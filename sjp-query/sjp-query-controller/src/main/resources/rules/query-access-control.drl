@@ -250,3 +250,11 @@ rule "sjp - Query - API - Get common case application"
   then
     $outcome.setSuccess(true);
 end
+
+rule "sjp.query.convicting-court-session"
+  when
+    $outcome: Outcome();
+    $action: Action(name == "sjp.query.convicting-court-session");
+  then
+    $outcome.setSuccess(true);
+end

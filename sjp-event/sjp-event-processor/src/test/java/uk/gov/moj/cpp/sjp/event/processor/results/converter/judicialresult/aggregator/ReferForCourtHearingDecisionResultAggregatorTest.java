@@ -10,27 +10,34 @@ import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.Matchers.allOf;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyObject;
 import static org.mockito.Matchers.isNull;
 import static org.mockito.Mockito.when;
+import static uk.gov.justice.core.courts.CourtCentre.courtCentre;
+import static uk.gov.justice.services.test.utils.core.reflection.ReflectionUtil.setField;
 import static uk.gov.moj.cpp.sjp.domain.decision.OffenceDecisionInformation.createOffenceDecisionInformation;
 import static uk.gov.moj.cpp.sjp.domain.disability.DisabilityNeeds.NO_DISABILITY_NEEDS;
 import static uk.gov.moj.cpp.sjp.domain.verdict.VerdictType.PROVED_SJP;
 import static uk.gov.moj.cpp.sjp.event.processor.results.converter.judicialresult.JCaseResultsConstants.DATE_FORMAT;
 
+import uk.gov.justice.core.courts.CourtCentre;
 import uk.gov.justice.core.courts.JudicialResult;
 import uk.gov.justice.core.courts.JudicialResultCategory;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.sjp.domain.DefendantCourtInterpreter;
 import uk.gov.moj.cpp.sjp.domain.DefendantCourtOptions;
 import uk.gov.moj.cpp.sjp.domain.decision.ReferForCourtHearing;
+import uk.gov.moj.cpp.sjp.event.processor.results.converter.CourtCentreConverter;
 
 import java.util.Collections;
+import java.util.Optional;
 import java.util.UUID;
 
 import org.hamcrest.Matchers;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -39,6 +46,11 @@ public class ReferForCourtHearingDecisionResultAggregatorTest extends  BaseDecis
     private ReferForCourtHearingDecisionResultAggregator aggregator;
 
     private final UUID REFERRAL_REASON_ID = randomUUID();
+
+    @Mock
+    private CourtCentreConverter courtCentreConverter;
+
+    private CourtCentre courtCentre = courtCentre().build();
 
     private final DefendantCourtOptions courtOptions =
             new DefendantCourtOptions(
@@ -49,6 +61,10 @@ public class ReferForCourtHearingDecisionResultAggregatorTest extends  BaseDecis
     public void setUp() {
         super.setUp();
         aggregator = new ReferForCourtHearingDecisionResultAggregator(jCachedReferenceData);
+
+        setField(aggregator, "courtCentreConverter", courtCentreConverter);
+
+        when(courtCentreConverter.convertByOffenceId(anyObject(), anyObject())).thenReturn(Optional.of(courtCentre));
 
         when(referenceDataService.getReferralReasons(any(JsonEnvelope.class)))
                 .thenReturn(createObjectBuilder().

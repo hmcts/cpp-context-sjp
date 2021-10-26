@@ -336,3 +336,12 @@ rule "sjp - Query - API - Get common case application"
   then
     $outcome.setSuccess(true);
 end
+
+rule "sjp - Query - API - Get convicting court session"
+  when
+    $outcome: Outcome();
+    $action: Action(name == "sjp.query.convicting-court-session");
+    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, RuleConstants.getQuerySessionGroups()))
+  then
+    $outcome.setSuccess(true);
+end

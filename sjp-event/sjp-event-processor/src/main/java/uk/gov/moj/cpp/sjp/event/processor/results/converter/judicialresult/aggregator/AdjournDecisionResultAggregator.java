@@ -4,24 +4,30 @@ import static uk.gov.moj.cpp.sjp.event.processor.results.converter.judicialresul
 import static uk.gov.moj.cpp.sjp.event.processor.results.converter.judicialresult.JPrompt.ADJOURN_TO_DATE;
 import static uk.gov.moj.cpp.sjp.event.processor.results.converter.judicialresult.JResultCode.ADJOURNSJP;
 
+import uk.gov.justice.core.courts.CourtCentre;
 import uk.gov.justice.core.courts.JudicialResult;
 import uk.gov.justice.core.courts.JudicialResultPrompt;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.sjp.domain.decision.Adjourn;
 import uk.gov.moj.cpp.sjp.domain.decision.OffenceDecision;
 import uk.gov.moj.cpp.sjp.event.processor.results.converter.ConvictionInfo;
+import uk.gov.moj.cpp.sjp.event.processor.results.converter.CourtCentreConverter;
 import uk.gov.moj.cpp.sjp.event.processor.results.converter.judicialresult.DecisionAggregate;
 import uk.gov.moj.cpp.sjp.event.processor.results.converter.judicialresult.JCachedReferenceData;
 
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 import javax.inject.Inject;
 import javax.json.JsonObject;
 
 public class AdjournDecisionResultAggregator extends DecisionResultAggregator {
+
+    @Inject
+    private CourtCentreConverter courtCentreConverter;
 
     @Inject
     public AdjournDecisionResultAggregator(final JCachedReferenceData jCachedReferenceData) {
@@ -62,10 +68,17 @@ public class AdjournDecisionResultAggregator extends DecisionResultAggregator {
         // conviction information
         adjournOffenceDecision
                 .getOffenceDecisionInformation()
-                .forEach(oi -> decisionAggregate.putConvictionInfo(oi.getOffenceId(),
+                .forEach(oi -> {
+                    final Optional<CourtCentre> offenceConvictingCourtCentreOptional = courtCentreConverter.convertByOffenceId(oi.getOffenceId(), sjpSessionEnvelope.metadata());
+
+                    offenceConvictingCourtCentreOptional.ifPresent(offenceConvictingCourtCentre ->
+                        decisionAggregate.putConvictionInfo(oi.getOffenceId(),
                                 new ConvictionInfo(oi.getOffenceId(),
                                         oi.getVerdict(),
-                                        adjournOffenceDecision.getConvictionDate())));
+                                        adjournOffenceDecision.getConvictionDate(),
+                                        offenceConvictingCourtCentre))
+                    );
+                });
     }
 
 }

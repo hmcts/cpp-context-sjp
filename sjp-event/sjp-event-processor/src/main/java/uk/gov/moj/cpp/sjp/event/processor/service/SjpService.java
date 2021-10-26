@@ -1,6 +1,8 @@
 package uk.gov.moj.cpp.sjp.event.processor.service;
 
 
+import static java.util.Optional.empty;
+import static java.util.Optional.ofNullable;
 import static javax.json.Json.createObjectBuilder;
 import static uk.gov.justice.services.core.annotation.Component.EVENT_PROCESSOR;
 import static uk.gov.justice.services.messaging.Envelope.metadataFrom;
@@ -9,6 +11,7 @@ import static uk.gov.moj.cpp.sjp.event.processor.EventProcessorConstants.APPLICA
 import static uk.gov.moj.cpp.sjp.event.processor.EventProcessorConstants.CASE_ID;
 import static uk.gov.moj.cpp.sjp.event.processor.EventProcessorConstants.CORRELATION_ID;
 import static uk.gov.moj.cpp.sjp.event.processor.EventProcessorConstants.DEFENDANT_ID;
+import static uk.gov.moj.cpp.sjp.event.processor.EventProcessorConstants.OFFENCE_ID;
 import static uk.gov.moj.cpp.sjp.event.processor.EventProcessorConstants.SESSION_ID;
 
 import uk.gov.justice.json.schemas.domains.sjp.queries.CaseDetails;
@@ -29,6 +32,7 @@ import java.util.UUID;
 
 import javax.inject.Inject;
 import javax.json.JsonObject;
+import javax.json.JsonValue;
 
 @SuppressWarnings("squid:CallToDeprecatedMethod")
 public class SjpService {
@@ -63,6 +67,16 @@ public class SjpService {
         final Envelope<CaseDetails> caseDetailsEnvelope = requester.request(request, CaseDetails.class);
 
         return caseDetailsEnvelope.payload();
+    }
+
+    public Optional<JsonObject> getConvictingCourtSessionDetails(final UUID offenceId, final JsonEnvelope envelope) {
+        final JsonObject payload = createObjectBuilder().add(OFFENCE_ID, offenceId.toString()).build();
+        final JsonEnvelope request = envelopeFrom(metadataFrom(envelope.metadata()).withName("sjp.query.convicting-court-session"), payload);
+        final JsonEnvelope response = requester.requestAsAdmin(request);
+
+        return response.payload() != JsonValue.NULL
+                ? ofNullable(response.payloadAsJsonObject())
+                : empty();
     }
 
     public JsonObject getSessionDetails(final UUID sessionId, final JsonEnvelope envelope) {

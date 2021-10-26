@@ -1,5 +1,6 @@
 package uk.gov.moj.cpp.sjp.event.processor.results.converter;
 
+import uk.gov.justice.core.courts.CourtCentre;
 import uk.gov.moj.cpp.sjp.domain.verdict.VerdictType;
 
 import java.time.LocalDate;
@@ -13,12 +14,16 @@ public class ConvictionInfo {
 
     private LocalDate convictionDate;
 
+    private CourtCentre convictingCourt;
+
     public ConvictionInfo(final UUID offenceId,
                           final VerdictType verdictType,
-                          final LocalDate convictionDate) {
+                          final LocalDate convictionDate,
+                          final CourtCentre convictingCourt) {
         this.offenceId = offenceId;
         this.verdictType = verdictType;
         this.convictionDate = convictionDate;
+        this.convictingCourt = convictingCourt;
     }
 
 
@@ -34,5 +39,7 @@ public class ConvictionInfo {
         return convictionDate;
     }
 
-
+    public CourtCentre getConvictingCourt() {
+        return convictingCourt;
+    }
 }

@@ -57,6 +57,9 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
+import javax.json.JsonArray;
+import javax.json.JsonObject;
+
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Sets;
 import org.hamcrest.Matchers;
@@ -148,6 +151,14 @@ public class CaseResultsIT extends BaseIntegrationTest {
         // Then
 
         final Optional<JsonEnvelope> jsonEnvelopePublicHearingResulted = eventListener.popEvent("public.hearing.resulted");
+        final JsonObject hearingResultedPayload = jsonEnvelopePublicHearingResulted.get().payloadAsJsonObject();
+        final JsonArray prosecutionCasesArray = hearingResultedPayload.getJsonObject("hearing").getJsonArray("prosecutionCases");
+        final JsonObject convictingCourt = prosecutionCasesArray.getJsonObject(0).getJsonArray("defendants").getJsonObject(0).getJsonArray("offences").getJsonObject(0).getJsonObject("convictingCourt");
+        final String convictingDate = prosecutionCasesArray.getJsonObject(0).getJsonArray("defendants").getJsonObject(0).getJsonArray("offences").getJsonObject(0).getString("convictionDate");
+        assertThat(!convictingCourt.isEmpty(), Matchers.is(true));
+        assertThat(convictingCourt.getString("code"),Matchers.is("B01LY"));
+        assertThat(!convictingDate.isEmpty(), Matchers.is(true));
+        assertThat(convictingDate, Matchers.is(LocalDate.now().toString()));
         assertThat(jsonEnvelopePublicHearingResulted.isPresent(), Matchers.is(true));
 
 

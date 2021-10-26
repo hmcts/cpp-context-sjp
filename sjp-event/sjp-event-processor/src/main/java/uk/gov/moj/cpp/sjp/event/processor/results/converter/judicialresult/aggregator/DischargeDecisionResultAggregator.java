@@ -1,11 +1,11 @@
 package uk.gov.moj.cpp.sjp.event.processor.results.converter.judicialresult.aggregator;
 
-import static uk.gov.justice.core.courts.JudicialResultCategory.FINAL;
 import static uk.gov.moj.cpp.sjp.event.processor.results.converter.judicialresult.JCaseResultsConstants.DATE_FORMAT;
 import static uk.gov.moj.cpp.sjp.event.processor.results.converter.judicialresult.JPrompt.DURATION_VALUE_OF_CONDITIONAL_DISCHARGE;
 import static uk.gov.moj.cpp.sjp.event.processor.results.converter.judicialresult.JResultCode.AD;
 import static uk.gov.moj.cpp.sjp.event.processor.results.converter.judicialresult.JResultCode.CD;
 
+import uk.gov.justice.core.courts.CourtCentre;
 import uk.gov.justice.core.courts.JudicialResult;
 import uk.gov.justice.core.courts.JudicialResultPrompt;
 import uk.gov.justice.services.messaging.JsonEnvelope;
@@ -14,6 +14,7 @@ import uk.gov.moj.cpp.sjp.domain.decision.OffenceDecision;
 import uk.gov.moj.cpp.sjp.domain.decision.discharge.DischargePeriod;
 import uk.gov.moj.cpp.sjp.domain.decision.discharge.DischargeType;
 import uk.gov.moj.cpp.sjp.event.processor.results.converter.ConvictionInfo;
+import uk.gov.moj.cpp.sjp.event.processor.results.converter.CourtCentreConverter;
 import uk.gov.moj.cpp.sjp.event.processor.results.converter.judicialresult.DecisionAggregate;
 import uk.gov.moj.cpp.sjp.event.processor.results.converter.judicialresult.JCachedReferenceData;
 import uk.gov.moj.cpp.sjp.event.processor.results.converter.judicialresult.JudicialResultPromptDurationHelper;
@@ -22,12 +23,16 @@ import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 import javax.inject.Inject;
 import javax.json.JsonObject;
 
 public class DischargeDecisionResultAggregator extends DecisionResultAggregator {
+
+    @Inject
+    private CourtCentreConverter courtCentreConverter;
 
     @Inject
     public DischargeDecisionResultAggregator(final JCachedReferenceData cachedReferenceData) {
@@ -68,11 +73,16 @@ public class DischargeDecisionResultAggregator extends DecisionResultAggregator 
 
         setFinalOffence(decisionAggregate, offenceId, judicialResults);
 
+        final Optional<CourtCentre> convictingCourtOptional = courtCentreConverter.convertByOffenceId(offenceId, sjpSessionEnvelope.metadata());
+
         // conviction information
-        decisionAggregate.putConvictionInfo(offenceId,
+        convictingCourtOptional.ifPresent(convictingCourt ->
+                decisionAggregate.putConvictionInfo(offenceId,
                 new ConvictionInfo(offenceId,
                         dischargeOffenceDecision.getOffenceDecisionInformation().getVerdict(),
-                        dischargeOffenceDecision.getConvictionDate()));
+                        dischargeOffenceDecision.getConvictionDate(),
+                        convictingCourt))
+        );
     }
 
     private List<JudicialResult> dischargeResult(final Discharge discharge,

@@ -5,24 +5,30 @@ import static uk.gov.moj.cpp.sjp.event.processor.results.converter.judicialresul
 import static uk.gov.moj.cpp.sjp.event.processor.results.converter.judicialresult.JPrompt.SUMRCC_REASONS_IDS_FOR_REFERRING_TO_COURT;
 import static uk.gov.moj.cpp.sjp.event.processor.results.converter.judicialresult.JResultCode.SUMRCC;
 
+import uk.gov.justice.core.courts.CourtCentre;
 import uk.gov.justice.core.courts.JudicialResult;
 import uk.gov.justice.core.courts.JudicialResultPrompt;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.sjp.domain.decision.OffenceDecision;
 import uk.gov.moj.cpp.sjp.domain.decision.ReferForCourtHearing;
 import uk.gov.moj.cpp.sjp.event.processor.results.converter.ConvictionInfo;
+import uk.gov.moj.cpp.sjp.event.processor.results.converter.CourtCentreConverter;
 import uk.gov.moj.cpp.sjp.event.processor.results.converter.judicialresult.DecisionAggregate;
 import uk.gov.moj.cpp.sjp.event.processor.results.converter.judicialresult.JCachedReferenceData;
 
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 import javax.inject.Inject;
 import javax.json.JsonObject;
 
 public class ReferForCourtHearingDecisionResultAggregator extends DecisionResultAggregator {
+
+    @Inject
+    private CourtCentreConverter courtCentreConverter;
 
     @Inject
     public ReferForCourtHearingDecisionResultAggregator(final JCachedReferenceData cachedReferenceData) {
@@ -52,10 +58,17 @@ public class ReferForCourtHearingDecisionResultAggregator extends DecisionResult
         // conviction information
         referForCourtHearing
                 .getOffenceDecisionInformation()
-                .forEach(oi -> decisionAggregate.putConvictionInfo(oi.getOffenceId(),
-                        new ConvictionInfo(oi.getOffenceId(),
-                                oi.getVerdict(),
-                                referForCourtHearing.getConvictionDate())));
+                .forEach(oi -> {
+                    final Optional<CourtCentre> convictingCourtOptional = courtCentreConverter.convertByOffenceId(oi.getOffenceId(), sjpSessionEnvelope.metadata());
+
+                    convictingCourtOptional.ifPresent(convictingCourt ->
+                            decisionAggregate.putConvictionInfo(oi.getOffenceId(),
+                                    new ConvictionInfo(oi.getOffenceId(),
+                                            oi.getVerdict(),
+                                            referForCourtHearing.getConvictionDate(),
+                                            convictingCourt))
+                    );
+                });
     }
 
     private List<JudicialResult> referForCourtHearing(final ReferForCourtHearing referForCourtHearing,

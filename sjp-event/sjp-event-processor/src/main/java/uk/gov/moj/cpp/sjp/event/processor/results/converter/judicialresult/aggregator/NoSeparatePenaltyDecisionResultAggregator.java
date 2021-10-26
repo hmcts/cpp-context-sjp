@@ -1,28 +1,33 @@
 package uk.gov.moj.cpp.sjp.event.processor.results.converter.judicialresult.aggregator;
 
 import static java.util.Collections.singletonList;
-import static uk.gov.justice.core.courts.JudicialResultCategory.FINAL;
 import static uk.gov.moj.cpp.sjp.event.processor.results.converter.judicialresult.JCaseResultsConstants.DATE_FORMAT;
 import static uk.gov.moj.cpp.sjp.event.processor.results.converter.judicialresult.JResultCode.LEN;
 import static uk.gov.moj.cpp.sjp.event.processor.results.converter.judicialresult.JResultCode.NSP;
 
+import uk.gov.justice.core.courts.CourtCentre;
 import uk.gov.justice.core.courts.JudicialResult;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.sjp.domain.decision.NoSeparatePenalty;
 import uk.gov.moj.cpp.sjp.domain.decision.OffenceDecision;
 import uk.gov.moj.cpp.sjp.event.processor.results.converter.ConvictionInfo;
-import uk.gov.moj.cpp.sjp.event.processor.results.converter.judicialresult.JCachedReferenceData;
+import uk.gov.moj.cpp.sjp.event.processor.results.converter.CourtCentreConverter;
 import uk.gov.moj.cpp.sjp.event.processor.results.converter.judicialresult.DecisionAggregate;
+import uk.gov.moj.cpp.sjp.event.processor.results.converter.judicialresult.JCachedReferenceData;
 
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 import javax.inject.Inject;
 import javax.json.JsonObject;
 
 public class NoSeparatePenaltyDecisionResultAggregator extends DecisionResultAggregator {
+
+    @Inject
+    private CourtCentreConverter courtCentreConverter;
 
     @Inject
     public NoSeparatePenaltyDecisionResultAggregator(final JCachedReferenceData jCachedReferenceData) {
@@ -52,10 +57,15 @@ public class NoSeparatePenaltyDecisionResultAggregator extends DecisionResultAgg
 
         setFinalOffence(decisionAggregate, offenceId, judicialResults);
 
-        decisionAggregate.putConvictionInfo(offenceId,
-                new ConvictionInfo(offenceId,
-                        noSeparatePenalty.getOffenceDecisionInformation().getVerdict(),
-                        noSeparatePenalty.getConvictionDate()));
+        final Optional<CourtCentre> convictingCourtOptional = courtCentreConverter.convertByOffenceId(offenceId, sjpSessionEnvelope.metadata());
+
+        convictingCourtOptional.ifPresent(convictingCourt ->
+                decisionAggregate.putConvictionInfo(offenceId,
+                        new ConvictionInfo(offenceId,
+                                noSeparatePenalty.getOffenceDecisionInformation().getVerdict(),
+                                noSeparatePenalty.getConvictionDate(),
+                                convictingCourt))
+        );
     }
 
     private List<JudicialResult> noSeparateResult(final JsonEnvelope sjpSessionEnvelope,

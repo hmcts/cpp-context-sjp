@@ -5,23 +5,31 @@ import static org.hamcrest.CoreMatchers.hasItem;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.hasProperty;
 import static org.junit.Assert.assertThat;
+import static org.mockito.Matchers.anyObject;
+import static org.mockito.Mockito.when;
+import static uk.gov.justice.core.courts.CourtCentre.courtCentre;
+import static uk.gov.justice.services.test.utils.core.reflection.ReflectionUtil.setField;
 import static uk.gov.moj.cpp.sjp.domain.decision.OffenceDecisionInformation.createOffenceDecisionInformation;
 import static uk.gov.moj.cpp.sjp.domain.verdict.VerdictType.PROVED_SJP;
 import static uk.gov.moj.cpp.sjp.event.processor.results.converter.judicialresult.JCaseResultsConstants.DATE_FORMAT;
 
+import uk.gov.justice.core.courts.CourtCentre;
 import uk.gov.moj.cpp.sjp.domain.decision.FinancialPenalty;
 import uk.gov.moj.cpp.sjp.domain.decision.PressRestriction;
 import uk.gov.moj.cpp.sjp.domain.decision.disqualification.DisqualificationPeriod;
 import uk.gov.moj.cpp.sjp.domain.decision.disqualification.DisqualificationPeriodTimeUnit;
 import uk.gov.moj.cpp.sjp.domain.decision.disqualification.DisqualificationType;
 import uk.gov.moj.cpp.sjp.domain.decision.endorsement.PenaltyPointsReason;
+import uk.gov.moj.cpp.sjp.event.processor.results.converter.CourtCentreConverter;
 
 import java.math.BigDecimal;
+import java.util.Optional;
 
 import org.hamcrest.Matchers;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -29,10 +37,17 @@ public class FinancialPenaltyDecisionResultAggregatorTest extends  BaseDecisionR
 
     private FinancialPenaltyDecisionResultAggregator aggregator;
 
+    @Mock
+    private CourtCentreConverter courtCentreConverter;
+
+    private CourtCentre courtCentre = courtCentre().build();
+
     @Before
     public void setUp() {
         super.setUp();
         aggregator = new FinancialPenaltyDecisionResultAggregator(jCachedReferenceData);
+        setField(aggregator, "courtCentreConverter", courtCentreConverter);
+        when(courtCentreConverter.convertByOffenceId(anyObject(), anyObject())).thenReturn(Optional.of(courtCentre));
     }
 
     @Test
@@ -57,7 +72,7 @@ public class FinancialPenaltyDecisionResultAggregatorTest extends  BaseDecisionR
                 1,
                 PressRestriction.requested("name"));
 
-        aggregator.aggregate(offenceDecision, sjpSessionEnvelope, resultsAggregate, resultedOn, "drivernumber" , "TVL");;
+        aggregator.aggregate(offenceDecision, sjpSessionEnvelope, resultsAggregate, resultedOn, "drivernumber" , "TVL");
 
         assertThat(resultsAggregate.getResults(offence1Id), allOf(
                 hasItem(allOf(
@@ -95,7 +110,7 @@ public class FinancialPenaltyDecisionResultAggregatorTest extends  BaseDecisionR
                 1,
                 PressRestriction.requested("name"));
 
-        aggregator.aggregate(offenceDecision, sjpSessionEnvelope, resultsAggregate, resultedOn, "drivernumber" , "TVL");;
+        aggregator.aggregate(offenceDecision, sjpSessionEnvelope, resultsAggregate, resultedOn, "drivernumber" , "TVL");
 
         assertThat(resultsAggregate.getResults(offence1Id), allOf(
                 hasItem(allOf(

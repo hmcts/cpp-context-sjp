@@ -18,4 +18,9 @@ public class SessionQueryController {
     public JsonEnvelope findSession(final JsonEnvelope query) {
         return requester.request(query);
     }
+
+    @Handles("sjp.query.convicting-court-session")
+    public JsonEnvelope findConvictingCourtSession(final JsonEnvelope query) {
+        return requester.request(query);
+    }
 }

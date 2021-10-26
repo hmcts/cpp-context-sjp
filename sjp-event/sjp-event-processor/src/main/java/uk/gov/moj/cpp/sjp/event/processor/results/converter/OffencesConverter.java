@@ -7,6 +7,7 @@ import static javax.json.JsonValue.NULL;
 import static uk.gov.justice.services.messaging.Envelope.metadataBuilder;
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
 
+import uk.gov.justice.core.courts.CourtCentre;
 import uk.gov.justice.core.courts.Offence;
 import uk.gov.justice.core.courts.Plea;
 import uk.gov.justice.core.courts.Verdict;
@@ -105,6 +106,10 @@ public class OffencesConverter {
                 .map(ConvictionInfo::getConvictionDate)
                 .orElse(null);
 
+        final CourtCentre courtCentre = ofNullable(resultsAggregate.getConvictionInfo(offence.getId()))
+                    .map(ConvictionInfo::getConvictingCourt)
+                    .orElse(null);
+
         return Offence.offence()
                 .withEndorsableFlag(offence.getEndorsable())
                 .withId(offence.getId())//Mandatory
@@ -120,6 +125,7 @@ public class OffencesConverter {
                 .withIsDisposed(resultsAggregate.getFinalOffence(offence.getId()))
                 .withVerdict(verdict)
                 .withConvictionDate(ofNullable(convictionDate).map(e -> convictionDate.toString()).orElse(null))
+                .withConvictingCourt(ofNullable(courtCentre).orElse(null))
                 .withOffenceFacts(offenceFactsConverter.getOffenceFacts(offence))
                 .withModeOfTrial(MODE_OF_TRIAL)
                 .withJudicialResults(resultsAggregate.getResults(offence.getId()))

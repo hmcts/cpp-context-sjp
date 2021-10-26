@@ -484,6 +484,28 @@ baseUri: http://localhost:8080/sjp-query-view/query/view/rest/sjp
                   schema: !include json/schema/sjp.query.session.json
                   example: !include json/sjp.query.session.json
 
+/convicting-court-session/{offenceId}:
+  description: return convicting court session
+  uriParameters:
+    offenceId:
+      description: Offence ID
+      type: string
+  get:
+    description: |
+      Get convicting court session.
+      ...
+      (mapping):
+          responseType: application/vnd.sjp.query.convicting-court-session+json
+          name: sjp.query.convicting-court-session
+      ...
+    responses:
+        200:
+          description: OK
+          body:
+                application/vnd.sjp.query.convicting-court-session+json:
+                  schema: !include json/schema/sjp.query.convicting-court-session.json
+                  example: !include json/sjp.query.convicting-court-session.json
+
 /cases/{caseId}/prosecuting-authority:
   get:
     description: |

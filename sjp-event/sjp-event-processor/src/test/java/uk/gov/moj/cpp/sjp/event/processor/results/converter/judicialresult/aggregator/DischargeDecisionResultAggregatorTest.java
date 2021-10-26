@@ -8,12 +8,17 @@ import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.hasProperty;
 import static org.junit.Assert.assertThat;
+import static org.mockito.Matchers.anyObject;
+import static org.mockito.Mockito.when;
+import static uk.gov.justice.core.courts.CourtCentre.courtCentre;
+import static uk.gov.justice.services.test.utils.core.reflection.ReflectionUtil.setField;
 import static uk.gov.moj.cpp.sjp.domain.decision.OffenceDecisionInformation.createOffenceDecisionInformation;
 import static uk.gov.moj.cpp.sjp.domain.decision.discharge.DischargeType.ABSOLUTE;
 import static uk.gov.moj.cpp.sjp.domain.decision.discharge.DischargeType.CONDITIONAL;
 import static uk.gov.moj.cpp.sjp.domain.verdict.VerdictType.PROVED_SJP;
 import static uk.gov.moj.cpp.sjp.event.processor.results.converter.judicialresult.JCaseResultsConstants.DATE_FORMAT;
 
+import uk.gov.justice.core.courts.CourtCentre;
 import uk.gov.moj.cpp.sjp.domain.decision.Discharge;
 import uk.gov.moj.cpp.sjp.domain.decision.discharge.DischargePeriod;
 import uk.gov.moj.cpp.sjp.domain.decision.discharge.PeriodUnit;
@@ -21,13 +26,16 @@ import uk.gov.moj.cpp.sjp.domain.decision.disqualification.DisqualificationPerio
 import uk.gov.moj.cpp.sjp.domain.decision.disqualification.DisqualificationPeriodTimeUnit;
 import uk.gov.moj.cpp.sjp.domain.decision.disqualification.DisqualificationType;
 import uk.gov.moj.cpp.sjp.domain.decision.endorsement.PenaltyPointsReason;
+import uk.gov.moj.cpp.sjp.event.processor.results.converter.CourtCentreConverter;
 
 import java.math.BigDecimal;
+import java.util.Optional;
 
 import org.hamcrest.Matchers;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -35,10 +43,18 @@ public class DischargeDecisionResultAggregatorTest extends  BaseDecisionResultAg
 
     private DischargeDecisionResultAggregator aggregator;
 
+    @Mock
+    private CourtCentreConverter courtCentreConverter;
+
+    private CourtCentre courtCentre = courtCentre().build();
+
     @Before
     public void setUp() {
         super.setUp();
         aggregator = new DischargeDecisionResultAggregator(jCachedReferenceData);
+        setField(aggregator, "courtCentreConverter", courtCentreConverter);
+
+        when(courtCentreConverter.convertByOffenceId(anyObject(), anyObject())).thenReturn(Optional.of(courtCentre));
     }
 
     @Test

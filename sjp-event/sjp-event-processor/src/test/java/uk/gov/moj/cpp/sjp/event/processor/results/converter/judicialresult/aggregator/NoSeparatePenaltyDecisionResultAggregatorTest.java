@@ -7,19 +7,28 @@ import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.hasProperty;
 import static org.junit.Assert.assertThat;
+import static org.mockito.Matchers.anyObject;
+import static org.mockito.Mockito.when;
+import static uk.gov.justice.core.courts.CourtCentre.courtCentre;
+import static uk.gov.justice.services.test.utils.core.reflection.ReflectionUtil.setField;
 import static uk.gov.moj.cpp.sjp.domain.decision.OffenceDecisionInformation.createOffenceDecisionInformation;
 import static uk.gov.moj.cpp.sjp.domain.verdict.VerdictType.PROVED_SJP;
 import static uk.gov.moj.cpp.sjp.event.processor.results.converter.judicialresult.JCaseResultsConstants.DATE_FORMAT;
 
+import uk.gov.justice.core.courts.CourtCentre;
+import uk.gov.justice.services.common.converter.jackson.ObjectMapperProducer;
 import uk.gov.moj.cpp.sjp.domain.decision.NoSeparatePenalty;
 import uk.gov.moj.cpp.sjp.domain.decision.PressRestriction;
+import uk.gov.moj.cpp.sjp.event.processor.results.converter.CourtCentreConverter;
 
 import java.time.ZonedDateTime;
+import java.util.Optional;
 
 import org.hamcrest.Matchers;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
 @SuppressWarnings("unchecked")
@@ -28,16 +37,22 @@ public class NoSeparatePenaltyDecisionResultAggregatorTest extends  BaseDecision
 
     private NoSeparatePenaltyDecisionResultAggregator aggregator;
 
+    @Mock
+    private CourtCentreConverter courtCentreConverter;
+
+    private CourtCentre courtCentre = courtCentre().build();
 
     @Before
     public void setUp() {
         super.setUp();
         aggregator = new NoSeparatePenaltyDecisionResultAggregator(jCachedReferenceData);
+        setField(aggregator, "courtCentreConverter", courtCentreConverter);
+
+        when(courtCentreConverter.convertByOffenceId(anyObject(), anyObject())).thenReturn(Optional.of(courtCentre));
     }
 
     @Test
     public void shouldPopulateBasicResult() {
-
         final NoSeparatePenalty offenceDecision
                 = new NoSeparatePenalty(null,
                 createOffenceDecisionInformation(offence1Id, PROVED_SJP),

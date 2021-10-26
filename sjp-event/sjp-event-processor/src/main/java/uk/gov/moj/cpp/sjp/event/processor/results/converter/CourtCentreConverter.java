@@ -1,5 +1,7 @@
 package uk.gov.moj.cpp.sjp.event.processor.results.converter;
 
+import static java.util.Objects.isNull;
+import static java.util.Optional.of;
 import static javax.json.JsonValue.NULL;
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
 import static uk.gov.justice.services.messaging.JsonEnvelope.metadataFrom;
@@ -50,6 +52,22 @@ public class CourtCentreConverter {
             }
         }
         return courtCentreBuilder.build();
+    }
+
+    public Optional<CourtCentre> convertByOffenceId(final UUID offenceId, final Metadata sourceMetadata) {
+
+        final JsonEnvelope emptyEnvelope = envelopeFrom(metadataFrom(sourceMetadata), NULL);
+        final Optional<JsonObject> sjpSessionPayloadOptional = sjpService.getConvictingCourtSessionDetails(offenceId, emptyEnvelope);
+        final CourtCentre.Builder courtCentreBuilder = CourtCentre.courtCentre();
+        sjpSessionPayloadOptional.ifPresent(sjpSessionPayload -> {
+            final String courtHouseCode = sjpSessionPayload.getString("courtHouseCode", null);
+            final Optional<JsonObject> courtOptional = referenceDataService.getCourtByCourtHouseOUCode(courtHouseCode, emptyEnvelope);
+            if (courtOptional.isPresent()) {
+                populateCourtCenter(sjpSessionPayload, courtCentreBuilder, courtOptional);
+            }
+        });
+        final CourtCentre courtCentre = courtCentreBuilder.build();
+        return isNull(courtCentre.getId()) ? Optional.empty() : of(courtCentre);
     }
 
     private void populateCourtCenter(final JsonObject sjpSessionPayload,

@@ -74,6 +74,8 @@ import java.time.LocalDate;
 import java.util.Optional;
 import java.util.UUID;
 
+import javax.json.JsonObject;
+
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Sets;
 import org.hamcrest.Matchers;
@@ -182,12 +184,15 @@ public class CompleteCaseIT extends BaseIntegrationTest {
 
         assertThat(jsonEnvelope2.isPresent(), is(true));
         final JsonEnvelope envelope = jsonEnvelope2.get();
+
         assertThat(envelope,
                 jsonEnvelope(
                         metadata().withName("public.hearing.resulted"),
                         payload().isJson(allOf(
                                 withJsonPath("$.hearing", Matchers.notNullValue()),
-                                withJsonPath("$.sharedTime", is(Matchers.notNullValue()))
+                                withJsonPath("$.sharedTime", is(Matchers.notNullValue())),
+                                withJsonPath("$.hearing.prosecutionCases[0].defendants[0].offences[0].convictingCourt", Matchers.notNullValue()),
+                                withJsonPath("$.hearing.prosecutionCases[0].defendants[0].offences[0].convictionDate", Matchers.is(LocalDate.now().toString()))
                         ))));
     }
 

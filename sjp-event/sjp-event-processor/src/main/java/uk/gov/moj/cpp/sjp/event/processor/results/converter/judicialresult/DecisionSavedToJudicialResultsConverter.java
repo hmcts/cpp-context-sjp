@@ -119,7 +119,7 @@ public class DecisionSavedToJudicialResultsConverter {
                 dischargeDecisionResultAggregator.aggregate(offenceDecision, sjpSessionPayloadObject, resultsAggregate, resultedOn, driverNumber, prosecutingAuthority);
                 break;
             case FINANCIAL_PENALTY:
-                financialPenaltyDecisionResultAggregator.aggregate(offenceDecision, sjpSessionPayloadObject, resultsAggregate, resultedOn, driverNumber, prosecutingAuthority) ;
+                financialPenaltyDecisionResultAggregator.aggregate(offenceDecision, sjpSessionPayloadObject, resultsAggregate, resultedOn, driverNumber, prosecutingAuthority);
                 break;
             case REFERRED_TO_OPEN_COURT:
                 referredToOpenCourtResultAggregator.aggregate(offenceDecision, sjpSessionPayloadObject, resultsAggregate, resultOn);

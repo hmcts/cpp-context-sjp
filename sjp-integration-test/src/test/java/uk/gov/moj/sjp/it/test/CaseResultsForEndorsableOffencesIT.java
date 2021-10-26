@@ -41,6 +41,8 @@ import static uk.gov.moj.sjp.it.util.matchers.ResultsMatcher.NCR;
 import static uk.gov.moj.sjp.it.util.matchers.ResultsMatcher.NSP;
 
 import uk.gov.justice.json.schemas.domains.sjp.User;
+import uk.gov.justice.services.messaging.JsonEnvelope;
+import uk.gov.moj.cpp.platform.test.feature.toggle.FeatureStubber;
 import uk.gov.moj.cpp.sjp.domain.decision.FinancialPenalty;
 import uk.gov.moj.cpp.sjp.domain.decision.NoSeparatePenalty;
 import uk.gov.moj.cpp.sjp.domain.decision.OffenceDecision;
@@ -70,13 +72,16 @@ import java.sql.SQLException;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.UUID;
 
 import javax.json.JsonArray;
 import javax.json.JsonObject;
 import javax.ws.rs.core.Response;
 
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Sets;
+import org.hamcrest.Matchers;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -102,6 +107,8 @@ public class CaseResultsForEndorsableOffencesIT extends BaseIntegrationTest {
     private final UUID defendantId = randomUUID();
     private UUID sessionId = randomUUID();
 
+    public static final String PUBLIC_HEARING_RESULTED = "public.hearing.resulted";
+
     private static JsonObject getCaseResults(final UUID caseId, final UUID userId) {
         final String url = String.format("/cases/%s/results", caseId);
         final Response response = makeGetCall(url, "application/vnd.sjp.query.case-results+json", userId);
@@ -122,6 +129,9 @@ public class CaseResultsForEndorsableOffencesIT extends BaseIntegrationTest {
         stubProsecutorQuery(prosecutingAuthority.name(), prosecutingAuthority.getFullName(), randomUUID());
         stubForUserDetails(user, prosecutingAuthority.name());
         CaseAssignmentRestrictionHelper.provisionCaseAssignmentRestrictions(Sets.newHashSet(TFL, TVL, DVLA));
+
+        final ImmutableMap<String, Boolean> features = ImmutableMap.of("amendReshare", false);
+        FeatureStubber.stubFeaturesFor("sjp", features);
 
         final CreateCase.CreateCasePayloadBuilder caseBuilder = CreateCase
                 .CreateCasePayloadBuilder
@@ -203,6 +213,7 @@ public class CaseResultsForEndorsableOffencesIT extends BaseIntegrationTest {
 
     @Test
     public void resultsForFinancialPenaltyWithAdditionalPointsAndReason() {
+
         // GIVEN
         final FinancialPenalty financialPenalty = FinancialPenaltyBuilder.withDefaults().id(offenceId1)
                 .licenceEndorsed(true)
@@ -229,7 +240,23 @@ public class CaseResultsForEndorsableOffencesIT extends BaseIntegrationTest {
         eventListener
                 .subscribe(DecisionSaved.EVENT_NAME)
                 .subscribe(CaseCompleted.EVENT_NAME)
+                .subscribe("public.hearing.resulted")
                 .run(() -> DecisionHelper.saveDecision(decision));
+
+        final Optional<JsonEnvelope> publicHearingResulted = eventListener.popEvent("public.hearing.resulted");
+        final JsonObject hearingResultedPayload = publicHearingResulted.get().payloadAsJsonObject();
+        final JsonArray prosecutionCasesArray = hearingResultedPayload.getJsonObject("hearing").getJsonArray("prosecutionCases");
+        final JsonArray offences = prosecutionCasesArray.getJsonObject(0).getJsonArray("defendants").getJsonObject(0).getJsonArray("offences");
+        assertThat(offences.size(), Matchers.is(3));
+        offences.forEach(item -> {
+            JsonObject obj = (JsonObject) item;
+            final JsonObject convictingCourtObj = obj.getJsonObject("convictingCourt");
+            assertThat(!convictingCourtObj.isEmpty(), Matchers.is(true));
+            assertThat(convictingCourtObj.getString("code"),Matchers.is("B01LY"));
+            final String convictingDate = obj.getString("convictionDate");
+            assertThat(!convictingDate.isEmpty(), Matchers.is(true));
+            assertThat(convictingDate, Matchers.is(LocalDate.now().toString()));
+        });
     }
 
     private Offence getOffenceResultsById(final UUID offenceId, final JsonObject payload) {

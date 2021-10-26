@@ -4,8 +4,10 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.when;
+import static uk.gov.justice.core.courts.CourtCentre.courtCentre;
 import static uk.gov.moj.cpp.sjp.event.processor.utils.FileUtil.getFileContentAsJson;
 
+import uk.gov.justice.core.courts.CourtCentre;
 import uk.gov.justice.core.courts.OffenceFacts;
 import uk.gov.justice.json.schemas.domains.sjp.queries.Offence;
 import uk.gov.moj.cpp.sjp.domain.verdict.VerdictType;
@@ -50,6 +52,8 @@ public class OffencesConverterTest {
     @InjectMocks
     private  OffencesConverter offencesConverter;
 
+    private CourtCentre courtCentre = courtCentre().build();
+
     @Test
     public void shouldReturnDvlaCode() {
 
@@ -77,7 +81,7 @@ public class OffencesConverterTest {
                 .withVehicleRegistration(offence.getVehicleRegistrationMark())
                 .build();
 
-        ConvictionInfo convictionInfo = new ConvictionInfo(UUID.randomUUID(), VerdictType.FOUND_GUILTY, LocalDate.now());
+        ConvictionInfo convictionInfo = new ConvictionInfo(UUID.randomUUID(), VerdictType.FOUND_GUILTY, LocalDate.now(), courtCentre);
         resultsAggregate.putConvictionInfo(offenceId,convictionInfo);
         when(offenceFactsConverter.getOffenceFacts(any())).thenReturn(offenceFacts);
 

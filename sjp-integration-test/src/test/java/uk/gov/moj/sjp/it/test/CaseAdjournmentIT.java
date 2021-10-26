@@ -5,6 +5,7 @@ import static com.jayway.jsonpath.matchers.JsonPathMatchers.withoutJsonPath;
 import static java.time.LocalDate.now;
 import static java.util.Collections.singletonList;
 import static java.util.UUID.randomUUID;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertTrue;
@@ -70,6 +71,8 @@ import java.util.Optional;
 import java.util.UUID;
 
 import javax.jms.JMSException;
+import javax.json.JsonArray;
+import javax.json.JsonObject;
 
 import com.google.common.collect.Sets;
 import com.google.common.collect.ImmutableMap;
@@ -77,6 +80,7 @@ import com.google.common.collect.Sets;
 import org.apache.commons.lang3.tuple.Triple;
 import org.hamcrest.CoreMatchers;
 import org.hamcrest.Matcher;
+import org.hamcrest.Matchers;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -373,6 +377,16 @@ public class CaseAdjournmentIT extends BaseIntegrationTest {
         final Optional<JsonEnvelope> caseAdjournmentRecordedEvent = eventListener.popEvent(CASE_ADJOURNED_TO_LATER_SJP_EVENT);
         assertTrue(caseAdjournmentRecordedEvent.isPresent());
         final Optional<JsonEnvelope> publicHearingResulted = eventListener.popEvent(PUBLIC_HEARING_RESULTED);
+        if(verdictType.equals(VerdictType.FOUND_GUILTY)){
+            final JsonObject hearingResultedPayload = publicHearingResulted.get().payloadAsJsonObject();
+            final JsonArray prosecutionCasesArray = hearingResultedPayload.getJsonObject("hearing").getJsonArray("prosecutionCases");
+            final JsonObject convictingCourt = prosecutionCasesArray.getJsonObject(0).getJsonArray("defendants").getJsonObject(0).getJsonArray("offences").getJsonObject(0).getJsonObject("convictingCourt");
+            final String convictingDate = prosecutionCasesArray.getJsonObject(0).getJsonArray("defendants").getJsonObject(0).getJsonArray("offences").getJsonObject(0).getString("convictionDate");
+            assertThat(!convictingCourt.isEmpty(), Matchers.is(true));
+            assertThat(convictingCourt.getString("code"),Matchers.is("B01LY"));
+            assertThat(!convictingDate.isEmpty(), Matchers.is(true));
+            assertThat(convictingDate, Matchers.is(LocalDate.now().toString()));
+        }
         assertTrue(publicHearingResulted.isPresent());
     }
 

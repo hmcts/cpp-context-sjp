@@ -108,6 +108,7 @@ public class PressRestrictionsSaveDecisionIT extends BaseIntegrationTest {
     public void setUp() throws Exception {
         new SjpDatabaseCleaner().cleanViewStore();
         stubStartSjpSessionCommand();
+        stubProsecutorQuery(ProsecutingAuthority.TFL.name(), ProsecutingAuthority.TFL.getFullName(), randomUUID());
         stubEndSjpSessionCommand();
         stubAssignmentReplicationCommands();
         stubAllResultDefinitions();

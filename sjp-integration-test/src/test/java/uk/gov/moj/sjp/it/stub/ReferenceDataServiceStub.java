@@ -185,6 +185,7 @@ public class ReferenceDataServiceStub {
                                                 .add("shortName", prosecutingAuthorityCode)
                                                 .add("fullName", prosecutingAuthorityFullName)
                                                 .add("policeFlag", policeFlag)
+                                                .add("majorCreditorCode", "Transport for London")
                                                 .add("address", createObjectBuilder()
                                                         .add("address1", "6th Floor Windsor House")
                                                         .add("address2", "42-50 Victoria Street")

@@ -91,15 +91,9 @@ public class JCachedReferenceData {
     }
 
     public Optional<String> getCreditorName(final String prosecutingAuthorityCode, final JsonEnvelope envelope) {
-        return referenceDataService.getFixedList(envelope)
-                .getJsonArray(FIXED_LIST_COLLECTION)
-                .getValuesAs(JsonObject.class)
-                .stream()
-                .filter(e -> "6e5f1afe-e35f-11e8-9f32-f2801f1b9fd1".equals(e.getString(ID)))
-                .flatMap(e -> e.getJsonArray(ELEMENTS).getValuesAs(JsonObject.class).stream())
-                .filter(fixedList -> fixedList.getString("code").startsWith(prosecutingAuthorityCode))
-                .findFirst()
-                .map(e -> e.getString(VALUE, null));
+        return referenceDataService
+                .getProsecutor(prosecutingAuthorityCode, envelope)
+                .map(prosecutor -> prosecutor.getString("fullName"));
     }
 
     private String extractReferralReason(final JsonObject referralReason) {

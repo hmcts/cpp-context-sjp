@@ -10,13 +10,14 @@ import static uk.gov.moj.cpp.sjp.event.processor.results.converter.judicialresul
 import static uk.gov.moj.cpp.sjp.event.processor.utils.FileUtil.getFileContentAsJson;
 
 import uk.gov.justice.services.messaging.JsonEnvelope;
-import uk.gov.moj.cpp.sjp.event.processor.results.converter.judicialresult.JCachedReferenceData;
 import uk.gov.moj.cpp.sjp.event.processor.results.converter.judicialresult.DecisionAggregate;
+import uk.gov.moj.cpp.sjp.event.processor.results.converter.judicialresult.JCachedReferenceData;
 import uk.gov.moj.cpp.sjp.event.processor.service.ReferenceDataService;
 
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
 import java.util.HashMap;
+import java.util.Optional;
 import java.util.UUID;
 
 import org.junit.Before;
@@ -48,6 +49,9 @@ public abstract class BaseDecisionResultAggregatorTest {
 
         when(referenceDataService.getFixedList(any(JsonEnvelope.class)))
                 .thenReturn((getFileContentAsJson("resultsconverter/referencedata.fixedlist.json", new HashMap<>())));
+
+        when(referenceDataService.getProsecutor(any(String.class), any(JsonEnvelope.class)))
+                .thenReturn((Optional.of(getFileContentAsJson("resultsconverter/prosecutor.json", new HashMap<>()))));
 
         this.jCachedReferenceData = new JCachedReferenceData(referenceDataService);
     }

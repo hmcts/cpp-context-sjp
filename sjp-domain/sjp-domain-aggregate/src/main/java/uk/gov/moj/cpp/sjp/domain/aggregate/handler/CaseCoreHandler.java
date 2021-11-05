@@ -1,7 +1,17 @@
 package uk.gov.moj.cpp.sjp.domain.aggregate.handler;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import static uk.gov.moj.cpp.sjp.domain.CaseAssignmentType.DELEGATED_POWERS_DECISION;
+import static uk.gov.moj.cpp.sjp.domain.CaseAssignmentType.MAGISTRATE_DECISION;
+import static uk.gov.moj.cpp.sjp.domain.DomainConstants.NUMBER_DAYS_WAITING_FOR_PLEA;
+import static uk.gov.moj.cpp.sjp.domain.aggregate.domain.SessionRules.getPriority;
+import static uk.gov.moj.cpp.sjp.domain.aggregate.domain.SessionRules.getSessionType;
+import static uk.gov.moj.cpp.sjp.domain.aggregate.handler.HandlerUtils.createRejectionEvents;
+import static uk.gov.moj.cpp.sjp.event.session.CaseAssignmentRejected.RejectReason.CASE_ASSIGNED_TO_OTHER_USER;
+import static uk.gov.moj.cpp.sjp.event.session.CaseAssignmentRejected.RejectReason.CASE_COMPLETED;
+import static uk.gov.moj.cpp.sjp.event.session.CaseAssignmentRejected.RejectReason.CASE_NOT_READY;
+
+import uk.gov.justice.core.courts.CourtCentre;
+import uk.gov.justice.core.courts.HearingDay;
 import uk.gov.justice.json.schemas.domains.sjp.ApplicationStatus;
 import uk.gov.moj.cpp.sjp.domain.Case;
 import uk.gov.moj.cpp.sjp.domain.CaseAssignmentType;
@@ -16,9 +26,11 @@ import uk.gov.moj.cpp.sjp.event.CaseAlreadyReopened;
 import uk.gov.moj.cpp.sjp.event.CaseCreationFailedBecauseCaseAlreadyExisted;
 import uk.gov.moj.cpp.sjp.event.CaseExpectedDateReadyChanged;
 import uk.gov.moj.cpp.sjp.event.CaseListedInCriminalCourts;
+import uk.gov.moj.cpp.sjp.event.CaseListedInCriminalCourtsV2;
 import uk.gov.moj.cpp.sjp.event.CaseMarkedReadyForDecision;
 import uk.gov.moj.cpp.sjp.event.CaseNotFound;
 import uk.gov.moj.cpp.sjp.event.CaseNotReopened;
+import uk.gov.moj.cpp.sjp.event.CaseOffenceListedInCriminalCourts;
 import uk.gov.moj.cpp.sjp.event.CaseReceived;
 import uk.gov.moj.cpp.sjp.event.CaseReopened;
 import uk.gov.moj.cpp.sjp.event.CaseReopenedUndone;
@@ -28,6 +40,7 @@ import uk.gov.moj.cpp.sjp.event.DatesToAvoidAdded;
 import uk.gov.moj.cpp.sjp.event.DatesToAvoidTimerExpired;
 import uk.gov.moj.cpp.sjp.event.DatesToAvoidUpdated;
 import uk.gov.moj.cpp.sjp.event.DefendantResponseTimerExpired;
+import uk.gov.moj.cpp.sjp.event.decision.DecisionSaved;
 import uk.gov.moj.cpp.sjp.event.session.CaseAlreadyAssigned;
 import uk.gov.moj.cpp.sjp.event.session.CaseAssigned;
 import uk.gov.moj.cpp.sjp.event.session.CaseAssignmentRejected;
@@ -36,19 +49,13 @@ import uk.gov.moj.cpp.sjp.event.session.CaseUnassignmentRejected;
 
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Stream;
 
-import static uk.gov.moj.cpp.sjp.domain.CaseAssignmentType.DELEGATED_POWERS_DECISION;
-import static uk.gov.moj.cpp.sjp.domain.CaseAssignmentType.MAGISTRATE_DECISION;
-import static uk.gov.moj.cpp.sjp.domain.DomainConstants.NUMBER_DAYS_WAITING_FOR_PLEA;
-import static uk.gov.moj.cpp.sjp.domain.aggregate.domain.SessionRules.getPriority;
-import static uk.gov.moj.cpp.sjp.domain.aggregate.domain.SessionRules.getSessionType;
-import static uk.gov.moj.cpp.sjp.domain.aggregate.handler.HandlerUtils.createRejectionEvents;
-import static uk.gov.moj.cpp.sjp.event.session.CaseAssignmentRejected.RejectReason.CASE_ASSIGNED_TO_OTHER_USER;
-import static uk.gov.moj.cpp.sjp.event.session.CaseAssignmentRejected.RejectReason.CASE_COMPLETED;
-import static uk.gov.moj.cpp.sjp.event.session.CaseAssignmentRejected.RejectReason.CASE_NOT_READY;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class CaseCoreHandler {
 
@@ -91,6 +98,21 @@ public class CaseCoreHandler {
     public Stream<Object> updateCaseListedInCriminalCourts(final UUID caseId, final String hearingCourtName,
                                                            final ZonedDateTime hearingTime) {
         return Stream.of(new CaseListedInCriminalCourts(caseId, hearingCourtName, hearingTime));
+    }
+
+    public Stream<Object> updateCaseOffenceListedInCcForReferToCourt(final UUID caseId,
+                                                                     final UUID defendantId,
+                                                                     final List<UUID> defendantOffences,
+                                                                     final UUID hearingId,
+                                                                     final CourtCentre courtCentre,
+                                                                     final List<HearingDay> hearingDays) {
+        return Stream.of(new CaseOffenceListedInCriminalCourts(caseId, defendantId,defendantOffences, hearingId, courtCentre, hearingDays));
+    }
+
+    public Stream<Object> updateCaseListedInCcForReferToCourt(final List<CaseOffenceListedInCriminalCourts> offenceHearings,
+                                                              final DecisionSaved decisionSaved,
+                                                              final UUID caseId) {
+        return Stream.of(new CaseListedInCriminalCourtsV2(offenceHearings, decisionSaved, caseId));
     }
 
     public Stream<Object> addDatesToAvoid(final String datesToAvoid,

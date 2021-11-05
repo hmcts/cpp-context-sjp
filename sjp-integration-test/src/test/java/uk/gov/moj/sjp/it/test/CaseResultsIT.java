@@ -103,7 +103,7 @@ public class CaseResultsIT extends BaseIntegrationTest {
         stubBailStatuses();
         stubResultIds();
 
-        final ImmutableMap<String, Boolean> features = ImmutableMap.of("amendReshare", false);
+        final ImmutableMap<String, Boolean> features = ImmutableMap.of("amendReshare", true);
         FeatureStubber.stubFeaturesFor("sjp", features);
 
         CaseAssignmentRestrictionHelper.provisionCaseAssignmentRestrictions(Sets.newHashSet(TFL, TVL, DVLA));
@@ -150,7 +150,7 @@ public class CaseResultsIT extends BaseIntegrationTest {
 
         // Then
 
-        final Optional<JsonEnvelope> jsonEnvelopePublicHearingResulted = eventListener.popEvent("public.hearing.resulted");
+        final Optional<JsonEnvelope> jsonEnvelopePublicHearingResulted = eventListener.popEvent(PUBLIC_EVENTS_HEARING_HEARING_RESULTED);
         final JsonObject hearingResultedPayload = jsonEnvelopePublicHearingResulted.get().payloadAsJsonObject();
         final JsonArray prosecutionCasesArray = hearingResultedPayload.getJsonObject("hearing").getJsonArray("prosecutionCases");
         final JsonObject convictingCourt = prosecutionCasesArray.getJsonObject(0).getJsonArray("defendants").getJsonObject(0).getJsonArray("offences").getJsonObject(0).getJsonObject("convictingCourt");
@@ -184,7 +184,7 @@ public class CaseResultsIT extends BaseIntegrationTest {
 
         // Then
 
-        final Optional<JsonEnvelope> jsonEnvelopePublicHearingResulted = eventListener.popEvent("public.hearing.resulted");
+        final Optional<JsonEnvelope> jsonEnvelopePublicHearingResulted = eventListener.popEvent(PUBLIC_EVENTS_HEARING_HEARING_RESULTED);
         assertThat(jsonEnvelopePublicHearingResulted.isPresent(), Matchers.is(true));
     }
 
@@ -210,7 +210,7 @@ public class CaseResultsIT extends BaseIntegrationTest {
         // Then
         // Then
 
-        final Optional<JsonEnvelope> jsonEnvelopePublicHearingResulted = eventListener.popEvent("public.hearing.resulted");
+        final Optional<JsonEnvelope> jsonEnvelopePublicHearingResulted = eventListener.popEvent(PUBLIC_EVENTS_HEARING_HEARING_RESULTED);
         assertThat(jsonEnvelopePublicHearingResulted.isPresent(), Matchers.is(true));
     }
 

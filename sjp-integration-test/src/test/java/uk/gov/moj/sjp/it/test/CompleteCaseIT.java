@@ -39,7 +39,6 @@ import static uk.gov.moj.sjp.it.stub.SchedulingStub.stubEndSjpSessionCommand;
 import static uk.gov.moj.sjp.it.stub.SchedulingStub.stubStartSjpSessionCommand;
 import static uk.gov.moj.sjp.it.stub.UsersGroupsStub.stubForUserDetails;
 import static uk.gov.moj.sjp.it.util.Defaults.DEFAULT_LONDON_COURT_HOUSE_OU_CODE;
-import static uk.gov.moj.sjp.it.util.Defaults.DEFAULT_USER_ID;
 import static uk.gov.moj.sjp.it.util.UrnProvider.generate;
 
 import uk.gov.justice.json.schemas.domains.sjp.User;
@@ -84,6 +83,7 @@ import org.junit.Test;
 
 public class CompleteCaseIT extends BaseIntegrationTest {
 
+    public static final String PUBLIC_SJP_ALL_OFFENCES_FOR_DEFENDANT_DISMISSED_OR_WITHDRAWN = "public.sjp.all-offences-for-defendant-dismissed-or-withdrawn";
     private final ProsecutingAuthority prosecutingAuthority = TFL;
     private final User user = new User("John", "Smith", USER_ID);
     private final LocalDate defendantDateOfBirth = LocalDate.of(1980, JULY, 15);
@@ -116,7 +116,7 @@ public class CompleteCaseIT extends BaseIntegrationTest {
         stubBailStatuses();
         stubFixedLists();
 
-        final ImmutableMap<String, Boolean> features = ImmutableMap.of("amendReshare", false);
+        final ImmutableMap<String, Boolean> features = ImmutableMap.of("amendReshare", true);
         FeatureStubber.stubFeaturesFor("sjp", features);
 
         CaseAssignmentRestrictionHelper.provisionCaseAssignmentRestrictions(Sets.newHashSet(TFL, TVL, DVLA));
@@ -154,19 +154,19 @@ public class CompleteCaseIT extends BaseIntegrationTest {
                         ))));
 
 
-        final Optional<JsonEnvelope> allOffencesDismissedOrWithdrawnEnvelope = eventListener.popEvent("public.sjp.all-offences-for-defendant-dismissed-or-withdrawn");
+        final Optional<JsonEnvelope> allOffencesDismissedOrWithdrawnEnvelope = eventListener.popEvent(PUBLIC_SJP_ALL_OFFENCES_FOR_DEFENDANT_DISMISSED_OR_WITHDRAWN);
         assertThat(allOffencesDismissedOrWithdrawnEnvelope.isPresent(), is(true));
 
         final JsonEnvelope envelope = allOffencesDismissedOrWithdrawnEnvelope.get();
         assertThat(envelope,
                 jsonEnvelope(
-                        metadata().withName("public.sjp.all-offences-for-defendant-dismissed-or-withdrawn"),
+                        metadata().withName(PUBLIC_SJP_ALL_OFFENCES_FOR_DEFENDANT_DISMISSED_OR_WITHDRAWN),
                         payload().isJson(allOf(
                                 withJsonPath("$.caseId", equalTo(caseId.toString())),
                                 withJsonPath("$.defendantId", equalTo(defendantId.toString()))
                         ))));
 
-        final Optional<JsonEnvelope> jsonEnvelopePublicHearingResulted = eventListener.popEvent("public.hearing.resulted");
+        final Optional<JsonEnvelope> jsonEnvelopePublicHearingResulted = eventListener.popEvent(PUBLIC_EVENTS_HEARING_HEARING_RESULTED);
         assertThat(jsonEnvelopePublicHearingResulted.isPresent(), is(true));
     }
 
@@ -177,17 +177,17 @@ public class CompleteCaseIT extends BaseIntegrationTest {
         final Optional<JsonEnvelope> deleteDocsStartedEnvelope = eventListener.popEvent(FinancialMeansDeleteDocsStarted.EVENT_NAME);
         assertThat(deleteDocsStartedEnvelope.isPresent(), is(false));
 
-        final Optional<JsonEnvelope> jsonEnvelope = eventListener.popEvent("public.sjp.all-offences-for-defendant-dismissed-or-withdrawn");
+        final Optional<JsonEnvelope> jsonEnvelope = eventListener.popEvent(PUBLIC_SJP_ALL_OFFENCES_FOR_DEFENDANT_DISMISSED_OR_WITHDRAWN);
         assertThat(jsonEnvelope.isPresent(), is(false));
 
-        final Optional<JsonEnvelope> jsonEnvelope2 = eventListener.popEvent("public.hearing.resulted");
+        final Optional<JsonEnvelope> jsonEnvelope2 = eventListener.popEvent(PUBLIC_EVENTS_HEARING_HEARING_RESULTED);
 
         assertThat(jsonEnvelope2.isPresent(), is(true));
         final JsonEnvelope envelope = jsonEnvelope2.get();
 
         assertThat(envelope,
                 jsonEnvelope(
-                        metadata().withName("public.hearing.resulted"),
+                        metadata().withName(PUBLIC_EVENTS_HEARING_HEARING_RESULTED),
                         payload().isJson(allOf(
                                 withJsonPath("$.hearing", Matchers.notNullValue()),
                                 withJsonPath("$.sharedTime", is(Matchers.notNullValue())),
@@ -205,8 +205,8 @@ public class CompleteCaseIT extends BaseIntegrationTest {
         eventListener
                 .subscribe(DecisionSaved.EVENT_NAME)
                 .subscribe(CaseCompleted.EVENT_NAME)
-                .subscribe("public.sjp.all-offences-for-defendant-dismissed-or-withdrawn")
-                .subscribe("public.hearing.resulted")
+                .subscribe(PUBLIC_SJP_ALL_OFFENCES_FOR_DEFENDANT_DISMISSED_OR_WITHDRAWN)
+                .subscribe(PUBLIC_EVENTS_HEARING_HEARING_RESULTED)
                 .subscribe(FinancialMeansDeleteDocsStarted.EVENT_NAME)
                 .run(() -> DecisionHelper.saveDecision(decision));
     }
@@ -221,8 +221,8 @@ public class CompleteCaseIT extends BaseIntegrationTest {
         eventListener
                 .subscribe(DecisionSaved.EVENT_NAME)
                 .subscribe(CaseCompleted.EVENT_NAME)
-                .subscribe("public.sjp.all-offences-for-defendant-dismissed-or-withdrawn")
-                .subscribe("public.hearing.resulted")
+                .subscribe(PUBLIC_SJP_ALL_OFFENCES_FOR_DEFENDANT_DISMISSED_OR_WITHDRAWN)
+                .subscribe(PUBLIC_EVENTS_HEARING_HEARING_RESULTED)
                 .subscribe(FinancialMeansDeleteDocsStarted.EVENT_NAME)
                 .run(() -> DecisionHelper.saveDecision(decision));
     }

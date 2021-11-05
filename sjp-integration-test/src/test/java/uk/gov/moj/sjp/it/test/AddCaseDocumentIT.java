@@ -4,7 +4,6 @@ import static java.util.Arrays.asList;
 import static java.util.UUID.randomUUID;
 import static org.apache.commons.lang3.RandomStringUtils.randomAlphanumeric;
 import static org.apache.commons.lang3.RandomUtils.nextInt;
-import static org.hamcrest.MatcherAssert.assertThat;
 import static uk.gov.justice.json.schemas.domains.sjp.User.user;
 import static uk.gov.moj.cpp.sjp.domain.SessionType.MAGISTRATE;
 import static uk.gov.moj.cpp.sjp.domain.disability.DisabilityNeeds.NO_DISABILITY_NEEDS;
@@ -24,7 +23,6 @@ import static uk.gov.moj.sjp.it.util.Defaults.DEFAULT_LONDON_COURT_HOUSE_OU_CODE
 
 import uk.gov.justice.domain.annotation.Event;
 import uk.gov.justice.json.schemas.domains.sjp.User;
-import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.platform.test.feature.toggle.FeatureStubber;
 import uk.gov.moj.cpp.sjp.domain.DefendantCourtInterpreter;
 import uk.gov.moj.cpp.sjp.domain.DefendantCourtOptions;
@@ -47,17 +45,10 @@ import uk.gov.moj.sjp.it.stub.UsersGroupsStub;
 import uk.gov.moj.sjp.it.util.CaseAssignmentRestrictionHelper;
 import uk.gov.moj.sjp.it.util.SjpDatabaseCleaner;
 
-import java.time.LocalDate;
-import java.time.ZoneOffset;
-import java.util.Optional;
 import java.util.UUID;
-
-import javax.json.JsonArray;
-import javax.json.JsonObject;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Sets;
-import org.hamcrest.Matchers;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -235,17 +226,6 @@ public class AddCaseDocumentIT extends BaseIntegrationTest {
                 .subscribe("public.events.hearing.hearing-resulted")
                 .run(() -> DecisionHelper.saveDecision(decision))
                 .popEvent(CaseReferredForCourtHearing.class.getAnnotation(Event.class).value());
-
-        final Optional<JsonEnvelope> jsonEnvelopePublicHearingResulted = eventListener.popEvent("public.events.hearing.hearing-resulted");
-        final JsonObject hearingResultedPayload = jsonEnvelopePublicHearingResulted.get().payloadAsJsonObject();
-        final JsonArray prosecutionCasesArray = hearingResultedPayload.getJsonObject("hearing").getJsonArray("prosecutionCases");
-        final JsonObject convictingCourt = prosecutionCasesArray.getJsonObject(0).getJsonArray("defendants").getJsonObject(0).getJsonArray("offences").getJsonObject(0).getJsonObject("convictingCourt");
-        final String convictingDate = prosecutionCasesArray.getJsonObject(0).getJsonArray("defendants").getJsonObject(0).getJsonArray("offences").getJsonObject(0).getString("convictionDate");
-        assertThat(!convictingCourt.isEmpty(), Matchers.is(true));
-        assertThat(convictingCourt.getString("code"),Matchers.is("B01LY"));
-        assertThat(!convictingDate.isEmpty(), Matchers.is(true));
-        assertThat(convictingDate, Matchers.is(LocalDate.now(ZoneOffset.UTC).toString()));
-        assertThat(jsonEnvelopePublicHearingResulted.isPresent(), Matchers.is(true));
 
         try (final CaseDocumentHelper caseDocumentHelper = new CaseDocumentHelper(caseId)) {
             caseDocumentHelper.uploadPleaCaseDocument();

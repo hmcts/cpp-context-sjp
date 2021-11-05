@@ -1,19 +1,7 @@
 package uk.gov.moj.cpp.sjp.event.processor;
 
-import static java.time.temporal.ChronoUnit.DAYS;
-import static java.util.Objects.nonNull;
-import static javax.json.Json.createArrayBuilder;
-import static javax.json.Json.createObjectBuilder;
-import static uk.gov.justice.core.courts.DefendantJudicialResult.defendantJudicialResult;
-import static uk.gov.justice.hearing.courts.HearingResulted.hearingResulted;
-import static uk.gov.justice.services.core.enveloper.Enveloper.envelop;
-import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
-import static uk.gov.moj.cpp.sjp.event.processor.results.converter.judicialresult.JCaseResultsConstants.DATE_FORMAT;
-import static uk.gov.moj.cpp.sjp.event.processor.results.converter.judicialresult.JPrompt.LSUM_DATE;
-import static uk.gov.moj.cpp.sjp.event.processor.results.converter.judicialresult.JResultCode.LSUM;
-import static uk.gov.moj.cpp.sjp.event.processor.results.converter.judicialresult.JudicialResultHelper.getResultText;
-import static uk.gov.moj.cpp.sjp.event.processor.results.converter.judicialresult.aggregator.DecisionResultAggregator.OUTGOING_PROMPT_DATE_FORMAT;
-
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import uk.gov.justice.core.courts.DefendantJudicialResult;
 import uk.gov.justice.core.courts.JudicialResult;
 import uk.gov.justice.core.courts.JudicialResultPrompt;
@@ -35,6 +23,10 @@ import uk.gov.moj.cpp.sjp.event.decision.DecisionSaved;
 import uk.gov.moj.cpp.sjp.event.processor.results.converter.SjpToHearingConverter;
 import uk.gov.moj.cpp.sjp.event.processor.service.SjpService;
 
+import javax.inject.Inject;
+import javax.json.JsonArrayBuilder;
+import javax.json.JsonObject;
+import javax.json.JsonValue;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
@@ -42,13 +34,19 @@ import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-import javax.inject.Inject;
-import javax.json.JsonArrayBuilder;
-import javax.json.JsonObject;
-import javax.json.JsonValue;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import static java.time.temporal.ChronoUnit.DAYS;
+import static java.util.Objects.nonNull;
+import static javax.json.Json.createArrayBuilder;
+import static javax.json.Json.createObjectBuilder;
+import static uk.gov.justice.core.courts.DefendantJudicialResult.defendantJudicialResult;
+import static uk.gov.justice.hearing.courts.HearingResulted.hearingResulted;
+import static uk.gov.justice.services.core.enveloper.Enveloper.envelop;
+import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
+import static uk.gov.moj.cpp.sjp.event.processor.results.converter.judicialresult.JCaseResultsConstants.DATE_FORMAT;
+import static uk.gov.moj.cpp.sjp.event.processor.results.converter.judicialresult.JPrompt.LSUM_DATE;
+import static uk.gov.moj.cpp.sjp.event.processor.results.converter.judicialresult.JResultCode.LSUM;
+import static uk.gov.moj.cpp.sjp.event.processor.results.converter.judicialresult.JudicialResultHelper.getResultText;
+import static uk.gov.moj.cpp.sjp.event.processor.results.converter.judicialresult.aggregator.DecisionResultAggregator.OUTGOING_PROMPT_DATE_FORMAT;
 
 @ServiceComponent(Component.EVENT_PROCESSOR)
 public class CaseDecisionProcessor {
@@ -80,8 +78,19 @@ public class CaseDecisionProcessor {
 
     @Handles(DecisionSaved.EVENT_NAME)
     public void handleCaseDecisionSaved(final JsonEnvelope caseDecisionSavedEnvelope) {
+        final JsonObject savedDecision = caseDecisionSavedEnvelope.payloadAsJsonObject();
 
         final PublicHearingResulted publicHearingResulted = getPublicHearingResulted(caseDecisionSavedEnvelope);
+        // DD-14110 When the decision type is refer to court then do not emit hearing resulted event
+        final boolean isDecisionReferredToCourt = savedDecision
+                .getJsonArray("offenceDecisions")
+                .stream()
+                .anyMatch(e -> ((JsonObject) e).getString("type").equals(DecisionType.REFER_FOR_COURT_HEARING.toString()));
+
+        if(isDecisionReferredToCourt) {
+            return;
+        }
+
 
         publishHearingEvent(caseDecisionSavedEnvelope, publicHearingResulted);
     }

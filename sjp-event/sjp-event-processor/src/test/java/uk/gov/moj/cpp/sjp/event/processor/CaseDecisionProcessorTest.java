@@ -194,4 +194,68 @@ public class CaseDecisionProcessorTest {
         assertThat(sentEnvelope, is(jsonEnvelope));
 
     }
+
+    @Test
+    public void handleCaseDecisionSaved_shouldNotInitiatePublicHearingResultedEvent() {
+        final UUID caseId = randomUUID();
+        final UUID decisionId = randomUUID();
+        final UUID sessionId = randomUUID();
+        final LocalDate savedAt = LocalDate.now();
+        final UUID offence1Id = randomUUID();
+        final UUID offence2Id = randomUUID();
+        final UUID withdrawalReasonId = randomUUID();
+        final String type = "REFER_FOR_COURT_HEARING";
+        final String verdict = "NO_VERDICT";
+
+        final JsonEnvelope privateEvent = createEnvelope(PRIVATE_CASE_DECISION_SAVED_EVENT,
+                createObjectBuilder()
+                        .add("caseId", caseId.toString())
+                        .add("decisionId", decisionId.toString())
+                        .add("sessionId", sessionId.toString())
+                        .add("savedAt", savedAt.toString())
+                        .add("offenceDecisions",
+                                createArrayBuilder()
+                                        .add(createObjectBuilder()
+                                                .add("type", type)
+                                                .add("offenceId", offence1Id.toString())
+                                                .add("withdrawalReasonId", withdrawalReasonId.toString())
+                                                .add("verdict", verdict))
+                                        .add(createObjectBuilder()
+                                                .add("type", type)
+                                                .add("offenceId", offence2Id.toString())
+                                                .add("withdrawalReasonId", withdrawalReasonId.toString())
+                                                .add("verdict", verdict))
+                        ).build());
+
+        when(sjpToHearingConverter.convertCaseDecision(privateEvent)).thenReturn(publicHearingResultedPayload);
+
+        caseDecisionProcessor.handleCaseDecisionSaved(privateEvent);
+
+        verify(sender, times(1)).send(jsonEnvelopeCaptor.capture());
+
+        final List<JsonEnvelope> eventEnvelopes = jsonEnvelopeCaptor.getAllValues();
+        final Envelope<JsonValue> decisionSavedPublicEvent = eventEnvelopes.get(0);
+
+        assertThat(decisionSavedPublicEvent.metadata(),
+                withMetadataEnvelopedFrom(privateEvent)
+                        .withName(PUBLIC_CASE_DECISION_SAVED_EVENT));
+
+        assertThat(decisionSavedPublicEvent.payload(),
+                payloadIsJson(allOf(
+                        withJsonPath("caseId", is(caseId.toString())),
+                        withJsonPath("decisionId", is(decisionId.toString())),
+                        withJsonPath("sessionId", is(sessionId.toString())),
+                        withJsonPath("savedAt", is(savedAt.toString())),
+                        withJsonPath("offenceDecisions[0].type", is(type)),
+                        withJsonPath("offenceDecisions[0].offenceId", is(offence1Id.toString())),
+                        withJsonPath("offenceDecisions[0].withdrawalReasonId", is(withdrawalReasonId.toString())),
+                        withJsonPath("offenceDecisions[0].verdict", is(verdict)),
+                        withJsonPath("offenceDecisions[1].type", is(type)),
+                        withJsonPath("offenceDecisions[1].offenceId", is(offence2Id.toString())),
+                        withJsonPath("offenceDecisions[1].withdrawalReasonId", is(withdrawalReasonId.toString())),
+                        withJsonPath("offenceDecisions[1].verdict", is(verdict))
+                )));
+
+    }
+
 }

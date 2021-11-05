@@ -17,6 +17,7 @@ import uk.gov.justice.json.schemas.domains.sjp.results.PublicHearingResulted;
 import uk.gov.justice.services.messaging.Envelope;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.messaging.Metadata;
+import uk.gov.moj.cpp.sjp.event.CaseListedInCriminalCourtsV2;
 import uk.gov.moj.cpp.sjp.event.decision.DecisionSaved;
 import uk.gov.moj.cpp.sjp.event.processor.results.converter.judicialresult.DecisionAggregate;
 import uk.gov.moj.cpp.sjp.event.processor.results.converter.judicialresult.DecisionSavedToJudicialResultsConverter;
@@ -71,7 +72,7 @@ public class SjpCaseDecisionToHearingResultConverter {
                         defendantId,
                         decisionSaved.getSavedAt(),
                         driverNumber,
-                        prosecutingAuthority);
+                        prosecutingAuthority,null);
 
         final List<DefendantJudicialResult> defendantJudicialResults = ofNullable(resultsAggregate
                 .getResults(defendantId)).orElse(new ArrayList<>())
@@ -106,5 +107,62 @@ public class SjpCaseDecisionToHearingResultConverter {
 
         return publicHearingResulted;
     }
+
+    // return the hearing object structure
+    @SuppressWarnings("squid:S2629")
+    public PublicHearingResulted convertCaseDecisionInCcForReferToCourt(final Envelope<CaseListedInCriminalCourtsV2>  caseListedInCcForReferToCourtEnvelope) {
+
+        // convert the results
+        final DecisionSaved decisionSaved = caseListedInCcForReferToCourtEnvelope.payload().getDecisionSaved();
+        final UUID caseId = caseListedInCcForReferToCourtEnvelope.payload().getCaseId();
+        final Metadata sourceMetadata = caseListedInCcForReferToCourtEnvelope.metadata();
+        final JsonEnvelope sjpSessionEnvelope = sjpService.getSessionInformation(fromString(decisionSaved.getSessionId().toString()), envelopeFrom(metadataFrom(sourceMetadata), NULL));
+        final CaseDetails caseDetails = sjpService.getCaseDetails(caseId, envelopeFrom(metadataFrom(caseListedInCcForReferToCourtEnvelope.metadata()), NULL));
+        final UUID defendantId = caseDetails.getDefendant().getId();
+        final String driverNumber = caseDetails.getDefendant().getPersonalDetails().getDriverNumber();
+        final String prosecutingAuthority = caseDetails.getProsecutingAuthority();
+
+        final DecisionAggregate resultsAggregate =
+                referencedDecisionSavedOffenceConverter.convertOffenceDecisions(
+                        decisionSaved,
+                        sjpSessionEnvelope,
+                        defendantId,
+                        decisionSaved.getSavedAt(),
+                        driverNumber,
+                        prosecutingAuthority,
+                        caseListedInCcForReferToCourtEnvelope.payload());
+
+        final List<DefendantJudicialResult> defendantJudicialResults = resultsAggregate
+                .getResults(caseId)
+                .stream()
+                .map(e -> DefendantJudicialResult
+                        .defendantJudicialResult()
+                        .withJudicialResult(e)
+                        .withMasterDefendantId(defendantId)
+                        .build())
+                .collect(toList());
+
+        final Hearing.Builder hearingBuilder = Hearing.hearing()
+                .withId(decisionSaved.getSessionId()) // mandatory
+                .withJurisdictionType(MAGISTRATES) // mandatory
+                .withCourtCentre(courtCenterConverter.convert(decisionSaved.getSessionId(), sourceMetadata)) // mandatory
+                .withIsSJPHearing(true)
+                .withHearingLanguage(ENGLISH)
+                .withHearingDays(hearingDaysConverter.convert(sjpSessionEnvelope.payloadAsJsonObject()))
+                .withHasSharedResults(false)
+                .withDefendantJudicialResults(!defendantJudicialResults.isEmpty() ? defendantJudicialResults : null)
+                .withProsecutionCases(prosecutionCasesConverter.convert(sjpSessionEnvelope.payloadAsJsonObject(), caseDetails, sourceMetadata, resultsAggregate))
+                .withIsBoxHearing(false);
+
+        final PublicHearingResulted publicHearingResulted = publicHearingResulted()
+                .withHearing(hearingBuilder.build())
+                .withSharedTime(caseListedInCcForReferToCourtEnvelope
+                        .payload().getDecisionSaved()
+                        .getSavedAt())
+                .build();
+        
+        return publicHearingResulted;
+    }
+
 
 }

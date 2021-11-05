@@ -7,7 +7,7 @@
     {
       "type": "WITHDRAW",
       "offenceId": "77fbfd34-a9b8-46bf-9c09-42b0a2ef9536",
-      "withdrawalReasonId": "7879e7b7-867f-41d9-83ce-3f21bbd8f51c",
+      "withdrawalReasonId": "7879ce7b7-867f-41d9-83ce-3f21bbd8f51c",
       "verdict": "NO_VERDICT"
     },
     {
@@ -18,3 +18,4 @@
     }
   ]
 }
+

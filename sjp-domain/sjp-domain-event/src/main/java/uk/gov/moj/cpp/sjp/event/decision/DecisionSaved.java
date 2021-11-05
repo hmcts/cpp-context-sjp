@@ -1,6 +1,7 @@
 package uk.gov.moj.cpp.sjp.event.decision;
 
 
+import static java.util.Collections.unmodifiableList;
 import static org.apache.commons.lang3.builder.EqualsBuilder.reflectionEquals;
 import static org.apache.commons.lang3.builder.HashCodeBuilder.reflectionHashCode;
 import static org.apache.commons.lang3.builder.ToStringBuilder.reflectionToString;
@@ -79,7 +80,7 @@ public class DecisionSaved implements Serializable {
     }
 
     public List<OffenceDecision> getOffenceDecisions() {
-        return offenceDecisions;
+        return unmodifiableList(offenceDecisions);
     }
 
     public FinancialImposition getFinancialImposition() {

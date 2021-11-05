@@ -6,6 +6,7 @@ import static java.time.LocalDate.now;
 import static java.util.UUID.fromString;
 import static uk.gov.justice.services.core.annotation.Component.EVENT_LISTENER;
 
+import uk.gov.justice.core.courts.HearingDay;
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
 import uk.gov.justice.services.common.converter.LocalDates;
 import uk.gov.justice.services.core.annotation.Handles;
@@ -18,6 +19,8 @@ import uk.gov.moj.cpp.sjp.event.AllOffencesWithdrawalRequested;
 import uk.gov.moj.cpp.sjp.event.CaseCompleted;
 import uk.gov.moj.cpp.sjp.event.CaseDocumentAdded;
 import uk.gov.moj.cpp.sjp.event.CaseListedInCriminalCourts;
+import uk.gov.moj.cpp.sjp.event.CaseListedInCriminalCourtsV2;
+import uk.gov.moj.cpp.sjp.event.CaseOffenceListedInCriminalCourts;
 import uk.gov.moj.cpp.sjp.event.CaseStatusChanged;
 import uk.gov.moj.cpp.sjp.event.casemanagement.UpdateCasesManagementStatus;
 import uk.gov.moj.cpp.sjp.event.listener.converter.CaseDocumentAddedToCaseDocument;
@@ -143,6 +146,42 @@ public class CaseUpdatedListener {
         caseDetail.setListedInCriminalCourts(TRUE);
         caseDetail.setHearingCourtName(Optional.ofNullable(payload.getString("hearingCourtName")).orElse(null));
         caseDetail.setHearingTime(ZonedDateTime.parse(payload.getString("hearingTime")));
+    }
+
+    @Handles(CaseListedInCriminalCourtsV2.EVENT_NAME)
+    @Transactional
+    @SuppressWarnings({"squid:S3655"})
+    public void updateCaseListedInCCForReferToCourt(final JsonEnvelope envelope) {
+        final JsonObject payload = envelope.payloadAsJsonObject();
+
+        final CaseListedInCriminalCourtsV2 caseListedInCriminalCourtsV2 = jsonObjectToObjectConverter.convert(payload, CaseListedInCriminalCourtsV2.class);
+
+        // find the first hearing
+        final ZonedDateTime firstSittingDate = caseListedInCriminalCourtsV2
+                .getOffenceHearings()
+                .stream()
+                .flatMap(e -> e.getHearingDays().stream())
+                .map(HearingDay::getSittingDay)
+                .sorted()
+                .findFirst()
+                .get();
+
+        final CaseOffenceListedInCriminalCourts caseOffenceListedInCriminalCourts = caseListedInCriminalCourtsV2
+                .getOffenceHearings()
+                .stream()
+                .filter(e -> e.getHearingDays()
+                        .stream()
+                        .anyMatch(b -> b.getSittingDay().equals(firstSittingDate)))
+                .findFirst()
+                .get();
+
+
+        final CaseDetail caseDetail = findCaseById(caseOffenceListedInCriminalCourts.getCaseId());
+        final String courtName = caseOffenceListedInCriminalCourts.getCourtCentre().getName();
+        caseDetail.setHearingCourtName(Optional.ofNullable(courtName).orElse(null));
+
+        caseDetail.setHearingTime(firstSittingDate);
+        caseDetail.setListedInCriminalCourts(TRUE);
     }
 
     @Handles(UpdateCasesManagementStatus.EVENT_NAME)

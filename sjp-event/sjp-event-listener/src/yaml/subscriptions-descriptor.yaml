@@ -155,6 +155,9 @@ subscriptions_descriptor:
               - name: sjp.events.case-listed-in-criminal-courts
                 schema_uri: http://cpp.moj.gov.uk/sjp/event/case-listed-in-criminal-courts.json
 
+              - name: sjp.events.case-listed-in-criminal-courts-v2
+                schema_uri: http://cpp.moj.gov.uk/sjp/event/case-listed-in-criminal-courts-v2.json
+
               - name: sjp.events.case-adjourned-to-later-sjp-hearing-recorded
                 schema_uri: http://cpp.moj.gov.uk/sjp/event/case-adjourned-to-later-sjp-hearing-recorded.json
 

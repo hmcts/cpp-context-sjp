@@ -1,5 +1,6 @@
 package uk.gov.moj.cpp.sjp.event.processor;
 
+import static javax.json.Json.createArrayBuilder;
 import static javax.json.Json.createObjectBuilder;
 import static uk.gov.justice.services.core.annotation.Component.EVENT_PROCESSOR;
 
@@ -8,8 +9,6 @@ import uk.gov.justice.services.core.annotation.ServiceComponent;
 import uk.gov.justice.services.core.enveloper.Enveloper;
 import uk.gov.justice.services.core.sender.Sender;
 import uk.gov.justice.services.messaging.JsonEnvelope;
-
-import java.util.Optional;
 
 import javax.inject.Inject;
 import javax.json.JsonObject;
@@ -29,21 +28,18 @@ public class ProsecutionCasesReferredToCourtProcessor {
     @Handles(ProsecutionCasesReferredToCourtProcessor.EVENT_NAME)
     public void handleProsecutionCasesReferredToCourtEvent(final JsonEnvelope prosecutionCasesReferredToCourtEvent) {
 
-
         final JsonObject payload = prosecutionCasesReferredToCourtEvent.payloadAsJsonObject();
         final String caseId = payload.getString("prosecutionCaseId");
-        final JsonObjectBuilder objectBuilder = createObjectBuilder()
-                .add("caseId", caseId);
+        final String defendantId = payload.getString("defendantId");
         final JsonObject courtCenter = payload.getJsonObject("courtCentre");
-        Optional.of(courtCenter.getString("name"))
-                .ifPresent(hearingCourtName -> objectBuilder.add("hearingCourtName", hearingCourtName));
 
-        payload.getJsonArray("hearingDays")
-                .getValuesAs(JsonObject.class)
-                .stream()
-                .findFirst()
-                .map(hearingTime -> objectBuilder.add("hearingTime", hearingTime.getString("sittingDay")))
-                .orElse(null);
+        final JsonObjectBuilder objectBuilder = createObjectBuilder()
+                .add("caseId", caseId)
+                .add("defendantId", defendantId)
+                .add("defendantOffences", payload.getJsonArray("defendantOffences"))
+                .add("hearingId", payload.getString("hearingId"))
+                .add("courtCentre", courtCenter)
+                .add("hearingDays", payload.getJsonArray("hearingDays"));
 
         sender.send(enveloper.withMetadataFrom(prosecutionCasesReferredToCourtEvent, "sjp.command.update-case-listed-in-criminal-courts").
                 apply(objectBuilder.build()));

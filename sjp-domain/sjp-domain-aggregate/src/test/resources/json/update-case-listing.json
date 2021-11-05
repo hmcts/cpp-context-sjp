@@ -1,5 +1,21 @@
 {
   "caseId": "042c541a-55b5-4f66-98f0-46b9e560f1b5",
-  "hearingCourtName":"",
-  "hearingTime": "2012-02-22T02:06:58.147Z"
+  "defendantId": "052c541a-55b5-4f66-98f0-46b9e560f1b5",
+  "defendantOffences": ["072c541a-55b5-4f66-98f0-46b9e560f1b5"],
+  "hearingId": "042c541a-55b5-4f66-98f0-46b9e560f1b5",
+  "courtCentre": {
+    "id": "8edb4218-60f5-4c2e-8073-734fc00e540f",
+    "name": "DzFEwSYMHe",
+    "roomId": "3f0e7f4e-098b-4e51-95c6-483711f49f20",
+    "roomName": "Pvsd1eQzqj",
+    "welshName": "DUpEpELeyc",
+    "welshRoomName": "v0bs9c8nBF"
+  },
+  "hearingDays": [
+    {
+      "listedDurationMinutes": 20,
+      "listingSequence": 0,
+      "sittingDay": "2020-04-10T10:00:00.000Z"
+    }
+  ]
 }

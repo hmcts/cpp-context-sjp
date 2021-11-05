@@ -164,6 +164,9 @@ subscriptions_descriptor:
         - name: sjp.events.financial-means-delete-docs-started
           schema_uri: http://justice.gov.uk/json/schemas/domains/sjp/events/sjp.events.financial-means-delete-docs-started.json
 
+        - name: sjp.events.case-listed-in-criminal-courts-v2
+          schema_uri: http://cpp.moj.gov.uk/sjp/event/case-listed-in-criminal-courts-v2.json
+
         - name: sjp.events.application-decision-set-aside
           schema_uri: http://justice.gov.uk/json/schemas/domains/sjp/events/application-decision-set-aside.json
 
@@ -193,7 +196,7 @@ subscriptions_descriptor:
           schema_uri: http://justice.gov.uk/json/schemas/domains/sjp/material.material-added.json
 
         - name: public.progression.prosecution-cases-referred-to-court
-          schema_uri: http://cpp.moj.gov.uk/sjp/prosecution-cases-referred-to-court
+          schema_uri: http://justice.gov.uk/progression/courts/public.progression.prosecution-cases-referred-to-court.json
 
         - name: public.progression.refer-prosecution-cases-to-court-rejected
           schema_uri: http://justice.gov.uk/progression/courts/prosecutionCasesReferredToCourt.json

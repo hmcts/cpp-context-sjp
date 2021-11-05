@@ -71,6 +71,7 @@
                             <sourceDirectory>CLASSPATH</sourceDirectory>
                             <includes>
                                 <include>json/schema/global/prosecutionCase.json</include>
+                                <include>json/schema/global/hearing.json</include>
                             </includes>
                             <generatorProperties implementation="uk.gov.justice.generation.pojo.core.PojoGeneratorProperties">
                                 <plugins>

@@ -3,6 +3,10 @@ package uk.gov.moj.cpp.sjp.domain.aggregate;
 import static java.util.stream.Stream.empty;
 import static uk.gov.moj.cpp.sjp.domain.aggregate.handler.EnforcementCheckIfNotificationRequired.INSTANCE;
 
+import static uk.gov.moj.cpp.sjp.domain.aggregate.handler.EnforcementCheckIfNotificationRequired.INSTANCE;
+
+import uk.gov.justice.core.courts.CourtCentre;
+import uk.gov.justice.core.courts.HearingDay;
 import uk.gov.justice.domain.aggregate.Aggregate;
 import uk.gov.justice.json.schemas.domains.sjp.ApplicationStatus;
 import uk.gov.justice.json.schemas.domains.sjp.Note;
@@ -67,7 +71,7 @@ import javax.json.JsonObject;
 @SuppressWarnings("WeakerAccess")
 public class CaseAggregate implements Aggregate {
 
-    private static final long serialVersionUID = 15L;
+    private static final long serialVersionUID = 16L;
     private static final AggregateStateMutator<Object, CaseAggregateState> AGGREGATE_STATE_MUTATOR = AggregateStateMutator.compositeCaseAggregateStateMutator();
     private static final CaseReadinessHandler caseReadinessHandler = CaseReadinessHandler.INSTANCE;
 
@@ -79,14 +83,35 @@ public class CaseAggregate implements Aggregate {
     }
 
     public Stream<Object> updateCaseListedInCriminalCourts(final UUID caseId,
-                                                           final String hearingCourtName,
-                                                           final ZonedDateTime hearingTime) {
-        if (state.isCaseReceived()) {
-            return apply(CaseCoreHandler.INSTANCE.updateCaseListedInCriminalCourts(caseId, hearingCourtName, hearingTime));
-        }
-        return empty();
-    }
+                                                           final UUID defendantId,
+                                                           final List<UUID> defendantOffences,
+                                                           final UUID hearingId,
+                                                           final CourtCentre courtCentre,
+                                                           final List<HearingDay> hearingDays) {
+        if (state.isCaseReceived()
+                && state.isCaseReferredForCourtHearing()) {
+            final Stream<Object> stream = apply(CaseCoreHandler.INSTANCE.updateCaseOffenceListedInCcForReferToCourt(
+                    caseId,
+                    defendantId,
+                    defendantOffences,
+                    hearingId,
+                    courtCentre,
+                    hearingDays));
 
+            // if the case is not already listed and all the offences are listed
+            if (!state.getCaseListed()
+                    && state.getLatestReferToCourtDecision() != null
+                    && state.checkAllOffencesHavingHearings()) {
+                return Stream.concat(stream, CaseCoreHandler
+                        .INSTANCE.updateCaseListedInCcForReferToCourt(
+                                state.getOffenceHearings(),
+                                state.getLatestReferToCourtDecision(),
+                                caseId));
+            }
+            return stream;
+        }
+        return Stream.empty();
+    }
     public Stream<Object> markCaseReopened(final CaseReopenDetails caseReopenDetails) {
         return applyAndResolveCaseReadiness(() -> CaseCoreHandler.INSTANCE.markCaseReopened(caseReopenDetails, state));
     }

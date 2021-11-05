@@ -96,7 +96,7 @@ public class SjpCaseDecisionToHearingResultConverterTest {
         when(defendant.getId()).thenReturn(ID_1);
         when(defendant.getPersonalDetails()).thenReturn(personalDetails);
         when(personalDetails.getDriverNumber()).thenReturn(RANDOM_TEXT);
-        when(referencedDecisionSavedOffenceConverter.convertOffenceDecisions(anyObject(), anyObject(), anyObject(), anyObject(), anyObject(), anyString())).thenReturn(resultsAggregate);
+        when(referencedDecisionSavedOffenceConverter.convertOffenceDecisions(anyObject(), anyObject(), anyObject(), anyObject(), anyObject(), anyString(), anyObject())).thenReturn(resultsAggregate);
         when(hearingDaysConverter.convert(anyObject())).thenReturn(Arrays.asList(hearingDay));
         when(courtCenterConverter.convert(anyObject(), anyObject())).thenReturn(courtCentre);
 
@@ -125,7 +125,7 @@ public class SjpCaseDecisionToHearingResultConverterTest {
         when(defendant.getId()).thenReturn(ID_1);
         when(defendant.getPersonalDetails()).thenReturn(personalDetails);
         when(personalDetails.getDriverNumber()).thenReturn(RANDOM_TEXT);
-        when(referencedDecisionSavedOffenceConverter.convertOffenceDecisions(anyObject(), anyObject(), anyObject(), anyObject(), anyObject(), anyString())).thenReturn(resultsAggregate);
+        when(referencedDecisionSavedOffenceConverter.convertOffenceDecisions(anyObject(), anyObject(), anyObject(), anyObject(), anyObject(), anyString(), anyObject())).thenReturn(resultsAggregate);
         when(hearingDaysConverter.convert(anyObject())).thenReturn(Arrays.asList(hearingDay));
         when(courtCenterConverter.convert(anyObject(), anyObject())).thenReturn(courtCentre);
 

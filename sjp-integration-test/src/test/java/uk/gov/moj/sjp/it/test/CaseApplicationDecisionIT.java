@@ -117,7 +117,6 @@ public class CaseApplicationDecisionIT extends BaseIntegrationTest {
     private final String SJP_EVENT_CASE_APP_RECORDED = "sjp.events.case-application-recorded";
     private final String SJP_EVENT_CASE_APP_STAT_DEC = "sjp.events.case-stat-dec-recorded";
     private final String SJP_EVENT_APPLICATION_DECISION_SAVED = "sjp.events.application-decision-saved";
-    public static final String PUBLIC_HEARING_RESULTED = "public.hearing.resulted";
     private static final String SJP_EVENT_APPLICATION_STATUS_CHANGED = ApplicationStatusChanged.EVENT_NAME;
     private static final String SJP_EVENT_APPLICATION_DECISION_SET_ASIDE = ApplicationDecisionSetAside.EVENT_NAME;
     private static final String SJP_EVENT_CASE_UNASSIGNED = CaseUnassigned.EVENT_NAME;
@@ -149,7 +148,7 @@ public class CaseApplicationDecisionIT extends BaseIntegrationTest {
         stubGroupForUser(USER.getUserId(), "Legal Advisers");
         stubResultIds();
 
-        final ImmutableMap<String, Boolean> features = ImmutableMap.of("amendReshare", false);
+        final ImmutableMap<String, Boolean> features = ImmutableMap.of("amendReshare", true);
         FeatureStubber.stubFeaturesFor("sjp", features);
 
         createCasePayloadBuilder = CreateCase.CreateCasePayloadBuilder
@@ -176,17 +175,17 @@ public class CaseApplicationDecisionIT extends BaseIntegrationTest {
         final DecisionCommand decision = new DecisionCommand(sessionId, caseId, null, USER, asList(discharge), financialImposition());
 
         eventListener
-                .withMaxWaitTime(90000)
+                .withMaxWaitTime(10000)
                 .subscribe(DecisionSaved.EVENT_NAME)
                 .subscribe(CaseCompleted.EVENT_NAME)
-                .subscribe(PUBLIC_HEARING_RESULTED)
+                .subscribe(PUBLIC_EVENTS_HEARING_HEARING_RESULTED)
                 .run(() -> saveDecision(decision));
         final DecisionSaved decisionSaved = eventListener.popEventPayload(DecisionSaved.class);
         final CaseCompleted caseCompleted = eventListener.popEventPayload(CaseCompleted.class);
         verifyDecisionSaved(decision, decisionSaved);
         verifyCaseCompleted(caseId, caseCompleted);
 
-        final Optional<JsonEnvelope> caseResulted = eventListener.popEvent(PUBLIC_HEARING_RESULTED);
+        final Optional<JsonEnvelope> caseResulted = eventListener.popEvent(PUBLIC_EVENTS_HEARING_HEARING_RESULTED);
 
         verifyPublicHearingResultedForOffences(caseResulted);
     }
@@ -211,7 +210,7 @@ public class CaseApplicationDecisionIT extends BaseIntegrationTest {
                 SJP_EVENT_APPLICATION_STATUS_CHANGED,
                 SJP_EVENT_APPLICATION_DECISION_SET_ASIDE,
                 PUBLIC_SJP_APPLICATION_DECISION_SET_ASIDE,
-                PUBLIC_HEARING_RESULTED
+                PUBLIC_EVENTS_HEARING_HEARING_RESULTED
         ).run(() -> saveApplicationDecision(USER.getUserId(), caseId, appId, sessionId2,
                         true, false,null, null));
 
@@ -225,7 +224,7 @@ public class CaseApplicationDecisionIT extends BaseIntegrationTest {
         final Optional<JsonEnvelope> publicApplicationSetAside = eventListener.popEvent(PUBLIC_SJP_APPLICATION_DECISION_SET_ASIDE);
         assertThat(publicApplicationSetAside.isPresent(), is(true));
 
-        final Optional<JsonEnvelope> caseResulted = eventListener.popEvent(PUBLIC_HEARING_RESULTED);
+        final Optional<JsonEnvelope> caseResulted = eventListener.popEvent(PUBLIC_EVENTS_HEARING_HEARING_RESULTED);
         verifyPublicHearingResultedForApplication(caseResulted);
 
         pollUntilCaseByIdIsOk(caseId, allOf(
@@ -303,7 +302,7 @@ public class CaseApplicationDecisionIT extends BaseIntegrationTest {
                 PUBLIC_SJP_APPLICATION_DECISION_SET_ASIDE,
                 SJP_EVENT_CASE_UNASSIGNED,
                 SJP_EVENTS_CASE_COMPLETED,
-                PUBLIC_HEARING_RESULTED
+                PUBLIC_EVENTS_HEARING_HEARING_RESULTED
         ).run(() -> saveApplicationDecision(USER.getUserId(), caseId, appId, sessionId2,
                         false, null,null, "Insufficient evidence"));
 
@@ -316,7 +315,7 @@ public class CaseApplicationDecisionIT extends BaseIntegrationTest {
         final Optional<JsonEnvelope> caseCompletedEvent = eventListener.popEvent(SJP_EVENTS_CASE_COMPLETED);
         assertThat(caseCompletedEvent.isPresent(), is(true));
 
-        final Optional<JsonEnvelope> caseResulted = eventListener.popEvent(PUBLIC_HEARING_RESULTED);
+        final Optional<JsonEnvelope> caseResulted = eventListener.popEvent(PUBLIC_EVENTS_HEARING_HEARING_RESULTED);
         verifyPublicHearingResultedForApplication(caseResulted);
 
         final Optional<JsonEnvelope> applicationSetAside = eventListener.popEvent(SJP_EVENT_APPLICATION_DECISION_SET_ASIDE);
@@ -358,7 +357,7 @@ public class CaseApplicationDecisionIT extends BaseIntegrationTest {
         final JsonEnvelope envelope = caseResultedEnvelope.get();
         assertThat(envelope,
                 jsonEnvelope(
-                        metadata().withName("public.hearing.resulted"),
+                        metadata().withName(PUBLIC_EVENTS_HEARING_HEARING_RESULTED),
                         payload().isJson(Matchers.allOf(
                                 withJsonPath("$.hearing", notNullValue()),
                                 withJsonPath("$.sharedTime", is(notNullValue()))
@@ -370,7 +369,7 @@ public class CaseApplicationDecisionIT extends BaseIntegrationTest {
         final JsonEnvelope envelope = caseResultedEnvelope.get();
         assertThat(envelope,
                 jsonEnvelope(
-                        metadata().withName("public.hearing.resulted"),
+                        metadata().withName(PUBLIC_EVENTS_HEARING_HEARING_RESULTED),
                         payload().isJson(Matchers.allOf(
                                 withJsonPath("$.hearing", notNullValue()),
                                 withJsonPath("$.hearing.courtApplications", notNullValue()),

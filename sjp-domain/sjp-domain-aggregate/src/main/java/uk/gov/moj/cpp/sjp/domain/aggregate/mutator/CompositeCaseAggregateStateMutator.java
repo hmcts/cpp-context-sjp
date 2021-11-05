@@ -5,11 +5,12 @@ import static uk.gov.justice.json.schemas.domains.sjp.ApplicationType.REOPENING;
 import static uk.gov.justice.json.schemas.domains.sjp.ApplicationType.STAT_DEC;
 import static uk.gov.moj.cpp.sjp.domain.disability.DisabilityNeeds.NO_DISABILITY_NEEDS;
 
-import uk.gov.moj.cpp.sjp.domain.aggregate.state.WithdrawalRequestsStatus;
 import uk.gov.moj.cpp.sjp.domain.DefendantCourtOptions;
 import uk.gov.moj.cpp.sjp.domain.aggregate.state.Application;
 import uk.gov.moj.cpp.sjp.domain.aggregate.state.CaseAggregateState;
 import uk.gov.moj.cpp.sjp.domain.aggregate.state.FinancialImpositionExportDetails;
+import uk.gov.moj.cpp.sjp.domain.aggregate.state.WithdrawalRequestsStatus;
+import uk.gov.moj.cpp.sjp.domain.decision.ReferForCourtHearing;
 import uk.gov.moj.cpp.sjp.domain.disability.DisabilityNeeds;
 import uk.gov.moj.cpp.sjp.domain.plea.Plea;
 import uk.gov.moj.cpp.sjp.event.AllOffencesWithdrawalRequestCancelled;
@@ -23,7 +24,9 @@ import uk.gov.moj.cpp.sjp.event.CaseApplicationRecorded;
 import uk.gov.moj.cpp.sjp.event.CaseCompleted;
 import uk.gov.moj.cpp.sjp.event.CaseDocumentAdded;
 import uk.gov.moj.cpp.sjp.event.CaseExpectedDateReadyChanged;
+import uk.gov.moj.cpp.sjp.event.CaseListedInCriminalCourtsV2;
 import uk.gov.moj.cpp.sjp.event.CaseMarkedReadyForDecision;
+import uk.gov.moj.cpp.sjp.event.CaseOffenceListedInCriminalCourts;
 import uk.gov.moj.cpp.sjp.event.CaseReceived;
 import uk.gov.moj.cpp.sjp.event.CaseReferralForCourtHearingRejectionRecorded;
 import uk.gov.moj.cpp.sjp.event.CaseReferredForCourtHearing;
@@ -190,6 +193,13 @@ final class CompositeCaseAggregateStateMutator implements AggregateStateMutator<
                 if (event.getFinancialImposition() != null) {
                     state.setDecisionSavedWithFinancialImposition(event);
                 }
+                if (event
+                        .getOffenceDecisions()
+                        .stream()
+                        .filter(e -> e instanceof ReferForCourtHearing)
+                        .count() > 0) {
+                    state.setLatestReferToCourtDecision(event);
+                }
             });
 
     private static final AggregateStateMutator<PleasSet, CaseAggregateState> PLEAS_SET_MUTATOR =
@@ -285,6 +295,12 @@ final class CompositeCaseAggregateStateMutator implements AggregateStateMutator<
     private static final AggregateStateMutator<PaymentTermsChanged, CaseAggregateState> PAYMENT_TERMS_CHANGED_CASE_AGGREGATE_STATE_AGGREGATE_STATE_MUTATOR =
             ((event, state) -> state.setPaymentTermsUpdated(true));
 
+    private static final AggregateStateMutator<CaseOffenceListedInCriminalCourts, CaseAggregateState> CASE_OFFENCE_LISTED_IN_CRIMINAL_COURTS_MUTATOR =
+            ((event, state) -> state.updateOffenceHearings(event));
+
+    private static final AggregateStateMutator<CaseListedInCriminalCourtsV2, CaseAggregateState> CASE_LISTED_IN_CRIMINAL_COURTS_V_2 =
+            ((event, state) -> state.markCaseListed());
+
     static final CompositeCaseAggregateStateMutator INSTANCE = new CompositeCaseAggregateStateMutator();
 
     private final Map<Class, AggregateStateMutator> eventToStateMutator;
@@ -352,6 +368,8 @@ final class CompositeCaseAggregateStateMutator implements AggregateStateMutator<
                 .put(FinancialImpositionCorrelationIdAdded.class, FINANCIAL_IMPOSITION_CORRELATION_ID_ADDED_MUTATOR)
                 .put(FinancialImpositionAccountNumberAdded.class, FINANCIAL_IMPOSITION_ACCOUNT_NUMBER_ADDED_MUTATOR)
                 .put(FinancialImpositionAccountNumberAddedBdf.class, FINANCIAL_IMPOSITION_ACCOUNT_NUMBER_ADDED_MUTATOR_BDF)
+                .put(CaseOffenceListedInCriminalCourts.class, CASE_OFFENCE_LISTED_IN_CRIMINAL_COURTS_MUTATOR)
+                .put(CaseListedInCriminalCourtsV2.class, CASE_LISTED_IN_CRIMINAL_COURTS_V_2)
                 .put(PaymentTermsChanged.class, PAYMENT_TERMS_CHANGED_CASE_AGGREGATE_STATE_AGGREGATE_STATE_MUTATOR)
                 .build();
     }

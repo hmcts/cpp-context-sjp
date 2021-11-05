@@ -74,7 +74,6 @@ import javax.jms.JMSException;
 import javax.json.JsonArray;
 import javax.json.JsonObject;
 
-import com.google.common.collect.Sets;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Sets;
 import org.apache.commons.lang3.tuple.Triple;
@@ -87,7 +86,6 @@ import org.junit.Test;
 public class CaseAdjournmentIT extends BaseIntegrationTest {
 
     private static final String TIMER_TIMEOUT_PROCESS_NAME = "timerTimeout";
-    public static final String PUBLIC_HEARING_RESULTED = "public.hearing.resulted";
     private final LocalDate postingDate = now().minusDays(NOTICE_PERIOD_IN_DAYS + 1);
     private final LocalDate adjournmentDate = now().plusDays(7);
     private final SjpDatabaseCleaner databaseCleaner = new SjpDatabaseCleaner();
@@ -117,7 +115,7 @@ public class CaseAdjournmentIT extends BaseIntegrationTest {
         stubWithdrawalReasonsQuery(withdrawalRequestReasonId, "Insufficient Evidence");
         stubForUserDetails(user, "ALL");
 
-        final ImmutableMap<String, Boolean> features = ImmutableMap.of("amendReshare", false);
+        final ImmutableMap<String, Boolean> features = ImmutableMap.of("amendReshare", true);
         FeatureStubber.stubFeaturesFor("sjp", features);
 
         createCasePayloadBuilder = CreateCase.CreateCasePayloadBuilder
@@ -371,12 +369,12 @@ public class CaseAdjournmentIT extends BaseIntegrationTest {
 
         final EventListener eventListener = new EventListener()
                 .subscribe(CASE_ADJOURNED_TO_LATER_SJP_EVENT)
-                .subscribe(PUBLIC_HEARING_RESULTED)
+                .subscribe(PUBLIC_EVENTS_HEARING_HEARING_RESULTED)
                 .run(() -> DecisionHelper.saveDecision(decision));
 
         final Optional<JsonEnvelope> caseAdjournmentRecordedEvent = eventListener.popEvent(CASE_ADJOURNED_TO_LATER_SJP_EVENT);
         assertTrue(caseAdjournmentRecordedEvent.isPresent());
-        final Optional<JsonEnvelope> publicHearingResulted = eventListener.popEvent(PUBLIC_HEARING_RESULTED);
+        final Optional<JsonEnvelope> publicHearingResulted = eventListener.popEvent(PUBLIC_EVENTS_HEARING_HEARING_RESULTED);
         if(verdictType.equals(VerdictType.FOUND_GUILTY)){
             final JsonObject hearingResultedPayload = publicHearingResulted.get().payloadAsJsonObject();
             final JsonArray prosecutionCasesArray = hearingResultedPayload.getJsonObject("hearing").getJsonArray("prosecutionCases");

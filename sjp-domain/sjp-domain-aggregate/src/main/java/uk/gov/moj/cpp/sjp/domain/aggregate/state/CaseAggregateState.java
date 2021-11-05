@@ -2,6 +2,7 @@ package uk.gov.moj.cpp.sjp.domain.aggregate.state;
 
 import static java.util.Arrays.asList;
 import static java.util.Collections.unmodifiableCollection;
+import static java.util.Collections.unmodifiableList;
 import static java.util.Collections.unmodifiableMap;
 import static java.util.Collections.unmodifiableSet;
 import static java.util.Objects.isNull;
@@ -26,10 +27,12 @@ import uk.gov.moj.cpp.sjp.domain.Interpreter;
 import uk.gov.moj.cpp.sjp.domain.aggregate.domain.DocumentCountByDocumentType;
 import uk.gov.moj.cpp.sjp.domain.decision.DecisionType;
 import uk.gov.moj.cpp.sjp.domain.decision.OffenceDecision;
+import uk.gov.moj.cpp.sjp.domain.decision.ReferForCourtHearing;
 import uk.gov.moj.cpp.sjp.domain.disability.DisabilityNeeds;
 import uk.gov.moj.cpp.sjp.domain.onlineplea.PersonalDetails;
 import uk.gov.moj.cpp.sjp.domain.plea.Plea;
 import uk.gov.moj.cpp.sjp.domain.plea.PleaType;
+import uk.gov.moj.cpp.sjp.event.CaseOffenceListedInCriminalCourts;
 import uk.gov.moj.cpp.sjp.event.DefendantDetailsUpdated;
 import uk.gov.moj.cpp.sjp.event.decision.DecisionSaved;
 
@@ -142,6 +145,10 @@ public class CaseAggregateState implements AggregateState {
     private final Map<UUID, FinancialImpositionExportDetails> defendantFinancialImpositionExportDetails = new HashMap<>();
 
     private DecisionSaved decisionSavedWithFinancialImposition;
+
+    private final List<CaseOffenceListedInCriminalCourts>  offenceHearings = new ArrayList<>();
+    private DecisionSaved latestReferToCourtDecision;
+    private boolean caseListed;
 
     public UUID getCaseId() {
         return caseId;
@@ -341,6 +348,29 @@ public class CaseAggregateState implements AggregateState {
 
     public void addFinancialImpositionExportDetails(final UUID defendantId, FinancialImpositionExportDetails exportDetails) {
         this.defendantFinancialImpositionExportDetails.put(defendantId, exportDetails);
+    }
+
+    public void updateOffenceHearings(CaseOffenceListedInCriminalCourts event) {
+        this.offenceHearings.add(event);
+    }
+
+    public void markCaseListed() {
+        this.caseListed = true;
+    }
+
+    public boolean getCaseListed() {
+        return this.caseListed;
+    }
+
+    public boolean checkAllOffencesHavingHearings() {
+        return this.getLatestReferToCourtDecision()
+                .getOffenceDecisions()
+                .stream()
+                .filter(e -> e instanceof ReferForCourtHearing)
+                .flatMap(e -> e.getOffenceIds().stream())
+                .allMatch(offenceId -> offenceHearings
+                        .stream()
+                        .anyMatch(e -> e.getDefendantOffences().contains(offenceId)));
     }
 
     public boolean isTrialRequested() {
@@ -960,5 +990,19 @@ public class CaseAggregateState implements AggregateState {
     public void setPaymentTermsUpdated(final boolean paymentTermsUpdated) {
         this.paymentTermsUpdated = paymentTermsUpdated;
     }
+
+
+    public DecisionSaved getLatestReferToCourtDecision() {
+        return latestReferToCourtDecision;
+    }
+
+    public void setLatestReferToCourtDecision(final DecisionSaved latestReferToCourtDecision) {
+        this.latestReferToCourtDecision = latestReferToCourtDecision;
+    }
+
+    public List<CaseOffenceListedInCriminalCourts> getOffenceHearings() {
+        return unmodifiableList(offenceHearings);
+    }
+
 
 }

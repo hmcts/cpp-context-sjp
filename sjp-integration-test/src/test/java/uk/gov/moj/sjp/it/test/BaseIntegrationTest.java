@@ -29,6 +29,7 @@ public abstract class BaseIntegrationTest {
     private static final Logger LOGGER = LoggerFactory.getLogger(BaseIntegrationTest.class);
     private static final String HOST = System.getProperty("INTEGRATION_HOST_KEY", "localhost");
     public static final UUID USER_ID = Defaults.DEFAULT_USER_ID;
+    public static final String PUBLIC_EVENTS_HEARING_HEARING_RESULTED = "public.hearing.resulted";
 
     protected static ElasticSearchIndexRemoverUtil elasticSearchIndexRemoverUtil = null;
     protected static ElasticSearchIndexFinderUtil elasticSearchIndexFinderUtil;

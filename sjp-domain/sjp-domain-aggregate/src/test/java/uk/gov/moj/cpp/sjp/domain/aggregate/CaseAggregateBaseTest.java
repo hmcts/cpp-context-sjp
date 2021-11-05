@@ -7,6 +7,7 @@ import static java.util.Optional.ofNullable;
 import static java.util.stream.Collectors.toList;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.fail;
+import static org.mockito.Mockito.*;
 import static uk.gov.moj.cpp.sjp.domain.DomainConstants.NUMBER_DAYS_WAITING_FOR_PLEA;
 
 import uk.gov.justice.services.common.util.Clock;
@@ -26,6 +27,7 @@ import java.util.stream.Stream;
 import org.hamcrest.Matcher;
 import org.junit.Before;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.internal.matchers.apachecommons.ReflectionEquals;
 
 public abstract class CaseAggregateBaseTest {
@@ -39,7 +41,6 @@ public abstract class CaseAggregateBaseTest {
     protected UUID defendantId;
     protected UUID offenceId;
 
-    @Mock
     protected Session session;
 
     @Before
@@ -51,6 +52,7 @@ public abstract class CaseAggregateBaseTest {
         caseId = caseReceivedEvent.getCaseId();
         defendantId = caseReceivedEvent.getDefendant().getId();
         offenceId = caseReceivedEvent.getDefendant().getOffences().stream().findFirst().map(Offence::getId).orElse(null);
+        session = mock(Session.class);
     }
 
     /**

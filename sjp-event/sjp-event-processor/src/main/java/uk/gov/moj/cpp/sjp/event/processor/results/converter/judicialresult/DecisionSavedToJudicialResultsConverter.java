@@ -6,6 +6,7 @@ import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.sjp.domain.decision.DecisionType;
 import uk.gov.moj.cpp.sjp.domain.decision.OffenceDecision;
 import uk.gov.moj.cpp.sjp.domain.decision.imposition.FinancialImposition;
+import uk.gov.moj.cpp.sjp.event.CaseListedInCriminalCourtsV2;
 import uk.gov.moj.cpp.sjp.event.decision.DecisionSaved;
 import uk.gov.moj.cpp.sjp.event.processor.results.converter.judicialresult.aggregator.AdjournDecisionResultAggregator;
 import uk.gov.moj.cpp.sjp.event.processor.results.converter.judicialresult.aggregator.DischargeDecisionResultAggregator;
@@ -66,7 +67,8 @@ public class DecisionSavedToJudicialResultsConverter {
                                                      final UUID defendantId,
                                                      final ZonedDateTime resultOn,
                                                      final String driverNumber,
-                                                     final String prosecutingAuthority) {
+                                                     final String prosecutingAuthority,
+                                                     final CaseListedInCriminalCourtsV2 caseListedInCcForReferToCourt) {
         final DecisionAggregate resultsAggregate = new DecisionAggregate();
         final List<OffenceDecision> offenceDecisions = decisionSaved.getOffenceDecisions();
         final FinancialImposition financialImposition = decisionSaved.getFinancialImposition();
@@ -79,7 +81,8 @@ public class DecisionSavedToJudicialResultsConverter {
                         resultsAggregate,
                         resultOn,
                         driverNumber,
-                        prosecutingAuthority));
+                        prosecutingAuthority,
+                        caseListedInCcForReferToCourt));
 
         if (nonNull(financialImposition)) {
             financialImpositionDecisionResultAggregator.aggregate(decisionSaved,
@@ -101,7 +104,8 @@ public class DecisionSavedToJudicialResultsConverter {
                                         final DecisionAggregate resultsAggregate,
                                         final ZonedDateTime resultOn,
                                         final String driverNumber,
-                                        final String prosecutingAuthority) {
+                                        final String prosecutingAuthority,
+                                        final CaseListedInCriminalCourtsV2 caseListedInCcForReferToCourt) {
         final DecisionType decisionType = offenceDecision.getType();
         final ZonedDateTime resultedOn = decisionSaved.getSavedAt();
 
@@ -128,7 +132,7 @@ public class DecisionSavedToJudicialResultsConverter {
                 referredForFutureSjpSessionResultAggregator.aggregate(offenceDecision, sjpSessionPayloadObject, resultsAggregate, resultOn);
                 break;
             case REFER_FOR_COURT_HEARING:
-                referForCourtHearingResultAggregator.aggregate(offenceDecision, sjpSessionPayloadObject, resultsAggregate, resultedOn);
+                referForCourtHearingResultAggregator.aggregate(offenceDecision, sjpSessionPayloadObject, resultsAggregate, caseListedInCcForReferToCourt, resultedOn);
                 break;
             case NO_SEPARATE_PENALTY:
                 noSeparatePenaltyDecisionResultAggregator.aggregate(offenceDecision, sjpSessionPayloadObject, resultsAggregate, resultedOn);

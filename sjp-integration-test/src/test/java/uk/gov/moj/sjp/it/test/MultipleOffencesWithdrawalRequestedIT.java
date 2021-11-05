@@ -104,7 +104,7 @@ public class MultipleOffencesWithdrawalRequestedIT extends BaseIntegrationTest {
     public void setUp() throws Exception {
         new SjpDatabaseCleaner().cleanViewStore();
 
-        final ImmutableMap<String, Boolean> features = ImmutableMap.of("amendReshare", false);
+        final ImmutableMap<String, Boolean> features = ImmutableMap.of("amendReshare", true);
         FeatureStubber.stubFeaturesFor("sjp", features);
 
         CaseAssignmentRestrictionHelper.provisionCaseAssignmentRestrictions(Sets.newHashSet(TFL, TVL, DVLA));

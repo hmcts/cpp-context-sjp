@@ -116,7 +116,21 @@ public enum JPrompt {
     DER_DVLA_ENDORSEMENT_CODE4(fromString("7e587ed2-6408-4520-af0d-adb90ac1c620"), null),
     DER_ORIGINAL_OFFENCE_DATE4(fromString("917a319b-4263-4b62-91f7-f354abe9ecdc"), null),
 
-    RFSD_REASONS(fromString("318c9eb2-cf3c-4592-a353-1b2166c15f81"), null);
+    RFSD_REASONS(fromString("318c9eb2-cf3c-4592-a353-1b2166c15f81"), null),
+
+    //NHMC
+    NHMC_HOUSE_ORG_NAME(fromString("66868c04-72c4-46d9-a4fc-860a82107475"), "hCHOUSEOrganisationName"),
+    NHMC_HOUSE_ADDR_LINE1(fromString("66868c04-72c4-46d9-a4fc-860a82107475"), "hCHOUSEAddress1"),
+    NHMC_HOUSE_ADDR_LINE2(fromString("66868c04-72c4-46d9-a4fc-860a82107475"), "hCHOUSEAddress2"),
+    NHMC_HOUSE_ADDR_LINE3(fromString("66868c04-72c4-46d9-a4fc-860a82107475"), "hCHOUSEAddress3"),
+    NHMC_HOUSE_ADDR_LINE4(fromString("66868c04-72c4-46d9-a4fc-860a82107475"), "hCHOUSEAddress4"),
+    NHMC_HOUSE_ADDR_LINE5(fromString("66868c04-72c4-46d9-a4fc-860a82107475"), "hCHOUSEAddress5"),
+    NHMC_HOUSE_ADDR_POSTCODE(fromString("66868c04-72c4-46d9-a4fc-860a82107475"), "hCHOUSEPostCode"),
+
+    NHMC_HOUSE_ROOM_NAME(fromString("49ec9b26-dd63-4637-b2e9-55ba9948a90f"), null),
+    NHMC_HOUSE_HEARING_TIME(fromString  ("4d125a5a-acbc-461d-a657-ba5643af85a6"), null),
+    NHMC_DURATION_IN_MINUTES(fromString("d85cc2d7-66c8-471e-b6ff-c1bc60c6cdac"), null),
+    NHMC_HOUSE_HEARING_DATE(fromString  ("d27a5d86-d51f-4c6e-914b-cb4b0abc4283"), null);
 
     private final UUID id;
     private final String promptReference;

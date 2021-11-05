@@ -8,24 +8,29 @@ import static uk.gov.moj.cpp.sjp.domain.verdict.VerdictType.FOUND_GUILTY;
 import static uk.gov.moj.cpp.sjp.domain.verdict.VerdictType.PROVED_SJP;
 
 import uk.gov.justice.json.schemas.domains.sjp.events.ApplicationDecisionSaved;
+import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
 import uk.gov.justice.services.core.annotation.Handles;
 import uk.gov.justice.services.core.annotation.ServiceComponent;
 import uk.gov.justice.services.messaging.Envelope;
 import uk.gov.moj.cpp.sjp.domain.verdict.VerdictType;
+import uk.gov.moj.cpp.sjp.event.decision.DecisionResubmitted;
 import uk.gov.moj.cpp.sjp.event.decision.DecisionSaved;
 import uk.gov.moj.cpp.sjp.event.listener.converter.ApplicationDecisionSavedToApplicationDecision;
 import uk.gov.moj.cpp.sjp.event.listener.converter.DecisionSavedToCaseDecision;
 import uk.gov.moj.cpp.sjp.event.listener.service.CaseApplicationService;
+import uk.gov.moj.cpp.sjp.persistence.entity.AccountNote;
 import uk.gov.moj.cpp.sjp.persistence.entity.CaseApplicationDecision;
 import uk.gov.moj.cpp.sjp.persistence.entity.CaseDecision;
 import uk.gov.moj.cpp.sjp.persistence.entity.CaseDetail;
 import uk.gov.moj.cpp.sjp.persistence.entity.OffenceDecision;
 import uk.gov.moj.cpp.sjp.persistence.entity.OffenceDetail;
+import uk.gov.moj.cpp.sjp.persistence.repository.CaseAccountNoteRepository;
 import uk.gov.moj.cpp.sjp.persistence.repository.CaseDecisionRepository;
 import uk.gov.moj.cpp.sjp.persistence.repository.CaseRepository;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 import javax.inject.Inject;
 
@@ -47,6 +52,12 @@ public class CaseDecisionListener {
     @Inject
     private CaseApplicationService caseApplicationService;
 
+    @Inject
+    private CaseAccountNoteRepository accountNoteRepository;
+
+    @Inject
+    private JsonObjectToObjectConverter jsonObjectToObjectConverter;
+
     private static final List<VerdictType> CONVICTION_VERDICTS = asList(FOUND_GUILTY, PROVED_SJP);
 
     private static final String APPLICATION_DECISION_SAVED = "sjp.events.application-decision-saved";
@@ -61,6 +72,39 @@ public class CaseDecisionListener {
         updateOffencePressRestriction(caseDetails, caseDecision);
         updateOffenceCompleted(caseDetails, caseDecision);
         caseRepository.save(caseDetails);
+    }
+
+    @Handles(DecisionResubmitted.EVENT_NAME)
+    public void handleCaseDecisionSavedWithPaymentTermsChanged(final Envelope<DecisionResubmitted> envelope) {
+        // convert to the decision object
+        final DecisionResubmitted decisionSavedWithPaymentTermsChanged = envelope.payload();
+        final DecisionSaved decisionSaved = new DecisionSaved(
+                decisionSavedWithPaymentTermsChanged.getDecisionSaved().getDecisionId(),
+                decisionSavedWithPaymentTermsChanged.getDecisionSaved().getSessionId(),
+                decisionSavedWithPaymentTermsChanged.getDecisionSaved().getCaseId(),
+                decisionSavedWithPaymentTermsChanged.getDecisionSaved().getSavedAt(),
+                decisionSavedWithPaymentTermsChanged.getDecisionSaved().getOffenceDecisions(),
+                decisionSavedWithPaymentTermsChanged.getDecisionSaved().getFinancialImposition());
+
+        final CaseDecision caseDecision = eventConverter.convert(decisionSaved);
+        final CaseDecision enrichedCaseDecision = enrichOffenceDecision(caseDecision);
+        caseDecisionRepository.save(enrichedCaseDecision);
+        final CaseDetail caseDetails = caseRepository.findBy(caseDecision.getCaseId());
+        updateOffenceConvictionInformation(caseDetails, caseDecision);
+        updateOffencePressRestriction(caseDetails, caseDecision);
+        updateOffenceCompleted(caseDetails, caseDecision);
+        caseRepository.save(caseDetails);
+        saveAccountNotes(caseDetails.getId(), caseDetails.getUrn());
+    }
+
+    private void saveAccountNotes(final UUID caseId,
+                                  final String caseUrn) {
+        final AccountNote accountNote = new AccountNote();
+        accountNote.setId(UUID.randomUUID());
+        accountNote.setCaseId(caseId);
+        accountNote.setCaseUrn(caseUrn);
+        accountNote.setNoteText("PAYMENT TERMS HAVE BEEN RESET");
+        accountNoteRepository.save(accountNote);
     }
 
     @Handles(APPLICATION_DECISION_SAVED)

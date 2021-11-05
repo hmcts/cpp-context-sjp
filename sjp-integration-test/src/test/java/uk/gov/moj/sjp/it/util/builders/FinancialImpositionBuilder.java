@@ -22,7 +22,7 @@ public class FinancialImpositionBuilder {
         );
     }
 
-    private static CostsAndSurcharge costsAndSurcharge() {
+    public static CostsAndSurcharge costsAndSurcharge() {
         return new CostsAndSurcharge(
                 new BigDecimal(40),
                 null,

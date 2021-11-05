@@ -89,6 +89,7 @@ public class SjpCaseDecisionToHearingResultConverterTest {
         when(decisionSavedEventEnvelop.payload()).thenReturn(decisionSaved);
         when(sjpService.getSessionInformation(anyObject(), anyObject())).thenReturn(sjpSessionEnvelope);
         when(decisionSaved.getSessionId()).thenReturn(ID_2);
+        when(decisionSaved.getDecisionId()).thenReturn(ID_2);
         when(decisionSavedEventEnvelop.metadata()).thenReturn(sourceMetadata);
         when(sjpService.getCaseDetails(anyObject(), anyObject())).thenReturn(caseDetails);
         when(caseDetails.getDefendant()).thenReturn(defendant);
@@ -117,6 +118,7 @@ public class SjpCaseDecisionToHearingResultConverterTest {
         when(decisionSavedEventEnvelop.payload()).thenReturn(decisionSaved);
         when(sjpService.getSessionInformation(anyObject(), anyObject())).thenReturn(sjpSessionEnvelope);
         when(decisionSaved.getSessionId()).thenReturn(ID_2);
+        when(decisionSaved.getDecisionId()).thenReturn(ID_2);
         when(decisionSavedEventEnvelop.metadata()).thenReturn(sourceMetadata);
         when(sjpService.getCaseDetails(anyObject(), anyObject())).thenReturn(caseDetails);
         when(caseDetails.getDefendant()).thenReturn(defendant);

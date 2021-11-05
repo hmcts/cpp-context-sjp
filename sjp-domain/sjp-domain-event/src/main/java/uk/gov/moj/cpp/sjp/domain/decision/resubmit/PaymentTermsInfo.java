@@ -1,0 +1,35 @@
+package uk.gov.moj.cpp.sjp.domain.decision.resubmit;
+
+import static org.apache.commons.lang3.builder.EqualsBuilder.reflectionEquals;
+import static org.apache.commons.lang3.builder.HashCodeBuilder.reflectionHashCode;
+
+import java.io.Serializable;
+
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
+public class PaymentTermsInfo implements Serializable {
+
+    private static final long serialVersionUID = 7193056950237733751L;
+
+    private Integer numberOfDaysToPostponeBy;
+
+    @JsonCreator
+    public PaymentTermsInfo(@JsonProperty("numberOfDaysToPostponeBy") final Integer numberOfDaysToPostponeBy) {
+        this.numberOfDaysToPostponeBy = numberOfDaysToPostponeBy;
+    }
+
+    public Integer getNumberOfDaysToPostponeBy() {
+        return numberOfDaysToPostponeBy;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        return reflectionEquals(this, o);
+    }
+
+    @Override
+    public int hashCode() {
+        return reflectionHashCode(this);
+    }
+}

@@ -11,6 +11,7 @@ import uk.gov.moj.cpp.sjp.domain.decision.OffenceDecision;
 import uk.gov.moj.cpp.sjp.domain.decision.ReferForCourtHearing;
 import uk.gov.moj.cpp.sjp.domain.decision.imposition.FinancialImposition;
 
+import java.io.Serializable;
 import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Optional;
@@ -20,9 +21,10 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-
 @Event(DecisionSaved.EVENT_NAME)
-public class DecisionSaved {
+public class DecisionSaved implements Serializable {
+
+    private static final long serialVersionUID = 4538558993636530549L;
 
     public static final String EVENT_NAME = "sjp.events.decision-saved";
 

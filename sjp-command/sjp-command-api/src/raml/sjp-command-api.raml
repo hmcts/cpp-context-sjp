@@ -384,6 +384,9 @@ baseUri: http://localhost:8080/sjp-command-api/command/api/rest/sjp
       (mapping):
           requestType: application/vnd.sjp.assign-case+json
           name: sjp.assign-case
+      (mapping):
+          requestType: application/vnd.sjp.resubmit-results+json
+          name: sjp.resubmit-results
       ...
     body:
       application/vnd.sjp.assign-case+json:
@@ -391,7 +394,9 @@ baseUri: http://localhost:8080/sjp-command-api/command/api/rest/sjp
           !include json/sjp.assign-case.json
         schema:
           !include json/schema/sjp.assign-case.json
-
+      application/vnd.sjp.resubmit-results+json:
+        schema:
+           !include json/schema/sjp.resubmit-results.json
     responses:
       202:
         description: Accepted

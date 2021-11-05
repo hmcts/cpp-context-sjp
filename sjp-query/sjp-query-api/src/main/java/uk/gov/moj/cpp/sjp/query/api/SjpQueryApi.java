@@ -271,4 +271,9 @@ public class SjpQueryApi {
         return requester.request(query);
     }
 
+    @Handles("sjp.query.account-note")
+    public JsonEnvelope getAccountNotes(final JsonEnvelope query) {
+        return requester.request(query);
+    }
+
 }

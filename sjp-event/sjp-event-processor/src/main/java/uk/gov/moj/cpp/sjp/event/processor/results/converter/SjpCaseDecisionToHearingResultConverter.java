@@ -84,7 +84,7 @@ public class SjpCaseDecisionToHearingResultConverter {
                 .collect(toList());
 
         final Hearing.Builder hearingBuilder = Hearing.hearing()
-                .withId(decisionSaved.getSessionId()) // mandatory
+                .withId(decisionSaved.getDecisionId()) // mandatory
                 .withJurisdictionType(MAGISTRATES) // mandatory
                 .withCourtCentre(courtCenterConverter.convert(decisionSaved.getSessionId(), sourceMetadata)) // mandatory
                 .withIsSJPHearing(true)

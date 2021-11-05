@@ -217,6 +217,11 @@ public class SjpQueryController {
         }
     }
 
+    @Handles("sjp.query.account-note")
+    public JsonEnvelope getAccountNotes(final JsonEnvelope query) {
+        return requester.request(query);
+    }
+
     private void logSummary(final DefendantProfilingView defendantProfilingView, final JsonObject outstandingFines) {
         int numberOfFines = 0;
         try {

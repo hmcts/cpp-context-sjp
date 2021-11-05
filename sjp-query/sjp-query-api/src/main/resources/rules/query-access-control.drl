@@ -345,3 +345,12 @@ rule "sjp - Query - API - Get convicting court session"
   then
     $outcome.setSuccess(true);
 end
+
+rule "sjp - Query - API - Get account note"
+  when
+    $outcome: Outcome();
+    $action: Action(name == "sjp.query.account-note");
+    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, RuleConstants.getAccountNotesGroups()))
+  then
+    $outcome.setSuccess(true);
+end

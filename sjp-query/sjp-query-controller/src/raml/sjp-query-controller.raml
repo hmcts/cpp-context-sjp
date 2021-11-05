@@ -623,3 +623,18 @@ baseUri: http://localhost:8080/sjp-query-controller/query/controller/rest/sjp
         body:
           application/vnd.sjp.query.common-case-application+json:
             schema: !include json/schema/sjp.query.common-case-application.json
+
+/cases/{caseUrn}/account-note:
+  get:
+    description: |
+      get account note
+      ...
+      (mapping):
+          responseType: application/vnd.sjp.query.account-note+json
+          name: sjp.query.account-note
+      ...
+    responses:
+      200:
+        body:
+          application/vnd.sjp.query.account-note+json:
+            schema: !include json/schema/sjp.query.account-note.json

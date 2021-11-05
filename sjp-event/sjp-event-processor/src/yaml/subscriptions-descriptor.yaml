@@ -146,6 +146,9 @@ subscriptions_descriptor:
         - name: sjp.events.decision-saved
           schema_uri: http://justice.gov.uk/json/schemas/domains/sjp/events/decision-saved.json
 
+        - name: sjp.events.decision-resubmitted
+          schema_uri: http://justice.gov.uk/json/schemas/domains/sjp/events/decision-resubmitted.json
+
         - name: sjp.events.financial-means-deleted
           schema_uri: http://justice.gov.uk/json/schemas/domains/sjp/events/sjp.events.financial-means-deleted.json
 

@@ -5066,6 +5066,102 @@
       "canBeSubjectOfVariation": false,
       "isAvailableForCourtExtract": false,
       "isBooleanResult": false
+    },
+    {
+      "id": "bcb5a496-f7cf-11e8-8eb2-f2801f1b9fd1",
+      "version": "2020-09-25T13:28:40.123Z",
+      "startDate": "2020-09-26",
+      "label": "Pay by date",
+      "shortCode": "PDATE",
+      "level": "D",
+      "rank": 62800,
+      "wordGroups": [
+        {
+          "wordGroup": [
+            "PDATE"
+          ]
+        },
+        {
+          "wordGroup": [
+            "PBD",
+            "pay",
+            "full",
+            "date"
+          ]
+        }
+      ],
+      "prompts": [
+        {
+          "id": "a9ad5002-ea38-4374-a475-4b352cdfa207",
+          "label": "Parent / Guardian to pay",
+          "welshLabel": "Rhiant / Gwarcheidwad i dalu",
+          "resultPromptRule": "optional",
+          "type": "BOOLEAN",
+          "sequence": 200,
+          "financial": "N",
+          "reference": "PARENT_GAURDIAN_TO_PAY",
+          "userGroups": [],
+          "courtExtract": "Y",
+          "jurisdiction": "B",
+          "hidden": false,
+          "nameEmail": false,
+          "associatedWithReferenceData": false
+        },
+        {
+          "id": "ee7d253a-c629-11e8-a355-529269fb1459",
+          "label": "Date to pay in full by",
+          "welshLabel": "Dyddiad terfyn ar gyfer talu'r swm llawn",
+          "resultPromptRule": "mandatory",
+          "type": "DATE",
+          "sequence": 100,
+          "financial": "N",
+          "reference": "PBD",
+          "userGroups": [],
+          "courtExtract": "Y",
+          "jurisdiction": "B",
+          "hidden": false,
+          "nameEmail": false,
+          "associatedWithReferenceData": false
+        },
+        {
+          "id": "e57dd7e2-edbe-11e8-8eb2-f2801f1b9fd1",
+          "label": "Number of days in default",
+          "welshLabel": "Nifer y diwrnodau y mae'r ddyled heb ei thalu",
+          "resultPromptRule": "optional",
+          "type": "INT",
+          "sequence": 300,
+          "financial": "N",
+          "reference": "DID",
+          "userGroups": [],
+          "min": "1",
+          "max": "999",
+          "courtExtract": "Y",
+          "jurisdiction": "B",
+          "hidden": false,
+          "nameEmail": false,
+          "associatedWithReferenceData": false
+        }
+      ],
+      "welshLabel": "Dyddiad terfyn ar gyfer talu",
+      "financial": "N",
+      "unscheduled": false,
+      "adjournment": "N",
+      "category": "F",
+      "urgent": false,
+      "convicted": "N",
+      "d20": false,
+      "resultDefinitionGroup": "Payment terms",
+      "postHearingCustodyStatus": "A",
+      "terminatesOffenceProceedings": false,
+      "lifeDuration": false,
+      "rollUpPrompts": false,
+      "publishedForNows": false,
+      "publishedAsAPrompt": false,
+      "excludedFromResults": false,
+      "alwaysPublished": true,
+      "jurisdiction": "M",
+      "isAvailableForCourtExtract": true,
+      "endDate": "2020-10-30"
     }
   ]
 }

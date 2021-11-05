@@ -54,6 +54,7 @@ import uk.gov.moj.cpp.sjp.event.InterpreterUpdatedForDefendant;
 import uk.gov.moj.cpp.sjp.event.OffenceWithdrawalRequestCancelled;
 import uk.gov.moj.cpp.sjp.event.OffenceWithdrawalRequestReasonChanged;
 import uk.gov.moj.cpp.sjp.event.OffenceWithdrawalRequested;
+import uk.gov.moj.cpp.sjp.event.PaymentTermsChanged;
 import uk.gov.moj.cpp.sjp.event.PleaCancelled;
 import uk.gov.moj.cpp.sjp.event.PleaUpdated;
 import uk.gov.moj.cpp.sjp.event.PleadedGuilty;
@@ -185,6 +186,10 @@ final class CompositeCaseAggregateStateMutator implements AggregateStateMutator<
             ((event, state) -> {
                 state.updateOffenceDecisions(event.getOffenceDecisions(), event.getSessionId());
                 state.updateOffenceConvictionDates(event.getSavedAt(), event.getOffenceDecisions());
+                // DD-16405
+                if (event.getFinancialImposition() != null) {
+                    state.setDecisionSavedWithFinancialImposition(event);
+                }
             });
 
     private static final AggregateStateMutator<PleasSet, CaseAggregateState> PLEAS_SET_MUTATOR =
@@ -277,6 +282,9 @@ final class CompositeCaseAggregateStateMutator implements AggregateStateMutator<
                 state.addFinancialImpositionExportDetails(defendantId, fiExportDetails);
             });
 
+    private static final AggregateStateMutator<PaymentTermsChanged, CaseAggregateState> PAYMENT_TERMS_CHANGED_CASE_AGGREGATE_STATE_AGGREGATE_STATE_MUTATOR =
+            ((event, state) -> state.setPaymentTermsUpdated(true));
+
     static final CompositeCaseAggregateStateMutator INSTANCE = new CompositeCaseAggregateStateMutator();
 
     private final Map<Class, AggregateStateMutator> eventToStateMutator;
@@ -344,6 +352,7 @@ final class CompositeCaseAggregateStateMutator implements AggregateStateMutator<
                 .put(FinancialImpositionCorrelationIdAdded.class, FINANCIAL_IMPOSITION_CORRELATION_ID_ADDED_MUTATOR)
                 .put(FinancialImpositionAccountNumberAdded.class, FINANCIAL_IMPOSITION_ACCOUNT_NUMBER_ADDED_MUTATOR)
                 .put(FinancialImpositionAccountNumberAddedBdf.class, FINANCIAL_IMPOSITION_ACCOUNT_NUMBER_ADDED_MUTATOR_BDF)
+                .put(PaymentTermsChanged.class, PAYMENT_TERMS_CHANGED_CASE_AGGREGATE_STATE_AGGREGATE_STATE_MUTATOR)
                 .build();
     }
 

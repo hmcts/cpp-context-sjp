@@ -1,33 +1,5 @@
 {
   "$schema": "http://json-schema.org/draft-04/schema#",
   "id": "http://justice.gov.uk/json/schemas/domains/sjp/events/decision-saved.json",
-  "type": "object",
-  "properties": {
-    "decisionId": {
-      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
-    },
-    "sessionId": {
-      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
-    },
-    "caseId": {
-      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
-    },
-    "savedAt": {
-      "$ref": "http://justice.gov.uk/json/schemas/domains/sjp/temporal.json#/definitions/date-time"
-    },
-    "offenceDecisions": {
-      "$ref": "http://cpp.moj.gov.uk/core/sjp/decision/offenceDecisions.json"
-    },
-    "financialImposition": {
-      "$ref": "http://cpp.moj.gov.uk/core/sjp/decision/financial-imposition/financialImposition.json"
-    }
-  },
-  "required": [
-    "decisionId",
-    "sessionId",
-    "caseId",
-    "savedAt",
-    "offenceDecisions"
-  ],
-  "additionalProperties": false
+  "$ref": "http://justice.gov.uk/json/schemas/domains/sjp/event/decision-saved.json"
 }

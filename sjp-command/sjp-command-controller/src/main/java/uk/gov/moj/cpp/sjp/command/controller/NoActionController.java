@@ -117,6 +117,11 @@ public class NoActionController {
         send(envelope);
     }
 
+    @Handles("sjp.command.resubmit-results")
+    public void resubmitResults(final JsonEnvelope envelope) {
+        send(envelope);
+    }
+
     @Handles("sjp.command.request-press-transparency-report")
     public void requestPressTransparencyReport(final JsonEnvelope envelope) {
         send(envelope);

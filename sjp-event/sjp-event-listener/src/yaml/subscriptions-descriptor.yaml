@@ -182,6 +182,9 @@ subscriptions_descriptor:
               - name: sjp.events.decision-saved
                 schema_uri: http://justice.gov.uk/json/schemas/domains/sjp/events/decision-saved.json
 
+              - name: sjp.events.decision-resubmitted
+                schema_uri: http://justice.gov.uk/json/schemas/domains/sjp/events/decision-resubmitted.json
+
               - name: sjp.events.outstanding-fines-updated
                 schema_uri: http://cpp.moj.gov.uk/sjp/json/schemas/event/sjp.events.outstanding-fines-updated.json
 

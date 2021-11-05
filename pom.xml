@@ -24,7 +24,7 @@
         <referencedata.offences.version>7.0.7</referencedata.offences.version>
         <scheduling.version>6.0.0</scheduling.version>
         <authorisation.service.version>0.1.49</authorisation.service.version>
-        <usersgroups.version>7.0.30</usersgroups.version>
+        <usersgroups.version>7.0.33</usersgroups.version>
         <progression.version>7.0.163</progression.version>
         <prosecutioncasefile.version>7.0.48</prosecutioncasefile.version>
         <access-control-sjp-providers.version>4.1.4-ATCM</access-control-sjp-providers.version>

@@ -1,5 +1,8 @@
 package uk.gov.moj.cpp.sjp.domain.aggregate;
 
+import static java.util.stream.Stream.empty;
+import static uk.gov.moj.cpp.sjp.domain.aggregate.handler.EnforcementCheckIfNotificationRequired.INSTANCE;
+
 import uk.gov.justice.domain.aggregate.Aggregate;
 import uk.gov.justice.json.schemas.domains.sjp.ApplicationStatus;
 import uk.gov.justice.json.schemas.domains.sjp.Note;
@@ -36,13 +39,13 @@ import uk.gov.moj.cpp.sjp.domain.aggregate.handler.DeleteDocsHandler;
 import uk.gov.moj.cpp.sjp.domain.aggregate.handler.FinancialImpositionHandler;
 import uk.gov.moj.cpp.sjp.domain.aggregate.handler.OffenceWithdrawalHandler;
 import uk.gov.moj.cpp.sjp.domain.aggregate.handler.ResolveCaseStatusHandler;
+import uk.gov.moj.cpp.sjp.domain.aggregate.handler.ResubmitResultsHandler;
 import uk.gov.moj.cpp.sjp.domain.aggregate.handler.SetDatesToAvoidRequiredAggregateHandler;
 import uk.gov.moj.cpp.sjp.domain.aggregate.handler.UpdateAllFinancialMeansAggregateHandler;
 import uk.gov.moj.cpp.sjp.domain.aggregate.handler.plea.OnlinePleaHandler;
 import uk.gov.moj.cpp.sjp.domain.aggregate.handler.plea.SetPleasHandler;
 import uk.gov.moj.cpp.sjp.domain.aggregate.mutator.AggregateStateMutator;
 import uk.gov.moj.cpp.sjp.domain.aggregate.state.CaseAggregateState;
-
 import uk.gov.moj.cpp.sjp.domain.aggregate.state.WithdrawalRequestsStatus;
 import uk.gov.moj.cpp.sjp.domain.common.CaseManagementStatus;
 import uk.gov.moj.cpp.sjp.domain.common.CaseState;
@@ -59,13 +62,12 @@ import java.util.UUID;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
 
-import static java.util.stream.Stream.empty;
-import static uk.gov.moj.cpp.sjp.domain.aggregate.handler.EnforcementCheckIfNotificationRequired.INSTANCE;
+import javax.json.JsonObject;
 
 @SuppressWarnings("WeakerAccess")
 public class CaseAggregate implements Aggregate {
 
-    private static final long serialVersionUID = 14L;
+    private static final long serialVersionUID = 15L;
     private static final AggregateStateMutator<Object, CaseAggregateState> AGGREGATE_STATE_MUTATOR = AggregateStateMutator.compositeCaseAggregateStateMutator();
     private static final CaseReadinessHandler caseReadinessHandler = CaseReadinessHandler.INSTANCE;
 
@@ -336,6 +338,10 @@ public class CaseAggregate implements Aggregate {
 
     public Stream<Object> addFinancialImpositionAccountNumberBdf(final UUID defendantId, final UUID correlationId, final String accountNumber) {
         return apply(FinancialImpositionHandler.INSTANCE.addFinancialImpositionAccountNumberBdf(state, defendantId, correlationId, accountNumber));
+    }
+
+    public Stream<Object> resubmitResults(final JsonObject payload) {
+        return apply(ResubmitResultsHandler.INSTANCE.resubmitResults(payload, state));
     }
 
     @Override

@@ -10,6 +10,8 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class FinancialImposition implements Serializable {
 
+    private static final long serialVersionUID = 676510790444821641L;
+
     private CostsAndSurcharge costsAndSurcharge;
 
     private Payment payment;

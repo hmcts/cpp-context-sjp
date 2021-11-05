@@ -31,6 +31,7 @@ import uk.gov.moj.cpp.sjp.domain.onlineplea.PersonalDetails;
 import uk.gov.moj.cpp.sjp.domain.plea.Plea;
 import uk.gov.moj.cpp.sjp.domain.plea.PleaType;
 import uk.gov.moj.cpp.sjp.event.DefendantDetailsUpdated;
+import uk.gov.moj.cpp.sjp.event.decision.DecisionSaved;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -51,9 +52,7 @@ import org.apache.commons.lang.StringUtils;
 /**
  * Defines the case aggregate state.
  */
-public class
-
-CaseAggregateState implements AggregateState {
+public class CaseAggregateState implements AggregateState {
 
 
     public static final String FINANCIAL_MEANS_DOCUMENT_TYPE = "FINANCIAL_MEANS";
@@ -135,11 +134,14 @@ CaseAggregateState implements AggregateState {
 
 
     private boolean managedByAtcm;
+    private boolean paymentTermsUpdated;
 
     private final Set<UUID> pressRestrictableOffenceIds = new HashSet<>();
     private final Set<UUID> offencesHavingPreviousPressRestriction = new HashSet<>();
     private final Map<UUID, DisabilityNeeds> defendantsDisabilityNeeds = new HashMap<>();
     private final Map<UUID, FinancialImpositionExportDetails> defendantFinancialImpositionExportDetails = new HashMap<>();
+
+    private DecisionSaved decisionSavedWithFinancialImposition;
 
     public UUID getCaseId() {
         return caseId;
@@ -942,4 +944,21 @@ CaseAggregateState implements AggregateState {
     public void setCaseAppealed(boolean caseAppealed) {
         this.caseAppealed = caseAppealed;
     }
+
+    public DecisionSaved getDecisionSavedWithFinancialImposition() {
+        return decisionSavedWithFinancialImposition;
+    }
+
+    public void setDecisionSavedWithFinancialImposition(final DecisionSaved decisionSavedWithFinancialImposition) {
+        this.decisionSavedWithFinancialImposition = decisionSavedWithFinancialImposition;
+    }
+
+    public boolean isPaymentTermsUpdated() {
+        return paymentTermsUpdated;
+    }
+
+    public void setPaymentTermsUpdated(final boolean paymentTermsUpdated) {
+        this.paymentTermsUpdated = paymentTermsUpdated;
+    }
+
 }

@@ -258,3 +258,11 @@ rule "sjp.query.convicting-court-session"
   then
     $outcome.setSuccess(true);
 end
+
+rule "sjp - Query - API - Get account note"
+  when
+    $outcome: Outcome();
+    $action: Action(name == "sjp.query.account-note");
+  then
+    $outcome.setSuccess(true);
+end

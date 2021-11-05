@@ -6,6 +6,7 @@ import static java.lang.String.format;
 import static java.util.Arrays.asList;
 import static java.util.UUID.randomUUID;
 import static java.util.stream.Collectors.toList;
+import static javax.json.Json.*;
 import static javax.ws.rs.core.Response.Status.ACCEPTED;
 import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -89,6 +90,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 
+import javax.json.Json;
 import javax.json.JsonObject;
 
 import com.jayway.jsonpath.ReadContext;
@@ -99,6 +101,7 @@ import org.hamcrest.Matcher;
 public class DecisionHelper {
 
     private static final String WRITE_URL_PATTERN = "/cases/%s/decision";
+    private static final String CHANGE_PAYMENT_TERMS_URL = "/cases/%s";
     private static final String QUERY_READY_CASES_RESOURCE = "/cases/ready-cases";
     private static final String QUERY_READY_CASES = "application/vnd.sjp.query.ready-cases+json";
 
@@ -132,6 +135,22 @@ public class DecisionHelper {
         final String path = format(WRITE_URL_PATTERN, decision.getCaseId());
         final String mediaType = "application/vnd.sjp.save-decision+json";
         final String payload = toJsonObject(decision).toString();
+
+        makePostCall(userId, path, mediaType, payload, ACCEPTED);
+    }
+
+    public static void changePaymentTerms(final UUID userId,
+                                          final UUID caseId) {
+
+        final String path = format(CHANGE_PAYMENT_TERMS_URL, caseId);
+        final String mediaType = "application/vnd.sjp.resubmit-results+json";
+        final String payload = createObjectBuilder()
+                .add("paymentTermsInfo",
+                        createObjectBuilder()
+                                .add("numberOfDaysToPostponeBy", 10)
+                                .build())
+                .build()
+                .toString();
 
         makePostCall(userId, path, mediaType, payload, ACCEPTED);
     }

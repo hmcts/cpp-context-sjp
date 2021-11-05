@@ -18,7 +18,6 @@ import uk.gov.moj.cpp.sjp.event.processor.results.converter.judicialresult.JCach
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 
 import javax.inject.Inject;
@@ -57,14 +56,13 @@ public class NoSeparatePenaltyDecisionResultAggregator extends DecisionResultAgg
 
         setFinalOffence(decisionAggregate, offenceId, judicialResults);
 
-        final Optional<CourtCentre> convictingCourtOptional = courtCentreConverter.convertByOffenceId(offenceId, sjpSessionEnvelope.metadata());
+        final CourtCentre convictingCourt = courtCentreConverter.convertByOffenceId(offenceId, sjpSessionEnvelope.metadata()).orElse(null);
 
-        convictingCourtOptional.ifPresent(convictingCourt ->
-                decisionAggregate.putConvictionInfo(offenceId,
-                        new ConvictionInfo(offenceId,
-                                noSeparatePenalty.getOffenceDecisionInformation().getVerdict(),
-                                noSeparatePenalty.getConvictionDate(),
-                                convictingCourt))
+        decisionAggregate.putConvictionInfo(offenceId,
+                new ConvictionInfo(offenceId,
+                        noSeparatePenalty.getOffenceDecisionInformation().getVerdict(),
+                        noSeparatePenalty.getConvictionDate(),
+                        convictingCourt)
         );
     }
 

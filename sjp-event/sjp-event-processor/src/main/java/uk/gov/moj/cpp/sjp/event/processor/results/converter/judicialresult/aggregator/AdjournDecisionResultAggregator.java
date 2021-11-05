@@ -71,12 +71,11 @@ public class AdjournDecisionResultAggregator extends DecisionResultAggregator {
                 .forEach(oi -> {
                     final Optional<CourtCentre> offenceConvictingCourtCentreOptional = courtCentreConverter.convertByOffenceId(oi.getOffenceId(), sjpSessionEnvelope.metadata());
 
-                    offenceConvictingCourtCentreOptional.ifPresent(offenceConvictingCourtCentre ->
-                        decisionAggregate.putConvictionInfo(oi.getOffenceId(),
-                                new ConvictionInfo(oi.getOffenceId(),
-                                        oi.getVerdict(),
-                                        adjournOffenceDecision.getConvictionDate(),
-                                        offenceConvictingCourtCentre))
+                    decisionAggregate.putConvictionInfo(oi.getOffenceId(),
+                            new ConvictionInfo(oi.getOffenceId(),
+                                    oi.getVerdict(),
+                                    adjournOffenceDecision.getConvictionDate(),
+                                    offenceConvictingCourtCentreOptional.orElse(null))
                     );
                 });
     }

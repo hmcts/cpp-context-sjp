@@ -76,12 +76,11 @@ public class DischargeDecisionResultAggregator extends DecisionResultAggregator 
         final Optional<CourtCentre> convictingCourtOptional = courtCentreConverter.convertByOffenceId(offenceId, sjpSessionEnvelope.metadata());
 
         // conviction information
-        convictingCourtOptional.ifPresent(convictingCourt ->
-                decisionAggregate.putConvictionInfo(offenceId,
+        decisionAggregate.putConvictionInfo(offenceId,
                 new ConvictionInfo(offenceId,
                         dischargeOffenceDecision.getOffenceDecisionInformation().getVerdict(),
                         dischargeOffenceDecision.getConvictionDate(),
-                        convictingCourt))
+                        convictingCourtOptional.orElse(null))
         );
     }
 

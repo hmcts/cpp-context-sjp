@@ -83,12 +83,12 @@ public class ReferForCourtHearingDecisionResultAggregator extends DecisionResult
                 .forEach(oi -> {
                     final Optional<CourtCentre> convictingCourtOptional = courtCentreConverter.convertByOffenceId(oi.getOffenceId(), sjpSessionEnvelope.metadata());
 
-                    convictingCourtOptional.ifPresent(convictingCourt ->
-                            decisionAggregate.putConvictionInfo(oi.getOffenceId(),
-                                    new ConvictionInfo(oi.getOffenceId(),
-                                            oi.getVerdict(),
-                                            referForCourtHearing.getConvictionDate(),
-                                            convictingCourt))
+
+                    decisionAggregate.putConvictionInfo(oi.getOffenceId(),
+                            new ConvictionInfo(oi.getOffenceId(),
+                                    oi.getVerdict(),
+                                    referForCourtHearing.getConvictionDate(),
+                                    convictingCourtOptional.orElse(null))
                     );
                 });
     }

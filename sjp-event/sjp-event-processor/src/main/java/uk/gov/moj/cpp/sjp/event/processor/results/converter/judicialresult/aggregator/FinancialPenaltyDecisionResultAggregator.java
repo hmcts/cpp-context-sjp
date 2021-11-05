@@ -75,12 +75,11 @@ public class FinancialPenaltyDecisionResultAggregator extends DecisionResultAggr
 
         final Optional<CourtCentre> convictingCourtOptional = courtCentreConverter.convertByOffenceId(offenceId, sjpSessionEnvelope.metadata());
 
-        convictingCourtOptional.ifPresent(convictingCourt ->
-                        decisionAggregate.putConvictionInfo(offenceId,
-                                new ConvictionInfo(offenceId,
-                                        financialPenaltyDecision.getOffenceDecisionInformation().getVerdict(),
-                                        financialPenaltyDecision.getConvictionDate(),
-                                        convictingCourt))
+        decisionAggregate.putConvictionInfo(offenceId,
+                new ConvictionInfo(offenceId,
+                        financialPenaltyDecision.getOffenceDecisionInformation().getVerdict(),
+                        financialPenaltyDecision.getConvictionDate(),
+                        convictingCourtOptional.orElse(null))
         );
     }
 

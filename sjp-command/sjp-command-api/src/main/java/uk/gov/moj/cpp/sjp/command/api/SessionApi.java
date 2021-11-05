@@ -48,7 +48,11 @@ public class SessionApi {
                 .add("localJusticeAreaNationalCourtCode", sessionCourt.getLocalJusticeAreaNationalCourtCode());
 
         JsonObjects.getString(commandPayload, "magistrate")
-                .ifPresent(magistrate -> startSessionBuilder.add("magistrate", magistrate));
+                .ifPresent(magistrate -> {
+                    startSessionBuilder.add("magistrate", magistrate);
+                    JsonObjects.getJsonObject(commandPayload, "legalAdviser")
+                            .ifPresent(legalAdviser -> startSessionBuilder.add("legalAdviser", legalAdviser));
+                });
 
         sender.send(enveloper.withMetadataFrom(startSessionCommand, "sjp.command.start-session").apply(startSessionBuilder.build()));
     }

@@ -12,6 +12,7 @@ public final class RuleConstants {
     private static final String GROUP_SJP_PROSECUTORS = "SJP Prosecutors";
     private static final String GROUP_LEGAL_ADVISERS = "Legal Advisers";
     private static final String GROUP_COURT_ADMINISTRATORS = "Court Administrators";
+    private static final String GROUP_MAGISTRATES = "Magistrates";
 
 
     private RuleConstants() {
@@ -75,7 +76,7 @@ public final class RuleConstants {
     }
 
     public static List<String> getUpdateDefendantDetails() {
-        return asList(GROUP_COURT_ADMINISTRATORS, GROUP_LEGAL_ADVISERS, GROUP_SYSTEM_USERS);
+        return asList(GROUP_COURT_ADMINISTRATORS, GROUP_LEGAL_ADVISERS, GROUP_SYSTEM_USERS, GROUP_MAGISTRATES);
     }
 
     public static List<String> getUpdateHearingRequirementsGroups() {
@@ -83,7 +84,7 @@ public final class RuleConstants {
     }
 
     public static List<String> getStartSessionGroups() {
-        return singletonList(GROUP_LEGAL_ADVISERS);
+        return asList(GROUP_LEGAL_ADVISERS, GROUP_MAGISTRATES);
     }
 
     public static List<String> getAddDatesToAvoidActionGroups() {
@@ -91,11 +92,11 @@ public final class RuleConstants {
     }
 
     public static List<String> getEndSessionGroups() {
-        return singletonList(GROUP_LEGAL_ADVISERS);
+        return asList(GROUP_LEGAL_ADVISERS, GROUP_MAGISTRATES);
     }
 
     public static List<String> getAssignCaseGroups() {
-        return singletonList(GROUP_LEGAL_ADVISERS);
+        return asList(GROUP_LEGAL_ADVISERS, GROUP_MAGISTRATES);
     }
 
     public static List<String> getAcknowledgeDefendantDetailsUpdatesGroups() {
@@ -127,11 +128,11 @@ public final class RuleConstants {
     }
 
     public static List<String> getSetPleasGroups() {
-        return asList(GROUP_COURT_ADMINISTRATORS, GROUP_LEGAL_ADVISERS, GROUP_SYSTEM_USERS);
+        return asList(GROUP_COURT_ADMINISTRATORS, GROUP_LEGAL_ADVISERS, GROUP_SYSTEM_USERS, GROUP_MAGISTRATES);
     }
 
     public static List<String> getSaveDecisionActionGroups() {
-        return asList(GROUP_LEGAL_ADVISERS);
+        return asList(GROUP_LEGAL_ADVISERS, GROUP_MAGISTRATES);
     }
 
     public static List<String> resolveCaseStatusGroups() {
@@ -159,7 +160,7 @@ public final class RuleConstants {
     }
 
     public static List<String> getAddFinancialImpositionCorrelationIdGroups() {
-        return asList(GROUP_SYSTEM_USERS, GROUP_LEGAL_ADVISERS, GROUP_COURT_ADMINISTRATORS);
+        return asList(GROUP_SYSTEM_USERS, GROUP_LEGAL_ADVISERS, GROUP_COURT_ADMINISTRATORS, GROUP_MAGISTRATES);
     }
 
     public static List<String> getAddFinancialImpositionAccountNumberBdfGroups() {
@@ -167,4 +168,3 @@ public final class RuleConstants {
     }
 
 }
-

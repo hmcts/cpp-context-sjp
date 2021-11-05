@@ -2,6 +2,7 @@ package uk.gov.moj.cpp.sjp.event.listener;
 
 import static uk.gov.justice.services.core.annotation.Component.EVENT_LISTENER;
 
+import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
 import uk.gov.justice.services.core.annotation.Handles;
 import uk.gov.justice.services.core.annotation.ServiceComponent;
 import uk.gov.justice.services.messaging.JsonEnvelope;
@@ -25,6 +26,9 @@ public class SessionListener {
     @Inject
     private SessionRepository sessionRepository;
 
+    @Inject
+    private JsonObjectToObjectConverter jsonObjectConverter;
+
     @Transactional
     @Handles(DelegatedPowersSessionStarted.EVENT_NAME)
     public void handleDelegatedPowersSessionStarted(final JsonEnvelope delegatedPowersSessionStartedEvent) {
@@ -45,17 +49,21 @@ public class SessionListener {
     @Transactional
     @Handles(MagistrateSessionStarted.EVENT_NAME)
     public void handleMagistrateSessionStarted(final JsonEnvelope magistrateSessionStartedEvent) {
-        final JsonObject magistrateSessionStarted = magistrateSessionStartedEvent.payloadAsJsonObject();
+        final JsonObject magistrateSessionStartedJson = magistrateSessionStartedEvent.payloadAsJsonObject();
+        final MagistrateSessionStarted magistrateSessionStarted = jsonObjectConverter.convert(magistrateSessionStartedJson, MagistrateSessionStarted.class);
 
         final Session session = new Session(
-                UUID.fromString(magistrateSessionStarted.getString("sessionId"))
-                , UUID.fromString(magistrateSessionStarted.getString("userId"))
-                , magistrateSessionStarted.getString("courtHouseCode")
-                , magistrateSessionStarted.getString("courtHouseName")
-                , magistrateSessionStarted.getString("localJusticeAreaNationalCourtCode")
-                , magistrateSessionStarted.getString("magistrate")
-                , ZonedDateTime.parse(magistrateSessionStarted.getString("startedAt"))
+                UUID.fromString(magistrateSessionStartedJson.getString("sessionId"))
+                , UUID.fromString(magistrateSessionStartedJson.getString("userId"))
+                , magistrateSessionStartedJson.getString("courtHouseCode")
+                , magistrateSessionStartedJson.getString("courtHouseName")
+                , magistrateSessionStartedJson.getString("localJusticeAreaNationalCourtCode")
+                , magistrateSessionStartedJson.getString("magistrate")
+                , ZonedDateTime.parse(magistrateSessionStartedJson.getString("startedAt"))
         );
+
+        magistrateSessionStarted.getLegalAdviser().ifPresent(legalAdviser -> session.setLegalAdviserUserId(legalAdviser.getUserId()));
+
         sessionRepository.save(session);
     }
 

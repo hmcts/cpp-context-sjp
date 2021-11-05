@@ -6,6 +6,7 @@ import static uk.gov.justice.domain.aggregate.matcher.EventSwitcher.when;
 import static uk.gov.moj.cpp.sjp.domain.SessionType.DELEGATED_POWERS;
 import static uk.gov.moj.cpp.sjp.domain.SessionType.MAGISTRATE;
 
+import uk.gov.justice.core.courts.DelegatedPowers;
 import uk.gov.justice.domain.aggregate.Aggregate;
 import uk.gov.moj.cpp.sjp.domain.SessionType;
 import uk.gov.moj.cpp.sjp.event.session.CaseAssignmentRejected;
@@ -64,12 +65,13 @@ public class Session implements Aggregate {
             final String courtHouseName,
             final String localJusticeAreaNationalCourtCode,
             final ZonedDateTime startedAt,
-            final String magistrate) {
+            final String magistrate,
+            final Optional<DelegatedPowers> legalAdviserOpt) {
 
         final Stream.Builder<Object> streamBuilder = Stream.builder();
 
         if (sessionState == SessionState.NOT_EXISTING) {
-            streamBuilder.add(new MagistrateSessionStarted(sessionId, userId, courtHouseCode, courtHouseName, localJusticeAreaNationalCourtCode, startedAt, magistrate));
+            streamBuilder.add(new MagistrateSessionStarted(sessionId, userId, courtHouseCode, courtHouseName, localJusticeAreaNationalCourtCode, startedAt, magistrate, legalAdviserOpt));
         } else {
             LOGGER.warn("Magistrate session can not be started - session {} already exists", sessionId);
         }
@@ -82,13 +84,10 @@ public class Session implements Aggregate {
         final Stream.Builder<Object> streamBuilder = Stream.builder();
 
         if (sessionState == SessionState.STARTED) {
-            switch (sessionType) {
-                case MAGISTRATE:
-                    streamBuilder.add(new MagistrateSessionEnded(sessionId, endedAt));
-                    break;
-                case DELEGATED_POWERS:
-                    streamBuilder.add(new DelegatedPowersSessionEnded(sessionId, endedAt));
-                    break;
+            if (MAGISTRATE.equals(sessionType)) {
+                streamBuilder.add(new MagistrateSessionEnded(sessionId, endedAt));
+            } else if (DELEGATED_POWERS.equals(sessionType)) {
+                streamBuilder.add(new DelegatedPowersSessionEnded(sessionId, endedAt));
             }
         } else {
             LOGGER.warn("Session can not be ended - session {} is not started", sessionId);

@@ -8,14 +8,15 @@ import static org.hamcrest.Matchers.notNullValue;
 import static uk.gov.justice.services.test.utils.core.http.RequestParamsBuilder.requestParams;
 import static uk.gov.justice.services.test.utils.core.matchers.ResponsePayloadMatcher.payload;
 import static uk.gov.justice.services.test.utils.core.matchers.ResponseStatusMatcher.status;
+import static uk.gov.moj.sjp.it.util.Defaults.DEFAULT_LEGAL_ADVISER;
 import static uk.gov.moj.sjp.it.util.HttpClientUtil.getReadUrl;
 import static uk.gov.moj.sjp.it.util.RestPollerWithDefaults.pollWithDefaults;
 
+import uk.gov.justice.core.courts.DelegatedPowers;
 import uk.gov.justice.services.common.http.HeaderConstants;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.test.utils.core.http.RequestParamsBuilder;
 import uk.gov.moj.cpp.sjp.domain.SessionType;
-import uk.gov.moj.cpp.sjp.event.session.DelegatedPowersSessionEnded;
 import uk.gov.moj.cpp.sjp.event.session.DelegatedPowersSessionStarted;
 import uk.gov.moj.cpp.sjp.event.session.MagistrateSessionStarted;
 import uk.gov.moj.sjp.it.util.HttpClientUtil;
@@ -27,9 +28,7 @@ import java.util.UUID;
 
 import javax.json.Json;
 import javax.json.JsonObject;
-import javax.json.JsonObjectBuilder;
 
-import com.google.common.base.Strings;
 import com.jayway.jsonpath.ReadContext;
 import org.hamcrest.Matcher;
 
@@ -59,10 +58,11 @@ public class SessionHelper {
         return startDelegatedPowersSessionAndWaitForEvent(sessionId, userId, courtHouseOUCode, DelegatedPowersSessionStarted.EVENT_NAME);
     }
 
-    public static UUID startMagistrateSessionAsync(final UUID sessionId, final UUID userId, final String courtHouseOUCode, final String magistrate) {
+    public static UUID startMagistrateSessionAsync(final UUID sessionId, final UUID userId, final String courtHouseOUCode, final String magistrate, final DelegatedPowers legalAdviser) {
         final JsonObject payload = createObjectBuilder()
                 .add("courtHouseOUCode", courtHouseOUCode)
                 .add("magistrate", magistrate)
+                .add("legalAdviser", buildLegalAdviserJsonObject(legalAdviser))
                 .build();
 
         return startSession(sessionId, userId, payload);
@@ -70,7 +70,7 @@ public class SessionHelper {
 
     public static Optional<JsonEnvelope> startMagistrateSessionAndWaitForEvent(final UUID sessionId, final UUID userId, final String courtHouseOUCode, final String magistrate, final String eventName) {
         return new EventListener().subscribe(eventName)
-                .run(() -> startMagistrateSessionAsync(sessionId, userId, courtHouseOUCode, magistrate))
+                .run(() -> startMagistrateSessionAsync(sessionId, userId, courtHouseOUCode, magistrate, DEFAULT_LEGAL_ADVISER))
                 .popEvent(eventName);
     }
 
@@ -81,7 +81,7 @@ public class SessionHelper {
     public static void startSessionAsync(final UUID sessionId, final UUID userId, final String courtHouseOUCode, final SessionType sessionType) {
         switch (sessionType) {
             case MAGISTRATE:
-                startMagistrateSessionAsync(sessionId, userId, courtHouseOUCode, "John Smith " + sessionId);
+                startMagistrateSessionAsync(sessionId, userId, courtHouseOUCode, "John Smith " + sessionId, DEFAULT_LEGAL_ADVISER);
                 break;
             case DELEGATED_POWERS:
                 startDelegatedPowersSessionAsync(sessionId, userId, courtHouseOUCode);
@@ -123,5 +123,13 @@ public class SessionHelper {
         final String contentType = "application/vnd.sjp.start-session+json";
         final String url = String.format("/sessions/%s", sessionId);
         return HttpClientUtil.makePostCall(userId, url, contentType, payload.toString(), ACCEPTED);
+    }
+
+    private static JsonObject buildLegalAdviserJsonObject(final DelegatedPowers legalAdviser) {
+        return createObjectBuilder()
+                .add("firstName", legalAdviser.getFirstName())
+                .add("lastName", legalAdviser.getLastName())
+                .add("userId", legalAdviser.getUserId().toString())
+                .build();
     }
 }

@@ -2,6 +2,7 @@ package uk.gov.moj.cpp.sjp.query.view.response;
 
 import static java.util.Optional.ofNullable;
 
+import uk.gov.moj.cpp.sjp.domain.SessionType;
 import uk.gov.moj.cpp.sjp.persistence.entity.ApplicationType;
 import uk.gov.moj.cpp.sjp.persistence.entity.CaseApplication;
 import uk.gov.moj.cpp.sjp.persistence.entity.CaseApplicationDecision;
@@ -92,7 +93,6 @@ public class ApplicationDecisionView {
         }
 
         view.setSessionId(entity.getSessionId());
-        view.setLegalAdviserUserId(entity.getUserId());
         view.setCourtHouseCode(entity.getCourtHouseCode());
         view.setCourtHouseName(entity.getCourtHouseName());
         view.setLocalJusticeAreaNationalCourtCode(entity.getLocalJusticeAreaNationalCourtCode());
@@ -100,6 +100,12 @@ public class ApplicationDecisionView {
         view.setStartedAt(entity.getStartedAt());
         view.setEndedAt(entity.getEndedAt().orElse(null));
         view.setSessionType(entity.getType().name());
+
+        if (SessionType.MAGISTRATE.name().equals(entity.getType().name()) && entity.getLegalAdviserUserId() != null) {
+            view.setLegalAdviserUserId(entity.getLegalAdviserUserId());
+        } else {
+            view.setLegalAdviserUserId(entity.getUserId());
+        }
 
         return view;
     }

@@ -22,8 +22,11 @@ import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopePaylo
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeStreamMatcher.streamContaining;
 import static uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderFactory.metadataWithRandomUUID;
 
+import uk.gov.justice.core.courts.DelegatedPowers;
 import uk.gov.justice.domain.annotation.Event;
+import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
 import uk.gov.justice.services.common.converter.ZonedDateTimes;
+import uk.gov.justice.services.common.converter.jackson.ObjectMapperProducer;
 import uk.gov.justice.services.common.util.Clock;
 import uk.gov.justice.services.core.aggregate.AggregateService;
 import uk.gov.justice.services.core.enveloper.Enveloper;
@@ -40,14 +43,19 @@ import uk.gov.moj.cpp.sjp.event.session.MagistrateSessionStarted;
 import uk.gov.moj.cpp.sjp.event.session.SessionEnded;
 
 import java.time.ZonedDateTime;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Stream;
 
+import javax.json.JsonObject;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
 import org.mockito.Spy;
 import org.mockito.runners.MockitoJUnitRunner;
 
@@ -70,6 +78,13 @@ public class SessionHandlerTest {
     private Session session;
 
     @Spy
+    private final ObjectMapper mapper = new ObjectMapperProducer().objectMapper();
+
+    @Spy
+    @InjectMocks
+    private JsonObjectToObjectConverter converter;
+
+    @Spy
     private Enveloper enveloper = createEnveloperWithEvents(
             MagistrateSessionStarted.class,
             MagistrateSessionEnded.class,
@@ -86,9 +101,11 @@ public class SessionHandlerTest {
     private String courtHouseCode, courtHouseName, localJusticeAreaNationalCourtCode;
     private ZonedDateTime startedAt;
     private ZonedDateTime endedAt;
+    private Optional<DelegatedPowers> legalAdviser;
 
     @Before
     public void init() {
+        MockitoAnnotations.initMocks(this);
         sessionId = randomUUID();
         userId = randomUUID();
         courtHouseCode = "B01LY";
@@ -96,6 +113,7 @@ public class SessionHandlerTest {
         localJusticeAreaNationalCourtCode = "2924";
         startedAt = clock.now();
         endedAt = clock.now();
+        legalAdviser = Optional.of(DelegatedPowers.delegatedPowers().withFirstName("Erica").withLastName("Wilson").withUserId(randomUUID()).build());
     }
 
     @Test
@@ -111,6 +129,7 @@ public class SessionHandlerTest {
     public void shouldStartMagistrateSession() throws EventStreamException {
 
         final String magistrate = randomAlphanumeric(20);
+        final JsonObject legalAdviserJsonObject = buildLegalAdviserJsonObject(legalAdviser.get());
 
         final JsonEnvelope startSessionCommand = envelopeFrom(metadataWithRandomUUID(START_SESSION_COMMAND).withUserId(userId.toString()),
                 createObjectBuilder()
@@ -119,13 +138,14 @@ public class SessionHandlerTest {
                         .add("courtHouseCode", courtHouseCode)
                         .add("courtHouseName", courtHouseName)
                         .add("localJusticeAreaNationalCourtCode", localJusticeAreaNationalCourtCode)
+                        .add("legalAdviser", legalAdviserJsonObject)
                         .build());
 
-        final MagistrateSessionStarted sessionStartedEvent = new MagistrateSessionStarted(sessionId, userId, courtHouseCode, courtHouseName, localJusticeAreaNationalCourtCode, startedAt, magistrate);
+        final MagistrateSessionStarted sessionStartedEvent = new MagistrateSessionStarted(sessionId, userId, courtHouseCode, courtHouseName, localJusticeAreaNationalCourtCode, startedAt, magistrate, legalAdviser);
 
         when(eventSource.getStreamById(sessionId)).thenReturn(sessionEventStream);
         when(aggregateService.get(sessionEventStream, Session.class)).thenReturn(session);
-        when(session.startMagistrateSession(sessionId, userId, courtHouseCode, courtHouseName, localJusticeAreaNationalCourtCode, startedAt, magistrate)).thenReturn(Stream.of(sessionStartedEvent));
+        when(session.startMagistrateSession(sessionId, userId, courtHouseCode, courtHouseName, localJusticeAreaNationalCourtCode, startedAt, magistrate, legalAdviser)).thenReturn(Stream.of(sessionStartedEvent));
 
         sessionHandler.startSession(startSessionCommand);
 
@@ -141,7 +161,10 @@ public class SessionHandlerTest {
                                         withJsonPath("$.courtHouseName", equalTo(courtHouseName)),
                                         withJsonPath("$.localJusticeAreaNationalCourtCode", equalTo(localJusticeAreaNationalCourtCode)),
                                         withJsonPath("$.magistrate", equalTo(magistrate)),
-                                        withJsonPath("$.startedAt", equalTo(ZonedDateTimes.toString(startedAt)))
+                                        withJsonPath("$.startedAt", equalTo(ZonedDateTimes.toString(startedAt))),
+                                        withJsonPath("$.legalAdviser.firstName", equalTo(legalAdviser.get().getFirstName())),
+                                        withJsonPath("$.legalAdviser.lastName", equalTo(legalAdviser.get().getLastName())),
+                                        withJsonPath("$.legalAdviser.userId", equalTo(legalAdviser.get().getUserId().toString()))
                                 ))))));
     }
 
@@ -209,6 +232,14 @@ public class SessionHandlerTest {
                                         withJsonPath("$.sessionId", equalTo(sessionEnded.getSessionId().toString())),
                                         withJsonPath("$.endedAt", equalTo(ZonedDateTimes.toString(sessionEnded.getEndedAt())))
                                 ))))));
+    }
+
+    private JsonObject buildLegalAdviserJsonObject(final DelegatedPowers legalAdviser) {
+        return createObjectBuilder()
+                .add("firstName", legalAdviser.getFirstName())
+                .add("lastName", legalAdviser.getLastName())
+                .add("userId", legalAdviser.getUserId().toString())
+                .build();
     }
 
 }

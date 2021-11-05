@@ -31,6 +31,9 @@ public class Session implements Serializable {
     @Column(name = "user_id")
     private UUID userId;
 
+    @Column(name = "legal_adviser_user_id")
+    private UUID legalAdviserUserId;
+
     @Column(name = "court_house_code")
     private String courtHouseCode;
 
@@ -65,6 +68,19 @@ public class Session implements Serializable {
         this.localJusticeAreaNationalCourtCode = localJusticeAreaNationalCourtCode;
         this.startedAt = startedAt;
         this.magistrate = magistrate;
+        this.type = Objects.isNull(magistrate) ? DELEGATED_POWERS : MAGISTRATE;
+    }
+
+    public Session(final UUID sessionId, final UUID userId, final UUID legalAdviserUserId, final String courtHouseCode, final String courtHouseName, final String localJusticeAreaNationalCourtCode, final String magistrate, final ZonedDateTime startedAt, final ZonedDateTime endedAt) {
+        this.sessionId = sessionId;
+        this.userId = userId;
+        this.legalAdviserUserId = legalAdviserUserId;
+        this.courtHouseCode = courtHouseCode;
+        this.courtHouseName = courtHouseName;
+        this.localJusticeAreaNationalCourtCode = localJusticeAreaNationalCourtCode;
+        this.magistrate = magistrate;
+        this.startedAt = startedAt;
+        this.endedAt = endedAt;
         this.type = Objects.isNull(magistrate) ? DELEGATED_POWERS : MAGISTRATE;
     }
 
@@ -112,4 +128,11 @@ public class Session implements Serializable {
         this.endedAt = endedAt;
     }
 
+    public UUID getLegalAdviserUserId() {
+        return legalAdviserUserId;
+    }
+
+    public void setLegalAdviserUserId(final UUID legalAdviserUserId) {
+        this.legalAdviserUserId = legalAdviserUserId;
+    }
 }

@@ -1,6 +1,8 @@
 package uk.gov.moj.cpp.sjp.query.view.response;
 
-import com.google.common.collect.ImmutableList;
+import static java.util.Objects.nonNull;
+
+import uk.gov.moj.cpp.sjp.domain.SessionType;
 import uk.gov.moj.cpp.sjp.persistence.entity.CaseApplicationDecision;
 import uk.gov.moj.cpp.sjp.persistence.entity.CaseDecision;
 import uk.gov.moj.cpp.sjp.persistence.entity.FinancialImposition;
@@ -12,7 +14,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
 
-import static java.util.Objects.nonNull;
+import com.google.common.collect.ImmutableList;
 
 public class CaseDecisionView implements Comparable<CaseDecisionView> {
 
@@ -84,7 +86,6 @@ public class CaseDecisionView implements Comparable<CaseDecisionView> {
         }
 
         view.setSessionId(entity.getSessionId());
-        view.setLegalAdviserUserId(entity.getUserId());
         view.setCourtHouseCode(entity.getCourtHouseCode());
         view.setCourtHouseName(entity.getCourtHouseName());
         view.setLocalJusticeAreaNationalCourtCode(entity.getLocalJusticeAreaNationalCourtCode());
@@ -92,6 +93,12 @@ public class CaseDecisionView implements Comparable<CaseDecisionView> {
         view.setStartedAt(entity.getStartedAt());
         view.setEndedAt(entity.getEndedAt().orElse(null));
         view.setSessionType(entity.getType().name());
+
+        if (SessionType.MAGISTRATE.name().equals(entity.getType().name()) && entity.getLegalAdviserUserId() != null) {
+            view.setLegalAdviserUserId(entity.getLegalAdviserUserId());
+        } else {
+            view.setLegalAdviserUserId(entity.getUserId());
+        }
 
         return view;
     }

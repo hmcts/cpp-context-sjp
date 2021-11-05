@@ -23,6 +23,7 @@ import static uk.gov.moj.cpp.sjp.domain.verdict.VerdictType.FOUND_GUILTY;
 import static uk.gov.moj.cpp.sjp.domain.verdict.VerdictType.NO_VERDICT;
 import static uk.gov.moj.cpp.sjp.domain.verdict.VerdictType.PROVED_SJP;
 
+import uk.gov.justice.core.courts.DelegatedPowers;
 import uk.gov.justice.json.schemas.domains.sjp.Note;
 import uk.gov.justice.json.schemas.domains.sjp.User;
 import uk.gov.justice.json.schemas.domains.sjp.events.CaseNoteAdded;
@@ -75,6 +76,7 @@ public class CaseDecisionHandlerValidVerdictPleaCasesTest {
     private final String courtHouseCode = "1008";
     private final String courtHouseName = "Test court";
     private final String localJusticeAreaNationalCode = "1009";
+    private final Optional<DelegatedPowers> legalAdviserMagistrate = Optional.of(DelegatedPowers.delegatedPowers().withFirstName("Erica").withLastName("Wilson").withUserId(randomUUID()).build());
 
 
     @Parameterized.Parameter(0)
@@ -118,7 +120,7 @@ public class CaseDecisionHandlerValidVerdictPleaCasesTest {
         switch (sessionType){
             case MAGISTRATE:
                 session.startMagistrateSession(sessionId, legalAdviserId, courtHouseCode, courtHouseName,
-                        localJusticeAreaNationalCode, now(), "magistrate");
+                        localJusticeAreaNationalCode, now(), "magistrate", legalAdviserMagistrate);
                 break;
             case DELEGATED_POWERS:
                 session.startDelegatedPowersSession(sessionId, legalAdviserId, courtHouseCode, courtHouseName,

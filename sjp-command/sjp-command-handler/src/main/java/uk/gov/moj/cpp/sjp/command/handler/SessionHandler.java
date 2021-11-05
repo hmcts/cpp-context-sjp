@@ -1,5 +1,11 @@
 package uk.gov.moj.cpp.sjp.command.handler;
 
+import static java.lang.String.format;
+import static java.util.Optional.empty;
+import static java.util.Optional.ofNullable;
+
+import uk.gov.justice.core.courts.DelegatedPowers;
+import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
 import uk.gov.justice.services.common.util.Clock;
 import uk.gov.justice.services.core.aggregate.AggregateService;
 import uk.gov.justice.services.core.annotation.Component;
@@ -10,6 +16,7 @@ import uk.gov.justice.services.eventsourcing.source.core.EventSource;
 import uk.gov.justice.services.eventsourcing.source.core.EventStream;
 import uk.gov.justice.services.eventsourcing.source.core.exception.EventStreamException;
 import uk.gov.justice.services.messaging.JsonEnvelope;
+import uk.gov.justice.services.messaging.JsonObjects;
 import uk.gov.moj.cpp.sjp.domain.aggregate.Session;
 
 import java.util.Optional;
@@ -23,6 +30,13 @@ import javax.json.JsonObject;
 @ServiceComponent(Component.COMMAND_HANDLER)
 public class SessionHandler {
 
+    private static final String SESSION_ID = "sessionId";
+    private static final String COURT_HOUSE_CODE = "courtHouseCode";
+    private static final String COURT_HOUSE_NAME = "courtHouseName";
+    private static final String MAGISTRATE = "magistrate";
+    private static final String LEGAL_ADVISER = "legalAdviser";
+    private static final String LOCAL_JUSTICE_AREA_NATIONAL_COURT_CODE = "localJusticeAreaNationalCourtCode";
+
     @Inject
     private Clock clock;
 
@@ -35,30 +49,37 @@ public class SessionHandler {
     @Inject
     private Enveloper enveloper;
 
+    @Inject
+    private JsonObjectToObjectConverter jsonObjectToObjectConverter;
+
     @Handles("sjp.command.start-session")
     public void startSession(final JsonEnvelope startSessionCommand) throws EventStreamException {
         final JsonObject startSession = startSessionCommand.payloadAsJsonObject();
 
-        final UUID userId = UUID.fromString(startSessionCommand.metadata().userId().get());
-        final UUID sessionId = UUID.fromString(startSession.getString("sessionId"));
-        final String courtHouseCode = startSession.getString("courtHouseCode");
-        final String courtHouseName = startSession.getString("courtHouseName");
-        final String localJusticeAreaNationalCourtCode = startSession.getString("localJusticeAreaNationalCourtCode");
-        final Optional<String> magistrate = Optional.ofNullable(startSession.getString("magistrate", null));
+        final UUID userId = UUID.fromString(startSessionCommand.metadata().userId().orElseThrow(() ->
+                new IllegalStateException(format("Envelope with id %s does not contains user id", startSessionCommand.metadata().id()))));
+        final UUID sessionId = UUID.fromString(startSession.getString(SESSION_ID));
+        final String courtHouseCode = startSession.getString(COURT_HOUSE_CODE);
+        final String courtHouseName = startSession.getString(COURT_HOUSE_NAME);
+        final String localJusticeAreaNationalCourtCode = startSession.getString(LOCAL_JUSTICE_AREA_NATIONAL_COURT_CODE);
+        final Optional<String> magistrate = ofNullable(startSession.getString(MAGISTRATE, null));
 
-        applyToSessionAggregate(startSessionCommand, (session) -> magistrate
-                .map(providedMagistrate -> session.startMagistrateSession(sessionId, userId, courtHouseCode, courtHouseName, localJusticeAreaNationalCourtCode, clock.now(), providedMagistrate))
+        applyToSessionAggregate(startSessionCommand, session -> magistrate
+                .map(providedMagistrate -> {
+                    final Optional<DelegatedPowers> legalAdviser = getLegalAdviserFromSession(startSession);
+                    return session.startMagistrateSession(sessionId, userId, courtHouseCode, courtHouseName, localJusticeAreaNationalCourtCode, clock.now(), providedMagistrate, legalAdviser);
+                })
                 .orElseGet(() -> session.startDelegatedPowersSession(sessionId, userId, courtHouseCode, courtHouseName, localJusticeAreaNationalCourtCode, clock.now())));
     }
 
     @Handles("sjp.command.end-session")
     public void endSession(final JsonEnvelope endSessionCommand) throws EventStreamException {
-        final UUID sessionId = UUID.fromString(endSessionCommand.payloadAsJsonObject().getString("sessionId"));
-        applyToSessionAggregate(endSessionCommand, (session) -> session.endSession(sessionId, clock.now()));
+        final UUID sessionId = UUID.fromString(endSessionCommand.payloadAsJsonObject().getString(SESSION_ID));
+        applyToSessionAggregate(endSessionCommand, session -> session.endSession(sessionId, clock.now()));
     }
 
     private void applyToSessionAggregate(JsonEnvelope sessionCommand, final Function<Session, Stream<Object>> function) throws EventStreamException {
-        final UUID sessionId = UUID.fromString(sessionCommand.payloadAsJsonObject().getString("sessionId"));
+        final UUID sessionId = UUID.fromString(sessionCommand.payloadAsJsonObject().getString(SESSION_ID));
         final EventStream eventStream = eventSource.getStreamById(sessionId);
         final Session session = aggregateService.get(eventStream, Session.class);
 
@@ -67,5 +88,16 @@ public class SessionHandler {
         eventStream.append(events.map(enveloper.withMetadataFrom(sessionCommand)));
     }
 
+    private Optional<DelegatedPowers> getLegalAdviserFromSession(final JsonObject session) {
+        if (JsonObjects.getJsonObject(session, LEGAL_ADVISER).isPresent()) {
+            final JsonObject legalAdviserJsonObject = session.getJsonObject(LEGAL_ADVISER);
+            return ofNullable(convertToObject(legalAdviserJsonObject, DelegatedPowers.class));
+        } else {
+            return empty();
+        }
+    }
 
+    private <T> T convertToObject(final JsonObject jsonObject, final Class<T> clazz) {
+        return this.jsonObjectToObjectConverter.convert(jsonObject, clazz);
+    }
 }

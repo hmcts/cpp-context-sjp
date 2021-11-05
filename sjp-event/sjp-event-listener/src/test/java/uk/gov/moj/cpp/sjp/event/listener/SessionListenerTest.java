@@ -13,6 +13,8 @@ import static uk.gov.justice.services.test.utils.core.matchers.HandlerClassMatch
 import static uk.gov.justice.services.test.utils.core.matchers.HandlerMethodMatcher.method;
 import static uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderFactory.metadataWithRandomUUID;
 
+import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
+import uk.gov.justice.services.common.converter.jackson.ObjectMapperProducer;
 import uk.gov.justice.services.common.util.Clock;
 import uk.gov.justice.services.common.util.UtcClock;
 import uk.gov.justice.services.core.annotation.Component;
@@ -29,6 +31,7 @@ import uk.gov.moj.cpp.sjp.persistence.repository.SessionRepository;
 import java.time.ZonedDateTime;
 import java.util.UUID;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -36,6 +39,7 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
 import org.mockito.Spy;
 import org.mockito.runners.MockitoJUnitRunner;
 
@@ -48,6 +52,13 @@ public class SessionListenerTest {
 
     @Mock
     private SessionRepository sessionRepository;
+
+    @Spy
+    @InjectMocks
+    private JsonObjectToObjectConverter jsonObjectToObjectConverter;
+
+    @Spy
+    private final ObjectMapper objectMapper = new ObjectMapperProducer().objectMapper();
 
     @InjectMocks
     private SessionListener sessionListener;
@@ -64,6 +75,9 @@ public class SessionListenerTest {
     private final String courtHouseName = "Hendon Magistrates' Court";
     private final String localJusticeAreaNationalCourtCode = "2571";
     private final String magistrate = "John Smith";
+    private final UUID legalAdviserUserId = UUID.fromString("a085e359-6069-4694-8820-7810e7dfe762");
+    private final String legalAdviserFirstName = "Erica";
+    private final String legalAdviserLastName = "Wilson";
     private ZonedDateTime startedAt;
     private ZonedDateTime endedAt;
 
@@ -71,6 +85,7 @@ public class SessionListenerTest {
     public void setup() {
         startedAt = clock.now();
         endedAt = startedAt.plusMinutes(1);
+        MockitoAnnotations.initMocks(this);
     }
 
     @Test
@@ -115,6 +130,10 @@ public class SessionListenerTest {
                         .add("localJusticeAreaNationalCourtCode", localJusticeAreaNationalCourtCode)
                         .add("startedAt", startedAt.format(ISO_DATE_TIME))
                         .add("magistrate", magistrate)
+                        .add("legalAdviser", createObjectBuilder()
+                                .add("userId", legalAdviserUserId.toString())
+                                .add("firstName", legalAdviserFirstName)
+                                .add("lastName", legalAdviserLastName))
                         .build());
 
         sessionListener.handleMagistrateSessionStarted(magistrateSessionStarted);
@@ -132,6 +151,7 @@ public class SessionListenerTest {
         assertThat(session.getType(), equalTo(SessionType.MAGISTRATE));
         assertThat(session.getMagistrate().get(), equalTo(magistrate));
         assertThat(session.getEndedAt().isPresent(), equalTo(false));
+        assertThat(session.getLegalAdviserUserId(), equalTo(legalAdviserUserId));
     }
 
     @Test

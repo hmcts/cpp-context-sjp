@@ -17,6 +17,9 @@
     },
     "magistrate": {
       "type": "string"
+    },
+    "legalAdviser": {
+      "$ref": "http://justice.gov.uk/core/courts/delegatedPowers.json"
     }
   },
   "required": [

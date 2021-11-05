@@ -23,6 +23,9 @@
     },
     "startedAt": {
       "$ref": "http://justice.gov.uk/json/schemas/domains/sjp/temporal.json#/definitions/date-time"
+    },
+    "legalAdviser": {
+      "$ref": "http://justice.gov.uk/core/courts/delegatedPowers.json"
     }
   },
   "required": [

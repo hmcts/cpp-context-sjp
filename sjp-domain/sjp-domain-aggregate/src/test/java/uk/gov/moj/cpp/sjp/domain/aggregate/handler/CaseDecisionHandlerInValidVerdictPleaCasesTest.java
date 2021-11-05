@@ -17,6 +17,7 @@ import static uk.gov.moj.cpp.sjp.domain.verdict.VerdictType.FOUND_GUILTY;
 import static uk.gov.moj.cpp.sjp.domain.verdict.VerdictType.FOUND_NOT_GUILTY;
 import static uk.gov.moj.cpp.sjp.domain.verdict.VerdictType.PROVED_SJP;
 
+import uk.gov.justice.core.courts.DelegatedPowers;
 import uk.gov.justice.json.schemas.domains.sjp.User;
 import uk.gov.moj.cpp.sjp.domain.DefendantCourtInterpreter;
 import uk.gov.moj.cpp.sjp.domain.DefendantCourtOptions;
@@ -40,6 +41,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Stream;
 
@@ -78,6 +80,7 @@ public class CaseDecisionHandlerInValidVerdictPleaCasesTest {
     private DefendantCourtOptions courtOptions;
     private CaseAggregateState caseAggregateState;
     private Session session;
+    private final Optional<DelegatedPowers> legalAdviserMagistrate = Optional.of(DelegatedPowers.delegatedPowers().withFirstName("Erica").withLastName("Wilson").withUserId(randomUUID()).build());
 
     @Parameterized.Parameters(name = "Validation rules test Session type {0} decisions-pleas {1} verdicts {2}, Rejected With Message {3}")
     public static Collection<Object[]> testData() {
@@ -150,7 +153,7 @@ public class CaseDecisionHandlerInValidVerdictPleaCasesTest {
         switch (sessionType) {
             case MAGISTRATE:
                 session.startMagistrateSession(sessionId, legalAdviserId, courtHouseCode, courtHouseName,
-                        localJusticeAreaNationalCode, now(), "magistrate");
+                        localJusticeAreaNationalCode, now(), "magistrate", legalAdviserMagistrate);
                 break;
             case DELEGATED_POWERS:
                 session.startDelegatedPowersSession(sessionId, legalAdviserId, courtHouseCode, courtHouseName,

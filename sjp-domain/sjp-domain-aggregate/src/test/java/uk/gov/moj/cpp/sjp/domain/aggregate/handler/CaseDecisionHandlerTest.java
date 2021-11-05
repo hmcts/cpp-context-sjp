@@ -33,6 +33,7 @@ import static uk.gov.moj.cpp.sjp.domain.verdict.VerdictType.FOUND_NOT_GUILTY;
 import static uk.gov.moj.cpp.sjp.domain.verdict.VerdictType.NO_VERDICT;
 import static uk.gov.moj.cpp.sjp.domain.verdict.VerdictType.PROVED_SJP;
 
+import uk.gov.justice.core.courts.DelegatedPowers;
 import uk.gov.justice.json.schemas.domains.sjp.User;
 import uk.gov.justice.json.schemas.domains.sjp.events.CaseNoteAdded;
 import uk.gov.moj.cpp.sjp.domain.DefendantCourtInterpreter;
@@ -80,6 +81,7 @@ import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -115,14 +117,15 @@ public class CaseDecisionHandlerTest {
     private final String courtHouseCode = "1008";
     private final String courtHouseName = "Test court";
     private final String localJusticeAreaNationalCode = "1009";
-    private final  String disabilityNeeds = "Disability_needs";
+    private final String disabilityNeeds = "Disability_needs";
+    private final Optional<DelegatedPowers> legalAdviserMagistrate = Optional.of(DelegatedPowers.delegatedPowers().withFirstName("Erica").withLastName("Wilson").withUserId(randomUUID()).build());
 
     @Before
     public void onceBeforeEachTest() {
         caseAggregateState = new CaseAggregateState();
         session = new Session();
         session.startMagistrateSession(sessionId, legalAdviserId, courtHouseCode, courtHouseName,
-                localJusticeAreaNationalCode, now(), "magistrate name");
+                localJusticeAreaNationalCode, now(), "magistrate name", legalAdviserMagistrate);
 
     }
 

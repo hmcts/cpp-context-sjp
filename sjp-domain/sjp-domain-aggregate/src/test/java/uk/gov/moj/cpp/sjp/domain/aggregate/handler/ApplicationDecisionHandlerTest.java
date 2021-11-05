@@ -28,6 +28,7 @@ import static uk.gov.moj.cpp.sjp.domain.testutils.builders.DischargeBuilder.with
 import static uk.gov.moj.cpp.sjp.domain.verdict.VerdictType.FOUND_GUILTY;
 
 import uk.gov.justice.core.courts.CourtApplication;
+import uk.gov.justice.core.courts.DelegatedPowers;
 import uk.gov.justice.json.schemas.domains.sjp.ApplicationStatus;
 import uk.gov.justice.json.schemas.domains.sjp.User;
 import uk.gov.justice.json.schemas.domains.sjp.commands.SaveApplicationDecision;
@@ -50,6 +51,7 @@ import uk.gov.moj.cpp.sjp.event.session.CaseUnassigned;
 
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Stream;
@@ -76,6 +78,7 @@ public class ApplicationDecisionHandlerTest {
     private final String courtHouseName = "Test court";
     private final String localJusticeAreaNationalCode = "1009";
     private final User savedBy = new User("John", "Smith", randomUUID());
+    private Optional<DelegatedPowers> legalAdviser;
 
     @Mock
     private CourtApplication courtApplication;
@@ -89,8 +92,9 @@ public class ApplicationDecisionHandlerTest {
         offencesSet.addAll(asList(offenceId1, offenceId2, offenceId3));
         caseAggregateState.addOffenceIdsForDefendant(defendantId,offencesSet);
         session = new Session();
+        legalAdviser = Optional.of(DelegatedPowers.delegatedPowers().withFirstName("Erica").withLastName("Wilson").withUserId(randomUUID()).build());
         session.startMagistrateSession(sessionId, legalAdviserId, courtHouseCode, courtHouseName,
-                localJusticeAreaNationalCode, now(), "magistrate name");
+                localJusticeAreaNationalCode, now(), "magistrate name", legalAdviser);
     }
 
     private void givenPendingReopening() {

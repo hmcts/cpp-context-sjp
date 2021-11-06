@@ -136,7 +136,7 @@ public class EndorsementRemovalNotificationServiceTest {
         assertThat(fileStorer.getAll(), hasSize(1));
         final JsonObject metadata = fileStorer.getAll().get(0).getKey();
         assertThat(metadata.size(), is(3));
-        assertThat(metadata.getString("fileName"), equalTo(format("notification-to-dvla-to-remove-endorsement-%s.json", applicationDecisionId)));
+        assertThat(metadata.getString("fileName"), equalTo(format("notification-to-dvla-to-remove-endorsement-%s.pdf", applicationDecisionId)));
         assertThat(metadata.getString("conversionFormat"), equalTo("pdf"));
         assertThat(metadata.getString("templateName"), equalTo(NOTIFICATION_TO_DVLA_TO_REMOVE_ENDORSEMENT.getValue()));
     }

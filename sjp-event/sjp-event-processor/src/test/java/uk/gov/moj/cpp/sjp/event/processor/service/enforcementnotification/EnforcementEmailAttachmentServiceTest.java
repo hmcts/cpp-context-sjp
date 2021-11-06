@@ -5,13 +5,18 @@ import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertThrows;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 import static uk.gov.justice.json.schemas.domains.sjp.ApplicationType.REOPENING;
 import static uk.gov.justice.json.schemas.domains.sjp.ApplicationType.STAT_DEC;
 import static uk.gov.justice.services.test.utils.core.converter.JsonObjectToObjectConverterFactory.createJsonObjectToObjectConverter;
 import static uk.gov.justice.services.test.utils.core.enveloper.EnveloperFactory.createEnveloper;
 import static uk.gov.moj.cpp.sjp.event.processor.service.systemdocgenerator.TemplateIdentifier.ENFORCEMENT_PENDING_APPLICATION_NOTIFICATION;
 
+import uk.gov.justice.json.schemas.domains.sjp.ApplicationType;
+import uk.gov.justice.json.schemas.domains.sjp.CaseApplication;
+import uk.gov.justice.json.schemas.domains.sjp.queries.CaseDetails;
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
 import uk.gov.justice.services.common.converter.ObjectToJsonObjectConverter;
 import uk.gov.justice.services.common.converter.jackson.ObjectMapperProducer;
@@ -23,6 +28,7 @@ import uk.gov.moj.cpp.sjp.event.EnforcementPendingApplicationNotificationRequire
 import uk.gov.moj.cpp.sjp.event.processor.helper.JsonObjectConversionHelper;
 import uk.gov.moj.cpp.sjp.event.processor.service.ReferenceDataOffencesService;
 import uk.gov.moj.cpp.sjp.event.processor.service.ReferenceDataService;
+import uk.gov.moj.cpp.sjp.event.processor.service.SjpService;
 import uk.gov.moj.cpp.sjp.event.processor.service.systemdocgenerator.ConversionFormat;
 import uk.gov.moj.cpp.sjp.event.processor.service.systemdocgenerator.DocumentGenerationRequest;
 import uk.gov.moj.cpp.sjp.event.processor.utils.fake.FakeFileStorer;
@@ -33,6 +39,7 @@ import java.time.LocalDate;
 import java.time.ZonedDateTime;
 import java.util.UUID;
 
+import javax.inject.Inject;
 import javax.json.JsonObject;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -85,6 +92,9 @@ public class EnforcementEmailAttachmentServiceTest extends TestCase {
     @InjectMocks
     private EnforcementEmailAttachmentService service;
 
+    @Mock
+    private SjpService sjpService;
+
 
     private EnforcementPendingApplicationNotificationRequired initiatedEvent;
     final UUID CASE_ID = UUID.randomUUID();
@@ -99,6 +109,7 @@ public class EnforcementEmailAttachmentServiceTest extends TestCase {
 
     @Spy
     private Enveloper envelopers = createEnveloper();
+    final String subJect = "APPLICATION FOR A STATUTORY DECLARATION RECEIVED (COMMISSIONER OF OATHS)";;
 
     @Before
     public void setUp() {
@@ -112,6 +123,12 @@ public class EnforcementEmailAttachmentServiceTest extends TestCase {
 
         final JsonObject jsonObject = mock(JsonObject.class);
         final JsonEnvelope privateEvent = EnvelopeFactory.createEnvelope(EVENT_NAME, jsonObject);
+        CaseDetails caseDetails = mock(CaseDetails.class);
+        CaseApplication caseApplication = mock(CaseApplication.class);
+        when(caseDetails.getCaseApplication()).thenReturn(caseApplication);
+        when(caseApplication.getApplicationType()).thenReturn(STAT_DEC);
+        when(sjpService.getCaseDetailsByApplicationId(initiatedEvent.getApplicationId(), privateEvent)).thenReturn(caseDetails);
+        
         service.generateNotification(initiatedEvent, privateEvent);
 
         assertThat(fileStorer.getAll(), hasSize(1));
@@ -126,7 +143,11 @@ public class EnforcementEmailAttachmentServiceTest extends TestCase {
     public void shouldStoreTemplateDataForNoticeGenerationFileServer() throws FileServiceException {
         final JsonObject jsonObject = mock(JsonObject.class);
         final JsonEnvelope privateEvent = EnvelopeFactory.createEnvelope(EVENT_NAME, jsonObject);
-
+        CaseDetails caseDetails = mock(CaseDetails.class);
+        CaseApplication caseApplication = mock(CaseApplication.class);
+        when(caseDetails.getCaseApplication()).thenReturn(caseApplication);
+        when(caseApplication.getApplicationType()).thenReturn(STAT_DEC);
+        when(sjpService.getCaseDetailsByApplicationId(initiatedEvent.getApplicationId(), privateEvent)).thenReturn(caseDetails);
         service.generateNotification(initiatedEvent, privateEvent);
 
         final EnforcementPendingApplicationNotificationTemplateData templateData = getTemplateData(fileStorer.getAll().get(0));
@@ -136,13 +157,18 @@ public class EnforcementEmailAttachmentServiceTest extends TestCase {
         assertThat(templateData.getDivisionCode(), equalTo(DIV_CODE));
         assertThat(templateData.getDefendantName(), equalTo(DEF_NAME));
         assertThat(templateData.getGobAccountNumber(), equalTo(GOB_ACCOUNT_NUMBER));
+        assertThat(templateData.getTitle(), equalTo(subJect));
     }
 
     @Test
     public void shouldRequestPdfGenerationOnSystemDocGenerator() throws FileServiceException {
         final JsonObject jsonObject = mock(JsonObject.class);
         final JsonEnvelope privateEvent = EnvelopeFactory.createEnvelope(EVENT_NAME, jsonObject);
-
+        CaseDetails caseDetails = mock(CaseDetails.class);
+        CaseApplication caseApplication = mock(CaseApplication.class);
+        when(caseDetails.getCaseApplication()).thenReturn(caseApplication);
+        when(caseApplication.getApplicationType()).thenReturn(STAT_DEC);
+        when(sjpService.getCaseDetailsByApplicationId(initiatedEvent.getApplicationId(), privateEvent)).thenReturn(caseDetails);
         service.generateNotification(initiatedEvent, privateEvent);
 
         final DocumentGenerationRequest request = systemDocGenerator.getDocumentGenerationRequest(privateEvent);
@@ -178,6 +204,6 @@ public class EnforcementEmailAttachmentServiceTest extends TestCase {
     }
 
     private String fileName(final UUID applicationId) {
-        return String.format("enforcement-pending-application-%s.json", applicationId);
+        return String.format("enforcement-pending-application-%s.pdf", applicationId);
     }
 }

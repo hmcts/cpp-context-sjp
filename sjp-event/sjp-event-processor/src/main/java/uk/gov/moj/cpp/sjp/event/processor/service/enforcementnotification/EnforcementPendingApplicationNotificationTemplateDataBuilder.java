@@ -9,6 +9,7 @@ public class EnforcementPendingApplicationNotificationTemplateDataBuilder {
     private String caseReference;
     private LocalDate dateApplicationIsListed;
     private String defendantName;
+    private String title;
 
     public EnforcementPendingApplicationNotificationTemplateDataBuilder withGobAccountNumber(final String gobAccountNumber) {
         this.gobAccountNumber = gobAccountNumber;
@@ -35,13 +36,19 @@ public class EnforcementPendingApplicationNotificationTemplateDataBuilder {
         return this;
     }
 
+    public EnforcementPendingApplicationNotificationTemplateDataBuilder withTitle(final String title) {
+        this.title = title;
+        return this;
+    }
+
     public EnforcementPendingApplicationNotificationTemplateData build() {
         return new EnforcementPendingApplicationNotificationTemplateData(
                 this.gobAccountNumber,
                 this.divisionCode,
                 this.caseReference,
                 this.dateApplicationIsListed,
-                this.defendantName
+                this.defendantName,
+                this.title
         );
     }
 }

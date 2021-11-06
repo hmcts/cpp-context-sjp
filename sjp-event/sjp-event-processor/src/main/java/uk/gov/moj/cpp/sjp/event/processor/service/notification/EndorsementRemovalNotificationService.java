@@ -123,7 +123,7 @@ public class EndorsementRemovalNotificationService {
     }
 
     private String fileName(final UUID correlationId) {
-        return String.format("notification-to-dvla-to-remove-endorsement-%s.json", correlationId);
+        return String.format("notification-to-dvla-to-remove-endorsement-%s.pdf", correlationId);
     }
 
     private ByteArrayInputStream toInputStream(final EndorsementRemovalNotificationTemplateData templateData) {

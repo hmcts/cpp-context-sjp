@@ -7,6 +7,7 @@ import static uk.gov.justice.json.schemas.domains.sjp.ApplicationType.STAT_DEC;
 import static uk.gov.moj.cpp.sjp.event.processor.helper.JsonObjectConversionHelper.jsonObjectAsByteArray;
 
 import uk.gov.justice.json.schemas.domains.sjp.ApplicationType;
+import uk.gov.justice.json.schemas.domains.sjp.queries.CaseDetails;
 import uk.gov.justice.services.common.converter.ObjectToJsonObjectConverter;
 import uk.gov.justice.services.fileservice.api.FileServiceException;
 import uk.gov.justice.services.fileservice.api.FileStorer;
@@ -14,6 +15,7 @@ import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.sjp.event.EnforcementPendingApplicationNotificationRequired;
 import uk.gov.moj.cpp.sjp.event.processor.service.ReferenceDataOffencesService;
 import uk.gov.moj.cpp.sjp.event.processor.service.ReferenceDataService;
+import uk.gov.moj.cpp.sjp.event.processor.service.SjpService;
 import uk.gov.moj.cpp.sjp.event.processor.service.systemdocgenerator.ConversionFormat;
 import uk.gov.moj.cpp.sjp.event.processor.service.systemdocgenerator.DocumentGenerationRequest;
 import uk.gov.moj.cpp.sjp.event.processor.service.systemdocgenerator.SystemDocGenerator;
@@ -31,12 +33,20 @@ public class EnforcementEmailAttachmentService {
     private static final String STAT_DECS_EMAIL_SUBJECT = "Subject: APPLICATION FOR A STATUTORY DECLARATION RECEIVED (COMMISSIONER OF OATHS)";
     private static final String REOPENING_EMAIL_SUBJECT = "Subject: APPLICATION TO REOPEN RECEIVED";
 
+    private static final String STAT_DECS_EMAIL_TITLE = "APPLICATION FOR A STATUTORY DECLARATION RECEIVED (COMMISSIONER OF OATHS)";
+    private static final String REOPENING_EMAIL_TITLE = "APPLICATION TO REOPEN RECEIVED";
+
+
     @Inject
     private ObjectToJsonObjectConverter objectToJsonObjectConverter;
     @Inject
     private ReferenceDataOffencesService referenceDataOffencesService;
     @Inject
     private ReferenceDataService referenceDataService;
+
+    @Inject
+    private SjpService sjpService;
+
     @Inject
     private FileStorer fileStorer;
     @Inject
@@ -48,7 +58,7 @@ public class EnforcementEmailAttachmentService {
 
     public void generateNotification(final EnforcementPendingApplicationNotificationRequired enforcementPendingApplicationNotificationInitiated,
                                      final JsonEnvelope envelope) throws FileServiceException {
-        final EnforcementPendingApplicationNotificationTemplateData templatePayload = createTemplatePayload(enforcementPendingApplicationNotificationInitiated);
+        final EnforcementPendingApplicationNotificationTemplateData templatePayload = createTemplatePayload(enforcementPendingApplicationNotificationInitiated, envelope);
 
         final UUID applicationId = enforcementPendingApplicationNotificationInitiated.getApplicationId();
         final UUID fileId = storeEmailAttachmentTemplatePayload(applicationId, templatePayload);
@@ -68,14 +78,30 @@ public class EnforcementEmailAttachmentService {
         throw new IllegalStateException(format("Invalid Application Type, unable to derive email subject for application type: %s", applicationType));
     }
 
-    private EnforcementPendingApplicationNotificationTemplateData createTemplatePayload(final EnforcementPendingApplicationNotificationRequired initiated) {
 
+    public String getEmailTitle(final ApplicationType applicationType) {
+        if (null == applicationType) {
+            throw new IllegalStateException(format("Invalid Application Type, unable to derive email subject for application type: %s", applicationType));
+        }
+        if (applicationType.equals(STAT_DEC)) {
+            return STAT_DECS_EMAIL_TITLE;
+        }
+        if (applicationType.equals(REOPENING)) {
+            return REOPENING_EMAIL_TITLE;
+        }
+        throw new IllegalStateException(format("Invalid Application Type, unable to derive email subject for application type: %s", applicationType));
+    }
+
+    private EnforcementPendingApplicationNotificationTemplateData createTemplatePayload(final EnforcementPendingApplicationNotificationRequired initiated, JsonEnvelope envelope) {
+        final CaseDetails caseDetails = sjpService.getCaseDetailsByApplicationId(initiated.getApplicationId(), envelope);
+        final String title = getEmailTitle(caseDetails.getCaseApplication().getApplicationType());
         return new EnforcementPendingApplicationNotificationTemplateDataBuilder()
                 .withCaseReference(initiated.getUrn())
                 .withDefendantName(initiated.getDefendantName())
                 .withGobAccountNumber(initiated.getGobAccountNumber())
                 .withDateApplicationIsListed(initiated.getDateApplicationIsListed())
-                .withDivisionCode(initiated.getDivisionCode()).build();
+                .withDivisionCode(initiated.getDivisionCode())
+                .withTitle(title).build();
     }
 
     private UUID storeEmailAttachmentTemplatePayload(final UUID applicationId,
@@ -104,7 +130,7 @@ public class EnforcementEmailAttachmentService {
     }
 
     private String fileName(final UUID applicationId) {
-        return format("enforcement-pending-application-%s.json", applicationId);
+        return format("enforcement-pending-application-%s.pdf", applicationId);
     }
 
     private ByteArrayInputStream toInputStream(final EnforcementPendingApplicationNotificationTemplateData templateData) {

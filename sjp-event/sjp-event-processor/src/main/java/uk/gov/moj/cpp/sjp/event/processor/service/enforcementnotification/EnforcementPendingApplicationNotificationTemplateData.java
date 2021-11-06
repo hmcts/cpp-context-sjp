@@ -14,17 +14,20 @@ public class EnforcementPendingApplicationNotificationTemplateData implements Se
     private final String caseReference;
     private final LocalDate dateApplicationIsListed;
     private final String defendantName;
+    private final String title;
 
     public EnforcementPendingApplicationNotificationTemplateData(final String gobAccountNumber,
                                                                  final int divisionCode,
                                                                  final String caseReference,
                                                                  final LocalDate dateApplicationIsListed,
-                                                                 final String defendantName) {
+                                                                 final String defendantName,
+                                                                 final String title) {
         this.gobAccountNumber = gobAccountNumber;
         this.divisionCode = divisionCode;
         this.caseReference = caseReference;
         this.dateApplicationIsListed = dateApplicationIsListed;
         this.defendantName = defendantName;
+        this.title = title;
     }
 
     public String getGobAccountNumber() {
@@ -46,6 +49,8 @@ public class EnforcementPendingApplicationNotificationTemplateData implements Se
     public String getDefendantName() {
         return defendantName;
     }
+
+    public String getTitle() { return title; }
 
     @Override
     public boolean equals(final Object o) {

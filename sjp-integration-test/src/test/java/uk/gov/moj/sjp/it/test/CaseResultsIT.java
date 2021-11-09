@@ -141,11 +141,13 @@ public class CaseResultsIT extends BaseIntegrationTest {
         final FinancialImposition financialImposition = FinancialImpositionBuilder.withDefaults();
         final DecisionCommand decision = new DecisionCommand(sessionId, caseId, null, laUser, offencesDecisions, financialImposition);
 
+        System.out.println("To see the Fix working for test ***CaseResultsIT**testCaseResults");
+
         // When
         eventListener
                 .subscribe(DecisionSaved.EVENT_NAME)
                 .subscribe(CaseCompleted.EVENT_NAME)
-                .subscribe("public.hearing.resulted")
+                .subscribe("public.events.hearing.hearing-resulted")
                 .run(() -> DecisionHelper.saveDecision(decision));
 
         // Then
@@ -179,7 +181,7 @@ public class CaseResultsIT extends BaseIntegrationTest {
         eventListener
                 .subscribe(DecisionSaved.EVENT_NAME)
                 .subscribe(CaseCompleted.EVENT_NAME)
-                .subscribe("public.hearing.resulted")
+                .subscribe("public.events.hearing.hearing-resulted")
                 .run(() -> DecisionHelper.saveDecision(decision));
 
         // Then
@@ -204,7 +206,7 @@ public class CaseResultsIT extends BaseIntegrationTest {
         eventListener
                 .subscribe(DecisionSaved.EVENT_NAME)
                 .subscribe(CaseCompleted.EVENT_NAME)
-                .subscribe("public.hearing.resulted")
+                .subscribe("public.events.hearing.hearing-resulted")
                 .run(() -> DecisionHelper.saveDecision(decision));
 
         // Then

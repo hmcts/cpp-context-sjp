@@ -214,7 +214,7 @@ public class CaseListedInCriminalCourtsIT extends BaseIntegrationTest {
         // second hearing
         eventListener = new EventListener();
         eventListener
-                .subscribe("public.hearing.resulted")
+                .subscribe("public.events.hearing.hearing-resulted")
                 .run(() -> raisePublicReferredToCourtEvent(payload2));
 
         jsonEnvelope = eventListener.popEvent(PUBLIC_EVENTS_HEARING_HEARING_RESULTED);

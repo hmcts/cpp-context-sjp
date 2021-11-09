@@ -119,7 +119,7 @@ public class PressRestrictionsSaveDecisionIT extends BaseIntegrationTest {
     private UUID systemUserId = randomUUID();
     private LocalDate postingDate = now().minusDays(NOTICE_PERIOD_IN_DAYS + 1);
     protected static final String SJP = "sjp";
-    public static final String PUBLIC_EVENTS_HEARING_HEARING_RESULTED = "public.hearing.resulted";
+    public static final String PUBLIC_EVENTS_HEARING_HEARING_RESULTED = "PressRestrictionsSaveDecisionIT";
 
     private static JsonObject startSessionAndRequestAssignment(final UUID sessionId, final SessionType sessionType) {
         final JsonEnvelope session = startSession(sessionId, USER_ID, DEFAULT_LONDON_COURT_HOUSE_OU_CODE, sessionType).get();

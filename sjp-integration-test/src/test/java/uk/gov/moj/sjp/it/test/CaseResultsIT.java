@@ -141,7 +141,6 @@ public class CaseResultsIT extends BaseIntegrationTest {
         final FinancialImposition financialImposition = FinancialImpositionBuilder.withDefaults();
         final DecisionCommand decision = new DecisionCommand(sessionId, caseId, null, laUser, offencesDecisions, financialImposition);
 
-        System.out.println("To see the Fix working for test ***CaseResultsIT**testCaseResults");
 
         // When
         eventListener

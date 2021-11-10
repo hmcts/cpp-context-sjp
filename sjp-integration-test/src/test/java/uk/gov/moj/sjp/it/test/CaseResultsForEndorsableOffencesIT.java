@@ -107,7 +107,7 @@ public class CaseResultsForEndorsableOffencesIT extends BaseIntegrationTest {
     private final UUID defendantId = randomUUID();
     private UUID sessionId = randomUUID();
 
-    public static final String PUBLIC_HEARING_RESULTED = "public.hearing.resulted";
+    public static final String PUBLIC_HEARING_RESULTED = "public.events.hearing.hearing-resulted";
 
     private static JsonObject getCaseResults(final UUID caseId, final UUID userId) {
         final String url = String.format("/cases/%s/results", caseId);
@@ -243,7 +243,7 @@ public class CaseResultsForEndorsableOffencesIT extends BaseIntegrationTest {
                 .subscribe("public.hearing.resulted")
                 .run(() -> DecisionHelper.saveDecision(decision));
 
-        final Optional<JsonEnvelope> publicHearingResulted = eventListener.popEvent("public.hearing.resulted");
+        final Optional<JsonEnvelope> publicHearingResulted = eventListener.popEvent("public.events.hearing.hearing-resulted");
         final JsonObject hearingResultedPayload = publicHearingResulted.get().payloadAsJsonObject();
         final JsonArray prosecutionCasesArray = hearingResultedPayload.getJsonObject("hearing").getJsonArray("prosecutionCases");
         final JsonArray offences = prosecutionCasesArray.getJsonObject(0).getJsonArray("defendants").getJsonObject(0).getJsonArray("offences");

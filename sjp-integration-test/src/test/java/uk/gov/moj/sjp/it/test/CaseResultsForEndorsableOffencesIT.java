@@ -240,10 +240,10 @@ public class CaseResultsForEndorsableOffencesIT extends BaseIntegrationTest {
         eventListener
                 .subscribe(DecisionSaved.EVENT_NAME)
                 .subscribe(CaseCompleted.EVENT_NAME)
-                .subscribe("public.hearing.resulted")
+                .subscribe(PUBLIC_HEARING_RESULTED)
                 .run(() -> DecisionHelper.saveDecision(decision));
 
-        final Optional<JsonEnvelope> publicHearingResulted = eventListener.popEvent("public.events.hearing.hearing-resulted");
+        final Optional<JsonEnvelope> publicHearingResulted = eventListener.popEvent(PUBLIC_HEARING_RESULTED);
         final JsonObject hearingResultedPayload = publicHearingResulted.get().payloadAsJsonObject();
         final JsonArray prosecutionCasesArray = hearingResultedPayload.getJsonObject("hearing").getJsonArray("prosecutionCases");
         final JsonArray offences = prosecutionCasesArray.getJsonObject(0).getJsonArray("defendants").getJsonObject(0).getJsonArray("offences");

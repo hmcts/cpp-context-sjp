@@ -97,6 +97,8 @@ public class CaseAdjournmentIT extends BaseIntegrationTest {
     private EventListener eventListener = new EventListener();
     private User user = new User("John", "Smith", randomUUID());
     private static final String NATIONAL_COURT_CODE = "1080";
+    public static final String PUBLIC_HEARING_RESULTED = "public.hearing.resulted";
+
 
     @Before
     public void setUp() throws SQLException {
@@ -115,7 +117,7 @@ public class CaseAdjournmentIT extends BaseIntegrationTest {
         stubWithdrawalReasonsQuery(withdrawalRequestReasonId, "Insufficient Evidence");
         stubForUserDetails(user, "ALL");
 
-        final ImmutableMap<String, Boolean> features = ImmutableMap.of("amendReshare", true);
+        final ImmutableMap<String, Boolean> features = ImmutableMap.of("amendReshare", false);
         FeatureStubber.stubFeaturesFor("sjp", features);
 
         createCasePayloadBuilder = CreateCase.CreateCasePayloadBuilder
@@ -369,12 +371,12 @@ public class CaseAdjournmentIT extends BaseIntegrationTest {
 
         final EventListener eventListener = new EventListener()
                 .subscribe(CASE_ADJOURNED_TO_LATER_SJP_EVENT)
-                .subscribe(PUBLIC_EVENTS_HEARING_HEARING_RESULTED)
+                .subscribe(PUBLIC_HEARING_RESULTED)
                 .run(() -> DecisionHelper.saveDecision(decision));
 
         final Optional<JsonEnvelope> caseAdjournmentRecordedEvent = eventListener.popEvent(CASE_ADJOURNED_TO_LATER_SJP_EVENT);
         assertTrue(caseAdjournmentRecordedEvent.isPresent());
-        final Optional<JsonEnvelope> publicHearingResulted = eventListener.popEvent(PUBLIC_EVENTS_HEARING_HEARING_RESULTED);
+        final Optional<JsonEnvelope> publicHearingResulted = eventListener.popEvent(PUBLIC_HEARING_RESULTED);
         if(verdictType.equals(VerdictType.FOUND_GUILTY)){
             final JsonObject hearingResultedPayload = publicHearingResulted.get().payloadAsJsonObject();
             final JsonArray prosecutionCasesArray = hearingResultedPayload.getJsonObject("hearing").getJsonArray("prosecutionCases");

@@ -107,7 +107,7 @@ public class CaseResultsForEndorsableOffencesIT extends BaseIntegrationTest {
     private final UUID defendantId = randomUUID();
     private UUID sessionId = randomUUID();
 
-    public static final String PUBLIC_HEARING_RESULTED = "public.events.hearing.hearing-resulted";
+    public static final String PUBLIC_HEARING_RESULTED = "public.hearing.resulted";
 
     private static JsonObject getCaseResults(final UUID caseId, final UUID userId) {
         final String url = String.format("/cases/%s/results", caseId);

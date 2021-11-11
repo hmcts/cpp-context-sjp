@@ -108,6 +108,7 @@ public class CourtReferralProcessor {
         final JsonEnvelope emptyEnvelope = envelopeFrom(metadataFrom(event.metadata()), NULL);
         final CaseReferredForCourtHearing caseReferredForCourtHearing = event.payload();
         final CaseDetails caseDetails = sjpService.getCaseDetails(caseReferredForCourtHearing.getCaseId(), emptyEnvelope);
+
         final CaseDecision caseDecision = getReferralDecisionFromCaseDecisions(
                 caseReferredForCourtHearing.getDecisionId(),
                 caseDetails)

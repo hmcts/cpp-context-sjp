@@ -231,30 +231,8 @@ public class CaseDecisionProcessorTest {
 
         caseDecisionProcessor.handleCaseDecisionSaved(privateEvent);
 
-        verify(sender, times(1)).send(jsonEnvelopeCaptor.capture());
+        verify(sender, times(0)).send(jsonEnvelopeCaptor.capture());
 
-        final List<JsonEnvelope> eventEnvelopes = jsonEnvelopeCaptor.getAllValues();
-        final Envelope<JsonValue> decisionSavedPublicEvent = eventEnvelopes.get(0);
-
-        assertThat(decisionSavedPublicEvent.metadata(),
-                withMetadataEnvelopedFrom(privateEvent)
-                        .withName(PUBLIC_CASE_DECISION_SAVED_EVENT));
-
-        assertThat(decisionSavedPublicEvent.payload(),
-                payloadIsJson(allOf(
-                        withJsonPath("caseId", is(caseId.toString())),
-                        withJsonPath("decisionId", is(decisionId.toString())),
-                        withJsonPath("sessionId", is(sessionId.toString())),
-                        withJsonPath("savedAt", is(savedAt.toString())),
-                        withJsonPath("offenceDecisions[0].type", is(type)),
-                        withJsonPath("offenceDecisions[0].offenceId", is(offence1Id.toString())),
-                        withJsonPath("offenceDecisions[0].withdrawalReasonId", is(withdrawalReasonId.toString())),
-                        withJsonPath("offenceDecisions[0].verdict", is(verdict)),
-                        withJsonPath("offenceDecisions[1].type", is(type)),
-                        withJsonPath("offenceDecisions[1].offenceId", is(offence2Id.toString())),
-                        withJsonPath("offenceDecisions[1].withdrawalReasonId", is(withdrawalReasonId.toString())),
-                        withJsonPath("offenceDecisions[1].verdict", is(verdict))
-                )));
 
     }
 

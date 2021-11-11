@@ -79,8 +79,9 @@ public class CaseDecisionProcessor {
     @Handles(DecisionSaved.EVENT_NAME)
     public void handleCaseDecisionSaved(final JsonEnvelope caseDecisionSavedEnvelope) {
         final JsonObject savedDecision = caseDecisionSavedEnvelope.payloadAsJsonObject();
+        final String caseId = savedDecision.getString(EventProcessorConstants.CASE_ID);
+        setAside(caseDecisionSavedEnvelope, savedDecision, caseId);
 
-        final PublicHearingResulted publicHearingResulted = getPublicHearingResulted(caseDecisionSavedEnvelope);
         // DD-14110 When the decision type is refer to court then do not emit hearing resulted event
         final boolean isDecisionReferredToCourt = savedDecision
                 .getJsonArray("offenceDecisions")
@@ -90,6 +91,11 @@ public class CaseDecisionProcessor {
         if(isDecisionReferredToCourt) {
             return;
         }
+        sender.send(envelop(savedDecision)
+                .withName(PUBLIC_CASE_DECISION_SAVED_EVENT)
+                .withMetadataFrom(caseDecisionSavedEnvelope));
+
+        final PublicHearingResulted publicHearingResulted = sjpToHearingConverter.convertCaseDecision(caseDecisionSavedEnvelope);
 
 
         publishHearingEvent(caseDecisionSavedEnvelope, publicHearingResulted);
@@ -214,6 +220,16 @@ public class CaseDecisionProcessor {
         LOGGER.info("Received Case decision saved message for caseId {}", caseId);
 
         // call the command to make the pleas as empty
+        setAside(caseDecisionSavedEnvelope, savedDecision, caseId);
+
+        sender.send(envelop(savedDecision)
+                .withName(PUBLIC_CASE_DECISION_SAVED_EVENT)
+                .withMetadataFrom(caseDecisionSavedEnvelope));
+
+        return sjpToHearingConverter.convertCaseDecision(caseDecisionSavedEnvelope);
+    }
+
+    private void setAside(JsonEnvelope caseDecisionSavedEnvelope, JsonObject savedDecision, String caseId) {
         final boolean isSetAside = savedDecision
                 .getJsonArray("offenceDecisions")
                 .stream()
@@ -222,12 +238,6 @@ public class CaseDecisionProcessor {
         if (isSetAside) {// if set aside then only clear the pleas
             clearPleas(caseDecisionSavedEnvelope, caseId);
         }
-
-        sender.send(envelop(savedDecision)
-                .withName(PUBLIC_CASE_DECISION_SAVED_EVENT)
-                .withMetadataFrom(caseDecisionSavedEnvelope));
-
-        return sjpToHearingConverter.convertCaseDecision(caseDecisionSavedEnvelope);
     }
 
     private void publishHearingEvent(final JsonEnvelope caseDecisionSavedEnvelope, final PublicHearingResulted publicHearingResulted) {

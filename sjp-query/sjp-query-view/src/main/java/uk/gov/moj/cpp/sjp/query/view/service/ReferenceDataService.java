@@ -28,12 +28,16 @@ import javax.json.JsonArray;
 import javax.json.JsonObject;
 import javax.json.JsonValue;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 @SuppressWarnings("squid:CallToDeprecatedMethod")
 public class ReferenceDataService {
 
     private static final String RESULTS = "results";
     private static final String REFERENCEDATA_QUERY_PROSECUTORS = "referencedata.query.prosecutors";
     private static final String PROSECUTORS_KEY = "prosecutors";
+    public static final String REFERENCEDATA_GET_REFERRAL_REASON_BY_ID = "reference-data.query.get-referral-reason";
 
     @Inject
     private Enveloper enveloper;
@@ -44,6 +48,11 @@ public class ReferenceDataService {
 
     private static final String QUERY_DATE = LocalDate.now().toString();
     private static final String FIELD_ON = "on";
+
+    public static final String REFERENCEDATA_GET_REFERRAL_REASONS = "referencedata.query.referral-reasons";
+    public static final String ID = "id";
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(ReferenceDataService.class);
 
     public Optional<JsonArray> getProsecutorsByProsecutorCode(String prosecutorCode) {
         final JsonEnvelope prosecutorsQueryEnvelope = envelopeFrom(
@@ -115,6 +124,24 @@ public class ReferenceDataService {
                 .payloadAsJsonObject()
                 .getJsonArray("referralReasons");
     }
+
+    public Optional<JsonObject> getReferralReasonByReferralReasonId(final UUID referralReasonId) {
+
+        final JsonEnvelope referralReasonsEnvelope = envelopeFrom(
+                metadataBuilder().
+                        withId(randomUUID()).
+                        withName(REFERENCEDATA_GET_REFERRAL_REASON_BY_ID),
+                createObjectBuilder().add(ID, referralReasonId.toString()).build());
+
+
+        if (LOGGER.isInfoEnabled()) {
+            LOGGER.info(" get referral reasons '{}' received with payload {} ", REFERENCEDATA_GET_REFERRAL_REASONS, referralReasonsEnvelope.payload());
+        }
+
+        return Optional.ofNullable(requester.requestAsAdmin(referralReasonsEnvelope)
+                .payloadAsJsonObject());
+    }
+
 
     public List<JsonObject> getWithdrawalReasons(final JsonEnvelope jsonEnvelope) {
         final JsonEnvelope query = enveloper

@@ -10,6 +10,7 @@ import uk.gov.moj.cpp.sjp.event.processor.service.ReferenceDataService;
 import uk.gov.moj.cpp.sjp.event.processor.service.referral.helpers.HearingRequestsViewHelper;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -30,22 +31,21 @@ public class HearingRequestsDataSourcingService {
             final DefendantsOnlinePlea defendantPleaDetails,
             final JsonEnvelope emptyEnvelopeWithReferralEventMetadata) {
 
-        final JsonObject referralReasons = referenceDataService.getReferralReasons(
-                emptyEnvelopeWithReferralEventMetadata);
-
         final JsonObject hearingTypes = referenceDataService.getHearingTypes(
                 emptyEnvelopeWithReferralEventMetadata);
 
+        final Optional<JsonObject> referralReasonsJsonOptional = referenceDataService.getReferralReasonByReferralReasonId(caseReferredForCourtHearing.getReferralReasonId());
+        final JsonObject referralReasonsJson = referralReasonsJsonOptional.orElseThrow(IllegalArgumentException::new);
         final List<UUID> referredOffenceIds = getReferredOffenceIds(
                 caseReferredForCourtHearing.getReferredOffences());
 
         return hearingRequestsViewHelper.createHearingRequestViews(
                 caseDetails,
-                referralReasons,
                 defendantPleaDetails,
                 caseReferredForCourtHearing,
                 hearingTypes,
-                referredOffenceIds);
+                referredOffenceIds,
+                referralReasonsJson);
     }
 
     private static List<UUID> getReferredOffenceIds(

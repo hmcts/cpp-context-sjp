@@ -50,15 +50,18 @@ import org.slf4j.LoggerFactory;
 @SuppressWarnings("squid:CallToDeprecatedMethod")
 public class ReferenceDataService {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(ReferenceDataService.class);
     private static final String REFERENCEDATA_GET_DOCUMENT_ACCESS = "referencedata.query.document-type-access";
-    private static final String ID = "id";
 
     private static final String ON_QUERY_PARAMETER = "on";
     public static final String VERDICT_TYPES = "verdictTypes";
     private static final String OU_CODE = "oucode";
     private static final String SHORT_CODE_PARAMETER = "shortCode";
     private static final String RESULT_DEFINITIONS = "resultDefinitions";
+
+    public static final String REFERENCEDATA_GET_REFERRAL_REASON_BY_ID = "reference-data.query.get-referral-reason";
+    public static final String ID = "id";
+    private static final Logger LOGGER = LoggerFactory.getLogger(ReferenceDataService.class);
+
 
     @Inject
     private Enveloper enveloper;
@@ -454,5 +457,23 @@ public class ReferenceDataService {
         }
         return Optional.ofNullable(response.payloadAsJsonObject());
     }
+
+    public Optional<JsonObject> getReferralReasonByReferralReasonId(final UUID referralReasonId) {
+
+        final JsonEnvelope referralReasonsEnvelope = envelopeFrom(
+                Envelope.metadataBuilder().
+                        withId(randomUUID()).
+                        withName(REFERENCEDATA_GET_REFERRAL_REASON_BY_ID),
+                createObjectBuilder().add(ID, referralReasonId.toString()).build());
+
+
+        if (LOGGER.isInfoEnabled()) {
+            LOGGER.info(" get referral reasons '{}' received with payload {} ", REFERENCEDATA_GET_REFERRAL_REASON_BY_ID, referralReasonsEnvelope.payload());
+        }
+
+        return Optional.ofNullable(requester.requestAsAdmin(referralReasonsEnvelope)
+                .payloadAsJsonObject());
+    }
+
 
 }

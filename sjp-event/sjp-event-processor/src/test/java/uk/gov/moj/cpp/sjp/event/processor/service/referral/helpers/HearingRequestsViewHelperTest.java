@@ -66,7 +66,7 @@ public class HearingRequestsViewHelperTest {
                                                              final CaseReferredForCourtHearing caseReferredForCourtHearingEvent,
                                                              final Boolean welshHearing) {
 
-        final JsonObject referralReasons = createReferralReasonsObject();
+        final JsonObject referralReason = createReferralReasonsObject();
         final JsonObject hearingTypes = createHearingTypesObject();
         final DefendantsOnlinePlea defendantPlea = DefendantsOnlinePlea.defendantsOnlinePlea()
                 .withPleaDetails(PleaDetails.pleaDetails()
@@ -76,11 +76,12 @@ public class HearingRequestsViewHelperTest {
 
         final List<HearingRequestView> hearingRequestViews = hearingRequestsViewHelper.createHearingRequestViews(
                 caseDetails,
-                referralReasons,
                 defendantPlea,
                 caseReferredForCourtHearingEvent,
                 hearingTypes,
-                singletonList(OFFENCE_ID));
+                singletonList(OFFENCE_ID),
+                referralReason
+                );
 
         assertThat(hearingRequestViews.size(), is(1));
 
@@ -119,15 +120,10 @@ public class HearingRequestsViewHelperTest {
 
     private JsonObject createReferralReasonsObject() {
         return createObjectBuilder()
-                .add("referralReasons", createArrayBuilder()
-                        .add(
-                                createObjectBuilder()
-                                        .add("id", REFERRAL_REASON_ID.toString())
-                                        .add("reason", REFERRAL_REASON)
-                                        .add("subReason", REFERRAL_SUB_REASON)
-                                        .add("hearingCode", HEARING_CODE)
-                        ))
-                .build();
+                .add("id", REFERRAL_REASON_ID.toString())
+                .add("reason", REFERRAL_REASON)
+                .add("subReason", REFERRAL_SUB_REASON)
+                .add("hearingCode", HEARING_CODE).build();
     }
 
     private JsonObject createHearingTypesObject() {

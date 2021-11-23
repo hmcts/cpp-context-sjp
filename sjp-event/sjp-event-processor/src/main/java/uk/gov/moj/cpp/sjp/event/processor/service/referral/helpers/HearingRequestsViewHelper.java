@@ -22,11 +22,11 @@ import static java.util.Collections.singletonList;
 public class HearingRequestsViewHelper {
 
     public List<HearingRequestView> createHearingRequestViews(final CaseDetails caseDetails,
-                                                              final JsonObject referralReasons,
                                                               final DefendantsOnlinePlea defendantPleaDetails,
             final CaseReferredForCourtHearing caseReferredForCourtHearingEvent,
             final JsonObject hearingTypes,
-            final List<UUID> referredOffenceIds) {
+            final List<UUID> referredOffenceIds,
+            final JsonObject referralReason) {
 
         final Optional<PleaDetails> defendantPleaDetailsOptional = Optional.ofNullable(defendantPleaDetails).map(DefendantsOnlinePlea::getPleaDetails);
 
@@ -34,14 +34,13 @@ public class HearingRequestsViewHelper {
 
         final DefendantRequestView defendantRequestView = createDefendantRequestView(
                 caseDetails,
-                referralReasons,
                 defendantUnavailability,
                 caseReferredForCourtHearingEvent,
-                referredOffenceIds);
+                referredOffenceIds,
+                referralReason);
 
         final String hearingTypeId = extractHearingTypeId(
-                referralReasons,
-                caseReferredForCourtHearingEvent.getReferralReasonId(), hearingTypes)
+                referralReason, hearingTypes)
                 .orElseThrow(() -> new IllegalStateException(
                         format("Hearing type Id not found for case %s and referral reason %s",
                                 caseDetails.getId(),
@@ -61,17 +60,15 @@ public class HearingRequestsViewHelper {
 
     private DefendantRequestView createDefendantRequestView(
             final CaseDetails caseDetails,
-            final JsonObject referralReasons,
             final String defendantUnavailability,
             final CaseReferredForCourtHearing referredForCourtHearing,
-            final List<UUID> referredOffenceIds) {
+            final List<UUID> referredOffenceIds,
+            final JsonObject referralReason) {
 
         final Defendant defendant = caseDetails.getDefendant();
         final UUID referralReasonId = referredForCourtHearing.getReferralReasonId();
 
-        final ReferralReasonView referralReasonView = extractReferralReason(
-                referralReasons,
-                referralReasonId)
+        final ReferralReasonView referralReasonView = extractReferralReason(referralReason)
                 .map(referralDescription -> new ReferralReasonView(referralReasonId, referralDescription, defendant.getId()))
                 .orElseThrow(() ->
                         new IllegalStateException(
@@ -97,40 +94,20 @@ public class HearingRequestsViewHelper {
         return (welshHearing != null && welshHearing) ? "WELSH" : "ENGLISH";
     }
 
-    private static Optional<String> extractReferralReason(final JsonObject allReferralReasons, final UUID referralReasonId) {
-        return allReferralReasons
-                .getJsonArray("referralReasons")
-                .getValuesAs(JsonObject.class)
-                .stream()
-                .filter(reason -> reason.getString("id").equals(referralReasonId.toString()))
-                .findFirst()
-                .map(reason -> {
-                    if (reason.containsKey("subReason")) {
-                        return String.format("%s (%s)", reason.getString("reason"), reason.getString("subReason"));
-                    } else {
-                        return reason.getString("reason");
-                    }
-                });
+    private static Optional<String> extractReferralReason(final JsonObject referralReason) {
+        if ( referralReason.getString("subReason", null) !=null  && !referralReason.get("subReason").toString().isEmpty()) {
+            return Optional.ofNullable(String.format("%s (%s)", referralReason.getString("reason"), referralReason.getString("subReason")));
+        } else {
+            return Optional.ofNullable(referralReason.getString("reason"));
+        }
     }
 
-    private static Optional<String> extractHearingCode(final JsonObject allReferralReasons, final UUID referralReasonId) {
-        return allReferralReasons
-                .getJsonArray("referralReasons")
-                .getValuesAs(JsonObject.class)
-                .stream()
-                .filter(reason -> reason.getString("id").equals(referralReasonId.toString()))
-                .findFirst()
-                .map(reason -> reason.getString("hearingCode"));
+    private static String extractHearingCode(final JsonObject referralReason) {
+        return referralReason.getString("hearingCode");
     }
 
-    private static Optional<String> extractHearingTypeId(final JsonObject allReferralReasons, final UUID referralReasonId, final JsonObject hearingTypes) {
-
-        final String hearingCode = extractHearingCode(
-                allReferralReasons, referralReasonId)
-                .orElseThrow(() -> new IllegalStateException(
-                        format("Referral reason not found for referral reason %s",
-                                referralReasonId)));
-
+    private static Optional<String> extractHearingTypeId(final JsonObject referralReason, final JsonObject hearingTypes) {
+        final String hearingCode = extractHearingCode(referralReason);
         return hearingTypes
                 .getJsonArray("hearingTypes")
                 .getValuesAs(JsonObject.class)

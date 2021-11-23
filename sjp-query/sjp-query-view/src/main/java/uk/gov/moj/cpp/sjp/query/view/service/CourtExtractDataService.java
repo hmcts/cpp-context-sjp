@@ -1,5 +1,6 @@
 package uk.gov.moj.cpp.sjp.query.view.service;
 
+import static java.lang.String.format;
 import static java.util.Optional.ofNullable;
 import static java.util.stream.Collectors.toList;
 import static uk.gov.moj.cpp.sjp.domain.SessionType.MAGISTRATE;
@@ -193,14 +194,16 @@ public class CourtExtractDataService {
     }
 
     private String getReferralReason(final UUID referralReasonId) {
-        return referenceDataService
-                .getReferralReasons()
-                .getValuesAs(JsonObject.class)
-                .stream()
-                .filter(referralReason -> referralReason.getString("id").equals(referralReasonId.toString()))
-                .findFirst()
-                .map(referralReason -> referralReason.getString("reason"))
-                .orElseThrow(() -> new ReferralReasonNotFoundException(referralReasonId));
+
+        final Optional<JsonObject> referralReasonOptional = referenceDataService
+                .getReferralReasonByReferralReasonId(referralReasonId);
+        final JsonObject referralReasonsJson = referralReasonOptional.orElseThrow(IllegalArgumentException::new);
+        final StringBuilder courtExtractReason = new StringBuilder();
+        courtExtractReason.append(referralReasonsJson.getString("reason"));
+        if(referralReasonsJson.getString("subReason", null) != null) {
+            courtExtractReason.append(format(" (%s)",referralReasonsJson.getString("subReason")));
+        }
+        return courtExtractReason.toString();
     }
 
     private Address addressString(JsonObject address) {

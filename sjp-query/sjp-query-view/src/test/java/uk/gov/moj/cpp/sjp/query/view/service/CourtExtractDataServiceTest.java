@@ -10,6 +10,7 @@ import static java.util.Arrays.asList;
 import static java.util.Collections.singletonList;
 import static java.util.Objects.nonNull;
 import static java.util.UUID.randomUUID;
+import static javax.json.Json.createObjectBuilder;
 import static javax.json.Json.createReader;
 import static org.apache.commons.lang.math.RandomUtils.nextInt;
 import static org.hamcrest.Matchers.contains;
@@ -112,7 +113,7 @@ public class CourtExtractDataServiceTest {
     public void setUp() {
         when(referenceDataService.getProsecutorsByProsecutorCode(anyString())).thenReturn(referenceProsecutorDataResponse());
         when(referenceDataService.getOffenceData(anyString())).thenReturn(referenceOffenceResponse());
-        when(referenceDataService.getReferralReasons()).thenReturn(referenceReferralReasonsDataResponse());
+        when(referenceDataService.getReferralReasonByReferralReasonId(any())).thenReturn(generateReferralReasonsJson(caseId.toString()));
         when(userAndGroupsService.getUserDetails(any())).thenReturn("Legal adviser name");
     }
 
@@ -254,7 +255,7 @@ public class CourtExtractDataServiceTest {
         assertEquals("Court decision", offenceDecisionView.getHeading());
         assertThat(offenceDecisionView.getLines(), contains(
                 new OffenceDecisionLineView("Plea", "No plea received"),
-                new OffenceDecisionLineView("Result", "Referred for court hearing.\nReason: Sections 135"),
+                new OffenceDecisionLineView("Result", "Referred for court hearing.\nReason: Sections 135 (reason text)"),
                 new OffenceDecisionLineView("Decision made", expectedDecisionMade(decisionSavedAt, false))));
     }
 
@@ -685,6 +686,20 @@ public class CourtExtractDataServiceTest {
         caseApplication.setOutOfTimeReason(caseApplicationDecision.getOutOfTimeReason());
         caseApplicationDecision.setCaseApplication(caseApplication);
         return caseApplication;
+    }
+
+    private Optional<JsonObject> generateReferralReasonsJson(String referralId) {
+
+        return Optional.ofNullable(createObjectBuilder()
+                .add("id", referralId)
+                .add("reason", "Sections 135")
+                .add("seqId", "1")
+                .add("welshReason", "Ple amhendant")
+                .add("hearingCode", "ANP")
+                .add("subReason", "reason text")
+                .add("welshSubReason", "welsh reason text")
+                .add("summonsWording", "summonsWording text")
+                .add("summonsWordingWelsh", "summonsWordingWelsh  text").build());
     }
 
 }

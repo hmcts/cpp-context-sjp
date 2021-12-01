@@ -9,6 +9,9 @@
     "sentTime": {
       "type": "string",
       "format": "date-time"
+    },
+    "clientContext":{
+      "type": "string"
     }
   },
   "additionalProperties": false,

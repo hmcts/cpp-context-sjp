@@ -27,13 +27,21 @@ public class DecisionResubmitted implements Serializable {
 
     private PaymentTermsInfo paymentTermsInfo;
 
+    private String accountNote;
+
+    private String prosecutionCaseReference;
+
     @JsonCreator
     public DecisionResubmitted(@JsonProperty("decisionSaved") final DecisionSaved decisionSaved,
                                @JsonProperty("resubmittedAt") final ZonedDateTime resubmittedAt,
-                               @JsonProperty("paymentTermsInfo") final PaymentTermsInfo paymentTermsInfo) {
+                               @JsonProperty("paymentTermsInfo") final PaymentTermsInfo paymentTermsInfo,
+                               @JsonProperty("accountNote") final String accountNote,
+                               @JsonProperty("prosecutionCaseReference") final String prosecutionCaseReference) {
         this.decisionSaved = decisionSaved;
         this.resubmittedAt = resubmittedAt;
         this.paymentTermsInfo = paymentTermsInfo;
+        this.accountNote = accountNote;
+        this.prosecutionCaseReference = prosecutionCaseReference;
     }
 
     public DecisionSaved getDecisionSaved() {
@@ -46,6 +54,14 @@ public class DecisionResubmitted implements Serializable {
 
     public PaymentTermsInfo getPaymentTermsInfo() {
         return paymentTermsInfo;
+    }
+
+    public String getAccountNote() {
+        return accountNote;
+    }
+
+    public String getProsecutionCaseReference() {
+        return prosecutionCaseReference;
     }
 
     @Override

@@ -9,8 +9,14 @@
         "numberOfDaysToPostponeBy": {
           "type": "number",
           "minimum": 1
+        },
+        "resetPayByDate": {
+          "type": "boolean"
         }
       }
+    },
+    "accountNote": {
+      "type": "string"
     }
   },
   "additionalProperties": false

@@ -120,6 +120,7 @@ public class PressRestrictionsSaveDecisionIT extends BaseIntegrationTest {
     private LocalDate postingDate = now().minusDays(NOTICE_PERIOD_IN_DAYS + 1);
     protected static final String SJP = "sjp";
     public static final String PUBLIC_EVENTS_HEARING_HEARING_RESULTED = "public.events.hearing.hearing-resulted";
+    public static final String PUBLIC_CASE_DECISION_RE_SUBMITTED = "public.sjp.events.case-decision-resubmitted";
 
     private static JsonObject startSessionAndRequestAssignment(final UUID sessionId, final SessionType sessionType) {
         final JsonEnvelope session = startSession(sessionId, USER_ID, DEFAULT_LONDON_COURT_HOUSE_OU_CODE, sessionType).get();
@@ -447,6 +448,7 @@ public class PressRestrictionsSaveDecisionIT extends BaseIntegrationTest {
                 .withMaxWaitTime(10000)
                 .subscribe(DecisionResubmitted.EVENT_NAME)
                 .subscribe(PUBLIC_EVENTS_HEARING_HEARING_RESULTED)
+                .subscribe(PUBLIC_CASE_DECISION_RE_SUBMITTED)
                 .subscribe(PaymentTermsChanged.EVENT_NAME)
                 .run(() -> DecisionHelper.changePaymentTerms(user.getUserId(), caseId));
 
@@ -456,6 +458,9 @@ public class PressRestrictionsSaveDecisionIT extends BaseIntegrationTest {
 
         publicHearingResulted = eventListener.popEvent(PUBLIC_EVENTS_HEARING_HEARING_RESULTED);
         assertThat(publicHearingResulted.orElseGet(null), notNullValue());
+
+        final Optional<JsonEnvelope> publicCaseDecisionReSubmitted = eventListener.popEvent(PUBLIC_CASE_DECISION_RE_SUBMITTED);
+        assertThat(publicCaseDecisionReSubmitted.orElseGet(null), notNullValue());
 
         final JsonObject jsonObject = pollForCaseAccountNote(builder.getUrn(), withJsonPath("$.noteText", is(notNullValue())), systemUserId);
         assertThat(jsonObject.getString("noteText"), is(equalTo("PAYMENT TERMS HAVE BEEN RESET")));

@@ -14,13 +14,21 @@ public class PaymentTermsInfo implements Serializable {
 
     private Integer numberOfDaysToPostponeBy;
 
+    private boolean resetPayByDate;
+
     @JsonCreator
-    public PaymentTermsInfo(@JsonProperty("numberOfDaysToPostponeBy") final Integer numberOfDaysToPostponeBy) {
+    public PaymentTermsInfo(@JsonProperty("numberOfDaysToPostponeBy") final Integer numberOfDaysToPostponeBy,
+                            @JsonProperty("resetPayByDate") final boolean resetPayByDate) {
         this.numberOfDaysToPostponeBy = numberOfDaysToPostponeBy;
+        this.resetPayByDate = resetPayByDate;
     }
 
     public Integer getNumberOfDaysToPostponeBy() {
         return numberOfDaysToPostponeBy;
+    }
+
+    public boolean isResetPayByDate() {
+        return resetPayByDate;
     }
 
     @Override

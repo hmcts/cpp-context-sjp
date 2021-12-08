@@ -94,16 +94,17 @@ public class CaseDecisionListener {
         updateOffencePressRestriction(caseDetails, caseDecision);
         updateOffenceCompleted(caseDetails, caseDecision);
         caseRepository.save(caseDetails);
-        saveAccountNotes(caseDetails.getId(), caseDetails.getUrn());
+        saveAccountNotes(caseDetails.getId(), caseDetails.getUrn(), decisionSavedWithPaymentTermsChanged.getAccountNote());
     }
 
     private void saveAccountNotes(final UUID caseId,
-                                  final String caseUrn) {
+                                  final String caseUrn,
+                                  final String accountNoteText) {
         final AccountNote accountNote = new AccountNote();
         accountNote.setId(UUID.randomUUID());
         accountNote.setCaseId(caseId);
         accountNote.setCaseUrn(caseUrn);
-        accountNote.setNoteText("PAYMENT TERMS HAVE BEEN RESET");
+        accountNote.setNoteText(accountNoteText);
         accountNoteRepository.save(accountNote);
     }
 

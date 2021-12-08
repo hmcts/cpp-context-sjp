@@ -1,7 +1,19 @@
 package uk.gov.moj.cpp.sjp.event.processor;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import static java.time.temporal.ChronoUnit.DAYS;
+import static java.util.Objects.nonNull;
+import static javax.json.Json.createArrayBuilder;
+import static javax.json.Json.createObjectBuilder;
+import static uk.gov.justice.core.courts.DefendantJudicialResult.defendantJudicialResult;
+import static uk.gov.justice.hearing.courts.HearingResulted.hearingResulted;
+import static uk.gov.justice.services.core.enveloper.Enveloper.envelop;
+import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
+import static uk.gov.moj.cpp.sjp.event.processor.results.converter.judicialresult.JCaseResultsConstants.DATE_FORMAT;
+import static uk.gov.moj.cpp.sjp.event.processor.results.converter.judicialresult.JPrompt.LSUM_DATE;
+import static uk.gov.moj.cpp.sjp.event.processor.results.converter.judicialresult.JResultCode.LSUM;
+import static uk.gov.moj.cpp.sjp.event.processor.results.converter.judicialresult.JudicialResultHelper.getResultText;
+import static uk.gov.moj.cpp.sjp.event.processor.results.converter.judicialresult.aggregator.DecisionResultAggregator.OUTGOING_PROMPT_DATE_FORMAT;
+
 import uk.gov.justice.core.courts.DefendantJudicialResult;
 import uk.gov.justice.core.courts.JudicialResult;
 import uk.gov.justice.core.courts.JudicialResultPrompt;
@@ -23,10 +35,6 @@ import uk.gov.moj.cpp.sjp.event.decision.DecisionSaved;
 import uk.gov.moj.cpp.sjp.event.processor.results.converter.SjpToHearingConverter;
 import uk.gov.moj.cpp.sjp.event.processor.service.SjpService;
 
-import javax.inject.Inject;
-import javax.json.JsonArrayBuilder;
-import javax.json.JsonObject;
-import javax.json.JsonValue;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
@@ -34,25 +42,20 @@ import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-import static java.time.temporal.ChronoUnit.DAYS;
-import static java.util.Objects.nonNull;
-import static javax.json.Json.createArrayBuilder;
-import static javax.json.Json.createObjectBuilder;
-import static uk.gov.justice.core.courts.DefendantJudicialResult.defendantJudicialResult;
-import static uk.gov.justice.hearing.courts.HearingResulted.hearingResulted;
-import static uk.gov.justice.services.core.enveloper.Enveloper.envelop;
-import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
-import static uk.gov.moj.cpp.sjp.event.processor.results.converter.judicialresult.JCaseResultsConstants.DATE_FORMAT;
-import static uk.gov.moj.cpp.sjp.event.processor.results.converter.judicialresult.JPrompt.LSUM_DATE;
-import static uk.gov.moj.cpp.sjp.event.processor.results.converter.judicialresult.JResultCode.LSUM;
-import static uk.gov.moj.cpp.sjp.event.processor.results.converter.judicialresult.JudicialResultHelper.getResultText;
-import static uk.gov.moj.cpp.sjp.event.processor.results.converter.judicialresult.aggregator.DecisionResultAggregator.OUTGOING_PROMPT_DATE_FORMAT;
+import javax.inject.Inject;
+import javax.json.JsonArrayBuilder;
+import javax.json.JsonObject;
+import javax.json.JsonValue;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @ServiceComponent(Component.EVENT_PROCESSOR)
 public class CaseDecisionProcessor {
     private static final Logger LOGGER = LoggerFactory.getLogger(CaseDecisionProcessor.class);
     public static final String PAYMENT_TERMS_INFO = "paymentTermsInfo";
     public static final String DECISION_SAVED = "decisionSaved";
+    public static final String RESET_PAY_BY_DATE = "resetPayByDate";
 
     @Inject
     private Sender sender;
@@ -73,6 +76,7 @@ public class CaseDecisionProcessor {
     private JsonObjectToObjectConverter jsonObjectToObjectConverter;
 
     private static final String PUBLIC_CASE_DECISION_SAVED_EVENT = "public.sjp.case-decision-saved";
+    private static final String PUBLIC_EVENTS_CASE_DECISION__RESUBMITTED = "public.sjp.events.case-decision-resubmitted";
     private static final String PUBLIC_HEARING_RESULTED_EVENT = "public.hearing.resulted";
     private static final String PUBLIC_EVENTS_HEARING_RESULTED = "public.events.hearing.hearing-resulted";
 
@@ -104,6 +108,10 @@ public class CaseDecisionProcessor {
     @Handles(DecisionResubmitted.EVENT_NAME)
     public void handleDecisionResubmitted(final JsonEnvelope decisionResubmittedEnvelope) {
 
+        sender.send(envelop(decisionResubmittedEnvelope.payloadAsJsonObject())
+                .withName(PUBLIC_EVENTS_CASE_DECISION__RESUBMITTED)
+                .withMetadataFrom(decisionResubmittedEnvelope));
+
         final JsonObject payloadJsonObject = decisionResubmittedEnvelope.payloadAsJsonObject();
 
         final JsonEnvelope decisionSavedEnvelope =
@@ -112,8 +120,8 @@ public class CaseDecisionProcessor {
 
         final PublicHearingResulted publicHearingResulted = getPublicHearingResulted(decisionSavedEnvelope);
 
-        if (payloadJsonObject.containsKey(PAYMENT_TERMS_INFO)
-                && nonNull(payloadJsonObject.getString(PAYMENT_TERMS_INFO, null))) {
+        if (nonNull(payloadJsonObject.getJsonObject(PAYMENT_TERMS_INFO))
+                && payloadJsonObject.getJsonObject(PAYMENT_TERMS_INFO).getBoolean(RESET_PAY_BY_DATE, false)) {
             // remove the judicial results and add then again
             final List<DefendantJudicialResult> defendantJudicialResults =
                     publicHearingResulted
@@ -121,7 +129,6 @@ public class CaseDecisionProcessor {
                             .getDefendantJudicialResults()
                             .stream()
                             .map(e -> transformTheLumpSumResult(publicHearingResulted, e))
-                            .filter(e -> nonNull(e))
                             .collect(Collectors.toList());
 
             if (!defendantJudicialResults.isEmpty()) {
@@ -187,7 +194,7 @@ public class CaseDecisionProcessor {
             return defendantJudicialResult().withValuesFrom(defendantJudicialResult).withJudicialResult(judicialResultBuilderNew.build()).build();
         }
 
-        return null;
+        return defendantJudicialResult;
     }
 
     private void clearPleas(final JsonEnvelope jsonEnvelope, final String caseId) {
@@ -218,13 +225,6 @@ public class CaseDecisionProcessor {
         final String caseId = savedDecision.getString(EventProcessorConstants.CASE_ID);
 
         LOGGER.info("Received Case decision saved message for caseId {}", caseId);
-
-        // call the command to make the pleas as empty
-        setAside(caseDecisionSavedEnvelope, savedDecision, caseId);
-
-        sender.send(envelop(savedDecision)
-                .withName(PUBLIC_CASE_DECISION_SAVED_EVENT)
-                .withMetadataFrom(caseDecisionSavedEnvelope));
 
         return sjpToHearingConverter.convertCaseDecision(caseDecisionSavedEnvelope);
     }

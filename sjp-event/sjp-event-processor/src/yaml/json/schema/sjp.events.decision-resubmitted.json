@@ -15,13 +15,23 @@
         "numberOfDaysToPostponeBy": {
           "type": "number",
           "minimum": 1
+        },
+        "resetPayByDate": {
+          "type": "boolean"
         }
       }
+    },
+    "accountNote": {
+      "type": "string"
+    },
+    "prosecutionCaseReference": {
+      "type": "string"
     }
   },
   "required": [
     "decisionSaved",
-    "resubmittedAt"
+    "resubmittedAt",
+    "prosecutionCaseReference"
   ],
   "additionalProperties": false
 }

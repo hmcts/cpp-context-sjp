@@ -147,8 +147,10 @@ public class DecisionHelper {
         final String payload = createObjectBuilder()
                 .add("paymentTermsInfo",
                         createObjectBuilder()
-                                .add("numberOfDaysToPostponeBy", 10)
+                                .add("numberOfDaysToPostponeBy", 1)
+                                .add("resetPayByDate", true)
                                 .build())
+                .add("accountNote", "PAYMENT TERMS HAVE BEEN RESET")
                 .build()
                 .toString();
 

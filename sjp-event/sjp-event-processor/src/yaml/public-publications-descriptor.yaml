@@ -131,4 +131,7 @@ subscriptions_descriptor:
         - name: public.events.hearing.hearing-resulted
           schema_uri: http://justice.gov.uk/hearing/courts/public.events.hearing.hearing-resulted.json
 
+        - name: public.sjp.events.case-decision-resubmitted
+          schema_uri: http://justice.gov.uk/json/schemas/domains/sjp/events/public.sjp.events.case-decision-resubmitted.json
+
       event_source_name: public.event.source

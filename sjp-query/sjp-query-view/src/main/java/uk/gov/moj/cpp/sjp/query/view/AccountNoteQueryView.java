@@ -17,6 +17,7 @@ import java.util.List;
 
 import javax.inject.Inject;
 import javax.json.JsonObject;
+import javax.json.JsonObjectBuilder;
 
 @ServiceComponent(Component.QUERY_VIEW)
 public class AccountNoteQueryView {
@@ -41,11 +42,17 @@ public class AccountNoteQueryView {
 
 
         if (accountNotes != null && !accountNotes.isEmpty()) {
-            return createObjectBuilder().add("id", accountNotes.get(0).getId().toString())
-                    .add("caseId", accountNotes.get(0).getCaseId().toString())
-                    .add("caseUrn", accountNotes.get(0).getCaseUrn())
-                    .add("noteText", accountNotes.get(0).getNoteText())
-                    .build();
+            final AccountNote accountNote = accountNotes.get(0);
+            final JsonObjectBuilder jsonObjectBuilder = createObjectBuilder()
+                    .add("id", accountNote.getId().toString())
+                    .add("caseId", accountNote.getCaseId().toString())
+                    .add("caseUrn", accountNote.getCaseUrn());
+
+            if (accountNote.getNoteText() != null) {
+                jsonObjectBuilder.add("noteText", accountNote.getNoteText());
+            }
+
+            return jsonObjectBuilder.build();
         }
 
         return createObjectBuilder().build();

@@ -123,6 +123,8 @@ public class ProsecutionCasesViewHelperTest {
     private static final String MAGISTRATE_NAME = "magistrate name";
     private static final String D45_RESULT_LABEL = "Direction made under Section 45 of the Youth Justice and Criminal Evidence Act 1999";
 
+    private static final LocalDate CONVICTION_DATE = ZonedDateTime.now().toLocalDate();
+
     @Mock
     private ReferenceDataService referenceDataService;
 
@@ -227,6 +229,7 @@ public class ProsecutionCasesViewHelperTest {
                 .withReferredAt(DECISION_DATE)
                 .withReferredOffences(getReferredOffencesWithVerdict(VerdictType.PROVED_SJP))
                 .withDefendantCourtOptions(new DefendantCourtOptions(new DefendantCourtInterpreter(LANGUAGE_X, true),null, disabilityNeedsOf(DISABILITY_NEEDS)))
+                .withConvictionDate(CONVICTION_DATE)
                 .build();
 
         final CaseDecision caseDecision = createCaseDecision(caseReferredForCourtHearing);
@@ -273,6 +276,7 @@ public class ProsecutionCasesViewHelperTest {
                 .withReferredAt(DECISION_DATE)
                 .withReferredOffences(getReferredOffencesWithVerdict(VerdictType.PROVED_SJP))
                 .withDefendantCourtOptions(new DefendantCourtOptions(new DefendantCourtInterpreter(LANGUAGE_X, true), null, disabilityNeedsOf(DISABILITY_NEEDS)))
+                .withConvictionDate(CONVICTION_DATE)
                 .build();
 
         final CaseDecision caseDecision = createCaseDecision(caseReferredForCourtHearing);
@@ -320,6 +324,7 @@ public class ProsecutionCasesViewHelperTest {
                 .withReferredAt(DECISION_DATE)
                 .withReferredOffences(getReferredOffencesWithVerdict(VerdictType.PROVED_SJP))
                 .withDefendantCourtOptions(new DefendantCourtOptions(new DefendantCourtInterpreter(LANGUAGE_X, true), null, null))
+                .withConvictionDate(CONVICTION_DATE)
                 .build();
 
         final CaseDecision caseDecision = createCaseDecision(caseReferredForCourtHearing);
@@ -365,6 +370,7 @@ public class ProsecutionCasesViewHelperTest {
                 .withReferredAt(DECISION_DATE)
                 .withReferredOffences(getReferredOffencesWithVerdict(VerdictType.PROVED_SJP))
                 .withDefendantCourtOptions(new DefendantCourtOptions(new DefendantCourtInterpreter(LANGUAGE_X, true), null, disabilityNeedsOf(DISABILITY_NEEDS)))
+                .withConvictionDate(CONVICTION_DATE)
                 .build();
 
 
@@ -410,6 +416,7 @@ public class ProsecutionCasesViewHelperTest {
                 .withReferredAt(DECISION_DATE)
                 .withReferredOffences(getReferredOffencesWithVerdict(VerdictType.PROVED_SJP))
                 .withDefendantCourtOptions(new DefendantCourtOptions(new DefendantCourtInterpreter(LANGUAGE_X, true), null, disabilityNeedsOf(DISABILITY_NEEDS)))
+                .withConvictionDate(CONVICTION_DATE)
                 .build();
 
         final NotifiedPleaView notifiedPleaView = new NotifiedPleaView(
@@ -449,7 +456,7 @@ public class ProsecutionCasesViewHelperTest {
         final DefendantView defendantView = prosecutionCaseView.getDefendants().get(0);
 
         final OffenceView offenceView1 = defendantView.getOffences().get(0);
-        assertOffenceView(offenceView1, offences.get(0), caseFileDefendantDetails, notifiedPleaView, DECISION_DATE.toLocalDate());
+        assertOffenceView(offenceView1, offences.get(0), caseFileDefendantDetails, notifiedPleaView);
         assertThat(offenceView1.getReportingRestrictions(), notNullValue());
         final ReportingRestrictionView reportingRestrictionView = offenceView1.getReportingRestrictions().get(0);
         assertThat(reportingRestrictionView.getId(), notNullValue());
@@ -471,6 +478,7 @@ public class ProsecutionCasesViewHelperTest {
         final CaseReferredForCourtHearing caseReferredForCourtHearing = caseReferredForCourtHearing()
                 .withReferredAt(DECISION_DATE)
                 .withReferredOffences(getReferredOffencesWithVerdict(VerdictType.PROVED_SJP))
+                .withConvictionDate(CONVICTION_DATE)
                 .build();
 
         final NotifiedPleaView notifiedPleaView = new NotifiedPleaView(
@@ -515,10 +523,10 @@ public class ProsecutionCasesViewHelperTest {
         assertDefendantDetailsMatch(defendantPersonalDetails, defendantView, employer, caseFileDefendantDetails, employer, 2);
 
         final OffenceView offenceView1 = defendantView.getOffences().get(0);
-        assertOffenceView(offenceView1, offences.get(0), caseFileDefendantDetails, notifiedPleaView, DECISION_DATE.toLocalDate());
+        assertOffenceView(offenceView1, offences.get(0), caseFileDefendantDetails, notifiedPleaView);
 
         final OffenceView offenceView2 = defendantView.getOffences().get(1);
-        assertOffenceView(offenceView2, offences.get(1), caseFileDefendantDetails, notifiedPleaView, DECISION_DATE.toLocalDate());
+        assertOffenceView(offenceView2, offences.get(1), caseFileDefendantDetails, notifiedPleaView);
     }
 
     @Test
@@ -560,6 +568,7 @@ public class ProsecutionCasesViewHelperTest {
         final CaseReferredForCourtHearing caseReferredForCourtHearing = caseReferredForCourtHearing()
                 .withReferredAt(DECISION_DATE)
                 .withReferredOffences(getReferredOffencesWithVerdict(VerdictType.PROVED_SJP))
+                .withConvictionDate(CONVICTION_DATE)
                 .build();
 
         final NotifiedPleaView notifiedPleaView = new NotifiedPleaView(
@@ -602,7 +611,7 @@ public class ProsecutionCasesViewHelperTest {
         assertDefendantDetailsMatch(defendantPersonalDetails, defendantView, employer, caseFileDefendantDetails, employer, 2);
 
         final OffenceView offenceView1 = defendantView.getOffences().get(0);
-        assertOffenceView(offenceView1, offences.get(0), caseFileDefendantDetails, notifiedPleaView, DECISION_DATE.toLocalDate());
+        assertOffenceView(offenceView1, offences.get(0), caseFileDefendantDetails, notifiedPleaView);
 
     }
 
@@ -623,6 +632,7 @@ public class ProsecutionCasesViewHelperTest {
         final CaseReferredForCourtHearing caseReferredForCourtHearing = caseReferredForCourtHearing()
                 .withReferredAt(DECISION_DATE)
                 .withReferredOffences(getReferredOffencesWithVerdict(verdictType))
+                .withConvictionDate(CONVICTION_DATE)
                 .build();
         final Offence offence = offences.get(0);
         final NotifiedPleaView notifiedPleaView = new NotifiedPleaView(
@@ -662,10 +672,10 @@ public class ProsecutionCasesViewHelperTest {
         assertDefendantDetailsMatch(defendantPersonalDetails, defendantView, employer, caseFileDefendantDetails, employer, 1);
 
         final OffenceView offenceView = defendantView.getOffences().get(0);
-        assertOffenceView(offenceView, offence, caseFileDefendantDetails, notifiedPleaView, expectedConvictionDate);
+        assertOffenceView(offenceView, offence, caseFileDefendantDetails, notifiedPleaView);
     }
 
-    private void assertOffenceView(final OffenceView offenceView, final Offence offence, final JsonObject caseFileDefendantDetails, final NotifiedPleaView notifiedPleaView, final LocalDate expectedConvictionDate) {
+    private void assertOffenceView(final OffenceView offenceView, final Offence offence, final JsonObject caseFileDefendantDetails, final NotifiedPleaView notifiedPleaView) {
         assertThat(offenceView.getId(), is(offence.getId()));
         assertThat(offenceView.getChargeDate(), is(LocalDate.parse(offence.getChargeDate())));
         assertThat(offenceView.getOffenceDefinitionId(), is(OFFENCE_DEFINITION_ID));
@@ -674,7 +684,7 @@ public class ProsecutionCasesViewHelperTest {
         assertThat(offenceView.getWording(), is(offence.getWording()));
         assertThat(offenceView.getWordingWelsh(), is(offence.getWordingWelsh()));
         assertThat(offenceView.getNotifiedPlea(), is(notifiedPleaView));
-        assertThat(offenceView.getConvictionDate(), is(expectedConvictionDate));
+        assertThat(offenceView.getConvictionDate(), is(CONVICTION_DATE));
         assertThat(offenceView.getCount(), is(1));
         assertThat(ofNullable(offenceView.getOffenceFacts()).map(OffenceFactsView::getVehicleMake).orElse(null), is(offence.getVehicleMake()));
         assertThat(ofNullable(offenceView.getOffenceFacts()).map(OffenceFactsView::getVehicleRegistration).orElse(null), is(offence.getVehicleRegistrationMark()));

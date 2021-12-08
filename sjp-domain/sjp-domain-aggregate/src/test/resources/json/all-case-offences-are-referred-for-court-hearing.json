@@ -20,6 +20,7 @@
   "referralReasonId": "809f7aac-d285-43a5-9fb1-3a894db71530",
   "referredAt": "2019-05-01T13:47:06.517Z",
   "decisionId": "7dfcf915-adb2-4ce0-9a81-bf45072f7bac",
+  "convictionDate":"2019-05-01",
   "defendantCourtOptions": {
     "welshHearing": false,
     "interpreter": {

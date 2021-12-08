@@ -213,6 +213,7 @@ public class CaseDecisionHandler {
                     .withListingNotes(referForCourtHearing.getListingNotes())
                     .withReferredOffences(offenceDecisionInformationList)
                     .withDefendantCourtOptions(referForCourtHearing.getDefendantCourtOptions())
+                    .withConvictionDate(referForCourtHearing.getConvictionDate())
                     .build());
 
             if (isNotEmpty(referForCourtHearing.getListingNotes())) {

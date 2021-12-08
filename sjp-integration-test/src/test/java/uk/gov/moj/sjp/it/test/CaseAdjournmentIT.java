@@ -3,11 +3,13 @@ package uk.gov.moj.sjp.it.test;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withoutJsonPath;
 import static java.time.LocalDate.now;
+import static java.util.Arrays.asList;
 import static java.util.Collections.singletonList;
 import static java.util.UUID.randomUUID;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.notNullValue;
 import static org.junit.Assert.assertTrue;
 import static uk.gov.moj.cpp.sjp.domain.CaseReadinessReason.PLEADED_GUILTY;
 import static uk.gov.moj.cpp.sjp.domain.CaseReadinessReason.WITHDRAWAL_REQUESTED;
@@ -15,8 +17,10 @@ import static uk.gov.moj.cpp.sjp.domain.Priority.HIGH;
 import static uk.gov.moj.cpp.sjp.domain.Priority.MEDIUM;
 import static uk.gov.moj.cpp.sjp.domain.SessionType.DELEGATED_POWERS;
 import static uk.gov.moj.cpp.sjp.domain.SessionType.MAGISTRATE;
+import static uk.gov.moj.cpp.sjp.domain.disability.DisabilityNeeds.disabilityNeedsOf;
 import static uk.gov.moj.cpp.sjp.domain.plea.PleaType.GUILTY;
 import static uk.gov.moj.cpp.sjp.domain.plea.PleaType.NOT_GUILTY;
+import static uk.gov.moj.cpp.sjp.domain.verdict.VerdictType.FOUND_GUILTY;
 import static uk.gov.moj.sjp.it.Constants.CASE_ADJOURNED_TO_LATER_SJP_EVENT;
 import static uk.gov.moj.sjp.it.Constants.EVENT_OFFENCES_WITHDRAWAL_STATUS_SET;
 import static uk.gov.moj.sjp.it.Constants.NOTICE_PERIOD_IN_DAYS;
@@ -45,10 +49,16 @@ import uk.gov.justice.json.schemas.domains.sjp.User;
 import uk.gov.justice.json.schemas.fragments.sjp.WithdrawalRequestsStatus;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.platform.test.feature.toggle.FeatureStubber;
+import uk.gov.moj.cpp.sjp.domain.DefendantCourtInterpreter;
+import uk.gov.moj.cpp.sjp.domain.DefendantCourtOptions;
 import uk.gov.moj.cpp.sjp.domain.common.CaseStatus;
 import uk.gov.moj.cpp.sjp.domain.decision.Adjourn;
 import uk.gov.moj.cpp.sjp.domain.decision.OffenceDecisionInformation;
+import uk.gov.moj.cpp.sjp.domain.decision.ReferForCourtHearing;
+import uk.gov.moj.cpp.sjp.domain.disability.DisabilityNeeds;
 import uk.gov.moj.cpp.sjp.domain.verdict.VerdictType;
+import uk.gov.moj.cpp.sjp.event.CaseReferredForCourtHearing;
+import uk.gov.moj.cpp.sjp.event.decision.DecisionSaved;
 import uk.gov.moj.sjp.it.command.CreateCase;
 import uk.gov.moj.sjp.it.helper.CaseSearchResultHelper;
 import uk.gov.moj.sjp.it.helper.DecisionHelper;
@@ -86,6 +96,7 @@ import org.junit.Test;
 public class CaseAdjournmentIT extends BaseIntegrationTest {
 
     private static final String TIMER_TIMEOUT_PROCESS_NAME = "timerTimeout";
+    public static final String PUBLIC_HEARING_RESULTED = "public.hearing.resulted";
     private final LocalDate postingDate = now().minusDays(NOTICE_PERIOD_IN_DAYS + 1);
     private final LocalDate adjournmentDate = now().plusDays(7);
     private final SjpDatabaseCleaner databaseCleaner = new SjpDatabaseCleaner();
@@ -95,10 +106,12 @@ public class CaseAdjournmentIT extends BaseIntegrationTest {
     private UUID withdrawalRequestReasonId = randomUUID();
     private CreateCase.CreateCasePayloadBuilder createCasePayloadBuilder;
     private EventListener eventListener = new EventListener();
-    private User user = new User("John", "Smith", randomUUID());
+    private User user = new User("John", "Smith", USER_ID);
     private static final String NATIONAL_COURT_CODE = "1080";
-    public static final String PUBLIC_HEARING_RESULTED = "public.hearing.resulted";
+    private final UUID referralReasonId = randomUUID();
 
+
+    private static final UUID REFERRAL_REASON_ID = randomUUID();
 
     @Before
     public void setUp() throws SQLException {
@@ -215,6 +228,67 @@ public class CaseAdjournmentIT extends BaseIntegrationTest {
     }
 
     @Test
+    public void shouldHaveConvictionDateWhenAdjournmentDateElapsedAndReferredToCourt() throws Exception {
+        try (final ReadyCaseHelper readyCaseHelper = new ReadyCaseHelper()) {
+
+            final CaseSearchResultHelper caseSearchResultHelper = new CaseSearchResultHelper(
+                    createCasePayloadBuilder.getUrn(),
+                    createCasePayloadBuilder.getDefendantBuilder().getLastName(),
+                    createCasePayloadBuilder.getDefendantBuilder().getDateOfBirth());
+
+            requestSetPleas(caseId,
+                    eventListener,
+                    true,
+                    false,
+                    true,
+                    null,
+                    false,
+                    null,
+                    singletonList(Triple.of(createCasePayloadBuilder.getOffenceId(),
+                            createCasePayloadBuilder.getDefendantBuilder().getId(),
+                            GUILTY)),
+                    PUBLIC_EVENT_SET_PLEAS);
+            caseSearchResultHelper.verifyCaseStatus(CaseStatus.PLEA_RECEIVED_READY_FOR_DECISION);
+            readyCaseHelper.verifyCaseMarkedReadyForDecisionEventEmitted(caseId, PLEADED_GUILTY, MAGISTRATE, MEDIUM);
+            pollUntilCaseReady(caseId);
+
+            adjournOffence(VerdictType.NO_VERDICT);
+
+            readyCaseHelper.verifyCaseUnmarkedReadyForDecisionEventEmitted(caseId, adjournmentDate); // TODO should be handled as part of ATCM-4395
+            pollUntilCaseNotReady(caseId);
+
+            final String pendingAdjournmentProcess = ActivitiHelper.pollUntilProcessExists(TIMER_TIMEOUT_PROCESS_NAME, caseId.toString());
+            ActivitiHelper.executeTimerJobs(pendingAdjournmentProcess);
+            pollUntilCaseReady(caseId);
+
+            final List<OffenceDecisionInformation> offenceDecisionInformationList = asList(new OffenceDecisionInformation(offenceId, FOUND_GUILTY));
+            final DisabilityNeeds disabilityNeeds = disabilityNeedsOf("Hearing aid");
+            final DefendantCourtOptions defendantCourtOptions = new DefendantCourtOptions(new DefendantCourtInterpreter("French", true),
+                    false, disabilityNeeds);
+
+            final ReferForCourtHearing referForCourtHearing = new ReferForCourtHearing(
+                    null,
+                    offenceDecisionInformationList,
+                    referralReasonId, "listing notes", 30, defendantCourtOptions);
+
+            final DecisionCommand decision = new DecisionCommand(sessionId, caseId, null, user, asList(referForCourtHearing), null);
+
+            requestCaseAssignment(sessionId, USER_ID);
+
+            final EventListener eventListener = new EventListener()
+                    .subscribe(DecisionSaved.EVENT_NAME)
+                    .subscribe(CaseReferredForCourtHearing.EVENT_NAME)
+                    .run(() -> DecisionHelper.saveDecision(decision));
+
+            final CaseReferredForCourtHearing caseReferredForCourtHearing = eventListener.popEventPayload(CaseReferredForCourtHearing.class);
+            assertThat(caseReferredForCourtHearing.getConvictionDate(), is(notNullValue()));
+            assertThat(caseReferredForCourtHearing.getConvictionDate(), is(LocalDate.now()));
+        }
+
+    }
+
+
+    @Test
     public void shouldNotChangeCaseReadinessStateForAdjournedCaseWhen28DaysElapsed() throws Exception {
         try (final ReadyCaseHelper readyCaseHelper = new ReadyCaseHelper()) {
 
@@ -317,7 +391,7 @@ public class CaseAdjournmentIT extends BaseIntegrationTest {
             readyCaseHelper.verifyCaseMarkedReadyForDecisionEventEmitted(caseId, PLEADED_GUILTY, MAGISTRATE, MEDIUM);
             pollUntilCaseReady(caseId);
 
-            adjournOffence(VerdictType.FOUND_GUILTY);
+            adjournOffence(FOUND_GUILTY);
             readyCaseHelper.verifyCaseUnmarkedReadyForDecisionEventEmitted(caseId, adjournmentDate);
             pollUntilCaseNotReady(caseId);
             caseSearchResultHelper.verifyCaseStatus(CaseStatus.PLEA_RECEIVED_NOT_READY_FOR_DECISION);
@@ -344,7 +418,7 @@ public class CaseAdjournmentIT extends BaseIntegrationTest {
                     createCasePayloadBuilder.getDefendantBuilder().getLastName(),
                     createCasePayloadBuilder.getDefendantBuilder().getDateOfBirth());
 
-            adjournOffence(VerdictType.FOUND_GUILTY);
+            adjournOffence(FOUND_GUILTY);
             readyCaseHelper.verifyCaseUnmarkedReadyForDecisionEventEmitted(caseId, adjournmentDate);
             pollUntilCaseNotReady(caseId);
             caseSearchResultHelper.verifyCaseStatus(CaseStatus.NO_PLEA_RECEIVED);
@@ -377,13 +451,13 @@ public class CaseAdjournmentIT extends BaseIntegrationTest {
         final Optional<JsonEnvelope> caseAdjournmentRecordedEvent = eventListener.popEvent(CASE_ADJOURNED_TO_LATER_SJP_EVENT);
         assertTrue(caseAdjournmentRecordedEvent.isPresent());
         final Optional<JsonEnvelope> publicHearingResulted = eventListener.popEvent(PUBLIC_HEARING_RESULTED);
-        if(verdictType.equals(VerdictType.FOUND_GUILTY)){
+        if (verdictType.equals(FOUND_GUILTY)) {
             final JsonObject hearingResultedPayload = publicHearingResulted.get().payloadAsJsonObject();
             final JsonArray prosecutionCasesArray = hearingResultedPayload.getJsonObject("hearing").getJsonArray("prosecutionCases");
             final JsonObject convictingCourt = prosecutionCasesArray.getJsonObject(0).getJsonArray("defendants").getJsonObject(0).getJsonArray("offences").getJsonObject(0).getJsonObject("convictingCourt");
             final String convictingDate = prosecutionCasesArray.getJsonObject(0).getJsonArray("defendants").getJsonObject(0).getJsonArray("offences").getJsonObject(0).getString("convictionDate");
             assertThat(!convictingCourt.isEmpty(), Matchers.is(true));
-            assertThat(convictingCourt.getString("code"),Matchers.is("B01LY"));
+            assertThat(convictingCourt.getString("code"), Matchers.is("B01LY"));
             assertThat(!convictingDate.isEmpty(), Matchers.is(true));
             assertThat(convictingDate, Matchers.is(LocalDate.now().toString()));
         }

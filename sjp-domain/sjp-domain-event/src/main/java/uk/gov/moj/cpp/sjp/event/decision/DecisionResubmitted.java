@@ -19,7 +19,7 @@ public class DecisionResubmitted implements Serializable {
 
     public static final String EVENT_NAME = "sjp.events.decision-resubmitted";
 
-    private static final long serialVersionUID = -6536727603846104446L;
+    private static final long serialVersionUID = -2251583010667697911L;
 
     private DecisionSaved decisionSaved;
 

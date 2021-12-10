@@ -18,7 +18,7 @@
         <sonar.report.export.path>sonar-report.json</sonar.report.export.path>
         <sonar.scm.provider>git</sonar.scm.provider>
         <assignment.version>6.0.0</assignment.version>
-        <material.version>7.0.14</material.version>
+        <material.version>7.0.20</material.version>
         <notification.notify.version>7.0.1</notification.notify.version>
         <referencedata.version>7.0.66</referencedata.version>
         <referencedata.offences.version>7.0.7</referencedata.offences.version>

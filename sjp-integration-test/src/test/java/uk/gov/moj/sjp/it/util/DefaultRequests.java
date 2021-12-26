@@ -11,6 +11,7 @@ import static uk.gov.moj.sjp.it.util.HttpClientUtil.getReadUrl;
 import uk.gov.justice.services.common.http.HeaderConstants;
 import uk.gov.justice.services.test.utils.core.http.RequestParamsBuilder;
 
+import java.net.URLEncoder;
 import java.util.UUID;
 
 public class DefaultRequests {
@@ -52,7 +53,7 @@ public class DefaultRequests {
     }
 
     public static RequestParamsBuilder getCaseByUrnAndPostcode(final String caseUrn, final String postcode) {
-        return requestParams(getReadUrl("/cases-for-citizen?urn=" + caseUrn + "&postcode=" + postcode), GET_CASE_BY_URN_AND_POSTCODE_MEDIA_TYPE)
+        return requestParams(getReadUrl("/cases-for-citizen?urn=" + caseUrn + "&postcode=" + URLEncoder.encode(postcode)), GET_CASE_BY_URN_AND_POSTCODE_MEDIA_TYPE)
                 .withHeader(HeaderConstants.USER_ID, USER_ID);
     }
 

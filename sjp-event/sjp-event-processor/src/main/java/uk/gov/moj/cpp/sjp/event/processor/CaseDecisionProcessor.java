@@ -2,6 +2,7 @@ package uk.gov.moj.cpp.sjp.event.processor;
 
 import static java.time.temporal.ChronoUnit.DAYS;
 import static java.util.Objects.nonNull;
+import static java.util.Optional.ofNullable;
 import static javax.json.Json.createArrayBuilder;
 import static javax.json.Json.createObjectBuilder;
 import static uk.gov.justice.core.courts.DefendantJudicialResult.defendantJudicialResult;
@@ -38,7 +39,9 @@ import uk.gov.moj.cpp.sjp.event.processor.service.SjpService;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -123,15 +126,18 @@ public class CaseDecisionProcessor {
         if (nonNull(payloadJsonObject.getJsonObject(PAYMENT_TERMS_INFO))
                 && payloadJsonObject.getJsonObject(PAYMENT_TERMS_INFO).getBoolean(RESET_PAY_BY_DATE, false)) {
             // remove the judicial results and add then again
-            final List<DefendantJudicialResult> defendantJudicialResults =
-                    publicHearingResulted
-                            .getHearing()
-                            .getDefendantJudicialResults()
+            final List<DefendantJudicialResult> defendantJudicialResultsWithLSUM =
+                    ofNullable(publicHearingResulted
+                                    .getHearing()
+                                    .getDefendantJudicialResults())
+                            .orElse(new ArrayList<>())
                             .stream()
+                            .filter(defendantJudicialResult -> defendantJudicialResult.getJudicialResult().getJudicialResultTypeId().equals(LSUM.getResultDefinitionId()))
                             .map(e -> transformTheLumpSumResult(publicHearingResulted, e))
+                            .filter(Objects::nonNull)
                             .collect(Collectors.toList());
 
-            if (!defendantJudicialResults.isEmpty()) {
+            if (!defendantJudicialResultsWithLSUM.isEmpty()) {
                 // remove
                 publicHearingResulted
                         .getHearing()
@@ -141,7 +147,7 @@ public class CaseDecisionProcessor {
                 publicHearingResulted
                         .getHearing()
                         .getDefendantJudicialResults()
-                        .addAll(defendantJudicialResults);
+                        .addAll(defendantJudicialResultsWithLSUM);
             }
         }
 
@@ -194,7 +200,7 @@ public class CaseDecisionProcessor {
             return defendantJudicialResult().withValuesFrom(defendantJudicialResult).withJudicialResult(judicialResultBuilderNew.build()).build();
         }
 
-        return defendantJudicialResult;
+        return null;
     }
 
     private void clearPleas(final JsonEnvelope jsonEnvelope, final String caseId) {

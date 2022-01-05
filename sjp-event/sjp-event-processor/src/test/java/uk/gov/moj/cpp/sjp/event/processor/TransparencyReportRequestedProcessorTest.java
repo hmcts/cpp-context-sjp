@@ -156,8 +156,6 @@ public class TransparencyReportRequestedProcessorTest {
 
     private void assertPayloadForDocumentGenerator(final JsonObject payload, final List<JsonObject> pendingCasesList, final Integer totalNumberOfRecords, final Boolean isWelsh) {
         assertReadyCasesPayloadWithPendingCases(payload, pendingCasesList, "defendantName");
-        assertReadyCasesPayloadWithPendingCases(payload, pendingCasesList, "town");
-        assertReadyCasesPayloadWithPendingCases(payload, pendingCasesList, "county");
         assertReadyCasesPayloadWithPendingCases(payload, pendingCasesList, "postcode");
 
         assertThat(getPropertyFromPayload(payload, "readyCases", "prosecutorName"),
@@ -178,7 +176,6 @@ public class TransparencyReportRequestedProcessorTest {
         return payload.getJsonArray(containerArray)
                 .getValuesAs(JsonObject.class).stream()
                 .map(e -> e.getString(jsonField, null))
-                .filter(Objects::nonNull)
                 .collect(toList());
     }
 

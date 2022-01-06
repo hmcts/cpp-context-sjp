@@ -13,7 +13,7 @@
         -->
         <class>uk.gov.moj.cpp.sjp.persistence.entity.converter.TimestampConverter</class>
         <properties>
-           <property name="hibernate.dialect" value="org.hibernate.dialect.PostgreSQL9Dialect"/>
+            <property name="jboss.as.jpa.providerModule" value="org.hibernate:5.2"/>
         </properties>
     </persistence-unit>
 

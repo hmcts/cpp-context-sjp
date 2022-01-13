@@ -63,15 +63,17 @@ public class HearingResultedProcessor {
         hearing.getCourtApplications().stream().forEach(courtApplication -> {
             final String applicationType = courtApplication.getType().getType();
             final String applicationId = courtApplication.getId().toString();
-            courtApplication
-                    .getCourtApplicationCases()
-                    .stream()
-                    .filter(CourtApplicationCase::getIsSJP)
-                    .forEach(courtApplicationCase -> {
-                        final String sjpCaseId = courtApplicationCase.getProsecutionCaseId().toString();
-                        final String applicationStatus = getApplicationStatus(courtApplication, applicationType);
-                        sendMessage(jsonEnvelope, applicationId, sjpCaseId, applicationStatus);
-                    });
+            if(courtApplication.getCourtApplicationCases() != null ) {
+                courtApplication
+                        .getCourtApplicationCases()
+                        .stream()
+                        .filter(CourtApplicationCase::getIsSJP)
+                        .forEach(courtApplicationCase -> {
+                            final String sjpCaseId = courtApplicationCase.getProsecutionCaseId().toString();
+                            final String applicationStatus = getApplicationStatus(courtApplication, applicationType);
+                            sendMessage(jsonEnvelope, applicationId, sjpCaseId, applicationStatus);
+                        });
+            }
         });
 
     }

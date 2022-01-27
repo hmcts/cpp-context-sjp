@@ -1,6 +1,7 @@
 package uk.gov.moj.cpp.sjp.query.view.response;
 
 import static java.time.LocalDate.now;
+import static java.util.UUID.randomUUID;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasSize;
 import static org.junit.Assert.assertFalse;
@@ -18,6 +19,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.UUID;
 
 import com.google.common.collect.Lists;
 import org.junit.Before;
@@ -127,6 +129,7 @@ public class CaseSearchResultsViewTest {
         OffenceSummary offenceSummaryWithTodayPleaDate = new OffenceSummary();
         final ZonedDateTime now = ZonedDateTime.now();
         offenceSummaryWithTodayPleaDate.setPleaDate(now);
+        offenceSummaryWithTodayPleaDate.setId(randomUUID());
 
         final CaseSearchResult caseSearchResult = createCaseSearchResultWithOffenceSummaries(offenceSummaryWithTodayPleaDate, offenceSummaryWithYesterdayPleaDate);
 

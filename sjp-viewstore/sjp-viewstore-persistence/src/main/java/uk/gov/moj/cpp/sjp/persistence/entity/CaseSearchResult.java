@@ -5,9 +5,13 @@ import static javax.persistence.ConstraintMode.NO_CONSTRAINT;
 import java.io.Serializable;
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
+import java.util.HashSet;
+import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
 
+import javax.persistence.Access;
+import javax.persistence.AccessType;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -25,6 +29,7 @@ public class CaseSearchResult implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
+
     @Id
     @Column(name = "id")
     private UUID id;
@@ -33,9 +38,8 @@ public class CaseSearchResult implements Serializable {
     @JoinColumn(name = "case_id", updatable = false, insertable = false, foreignKey = @ForeignKey(name = "none", value = NO_CONSTRAINT))
     private CaseSummary caseSummary;
 
-    @OneToMany
-    @JoinColumn(name = "defendant_id", referencedColumnName = "defendant_id")
-    private Set<OffenceSummary> offenceSummary;
+
+    private Set<OffenceSummary> offenceSummary = new HashSet<>();
 
     // because there is no foreign key we can create this entity before the CaseSummary if we want
 
@@ -98,14 +102,18 @@ public class CaseSearchResult implements Serializable {
     }
 
     @SuppressWarnings("squid:S2384")
+    @Access(AccessType.PROPERTY)
+    @OneToMany()
+    @JoinColumn(name = "defendant_id", referencedColumnName = "defendant_id" )
     public Set<OffenceSummary> getOffenceSummary() {
         return offenceSummary;
     }
 
     @SuppressWarnings("squid:S2384")
     public void setOffenceSummary(final Set<OffenceSummary> offenceSummary) {
-        this.offenceSummary = offenceSummary;
+        this.offenceSummary.addAll(offenceSummary);
     }
+
 
     public UUID getDefendantId() {
         return defendantId;
@@ -114,6 +122,7 @@ public class CaseSearchResult implements Serializable {
     public void setDefendantId(final UUID defendantId) {
         this.defendantId = defendantId;
     }
+
 
     public UUID getId() {
         return id;
@@ -197,5 +206,22 @@ public class CaseSearchResult implements Serializable {
 
     public void setDateOfBirth(final LocalDate dateOfBirth) {
         this.dateOfBirth = dateOfBirth;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        CaseSearchResult that = (CaseSearchResult) o;
+        return id.equals(that.id);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id);
     }
 }

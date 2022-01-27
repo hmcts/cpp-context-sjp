@@ -248,6 +248,7 @@ public class CaseSearchResultRepositoryTest extends BaseTransactionalTest {
         caseSearchResult.setCaseSummary(caseSummary);
         caseSearchResult.setFirstName(firstName);
         caseSearchResult.setLastName(lastName);
+        caseSearchResult.setDefendantId(UUID.randomUUID());
         caseSearchResult.setCurrentFirstName(firstName);
         caseSearchResult.setCurrentLastName(lastName);
         caseSearchResult.setDateAdded(ZonedDateTime.ofInstant(Instant.ofEpochMilli(TIME.getAndAdd(100)), ZoneId.systemDefault()));

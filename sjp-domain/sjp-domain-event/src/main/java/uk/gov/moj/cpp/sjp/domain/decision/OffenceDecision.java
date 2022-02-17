@@ -5,6 +5,7 @@ import static com.fasterxml.jackson.annotation.JsonTypeInfo.Id.NAME;
 import static java.util.stream.Collectors.toList;
 
 import java.io.Serializable;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -89,13 +90,14 @@ public abstract class OffenceDecision implements Serializable {
 
     /**
      * Accesor/helper method to get all available offences decisions information
+     *
      * @return all available offence-decision-information objects
      */
     @JsonIgnore
     public abstract List<OffenceDecisionInformation> offenceDecisionInformationAsList();
 
     @JsonIgnore
-    public Optional<OffenceDecisionInformation> getOffenceDecisionInformation(final UUID offenceId){
+    public Optional<OffenceDecisionInformation> getOffenceDecisionInformation(final UUID offenceId) {
         return offenceDecisionInformationAsList()
                 .stream()
                 .filter(offenceDecisionInformation -> offenceDecisionInformation.getOffenceId().equals(offenceId))
@@ -108,6 +110,10 @@ public abstract class OffenceDecision implements Serializable {
                 .map(OffenceDecisionInformation::isConviction)
                 .orElse(false);
     }
+
+
+    public abstract LocalDate getConvictionDate();
+    public abstract SessionCourt getConvictingCourt();
 
     @Override
     public boolean equals(Object o) {

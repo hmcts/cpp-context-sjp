@@ -37,6 +37,7 @@ public class OffencesConverterTest {
     @Mock
     private PleaConverter pleaConverter;
 
+
     @Mock
     private ReferenceDataService referenceDataService;
 
@@ -81,7 +82,7 @@ public class OffencesConverterTest {
                 .withVehicleRegistration(offence.getVehicleRegistrationMark())
                 .build();
 
-        ConvictionInfo convictionInfo = new ConvictionInfo(UUID.randomUUID(), VerdictType.FOUND_GUILTY, LocalDate.now(), courtCentre);
+        ConvictionInfo convictionInfo = new ConvictionInfo(UUID.randomUUID(), VerdictType.FOUND_GUILTY, LocalDate.now(), null);
         resultsAggregate.putConvictionInfo(offenceId,convictionInfo);
         when(offenceFactsConverter.getOffenceFacts(any())).thenReturn(offenceFacts);
 

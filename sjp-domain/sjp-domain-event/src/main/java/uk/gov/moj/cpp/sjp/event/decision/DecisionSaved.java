@@ -25,7 +25,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 @Event(DecisionSaved.EVENT_NAME)
 public class DecisionSaved implements Serializable {
 
-    private static final long serialVersionUID = 4538558993636530549L;
+    private static final long serialVersionUID = 6642617575162421150L;
 
     public static final String EVENT_NAME = "sjp.events.decision-saved";
 

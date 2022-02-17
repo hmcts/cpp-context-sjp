@@ -2,6 +2,7 @@ package uk.gov.moj.cpp.sjp.domain.decision;
 
 import static uk.gov.moj.cpp.sjp.domain.decision.DecisionType.REFERRED_FOR_FUTURE_SJP_SESSION;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
 
@@ -22,6 +23,14 @@ public class ReferredForFutureSJPSession extends MultipleOffenceDecision {
 
         super(id, REFERRED_FOR_FUTURE_SJP_SESSION, offenceDecisionInformation, pressRestriction);
     }
+
+    @Override
+    public SessionCourt getConvictingCourt() {
+        return null;
+    }
+
+    @Override
+    public LocalDate getConvictionDate() { return null; }
 
     @Override
     public void accept(final OffenceDecisionVisitor visitor) {

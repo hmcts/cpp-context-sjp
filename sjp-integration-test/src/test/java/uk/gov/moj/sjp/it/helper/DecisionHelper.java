@@ -6,7 +6,7 @@ import static java.lang.String.format;
 import static java.util.Arrays.asList;
 import static java.util.UUID.randomUUID;
 import static java.util.stream.Collectors.toList;
-import static javax.json.Json.*;
+import static javax.json.Json.createObjectBuilder;
 import static javax.ws.rs.core.Response.Status.ACCEPTED;
 import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -90,7 +90,6 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 
-import javax.json.Json;
 import javax.json.JsonObject;
 
 import com.jayway.jsonpath.ReadContext;
@@ -188,11 +187,11 @@ public class DecisionHelper {
     }
 
     public static CreateCasePayloadBuilder createCaseWithoutDefendantPostcode(
-                                                      final UUID caseId,
-                                                      final UUID offence1Id,
-                                                      final UUID offence2Id,
-                                                      final UUID offence3Id,
-                                                      final LocalDate postingDate) {
+            final UUID caseId,
+            final UUID offence1Id,
+            final UUID offence2Id,
+            final UUID offence3Id,
+            final LocalDate postingDate) {
         final CreateCasePayloadBuilder createCasePayloadBuilder = CreateCasePayloadBuilder
                 .withDefaults()
                 .withId(caseId)
@@ -243,7 +242,7 @@ public class DecisionHelper {
     public static void verifyCaseQueryWithDisabilityNeeds(final UUID caseId, final String disabilityNeeds) {
 
         Matcher disabilityNeedsMatcher;
-        if(disabilityNeeds!=null) {
+        if (disabilityNeeds != null) {
             disabilityNeedsMatcher = allOf(
                     withJsonPath("$.defendant.disabilityNeeds.needed", is(true)),
                     withJsonPath("$.defendant.disabilityNeeds.disabilityNeeds", equalTo(disabilityNeeds))
@@ -375,7 +374,7 @@ public class DecisionHelper {
         }
     }
 
-        private static void verifyOffenceDecisions(final List<? extends OffenceDecision> eventDecisions, final List<? extends OffenceDecision> commandOffenceDecisions, final DecisionSaved decisionSaved) {
+    private static void verifyOffenceDecisions(final List<? extends OffenceDecision> eventDecisions, final List<? extends OffenceDecision> commandOffenceDecisions, final DecisionSaved decisionSaved) {
         assertEquals(commandOffenceDecisions.size(), eventDecisions.size());
 
         for (OffenceDecision offenceDecision : commandOffenceDecisions) {

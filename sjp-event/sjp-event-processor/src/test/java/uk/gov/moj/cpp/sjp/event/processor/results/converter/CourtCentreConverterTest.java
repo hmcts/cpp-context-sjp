@@ -6,6 +6,7 @@ import static org.junit.Assert.assertThat;
 import static java.util.UUID.randomUUID;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.anyObject;
+import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.when;
 import static uk.gov.moj.cpp.sjp.event.processor.results.converter.TestConstants.ADDRESS_LINE_1;
 import static uk.gov.moj.cpp.sjp.event.processor.results.converter.TestConstants.COURT_CENTRE_CODE;
@@ -32,6 +33,7 @@ import javax.json.JsonObject;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
+import org.mockito.Matchers;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
@@ -91,7 +93,7 @@ public class CourtCentreConverterTest {
         when(referenceDataService.getCourtByCourtHouseOUCode(anyObject(), anyObject())).thenReturn(courtOptional);
         when(addressConverter.convertWelsh(anyObject())).thenReturn(welshAddress);
         when(addressConverter.convert(anyObject())).thenReturn(address);
-        when(ljaDetailsConverter.convert(anyObject(), anyObject())).thenReturn(ljaDetails);
+        when(ljaDetailsConverter.convert(any(JsonObject.class), anyObject())).thenReturn(ljaDetails);
         when(ljaDetails.getLjaCode()).thenReturn(LJA_CODE);
 
 
@@ -140,7 +142,7 @@ public class CourtCentreConverterTest {
         when(referenceDataService.getCourtByCourtHouseOUCode(anyObject(), anyObject())).thenReturn(courtOptional);
         when(addressConverter.convertWelsh(anyObject())).thenReturn(welshAddress);
         when(addressConverter.convert(anyObject())).thenReturn(address);
-        when(ljaDetailsConverter.convert(anyObject(), anyObject())).thenReturn(ljaDetails);
+        when(ljaDetailsConverter.convert(any(JsonObject.class), anyObject())).thenReturn(ljaDetails);
         when(ljaDetails.getLjaCode()).thenReturn(LJA_CODE);
 
 

@@ -70,6 +70,20 @@ public class CourtCentreConverter {
         return isNull(courtCentre.getId()) ? Optional.empty() : of(courtCentre);
     }
 
+    public Optional<CourtCentre> convertByCourtHouseCode(final String courtHouseCode, final String ljaCode, final Metadata sourceMetadata) {
+
+        final JsonEnvelope emptyEnvelope = envelopeFrom(metadataFrom(sourceMetadata), NULL);
+        final CourtCentre.Builder courtCentreBuilder = CourtCentre.courtCentre();
+
+        final Optional<JsonObject> courtOptional = referenceDataService.getCourtByCourtHouseOUCode(courtHouseCode, emptyEnvelope);
+        if (courtOptional.isPresent()) {
+            populateCourtCenter(ljaCode, courtCentreBuilder, courtOptional);
+        }
+
+        final CourtCentre courtCentre = courtCentreBuilder.build();
+        return isNull(courtCentre.getId()) ? Optional.empty() : of(courtCentre);
+    }
+
     private void populateCourtCenter(final JsonObject sjpSessionPayload,
                                      final CourtCentre.Builder courtCentreBuilder,
                                      final Optional<JsonObject> courtOptional) {
@@ -80,6 +94,28 @@ public class CourtCentreConverter {
                     .withName(court.getString(OUCODE_L3_NAME_KEY, null))
                     .withCode(court.getString(OUCODE, null))
                     .withLja(ljaDetailsConverter.convert(sjpSessionPayload, courtOptional))
+                    .withAddress(addressConverter.convert(courtOptional));
+
+            if (court.getBoolean(IS_WELSH, false)) {
+                courtCentreBuilder
+                        .withWelshName(court.getString(OUCODE_L3_WELSH_NAME_KEY, null))
+                        .withWelshCourtCentre(court.getBoolean(IS_WELSH, false))
+                        .withWelshAddress(addressConverter.convertWelsh(courtOptional));
+
+            }
+        }
+    }
+
+    private void populateCourtCenter(final String ljaCode,
+                                     final CourtCentre.Builder courtCentreBuilder,
+                                     final Optional<JsonObject> courtOptional) {
+        if (courtOptional.isPresent()) {
+            final JsonObject court = courtOptional.get();
+            courtCentreBuilder
+                    .withId(extractUUID(court, ID))
+                    .withName(court.getString(OUCODE_L3_NAME_KEY, null))
+                    .withCode(court.getString(OUCODE, null))
+                    .withLja(ljaDetailsConverter.convert(ljaCode, courtOptional))
                     .withAddress(addressConverter.convert(courtOptional));
 
             if (court.getBoolean(IS_WELSH, false)) {

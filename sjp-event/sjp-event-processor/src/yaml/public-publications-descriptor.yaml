@@ -134,4 +134,7 @@ subscriptions_descriptor:
         - name: public.sjp.events.case-decision-resubmitted
           schema_uri: http://justice.gov.uk/json/schemas/domains/sjp/events/public.sjp.events.case-decision-resubmitted.json
 
+        - name: public.sjp.events.conviction-court-resolved
+          schema_uri: http://justice.gov.uk/json/schemas/domains/sjp/events/public.sjp.events.conviction-court-resolved.json
+
       event_source_name: public.event.source

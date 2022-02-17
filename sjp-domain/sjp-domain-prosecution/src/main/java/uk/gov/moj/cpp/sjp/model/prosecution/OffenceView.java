@@ -3,6 +3,8 @@ package uk.gov.moj.cpp.sjp.model.prosecution;
 import static java.util.Collections.unmodifiableList;
 import static java.util.Optional.ofNullable;
 
+import uk.gov.justice.core.courts.CourtCentre;
+
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
@@ -19,6 +21,7 @@ public class OffenceView {
     private final LocalDate startDate;
     private final LocalDate chargeDate;
     private final LocalDate convictionDate;
+    private final CourtCentre convictingCourt;
     private final LocalDate endDate;
     private final Integer orderIndex;
     private final NotifiedPleaView notifiedPlea;
@@ -47,7 +50,8 @@ public class OffenceView {
                        final String offenceLegislation,
                        final String offenceTitle,
                        final String offenceCode,
-                       final String maxPenalty) {
+                       final String maxPenalty,
+                       final CourtCentre convictingCourt) {
 
         this.id = id;
         this.offenceDefinitionId = offenceDefinitionId;
@@ -69,6 +73,7 @@ public class OffenceView {
         this.offenceLegislation = offenceLegislation;
         this.offenceTitle = offenceTitle;
         this.offenceCode = offenceCode;
+        this.convictingCourt = convictingCourt;
     }
 
 
@@ -115,6 +120,8 @@ public class OffenceView {
     public LocalDate getConvictionDate() {
         return convictionDate;
     }
+
+    public CourtCentre getConvictingCourt() { return convictingCourt; }
 
     public OffenceFactsView getOffenceFacts() {
         return offenceFacts;
@@ -167,6 +174,7 @@ public class OffenceView {
         private String offenceTitle;
         private String offenceCode;
         private String maxPenalty;
+        private CourtCentre convictingCourt;
 
         public Builder withId(final UUID id) {
             this.id = id;
@@ -200,6 +208,11 @@ public class OffenceView {
 
         public Builder withConvictionDate(final LocalDate convictionDate) {
             this.convictionDate = convictionDate;
+            return this;
+        }
+
+        public Builder withConvictingCourt(final CourtCentre convictingCourt) {
+            this.convictingCourt = convictingCourt;
             return this;
         }
 
@@ -274,7 +287,8 @@ public class OffenceView {
                     offenceLegislation,
                     offenceTitle,
                     offenceCode,
-                    maxPenalty);
+                    maxPenalty,
+                    convictingCourt);
         }
     }
 }

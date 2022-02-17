@@ -241,7 +241,8 @@ public class CaseApplicationDecisionIT extends BaseIntegrationTest {
                 withoutJsonPath("$.defendant.offences[0].pleaMethod"),
                 withoutJsonPath("$.defendant.offences[0].pleaDate"),
                 withoutJsonPath("$.defendant.offences[0].conviction"),
-                withoutJsonPath("$.defendant.offences[0].convictionDate")
+                withoutJsonPath("$.defendant.offences[0].convictionDate"),
+                withoutJsonPath("$.defendant.offences[0].convictingCourt")
         ));
 
         pollUntilCaseReady(caseId);

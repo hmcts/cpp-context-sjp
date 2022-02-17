@@ -16,7 +16,8 @@ import java.util.UUID;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-public class Discharge extends DisqualifyEndorseDecision {
+@SuppressWarnings("PMD.BeanMembersShouldSerialize")
+public class Discharge extends DisqualifyEndorseDecision implements ConvictingDecision {
 
     private DischargeType dischargeType;
 
@@ -31,6 +32,8 @@ public class Discharge extends DisqualifyEndorseDecision {
     private BigDecimal backDuty;
 
     private LocalDate convictionDate;
+
+    private SessionCourt convictingCourt;
 
     @SuppressWarnings("squid:S00107")
     public Discharge(@JsonProperty("id") final UUID id,
@@ -104,6 +107,14 @@ public class Discharge extends DisqualifyEndorseDecision {
 
     public void setConvictionDate(final LocalDate convictionDate) {
         this.convictionDate = convictionDate;
+    }
+
+    public SessionCourt getConvictingCourt() {
+        return convictingCourt;
+    }
+
+    public void setConvictingCourt(final SessionCourt convictingCourt) {
+        this.convictingCourt = convictingCourt;
     }
 
     @Override

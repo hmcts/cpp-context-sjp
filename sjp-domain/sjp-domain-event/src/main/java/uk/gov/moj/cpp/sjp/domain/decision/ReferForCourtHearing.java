@@ -13,7 +13,7 @@ import java.util.UUID;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-public class ReferForCourtHearing extends MultipleOffenceDecision {
+public class ReferForCourtHearing extends MultipleOffenceDecision implements ConvictingDecision {
 
     private final UUID referralReasonId;
     private final String referralReason;
@@ -21,6 +21,7 @@ public class ReferForCourtHearing extends MultipleOffenceDecision {
     private final Integer estimatedHearingDuration;
     private final DefendantCourtOptions defendantCourtOptions;
     private LocalDate convictionDate;
+    private SessionCourt convictingCourt;
 
     public ReferForCourtHearing(final UUID id,
                                 final List<OffenceDecisionInformation> offenceDecisionInformation,
@@ -74,6 +75,14 @@ public class ReferForCourtHearing extends MultipleOffenceDecision {
 
     public void setConvictionDate(final LocalDate convictionDate) {
         this.convictionDate = convictionDate;
+    }
+
+    public SessionCourt getConvictingCourt() {
+        return convictingCourt;
+    }
+
+    public void setConvictingCourt(final SessionCourt convictingCourt) {
+        this.convictingCourt = convictingCourt;
     }
 
     @Override

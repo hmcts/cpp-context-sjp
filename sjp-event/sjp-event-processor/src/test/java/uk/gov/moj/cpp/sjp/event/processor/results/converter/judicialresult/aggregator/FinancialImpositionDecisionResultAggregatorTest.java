@@ -44,7 +44,7 @@ import org.mockito.runners.MockitoJUnitRunner;
 
 @SuppressWarnings("unchecked")
 @RunWith(MockitoJUnitRunner.class)
-public class FinancialImpositionDecisionResultAggregatorTest extends  BaseDecisionResultAggregatorTest {
+public class FinancialImpositionDecisionResultAggregatorTest extends BaseDecisionResultAggregatorTest {
 
     private FinancialImpositionDecisionResultAggregator aggregator;
 

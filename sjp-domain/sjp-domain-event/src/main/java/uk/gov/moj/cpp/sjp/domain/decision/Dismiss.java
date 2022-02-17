@@ -2,6 +2,7 @@ package uk.gov.moj.cpp.sjp.domain.decision;
 
 import static uk.gov.moj.cpp.sjp.domain.decision.DecisionType.DISMISS;
 
+import java.time.LocalDate;
 import java.util.UUID;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
@@ -24,5 +25,13 @@ public class Dismiss extends SingleOffenceDecision {
     public void accept(final OffenceDecisionVisitor visitor) {
         visitor.visit(this);
     }
+
+    @Override
+    public SessionCourt getConvictingCourt() {
+        return null;
+    }
+
+    @Override
+    public LocalDate getConvictionDate() { return null; }
 
 }

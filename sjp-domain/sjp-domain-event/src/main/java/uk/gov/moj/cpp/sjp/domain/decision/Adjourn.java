@@ -12,11 +12,13 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
 
-public class Adjourn extends MultipleOffenceDecision {
+@SuppressWarnings("PMD.BeanMembersShouldSerialize")
+public class Adjourn extends MultipleOffenceDecision implements ConvictingDecision {
 
     private final String reason;
     private final LocalDate adjournTo;
     private LocalDate convictionDate;
+    private SessionCourt convictingCourt;
 
     public Adjourn(final UUID id,
                    final List<OffenceDecisionInformation> offenceDecisionInformation,
@@ -50,6 +52,13 @@ public class Adjourn extends MultipleOffenceDecision {
 
     public void setConvictionDate(final LocalDate convictionDate) {
         this.convictionDate = convictionDate;
+    }
+
+    public void setConvictionCourt(final SessionCourt convictingCourt) {
+        this.convictingCourt = convictingCourt;
+    }
+    public SessionCourt getConvictingCourt() {
+        return convictingCourt;
     }
 
     @Override

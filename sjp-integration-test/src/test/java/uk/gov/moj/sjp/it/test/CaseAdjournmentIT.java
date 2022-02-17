@@ -44,6 +44,7 @@ import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubRegionByPostco
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubWithdrawalReasonsQuery;
 import static uk.gov.moj.sjp.it.stub.UsersGroupsStub.stubForUserDetails;
 import static uk.gov.moj.sjp.it.util.Defaults.DEFAULT_LONDON_COURT_HOUSE_OU_CODE;
+import static uk.gov.moj.sjp.it.util.Defaults.DEFAULT_LONDON_LJA_NATIONAL_COURT_CODE;
 
 import uk.gov.justice.json.schemas.domains.sjp.User;
 import uk.gov.justice.json.schemas.fragments.sjp.WithdrawalRequestsStatus;
@@ -230,7 +231,7 @@ public class CaseAdjournmentIT extends BaseIntegrationTest {
     }
 
     @Test
-    public void shouldHaveConvictionDateWhenAdjournmentDateElapsedAndReferredToCourt() throws Exception {
+    public void shouldHaveConvictionDetailsWhenAdjournmentDateElapsedAndReferredToCourt() throws Exception {
         try (final ReadyCaseHelper readyCaseHelper = new ReadyCaseHelper()) {
 
             final CaseSearchResultHelper caseSearchResultHelper = new CaseSearchResultHelper(
@@ -285,6 +286,8 @@ public class CaseAdjournmentIT extends BaseIntegrationTest {
             final CaseReferredForCourtHearing caseReferredForCourtHearing = eventListener.popEventPayload(CaseReferredForCourtHearing.class);
             assertThat(caseReferredForCourtHearing.getConvictionDate(), is(notNullValue()));
             assertThat(caseReferredForCourtHearing.getConvictionDate(), is(LocalDate.now()));
+            assertThat(caseReferredForCourtHearing.getConvictingCourt().getCourtHouseCode(), is(DEFAULT_LONDON_COURT_HOUSE_OU_CODE));
+            assertThat(caseReferredForCourtHearing.getConvictingCourt().getLjaCode(), is(DEFAULT_LONDON_LJA_NATIONAL_COURT_CODE));
         }
 
     }
@@ -369,7 +372,6 @@ public class CaseAdjournmentIT extends BaseIntegrationTest {
     }
 
     @Test
-    @Ignore("DD-17905:Commented as part of 21.25.01 as it is failing on Jenkins at random, but works locally")
     public void shouldCaseBeInPleaReceivedNotReadyForDecisionStateWhenThereIsPleaAndWithdrawalRequestedOnAllAndAdjournedPostConviction() throws JMSException {
         try (final ReadyCaseHelper readyCaseHelper = new ReadyCaseHelper()) {
 

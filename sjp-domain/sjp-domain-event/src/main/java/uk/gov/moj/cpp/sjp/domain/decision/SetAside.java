@@ -4,6 +4,7 @@ import static org.apache.commons.lang3.builder.EqualsBuilder.reflectionEquals;
 import static org.apache.commons.lang3.builder.HashCodeBuilder.reflectionHashCode;
 import static uk.gov.moj.cpp.sjp.domain.decision.DecisionType.SET_ASIDE;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
 
@@ -23,6 +24,14 @@ public class SetAside extends MultipleOffenceDecision {
                     @JsonProperty("pressRestriction") final PressRestriction pressRestriction) {
         super(id, SET_ASIDE, offenceDecisionInformation, pressRestriction);
     }
+
+    @Override
+    public SessionCourt getConvictingCourt() {
+        return null;
+    }
+
+    @Override
+    public LocalDate getConvictionDate() { return null; }
 
     @Override
     public void accept(final OffenceDecisionVisitor visitor) {

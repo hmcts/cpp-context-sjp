@@ -266,7 +266,7 @@ public class ApplicationDecisionHandlerTest {
                 .build();
         final Dismiss dismiss = DismissBuilder.withDefaults(offenceId3).build();
         final List<OffenceDecision> offenceDecisions = asList(discharge1, discharge2, dismiss);
-        caseAggregateState.updateOffenceConvictionDates(now(), offenceDecisions);
+        caseAggregateState.updateOffenceConvictionDetails(now(), offenceDecisions, null);
 
         final SaveApplicationDecision saveApplicationDecision = saveApplicationDecision()
                 .withApplicationId(currentApplication.getApplicationId())

@@ -59,7 +59,7 @@ public class HandlerUtilsTest {
         final List<Plea> pleas = singletonList(new Plea(DEFENDANT_ID, OFFENCE_ID_1, PleaType.GUILTY));
         caseAggregateState.setPleas(pleas);
         caseAggregateState.updateOffenceDecisions(offenceDecisions, randomUUID());
-        caseAggregateState.updateOffenceConvictionDates(ZonedDateTime.now().plusDays(7), offenceDecisions);
+        caseAggregateState.updateOffenceConvictionDetails(ZonedDateTime.now().plusDays(7), offenceDecisions, null);
 
         final List<Object> results = HandlerUtils.createRejectionEvents(USER_ID, caseAggregateState, pleas, "Set pleas").get().collect(toList());
 
@@ -78,7 +78,7 @@ public class HandlerUtilsTest {
         final List<Plea> pleas = singletonList(new Plea(DEFENDANT_ID, OFFENCE_ID_1, PleaType.GUILTY));
         caseAggregateState.setPleas(pleas);
         caseAggregateState.updateOffenceDecisions(offenceDecisions, randomUUID());
-        caseAggregateState.updateOffenceConvictionDates(ZonedDateTime.now().plusDays(7), offenceDecisions);
+        caseAggregateState.updateOffenceConvictionDetails(ZonedDateTime.now().plusDays(7), offenceDecisions, null);
 
         final Optional<Stream<Object>> results = HandlerUtils.createRejectionEvents(USER_ID, caseAggregateState, pleas, "Set pleas");
 

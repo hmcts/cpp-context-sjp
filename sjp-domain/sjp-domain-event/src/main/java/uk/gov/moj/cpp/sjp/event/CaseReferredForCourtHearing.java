@@ -2,6 +2,7 @@ package uk.gov.moj.cpp.sjp.event;
 
 import uk.gov.justice.domain.annotation.Event;
 import uk.gov.moj.cpp.sjp.domain.DefendantCourtOptions;
+import uk.gov.moj.cpp.sjp.domain.decision.SessionCourt;
 import uk.gov.moj.cpp.sjp.domain.decision.OffenceDecisionInformation;
 
 import java.time.LocalDate;
@@ -36,13 +37,15 @@ public class CaseReferredForCourtHearing {
 
     private LocalDate convictionDate;
 
+    private SessionCourt convictingCourt;
+
     @JsonIgnoreProperties(ignoreUnknown = true)
     public CaseReferredForCourtHearing(final UUID caseId, final List<OffenceDecisionInformation> referredOffences,
                                        final UUID referralReasonId, final String referralReason,
                                        final Integer estimatedHearingDuration, final String listingNotes,
                                        final ZonedDateTime referredAt, final UUID decisionId,
                                        final DefendantCourtOptions defendantCourtOptions,
-                                       final LocalDate convictionDate) {
+                                       final LocalDate convictionDate , final SessionCourt convictingCourt) {
         this.caseId = caseId;
         this.estimatedHearingDuration = estimatedHearingDuration;
         this.listingNotes = listingNotes;
@@ -53,6 +56,7 @@ public class CaseReferredForCourtHearing {
         this.referredOffences = referredOffences;
         this.defendantCourtOptions = defendantCourtOptions;
         this.convictionDate = convictionDate;
+        this.convictingCourt = convictingCourt;
     }
 
     public UUID getCaseId() {
@@ -95,6 +99,10 @@ public class CaseReferredForCourtHearing {
         return convictionDate;
     }
 
+    public SessionCourt getConvictingCourt() {
+        return convictingCourt;
+    }
+
     public static Builder caseReferredForCourtHearing() {
         return new CaseReferredForCourtHearing.Builder();
     }
@@ -110,6 +118,7 @@ public class CaseReferredForCourtHearing {
         private ZonedDateTime referredAt;
         private DefendantCourtOptions defendantCourtOptions;
         private LocalDate convictionDate;
+        private SessionCourt convictingCourt;
 
         public Builder withCaseId(final UUID caseId) {
             this.caseId = caseId;
@@ -161,9 +170,14 @@ public class CaseReferredForCourtHearing {
             return this;
         }
 
+        public Builder withConvictingCourt(final SessionCourt convictingCourt) {
+            this.convictingCourt = convictingCourt;
+            return this;
+        }
+
         public CaseReferredForCourtHearing build() {
             return new CaseReferredForCourtHearing(caseId, referredOffences, referralReasonId, referralReason,
-                    estimatedHearingDuration, listingNotes, referredAt, decisionId, defendantCourtOptions, convictionDate);
+                    estimatedHearingDuration, listingNotes, referredAt, decisionId, defendantCourtOptions, convictionDate, convictingCourt);
         }
 
     }

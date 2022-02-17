@@ -1231,7 +1231,7 @@ public class CaseStatusResolverTest {
                             .ifPresent((decisionType) -> {
                                 final List<OffenceDecision> offenceDecisions = singletonList(offenceDecision(offenceId, decisionType));
                                 caseAggregateState.updateOffenceDecisions(singletonList(offenceDecision(offenceId, decisionType)), randomUUID());
-                                caseAggregateState.updateOffenceConvictionDates(ZonedDateTime.now(), offenceDecisions);
+                                caseAggregateState.updateOffenceConvictionDetails(ZonedDateTime.now(), offenceDecisions, null);
                             });
 
                     ofNullable(e.getDecision())

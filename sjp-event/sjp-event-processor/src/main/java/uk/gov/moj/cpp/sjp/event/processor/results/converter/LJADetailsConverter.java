@@ -28,4 +28,18 @@ public class LJADetailsConverter {
         }
         return ljaDetails.build();
     }
+
+    public LjaDetails convert(final String ljaCode, final Optional<JsonObject> court) {
+
+        final LjaDetails.Builder ljaDetails = LjaDetails.ljaDetails();
+        if (court.isPresent()) {
+            ljaDetails.withLjaName(getString(court.get(), LJA_NAME));
+            ljaDetails.withWelshLjaName(getString(court.get(), LJA_WELSH_NAME));
+        }
+
+        if (ljaCode != null) {
+            ljaDetails.withLjaCode(ljaCode);//Mandatory
+        }
+        return ljaDetails.build();
+    }
 }

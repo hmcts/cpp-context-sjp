@@ -10,11 +10,12 @@ import java.util.UUID;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-public class NoSeparatePenalty extends SingleOffenceDecision {
+public class NoSeparatePenalty extends SingleOffenceDecision implements ConvictingDecision {
 
     private Boolean guiltyPleaTakenIntoAccount;
     private Boolean licenceEndorsed;
     private LocalDate convictionDate;
+    private SessionCourt convictingCourt;
 
     public NoSeparatePenalty(final UUID id,
                              final OffenceDecisionInformation offenceDecisionInformation,
@@ -65,6 +66,12 @@ public class NoSeparatePenalty extends SingleOffenceDecision {
 
     public void setConvictionDate(final LocalDate convictionDate) {
         this.convictionDate = convictionDate;
+    }
+
+    public SessionCourt getConvictingCourt() { return convictingCourt; }
+
+    public void setConvictingCourt(final SessionCourt convictingCourt) {
+        this.convictingCourt = convictingCourt;
     }
 
     @Override

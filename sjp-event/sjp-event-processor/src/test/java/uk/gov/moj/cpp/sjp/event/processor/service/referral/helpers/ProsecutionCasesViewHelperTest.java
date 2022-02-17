@@ -41,10 +41,10 @@ import uk.gov.justice.json.schemas.domains.sjp.query.EmployerDetails;
 import uk.gov.moj.cpp.core.sjp.decision.DecisionType;
 import uk.gov.moj.cpp.sjp.domain.DefendantCourtInterpreter;
 import uk.gov.moj.cpp.sjp.domain.DefendantCourtOptions;
+import uk.gov.moj.cpp.sjp.domain.decision.SessionCourt;
 import uk.gov.moj.cpp.sjp.domain.decision.OffenceDecisionInformation;
 import uk.gov.moj.cpp.sjp.domain.verdict.VerdictType;
 import uk.gov.moj.cpp.sjp.event.CaseReferredForCourtHearing;
-
 import uk.gov.moj.cpp.sjp.event.processor.service.ReferenceDataOffencesService;
 import uk.gov.moj.cpp.sjp.event.processor.service.ReferenceDataService;
 import uk.gov.moj.cpp.sjp.model.prosecution.AddressView;
@@ -119,9 +119,11 @@ public class ProsecutionCasesViewHelperTest {
     private static final VerdictType NULL_VERDICT = null;
     private static final String DISABILITY_NEEDS = "Hearing aid";
     private static final String COURT_HOUSE_NAME = "Court house name";
-    private static final String COURT_HOUSE_CODE = "Court house code";
+    private static final String COURT_HOUSE_CODE = "B01LY00";
     private static final String MAGISTRATE_NAME = "magistrate name";
     private static final String D45_RESULT_LABEL = "Direction made under Section 45 of the Youth Justice and Criminal Evidence Act 1999";
+    private static final String LJA_CODE = "2577";
+
 
     private static final LocalDate CONVICTION_DATE = ZonedDateTime.now().toLocalDate();
 
@@ -130,6 +132,9 @@ public class ProsecutionCasesViewHelperTest {
 
     @Mock
     private ReferenceDataOffencesService referenceDataOffencesService;
+
+    @Mock
+    private ConvictingCourtHelper convictingCourtViewHelper;
 
     @InjectMocks
     private ProsecutionCasesViewHelper prosecutionCasesViewHelper;
@@ -228,8 +233,9 @@ public class ProsecutionCasesViewHelperTest {
         final CaseReferredForCourtHearing caseReferredForCourtHearing = caseReferredForCourtHearing()
                 .withReferredAt(DECISION_DATE)
                 .withReferredOffences(getReferredOffencesWithVerdict(VerdictType.PROVED_SJP))
-                .withDefendantCourtOptions(new DefendantCourtOptions(new DefendantCourtInterpreter(LANGUAGE_X, true),null, disabilityNeedsOf(DISABILITY_NEEDS)))
+                .withDefendantCourtOptions(new DefendantCourtOptions(new DefendantCourtInterpreter(LANGUAGE_X, true), null, disabilityNeedsOf(DISABILITY_NEEDS)))
                 .withConvictionDate(CONVICTION_DATE)
+                .withConvictingCourt(new SessionCourt(COURT_HOUSE_CODE,LJA_CODE))
                 .build();
 
         final CaseDecision caseDecision = createCaseDecision(caseReferredForCourtHearing);
@@ -246,7 +252,7 @@ public class ProsecutionCasesViewHelperTest {
                 caseReferredForCourtHearing,
                 OFFENCE_MITIGATION,
                 mockCJSOffenceCodeToOffenceDefinition(),
-                singletonList(offences.get(0)));
+                singletonList(offences.get(0)), null);
 
         assertThat(prosecutionCaseViews.size(), is(1));
 
@@ -277,6 +283,7 @@ public class ProsecutionCasesViewHelperTest {
                 .withReferredOffences(getReferredOffencesWithVerdict(VerdictType.PROVED_SJP))
                 .withDefendantCourtOptions(new DefendantCourtOptions(new DefendantCourtInterpreter(LANGUAGE_X, true), null, disabilityNeedsOf(DISABILITY_NEEDS)))
                 .withConvictionDate(CONVICTION_DATE)
+                .withConvictingCourt(new SessionCourt(COURT_HOUSE_CODE,LJA_CODE))
                 .build();
 
         final CaseDecision caseDecision = createCaseDecision(caseReferredForCourtHearing);
@@ -293,7 +300,7 @@ public class ProsecutionCasesViewHelperTest {
                 caseReferredForCourtHearing,
                 OFFENCE_MITIGATION,
                 mockCJSOffenceCodeToOffenceDefinition(),
-                offences);
+                offences, null);
 
         assertThat(prosecutionCaseViews, hasSize(1));
 
@@ -325,6 +332,7 @@ public class ProsecutionCasesViewHelperTest {
                 .withReferredOffences(getReferredOffencesWithVerdict(VerdictType.PROVED_SJP))
                 .withDefendantCourtOptions(new DefendantCourtOptions(new DefendantCourtInterpreter(LANGUAGE_X, true), null, null))
                 .withConvictionDate(CONVICTION_DATE)
+                .withConvictingCourt(new SessionCourt(COURT_HOUSE_CODE,LJA_CODE))
                 .build();
 
         final CaseDecision caseDecision = createCaseDecision(caseReferredForCourtHearing);
@@ -340,7 +348,7 @@ public class ProsecutionCasesViewHelperTest {
                 caseReferredForCourtHearing,
                 OFFENCE_MITIGATION,
                 mockCJSOffenceCodeToOffenceDefinition(),
-                singletonList(offences.get(0)));
+                singletonList(offences.get(0)), null);
 
         assertThat(prosecutionCaseViews, hasSize(1));
 
@@ -371,6 +379,7 @@ public class ProsecutionCasesViewHelperTest {
                 .withReferredOffences(getReferredOffencesWithVerdict(VerdictType.PROVED_SJP))
                 .withDefendantCourtOptions(new DefendantCourtOptions(new DefendantCourtInterpreter(LANGUAGE_X, true), null, disabilityNeedsOf(DISABILITY_NEEDS)))
                 .withConvictionDate(CONVICTION_DATE)
+                .withConvictingCourt(new SessionCourt(COURT_HOUSE_CODE,LJA_CODE))
                 .build();
 
 
@@ -387,7 +396,7 @@ public class ProsecutionCasesViewHelperTest {
                 caseReferredForCourtHearing,
                 OFFENCE_MITIGATION,
                 mockCJSOffenceCodeToOffenceDefinition(),
-                singletonList(offences.get(0)));
+                singletonList(offences.get(0)), null);
 
         assertThat(prosecutionCaseViews, hasSize(1));
 
@@ -417,6 +426,7 @@ public class ProsecutionCasesViewHelperTest {
                 .withReferredOffences(getReferredOffencesWithVerdict(VerdictType.PROVED_SJP))
                 .withDefendantCourtOptions(new DefendantCourtOptions(new DefendantCourtInterpreter(LANGUAGE_X, true), null, disabilityNeedsOf(DISABILITY_NEEDS)))
                 .withConvictionDate(CONVICTION_DATE)
+                .withConvictingCourt(new SessionCourt(COURT_HOUSE_CODE,LJA_CODE))
                 .build();
 
         final NotifiedPleaView notifiedPleaView = new NotifiedPleaView(
@@ -447,7 +457,7 @@ public class ProsecutionCasesViewHelperTest {
                 caseReferredForCourtHearing,
                 OFFENCE_MITIGATION,
                 mockCJSOffenceCodeToOffenceDefinition(),
-                singletonList(offences.get(0)));
+                singletonList(offences.get(0)), null);
 
         assertThat(prosecutionCaseViews, hasSize(1));
 
@@ -479,6 +489,7 @@ public class ProsecutionCasesViewHelperTest {
                 .withReferredAt(DECISION_DATE)
                 .withReferredOffences(getReferredOffencesWithVerdict(VerdictType.PROVED_SJP))
                 .withConvictionDate(CONVICTION_DATE)
+                .withConvictingCourt(new SessionCourt(COURT_HOUSE_CODE,LJA_CODE))
                 .build();
 
         final NotifiedPleaView notifiedPleaView = new NotifiedPleaView(
@@ -510,7 +521,7 @@ public class ProsecutionCasesViewHelperTest {
                 caseReferredForCourtHearing,
                 OFFENCE_MITIGATION,
                 mockCJSOffenceCodeToOffenceDefinition(),
-                asList(offences.get(0), offences.get(1)));
+                asList(offences.get(0), offences.get(1)), null);
 
         assertThat(prosecutionCaseViews, hasSize(1));
 
@@ -569,6 +580,7 @@ public class ProsecutionCasesViewHelperTest {
                 .withReferredAt(DECISION_DATE)
                 .withReferredOffences(getReferredOffencesWithVerdict(VerdictType.PROVED_SJP))
                 .withConvictionDate(CONVICTION_DATE)
+                .withConvictingCourt(new SessionCourt(COURT_HOUSE_CODE,LJA_CODE))
                 .build();
 
         final NotifiedPleaView notifiedPleaView = new NotifiedPleaView(
@@ -599,7 +611,7 @@ public class ProsecutionCasesViewHelperTest {
                 caseReferredForCourtHearing,
                 OFFENCE_MITIGATION,
                 mockCJSOffenceCodeToOffenceDefinition(),
-                asList(offences.get(0), offences.get(1)));
+                asList(offences.get(0), offences.get(1)), null);
 
         assertThat(prosecutionCaseViews, hasSize(1));
 
@@ -633,6 +645,7 @@ public class ProsecutionCasesViewHelperTest {
                 .withReferredAt(DECISION_DATE)
                 .withReferredOffences(getReferredOffencesWithVerdict(verdictType))
                 .withConvictionDate(CONVICTION_DATE)
+                .withConvictingCourt(new SessionCourt(COURT_HOUSE_CODE,LJA_CODE))
                 .build();
         final Offence offence = offences.get(0);
         final NotifiedPleaView notifiedPleaView = new NotifiedPleaView(
@@ -660,7 +673,7 @@ public class ProsecutionCasesViewHelperTest {
                 caseReferredForCourtHearing,
                 OFFENCE_MITIGATION,
                 mockCJSOffenceCodeToOffenceDefinition(),
-                singletonList(offence));
+                singletonList(offence), null);
 
         assertThat(prosecutionCaseViews, hasSize(1));
 

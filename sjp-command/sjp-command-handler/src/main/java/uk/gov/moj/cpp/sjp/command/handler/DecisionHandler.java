@@ -10,11 +10,12 @@ import uk.gov.justice.services.eventsourcing.source.core.EventSource;
 import uk.gov.justice.services.eventsourcing.source.core.EventStream;
 import uk.gov.justice.services.eventsourcing.source.core.exception.EventStreamException;
 import uk.gov.justice.services.messaging.Envelope;
-import uk.gov.moj.cpp.sjp.domain.decision.Decision;
 import uk.gov.moj.cpp.sjp.domain.aggregate.Session;
+import uk.gov.moj.cpp.sjp.domain.decision.Decision;
+
+import java.util.UUID;
 
 import javax.inject.Inject;
-import java.util.UUID;
 
 @ServiceComponent(COMMAND_HANDLER)
 public class DecisionHandler extends CaseCommandHandler {

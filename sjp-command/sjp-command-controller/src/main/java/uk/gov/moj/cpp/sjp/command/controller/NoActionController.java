@@ -172,6 +172,11 @@ public class NoActionController {
         send(envelope);
     }
 
+    @Handles("sjp.command.resolve-conviction-court-bdf")
+    public void resolveConvictionCourtBdf(final JsonEnvelope envelope) {
+        send(envelope);
+    }
+
     private void send(final Envelope<?> envelope) {
         sender.send(envelope);
     }

@@ -16,7 +16,6 @@ import static org.junit.Assume.assumeThat;
 import static uk.gov.moj.cpp.sjp.domain.decision.OffenceDecisionInformation.createOffenceDecisionInformation;
 import static uk.gov.moj.cpp.sjp.domain.verdict.VerdictType.FOUND_GUILTY;
 
-import uk.gov.moj.cpp.sjp.domain.aggregate.state.WithdrawalRequestsStatus;
 import uk.gov.moj.cpp.sjp.domain.Interpreter;
 import uk.gov.moj.cpp.sjp.domain.decision.Adjourn;
 import uk.gov.moj.cpp.sjp.domain.decision.Dismiss;
@@ -266,7 +265,7 @@ public class CaseAggregateStateStateTest {
                         createOffenceDecisionInformation(offenceId2, FOUND_GUILTY)),
                         "adjourn reason ", adjournedTo));
 
-        state.updateOffenceConvictionDates(zonedDateTime, offenceDecisions);
+        state.updateOffenceConvictionDetails(zonedDateTime, offenceDecisions, null);
 
         assertTrue(state.offenceHasPreviousConviction(offenceId1));
         zonedDateTime = ZonedDateTime.now();
@@ -275,7 +274,7 @@ public class CaseAggregateStateStateTest {
                         createOffenceDecisionInformation(offenceId1, null),
                         createOffenceDecisionInformation(offenceId2, null))));
         // when
-        state.updateOffenceConvictionDates(zonedDateTime, offenceDecisions);
+        state.updateOffenceConvictionDetails(zonedDateTime, offenceDecisions, null);
 
         // then
         assertFalse(state.offenceHasPreviousConviction(offenceId1));

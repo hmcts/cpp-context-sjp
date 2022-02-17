@@ -412,7 +412,7 @@ public class OffenceDetail implements Serializable, Comparable<OffenceDetail> {
         return isNull(other) ? 1 : sequenceNumber - other.sequenceNumber;
     }
 
-    @SuppressWarnings("pmd:BeanMembersShouldSerialize")
+    @SuppressWarnings("PMD.BeanMembersShouldSerialize")
     public static class OffenceDetailBuilder {
 
         private UUID id;

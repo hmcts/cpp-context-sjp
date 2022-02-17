@@ -69,6 +69,7 @@ import uk.gov.moj.cpp.sjp.event.TrialRequestCancelled;
 import uk.gov.moj.cpp.sjp.event.TrialRequested;
 import uk.gov.moj.cpp.sjp.event.VerdictCancelled;
 import uk.gov.moj.cpp.sjp.event.decision.ApplicationDecisionSetAside;
+import uk.gov.moj.cpp.sjp.event.decision.ConvictionCourtResolved;
 import uk.gov.moj.cpp.sjp.event.decision.DecisionSaved;
 import uk.gov.moj.cpp.sjp.event.decision.DecisionSetAside;
 import uk.gov.moj.cpp.sjp.event.decision.DecisionSetAsideReset;
@@ -88,6 +89,7 @@ import com.google.common.collect.ImmutableMap;
  * Defines the composite {@link AggregateStateMutator} which delegates to the appropriate mutator
  * based on the event handled.
  */
+@SuppressWarnings("PMD.BeanMembersShouldSerialize")
 final class CompositeCaseAggregateStateMutator implements AggregateStateMutator<Object, CaseAggregateState> {
 
     private static final AggregateStateMutator<CaseStarted, CaseAggregateState> CASE_STARTED_MUTATOR =
@@ -188,7 +190,8 @@ final class CompositeCaseAggregateStateMutator implements AggregateStateMutator<
     private static final AggregateStateMutator<DecisionSaved, CaseAggregateState> DECISION_MUTATOR =
             ((event, state) -> {
                 state.updateOffenceDecisions(event.getOffenceDecisions(), event.getSessionId());
-                state.updateOffenceConvictionDates(event.getSavedAt(), event.getOffenceDecisions());
+                state.updateOffenceConvictionDetails(event.getSavedAt(), event.getOffenceDecisions(), event.getSessionId());
+
                 // DD-16405
                 if (event.getFinancialImposition() != null) {
                     state.setDecisionSavedWithFinancialImposition(event);
@@ -201,6 +204,10 @@ final class CompositeCaseAggregateStateMutator implements AggregateStateMutator<
                     state.setLatestReferToCourtDecision(event);
                 }
             });
+
+    private static final AggregateStateMutator<ConvictionCourtResolved, CaseAggregateState> RESOLVE_CONVICTION_COURT_DETAILS_MUTATOR =
+            ((event, state) -> state.resolveConvictionCourtDetails(event.getConvictingInformations()));
+
 
     private static final AggregateStateMutator<PleasSet, CaseAggregateState> PLEAS_SET_MUTATOR =
             ((event, state) -> {
@@ -371,6 +378,7 @@ final class CompositeCaseAggregateStateMutator implements AggregateStateMutator<
                 .put(CaseOffenceListedInCriminalCourts.class, CASE_OFFENCE_LISTED_IN_CRIMINAL_COURTS_MUTATOR)
                 .put(CaseListedInCriminalCourtsV2.class, CASE_LISTED_IN_CRIMINAL_COURTS_V_2)
                 .put(PaymentTermsChanged.class, PAYMENT_TERMS_CHANGED_CASE_AGGREGATE_STATE_AGGREGATE_STATE_MUTATOR)
+                .put(ConvictionCourtResolved.class, RESOLVE_CONVICTION_COURT_DETAILS_MUTATOR)
                 .build();
     }
 

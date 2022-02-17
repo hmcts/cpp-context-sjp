@@ -146,7 +146,7 @@ public class ProsecutionCasesDataSourcingServiceTest {
                         REFERRAL_EVEN_PAYLOAD,
                         PLEA_MITIGATION,
                         mockCJSOffenceCodeToOffenceDefinition(),
-                        createOffences(OFFENCE_ID1, OFFENCE_ID2));
+                        createOffences(OFFENCE_ID1, OFFENCE_ID2), EMPTY_ENVELOPE);
     }
 
     @Test
@@ -172,7 +172,7 @@ public class ProsecutionCasesDataSourcingServiceTest {
                 REFERRAL_EVEN_PAYLOAD,
                 null,
                 mockCJSOffenceCodeToOffenceDefinition(),
-                createOffences(OFFENCE_ID1, OFFENCE_ID2));
+                createOffences(OFFENCE_ID1, OFFENCE_ID2), EMPTY_ENVELOPE);
     }
 
     @Test
@@ -200,7 +200,7 @@ public class ProsecutionCasesDataSourcingServiceTest {
                 REFERRAL_EVEN_PAYLOAD,
                 null,
                 mockCJSOffenceCodeToOffenceDefinition(),
-                createOffences(OFFENCE_ID1, OFFENCE_ID2));
+                createOffences(OFFENCE_ID1, OFFENCE_ID2), EMPTY_ENVELOPE);
     }
 
     private static JsonObject createCaseFileDefendantDetails() {

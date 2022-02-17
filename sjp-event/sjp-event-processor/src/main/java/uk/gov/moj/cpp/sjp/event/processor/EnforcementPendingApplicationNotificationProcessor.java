@@ -37,7 +37,7 @@ public class EnforcementPendingApplicationNotificationProcessor {
     private static final String QUEUE_EMAIL_NOTIFICATION_COMMAND_NAME = "sjp.command.enforcement-pending-application-queue-notification";
 
     @Inject
-    @Value(key = "enforcementPendingApplicationNotificationTemplateId")
+    @Value(key = "enforcementPendingApplicationNotificationTemplateId", defaultValue = "07d1f043-6052-4d18-adce-58678d0e7018")
     private String templateId;
 
     @Inject

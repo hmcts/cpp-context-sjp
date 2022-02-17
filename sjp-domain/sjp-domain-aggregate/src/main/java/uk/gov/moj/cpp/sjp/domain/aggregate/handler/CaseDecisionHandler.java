@@ -5,6 +5,7 @@ import static java.lang.String.format;
 import static java.math.BigDecimal.ZERO;
 import static java.util.Arrays.asList;
 import static java.util.Objects.isNull;
+import static java.util.Objects.nonNull;
 import static java.util.Optional.ofNullable;
 import static java.util.UUID.randomUUID;
 import static java.util.function.Function.identity;
@@ -46,6 +47,8 @@ import uk.gov.moj.cpp.sjp.domain.SessionType;
 import uk.gov.moj.cpp.sjp.domain.aggregate.Session;
 import uk.gov.moj.cpp.sjp.domain.aggregate.state.CaseAggregateState;
 import uk.gov.moj.cpp.sjp.domain.decision.Adjourn;
+import uk.gov.moj.cpp.sjp.domain.decision.SessionCourt;
+import uk.gov.moj.cpp.sjp.domain.decision.ConvictingInformation;
 import uk.gov.moj.cpp.sjp.domain.decision.Decision;
 import uk.gov.moj.cpp.sjp.domain.decision.DecisionType;
 import uk.gov.moj.cpp.sjp.domain.decision.Defendant;
@@ -75,6 +78,7 @@ import uk.gov.moj.cpp.sjp.event.decision.DecisionSetAsideReset;
 import uk.gov.moj.cpp.sjp.event.session.CaseUnassigned;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -104,11 +108,18 @@ public class CaseDecisionHandler {
 
     private static void addDecisionSavedEvent(final Session session, Decision decision, final CaseAggregateState state, final Stream.Builder<Object> streamBuilder) {
 
+        final Optional<SessionCourt> convictingCourt =
+                ofNullable(session.getCourtHouseCode()).map(chc ->
+                                ofNullable(session.getLocalJusticeAreaNationalCourtCode()).map(lja ->
+                                        new SessionCourt(chc, lja)))
+                        .orElse(Optional.empty());
+
+
         if (decisionHasFinancialImposition(decision) && sessionCourtAndDefendantCourtAreDifferent(session, decision.getDefendant())) {
             decision.getFinancialImposition().getPayment().setFineTransferredTo(decision.getDefendant().getCourt());
         }
 
-        addOffencesConvictionDate(decision, state);
+        addOffencesConvictionDetails(decision, state, convictingCourt.orElse(null));
         addOffencesPressRestrictable(decision, state);
 
         streamBuilder.add(new DecisionSaved(
@@ -125,8 +136,8 @@ public class CaseDecisionHandler {
         decision.getOffenceDecisions().forEach(offenceDecision -> offenceDecision.accept(pressRestrictableOffenceDecisionVistor));
     }
 
-    private static void addOffencesConvictionDate(final Decision decision, final CaseAggregateState state) {
-        final ConvictionDateOffenceVisitor convictionDateOffenceVisitor = new ConvictionDateOffenceVisitor(state, decision.getSavedAt());
+    private static void addOffencesConvictionDetails(final Decision decision, final CaseAggregateState state, final SessionCourt sessionCourt) {
+        final ConvictionDateOffenceVisitor convictionDateOffenceVisitor = new ConvictionDateOffenceVisitor(state, decision.getSavedAt(), sessionCourt);
         decision.getOffenceDecisions()
                 .forEach(offenceDecision -> offenceDecision.accept(convictionDateOffenceVisitor));
     }
@@ -214,6 +225,7 @@ public class CaseDecisionHandler {
                     .withReferredOffences(offenceDecisionInformationList)
                     .withDefendantCourtOptions(referForCourtHearing.getDefendantCourtOptions())
                     .withConvictionDate(referForCourtHearing.getConvictionDate())
+                    .withConvictingCourt(referForCourtHearing.getConvictingCourt())
                     .build());
 
             if (isNotEmpty(referForCourtHearing.getListingNotes())) {
@@ -283,7 +295,7 @@ public class CaseDecisionHandler {
             return;
         }
 
-        if(state.isSetAside()) {
+        if (state.isSetAside()) {
             return;
         }
 
@@ -395,6 +407,7 @@ public class CaseDecisionHandler {
 
         return streamBuilder.build();
     }
+
 
     private List<String> validateDecision(final Decision decision, final CaseAggregateState state, final SessionType sessionType) {
         final List<String> rejectionReason = new ArrayList<>();
@@ -524,7 +537,7 @@ public class CaseDecisionHandler {
                 .ifPresent(costsAndSurcharge -> {
                     final BigDecimal impositionCosts = costsAndSurcharge.getCosts();
                     final String impositionReasonForNoCosts = ofNullable(costsAndSurcharge.getReasonForNoCosts()).map(String::trim).orElse(null);
-                    if(state.getCosts()!=null && state.getCosts().compareTo(ZERO) > 0 && impositionCosts.compareTo(ZERO) <= 0 && isEmpty(impositionReasonForNoCosts)) {
+                    if (state.getCosts() != null && state.getCosts().compareTo(ZERO) > 0 && impositionCosts.compareTo(ZERO) <= 0 && isEmpty(impositionReasonForNoCosts)) {
                         rejectionReason.add("Reason for no costs is required when costs is zero");
                     }
                 });
@@ -616,14 +629,19 @@ public class CaseDecisionHandler {
         }
     }
 
+    @SuppressWarnings("PMD.BeanMembersShouldSerialize")
     private static class ConvictionDateOffenceVisitor implements OffenceDecisionVisitor {
 
         private final CaseAggregateState state;
         private final ZonedDateTime decisionSavedAt;
 
-        public ConvictionDateOffenceVisitor(final CaseAggregateState state, final ZonedDateTime decisionSavedAt) {
+
+        private final SessionCourt sessionCourt;
+
+        public ConvictionDateOffenceVisitor(final CaseAggregateState state, final ZonedDateTime decisionSavedAt, final SessionCourt sessionCourt) {
             this.state = state;
             this.decisionSavedAt = decisionSavedAt;
+            this.sessionCourt = sessionCourt;
         }
 
         @Override
@@ -647,18 +665,25 @@ public class CaseDecisionHandler {
         public void visit(final Adjourn adjourn) {
             if (offenceHasPreviousConviction(adjourn)) {
                 adjourn.getOffenceIds().stream()
-                        .map(state::getOffencePreviousConvictionDate)
+                        .map(state::getOffenceConvictionInfo)
                         .filter(Objects::nonNull)
                         .findFirst()
-                        .ifPresent(convictionDate ->
-                                adjourn.setConvictionDate(convictionDate.toLocalDate()));
+                        .ifPresent(convictingInfo -> {
+                            adjourn.setConvictionDate(convictingInfo.getConvictionDate().toLocalDate());
+                            adjourn.setConvictionCourt(convictingInfo.getConvictingCourt());
+
+                        });
             } else {
-                adjourn.setConvictionDate(adjourn
+                final LocalDate convictionDate = adjourn
                         .getOffenceDecisionInformation()
                         .stream()
                         .filter(OffenceDecisionInformation::isConviction)
                         .findFirst()
-                        .map(e -> decisionSavedAt.toLocalDate()).orElse(null));
+                        .map(e -> decisionSavedAt.toLocalDate()).orElse(null);
+                if (nonNull(convictionDate)) {
+                    adjourn.setConvictionDate(convictionDate);
+                    adjourn.setConvictionCourt(sessionCourt);
+                }
             }
         }
 
@@ -666,40 +691,52 @@ public class CaseDecisionHandler {
         public void visit(final ReferForCourtHearing referForCourtHearing) {
             if (offenceHasPreviousConviction(referForCourtHearing)) {
                 referForCourtHearing.getOffenceIds().stream()
-                        .map(state::getOffencePreviousConvictionDate)
+                        .map(state::getOffenceConvictionInfo)
                         .filter(Objects::nonNull)
                         .findFirst()
-                        .ifPresent(convictionDate ->
-                                referForCourtHearing.setConvictionDate(convictionDate.toLocalDate()));
+                        .ifPresent(convictingInfo -> {
+                            referForCourtHearing.setConvictionDate(convictingInfo.getConvictionDate().toLocalDate());
+                            referForCourtHearing.setConvictingCourt(convictingInfo.getConvictingCourt());
+                        });
             } else {
-                referForCourtHearing.setConvictionDate(referForCourtHearing
+                final LocalDate convictionDate = referForCourtHearing
                         .getOffenceDecisionInformation()
                         .stream()
                         .filter(OffenceDecisionInformation::isConviction)
                         .findFirst()
-                        .map(e -> decisionSavedAt.toLocalDate()).orElse(null));
+                        .map(e -> decisionSavedAt.toLocalDate()).orElse(null);
+                if (convictionDate != null) {
+                    referForCourtHearing.setConvictionDate(convictionDate);
+                    referForCourtHearing.setConvictingCourt(sessionCourt);
+                }
             }
+
         }
 
         @Override
         public void visit(final Discharge discharge) {
             if (offenceHasPreviousConviction(discharge)) {
                 final UUID offenceId = discharge.getOffenceDecisionInformation().getOffenceId();
-                final ZonedDateTime convictionDate = state.getOffencePreviousConvictionDate(offenceId);
-                discharge.setConvictionDate(convictionDate.toLocalDate());
+                final ConvictingInformation convictingInfo = state.getOffenceConvictionInfo(offenceId);
+                discharge.setConvictionDate(convictingInfo.getConvictionDate().toLocalDate());
+                discharge.setConvictingCourt(convictingInfo.getConvictingCourt());
             } else {
                 discharge.setConvictionDate(decisionSavedAt.toLocalDate());
+                discharge.setConvictingCourt(sessionCourt);
             }
+
         }
 
         @Override
         public void visit(final FinancialPenalty financialPenalty) {
             if (offenceHasPreviousConviction(financialPenalty)) {
                 final UUID offenceId = financialPenalty.getOffenceDecisionInformation().getOffenceId();
-                final ZonedDateTime convictionDate = state.getOffencePreviousConvictionDate(offenceId);
-                financialPenalty.setConvictionDate(convictionDate.toLocalDate());
+                final ConvictingInformation convictingInformation = state.getOffenceConvictionInfo(offenceId);
+                financialPenalty.setConvictionDate(convictingInformation.getConvictionDate().toLocalDate());
+                financialPenalty.setConvictingCourt(convictingInformation.getConvictingCourt());
             } else {
                 financialPenalty.setConvictionDate(decisionSavedAt.toLocalDate());
+                financialPenalty.setConvictingCourt(sessionCourt);
             }
         }
 
@@ -717,10 +754,12 @@ public class CaseDecisionHandler {
         public void visit(final NoSeparatePenalty noSeparatePenalty) {
             if (offenceHasPreviousConviction(noSeparatePenalty)) {
                 final UUID offenceId = noSeparatePenalty.getOffenceDecisionInformation().getOffenceId();
-                final ZonedDateTime convictionDate = state.getOffencePreviousConvictionDate(offenceId);
-                noSeparatePenalty.setConvictionDate(convictionDate.toLocalDate());
-            }  else {
+                final ConvictingInformation convictingInformation = state.getOffenceConvictionInfo(offenceId);
+                noSeparatePenalty.setConvictionDate(convictingInformation.getConvictionDate().toLocalDate());
+                noSeparatePenalty.setConvictingCourt(convictingInformation.getConvictingCourt());
+            } else {
                 noSeparatePenalty.setConvictionDate(decisionSavedAt.toLocalDate());
+                noSeparatePenalty.setConvictingCourt(sessionCourt);
             }
         }
 
@@ -731,6 +770,7 @@ public class CaseDecisionHandler {
 
     }
 
+    @SuppressWarnings("PMD.BeanMembersShouldSerialize")
     private static class PressRestrictableOffenceDecisionVistor implements OffenceDecisionVisitor {
 
         private final CaseAggregateState state;

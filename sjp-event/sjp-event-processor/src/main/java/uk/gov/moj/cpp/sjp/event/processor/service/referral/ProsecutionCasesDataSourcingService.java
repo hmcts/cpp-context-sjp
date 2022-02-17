@@ -104,7 +104,8 @@ public class ProsecutionCasesDataSourcingService {
                 caseReferredForCourtHearing,
                 pleaMitigation,
                 offenceDefinition,
-                referredOffences);
+                referredOffences,
+                emptyEnvelopeWithReferralEventMetadata);
     }
 
     private List<Offence> getReferredOffences(

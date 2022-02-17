@@ -25,6 +25,8 @@ import uk.gov.moj.cpp.sjp.domain.CaseReadinessReason;
 import uk.gov.moj.cpp.sjp.domain.ContactDetails;
 import uk.gov.moj.cpp.sjp.domain.Interpreter;
 import uk.gov.moj.cpp.sjp.domain.aggregate.domain.DocumentCountByDocumentType;
+import uk.gov.moj.cpp.sjp.domain.decision.ConvictingDecision;
+import uk.gov.moj.cpp.sjp.domain.decision.ConvictingInformation;
 import uk.gov.moj.cpp.sjp.domain.decision.DecisionType;
 import uk.gov.moj.cpp.sjp.domain.decision.OffenceDecision;
 import uk.gov.moj.cpp.sjp.domain.decision.ReferForCourtHearing;
@@ -55,6 +57,7 @@ import org.apache.commons.lang.StringUtils;
 /**
  * Defines the case aggregate state.
  */
+@SuppressWarnings("PMD.BeanMembersShouldSerialize")
 public class CaseAggregateState implements AggregateState {
 
 
@@ -120,7 +123,7 @@ public class CaseAggregateState implements AggregateState {
     private final Set<WithdrawalRequestsStatus> withdrawalRequests = new HashSet<>();
 
     private final Map<UUID, OffenceDecision> offenceDecisionsByOffenceId = new HashMap<>();
-    private final Map<UUID, ZonedDateTime> offenceConvictionDates = new HashMap<>();
+    private final Map<UUID, ConvictingInformation> offenceConvictionDetails = new HashMap<>();
 
     private Set<UUID> sessionIds = new HashSet<>();
 
@@ -146,7 +149,7 @@ public class CaseAggregateState implements AggregateState {
 
     private DecisionSaved decisionSavedWithFinancialImposition;
 
-    private final List<CaseOffenceListedInCriminalCourts>  offenceHearings = new ArrayList<>();
+    private final List<CaseOffenceListedInCriminalCourts> offenceHearings = new ArrayList<>();
     private DecisionSaved latestReferToCourtDecision;
     private boolean caseListed;
 
@@ -746,8 +749,8 @@ public class CaseAggregateState implements AggregateState {
     }
 
     public boolean isPostConviction() {
-        return !this.offenceConvictionDates.isEmpty() &&
-                this.offenceConvictionDates.values()
+        return !this.offenceConvictionDetails.isEmpty() &&
+                this.offenceConvictionDetails.values()
                         .stream()
                         .anyMatch(Objects::nonNull);
     }
@@ -763,7 +766,6 @@ public class CaseAggregateState implements AggregateState {
                 .collect(toList());
         uuids.stream().forEach(this.caseDocuments::remove);
     }
-
 
 
     /**
@@ -849,7 +851,7 @@ public class CaseAggregateState implements AggregateState {
         return unmodifiableSet(sessionIds);
     }
 
-    public void updateOffenceConvictionDates(final ZonedDateTime decisionSavedAt, final List<OffenceDecision> offenceDecisions) {
+    public void updateOffenceConvictionDetails(final ZonedDateTime decisionSavedAt, final List<OffenceDecision> offenceDecisions, final UUID sessionId) {
         final boolean setAsideDecision = offenceDecisions
                 .stream()
                 .allMatch(e -> e.getType().equals(DecisionType.SET_ASIDE));
@@ -861,7 +863,7 @@ public class CaseAggregateState implements AggregateState {
                     offencesDecision -> offencesDecision.getOffenceIds().forEach(
                             offenceId -> {
                                 if (offencesDecision.isConviction(offenceId)) {
-                                    this.offenceConvictionDates.put(offenceId, decisionSavedAt);
+                                    this.offenceConvictionDetails.put(offenceId, new ConvictingInformation(decisionSavedAt, ((ConvictingDecision) offencesDecision).getConvictingCourt(), sessionId, offenceId));
                                 }
                             }
                     )
@@ -869,24 +871,30 @@ public class CaseAggregateState implements AggregateState {
         }
     }
 
+    public void resolveConvictionCourtDetails(final List<ConvictingInformation> convictingInformation) {
+        convictingInformation.forEach(
+                 convictingInfo ->
+                    this.offenceConvictionDetails.put(convictingInfo.getOffenceId(), convictingInfo)
+                );
+    }
     public boolean offenceHasPreviousConviction(final UUID offenceId) {
-        return offenceConvictionDates.containsKey(offenceId);
+        return offenceConvictionDetails.containsKey(offenceId);
     }
 
     public Set<UUID> getOffencesWithConviction() {
-        return offenceConvictionDates.keySet();
+        return offenceConvictionDetails.keySet();
     }
 
-    public ZonedDateTime getOffencePreviousConvictionDate(final UUID offenceId) {
-        return offenceConvictionDates.get(offenceId);
+    public ConvictingInformation getOffenceConvictionInfo(final UUID offenceId) {
+        return offenceConvictionDetails.get(offenceId);
     }
 
     public void clearOffenceConvictionDates() {
-        offenceConvictionDates.clear();
+        offenceConvictionDetails.clear();
     }
 
     public void removeOffenceConvictionDate(final UUID offenceId) {
-        this.offenceConvictionDates.remove(offenceId);
+        this.offenceConvictionDetails.remove(offenceId);
     }
 
     public boolean isSetAside() {
@@ -913,9 +921,13 @@ public class CaseAggregateState implements AggregateState {
         return offencesHavingPreviousPressRestriction.contains(offenceId);
     }
 
-    public boolean isManagedByAtcm() { return managedByAtcm; }
+    public boolean isManagedByAtcm() {
+        return managedByAtcm;
+    }
 
-    public void setManagedByAtcm(final boolean managedByAtcm) { this.managedByAtcm = managedByAtcm; }
+    public void setManagedByAtcm(final boolean managedByAtcm) {
+        this.managedByAtcm = managedByAtcm;
+    }
 
     public BigDecimal getCosts() {
         return costs;

@@ -1,8 +1,5 @@
 package uk.gov.moj.cpp.sjp.domain.aggregate;
 
-import static java.util.stream.Stream.empty;
-import static uk.gov.moj.cpp.sjp.domain.aggregate.handler.EnforcementCheckIfNotificationRequired.INSTANCE;
-
 import static uk.gov.moj.cpp.sjp.domain.aggregate.handler.EnforcementCheckIfNotificationRequired.INSTANCE;
 
 import uk.gov.justice.core.courts.CourtCentre;
@@ -43,6 +40,7 @@ import uk.gov.moj.cpp.sjp.domain.aggregate.handler.DeleteDocsHandler;
 import uk.gov.moj.cpp.sjp.domain.aggregate.handler.FinancialImpositionHandler;
 import uk.gov.moj.cpp.sjp.domain.aggregate.handler.OffenceWithdrawalHandler;
 import uk.gov.moj.cpp.sjp.domain.aggregate.handler.ResolveCaseStatusHandler;
+import uk.gov.moj.cpp.sjp.domain.aggregate.handler.ResolveConvictionCourtHandler;
 import uk.gov.moj.cpp.sjp.domain.aggregate.handler.ResubmitResultsHandler;
 import uk.gov.moj.cpp.sjp.domain.aggregate.handler.SetDatesToAvoidRequiredAggregateHandler;
 import uk.gov.moj.cpp.sjp.domain.aggregate.handler.UpdateAllFinancialMeansAggregateHandler;
@@ -62,6 +60,7 @@ import uk.gov.moj.cpp.sjp.event.CCApplicationStatusCreated;
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
@@ -112,6 +111,7 @@ public class CaseAggregate implements Aggregate {
         }
         return Stream.empty();
     }
+
     public Stream<Object> markCaseReopened(final CaseReopenDetails caseReopenDetails) {
         return applyAndResolveCaseReadiness(() -> CaseCoreHandler.INSTANCE.markCaseReopened(caseReopenDetails, state));
     }
@@ -196,7 +196,7 @@ public class CaseAggregate implements Aggregate {
     }
 
     public Stream<Object> addDatesToAvoid(final String datesToAvoid, final String userProsecutingAuthority) {
-            return applyAndResolveCaseReadiness(() -> CaseCoreHandler.INSTANCE.addDatesToAvoid(datesToAvoid, state, userProsecutingAuthority));
+        return applyAndResolveCaseReadiness(() -> CaseCoreHandler.INSTANCE.addDatesToAvoid(datesToAvoid, state, userProsecutingAuthority));
     }
 
     public Stream<Object> expireDefendantResponseTimer() {
@@ -293,6 +293,10 @@ public class CaseAggregate implements Aggregate {
         return applyAndResolveCaseReadiness(() -> CaseDecisionHandler.INSTANCE.saveDecision(decision, state, session));
     }
 
+    public Stream<Object> resolveConvictionCourt(final UUID caseId, final Map<UUID, Session> sessions) {
+        return applyAndResolveCaseReadiness(() -> ResolveConvictionCourtHandler.INSTANCE.resolveConvictionCourt(caseId, state, sessions));
+    }
+
     public Stream<Object> saveApplicationDecision(final SaveApplicationDecision applicationDecision,
                                                   final Session session) {
         return applyAndResolveCaseReadiness(() ->
@@ -313,12 +317,12 @@ public class CaseAggregate implements Aggregate {
 
     public Stream<Object> updateCaseApplicationStatus(final UUID caseId, final UUID applicationId, final ApplicationStatus applicationStatus) {
 
-        if(applicationStatus.equals(ApplicationStatus.STATUTORY_DECLARATION_PENDING)
+        if (applicationStatus.equals(ApplicationStatus.STATUTORY_DECLARATION_PENDING)
                 || applicationStatus.equals(ApplicationStatus.REOPENING_PENDING)
                 || applicationStatus.equals(ApplicationStatus.APPEAL_PENDING)) {
 
             final Stream.Builder<Object> streamBuilder = Stream.builder();
-            if(state.isCaseCompleted()) {
+            if (state.isCaseCompleted()) {
                 streamBuilder.add(new CCApplicationStatusCreated(caseId, applicationId, applicationStatus));
             }
             return apply(streamBuilder.build());

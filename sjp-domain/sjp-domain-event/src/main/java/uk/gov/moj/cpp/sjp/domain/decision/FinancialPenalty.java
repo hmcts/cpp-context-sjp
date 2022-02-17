@@ -14,7 +14,8 @@ import java.util.UUID;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-public class FinancialPenalty extends DisqualifyEndorseDecision {
+@SuppressWarnings("PMD.BeanMembersShouldSerialize")
+public class FinancialPenalty extends DisqualifyEndorseDecision implements ConvictingDecision {
 
     private BigDecimal fine;
 
@@ -29,6 +30,8 @@ public class FinancialPenalty extends DisqualifyEndorseDecision {
     private BigDecimal excisePenalty;
 
     private LocalDate convictionDate;
+
+    private SessionCourt convictingCourt;
 
     @SuppressWarnings("squid:S00107")
     public FinancialPenalty(@JsonProperty("id") final UUID id,
@@ -104,6 +107,12 @@ public class FinancialPenalty extends DisqualifyEndorseDecision {
 
     public void setConvictionDate(final LocalDate convictionDate) {
         this.convictionDate = convictionDate;
+    }
+
+    public SessionCourt getConvictingCourt() { return convictingCourt; }
+
+    public void setConvictingCourt(final SessionCourt convictingCourt) {
+        this.convictingCourt = convictingCourt;
     }
 
     @Override

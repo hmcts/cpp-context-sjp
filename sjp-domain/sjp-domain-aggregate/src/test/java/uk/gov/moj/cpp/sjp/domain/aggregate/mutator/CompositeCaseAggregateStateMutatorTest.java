@@ -1,7 +1,34 @@
 package uk.gov.moj.cpp.sjp.domain.aggregate.mutator;
 
-import com.google.common.collect.Sets;
-import org.junit.Test;
+import static com.google.common.collect.Lists.newArrayList;
+import static java.time.ZonedDateTime.now;
+import static java.util.Arrays.asList;
+import static java.util.UUID.randomUUID;
+import static org.hamcrest.Matchers.allOf;
+import static org.hamcrest.Matchers.contains;
+import static org.hamcrest.Matchers.containsInAnyOrder;
+import static org.hamcrest.Matchers.empty;
+import static org.hamcrest.Matchers.hasItem;
+import static org.hamcrest.Matchers.hasProperty;
+import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.iterableWithSize;
+import static org.hamcrest.Matchers.not;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
+import static uk.gov.justice.json.schemas.domains.sjp.ApplicationStatus.STATUTORY_DECLARATION_GRANTED;
+import static uk.gov.justice.json.schemas.domains.sjp.ApplicationStatus.STATUTORY_DECLARATION_PENDING;
+import static uk.gov.justice.json.schemas.domains.sjp.ApplicationType.STAT_DEC;
+import static uk.gov.moj.cpp.sjp.domain.Priority.MEDIUM;
+import static uk.gov.moj.cpp.sjp.domain.SessionType.MAGISTRATE;
+import static uk.gov.moj.cpp.sjp.domain.decision.OffenceDecisionInformation.createOffenceDecisionInformation;
+import static uk.gov.moj.cpp.sjp.domain.testutils.builders.DischargeBuilder.withDefaults;
+import static uk.gov.moj.cpp.sjp.domain.verdict.VerdictType.FOUND_GUILTY;
+import static uk.gov.moj.cpp.sjp.event.CaseReferralForCourtHearingRejectionRecorded.caseReferralForCourtHearingRejectionRecorded;
+import static uk.gov.moj.cpp.sjp.event.CaseReferredForCourtHearing.caseReferredForCourtHearing;
+
 import uk.gov.moj.cpp.sjp.domain.Address;
 import uk.gov.moj.cpp.sjp.domain.Benefits;
 import uk.gov.moj.cpp.sjp.domain.CaseAssignmentType;
@@ -15,12 +42,16 @@ import uk.gov.moj.cpp.sjp.domain.aggregate.state.Application;
 import uk.gov.moj.cpp.sjp.domain.aggregate.state.CaseAggregateState;
 import uk.gov.moj.cpp.sjp.domain.aggregate.state.FinancialImpositionExportDetails;
 import uk.gov.moj.cpp.sjp.domain.aggregate.state.WithdrawalRequestsStatus;
+import uk.gov.moj.cpp.sjp.domain.decision.Adjourn;
+import uk.gov.moj.cpp.sjp.domain.decision.SessionCourt;
+import uk.gov.moj.cpp.sjp.domain.decision.ConvictingInformation;
 import uk.gov.moj.cpp.sjp.domain.decision.Discharge;
 import uk.gov.moj.cpp.sjp.domain.decision.OffenceDecision;
 import uk.gov.moj.cpp.sjp.domain.decision.Withdraw;
 import uk.gov.moj.cpp.sjp.domain.plea.Plea;
 import uk.gov.moj.cpp.sjp.domain.plea.PleaMethod;
 import uk.gov.moj.cpp.sjp.domain.plea.PleaType;
+import uk.gov.moj.cpp.sjp.domain.testutils.builders.AdjournBuilder;
 import uk.gov.moj.cpp.sjp.domain.verdict.VerdictType;
 import uk.gov.moj.cpp.sjp.event.AllOffencesWithdrawalRequestCancelled;
 import uk.gov.moj.cpp.sjp.event.AllOffencesWithdrawalRequested;
@@ -54,6 +85,7 @@ import uk.gov.moj.cpp.sjp.event.PleaUpdated;
 import uk.gov.moj.cpp.sjp.event.TrialRequestCancelled;
 import uk.gov.moj.cpp.sjp.event.VerdictCancelled;
 import uk.gov.moj.cpp.sjp.event.decision.ApplicationDecisionSetAside;
+import uk.gov.moj.cpp.sjp.event.decision.ConvictionCourtResolved;
 import uk.gov.moj.cpp.sjp.event.decision.DecisionSaved;
 import uk.gov.moj.cpp.sjp.event.decommissioned.CaseAssignmentDeleted;
 import uk.gov.moj.cpp.sjp.event.session.CaseAssigned;
@@ -66,34 +98,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
-import static com.google.common.collect.Lists.newArrayList;
-import static java.time.ZonedDateTime.now;
-import static java.util.Arrays.asList;
-import static java.util.UUID.randomUUID;
-import static org.hamcrest.Matchers.allOf;
-import static org.hamcrest.Matchers.contains;
-import static org.hamcrest.Matchers.containsInAnyOrder;
-import static org.hamcrest.Matchers.empty;
-import static org.hamcrest.Matchers.hasItem;
-import static org.hamcrest.Matchers.hasProperty;
-import static org.hamcrest.Matchers.hasSize;
-import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.iterableWithSize;
-import static org.hamcrest.Matchers.not;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
-import static uk.gov.justice.json.schemas.domains.sjp.ApplicationStatus.STATUTORY_DECLARATION_GRANTED;
-import static uk.gov.justice.json.schemas.domains.sjp.ApplicationStatus.STATUTORY_DECLARATION_PENDING;
-import static uk.gov.justice.json.schemas.domains.sjp.ApplicationType.STAT_DEC;
-import static uk.gov.moj.cpp.sjp.domain.Priority.MEDIUM;
-import static uk.gov.moj.cpp.sjp.domain.SessionType.MAGISTRATE;
-import static uk.gov.moj.cpp.sjp.domain.decision.OffenceDecisionInformation.createOffenceDecisionInformation;
-import static uk.gov.moj.cpp.sjp.domain.testutils.builders.DischargeBuilder.withDefaults;
-import static uk.gov.moj.cpp.sjp.domain.verdict.VerdictType.FOUND_GUILTY;
-import static uk.gov.moj.cpp.sjp.event.CaseReferralForCourtHearingRejectionRecorded.caseReferralForCourtHearingRejectionRecorded;
-import static uk.gov.moj.cpp.sjp.event.CaseReferredForCourtHearing.caseReferredForCourtHearing;
+import com.google.common.collect.Sets;
+import org.junit.Test;
 
 public class CompositeCaseAggregateStateMutatorTest {
 
@@ -462,6 +468,60 @@ public class CompositeCaseAggregateStateMutatorTest {
     }
 
     @Test
+    public void shouldMutateOnConvictionCourtResolvedEvent() {
+
+        final SessionCourt convictingCourt = new SessionCourt("1234","001");
+        final UUID sessionId = randomUUID();
+        final UUID caseId = randomUUID();
+        final UUID offenceId1 = randomUUID();
+        final UUID offenceId2 = randomUUID();
+        final ConvictingInformation convictingInformation = new ConvictingInformation(ZonedDateTime.now(),convictingCourt,sessionId, offenceId2);
+        final List<ConvictingInformation> convictingInformationList = newArrayList(convictingInformation);
+
+        final ConvictionCourtResolved convictionCourtResolved = new ConvictionCourtResolved(caseId,convictingInformationList);
+
+        final Adjourn adjourn = AdjournBuilder.withDefaults()
+                .addOffenceDecisionInformation(offenceId1, FOUND_GUILTY)
+                .build();
+        caseAggregateState.updateOffenceConvictionDetails(now(), asList(adjourn), sessionId);
+        assertThat(caseAggregateState.getOffencesWithConviction(), not(empty()));
+
+        compositeCaseAggregateStateMutator.apply(convictionCourtResolved, caseAggregateState);
+
+        assertTrue(caseAggregateState.getOffencesWithConviction().contains(offenceId1));
+        assertTrue(caseAggregateState.getOffencesWithConviction().contains(offenceId2));
+        assertThat(caseAggregateState.getOffencesWithConviction(),hasSize(2));
+    }
+
+    @Test
+    public void shouldMutateOnConvictionCourtResolvedEventToUpdateOffenceDetail() {
+
+        final SessionCourt convictingCourt = new SessionCourt("1234","001");
+        final UUID sessionId = randomUUID();
+        final UUID caseId = randomUUID();
+        final UUID offenceId1 = randomUUID();
+        final UUID offenceId2 = randomUUID();
+
+        //Initially offence is adjourned
+        final Adjourn adjourn = AdjournBuilder.withDefaults()
+                .addOffenceDecisionInformation(offenceId1, FOUND_GUILTY)
+                .build();
+
+        caseAggregateState.updateOffenceConvictionDetails(now(), asList(adjourn), sessionId);
+        assertThat(caseAggregateState.getOffencesWithConviction(), not(empty()));
+
+        //for same offence now convicted
+        final ConvictingInformation convictingInformation = new ConvictingInformation(ZonedDateTime.now(),convictingCourt,sessionId, offenceId1);
+        final List<ConvictingInformation> convictingInformationList = newArrayList(convictingInformation);
+
+        final ConvictionCourtResolved convictionCourtResolved = new ConvictionCourtResolved(caseId,convictingInformationList);
+        compositeCaseAggregateStateMutator.apply(convictionCourtResolved, caseAggregateState);
+        assertTrue(caseAggregateState.getOffencesWithConviction().contains(offenceId1));
+        assertThat(caseAggregateState.getOffencesWithConviction(),hasSize(1));
+    }
+
+
+    @Test
     public void shouldMutateStateOnDeleteDocsStarted() {
         final FinancialMeansDeleteDocsStarted deleteDocsStarted = new FinancialMeansDeleteDocsStarted(caseId, defendantId);
         compositeCaseAggregateStateMutator.apply(deleteDocsStarted, caseAggregateState);
@@ -473,7 +533,7 @@ public class CompositeCaseAggregateStateMutatorTest {
         final Discharge discharge = withDefaults()
                 .offenceDecisionInformation(createOffenceDecisionInformation(offenceId, FOUND_GUILTY))
                 .build();
-        caseAggregateState.updateOffenceConvictionDates(now(), asList(discharge));
+        caseAggregateState.updateOffenceConvictionDetails(now(), asList(discharge), null);
         assertThat(caseAggregateState.getOffencesWithConviction(), not(empty()));
 
         final VerdictCancelled verdictCancelled = new VerdictCancelled(offenceId);

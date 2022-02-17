@@ -11,7 +11,12 @@ import uk.gov.justice.services.eventsourcing.source.core.exception.EventStreamEx
 import uk.gov.justice.services.messaging.Envelope;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.sjp.domain.aggregate.CaseAggregate;
+import uk.gov.moj.cpp.sjp.domain.aggregate.Session;
+import uk.gov.moj.cpp.sjp.domain.decision.ConvictingInformation;
 
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 import java.util.function.Function;
 import java.util.stream.Stream;
@@ -48,11 +53,25 @@ public class CaseCommandHandler {
     protected void applyToCaseAggregate(final UUID caseId, final Envelope<?> command, final Function<CaseAggregate, Stream<Object>> function) throws EventStreamException {
         final EventStream eventStream = eventSource.getStreamById(caseId);
         final CaseAggregate aCase = aggregateService.get(eventStream, CaseAggregate.class);
-
         final Stream<Object> events = function.apply(aCase);
         final JsonEnvelope jsonEnvelope = envelopeFrom(command.metadata(), JsonValue.NULL);
         eventStream.append(events.map(enveloper.withMetadataFrom(jsonEnvelope)));
 
+    }
+
+    protected Map<UUID, Session> getSessionFromCaseAggregate(final UUID caseId) {
+        final EventStream eventStream = eventSource.getStreamById(caseId);
+        final CaseAggregate aCase = aggregateService.get(eventStream, CaseAggregate.class);
+        final Set<UUID> offenceIds = aCase.getState().getOffencesWithConviction();
+        final Map<UUID, Session> sessions = new HashMap<>();
+        for (final UUID offenceId : offenceIds) {
+            final ConvictingInformation convictionInfo = aCase.getState().getOffenceConvictionInfo(offenceId);
+            final UUID sessionId = convictionInfo.getSessionId();
+            final EventStream sessionEventStream = eventSource.getStreamById(sessionId);
+            final Session session = aggregateService.get(sessionEventStream, Session.class);
+            sessions.put(offenceId, session);
+        }
+        return sessions;
     }
 
     protected UUID getCaseId(final JsonObject payload) {

@@ -8,6 +8,7 @@ import static uk.gov.justice.services.messaging.Envelope.metadataBuilder;
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
 
 import uk.gov.justice.core.courts.CourtCentre;
+import uk.gov.justice.core.courts.JudicialResult;
 import uk.gov.justice.core.courts.Offence;
 import uk.gov.justice.core.courts.Plea;
 import uk.gov.justice.core.courts.Verdict;
@@ -110,6 +111,8 @@ public class OffencesConverter {
                     .map(ConvictionInfo::getConvictingCourt)
                     .orElse(null);
 
+        final List<JudicialResult> judicialResults = resultsAggregate.getResults(offence.getId());
+
         return Offence.offence()
                 .withEndorsableFlag(offence.getEndorsable())
                 .withId(offence.getId())//Mandatory
@@ -128,7 +131,7 @@ public class OffencesConverter {
                 .withConvictingCourt(ofNullable(courtCentre).orElse(null))
                 .withOffenceFacts(offenceFactsConverter.getOffenceFacts(offence))
                 .withModeOfTrial(MODE_OF_TRIAL)
-                .withJudicialResults(resultsAggregate.getResults(offence.getId()))
+                .withJudicialResults(judicialResults.isEmpty() ?  null : judicialResults)
                 .withOffenceTitle(ofNullable(offenceObject).map(e -> e.getString(TITLE, null)).orElse(null))
                 .withOffenceLegislation(ofNullable(offenceObject).map(e -> e.getString("legislation", null)).orElse(null))
                 .withOffenceTitleWelsh(ofNullable(offenceObject).map(e -> e.getString("welshoffencetitle", null)).orElse(null))

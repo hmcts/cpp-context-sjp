@@ -1,8 +1,10 @@
 package uk.gov.moj.cpp.sjp.event.processor.results.converter;
 
 import static org.hamcrest.CoreMatchers.is;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.isNull;
 import static org.mockito.Mockito.when;
 import static uk.gov.justice.core.courts.CourtCentre.courtCentre;
 import static uk.gov.moj.cpp.sjp.event.processor.utils.FileUtil.getFileContentAsJson;
@@ -88,6 +90,28 @@ public class OffencesConverterTest {
 
 
         assertThat(offencesConverter.getOffenceBuilderWithPopulation(offence,offencesReferenceData,resultsAggregate,null).build().getOffenceFacts(), is(offenceFacts));
+
+    }
+
+    @Test
+    public void shouldReturnNullJudicialResultsWhenThereIsNoOffenceResults() {
+
+        UUID offenceId = UUID.randomUUID();
+        Offence offence = Offence.offence()
+                .withId(offenceId)
+                .withVehicleMake("AAA")
+                .withVehicleRegistrationMark("BBB")
+                .build();
+
+        final JsonObject offencesReferenceData = getFileContentAsJson("resultsconverter/offenceReferenceData.json", new HashMap<>());
+
+
+
+        ConvictionInfo convictionInfo = new ConvictionInfo(UUID.randomUUID(), VerdictType.FOUND_GUILTY, LocalDate.now(), courtCentre);
+        resultsAggregate.putConvictionInfo(offenceId,convictionInfo);
+
+
+        assertNull(offencesConverter.getOffenceBuilderWithPopulation(offence,offencesReferenceData,resultsAggregate,null).build().getJudicialResults());
 
     }
 

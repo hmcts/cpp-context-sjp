@@ -70,6 +70,7 @@ import uk.gov.moj.cpp.sjp.event.TrialRequested;
 import uk.gov.moj.cpp.sjp.event.VerdictCancelled;
 import uk.gov.moj.cpp.sjp.event.decision.ApplicationDecisionSetAside;
 import uk.gov.moj.cpp.sjp.event.decision.ConvictionCourtResolved;
+import uk.gov.moj.cpp.sjp.event.decision.DecisionResubmitted;
 import uk.gov.moj.cpp.sjp.event.decision.DecisionSaved;
 import uk.gov.moj.cpp.sjp.event.decision.DecisionSetAside;
 import uk.gov.moj.cpp.sjp.event.decision.DecisionSetAsideReset;
@@ -278,6 +279,8 @@ final class CompositeCaseAggregateStateMutator implements AggregateStateMutator<
                         .orElse(new FinancialImpositionExportDetails());
                 fiExportDetails.setCorrelationId(event.getCorrelationId());
                 state.addFinancialImpositionExportDetails(defendantId, fiExportDetails);
+                state.setFinancialImpositionCorelationId(true);
+
             });
 
     private static final AggregateStateMutator<FinancialImpositionAccountNumberAdded, CaseAggregateState> FINANCIAL_IMPOSITION_ACCOUNT_NUMBER_ADDED_MUTATOR =
@@ -301,6 +304,10 @@ final class CompositeCaseAggregateStateMutator implements AggregateStateMutator<
 
     private static final AggregateStateMutator<PaymentTermsChanged, CaseAggregateState> PAYMENT_TERMS_CHANGED_CASE_AGGREGATE_STATE_AGGREGATE_STATE_MUTATOR =
             ((event, state) -> state.setPaymentTermsUpdated(true));
+
+    private static final AggregateStateMutator<DecisionResubmitted, CaseAggregateState> DECISION_RESUBMITTED_CASE_AGGREGATE_STATE_AGGREGATE_STATE_MUTATOR =
+            ((event, state) -> state.setDecisionResubmitted(true));
+
 
     private static final AggregateStateMutator<CaseOffenceListedInCriminalCourts, CaseAggregateState> CASE_OFFENCE_LISTED_IN_CRIMINAL_COURTS_MUTATOR =
             ((event, state) -> state.updateOffenceHearings(event));
@@ -379,6 +386,7 @@ final class CompositeCaseAggregateStateMutator implements AggregateStateMutator<
                 .put(CaseListedInCriminalCourtsV2.class, CASE_LISTED_IN_CRIMINAL_COURTS_V_2)
                 .put(PaymentTermsChanged.class, PAYMENT_TERMS_CHANGED_CASE_AGGREGATE_STATE_AGGREGATE_STATE_MUTATOR)
                 .put(ConvictionCourtResolved.class, RESOLVE_CONVICTION_COURT_DETAILS_MUTATOR)
+                .put(DecisionResubmitted.class, DECISION_RESUBMITTED_CASE_AGGREGATE_STATE_AGGREGATE_STATE_MUTATOR)
                 .build();
     }
 

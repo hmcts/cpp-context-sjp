@@ -142,6 +142,9 @@ public class CaseAggregateState implements AggregateState {
     private boolean managedByAtcm;
     private boolean paymentTermsUpdated;
 
+    private boolean decisionResubmitted;
+    private boolean correlationIdAllreadyGenerated;
+
     private final Set<UUID> pressRestrictableOffenceIds = new HashSet<>();
     private final Set<UUID> offencesHavingPreviousPressRestriction = new HashSet<>();
     private final Map<UUID, DisabilityNeeds> defendantsDisabilityNeeds = new HashMap<>();
@@ -999,8 +1002,24 @@ public class CaseAggregateState implements AggregateState {
         return paymentTermsUpdated;
     }
 
+    public boolean isDecisionResubmitted() {
+        return decisionResubmitted;
+    }
+
+    public boolean isCorrelationIdAllreadyGenerated() {
+        return correlationIdAllreadyGenerated;
+    }
+
     public void setPaymentTermsUpdated(final boolean paymentTermsUpdated) {
         this.paymentTermsUpdated = paymentTermsUpdated;
+    }
+
+    public void setDecisionResubmitted(final boolean decisionResubmitted) {
+        this.decisionResubmitted = decisionResubmitted;
+    }
+
+    public void setFinancialImpositionCorelationId(final boolean correlationIdAllreadyGenerated) {
+        this.correlationIdAllreadyGenerated = correlationIdAllreadyGenerated;
     }
 
 

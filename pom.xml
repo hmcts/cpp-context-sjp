@@ -19,12 +19,12 @@
         <sonar.scm.provider>git</sonar.scm.provider>
         <assignment.version>6.0.0</assignment.version>
         <material.version>7.0.23</material.version>
-        <notification.notify.version>7.0.1</notification.notify.version>
+        <notification.notify.version>7.0.14</notification.notify.version>
         <referencedata.version>7.0.74</referencedata.version>
         <referencedata.offences.version>7.0.10</referencedata.offences.version>
         <scheduling.version>6.0.0</scheduling.version>
         <authorisation.service.version>0.1.49</authorisation.service.version>
-        <usersgroups.version>7.0.39</usersgroups.version>
+        <usersgroups.version>7.0.40</usersgroups.version>
         <progression.version>7.0.200</progression.version>
         <prosecutioncasefile.version>7.0.48</prosecutioncasefile.version>
         <access-control-sjp-providers.version>4.1.4-ATCM</access-control-sjp-providers.version>

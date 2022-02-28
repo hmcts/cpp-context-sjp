@@ -22,7 +22,7 @@ public class FinancialImpositionHandler {
     public Stream<Object> addFinancialImpositionCorrelationId(CaseAggregateState caseAggregateState,
                                                               final UUID defendantId,
                                                               final UUID correlationId) {
-        if (caseAggregateState.getDefendantId().equals(defendantId)) {
+        if (caseAggregateState.getDefendantId().equals(defendantId) && (!caseAggregateState.isCorrelationIdAllreadyGenerated() || caseAggregateState.isDecisionResubmitted())) {
             return of(new FinancialImpositionCorrelationIdAdded(caseAggregateState.getCaseId(), defendantId, correlationId));
         } else {
             return empty();

@@ -11,6 +11,7 @@ import static org.mockito.Mockito.when;
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
 import static uk.gov.justice.services.test.utils.core.enveloper.EnveloperFactory.createEnveloperWithEvents;
 import static uk.gov.justice.services.test.utils.core.matchers.EventStreamMatcher.eventStreamAppendedWith;
+import static uk.gov.justice.services.test.utils.core.matchers.EventStreamMatcher.eventStreamWithEmptyStream;
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMatcher.jsonEnvelope;
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMetadataMatcher.withMetadataEnvelopedFrom;
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopePayloadMatcher.payloadIsJson;
@@ -30,6 +31,7 @@ import uk.gov.moj.cpp.sjp.event.FinancialImpositionAccountNumberAddedBdf;
 import uk.gov.moj.cpp.sjp.event.FinancialImpositionCorrelationIdAdded;
 
 import java.util.UUID;
+import java.util.stream.Stream;
 
 import javax.json.JsonObject;
 
@@ -49,6 +51,10 @@ public class FinancialImpositionHandlerTest {
 
     @Mock
     private EventStream eventStream;
+
+
+    @Mock
+    private EventStream eventStream1;
 
     @Mock
     private EventSource eventSource;
@@ -97,6 +103,37 @@ public class FinancialImpositionHandlerTest {
 
                                 )))
                 )));
+    }
+
+    @Test
+    public void shouldNotRaiseFinancialImpositionCorrelatioNIdEventIfallReadyRaised() throws EventStreamException {
+        final JsonEnvelope command = createAddCorrelationIdCommand();
+        when(eventSource.getStreamById(CASE_ID)).thenReturn(eventStream);
+        financialImpositionHandler.addFinancialImpositionCorrelationId(command);
+        assertThat(eventStream, eventStreamAppendedWith(
+                streamContaining(
+                        jsonEnvelope(
+                                withMetadataEnvelopedFrom(command)
+                                        .withName("sjp.events.financial-imposition-correlation-id-added"),
+                                payloadIsJson(allOf(
+                                        withJsonPath("$.caseId", equalTo(CASE_ID.toString())),
+                                        withJsonPath("$.defendantId", equalTo(DEFENDANT_ID.toString())),
+                                        withJsonPath("$.correlationId", equalTo(CORRELATION_ID.toString()))
+
+                                )))
+                )));
+        final JsonObject payload = createObjectBuilder()
+                .add("caseId", CASE_ID.toString())
+                .add("defendantId", DEFENDANT_ID.toString())
+                .add("correlationId", randomUUID().toString())
+                .build();
+        final JsonEnvelope newCommand =envelopeFrom(
+                metadataWithRandomUUID("sjp.command.add-financial-imposition-correlation-id"),
+                payload);
+        when(eventSource.getStreamById(CASE_ID)).thenReturn(eventStream1);
+        financialImpositionHandler.addFinancialImpositionCorrelationId(newCommand);
+        assertThat(eventStream1, eventStreamWithEmptyStream());
+
     }
 
     @Test

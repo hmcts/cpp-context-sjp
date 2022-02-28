@@ -48,6 +48,7 @@ import uk.gov.moj.cpp.sjp.domain.decision.ConvictingInformation;
 import uk.gov.moj.cpp.sjp.domain.decision.Discharge;
 import uk.gov.moj.cpp.sjp.domain.decision.OffenceDecision;
 import uk.gov.moj.cpp.sjp.domain.decision.Withdraw;
+import uk.gov.moj.cpp.sjp.domain.decision.resubmit.PaymentTermsInfo;
 import uk.gov.moj.cpp.sjp.domain.plea.Plea;
 import uk.gov.moj.cpp.sjp.domain.plea.PleaMethod;
 import uk.gov.moj.cpp.sjp.domain.plea.PleaType;
@@ -86,6 +87,7 @@ import uk.gov.moj.cpp.sjp.event.TrialRequestCancelled;
 import uk.gov.moj.cpp.sjp.event.VerdictCancelled;
 import uk.gov.moj.cpp.sjp.event.decision.ApplicationDecisionSetAside;
 import uk.gov.moj.cpp.sjp.event.decision.ConvictionCourtResolved;
+import uk.gov.moj.cpp.sjp.event.decision.DecisionResubmitted;
 import uk.gov.moj.cpp.sjp.event.decision.DecisionSaved;
 import uk.gov.moj.cpp.sjp.event.decommissioned.CaseAssignmentDeleted;
 import uk.gov.moj.cpp.sjp.event.session.CaseAssigned;
@@ -468,6 +470,22 @@ public class CompositeCaseAggregateStateMutatorTest {
     }
 
     @Test
+    public void shouldMutateOnDecisionResubmittedEvent() {
+        final Withdraw offence1Decision = new Withdraw(randomUUID(), createOffenceDecisionInformation(randomUUID(), VerdictType.NO_VERDICT), randomUUID());
+        final Withdraw offence2Decision = new Withdraw(randomUUID(), createOffenceDecisionInformation(randomUUID(), VerdictType.NO_VERDICT), randomUUID());
+        final List<OffenceDecision> offenceDecisions = newArrayList(offence1Decision, offence2Decision);
+        final UUID sessionId = randomUUID();
+        final DecisionSaved decisionSaved = new DecisionSaved(randomUUID(), sessionId, caseId, now(), offenceDecisions);
+        final DecisionResubmitted decisionResubmitted = new DecisionResubmitted(decisionSaved, ZonedDateTime.now(),
+                new PaymentTermsInfo(10, false), "fixed","SW13213141");
+
+        compositeCaseAggregateStateMutator.apply(decisionResubmitted, caseAggregateState);
+
+        assertThat(caseAggregateState.isDecisionResubmitted(), is(true));
+
+    }
+
+    @Test
     public void shouldMutateOnConvictionCourtResolvedEvent() {
 
         final SessionCourt convictingCourt = new SessionCourt("1234","001");
@@ -579,6 +597,8 @@ public class CompositeCaseAggregateStateMutatorTest {
         assertThat(caseAggregateState.getDefendantFinancialImpositionExportDetails().values(), hasItem(allOf(
                 hasProperty("correlationId", is(correlationIdAdded.getCorrelationId()))
         )));
+        assertThat(caseAggregateState.isCorrelationIdAllreadyGenerated(), is(true));
+
     }
 
     @Test

@@ -235,5 +235,29 @@ public class CourtApplicationCreatedProcessorTest {
 
     }
 
+    @Test
+    public void processPublicEventCourtApplicationCreatedWithoutCase() {
+
+        final UUID applicationId = randomUUID();
+        final UUID sjpCaseId = randomUUID();
+
+        final JsonEnvelope event = envelopeFrom(metadataWithRandomUUID("public.progression.court-application-created"),payload);
+        final CourtApplication courtApplication = CourtApplication.courtApplication().
+                withId(applicationId)
+                .withType(CourtApplicationType.courtApplicationType()
+                        .withType(APPEAL)
+                        .withAppealFlag(true)
+                        .withLinkType(LinkType.SJP)
+                        .build())
+                .build();
+
+        when(payload.getJsonObject("courtApplication")).thenReturn(courtApplicationJsonObject);
+        when(jsonObjectToObjectConverter.convert(courtApplicationJsonObject, CourtApplication.class)).thenReturn(courtApplication);
+
+        processor.courtApplicationCreated(event);
+
+        verify(sender, times(0)).send(envelopeArgumentCaptor.capture());
+
+    }
 
 }

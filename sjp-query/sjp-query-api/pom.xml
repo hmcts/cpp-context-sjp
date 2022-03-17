@@ -111,7 +111,6 @@
         <dependency>
             <groupId>uk.gov.moj.cpp.system.documentgenerator</groupId>
             <artifactId>system-documentgenerator-client</artifactId>
-            <version>${document-generator-client.version}</version>
         </dependency>
         <!-- Unit Test Dependencies -->
         <dependency>

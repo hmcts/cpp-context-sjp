@@ -90,6 +90,7 @@
   ],
   "listedInCriminalCourts": false,
   "postConviction": false,
+  "hasPotentialCase": false,
   "assigned": false,
   "id": "${caseId}",
   "completed": false,

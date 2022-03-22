@@ -129,6 +129,15 @@ rule "sjp.query.financial-means"
     $outcome.setSuccess(true);
 end
 
+rule "sjp.query.defendant-potential-cases"
+  when
+    $outcome: Outcome();
+    $action: Action(name == "sjp.query.defendant-potential-cases");
+    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, RuleConstants.getQueryDefendantPotentialCases()))
+  then
+    $outcome.setSuccess(true);
+end
+
 rule "sjp.query.employer"
   when
     $outcome: Outcome();

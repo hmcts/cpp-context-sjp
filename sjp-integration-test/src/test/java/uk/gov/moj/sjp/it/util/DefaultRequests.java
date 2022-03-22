@@ -17,6 +17,7 @@ import java.util.UUID;
 public class DefaultRequests {
     private static final String GET_CASE_BY_ID_MEDIA_TYPE = "application/vnd.sjp.query.case+json";
     private static final String GET_PROSECUTION_CASE_BY_ID_MEDIA_TYPE = "application/vnd.sjp.query.prosecution-case+json";
+    private static final String GET_POTENTIAL_CASES_BY_DEFENDANT_ID_MEDIA_TYPE = "application/vnd.sjp.query.defendant-potential-cases+json";
     private static final String GET_CASE_BY_ID_WITH_DOCUMENT_METADATA_MEDIA_TYPE = "application/vnd.sjp.query.case-with-document-metadata+json";
 
     public static RequestParamsBuilder getCaseById(final UUID caseId) {
@@ -57,4 +58,9 @@ public class DefaultRequests {
                 .withHeader(HeaderConstants.USER_ID, USER_ID);
     }
 
+    public static RequestParamsBuilder getPotentialCasesByDefendantId(final UUID defendantId) {
+        return requestParams(getReadUrl("/defendant/" + defendantId + "/potential-cases"),
+                                        GET_POTENTIAL_CASES_BY_DEFENDANT_ID_MEDIA_TYPE)
+                .withHeader(HeaderConstants.USER_ID, USER_ID);
+    }
 }

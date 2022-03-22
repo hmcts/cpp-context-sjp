@@ -685,6 +685,7 @@ public class PleadOnlineIT extends BaseIntegrationTest {
         expectedParams.put("dateTimeCreated", dateTimeCreated);
         expectedParams.put("offenceId", offenceId);
         expectedParams.put("defendantId", defendantId);
+        expectedParams.put("hasPotentialCase", "false");
         expectedParams.put("pleaDate", pleaDate);
         expectedParams.put("caseStatus", caseStatus);
         expectedParams.put("speakWelsh", "false");

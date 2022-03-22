@@ -164,6 +164,27 @@ baseUri: http://localhost:8080/sjp-query-api/query/api/rest/sjp
                   schema: !include json/schema/sjp.query.financial-means.json
                   example: !include json/sjp.query.financial-means.json
 
+/defendant/{defendantId}/potential-cases:
+  uriParameters:
+    defendantId:
+      description: The ID of the defendant
+      type: string
+  get:
+    description: |
+      Retrieve defendant's other potential SJP and criminal court cases which are open or closed within last 28 days in posting/hearing date order
+      ...
+      (mapping):
+          responseType: application/vnd.sjp.query.defendant-potential-cases+json
+          name: sjp.query.defendant-potential-cases
+      ...
+    responses:
+      200:
+        description: OK
+        body:
+          application/vnd.sjp.query.defendant-potential-cases+json:
+            schema: !include json/schema/sjp.query.defendant-potential-cases.json
+            example: !include json/sjp.query.defendant-potential-cases.json
+
 /defendant/{defendantId}/employer:
   uriParameters:
     defendantId:

@@ -116,6 +116,10 @@ public class DefendantService {
         return "UNKNOWN".equalsIgnoreCase(regionId) || isBlank(regionId);
     }
 
+    public DefendantDetail findDefendantDetailById(final UUID defendantId) {
+        return defendantRepository.findBy(defendantId);
+    }
+
     public DefendantProfilingView getDefendantProfilingView(final UUID defendantId) {
         final DefendantDetail defendant = defendantRepository.findBy(defendantId);
         if (defendant == null) {

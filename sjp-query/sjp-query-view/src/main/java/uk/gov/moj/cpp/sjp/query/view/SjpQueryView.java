@@ -49,6 +49,8 @@ import uk.gov.moj.cpp.sjp.query.view.service.ProsecutionCaseService;
 import uk.gov.moj.cpp.sjp.query.view.service.ReferenceDataService;
 import uk.gov.moj.cpp.sjp.query.view.service.TransparencyReportService;
 import uk.gov.moj.cpp.sjp.query.view.service.UserAndGroupsService;
+import uk.gov.moj.cpp.sjp.query.view.service.defendantcase.DefendantPotentialCaseService;
+import uk.gov.moj.cpp.sjp.query.view.service.defendantcase.PotentialCases;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -78,6 +80,7 @@ public class SjpQueryView {
     private static final Logger LOGGER = LoggerFactory.getLogger(SjpQueryView.class);
     private static final String NAME_RESPONSE_CASE = "sjp.query.case-response";
     private static final String NAME_RESPONSE_CASES_SEARCH = "sjp.query.cases-search-response";
+    private static final String NAME_RESPONSE_POTENTIAL_CASES_SEARCH = "sjp.query.defendant-potential-cases-response";
     private static final String NAME_RESPONSE_CASES_SEARCH_BY_MATERIAL_ID = "sjp.query.cases-search-by-material-id-response";
     private static final String NAME_RESPONSE_CASE_DOCUMENTS = "sjp.query.case-documents-response";
     private static final String NAME_RESPONSE_PENDING_CASES = "sjp.query.pending-cases";
@@ -135,6 +138,9 @@ public class SjpQueryView {
     private UserAndGroupsService userAndGroupsService;
 
     @Inject
+    private DefendantPotentialCaseService defendantPotentialCaseService;
+
+    @Inject
     private OnlinePleaRepository.FinancialMeansOnlinePleaRepository onlinePleaRepository;
 
     @Inject
@@ -169,6 +175,13 @@ public class SjpQueryView {
         if (caseView != null) {
             final String prosecutingAuthority = caseView.getProsecutingAuthority();
             final Optional<String> userId = envelope.metadata().userId();
+            boolean hasPotentialCase = false;
+            if (caseView.getDefendant() != null) {
+                final UUID defendantId = caseView.getDefendant().getId();
+                hasPotentialCase = defendantPotentialCaseService.
+                                            hasDefendantPotentialCase(envelope, defendantId);
+            }
+            caseView.setHasPotentialCase(hasPotentialCase);
             if (userId.isPresent()) {
                 final boolean userHasProsecutingAuthorityAccess = prosecutingAuthorityProvider.userHasProsecutingAuthorityAccess(envelope, prosecutingAuthority);
                 if (userHasProsecutingAuthorityAccess) {
@@ -182,6 +195,16 @@ public class SjpQueryView {
         } else {
             return enveloper.withMetadataFrom(envelope, NAME_RESPONSE_CASE).apply(caseView);
         }
+    }
+
+    @SuppressWarnings("squid:CallToDeprecatedMethod")
+    @Handles("sjp.query.defendant-potential-cases")
+    public JsonEnvelope findDefendantPotentialCases(final JsonEnvelope envelope) {
+        final UUID defendantId = UUID.fromString(envelope.payloadAsJsonObject().
+                                                          getString(FIELD_DEFENDANT_ID));
+        final PotentialCases potentialCases =
+                defendantPotentialCaseService.findDefendantPotentialCases(envelope, defendantId);
+        return enveloper.withMetadataFrom(envelope, NAME_RESPONSE_POTENTIAL_CASES_SEARCH).apply(potentialCases);
     }
 
     @SuppressWarnings("squid:CallToDeprecatedMethod")

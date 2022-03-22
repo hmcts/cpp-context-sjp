@@ -54,6 +54,7 @@ public class CaseView {
     private final Boolean managedByATCM;
     private ApplicationView caseApplication;// latest case application
     private final ApplicationStatus ccApplicationStatus;
+    private Boolean hasPotentialCase;
 
     @SuppressWarnings("squid:S2384")
     public CaseView(final CaseDetail caseDetail, final JsonObject prosecutor) {
@@ -250,5 +251,13 @@ public class CaseView {
 
     public ApplicationStatus getCcApplicationStatus() {
         return ccApplicationStatus;
+    }
+
+    public Boolean getHasPotentialCase() {
+        return hasPotentialCase;
+    }
+
+    public void setHasPotentialCase(final Boolean hasPotentialCase) {
+        this.hasPotentialCase = hasPotentialCase;
     }
 }

@@ -56,12 +56,36 @@
                             </exclusion>
                         </exclusions>
                     </dependency>
+                    <dependency>
+                        <groupId>uk.gov.moj.cpp.unifiedsearch.query</groupId>
+                        <artifactId>unifiedsearchquery-api</artifactId>
+                        <version>${unifiedsearch.version}</version>
+                        <classifier>raml</classifier>
+                        <exclusions>
+                            <exclusion>
+                                <groupId>*</groupId>
+                                <artifactId>*</artifactId>
+                            </exclusion>
+                        </exclusions>
+                    </dependency>
+                    <dependency>
+                        <groupId>uk.gov.moj.cpp.progression</groupId>
+                        <artifactId>progression-query-api</artifactId>
+                        <version>${progression.version}</version>
+                        <classifier>raml</classifier>
+                    </dependency>
                 </dependencies>
             </plugin>
         </plugins>
     </build>
 
     <dependencies>
+        <!-- This needs to be first in class loader as test framework picks the first impl -->
+        <dependency>
+            <groupId>uk.gov.justice.services</groupId>
+            <artifactId>test-utils-enveloper-provider</artifactId>
+            <scope>test</scope>
+        </dependency>
         <dependency>
             <groupId>uk.gov.moj.cpp.sjp</groupId>
             <artifactId>sjp-json</artifactId>

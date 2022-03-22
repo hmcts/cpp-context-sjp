@@ -70,6 +70,11 @@ public class SjpQueryController {
         return requester.request(query);
     }
 
+    @Handles("sjp.query.defendant-potential-cases")
+    public JsonEnvelope findDefendantPotentialCases(final JsonEnvelope query) {
+        return requester.request(query);
+    }
+
     @Handles("sjp.query.employer")
     public JsonEnvelope findEmployer(final JsonEnvelope query) {
         return requester.request(query);

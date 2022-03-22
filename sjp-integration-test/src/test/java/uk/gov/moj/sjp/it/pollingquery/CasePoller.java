@@ -13,6 +13,7 @@ import static org.junit.Assert.fail;
 import static uk.gov.justice.services.test.utils.core.matchers.ResponsePayloadMatcher.payload;
 import static uk.gov.justice.services.test.utils.core.matchers.ResponseStatusMatcher.status;
 import static uk.gov.moj.sjp.it.util.DefaultRequests.getCaseById;
+import static uk.gov.moj.sjp.it.util.DefaultRequests.getPotentialCasesByDefendantId;
 import static uk.gov.moj.sjp.it.util.DefaultRequests.getProsecutionCaseById;
 import static uk.gov.moj.sjp.it.util.RestPollerWithDefaults.pollWithDefaults;
 
@@ -80,6 +81,26 @@ public class CasePoller {
         }
 
         return new JsonPath(responseData.getPayload());
+    }
+
+    public static String pollUntilPotentialCasesByDefendantIdIsOk(final UUID defendantId) {
+        ResponseData responseData = pollWithDefaults(getPotentialCasesByDefendantId(defendantId)).logging()
+                .timeout(POLLING_TIMEOUT, SECONDS)
+                .pollInterval(POLLING_INTERVAL, SECONDS)
+                .until(
+                        anyOf(
+                                allOf(
+                                        status().is(OK),
+                                        payload().isJson(any(ReadContext.class))),
+                                status().is(INTERNAL_SERVER_ERROR),
+                                status().is(FORBIDDEN))
+                );
+
+        if (responseData.getStatus() != OK) {
+            fail("Polling interrupted, please fix the error before continue. Status code: " + responseData.getStatus());
+        }
+
+        return responseData.getPayload();
     }
 
     public static JsonObject getCase(final UUID caseId, final Matcher<? super ReadContext> jsonPayloadMatcher) {

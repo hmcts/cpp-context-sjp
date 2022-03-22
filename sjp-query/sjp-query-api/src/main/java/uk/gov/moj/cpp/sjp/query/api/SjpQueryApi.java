@@ -109,6 +109,11 @@ public class SjpQueryApi {
         return requester.request(query);
     }
 
+    @Handles("sjp.query.defendant-potential-cases")
+    public JsonEnvelope findDefendantPotentialCases(final JsonEnvelope query) {
+        return requester.request(query);
+    }
+
     @Handles("sjp.query.case-by-urn-postcode")
     public JsonEnvelope findCaseByUrnPostcode(final JsonEnvelope query) {
         final JsonValue caseDetails = requester.request(query).payload();

@@ -1,8 +1,10 @@
 package uk.gov.moj.cpp.sjp.domain.common;
 
-import java.util.Set;
-
 import static com.google.common.collect.Sets.newHashSet;
+
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
 
 @SuppressWarnings({"squid:S1067"})
 public enum CaseStatus {
@@ -31,6 +33,13 @@ public enum CaseStatus {
     // Now we throw an exception if a case is not covered
     public static final CaseStatus DEFAULT_STATUS = UNKNOWN;
 
+    private static final Map<String, CaseStatus> caseStatusByNameLookupMap = new HashMap<>();
+    static {
+        for (final CaseStatus caseStatus : values()) {
+            caseStatusByNameLookupMap.put(caseStatus.name(), caseStatus);
+        }
+    }
+
     public static boolean isAReadyStatus(CaseStatus caseStatus) { // TODO rather should be on enum state ??
         return READY_STATUSES.contains(caseStatus);
     }
@@ -49,5 +58,9 @@ public enum CaseStatus {
 
     public static boolean isTerminalStatus(final CaseStatus caseStatus) {
         return TERMINAL_STATUS.contains(caseStatus);
+    }
+
+    public static CaseStatus fromName(String name) {
+        return caseStatusByNameLookupMap.getOrDefault(name, UNKNOWN);
     }
 }

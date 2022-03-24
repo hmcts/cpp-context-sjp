@@ -3,10 +3,7 @@ package uk.gov.justice.api.resource;
 
 import static java.util.UUID.randomUUID;
 import static javax.json.Json.createObjectBuilder;
-import static javax.ws.rs.core.HttpHeaders.CONTENT_TYPE;
 import static javax.ws.rs.core.Response.Status.NOT_FOUND;
-import static javax.ws.rs.core.Response.Status.OK;
-import static javax.ws.rs.core.Response.Status.fromStatusCode;
 import static javax.ws.rs.core.Response.status;
 import static uk.gov.justice.services.core.interceptor.InterceptorContext.interceptorContextWithInput;
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
@@ -19,12 +16,11 @@ import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.material.client.MaterialClient;
 import uk.gov.moj.cpp.systemusers.ServiceContextSystemUserProvider;
 
+import java.io.InputStream;
 import java.util.UUID;
 
 import javax.ejb.Stateless;
 import javax.inject.Inject;
-import javax.json.Json;
-import javax.json.JsonObject;
 import javax.json.JsonValue;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Response;
@@ -83,23 +79,9 @@ public class DefaultQueryApiCasesCaseIdDocumentsDocumentIdContentResource implem
 
             final UUID materialId = UUID.fromString(document.payloadAsJsonObject().getJsonObject("caseDocument").getString("materialId"));
             final Response documentContentResponse = materialClient.getMaterialWithHeader(materialId, systemUser);
-            final Response.Status documentContentResponseStatus = fromStatusCode(documentContentResponse.getStatus());
 
-            if (OK.equals(documentContentResponseStatus)) {
-                final String url = documentContentResponse.readEntity(String.class);
-                final JsonObject jsonObject = Json.createObjectBuilder()
-                        .add("url", url)
-                        .build();
-
-                return Response
-                        .status(OK)
-                        .entity(jsonObject)
-                        .header(CONTENT_TYPE, "application/json")
-                        .build();
-
-            }
-            return Response
-                    .fromResponse(documentContentResponse)
+            return Response.fromResponse(documentContentResponse)
+                    .entity(documentContentResponse.readEntity(InputStream.class))
                     .build();
         }
     }

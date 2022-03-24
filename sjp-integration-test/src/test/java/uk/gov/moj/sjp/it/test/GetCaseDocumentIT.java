@@ -18,9 +18,6 @@ import static uk.gov.moj.sjp.it.helper.CaseDocumentHelper.getCaseDocumentMetadat
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubEnforcementAreaByPostcode;
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubRegionByPostcode;
 
-
-import javax.json.Json;
-import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
 import uk.gov.moj.sjp.it.model.ProsecutingAuthority;
 import uk.gov.moj.cpp.sjp.event.CaseReceived;
 import uk.gov.moj.sjp.it.command.CreateCase;
@@ -47,13 +44,11 @@ public class GetCaseDocumentIT extends BaseIntegrationTest {
     private final UUID tvlUser = randomUUID();
     private final UUID legalAdviserUser = randomUUID();
     private final String fileName = randomAlphanumeric(10);
-    private final String mimeType = "application/json";
+    private final String mimeType = "application/pdf";
     private final String documentType = "OTHER-Test";
-    private final String documentUrl = "http://documentlocation.com/myfile.pdf";
-    private final JsonObject expectedResponse = Json.createObjectBuilder().add("url", documentUrl).build();
+    private final String documentContent = "Test document content";
     private final ZonedDateTime addedAt = ZonedDateTime.now();
     private static final String NATIONAL_COURT_CODE = "1080";
-    private final StringToJsonObjectConverter stringToJsonObjectConverter = new StringToJsonObjectConverter();
 
     @Before
     public void init() {
@@ -98,16 +93,16 @@ public class GetCaseDocumentIT extends BaseIntegrationTest {
 
     @Test
     public void shouldGetDocumentContent() {
-        MaterialStub.stubMaterialContent(materialId, documentUrl.getBytes(), mimeType);
+        MaterialStub.stubMaterialContent(materialId, documentContent.getBytes(), mimeType);
         final Response documentContentResponse = getCaseDocumentContent(tflCaseId, documentId, tflUser);
 
         assertThat(documentContentResponse.getHeaderString(CONTENT_TYPE), equalTo(mimeType));
-        assertThat(stringToJsonObjectConverter.convert(documentContentResponse.readEntity(String.class)), equalTo(expectedResponse));
+        assertThat(documentContentResponse.readEntity(String.class), equalTo(documentContent));
     }
 
     @Test
     public void shouldRestrictDocumentContentAccess() {
-        MaterialStub.stubMaterialContent(materialId, documentUrl.getBytes(), mimeType);
+        MaterialStub.stubMaterialContent(materialId, documentContent.getBytes(), mimeType);
 
         assertThat(getCaseDocumentContent(tflCaseId, documentId, tflUser).getStatus(), is(SC_OK));
         assertThat(getCaseDocumentContent(tflCaseId, documentId, tvlUser).getStatus(), is(SC_FORBIDDEN));

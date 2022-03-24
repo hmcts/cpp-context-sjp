@@ -41,16 +41,17 @@ public class CaseAssignmentRestrictionApiTest {
     private ArgumentCaptor<Envelope> envelopeCaptor;
 
     @Spy
+    @SuppressWarnings("unused")
+    private ObjectToJsonValueConverter objectToJsonValueConverter =
+            new ObjectToJsonValueConverter(new ObjectMapperProducer().objectMapper());
+
+    @Spy
     private ObjectMapper objectMapper = new ObjectMapperProducer().objectMapper();
 
     @Spy
-    @SuppressWarnings("unused")
-    private ObjectToJsonValueConverter objectToJsonValueConverter = new ObjectToJsonValueConverter(objectMapper);
-
-    @Spy
     @InjectMocks
-    @SuppressWarnings("unused")
-    private ObjectToJsonObjectConverter objectToJsonObjectConverter = new ObjectToJsonObjectConverter(objectMapper);
+    private final ObjectToJsonObjectConverter objectToJsonObjectConverter = new ObjectToJsonObjectConverter(objectMapper);
+
 
 
     @InjectMocks

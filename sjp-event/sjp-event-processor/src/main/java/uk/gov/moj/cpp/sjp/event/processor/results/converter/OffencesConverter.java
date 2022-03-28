@@ -1,5 +1,6 @@
 package uk.gov.moj.cpp.sjp.event.processor.results.converter;
 
+import static java.util.Objects.isNull;
 import static java.util.Optional.ofNullable;
 import static java.util.UUID.fromString;
 import static java.util.UUID.randomUUID;
@@ -93,6 +94,7 @@ public class OffencesConverter {
     }
 
     @VisibleForTesting
+    @SuppressWarnings("pmd:NullAssignment")
     Offence.Builder getOffenceBuilderWithPopulation(final uk.gov.justice.json.schemas.domains.sjp.queries.Offence offence,
                                                             final JsonObject offenceObject,
                                                             final DecisionAggregate resultsAggregate,
@@ -131,7 +133,7 @@ public class OffencesConverter {
                 .withConvictingCourt(ofNullable(courtCentre).orElse(null))
                 .withOffenceFacts(offenceFactsConverter.getOffenceFacts(offence))
                 .withModeOfTrial(MODE_OF_TRIAL)
-                .withJudicialResults(judicialResults.isEmpty() ?  null : judicialResults)
+                .withJudicialResults(isNull(judicialResults) || judicialResults.isEmpty() ? null : judicialResults)
                 .withOffenceTitle(ofNullable(offenceObject).map(e -> e.getString(TITLE, null)).orElse(null))
                 .withOffenceLegislation(ofNullable(offenceObject).map(e -> e.getString("legislation", null)).orElse(null))
                 .withOffenceTitleWelsh(ofNullable(offenceObject).map(e -> e.getString("welshoffencetitle", null)).orElse(null))

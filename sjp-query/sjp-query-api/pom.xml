@@ -3,7 +3,7 @@
     <parent>
         <artifactId>sjp-query</artifactId>
         <groupId>uk.gov.moj.cpp.sjp</groupId>
-        <version>7.0.76-SNAPSHOT</version>
+        <version>8.0.0-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -111,7 +111,6 @@
         <dependency>
             <groupId>uk.gov.moj.cpp.system.documentgenerator</groupId>
             <artifactId>system-documentgenerator-client</artifactId>
-            <version>${document-generator-client.version}</version>
         </dependency>
         <!-- Unit Test Dependencies -->
         <dependency>

@@ -29,7 +29,7 @@ import org.slf4j.LoggerFactory;
 
 public class SystemDocumentGeneratorStub {
 
-    private static final String SYSTEM_DOCUMENT_GENERATOR_QUERY_URL = "/system-documentgenerator-api/rest/documentgenerator/render";
+    private static final String SYSTEM_DOCUMENT_GENERATOR_QUERY_URL = "/systemdocgenerator-service/command/api/rest/systemdocgenerator/render";
 
     private static final Logger LOGGER = LoggerFactory.getLogger(SystemDocumentGeneratorStub.class);
 

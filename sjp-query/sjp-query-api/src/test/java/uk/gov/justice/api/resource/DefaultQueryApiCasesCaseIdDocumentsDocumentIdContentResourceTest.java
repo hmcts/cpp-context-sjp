@@ -4,7 +4,6 @@ import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
 import static java.util.UUID.randomUUID;
 import static javax.json.Json.createObjectBuilder;
 import static javax.servlet.http.HttpServletResponse.SC_NOT_FOUND;
-import static javax.ws.rs.core.HttpHeaders.CONTENT_DISPOSITION;
 import static javax.ws.rs.core.HttpHeaders.CONTENT_TYPE;
 import static org.apache.http.HttpStatus.SC_OK;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -24,7 +23,6 @@ import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMetad
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopePayloadMatcher.payload;
 import static uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderFactory.metadataWithRandomUUID;
 
-import uk.gov.justice.services.common.http.HeaderConstants;
 import uk.gov.justice.services.core.accesscontrol.AccessControlViolationException;
 import uk.gov.justice.services.core.interceptor.InterceptorChainProcessor;
 import uk.gov.justice.services.core.interceptor.InterceptorContext;
@@ -32,11 +30,11 @@ import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.material.client.MaterialClient;
 import uk.gov.moj.cpp.systemusers.ServiceContextSystemUserProvider;
 
-import java.io.ByteArrayInputStream;
-import java.io.InputStream;
 import java.util.Optional;
 import java.util.UUID;
 
+import javax.json.Json;
+import javax.json.JsonObject;
 import javax.json.JsonValue;
 import javax.ws.rs.core.MultivaluedHashMap;
 import javax.ws.rs.core.MultivaluedMap;
@@ -55,8 +53,7 @@ import org.mockito.runners.MockitoJUnitRunner;
 @RunWith(MockitoJUnitRunner.class)
 public class DefaultQueryApiCasesCaseIdDocumentsDocumentIdContentResourceTest {
 
-    private static final String PDF_CONTENT_TYPE = "application/pdf";
-    private static final String CONTENT_DISPOSITION_INLINE = "inline; filename=test.pdf";
+    private static final String JSON_CONTENT_TYPE = "application/json";
 
     @Mock
     private MaterialClient materialClient;
@@ -81,7 +78,7 @@ public class DefaultQueryApiCasesCaseIdDocumentsDocumentIdContentResourceTest {
     private final UUID documentId = randomUUID();
     private final UUID materialId = randomUUID();
     private final UUID systemUserId = randomUUID();
-    private final InputStream documentStream = new ByteArrayInputStream("test".getBytes());
+    private final String documentUrl =  "http://filelocation.com/myfile.pdf";
 
     @Before
     public void init() {
@@ -92,13 +89,15 @@ public class DefaultQueryApiCasesCaseIdDocumentsDocumentIdContentResourceTest {
     public void shouldRunAllInterceptorsAndFetchAndStreamDocument() {
         final JsonEnvelope documentDetails = documentDetails(materialId);
 
-        final MultivaluedMap headers = new MultivaluedHashMap(ImmutableMap.of(CONTENT_TYPE, PDF_CONTENT_TYPE,
-                HeaderConstants.ID, randomUUID(),
-                CONTENT_DISPOSITION, CONTENT_DISPOSITION_INLINE));
+        final MultivaluedMap headers = new MultivaluedHashMap(ImmutableMap.of(CONTENT_TYPE, JSON_CONTENT_TYPE));
+
+        final JsonObject json = Json.createObjectBuilder()
+                .add("url", documentUrl)
+                .build();
 
         when(interceptorChainProcessor.process(argThat((any(InterceptorContext.class))))).thenReturn(Optional.ofNullable(documentDetails));
         when(materialClient.getMaterialWithHeader(materialId, systemUserId)).thenReturn(documentContentResponse);
-        when(documentContentResponse.readEntity(InputStream.class)).thenReturn(documentStream);
+        when(documentContentResponse.readEntity(String.class)).thenReturn(documentUrl);
         when(documentContentResponse.getHeaders()).thenReturn(headers);
         when(documentContentResponse.getStatus()).thenReturn(SC_OK);
 
@@ -106,7 +105,7 @@ public class DefaultQueryApiCasesCaseIdDocumentsDocumentIdContentResourceTest {
 
         assertThat(documentContentResponse.getStatus(), is(SC_OK));
         assertThat(documentContentResponse.getHeaders(), is(headers));
-        assertThat(documentContentResponse.getEntity(), is(documentStream));
+        assertThat(documentContentResponse.getEntity(), is(json));
 
         verifyInterceptorChainExecution();
     }

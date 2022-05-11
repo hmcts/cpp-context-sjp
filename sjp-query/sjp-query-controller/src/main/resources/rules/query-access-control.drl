@@ -266,3 +266,11 @@ rule "sjp - Query - API - Get account note"
   then
     $outcome.setSuccess(true);
 end
+
+rule "sjp - Query -API -Get cases for soc check"
+  when
+    $outcome: Outcome();
+    $action: Action(name == "sjp.query.cases-for-soc-check");
+  then
+    $outcome.setSuccess(true);
+end

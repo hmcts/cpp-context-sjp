@@ -32,6 +32,11 @@ public class NoActionController {
         send(envelope);
     }
 
+    @Handles("sjp.command.mark-as-legal-soc-checked")
+    public void markAsLegalSocChecked(final JsonEnvelope envelope) {
+        send(envelope);
+    }
+
     @Handles("sjp.command.update-case-reopened-in-libra")
     public void updateCaseReopenedInLibra(final JsonEnvelope envelope) {
         send(envelope);

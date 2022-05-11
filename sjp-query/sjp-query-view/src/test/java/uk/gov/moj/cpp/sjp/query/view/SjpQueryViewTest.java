@@ -35,14 +35,18 @@ import static uk.gov.moj.cpp.sjp.domain.common.CaseManagementStatus.IN_PROGRESS;
 import static uk.gov.moj.cpp.sjp.domain.plea.PleaType.GUILTY;
 import static uk.gov.moj.cpp.sjp.domain.plea.PleaType.NOT_GUILTY;
 import static uk.gov.moj.cpp.sjp.persistence.builder.DefendantDetailBuilder.aDefendantDetail;
+import static uk.gov.moj.cpp.sjp.query.view.SjpQueryView.ERROR_INVALID_DATE_RANGE;
+import static uk.gov.moj.cpp.sjp.query.view.SjpQueryView.ERROR_INVALID_PAGE_NUMBER;
 
 import uk.gov.justice.core.courts.ProsecutionCase;
+import uk.gov.justice.services.common.converter.LocalDates;
 import uk.gov.justice.services.common.exception.ForbiddenRequestException;
 import uk.gov.justice.services.common.util.Clock;
 import uk.gov.justice.services.common.util.UtcClock;
 import uk.gov.justice.services.core.enveloper.Enveloper;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.messaging.Metadata;
+import uk.gov.justice.services.messaging.MetadataBuilder;
 import uk.gov.justice.services.test.utils.core.enveloper.EnveloperFactory;
 import uk.gov.moj.cpp.accesscontrol.sjp.providers.ProsecutingAuthorityProvider;
 import uk.gov.moj.cpp.sjp.domain.Address;
@@ -101,7 +105,9 @@ import javax.persistence.NoResultException;
 
 import org.hamcrest.Matchers;
 import org.junit.Assert;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
@@ -122,6 +128,8 @@ public class SjpQueryViewTest {
     private static final UUID CASE_ID = randomUUID();
     private static final UUID APP_ID = randomUUID();
 
+    @Rule
+    public ExpectedException exceptionRule = ExpectedException.none();
 
     @Spy
     private Clock clock = new UtcClock();
@@ -284,7 +292,7 @@ public class SjpQueryViewTest {
                 .build();
 
         final CaseDetail caseDetail = CaseDetailBuilder.aCase().withDefendantDetail(
-                aDefendantDetail().withPostcode(postcode).withId(randomUUID()).build())
+                        aDefendantDetail().withPostcode(postcode).withId(randomUUID()).build())
                 .withCompleted(false).withProsecutingAuthority("TFL")
                 .withCaseId(randomUUID()).withUrn(urn).build();
 
@@ -803,6 +811,174 @@ public class SjpQueryViewTest {
         assertEquals(result, outputEnvelope);
         verify(caseApplicationService).findApplication(APP_ID);
         verify(function).apply(appView.get());
+    }
+
+    @Test
+    public void shouldGetCasesForSOCCheck() {
+        final int pageSize = 20;
+        final int pageNumber = 1;
+        final String courtHouseCode = "B01LY00";
+        final String fromDate = "2019-03-23";
+        final String toDate = "2021-03-23";
+        final int percentage = 50;
+        final String sortOrder = "asc";
+        final String sortField = "magistrate";
+        final String ljaCode = "2577";
+        final UUID userId = randomUUID();
+
+        MetadataBuilder metadataBuilder = JsonEnvelope.metadataBuilder().withUserId(userId.toString()).withId(randomUUID()).withName("sjp.query.cases-for-soc-check");
+        final JsonEnvelope queryEnvelope = envelope()
+                .with(metadataBuilder)
+                .withPayloadOf(courtHouseCode, "courtHouseCode")
+                .withPayloadOf(fromDate, "fromDate")
+                .withPayloadOf(toDate, "toDate")
+                .withPayloadOf(percentage, "percentage")
+                .withPayloadOf(sortOrder, "sortOrder")
+                .withPayloadOf(sortField, "sortField")
+                .withPayloadOf(ljaCode, "ljaCode")
+                .withPayloadOf(pageSize, "pageSize")
+                .withPayloadOf(pageNumber, "pageNumber")
+                .build();
+
+        when(caseService.buildCasesForSOCCheckView(userId.toString(), courtHouseCode, ljaCode, LocalDates.from(fromDate),
+                LocalDates.from(toDate), percentage, pageSize, pageNumber, sortField, sortOrder, queryEnvelope)).thenReturn(buildCasesForSOCCheck());
+        JsonEnvelope responseEnvelope = sjpQueryView.getCasesForSOCCheck(queryEnvelope);
+        assertThat(responseEnvelope.metadata().name(), is("sjp.query.cases-for-soc-check"));
+        assertThat(responseEnvelope.payloadAsJsonObject().toString(),
+                isJson(Matchers.allOf(
+                        withJsonPath("totalCount", is(1)),
+                        withJsonPath("numberOfPages", is(1)),
+                        withJsonPath("pageNumber", is(1)),
+                        withJsonPath("pageSize", is(20)),
+                        withJsonPath("cases[0].id", is(CASE_ID.toString())),
+                        withJsonPath("cases[0].urn", is(URN)),
+                        withJsonPath("cases[0].magistrate", is("Test")),
+                        withJsonPath("cases[0].legalAdvisor", is("Erica Wilson")),
+                        withJsonPath("cases[0].prosecutingAuthority", is("Transport for London"))
+                ))
+        );
+    }
+
+    @Test
+    public void shouldGetExceptionForSOCCheckForInvalidPageNumber() {
+        final int pageSize = 20;
+        final int pageNumber = -1;
+        final String courtHouseCode = "B01LY00";
+        final String fromDate = "2019-03-23";
+        final String toDate = "2021-03-23";
+        final int percentage = 50;
+        final String sortOrder = "asc";
+        final String sortField = "magistrate";
+        final String ljaCode = "2577";
+        final UUID userId = randomUUID();
+
+        MetadataBuilder metadataBuilder = JsonEnvelope.metadataBuilder().withUserId(userId.toString()).withId(randomUUID()).withName("sjp.query.cases-for-soc-check");
+        final JsonEnvelope queryEnvelope = envelope()
+                .with(metadataBuilder)
+                .withPayloadOf(courtHouseCode, "courtHouseCode")
+                .withPayloadOf(fromDate, "fromDate")
+                .withPayloadOf(toDate, "toDate")
+                .withPayloadOf(percentage, "percentage")
+                .withPayloadOf(sortOrder, "sortOrder")
+                .withPayloadOf(sortField, "sortField")
+                .withPayloadOf(ljaCode, "ljaCode")
+                .withPayloadOf(pageSize, "pageSize")
+                .withPayloadOf(pageNumber, "pageNumber")
+                .build();
+
+        when(caseService.buildCasesForSOCCheckView(userId.toString(), courtHouseCode, ljaCode, LocalDates.from(fromDate),
+                LocalDates.from(toDate), percentage, pageSize, pageNumber, sortField, sortOrder, queryEnvelope)).thenReturn(buildCasesForSOCCheck());
+        exceptionRule.expect(IllegalArgumentException.class);
+        exceptionRule.expectMessage(String.format(ERROR_INVALID_PAGE_NUMBER, pageNumber, pageSize));
+
+        sjpQueryView.getCasesForSOCCheck(queryEnvelope);
+    }
+
+    @Test
+    public void shouldGetExceptionForSOCCheckForInvalidPageSize() {
+        final int pageSize = -20;
+        final int pageNumber = 1;
+        final String courtHouseCode = "B01LY00";
+        final String fromDate = "2019-03-23";
+        final String toDate = "2021-03-23";
+        final int percentage = 50;
+        final String sortOrder = "asc";
+        final String sortField = "magistrate";
+        final String ljaCode = "2577";
+        final UUID userId = randomUUID();
+
+        MetadataBuilder metadataBuilder = JsonEnvelope.metadataBuilder().withUserId(userId.toString()).withId(randomUUID()).withName("sjp.query.cases-for-soc-check");
+        final JsonEnvelope queryEnvelope = envelope()
+                .with(metadataBuilder)
+                .withPayloadOf(courtHouseCode, "courtHouseCode")
+                .withPayloadOf(fromDate, "fromDate")
+                .withPayloadOf(toDate, "toDate")
+                .withPayloadOf(percentage, "percentage")
+                .withPayloadOf(sortOrder, "sortOrder")
+                .withPayloadOf(sortField, "sortField")
+                .withPayloadOf(ljaCode, "ljaCode")
+                .withPayloadOf(pageSize, "pageSize")
+                .withPayloadOf(pageNumber, "pageNumber")
+                .build();
+
+        when(caseService.buildCasesForSOCCheckView(userId.toString(), courtHouseCode, ljaCode, LocalDates.from(fromDate),
+                LocalDates.from(toDate), percentage, pageSize, pageNumber, sortField, sortOrder, queryEnvelope)).thenReturn(buildCasesForSOCCheck());
+
+        exceptionRule.expect(IllegalArgumentException.class);
+        exceptionRule.expectMessage(String.format(ERROR_INVALID_PAGE_NUMBER, pageNumber, pageSize));
+        sjpQueryView.getCasesForSOCCheck(queryEnvelope);
+    }
+
+
+    @Test
+    public void shouldGetExceptionForSOCCheckForInvalidDateRange() {
+        final int pageSize = 20;
+        final int pageNumber = 1;
+        final String courtHouseCode = "B01LY00";
+        final String toDate = "2019-03-23";
+        final String fromDate = "2021-03-23";
+        final int percentage = 50;
+        final String sortOrder = "asc";
+        final String sortField = "magistrate";
+        final String ljaCode = "2577";
+        final UUID userId = randomUUID();
+
+        MetadataBuilder metadataBuilder = JsonEnvelope.metadataBuilder().withUserId(userId.toString()).withId(randomUUID()).withName("sjp.query.cases-for-soc-check");
+        final JsonEnvelope queryEnvelope = envelope()
+                .with(metadataBuilder)
+                .withPayloadOf(courtHouseCode, "courtHouseCode")
+                .withPayloadOf(fromDate, "fromDate")
+                .withPayloadOf(toDate, "toDate")
+                .withPayloadOf(percentage, "percentage")
+                .withPayloadOf(sortOrder, "sortOrder")
+                .withPayloadOf(sortField, "sortField")
+                .withPayloadOf(ljaCode, "ljaCode")
+                .withPayloadOf(pageSize, "pageSize")
+                .withPayloadOf(pageNumber, "pageNumber")
+                .build();
+
+        when(caseService.buildCasesForSOCCheckView(userId.toString(), courtHouseCode, ljaCode, LocalDates.from(fromDate),
+                LocalDates.from(toDate), percentage, pageSize, pageNumber, sortField, sortOrder, queryEnvelope)).thenReturn(buildCasesForSOCCheck());
+        exceptionRule.expect(IllegalArgumentException.class);
+        exceptionRule.expectMessage(String.format(ERROR_INVALID_DATE_RANGE, fromDate, toDate));
+        sjpQueryView.getCasesForSOCCheck(queryEnvelope);
+
+    }
+
+    private JsonObject buildCasesForSOCCheck() {
+        return createObjectBuilder()
+                .add("totalCount", 1)
+                .add("numberOfPages", 1)
+                .add("pageNumber", 1)
+                .add("pageSize", 20)
+                .add("cases", createArrayBuilder().add(createObjectBuilder()
+                        .add("id", CASE_ID.toString())
+                        .add("urn", URN)
+                        .add("lastUpdatedDate", "2022-04-26T09:58:00.913Z")
+                        .add("magistrate", "Test")
+                        .add("legalAdvisor", "Erica Wilson")
+                        .add("prosecutingAuthority", "Transport for London")))
+                .build();
     }
 
     private JsonObject buildNotGuiltyPleaCases(final ZonedDateTime pleaDate) {

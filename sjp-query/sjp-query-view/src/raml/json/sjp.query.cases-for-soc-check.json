@@ -1,0 +1,24 @@
+{
+  "cases": [
+    {
+      "id" :"bbfbb752-9dae-48e4-a69d-f132998f737d",
+      "urn": "POL5809338539",
+      "magistrate": "Hakan",
+      "lastUpdatedDate": "2018-03-20T18:14:29.894Z",
+      "legalAdvisor": "legalAdvisor",
+      "prosecutingAuthority": "West Yorkshire Police"
+    },
+    {
+      "id" :"bbfbb752-9dae-48e4-a69d-f132998f737e",
+      "urn": "TFL7631646",
+      "magistrate": "Hakan",
+      "lastUpdatedDate": "2018-03-20T18:14:29.894Z",
+      "legalAdvisor": "legalAdvisor",
+      "prosecutingAuthority": "Transport for London"
+    }
+  ],
+  "totalCount": 121,
+  "numberOfPages": 6,
+  "pageNumber": 1,
+  "pageSize": 20
+}

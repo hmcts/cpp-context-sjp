@@ -222,6 +222,11 @@ public class SjpQueryController {
         return requester.request(query);
     }
 
+    @Handles("sjp.query.cases-for-soc-check")
+    public JsonEnvelope getCasesForSOCCheck(final JsonEnvelope query) {
+        return requester.request(query);
+    }
+
     private void logSummary(final DefendantProfilingView defendantProfilingView, final JsonObject outstandingFines) {
         int numberOfFines = 0;
         try {

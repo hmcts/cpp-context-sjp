@@ -40,6 +40,7 @@ import uk.gov.moj.cpp.sjp.persistence.builder.DefendantDetailBuilder;
 import uk.gov.moj.cpp.sjp.persistence.entity.ApplicationStatus;
 import uk.gov.moj.cpp.sjp.persistence.entity.CaseDetail;
 import uk.gov.moj.cpp.sjp.persistence.entity.CaseDocument;
+import uk.gov.moj.cpp.sjp.persistence.entity.CaseForSocCheck;
 import uk.gov.moj.cpp.sjp.persistence.entity.CaseNotGuiltyPlea;
 import uk.gov.moj.cpp.sjp.persistence.entity.CaseSearchResult;
 import uk.gov.moj.cpp.sjp.persistence.entity.CaseSummary;
@@ -62,12 +63,16 @@ import uk.gov.moj.cpp.sjp.query.view.response.CaseWithoutDefendantPostcodeView;
 import uk.gov.moj.cpp.sjp.query.view.response.ResultOrdersView;
 import uk.gov.moj.cpp.sjp.query.view.response.SearchCaseByMaterialIdView;
 
+import java.sql.Timestamp;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
@@ -154,6 +159,15 @@ public class CaseServiceTest {
     @Mock
     private ListToJsonArrayConverter<CaseWithoutDefendantPostcodeView> noPostcodeCaseListToJsonArrayConverter;
 
+    @Mock
+    private ReferenceDataCachingService referenceDataCachingService;
+
+    @Mock
+    private UserDetailsCacheService userDetailsCacheService;
+
+    @Mock
+    private ListToJsonArrayConverter<CaseForSocCheck> caseForSockCheckListToJsonArrayConverter;
+
     @Test
     public void shouldFindCaseViewWithDocumentsWherePostalPlea() {
         assertExpectationsForFindCaseViewWithDocuments(false);
@@ -192,7 +206,7 @@ public class CaseServiceTest {
 
     @Test
     public void shouldFindCaseViewWithFilteringWhichLeavesRequiredDocuments() {
-        final CaseDetail caseDetail = createCaseDetailWithDocumentTypes("PLEA", "CITN", "SJPN","APPLICATION");
+        final CaseDetail caseDetail = createCaseDetailWithDocumentTypes("PLEA", "CITN", "SJPN", "APPLICATION");
 
         given(caseRepository.findBy(CASE_ID)).willReturn(caseDetail);
         given(referenceDataService.getProsecutorsByProsecutorCode(anyString())).willReturn(of(PROSECUTORS));
@@ -202,7 +216,7 @@ public class CaseServiceTest {
 
     @Test
     public void shouldFindCaseViewWithFilteringOfUnwantedDocuments() {
-        final CaseDetail caseDetail = createCaseDetailWithDocumentTypes("PLEA", "OTHER", "FINANCIAL_MEANS","APPLICATION");
+        final CaseDetail caseDetail = createCaseDetailWithDocumentTypes("PLEA", "OTHER", "FINANCIAL_MEANS", "APPLICATION");
 
         given(caseRepository.findBy(CASE_ID)).willReturn(caseDetail);
         given(referenceDataService.getProsecutorsByProsecutorCode(anyString())).willReturn(of(PROSECUTORS));
@@ -497,27 +511,27 @@ public class CaseServiceTest {
 
         final PendingCaseToPublishPerOffence pendingCaseToPublishWith5LinesOfAddressOffence1 = new PendingCaseToPublishPerOffence("John", "Doe", LocalDate.of(1980, 6, 20),
                 caseId1, "TVL1", "address line 1", "address line 2", "Lant Street", "London", "Greater London",
-                "SE1 1PJ", "CA03014" , LocalDate.of(2018, 12, 15),"offence wording", false, null, false,"TVL");
+                "SE1 1PJ", "CA03014", LocalDate.of(2018, 12, 15), "offence wording", false, null, false, "TVL");
 
-        final PendingCaseToPublishPerOffence pendingCaseToPublishWith5LinesOfAddressOffence2 = new PendingCaseToPublishPerOffence("John", "Doe", LocalDate.of(1980,6,20),
-                caseId1, "TVL1","address line 1", "address line 2", "Lant Street", "London", "Greater London",
-                "SE1 1PJ", "CA03014", LocalDate.of(2018, 11, 11), "offence wording", false, null, false,"TVL");
+        final PendingCaseToPublishPerOffence pendingCaseToPublishWith5LinesOfAddressOffence2 = new PendingCaseToPublishPerOffence("John", "Doe", LocalDate.of(1980, 6, 20),
+                caseId1, "TVL1", "address line 1", "address line 2", "Lant Street", "London", "Greater London",
+                "SE1 1PJ", "CA03014", LocalDate.of(2018, 11, 11), "offence wording", false, null, false, "TVL");
 
         final PendingCaseToPublishPerOffence pendingCaseToPublishWith4LinesOfAddressAndWithoutFirstName = new PendingCaseToPublishPerOffence("", "Doe", null,
                 caseId2, "TVL2", "address line 1", "address line 2", "London", "Greater London", "",
-                "S", "CA03014",  LocalDate.of(2018, 8, 2), "offence wording",true, "Person 1",false, "TVL");
+                "S", "CA03014", LocalDate.of(2018, 8, 2), "offence wording", true, "Person 1", false, "TVL");
 
-        final PendingCaseToPublishPerOffence pendingCaseToPublishWithoutAddress3and4and5 = new PendingCaseToPublishPerOffence("Emma", "White", LocalDate.of(1980,6,20),
-                caseId3, "TVL3", "address line 1", "address line 2",null, null, null,
-                "CR0 2GE", "CA03011", LocalDate.of(2018, 8, 2), "offence wording", false,null,false, "TVL");
+        final PendingCaseToPublishPerOffence pendingCaseToPublishWithoutAddress3and4and5 = new PendingCaseToPublishPerOffence("Emma", "White", LocalDate.of(1980, 6, 20),
+                caseId3, "TVL3", "address line 1", "address line 2", null, null, null,
+                "CR0 2GE", "CA03011", LocalDate.of(2018, 8, 2), "offence wording", false, null, false, "TVL");
 
         final PendingCaseToPublishPerOffence pendingCaseToPublishWithSingleLetterFirstName = new PendingCaseToPublishPerOffence("X", "Doe", null,
                 caseId4, "TVL2", "address line 1", "address line 2", "London", "Greater London", "",
-                "S", "CA03014",  LocalDate.of(2018, 8, 2), "offence wording", false, null, false, "TVL");
+                "S", "CA03014", LocalDate.of(2018, 8, 2), "offence wording", false, null, false, "TVL");
 
         final PendingCaseToPublishPerOffence pendingCaseToPublishWithSingleLetterFirstNameNoLastNameAndNullPostcode = new PendingCaseToPublishPerOffence("X", null, null,
                 caseId5, "TVL2", "address line 1", "address line 2", "London", "Greater London", "",
-                null, "CA03014",  LocalDate.of(2018, 8, 2), "offence wording", false, null,false, "TVL");
+                null, "CA03014", LocalDate.of(2018, 8, 2), "offence wording", false, null, false, "TVL");
 
         when(caseRepository.findPublicTransparencyReportPendingCases()).thenReturn(newArrayList(
                 pendingCaseToPublishWith5LinesOfAddressOffence1,
@@ -767,26 +781,110 @@ public class CaseServiceTest {
         assertThat(result.getJsonArray("cases").size(), is(1));
     }
 
+    @Test
+    public void shouldBuildCasesForSOCView() {
+        final String loggedInUserId = "f7da3cea-fcba-44e5-b589-3415dbf8340b";
+        final String ljaCode = "2905";
+        final String courtHouseCode = "B23HS00";
+        final LocalDate fromDate = LocalDate.now().minusYears(1);
+        final LocalDate toDate = LocalDate.now();
+        final String columnSortedOn = "lastupdatedDate";
+        final String sortOrder = "asc";
+        when(referenceDataCachingService.getAllProsecutors()).thenReturn(buildProsecutorsMap());
+        when(userDetailsCacheService.getUserName(any(), any())).thenReturn("TEST USER");
+        when(caseRepository.findCasesForSOCCheck(anyString(), anyString(), anyString(), any(), any(),
+                anyString(), anyString())).thenReturn(getCasesForSOCCheck());
+        when(caseForSockCheckListToJsonArrayConverter.convert(any())).thenReturn(buildCasesForSOCCheck());
+        final JsonObject result = service.buildCasesForSOCCheckView(loggedInUserId, courtHouseCode, ljaCode, fromDate, toDate,
+                100, 20, 1, columnSortedOn, sortOrder, null);
+        assertThat(result.getJsonArray("cases").size(), is(2));
+        assertThat(result.getInt("numberOfPages"), is(1));
+        assertThat(result.getInt("pageNumber"), is(1));
+        assertThat(result.getInt("totalCount"), is(2));
+        assertThat(result.getInt("pageSize"), is(20));
+    }
+
+    @Test
+    public void shouldBuildCasesForSOCViewInValidPageNumber() {
+        final String loggedInUserId = "f7da3cea-fcba-44e5-b589-3415dbf8340b";
+        final String ljaCode = "2905";
+        final String courtHouseCode = "B23HS00";
+        final LocalDate fromDate = LocalDate.now().minusYears(1);
+        final LocalDate toDate = LocalDate.now();
+        final String columnSortedOn = "lastupdatedDate";
+        final String sortOrder = "asc";
+        when(referenceDataCachingService.getAllProsecutors()).thenReturn(buildProsecutorsMap());
+        when(userDetailsCacheService.getUserName(any(), any())).thenReturn("TEST USER");
+        when(caseRepository.findCasesForSOCCheck(anyString(), anyString(), anyString(), any(), any(),
+                anyString(), anyString())).thenReturn(getCasesForSOCCheck());
+        when(caseForSockCheckListToJsonArrayConverter.convert(any())).thenReturn(buildCasesForSOCCheck());
+        final JsonObject result = service.buildCasesForSOCCheckView(loggedInUserId, courtHouseCode, ljaCode, fromDate, toDate,
+                100, 20, 10, columnSortedOn, sortOrder, null);
+        assertThat(result.getJsonArray("cases").size(), is(2));
+        assertThat(result.getInt("numberOfPages"), is(1));
+        assertThat(result.getInt("pageNumber"), is(10));
+        assertThat(result.getInt("totalCount"), is(2));
+        assertThat(result.getInt("pageSize"), is(20));
+    }
+
+    private List<Object[]> getCasesForSOCCheck() {
+        final List<Object[]> results = new ArrayList<>();
+        final Object[] result1 = {"7f2909c4-bd7c-44f5-9850-772c4a115656", "TVL4535369459",
+                Timestamp.valueOf(LocalDateTime.now().minusYears(2)),
+                "TFL", "31ec3a16-8721-498c-8da5-f099390ee254", "31ec3a16-8721-498c-8da5-f099390ee254"};
+        final Object[] result2 = {"7f2909c4-bd7c-44f5-9850-772c4a115656", "TVL4535369459",
+                Timestamp.valueOf(LocalDateTime.now().minusYears(2)),
+                "DVLA", "31ec3a16-8721-498c-8da5-f099390ee254", "31ec3a16-8721-498c-8da5-f099390ee254"};
+        results.add(result1);
+        results.add(result2);
+        return results;
+    }
+
+    private Map<String, String> buildProsecutorsMap() {
+        final Map<String, String> prosecutorsMap = new HashMap<>();
+        prosecutorsMap.put("TFL", "Transport for London");
+        prosecutorsMap.put("DVLA", "Driver and Vehicle Licensing Agency");
+        return prosecutorsMap;
+    }
+
+    private JsonArray buildCasesForSOCCheck() {
+        return createArrayBuilder().add(createObjectBuilder()
+                        .add("id", CASE_ID.toString())
+                        .add("urn", URN)
+                        .add("lastUpdatedDate", Timestamp.valueOf(LocalDateTime.now()).toString())
+                        .add("magistrate", "Manav")
+                        .add("legalAdvisor", "legalAdvisor")
+                        .add("prosecutingAuthority", "Transport for London"))
+                .add(createObjectBuilder()
+                        .add("id", CASE_ID.toString())
+                        .add("urn", URN)
+                        .add("lastUpdatedDate", Timestamp.valueOf(LocalDateTime.now()).toString())
+                        .add("magistrate", "Manav")
+                        .add("legalAdvisor", "legalAdvisor")
+                        .add("prosecutingAuthority", "Driver and Vehicle Licensing Agency"))
+                .build();
+    }
+
     private JsonArray buildNotGuiltyPleaCases(final ZonedDateTime pleaDate) {
         return createArrayBuilder().add(createObjectBuilder()
-                .add("id", CASE_ID.toString())
-                .add("urn", URN)
-                .add("firstName", "Hakan")
-                .add("lastName", "Kurtulus")
-                .add("pleaDate", pleaDate.toString())
-                .add("prosecutingAuthority", "Transport for London")
-                .add("caseManagementStatus", IN_PROGRESS.name()))
+                        .add("id", CASE_ID.toString())
+                        .add("urn", URN)
+                        .add("firstName", "Hakan")
+                        .add("lastName", "Kurtulus")
+                        .add("pleaDate", pleaDate.toString())
+                        .add("prosecutingAuthority", "Transport for London")
+                        .add("caseManagementStatus", IN_PROGRESS.name()))
                 .build();
     }
 
     private JsonArray buildWithoutPostcodeCases(final LocalDate postingDate) {
         return createArrayBuilder().add(createObjectBuilder()
-                .add("id", CASE_ID.toString())
-                .add("urn", URN)
-                .add("firstName", "Hakan")
-                .add("lastName", "Kurtulus")
-                .add("postingDate", postingDate.toString())
-                .add("prosecutingAuthority", "Transport for London"))
+                        .add("id", CASE_ID.toString())
+                        .add("urn", URN)
+                        .add("firstName", "Hakan")
+                        .add("lastName", "Kurtulus")
+                        .add("postingDate", postingDate.toString())
+                        .add("prosecutingAuthority", "Transport for London"))
                 .build();
     }
 

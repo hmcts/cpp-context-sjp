@@ -19,6 +19,7 @@ import uk.gov.moj.cpp.accesscontrol.sjp.providers.ProsecutingAuthorityProvider;
 import uk.gov.moj.cpp.sjp.domain.common.CaseManagementStatus;
 import uk.gov.moj.cpp.sjp.persistence.entity.CaseDetail;
 import uk.gov.moj.cpp.sjp.persistence.entity.CaseDocument;
+import uk.gov.moj.cpp.sjp.persistence.entity.CaseForSocCheck;
 import uk.gov.moj.cpp.sjp.persistence.entity.CaseNotGuiltyPlea;
 import uk.gov.moj.cpp.sjp.persistence.entity.CaseSearchResult;
 import uk.gov.moj.cpp.sjp.persistence.entity.CaseWithoutDefendantPostcode;
@@ -41,12 +42,15 @@ import uk.gov.moj.cpp.sjp.query.view.response.CasesMissingSjpnView;
 import uk.gov.moj.cpp.sjp.query.view.response.ResultOrdersView;
 import uk.gov.moj.cpp.sjp.query.view.response.SearchCaseByMaterialIdView;
 
+import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
@@ -73,6 +77,14 @@ import org.slf4j.LoggerFactory;
 public class CaseService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(CaseService.class);
+
+    private static final String CASES = "cases";
+    private static final String TOTAL_COUNT = "totalCount";
+    private static final String NUMBER_OF_PAGES = "numberOfPages";
+    private static final String PAGE_NUMBER = "pageNumber";
+    private static final String PAGE_SIZE = "pageSize";
+    private static final String PAGE_COUNT = "pageCount";
+    private static final String RESULTS = "results";
 
     @Inject
     private CaseRepository caseRepository;
@@ -102,7 +114,19 @@ public class CaseService {
     private ListToJsonArrayConverter<CaseNotGuiltyPleaView> notGuiltyCasesListToJsonArrayConverter;
 
     @Inject
+    private ListToJsonArrayConverter<CaseForSocCheck> caseForSockCheckListToJsonArrayConverter;
+
+    @Inject
     private ListToJsonArrayConverter<CaseWithoutDefendantPostcodeView> noPostcodeCaseListToJsonArrayConverter;
+
+    @Inject
+    private UserAndGroupsService userAndGroupsService;
+
+    @Inject
+    private ReferenceDataCachingService referenceDataCachingService;
+
+    @Inject
+    private UserDetailsCacheService userDetailsCacheService;
 
     /**
      * Find case by id.
@@ -255,7 +279,7 @@ public class CaseService {
     }
 
     public CaseDocumentsView findCaseDocumentsFilterOtherAndFinancialMeans(UUID caseId) {
-        final List<String> WANTED = asList("SJPN", "PLEA", "CITN","APPLICATION");
+        final List<String> WANTED = asList("SJPN", "PLEA", "CITN", "APPLICATION");
 
         return findCaseDocuments(caseId, documentView -> WANTED.contains(documentView.getDocumentType()));
     }
@@ -359,25 +383,79 @@ public class CaseService {
 
     }
 
+    public JsonObject buildCasesForSOCCheckView(final String loggedInUserId, final String courtHouseCode,
+                                                final String ljaCode, final LocalDate fromDate,
+                                                final LocalDate toDate, int percentage,
+                                                int pageSize, int pageNumber, final String columnSortedOn,
+                                                final String sortOrder, final JsonEnvelope envelope) {
+
+        final Map<String, String> allProsecutors = referenceDataCachingService.getAllProsecutors();
+        final List<Object[]> results = caseRepository.findCasesForSOCCheck(loggedInUserId, ljaCode, courtHouseCode, fromDate, toDate, columnSortedOn, sortOrder);
+
+        int offset = pageSize * (pageNumber - 1);
+        final int totalCount = results.size() * percentage / 100;
+        final int pageCount = (int) ceil((double) totalCount / pageSize);
+        final int recordsToShow = totalCount < pageSize ? totalCount : pageSize;
+        if (pageNumber > pageCount && recordsToShow > 0) {
+            offset = (pageCount - 1) * pageSize;
+        }
+
+        final List<CaseForSocCheck> casesForSocCheckView = results.stream()
+                .skip(offset)
+                .limit(recordsToShow)
+                .collect(toList())
+                .stream()
+                .map(elem -> new CaseForSocCheck(getNotNullElement(elem[0]),
+                        getNotNullElement(elem[1]),
+                        convertToZonedDateTime(elem[2]),
+                        getNotNullElement(elem[4]),
+                        getUserName(getNotNullElement(elem[5]), envelope),
+                        allProsecutors.get(getNotNullElement(elem[3]))))
+                .collect(toList());
+
+        final JsonArray convertedCases = caseForSockCheckListToJsonArrayConverter.convert(casesForSocCheckView);
+        return createObjectBuilder()
+                .add(CASES, convertedCases)
+                .add(TOTAL_COUNT, totalCount)
+                .add(NUMBER_OF_PAGES, pageCount)
+                .add(PAGE_NUMBER, pageNumber)
+                .add(PAGE_SIZE, pageSize)
+                .build();
+    }
+
+    private String getNotNullElement(final Object elem) {
+        return Objects.nonNull(elem) ? elem.toString() : "";
+    }
+
+    private ZonedDateTime convertToZonedDateTime(final Object object) {
+        final Timestamp timestamp = (Timestamp) object;
+        return timestamp == null ? null : ZonedDateTime.ofInstant(timestamp.toInstant(), ZoneOffset.UTC);
+    }
+
+    private String getUserName(final String userId, final JsonEnvelope envelope) {
+        return userDetailsCacheService.getUserName(envelope, UUID.fromString(userId));
+    }
+
     private JsonObject buildResponsePayload(final List<CaseNotGuiltyPleaView> casesNotGuiltyPlea,
                                             final int totalCount,
                                             final int pageCount) {
         final JsonArray convertedCases = notGuiltyCasesListToJsonArrayConverter.convert(casesNotGuiltyPlea);
         return createObjectBuilder()
-                .add("results", totalCount)
-                .add("pageCount", pageCount)
-                .add("cases", convertedCases)
+                .add(RESULTS, totalCount)
+                .add(PAGE_COUNT, pageCount)
+                .add(CASES, convertedCases)
                 .build();
     }
+
 
     private JsonObject buildCasesWithoutPostcodeResponsePayload(final List<CaseWithoutDefendantPostcodeView> casesWithoutDefendantPostcode,
                                                                 final int totalCount,
                                                                 final int pageCount) {
         final JsonArray convertedCases = noPostcodeCaseListToJsonArrayConverter.convert(casesWithoutDefendantPostcode);
         return createObjectBuilder()
-                .add("results", totalCount)
-                .add("pageCount", pageCount)
-                .add("cases", convertedCases)
+                .add(RESULTS, totalCount)
+                .add(PAGE_COUNT, pageCount)
+                .add(CASES, convertedCases)
                 .build();
     }
 
@@ -391,7 +469,7 @@ public class CaseService {
     }
 
     private void filterOtherAndFinancialMeansDocuments(Collection<CaseDocumentView> caseDocumentsView) {
-        Set<String> documentsTypeToRetain = Sets.newHashSet("SJPN", "PLEA", "CITN","APPLICATION");
+        Set<String> documentsTypeToRetain = Sets.newHashSet("SJPN", "PLEA", "CITN", "APPLICATION");
         caseDocumentsView.removeIf(
                 documentView -> !documentsTypeToRetain.contains(documentView.getDocumentType())
         );
@@ -467,7 +545,6 @@ public class CaseService {
     }
 
 
-
     public JsonObject buildCasesWithoutDefendantPostcodeView(final int pageSize, final int pageNumber) {
         final Map<String, String> allProsecutors = getAllProsecutorsMap();
         final List<CaseWithoutDefendantPostcode> results = caseRepository.findCasesWithoutDefendantPostcode();
@@ -491,8 +568,9 @@ public class CaseService {
 
         return buildCasesWithoutPostcodeResponsePayload(casesWithoutPostcodeView, totalCount, pageCount);
     }
+
     private Optional<String> getPostcode(final PendingCaseToPublishPerOffence pendingCaseToPublishWithAnyOffence) {
-        return  Optional.ofNullable(pendingCaseToPublishWithAnyOffence.getPostcode());
+        return Optional.ofNullable(pendingCaseToPublishWithAnyOffence.getPostcode());
     }
 
     private Function<PendingCaseToPublishPerOffence, String> caseIdPredicate() {
@@ -510,4 +588,7 @@ public class CaseService {
 
         return pendingCases.stream().collect(groupingBy(caseIdPredicate()));
     }
+
 }
+
+

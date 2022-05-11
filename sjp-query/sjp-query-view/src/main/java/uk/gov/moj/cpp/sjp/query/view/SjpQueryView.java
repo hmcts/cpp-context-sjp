@@ -84,9 +84,22 @@ public class SjpQueryView {
     private static final String TRANSPARENCY_REPORT_METADATA_RESPONSE_NAME = "sjp.query.transparency-report-metadata";
     private static final String PRESS_TRANSPARENCY_REPORT_METADATA_RESPONSE_NAME = "sjp.query.press-transparency-report-metadata";
     private static final String NOT_GUILTY_PLEA_CASES_RESPONSE_NAME = "sjp.query.not-guilty-plea-cases";
+    private static final String CASES_FOR_SOC_CHECK_RESPONSE_NAME = "sjp.query.cases-for-soc-check";
     private static final String CASES_WITHOUT_DEFENDANT_POSTCODE_RESPONSE_NAME = "sjp.query.cases-without-defendant-postcode";
     private static final String NAME_APPLICATION_RESPONSE_CASE = "sjp.query.application-response";
     private static final int DEFAULT_CASES_PAGE_SIZE = 20;
+    private static final String PAGE_SIZE = "pageSize";
+    private static final String PAGE_NUMBER = "pageNumber";
+    private static final String COURT_HOUSE_CODE = "courtHouseCode";
+    private static final String LJA_CODE = "ljaCode";
+    private static final String FROM_DATE = "fromDate";
+    private static final String TO_DATE = "toDate";
+    private static final String PERCENTAGE = "percentage";
+    private static final String SORT_ORDER = "sortOrder";
+    private static final String SORT_FIELD = "sortField";
+    public static final String ERROR_INVALID_PAGE_NUMBER = "invalid page number (%d) or page size (%d)";
+    public static final String ERROR_INVALID_DATE_RANGE = "invalid date range : (%s) cannot be before (%s)";
+
 
     @Inject
     private CaseService caseService;
@@ -297,8 +310,8 @@ public class SjpQueryView {
 
     @Handles("sjp.query.result-orders")
     public JsonEnvelope getResultOrders(final JsonEnvelope envelope) {
-        final LocalDate fromDate = LocalDates.from(extract(envelope, "fromDate"));
-        final LocalDate toDate = LocalDates.from(extract(envelope, "toDate"));
+        final LocalDate fromDate = LocalDates.from(extract(envelope, FROM_DATE));
+        final LocalDate toDate = LocalDates.from(extract(envelope, TO_DATE));
 
         return enveloper.withMetadataFrom(envelope, "sjp.query.result-orders")
                 .apply(caseService.findResultOrders(fromDate, toDate));
@@ -374,11 +387,11 @@ public class SjpQueryView {
         final JsonObject queryFilters = query.payloadAsJsonObject();
 
         final String prosecutingAuthority = getString(queryFilters, "prosecutingAuthority");
-        final int pageSize = queryFilters.getInt("pageSize");
-        final int pageNumber = queryFilters.getInt("pageNumber");
+        final int pageSize = queryFilters.getInt(PAGE_SIZE);
+        final int pageNumber = queryFilters.getInt(PAGE_NUMBER);
 
         if (pageNumber <= 0 || pageSize <= 0) {
-            throw new IllegalArgumentException(format("invalid page number (%d) or page size (%d)", pageNumber, pageSize));
+            throw new IllegalArgumentException(format(ERROR_INVALID_PAGE_NUMBER, pageNumber, pageSize));
         }
 
         final JsonObject result = caseService.buildNotGuiltyPleaCasesView(prosecutingAuthority, pageSize, pageNumber);
@@ -392,11 +405,11 @@ public class SjpQueryView {
     public JsonEnvelope getCasesWithoutDefendantPostcode(final JsonEnvelope query) {
         final JsonObject queryFilters = query.payloadAsJsonObject();
 
-        final int pageSize = queryFilters.getInt("pageSize", DEFAULT_CASES_PAGE_SIZE);
-        final int pageNumber = queryFilters.getInt("pageNumber", 1);
+        final int pageSize = queryFilters.getInt(PAGE_SIZE, DEFAULT_CASES_PAGE_SIZE);
+        final int pageNumber = queryFilters.getInt(PAGE_NUMBER, 1);
 
         if (pageNumber <= 0 || pageSize <= 0) {
-            throw new IllegalArgumentException(format("invalid page number (%d) or page size (%d)", pageNumber, pageSize));
+            throw new IllegalArgumentException(format(ERROR_INVALID_PAGE_NUMBER, pageNumber, pageSize));
         }
 
         final JsonObject result = caseService.buildCasesWithoutDefendantPostcodeView(pageSize, pageNumber);
@@ -447,6 +460,42 @@ public class SjpQueryView {
                 .apply(notificationStatus);
     }
 
+    @Handles("sjp.query.cases-for-soc-check")
+    public JsonEnvelope getCasesForSOCCheck(final JsonEnvelope envelope) {
+
+        final JsonObject queryFilters = envelope.payloadAsJsonObject();
+
+        final String courtHouseCode = getString(queryFilters, COURT_HOUSE_CODE);
+        final String ljaCode = getString(queryFilters, LJA_CODE);
+        final LocalDate fromDate = LocalDates.from(extract(envelope, FROM_DATE));
+        final LocalDate toDate = LocalDates.from(extract(envelope, TO_DATE));
+        final int percentage = queryFilters.getInt(PERCENTAGE);
+        final int pageSize = queryFilters.getInt(PAGE_SIZE);
+        final int pageNumber = queryFilters.getInt(PAGE_NUMBER);
+        final String sortOrder = queryFilters.getString(SORT_ORDER);
+        final String sortField = queryFilters.getString(SORT_FIELD);
+        final String loggedInUserId = envelope.metadata().userId()
+                .orElseThrow(() -> new IllegalStateException(format("Envelope with id %s does not contains user id", envelope.metadata().id())));
+
+
+        if (pageNumber <= 0 || pageSize <= 0) {
+            throw new IllegalArgumentException(format(ERROR_INVALID_PAGE_NUMBER, pageNumber, pageSize));
+        }
+
+        if (toDate.isBefore(fromDate)) {
+            throw new IllegalArgumentException(format(ERROR_INVALID_DATE_RANGE, fromDate, toDate));
+        }
+
+        final String columnSortedOn = getColumnSortedOn(sortField);
+        final String sortingOrder = SjpQueryView.SortOrder.valueOf(sortOrder).getOrder();
+        final JsonObject result = caseService.buildCasesForSOCCheckView(loggedInUserId, courtHouseCode, ljaCode, fromDate, toDate, percentage, pageSize, pageNumber,
+                columnSortedOn, sortingOrder, envelope);
+
+        return envelopeFrom(
+                metadataFrom(envelope.metadata()).withName(CASES_FOR_SOC_CHECK_RESPONSE_NAME),
+                result);
+    }
+
     private String extract(final JsonEnvelope envelope, final String fieldName) {
         return envelope.payloadAsJsonObject().getString(fieldName);
     }
@@ -464,5 +513,37 @@ public class SjpQueryView {
 
     private UUID getApplicationId(JsonEnvelope envelope) {
         return fromString(envelope.payloadAsJsonObject().getString(FIELD_APPLICATION_ID));
+    }
+
+    private String getColumnSortedOn(final String sortField) {
+        return  SjpQueryView.CaseSortColumn.valueOf(sortField).getColumn();
+    }
+
+    @SuppressWarnings("squid:S00115")
+    enum CaseSortColumn {
+        lastupdatedDate("cdn.saved_at"),
+        magistrate("magistrate");
+
+        private final String column;
+        CaseSortColumn(final String sortColumn) {
+            this.column = sortColumn;
+        }
+        public String getColumn() {
+            return this.column;
+        }
+    }
+
+    @SuppressWarnings("squid:S00115")
+    enum SortOrder {
+        asc("asc"),
+        desc("desc");
+
+        private final String order;
+        SortOrder(final String order) {
+            this.order = order;
+        }
+        public String getOrder() {
+            return this.order;
+        }
     }
 }

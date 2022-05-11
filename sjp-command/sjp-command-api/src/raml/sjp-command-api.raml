@@ -390,6 +390,9 @@ baseUri: http://localhost:8080/sjp-command-api/command/api/rest/sjp
       (mapping):
           requestType: application/vnd.sjp.resolve-conviction-court-bdf+json
           name: sjp.resolve-conviction-court-bdf
+      (mapping):
+          requestType: application/vnd.sjp.mark-as-legal-soc-checked+json
+          name: sjp.mark-as-legal-soc-checked
       ...
     body:
       application/vnd.sjp.assign-case+json:
@@ -401,6 +404,8 @@ baseUri: http://localhost:8080/sjp-command-api/command/api/rest/sjp
         schema:
            !include json/schema/sjp.resubmit-results.json
       application/vnd.sjp.resolve-conviction-court-bdf+json: !!null
+      application/vnd.sjp.mark-as-legal-soc-checked+json: !!null
+
     responses:
       202:
         description: Accepted

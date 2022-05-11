@@ -1,33 +1,5 @@
 package uk.gov.moj.cpp.sjp.persistence.repository;
 
-import org.apache.deltaspike.testcontrol.api.junit.CdiTestRunner;
-import org.junit.After;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import uk.gov.justice.services.common.util.Clock;
-import uk.gov.justice.services.test.utils.core.random.RandomGenerator;
-import uk.gov.justice.services.test.utils.persistence.BaseTransactionalTest;
-import uk.gov.moj.cpp.sjp.domain.CaseReadinessReason;
-import uk.gov.moj.cpp.sjp.persistence.builder.CaseDetailBuilder;
-import uk.gov.moj.cpp.sjp.persistence.builder.DefendantDetailBuilder;
-import uk.gov.moj.cpp.sjp.persistence.entity.CaseDetail;
-import uk.gov.moj.cpp.sjp.persistence.entity.CaseDocument;
-import uk.gov.moj.cpp.sjp.persistence.entity.DefendantDetail;
-import uk.gov.moj.cpp.sjp.persistence.entity.OffenceDetail;
-import uk.gov.moj.cpp.sjp.persistence.entity.ReadyCase;
-
-import javax.inject.Inject;
-import javax.persistence.EntityManager;
-import javax.persistence.NonUniqueResultException;
-import java.math.BigDecimal;
-import java.time.LocalDate;
-import java.time.ZonedDateTime;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
-
 import static java.time.LocalDate.now;
 import static java.util.UUID.randomUUID;
 import static java.util.stream.Collectors.toList;
@@ -46,6 +18,36 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static uk.gov.moj.cpp.sjp.domain.SessionType.DELEGATED_POWERS;
 import static uk.gov.moj.cpp.sjp.domain.SessionType.MAGISTRATE;
+
+import uk.gov.justice.services.common.util.Clock;
+import uk.gov.justice.services.test.utils.core.random.RandomGenerator;
+import uk.gov.justice.services.test.utils.persistence.BaseTransactionalTest;
+import uk.gov.moj.cpp.sjp.domain.CaseReadinessReason;
+import uk.gov.moj.cpp.sjp.persistence.builder.CaseDetailBuilder;
+import uk.gov.moj.cpp.sjp.persistence.builder.DefendantDetailBuilder;
+import uk.gov.moj.cpp.sjp.persistence.entity.CaseDetail;
+import uk.gov.moj.cpp.sjp.persistence.entity.CaseDocument;
+import uk.gov.moj.cpp.sjp.persistence.entity.DefendantDetail;
+import uk.gov.moj.cpp.sjp.persistence.entity.OffenceDetail;
+import uk.gov.moj.cpp.sjp.persistence.entity.ReadyCase;
+
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.ZonedDateTime;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
+
+import javax.inject.Inject;
+import javax.persistence.EntityManager;
+import javax.persistence.NonUniqueResultException;
+
+import org.apache.deltaspike.testcontrol.api.junit.CdiTestRunner;
+import org.junit.After;
+import org.junit.Test;
+import org.junit.runner.RunWith;
 
 @RunWith(CdiTestRunner.class)
 public class CaseRepositoryTest extends BaseTransactionalTest {
@@ -332,6 +334,19 @@ public class CaseRepositoryTest extends BaseTransactionalTest {
         final CaseDetail actualCase = caseRepository.findByUrnPostcode("12345678A", postcode1);
 
         //then throws exception
+    }
+
+    @Test
+    public void shouldFindCasesForSOCCheck() {
+        final String loggedInUserId = "2781b565-4514-4805-8744-a3e827f0f611";
+        final String ljaCode = "2577";
+        final String courtHouseCode = "B01LY00";
+        final LocalDate fromDate = LocalDate.of(2020, 01, 01);
+        final LocalDate toDate = LocalDate.now();
+        final String sortField = "magistrate";
+        final String sortOrder = "asc";
+        List<Object[]> cases = caseRepository.findCasesForSOCCheck(loggedInUserId, ljaCode, courtHouseCode, fromDate, toDate, sortField, sortOrder);
+        assertNotNull(cases);
     }
 
     private void checkAllOffencesForACase(final CaseDetail caseDetail, final boolean withdrawn) {

@@ -137,4 +137,7 @@ subscriptions_descriptor:
         - name: public.sjp.events.conviction-court-resolved
           schema_uri: http://justice.gov.uk/json/schemas/domains/sjp/events/public.sjp.events.conviction-court-resolved.json
 
+        - name: public.sjp.case-legal-soc-checked
+          schema_uri: http://cpp.moj.gov.uk/sjp/json/schema/event/public.sjp.marked-as-legal-soc-checked.json
+
       event_source_name: public.event.source

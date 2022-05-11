@@ -38,6 +38,7 @@ import uk.gov.moj.cpp.sjp.domain.aggregate.handler.ChangeCaseManagementStatusHan
 import uk.gov.moj.cpp.sjp.domain.aggregate.handler.CourtReferralHandler;
 import uk.gov.moj.cpp.sjp.domain.aggregate.handler.DeleteDocsHandler;
 import uk.gov.moj.cpp.sjp.domain.aggregate.handler.FinancialImpositionHandler;
+import uk.gov.moj.cpp.sjp.domain.aggregate.handler.MarkAsLegalSocCheckedHandler;
 import uk.gov.moj.cpp.sjp.domain.aggregate.handler.OffenceWithdrawalHandler;
 import uk.gov.moj.cpp.sjp.domain.aggregate.handler.ResolveCaseStatusHandler;
 import uk.gov.moj.cpp.sjp.domain.aggregate.handler.ResolveConvictionCourtHandler;
@@ -213,6 +214,10 @@ public class CaseAggregate implements Aggregate {
 
     public Stream<Object> pleadOnline(final UUID caseId, final PleadOnline pleadOnline, final ZonedDateTime createdOn, final UUID userId) {
         return applyAndResolveCaseReadiness(() -> OnlinePleaHandler.INSTANCE.pleadOnline(caseId, pleadOnline, createdOn, state, userId));
+    }
+
+    public Stream<Object> markAsLegalSocChecked(final UUID caseId, final UUID checkedBy, final ZonedDateTime checkedAt) {
+        return apply(MarkAsLegalSocCheckedHandler.INSTANCE.markAsLegalSocChecked(caseId, checkedBy, checkedAt, state));
     }
 
     public Stream<Object> acknowledgeDefendantDetailsUpdates(

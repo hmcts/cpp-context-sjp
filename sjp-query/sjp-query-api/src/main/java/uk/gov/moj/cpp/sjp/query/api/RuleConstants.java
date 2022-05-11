@@ -141,4 +141,8 @@ public final class RuleConstants {
     public static List<String> getAllowedGroupsForCommonCaseApplication() {
         return asList(GROUP_SYSTEM_USERS, GROUP_SJP_PROSECUTORS, GROUP_LEGAL_ADVISERS, GROUP_COURT_ADMINISTRATORS);
     }
+
+    public static List<String> getAllowedGroupsForSOCCheck() {
+        return asList(GROUP_LEGAL_ADVISERS);
+    }
 }

@@ -171,4 +171,8 @@ public final class RuleConstants {
         return singletonList(GROUP_SYSTEM_USERS);
     }
 
+    public static List<String> getMarkAsLegalSocCheckedGroups() {
+        return asList(GROUP_LEGAL_ADVISERS);
+    }
+
 }

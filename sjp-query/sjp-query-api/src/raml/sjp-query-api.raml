@@ -753,3 +753,57 @@ baseUri: http://localhost:8080/sjp-query-api/query/api/rest/sjp
         body:
           application/vnd.sjp.query.account-note+json:
             schema: !include json/schema/sjp.query.account-note.json
+
+/case-for-soc-check:
+  get:
+    description: |
+      Retrieve cases for SOC check
+      ...
+      (mapping):
+          responseType: application/vnd.sjp.query.cases-for-soc-check+json
+          name: sjp.query.cases-for-soc-check
+      ...
+    queryParameters:
+      courtHouseCode:
+        description: court house code
+        type: string
+        required: true
+      ljaCode:
+        description: lja code
+        type: string
+        required: true
+      fromDate:
+        description: From date inclusive.
+        type: string
+        required: true
+      toDate:
+        description: To date exclusive.
+        type: string
+        required: true
+      percentage:
+        description: percent of total number of cases
+        type: number
+        required: true
+      pageSize:
+        description: Number of item per page. Default is 20
+        type: number
+        required: true
+      pageNumber:
+        description: Current page. Could be 1 or 2 or 3 or ...
+        type: number
+        required: true
+      sortOrder:
+        description: Sort order (ASC / DESC). Default is DESC
+        type: string
+        required: false
+      sortField:
+        description: Sort by field name. Default is date
+        type: string
+        required: false
+    responses:
+        200:
+          description: OK
+          body:
+                application/vnd.sjp.query.cases-for-soc-check+json:
+                  schema: !include json/schema/sjp.query.cases-for-soc-check.json
+                  example: !include json/sjp.query.cases-for-soc-check.json

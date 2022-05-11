@@ -272,5 +272,7 @@ subscriptions_descriptor:
               - name: sjp.events.cc-application-status-updated
                 schema_uri: http://justice.gov.uk/json/schemas/domains/sjp/events/cc-application-status-updated.json
 
+              - name: sjp.events.marked-as-legal-soc-checked
+                schema_uri: http://justice.gov.uk/json/schemas/domains/sjp/event/sjp.events.marked-as-legal-soc-checked.json
 
           event_source_name: sjp

@@ -276,4 +276,9 @@ public class SjpQueryApi {
         return requester.request(query);
     }
 
+    @Handles("sjp.query.cases-for-soc-check")
+    public JsonEnvelope getCasesForSOCCheck(final JsonEnvelope query) {
+        return requester.request(query);
+    }
+
 }

@@ -16,5 +16,9 @@ public final class RuleConstants {
     public static List<String> getUploadCaseDocumentActionGroups() {
         return Arrays.asList(GROUP_LEGAL_ADVISERS, GROUP_COURT_ADMINISTRATORS, GROUP_SYSTEM_USERS);
     }
+
+    public static List<String> getMarkAsLegalSocCheckedActionGroups() {
+        return Arrays.asList(GROUP_LEGAL_ADVISERS);
+    }
 }
 

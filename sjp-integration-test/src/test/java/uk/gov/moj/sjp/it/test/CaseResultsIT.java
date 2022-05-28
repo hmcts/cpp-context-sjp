@@ -157,7 +157,7 @@ public class CaseResultsIT extends BaseIntegrationTest {
         final JsonObject convictingCourt = prosecutionCasesArray.getJsonObject(0).getJsonArray("defendants").getJsonObject(0).getJsonArray("offences").getJsonObject(0).getJsonObject("convictingCourt");
         final String convictingDate = prosecutionCasesArray.getJsonObject(0).getJsonArray("defendants").getJsonObject(0).getJsonArray("offences").getJsonObject(0).getString("convictionDate");
         assertThat(!convictingCourt.isEmpty(), Matchers.is(true));
-        assertThat(convictingCourt.getString("code"),Matchers.is("B01LY"));
+        assertThat(convictingCourt.getString("code"),Matchers.is("B01LY00"));
         assertThat(!convictingDate.isEmpty(), Matchers.is(true));
         assertThat(convictingDate, Matchers.is(LocalDate.now().toString()));
         assertThat(jsonEnvelopePublicHearingResulted.isPresent(), Matchers.is(true));

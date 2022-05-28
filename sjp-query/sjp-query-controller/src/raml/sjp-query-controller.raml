@@ -605,6 +605,32 @@ baseUri: http://localhost:8080/sjp-query-controller/query/controller/rest/sjp
             schema: !include json/schema/sjp.query.regions.json
             example: !include json/sjp.query.regions.json
 
+/courtcentre:
+  get:
+    description: |
+      Calculate CourtCentre Information
+      ...
+      (mapping):
+          responseType: application/vnd.sjp.query.courtcentre+json
+          name: sjp.query.courtcentre
+      ...
+    queryParameters:
+             defendantPostcode:
+               description: DefendantPostCode
+               type: string
+               required: true
+             prosecutionAuthorityCode:
+               description: Prosecuting Authority Code
+               type: string
+               required: true
+    responses:
+        200:
+          description: OK
+          body:
+                application/vnd.sjp.query.courtcentre+json:
+                  schema: !include json/schema/sjp.query.courtcentre.json
+                  example: !include json/sjp.query.courtcentre.json
+
 /cases/{caseId}/common-case-application:
   uriParameters:
      caseId:

@@ -16,6 +16,6 @@ public class Defaults {
 
     public static final String DEFAULT_LONDON_LJA_NATIONAL_COURT_CODE = "2572";
     public static final String DEFAULT_NON_LONDON_LJA_NATIONAL_COURT_CODE = "2905";
-    public static final String DEFAULT_LONDON_COURT_HOUSE_OU_CODE = "B01OK";
+    public static final String DEFAULT_LONDON_COURT_HOUSE_OU_CODE = "B01LY00";
     public static final String DEFAULT_NON_LONDON_COURT_HOUSE_OU_CODE = "B20EB00";
 }

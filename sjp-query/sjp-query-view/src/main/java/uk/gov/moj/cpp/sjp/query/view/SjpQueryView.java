@@ -100,6 +100,10 @@ public class SjpQueryView {
     public static final String ERROR_INVALID_PAGE_NUMBER = "invalid page number (%d) or page size (%d)";
     public static final String ERROR_INVALID_DATE_RANGE = "invalid date range : (%s) cannot be before (%s)";
 
+    static final String FIELD_DEFENDANT_POSTCODE = "defendantPostcode";
+    static final String FIELD_PROSECUTING_AUTHORITY = "prosecutionAuthorityCode";
+
+
 
     @Inject
     private CaseService caseService;
@@ -494,6 +498,13 @@ public class SjpQueryView {
         return envelopeFrom(
                 metadataFrom(envelope.metadata()).withName(CASES_FOR_SOC_CHECK_RESPONSE_NAME),
                 result);
+    }
+
+    @Handles("sjp.query.courtcentre")
+    public JsonEnvelope getCourtCentre(final JsonEnvelope envelope) {
+        final String defendantPostcode = extract(envelope, FIELD_DEFENDANT_POSTCODE).split(" ")[0];
+        final String prosecutionAuthorityCode = extract(envelope, FIELD_PROSECUTING_AUTHORITY);
+        return enveloper.withMetadataFrom(envelope, "sjp.query.courtcentre").apply(referenceDataService.getCourtCentre(defendantPostcode, prosecutionAuthorityCode, envelope));
     }
 
     private String extract(final JsonEnvelope envelope, final String fieldName) {

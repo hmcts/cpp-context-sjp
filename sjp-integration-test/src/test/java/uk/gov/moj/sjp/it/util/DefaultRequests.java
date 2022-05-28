@@ -10,6 +10,7 @@ import static uk.gov.moj.sjp.it.util.HttpClientUtil.getReadUrl;
 
 import uk.gov.justice.services.common.http.HeaderConstants;
 import uk.gov.justice.services.test.utils.core.http.RequestParamsBuilder;
+import uk.gov.moj.sjp.it.helper.CaseHelper;
 
 import java.net.URLEncoder;
 import java.util.UUID;
@@ -55,6 +56,11 @@ public class DefaultRequests {
     public static RequestParamsBuilder getCaseByUrnAndPostcode(final String caseUrn, final String postcode) {
         return requestParams(getReadUrl("/cases-for-citizen?urn=" + caseUrn + "&postcode=" + URLEncoder.encode(postcode)), GET_CASE_BY_URN_AND_POSTCODE_MEDIA_TYPE)
                 .withHeader(HeaderConstants.USER_ID, USER_ID);
+    }
+
+    public static RequestParamsBuilder getCourtCentreByDefendantPostCode(final String defendantPostcode, final String prosecutionAuthorityCode, final UUID userId) {
+        return requestParams(getReadUrl("/courtcentre?defendantPostcode=" + defendantPostcode + "&prosecutionAuthorityCode=" + prosecutionAuthorityCode), CaseHelper.QUERY_COURTCENTRE_MEDIA_TYPE)
+                .withHeader(HeaderConstants.USER_ID, userId);
     }
 
 }

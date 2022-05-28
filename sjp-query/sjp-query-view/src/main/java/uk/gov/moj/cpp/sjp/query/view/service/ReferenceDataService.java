@@ -8,9 +8,14 @@ import static java.util.Optional.ofNullable;
 import static java.util.UUID.randomUUID;
 import static javax.json.Json.createObjectBuilder;
 import static uk.gov.justice.services.core.annotation.Component.QUERY_VIEW;
+import static uk.gov.justice.services.core.enveloper.Enveloper.envelop;
 import static uk.gov.justice.services.messaging.Envelope.metadataBuilder;
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
 import static uk.gov.justice.services.messaging.JsonEnvelope.metadataFrom;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 
 import uk.gov.justice.services.core.annotation.ServiceComponent;
 import uk.gov.justice.services.core.enveloper.Enveloper;
@@ -24,20 +29,22 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 import javax.inject.Inject;
+import javax.json.Json;
 import javax.json.JsonArray;
 import javax.json.JsonObject;
 import javax.json.JsonValue;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 @SuppressWarnings("squid:CallToDeprecatedMethod")
 public class ReferenceDataService {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(ReferenceDataService.class);
+    public static final String REFERENCEDATA_GET_COURTCENTER = "referencedata.query.organisationunits";
     private static final String RESULTS = "results";
     private static final String REFERENCEDATA_QUERY_PROSECUTORS = "referencedata.query.prosecutors";
     private static final String PROSECUTORS_KEY = "prosecutors";
     public static final String REFERENCEDATA_GET_REFERRAL_REASON_BY_ID = "reference-data.query.get-referral-reason";
+    public static final String REFERENCEDATA_GET_OUCODE = "referencedata.query.local-justice-area-court-prosecutor-mapping-courts";
 
     @Inject
     private Enveloper enveloper;
@@ -51,8 +58,6 @@ public class ReferenceDataService {
 
     public static final String REFERENCEDATA_GET_REFERRAL_REASONS = "referencedata.query.referral-reasons";
     public static final String ID = "id";
-
-    private static final Logger LOGGER = LoggerFactory.getLogger(ReferenceDataService.class);
 
     public Optional<JsonArray> getProsecutorsByProsecutorCode(String prosecutorCode) {
         final JsonEnvelope prosecutorsQueryEnvelope = envelopeFrom(
@@ -258,5 +263,56 @@ public class ReferenceDataService {
                 .getValuesAs(JsonObject.class)
                 .stream()
                 .findFirst();
+    }
+
+    public Optional<JsonObject> getCourtCentre(final String defendantPostCode, final String prosecutionAuthorityCode, final JsonEnvelope jsonEnvelope) {
+
+        final Optional<JsonObject> responseOucode = getCourtsByPostCodeAndProsecutingAuthority(jsonEnvelope, defendantPostCode, prosecutionAuthorityCode, requester);
+        String oucode = null;
+        if (responseOucode.isPresent() && !responseOucode.get().getJsonArray("courts").isEmpty()) {
+            final String courtHouseCode = ((JsonObject)
+                    responseOucode.get().getJsonArray("courts").get(0)).getString("oucode");
+            oucode = courtHouseCode;
+        }
+        return oucode != null ? getCourtCentreFromReferenceData(oucode, jsonEnvelope, requester) : empty();
+    }
+
+    public Optional<JsonObject> getCourtCentreFromReferenceData(final String oucode, final JsonEnvelope jsonEnvelope, final Requester requester) {
+        final JsonObject jsonObject = getCourtsOrganisationUnitsByOuCode(jsonEnvelope, oucode, requester).orElseThrow(RuntimeException::new);
+        final JsonObject orgUnit = (JsonObject) jsonObject.getJsonArray("organisationunits").get(0);
+
+        return JsonValue.NULL.equals(orgUnit) ? Optional.empty() : of(Json.createObjectBuilder().add("CourtCentre",
+                orgUnit).build());
+
+    }
+
+    public Optional<JsonObject> getCourtsOrganisationUnitsByOuCode(final JsonEnvelope event, final String oucode, final Requester requester) {
+
+        final JsonObject payload = Json.createObjectBuilder()
+                .add("oucode", oucode)
+                .build();
+
+        final JsonEnvelope response = requester.request(envelop(payload)
+                .withName(REFERENCEDATA_GET_COURTCENTER)
+                .withMetadataFrom(event));
+        if (LOGGER.isInfoEnabled()) {
+            LOGGER.info(" get court center '{}' received with payload {} ", REFERENCEDATA_GET_COURTCENTER, response.toObfuscatedDebugString());
+        }
+        return Optional.ofNullable(response.payloadAsJsonObject());
+    }
+
+    public Optional<JsonObject> getCourtsByPostCodeAndProsecutingAuthority(final JsonEnvelope jsonEnvelope, final String postcode, final String prosecutingAuthority, final Requester requester) {
+        final JsonObject payloadForoucode = Json.createObjectBuilder()
+                .add("postcode", postcode)
+                .add("prosecutingAuthority", prosecutingAuthority)
+                .build();
+        final JsonEnvelope responseForoucode = requester.request(envelop(payloadForoucode)
+                .withName(REFERENCEDATA_GET_OUCODE)
+                .withMetadataFrom(jsonEnvelope));
+
+        if (LOGGER.isInfoEnabled()) {
+            LOGGER.info(" get oucode '{}' received with payload {} ", REFERENCEDATA_GET_OUCODE, responseForoucode.toObfuscatedDebugString());
+        }
+        return Optional.ofNullable(responseForoucode.payloadAsJsonObject());
     }
 }

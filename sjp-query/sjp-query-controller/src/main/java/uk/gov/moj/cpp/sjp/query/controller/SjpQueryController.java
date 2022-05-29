@@ -2,7 +2,6 @@ package uk.gov.moj.cpp.sjp.query.controller;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 import uk.gov.justice.services.core.annotation.Component;
 import uk.gov.justice.services.core.annotation.Handles;
 import uk.gov.justice.services.core.annotation.ServiceComponent;
@@ -16,7 +15,6 @@ import uk.gov.moj.cpp.sjp.query.controller.service.UserAndGroupsService;
 import javax.inject.Inject;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
-
 import java.util.Objects;
 
 import static javax.json.Json.createArrayBuilder;
@@ -175,12 +173,6 @@ public class SjpQueryController {
         return requester.request(query);
     }
 
-    @Handles("sjp.query.courtcentre")
-    public JsonEnvelope getCourtCentre(final JsonEnvelope query) {
-        return requester.request(query);
-    }
-
-
     @Handles("sjp.query.cases-without-defendant-postcode")
     public JsonEnvelope getCasesWithoutDefendantPostcode(final JsonEnvelope query) {
         return requester.request(query);
@@ -199,7 +191,7 @@ public class SjpQueryController {
         if (defendantProfilingView != null) {
             final JsonObjectBuilder payloadBuilder = createObjectBuilder();
             payloadBuilder
-                    .add("defendantId", defendantProfilingView.getId().toString())
+                    .add("defendantId",defendantProfilingView.getId().toString())
                     .add("firstname", defendantProfilingView.getFirstName())
                     .add("lastname", defendantProfilingView.getLastName());
             if (!Objects.isNull(defendantProfilingView.getDateOfBirth())) {

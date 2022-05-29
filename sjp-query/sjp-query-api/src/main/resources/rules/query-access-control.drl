@@ -129,15 +129,6 @@ rule "sjp.query.financial-means"
     $outcome.setSuccess(true);
 end
 
-rule "sjp.query.courtcentre"
-  when
-    $outcome: Outcome();
-    $action: Action(name == "sjp.query.courtcentre");
-    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, RuleConstants.getQueryCourtCentreGroups()))
-  then
-    $outcome.setSuccess(true);
-end
-
 rule "sjp.query.employer"
   when
     $outcome: Outcome();

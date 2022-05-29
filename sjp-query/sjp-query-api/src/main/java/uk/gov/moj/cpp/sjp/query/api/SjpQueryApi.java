@@ -115,7 +115,7 @@ public class SjpQueryApi {
         if (null != caseDetails && caseDetails.getValueType() == JsonValue.ValueType.NULL) {
             throw new NotFoundException();
         }
-        final Map<String, List<String>> validationErrors = sjpQueryApiValidator.validateCasePostConviction((JsonObject) caseDetails);
+        final Map<String, List<String>> validationErrors = sjpQueryApiValidator.validateCasePostConviction((JsonObject)caseDetails);
 
         if (!validationErrors.isEmpty()) {
             throw new BadRequestException(objectToJsonValueConverter.convert(validationErrors).toString());
@@ -130,11 +130,6 @@ public class SjpQueryApi {
 
     @Handles("sjp.query.financial-means")
     public JsonEnvelope findFinancialMeans(final JsonEnvelope query) {
-        return requester.request(query);
-    }
-
-    @Handles("sjp.query.courtcentre")
-    public JsonEnvelope getcourtCentre(final JsonEnvelope query) {
         return requester.request(query);
     }
 

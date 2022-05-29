@@ -33,8 +33,6 @@ public class CaseHelper {
     private static final String QUERY_READY_CASES = "application/vnd.sjp.query.ready-cases+json";
     private static final String QUERY_CASES_WITHOUT_DEFENDANT_POSTCODE = "application/vnd.sjp.query.cases-without-defendant-postcode+json";
     private static final String COMMAND_ADD_FINANCIAL_IMPOSITION_CORRELATION_ID = "application/vnd.sjp.add-financial-imposition-correlation-id+json";
-    public static final String QUERY_COURTCENTRE_MEDIA_TYPE = "application/vnd.sjp.query.courtcentre+json";
-    public static final String QUERY_COURTCENTRE_URL = "/courtcentre";
 
     public static JsonObject pollUntilCaseReady(UUID caseId) {
         final JsonObject readyCases = pollReadyCasesUntilResponseIsJson(withJsonPath("readyCases.*", hasItem(
@@ -73,12 +71,4 @@ public class CaseHelper {
                 .build();
         makePostCall(USER_ID, url, COMMAND_ADD_FINANCIAL_IMPOSITION_CORRELATION_ID, payload.toString(), ACCEPTED);
     }
-
-    public static JsonObject pollCasesCourtCentreResponseIsJson(final Matcher<? super ReadContext> matcher) {
-        final RequestParamsBuilder requestParams = requestParams(getReadUrl(QUERY_COURTCENTRE_URL), QUERY_COURTCENTRE_MEDIA_TYPE)
-                .withHeader(HeaderConstants.USER_ID, USER_ID);
-        return pollWithDefaultsUntilResponseIsJson(requestParams.build(), matcher);
-    }
-
-
 }

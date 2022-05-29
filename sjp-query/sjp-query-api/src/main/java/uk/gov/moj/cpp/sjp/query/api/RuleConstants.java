@@ -26,10 +26,6 @@ public final class RuleConstants {
         return asList(GROUP_SYSTEM_USERS, GROUP_SJP_PROSECUTORS, GROUP_LEGAL_ADVISERS, GROUP_COURT_ADMINISTRATORS);
     }
 
-    public static List<String> getQueryCourtCentreGroups() {
-        return asList(GROUP_LEGAL_ADVISERS, GROUP_SYSTEM_USERS);
-    }
-
     public static List<String> getQueryCaseByUrnPostcodeActionGroups() {
         return Collections.singletonList(GROUP_ONLINE_PLEA_SYSTEM_USERS);
     }

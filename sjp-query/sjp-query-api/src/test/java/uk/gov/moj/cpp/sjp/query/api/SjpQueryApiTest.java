@@ -21,13 +21,11 @@ import static uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderF
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
-
 import uk.gov.justice.services.core.annotation.Component;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.runners.MockitoJUnitRunner;
-
 import uk.gov.justice.services.core.enveloper.Enveloper;
 import uk.gov.justice.services.core.requester.Requester;
 import uk.gov.justice.services.messaging.JsonEnvelope;
@@ -37,7 +35,6 @@ import uk.gov.moj.cpp.sjp.query.api.validator.SjpQueryApiValidator;
 
 import javax.json.JsonObject;
 import javax.json.JsonValue;
-
 import java.util.Collections;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -89,8 +86,7 @@ public class SjpQueryApiTest {
                         method("getCasesWithoutDefendantPostcode").thatHandles("sjp.query.cases-without-defendant-postcode"),
                         method("getOffencesVerdicts").thatHandles("sjp.query.offence-verdicts"),
                         method("getCaseNotes").thatHandles("sjp.query.case-notes").withRequesterPassThrough(),
-                        method("getOutstandingFines").thatHandles("sjp.query.defendant-outstanding-fines").withRequesterPassThrough(),
-                        method("getcourtCentre").thatHandles("sjp.query.courtcentre").withRequesterPassThrough()
+                        method("getOutstandingFines").thatHandles("sjp.query.defendant-outstanding-fines").withRequesterPassThrough()
                 )));
     }
 

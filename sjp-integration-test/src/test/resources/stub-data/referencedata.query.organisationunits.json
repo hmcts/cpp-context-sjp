@@ -2,7 +2,7 @@
   "organisationunits": [
     {
       "id": "f8254db1-1683-483e-afb3-b87fde5a0a26",
-      "oucode": "B01LY00",
+      "oucode": "B01LY",
       "oucodeL3Code": "LY",
       "oucodeL3Name": "$(courtHouseName)",
       "oucodeL2Code": "01",

@@ -5,7 +5,6 @@ import static com.github.tomakehurst.wiremock.client.WireMock.equalTo;
 import static com.github.tomakehurst.wiremock.client.WireMock.get;
 import static com.github.tomakehurst.wiremock.client.WireMock.matching;
 import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
-import static com.github.tomakehurst.wiremock.client.WireMock.urlMatching;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlPathEqualTo;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlPathMatching;
 import static java.lang.String.format;
@@ -22,7 +21,6 @@ import static uk.gov.justice.service.wiremock.testutil.InternalEndpointMockUtils
 import static uk.gov.justice.services.common.http.HeaderConstants.ID;
 import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 import static uk.gov.moj.sjp.it.Constants.DEFAULT_OFFENCE_CODE;
-import static uk.gov.moj.sjp.it.stub.DefendantOutstandingFinesStub.waitForStubToBeReady;
 import static uk.gov.moj.sjp.it.util.Defaults.DEFAULT_LONDON_COURT_HOUSE_OU_CODE;
 import static uk.gov.moj.sjp.it.util.Defaults.DEFAULT_LONDON_LJA_NATIONAL_COURT_CODE;
 import static uk.gov.moj.sjp.it.util.Defaults.DEFAULT_NON_LONDON_COURT_HOUSE_OU_CODE;
@@ -30,7 +28,6 @@ import static uk.gov.moj.sjp.it.util.Defaults.DEFAULT_NON_LONDON_LJA_NATIONAL_CO
 import static uk.gov.moj.sjp.it.util.FileUtil.getFileContentAsJson;
 import static uk.gov.moj.sjp.it.util.FileUtil.getPayload;
 
-import uk.gov.justice.service.wiremock.testutil.InternalEndpointMockUtils;
 import uk.gov.justice.services.common.http.HeaderConstants;
 import uk.gov.moj.sjp.it.model.ProsecutingAuthority;
 
@@ -66,10 +63,6 @@ public class ReferenceDataServiceStub {
     private static final String QUERY_ALL_RESULT_DEFINITIONS_MIME_TYPE = "application/vnd.referencedata.get-all-result-definitions+json";
     private static final String QUERY_PROSECUTOR_BY_PTI_URN_MIME_TYPE = "application/vnd.referencedata.query.prosecutor.by.ptiurn+json";
     private static final String QUERY_ALL_FIXED_LIST_MIME_TYPE = "application/vnd.referencedata.get-all-fixed-list+json";
-    private static final String QUERY_LOCAL_JUSTICE_AREA_URL = "/referencedata-query-api/query/api/rest/referencedata/local-justice-area-court-prosecutor-mapping/courts?postcode=%s&prosecutingAuthority=%s";
-    private static final String QUERY_LOCAL_JUSTICE_AREA_MEDIA_TYPE = "application/vnd.referencedata.query.local-justice-area-court-prosecutor-mapping-courts+json";
-    public static final String LJA_PROSECUTOR_MAPPING_URL = "/referencedata-service/query/api/rest/referencedata/local-justice-area-court-prosecutor-mapping/courts?.*";
-    public static final String LJA_PROSECUTOR_MAPPING_MEDIA_TYPE = "application/vnd.referencedata.query.local-justice-area-court-prosecutor-mapping-courts.+json";
 
 
     public static void stubAllReferenceData() {
@@ -149,21 +142,6 @@ public class ReferenceDataServiceStub {
                         .withHeader(HeaderConstants.ID, randomUUID().toString())
                         .withHeader(CONTENT_TYPE, APPLICATION_JSON)
                         .withBody(offence.toString())));
-    }
-
-    public static void stubQueryCourtsCodeData(final String resourceName) {
-        InternalEndpointMockUtils.stubPingFor("referencedata-service");
-        final JsonObject documentType = Json.createReader(ReferenceDataServiceStub.class
-                .getResourceAsStream(resourceName))
-                .readObject();
-
-        stubFor(get(urlMatching(LJA_PROSECUTOR_MAPPING_URL))
-                .willReturn(aResponse().withStatus(SC_OK)
-                        .withHeader("CPPID", randomUUID().toString())
-                        .withHeader("Content-Type", APPLICATION_JSON)
-                        .withBody(documentType.toString())));
-
-        waitForStubToBeReady(LJA_PROSECUTOR_MAPPING_URL, LJA_PROSECUTOR_MAPPING_MEDIA_TYPE);
     }
 
     public static void stubAllIndividualProsecutorsQueries() {
@@ -355,7 +333,6 @@ public class ReferenceDataServiceStub {
                         .withHeader(CONTENT_TYPE, APPLICATION_JSON)
                         .withBody(stubbedResponse.toString())));
     }
-
     public static void stubEnforcementAreaByLocalLJACode(final String nationalCourtCode, final String nationalCourtName) {
         stubPingFor(REFERENCEDATA_SERVICE);
         final String urlPath = QUERY_API_PATH + "/enforcement-area";

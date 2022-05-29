@@ -20,7 +20,6 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
-import static org.mockito.Matchers.isNotNull;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -102,7 +101,6 @@ import java.util.stream.Stream;
 
 import javax.json.Json;
 import javax.json.JsonObject;
-import javax.json.JsonValue;
 import javax.persistence.NoResultException;
 
 import org.hamcrest.Matchers;
@@ -983,76 +981,6 @@ public class SjpQueryViewTest {
                 .build();
     }
 
-    @Test
-    public void shouldcalculateCourtCentre() {
-
-        final String courtCentreId = randomUUID().toString();
-        final String oucode = randomUUID().toString();
-        final String oucodeL3Code = randomUUID().toString();
-        final String oucodeL2Code = randomUUID().toString();
-        final String oucodeL2Name = randomUUID().toString();
-        final String oucodeL1Code = randomUUID().toString();
-        final String oucodeL1Name = randomUUID().toString();
-        final String oucodeEffectiveFromDate = randomUUID().toString();
-        final String oucodeEffectiveToDate = randomUUID().toString();
-        final String lja = randomUUID().toString();
-        final String localName = randomUUID().toString();
-        final String phone = randomUUID().toString();
-        final String fax = randomUUID().toString();
-        final String email = randomUUID().toString();
-        final String postcode = randomUUID().toString();
-        final String isWelsh = randomUUID().toString();
-        final String oucodeNotes = randomUUID().toString();
-
-
-        final Optional<JsonObject> courtCentreObject = Optional.of(Json.createObjectBuilder().add("CourtCentre",
-                Json.createObjectBuilder()
-                        .add("id", courtCentreId.toString())
-                        .add("oucode", oucode)
-                        .add("oucodeL3Code", oucodeL3Code)
-                        .add("oucodeL2Code", oucodeL2Code)
-                        .add("oucodeL2Name", oucodeL2Name)
-                        .add("oucodeL1Code", oucodeL1Code)
-                        .add("oucodeL1Name", oucodeL1Name)
-                        .add("oucodeEffectiveFromDate", oucodeEffectiveFromDate)
-                        .add("oucodeEffectiveToDate", oucodeEffectiveToDate)
-                        .add("lja", lja)
-                        .add("localName", localName)
-                        .add("phone", phone)
-                        .add("fax", fax)
-                        .add("email", email)
-                        .add("postcode", postcode)
-                        .add("isWelsh", isWelsh)
-                        .add("oucodeNotes", oucodeNotes).build()).build());
-
-        when(referenceDataService.getCourtCentreFromReferenceData(any(), any(), any())).thenReturn(courtCentreObject);
-        when(referenceDataService.getCourtCentre(any(), any(), any())).thenReturn(courtCentreObject);
-        final JsonEnvelope query = envelopeFrom(metadataWithRandomUUID("sjp.query.courtcentre"), createObjectBuilder().add("defendantPostcode", randomUUID().toString()).add("prosecutionAuthorityCode", randomUUID().toString()).build());
-        final JsonEnvelope result = sjpQueryView.getCourtCentre(query);
-        assertThat(result, jsonEnvelope(metadata().withName("sjp.query.courtcentre"),
-                payload().isJson(allOf(
-                        withJsonPath("$.CourtCentre.id", is(courtCentreId)),
-                        withJsonPath("$.CourtCentre.oucode", is(oucode)),
-                        withJsonPath("$.CourtCentre.oucodeL3Code", is(oucodeL3Code)),
-                        withJsonPath("$.CourtCentre.oucodeL2Code", is(oucodeL2Code)),
-                        withJsonPath("$.CourtCentre.oucodeL2Name", is(oucodeL2Name)),
-                        withJsonPath("$.CourtCentre.oucodeL1Code", is(oucodeL1Code)),
-                        withJsonPath("$.CourtCentre.oucodeL1Name", is(oucodeL1Name)),
-                        withJsonPath("$.CourtCentre.oucodeEffectiveFromDate", is(oucodeEffectiveFromDate)),
-                        withJsonPath("$.CourtCentre.oucodeEffectiveToDate", is(oucodeEffectiveToDate)),
-                        withJsonPath("$.CourtCentre.lja", is(lja)),
-                        withJsonPath("$.CourtCentre.phone", is(phone)),
-                        withJsonPath("$.CourtCentre.fax", is(fax)),
-                        withJsonPath("$.CourtCentre.email", is(email)),
-                        withJsonPath("$.CourtCentre.postcode", is(postcode)),
-                        withJsonPath("$.CourtCentre.isWelsh", is(isWelsh)),
-                        withJsonPath("$.CourtCentre.oucodeNotes", is(oucodeNotes))
-                ))
-        ));
-
-
-    }
-
     private JsonObject buildNotGuiltyPleaCases(final ZonedDateTime pleaDate) {
         return createObjectBuilder()
                 .add("results", 1)
@@ -1155,5 +1083,4 @@ public class SjpQueryViewTest {
 
         return response;
     }
-
 }

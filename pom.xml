@@ -4,7 +4,7 @@
     <parent>
         <groupId>uk.gov.moj.cpp.common</groupId>
         <artifactId>service-parent-pom</artifactId>
-        <version>10.8.11</version>
+        <version>10.8.12</version>
     </parent>
 
     <groupId>uk.gov.moj.cpp.sjp</groupId>
@@ -31,7 +31,7 @@
         <cpp.framework.action.mapping.enabled>true</cpp.framework.action.mapping.enabled>
         <mvn.site.url>file://${project.build.directory}/site</mvn.site.url>
         <file.alfresco.version>2.3.0</file.alfresco.version>
-        <coredomain.version>1.0.185</coredomain.version>
+        <coredomain.version>1.0.186</coredomain.version>
         <javax.el-api.version>3.0.0</javax.el-api.version>
         <joda-time.version>2.10</joda-time.version>
         <lombok.version>1.18.2</lombok.version>
@@ -45,7 +45,7 @@
         <elasticsearch.embedded.version>7.16.2</elasticsearch.embedded.version>
         <stagingenforcement.version>7.0.26</stagingenforcement.version>
         <criminal-court-public-model.version>${coredomain.version}</criminal-court-public-model.version>
-        <unifiedsearch.version>7.0.21</unifiedsearch.version>
+        <unifiedsearch.version>7.0.22</unifiedsearch.version>
     </properties>
 
     <modules>

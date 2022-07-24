@@ -18,6 +18,7 @@ import uk.gov.moj.cpp.sjp.event.processor.service.ReferenceDataService;
 import javax.inject.Inject;
 import javax.json.JsonObject;
 
+@SuppressWarnings("squid:CallToDeprecatedMethod")
 @ServiceComponent(EVENT_PROCESSOR)
 public class PleaNotificationProcessor {
 
@@ -34,7 +35,7 @@ public class PleaNotificationProcessor {
     private ReferenceDataService referenceDataService;
 
     @Inject
-    @Value(key = "pleaNotificationEnglishTemplateId", defaultValue = "07d1f043-6052-4d18-adce-58678d0e7018")
+    @Value(key = "onlinePleaSjpTemplateId", defaultValue = "ab3487de-a318-4364-9ded-f71c1420360f")
     String englishTemplateId;
 
     @Inject

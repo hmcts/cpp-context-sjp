@@ -144,7 +144,7 @@ public class PleadOnlineIT extends BaseIntegrationTest {
     private static final String TEMPLATE_PLEA_NOT_GUILTY_WITHOUT_FINANCIAL_MEANS_CASE_RESPONSE = "raml/json/sjp.command.plead-online__not-guilty_without_finances_case_response.json";
     private static final String TEMPLATE_PLEA_NOT_GUILTY_WITH_CHANGED_DETAILS_CASE_RESPONSE = "raml/json/sjp.command.plead-online__not-guilty_with_changed_details_case_response.json";
     private static final String DEFENDANT_DETAIL_UPDATES_CONTENT_TYPE = "application/vnd.sjp.query.defendant-details-updates+json";
-    private static final String ENGLISH_TEMPLATE_ID = "07d1f043-6052-4d18-adce-58678d0e7018";
+    private static final String ENGLISH_TEMPLATE_ID = "ab3487de-a318-4364-9ded-f71c1420360f";
     private static final Set<UUID> DEFAULT_STUBBED_USER_ID = singleton(USER_ID);
     private static final SjpDatabaseCleaner databaseCleaner = new SjpDatabaseCleaner();
     private static final UUID REFERRAL_REASON_ID = randomUUID();

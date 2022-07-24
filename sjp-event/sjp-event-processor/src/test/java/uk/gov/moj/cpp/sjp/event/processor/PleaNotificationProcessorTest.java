@@ -61,7 +61,7 @@ public class PleaNotificationProcessorTest {
     @Captor
     private ArgumentCaptor<JsonEnvelope> argumentCaptor;
 
-    private static final String ENGLISH_TEMPLATE_ID = "07d1f043-6052-4d18-adce-58678d0e7018";
+    private static final String ENGLISH_TEMPLATE_ID = "ab3487de-a318-4364-9ded-f71c1420360f";
     private static final String WELSH_TEMPLATE_ID = "af48b904-3ee5-402b-bd82-0a80249c4405";
 
 

@@ -24,7 +24,6 @@ public class DefendantCaseQuery {
     public static final String DOB_QUERY_PARAM = "partyDateOfBirth";
     public static final String ADDRESS_LINE1_QUERY_PARAM = "addressLine1";
     public static final String POSTCODE_QUERY_PARAM = "partyPostcode";
-    public static final String ASN_QUERY_PARAM = "partyArrestSummonsNumber";
     private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
     private final DefendantDetail defendant;
@@ -49,7 +48,6 @@ public class DefendantCaseQuery {
             addQueryParam(criteriaBuilder, ADDRESS_LINE1_QUERY_PARAM, address.getAddress1());
             addQueryParam(criteriaBuilder, POSTCODE_QUERY_PARAM, address.getPostcode());
         }
-        addQueryParam(criteriaBuilder, ASN_QUERY_PARAM, defendant.getAsn());
 
         criteria = criteriaBuilder.build();
     }

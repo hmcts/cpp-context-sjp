@@ -20,7 +20,6 @@ import static uk.gov.moj.cpp.sjp.query.view.service.ProgressionService.PROSECUTI
 import static uk.gov.moj.cpp.sjp.query.view.service.defendantcase.rules.CaseRuleType.COURT_CASE_OPEN;
 import static uk.gov.moj.cpp.sjp.query.view.service.defendantcase.rules.CaseRuleType.SJP_OPEN;
 import static uk.gov.moj.cpp.sjp.query.view.service.defendantcase.search.DefendantCaseQuery.ADDRESS_LINE1_QUERY_PARAM;
-import static uk.gov.moj.cpp.sjp.query.view.service.defendantcase.search.DefendantCaseQuery.ASN_QUERY_PARAM;
 import static uk.gov.moj.cpp.sjp.query.view.service.defendantcase.search.DefendantCaseQuery.CASES_DEFAULT_PAGE_SIZE;
 import static uk.gov.moj.cpp.sjp.query.view.service.defendantcase.search.DefendantCaseQuery.CASES_PAGE_SIZE;
 import static uk.gov.moj.cpp.sjp.query.view.service.defendantcase.search.DefendantCaseQuery.CASES_QUERY_NAME;
@@ -186,7 +185,6 @@ public class DefendantPotentialCaseServiceTest {
         assertEquals(queryParamPayload.getString(DOB_QUERY_PARAM), personalDetails.getDateOfBirth().toString());
         assertEquals(queryParamPayload.getString(ADDRESS_LINE1_QUERY_PARAM), personalDetails.getAddress().getAddress1());
         assertEquals(queryParamPayload.getString(POSTCODE_QUERY_PARAM), personalDetails.getAddress().getPostcode());
-        assertEquals(queryParamPayload.getString(ASN_QUERY_PARAM), defendant.getAsn());
     }
 
     @Test

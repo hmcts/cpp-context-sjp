@@ -67,29 +67,6 @@ public class DefendantPotentialCaseIT extends BaseIntegrationTest {
     }
 
     @Test
-    public void shouldReturnTrueForPotentialCases()  {
-        UUID caseId =  UUID.randomUUID();
-        UUID defendantId = randomUUID();
-
-        privateEventsProducer.startProducer(SJP_EVENT);
-        final ProsecutingAuthority prosecutingAuthority = TFL;
-        stubProsecutorQuery(prosecutingAuthority.name(), prosecutingAuthority.getFullName(), randomUUID());
-        final CreateCase.CreateCasePayloadBuilder createCase = createCase(caseId,
-                defendantId,
-                prosecutingAuthority,
-                LocalDate.of(1980, 10, 10));
-
-        final Optional<JsonEnvelope> caseReceivedEvent = new EventListener()
-                .subscribe(CaseReceived.EVENT_NAME)
-                .run(() -> CreateCase.createCaseForPayloadBuilder(createCase))
-                .popEvent(CaseReceived.EVENT_NAME);
-        assertTrue(caseReceivedEvent.isPresent());
-
-        final boolean hasPotentialCase = CasePoller.pollUntilCaseByIdIsOk(caseId).get("hasPotentialCase");
-        assertTrue(hasPotentialCase);
-    }
-
-    @Test
     public void shouldFindPotentialCases()  {
         UUID caseId = randomCaseId;
         UUID defendantId =  UUID.randomUUID();

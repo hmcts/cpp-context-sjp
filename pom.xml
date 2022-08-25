@@ -24,8 +24,8 @@
         <referencedata.offences.version>7.0.13</referencedata.offences.version>
         <scheduling.version>6.0.0</scheduling.version>
         <authorisation.service.version>0.1.49</authorisation.service.version>
-        <usersgroups.version>7.0.42</usersgroups.version>
-        <progression.version>8.0.51</progression.version>
+        <usersgroups.version>8.0.5</usersgroups.version>
+        <progression.version>8.0.53</progression.version>
         <prosecutioncasefile.version>8.0.4</prosecutioncasefile.version>
         <access-control-sjp-providers.version>4.1.4-ATCM</access-control-sjp-providers.version>
         <cpp.framework.action.mapping.enabled>true</cpp.framework.action.mapping.enabled>

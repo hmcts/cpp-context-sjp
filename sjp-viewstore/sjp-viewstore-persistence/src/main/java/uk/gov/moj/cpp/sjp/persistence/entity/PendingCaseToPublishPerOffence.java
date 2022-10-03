@@ -7,6 +7,7 @@ public class PendingCaseToPublishPerOffence {
 
     private final String firstName;
     private final String lastName;
+    private final String legalEntityName;
     private final LocalDate defendantDateOfBirth;
     private final UUID caseId;
     private String caseUrn;
@@ -25,7 +26,7 @@ public class PendingCaseToPublishPerOffence {
     private final String prosecutor;
 
     @SuppressWarnings("squid:S00107")
-    public PendingCaseToPublishPerOffence(final String firstName, final String lastName, final LocalDate defendantDateOfBirth,
+    public PendingCaseToPublishPerOffence(final String firstName, final String lastName, String legalEntityName, final LocalDate defendantDateOfBirth,
                                           final UUID caseId, final String caseUrn,
                                           final String addressLine1, final String addressLine2,
                                           final String addressLine3, final String addressLine4, final String addressLine5,
@@ -34,6 +35,7 @@ public class PendingCaseToPublishPerOffence {
                                           final String pressRestrictionName, final Boolean completed, final String prosecutor) {
         this.firstName = firstName;
         this.lastName = lastName;
+        this.legalEntityName = legalEntityName;
         this.defendantDateOfBirth = defendantDateOfBirth;
         this.caseId = caseId;
         this.caseUrn = caseUrn;
@@ -122,5 +124,9 @@ public class PendingCaseToPublishPerOffence {
 
     public Boolean getCompleted() {
         return completed;
+    }
+
+    public String getLegalEntityName() {
+        return legalEntityName;
     }
 }

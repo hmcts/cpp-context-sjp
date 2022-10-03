@@ -55,7 +55,7 @@ import uk.gov.moj.cpp.sjp.event.DefendantAddressUpdated;
 import uk.gov.moj.cpp.sjp.event.DefendantDateOfBirthUpdated;
 import uk.gov.moj.cpp.sjp.event.DefendantDetailsUpdated;
 import uk.gov.moj.cpp.sjp.event.DefendantNotFound;
-import uk.gov.moj.cpp.sjp.event.DefendantPersonalNameUpdated;
+import uk.gov.moj.cpp.sjp.event.DefendantNameUpdated;
 import uk.gov.moj.cpp.sjp.event.EmployerUpdated;
 import uk.gov.moj.cpp.sjp.event.EmploymentStatusUpdated;
 import uk.gov.moj.cpp.sjp.event.FinancialMeansUpdated;
@@ -99,7 +99,7 @@ public class PleadOnlineTest {
     @Before
     public void setup() {
         // single offence case
-        setup(createTestCase(null));
+        setup(createTestCase(null,null));
     }
 
     private void setup(final Case testCase) {
@@ -116,7 +116,7 @@ public class PleadOnlineTest {
     @Test
     public void shouldPleadOnlineSuccessfullyForGuiltyPlea() {
         //when
-        final PleadOnline pleadOnline = StoreOnlinePleaBuilder.defaultStoreOnlinePleaWithGuiltyPlea(offenceId, defendantId);
+        final PleadOnline pleadOnline = StoreOnlinePleaBuilder.defaultStoreOnlinePleaWithGuiltyPlea(offenceId, defendantId, null, null);
         final Stream<Object> eventStream = caseAggregate.pleadOnline(caseId, pleadOnline, now, randomUUID());
         //then
         final List<Object> events = asList(eventStream.toArray());
@@ -124,6 +124,7 @@ public class PleadOnlineTest {
                 PleasSet.class,
                 HearingLanguagePreferenceUpdatedForDefendant.class,
                 PleadedGuilty.class,
+                DefendantDetailsUpdated.class,
                 FinancialMeansUpdated.class,
                 EmployerUpdated.class,
                 EmploymentStatusUpdated.class,
@@ -144,7 +145,7 @@ public class PleadOnlineTest {
 
         //when
         final PleadOnline pleadOnline = StoreOnlinePleaBuilder.defaultStoreOnlinePleaWithGuiltyRequestHearingPlea(offenceId,
-                defendantId, interpreterLanguage, speakWelsh);
+                defendantId, interpreterLanguage, speakWelsh, null, null);
         final Stream<Object> eventStream = caseAggregate.pleadOnline(caseId, pleadOnline, now, randomUUID());
 
         //then
@@ -154,6 +155,7 @@ public class PleadOnlineTest {
                 InterpreterUpdatedForDefendant.class,
                 HearingLanguagePreferenceUpdatedForDefendant.class,
                 PleadedGuiltyCourtHearingRequested.class,
+                DefendantDetailsUpdated.class,
                 FinancialMeansUpdated.class,
                 EmployerUpdated.class,
                 EmploymentStatusUpdated.class,
@@ -173,7 +175,7 @@ public class PleadOnlineTest {
 
         //when
         final PleadOnline pleadOnline = StoreOnlinePleaBuilder.defaultStoreOnlinePleaWithGuiltyRequestHearingPlea(offenceId,
-                defendantId, interpreterLanguage, speakWelsh);
+                defendantId, interpreterLanguage, speakWelsh, null, null);
         final Stream<Object> eventStream = caseAggregate.pleadOnline(caseId, pleadOnline, now, randomUUID());
 
         //then
@@ -182,6 +184,7 @@ public class PleadOnlineTest {
                 PleasSet.class,
                 HearingLanguagePreferenceUpdatedForDefendant.class,
                 PleadedGuiltyCourtHearingRequested.class,
+                DefendantDetailsUpdated.class,
                 FinancialMeansUpdated.class,
                 EmployerUpdated.class,
                 EmploymentStatusUpdated.class,
@@ -201,7 +204,7 @@ public class PleadOnlineTest {
 
         //when
         final PleadOnline pleadOnline = StoreOnlinePleaBuilder.defaultStoreOnlinePleaWithNotGuiltyPlea(offenceId,
-                defendantId, interpreterLanguage, speakWelsh, true);
+                defendantId, interpreterLanguage, speakWelsh, true, null, null);
         final Stream<Object> eventStream = caseAggregate.pleadOnline(caseId, pleadOnline, now, randomUUID());
 
         //then
@@ -213,6 +216,7 @@ public class PleadOnlineTest {
                 PleadedNotGuilty.class,
                 DatesToAvoidRequired.class,
                 TrialRequested.class,
+                DefendantDetailsUpdated.class,
                 FinancialMeansUpdated.class,
                 EmployerUpdated.class,
                 EmploymentStatusUpdated.class,
@@ -232,7 +236,7 @@ public class PleadOnlineTest {
 
         //when
         final PleadOnline pleadOnline = StoreOnlinePleaBuilder.defaultStoreOnlinePleaWithNotGuiltyPlea(offenceId,
-                defendantId, interpreterLanguage, speakWelsh, false);
+                defendantId, interpreterLanguage, speakWelsh, false, null, null);
         final Stream<Object> eventStream = caseAggregate.pleadOnline(caseId, pleadOnline, now, randomUUID());
 
         //then
@@ -244,6 +248,7 @@ public class PleadOnlineTest {
                 PleadedNotGuilty.class,
                 DatesToAvoidRequired.class,
                 TrialRequested.class,
+                DefendantDetailsUpdated.class,
                 FinancialMeansUpdated.class,
                 EmployerUpdated.class,
                 EmploymentStatusUpdated.class,
@@ -267,7 +272,7 @@ public class PleadOnlineTest {
         final UUID[] extraOffenceIds = Arrays.stream(pleaInformationArray).map(pleaInformation ->
                 (UUID) pleaInformation[0]).toArray(UUID[]::new);
 
-        final Case testCase = createTestCase("Mr", extraOffenceIds);
+        final Case testCase = createTestCase("Mr", null,extraOffenceIds);
         setup(testCase); // Override the @Before
 
         final String interpreterLanguage = "French";
@@ -275,7 +280,7 @@ public class PleadOnlineTest {
 
         //when
         final PleadOnline pleadOnline = StoreOnlinePleaBuilder.defaultStoreOnlinePleaForMultipleOffences(
-                pleaInformationArray, defendantId, interpreterLanguage, speakWelsh, true);
+                pleaInformationArray, defendantId, interpreterLanguage, speakWelsh, true, null, null);
         final Stream<Object> eventStream = caseAggregate.pleadOnline(caseId, pleadOnline, now, randomUUID());
 
         //then
@@ -334,7 +339,7 @@ public class PleadOnlineTest {
         caseAggregate.assignCase(userId, ZonedDateTime.now(), CaseAssignmentType.MAGISTRATE_DECISION);
 
         //when
-        final PleadOnline pleadOnline = StoreOnlinePleaBuilder.defaultStoreOnlinePleaWithGuiltyPlea(offenceId, defendantId);
+        final PleadOnline pleadOnline = StoreOnlinePleaBuilder.defaultStoreOnlinePleaWithGuiltyPlea(offenceId, defendantId, null, null);
         final Stream<Object> eventStream = caseAggregate.pleadOnline(caseId, pleadOnline, now, randomUUID());
 
         //then
@@ -354,7 +359,7 @@ public class PleadOnlineTest {
                 singletonList(new WithdrawalRequestsStatus(offenceId, withdrawalRequestReasonId)), "ALL");
 
         //when
-        final PleadOnline pleadOnline = StoreOnlinePleaBuilder.defaultStoreOnlinePleaWithGuiltyPlea(offenceId, defendantId);
+        final PleadOnline pleadOnline = StoreOnlinePleaBuilder.defaultStoreOnlinePleaWithGuiltyPlea(offenceId, defendantId, null, null);
         final Stream<Object> eventStream = caseAggregate.pleadOnline(caseId, pleadOnline, now, randomUUID());
 
         //then
@@ -363,6 +368,7 @@ public class PleadOnlineTest {
                 PleasSet.class,
                 HearingLanguagePreferenceUpdatedForDefendant.class,
                 PleadedGuilty.class,
+                DefendantDetailsUpdated.class,
                 FinancialMeansUpdated.class,
                 EmployerUpdated.class,
                 EmploymentStatusUpdated.class,
@@ -383,7 +389,7 @@ public class PleadOnlineTest {
         caseAggregate.requestForOffenceWithdrawal(caseId, userId, ZonedDateTime.now(), emptyList(), "ALL");
 
         //when
-        final PleadOnline pleadOnline = StoreOnlinePleaBuilder.defaultStoreOnlinePleaWithGuiltyPlea(offenceId, defendantId);
+        final PleadOnline pleadOnline = StoreOnlinePleaBuilder.defaultStoreOnlinePleaWithGuiltyPlea(offenceId, defendantId, null, null);
         final Stream<Object> eventStream = caseAggregate.pleadOnline(caseId, pleadOnline, now, randomUUID());
 
         //then
@@ -392,6 +398,7 @@ public class PleadOnlineTest {
                 PleasSet.class,
                 HearingLanguagePreferenceUpdatedForDefendant.class,
                 PleadedGuilty.class,
+                DefendantDetailsUpdated.class,
                 FinancialMeansUpdated.class,
                 EmployerUpdated.class,
                 EmploymentStatusUpdated.class,
@@ -409,7 +416,7 @@ public class PleadOnlineTest {
         final UUID offenceId = randomUUID();
 
         //when
-        final PleadOnline pleadOnline = StoreOnlinePleaBuilder.defaultStoreOnlinePleaWithGuiltyPlea(offenceId, defendantId);
+        final PleadOnline pleadOnline = StoreOnlinePleaBuilder.defaultStoreOnlinePleaWithGuiltyPlea(offenceId, defendantId, null, null);
         final List<Object> events = caseAggregate.pleadOnline(caseId, pleadOnline, now, randomUUID()).collect(toList());
 
         //then
@@ -422,7 +429,7 @@ public class PleadOnlineTest {
         final UUID defendantId = randomUUID();
 
         //when
-        final PleadOnline pleadOnline = StoreOnlinePleaBuilder.defaultStoreOnlinePleaWithGuiltyPlea(offenceId, defendantId);
+        final PleadOnline pleadOnline = StoreOnlinePleaBuilder.defaultStoreOnlinePleaWithGuiltyPlea(offenceId, defendantId, null, null);
         final List<Object> events = caseAggregate.pleadOnline(caseId, pleadOnline, now, randomUUID()).collect(toList());
 
         //then
@@ -432,7 +439,7 @@ public class PleadOnlineTest {
     @Test
     public void shouldWarnNameChanged() {
         //when
-        final PleadOnline pleadOnline = StoreOnlinePleaBuilder.defaultStoreOnlinePleaWithGuiltyPlea(offenceId, defendantId, true, false, false);
+        final PleadOnline pleadOnline = StoreOnlinePleaBuilder.defaultStoreOnlinePleaWithGuiltyPlea(offenceId, defendantId, true, false, false, null, null);
         final List<Object> events = caseAggregate.pleadOnline(caseId, pleadOnline, now, randomUUID()).collect(toList());
 
         //then
@@ -441,7 +448,7 @@ public class PleadOnlineTest {
                 HearingLanguagePreferenceUpdatedForDefendant.class,
                 PleadedGuilty.class,
                 DefendantDetailsUpdated.class,
-                DefendantPersonalNameUpdated.class,
+                DefendantNameUpdated.class,
                 FinancialMeansUpdated.class,
                 EmployerUpdated.class,
                 EmploymentStatusUpdated.class,
@@ -461,7 +468,7 @@ public class PleadOnlineTest {
     @Test
     public void shouldNotRaiseDefendantDetailsUpdatedIfNoPersonalDetailsChange() {
         //when
-        final PleadOnline pleadOnline = StoreOnlinePleaBuilder.defaultStoreOnlinePleaWithGuiltyPlea(offenceId, defendantId, false, false, false);
+        final PleadOnline pleadOnline = StoreOnlinePleaBuilder.defaultStoreOnlinePleaWithGuiltyPlea(offenceId, defendantId, false, false, false, null, null);
         final List<Object> events = caseAggregate.pleadOnline(caseId, pleadOnline, now, randomUUID()).collect(toList());
 
         //then
@@ -469,6 +476,7 @@ public class PleadOnlineTest {
                 PleasSet.class,
                 HearingLanguagePreferenceUpdatedForDefendant.class,
                 PleadedGuilty.class,
+                DefendantDetailsUpdated.class,
                 FinancialMeansUpdated.class,
                 EmployerUpdated.class,
                 EmploymentStatusUpdated.class,
@@ -493,7 +501,7 @@ public class PleadOnlineTest {
     @Test
     public void shouldWarnAddressChanged() {
         //when
-        final PleadOnline pleadOnline = StoreOnlinePleaBuilder.defaultStoreOnlinePleaWithGuiltyPlea(offenceId, defendantId, false, true, false);
+        final PleadOnline pleadOnline = StoreOnlinePleaBuilder.defaultStoreOnlinePleaWithGuiltyPlea(offenceId, defendantId, false, true, false, null, null);
         final List<Object> events = caseAggregate.pleadOnline(caseId, pleadOnline, now, randomUUID()).collect(toList());
 
         //then
@@ -524,7 +532,7 @@ public class PleadOnlineTest {
     @Test
     public void shouldWarnDobChanged() {
         //when
-        final PleadOnline pleadOnline = StoreOnlinePleaBuilder.defaultStoreOnlinePleaWithGuiltyPlea(offenceId, defendantId, false, false, true);
+        final PleadOnline pleadOnline = StoreOnlinePleaBuilder.defaultStoreOnlinePleaWithGuiltyPlea(offenceId, defendantId, false, false, true, null, null);
         final List<Object> events = caseAggregate.pleadOnline(caseId, pleadOnline, now, randomUUID()).collect(toList());
 
         //then
@@ -663,17 +671,17 @@ public class PleadOnlineTest {
                 assertThat(defendantDateOfBirthUpdated.getCaseId(), equalTo(caseId));
                 assertThat(defendantDateOfBirthUpdated.getNewDateOfBirth(), equalTo(pleadOnline.getPersonalDetails().getDateOfBirth()));
                 assertThat(defendantDateOfBirthUpdated.getOldDateOfBirth(), not(equalTo(defendantDateOfBirthUpdated.getNewDateOfBirth())));
-            } else if (e instanceof DefendantPersonalNameUpdated) {
-                final DefendantPersonalNameUpdated defendantPersonalNameUpdated = (DefendantPersonalNameUpdated) e;
+            } else if (e instanceof DefendantNameUpdated) {
+                final DefendantNameUpdated defendantNameUpdated = (DefendantNameUpdated) e;
 
-                assertThat(defendantPersonalNameUpdated.getCaseId(), equalTo(caseId));
-                assertThat(defendantPersonalNameUpdated.getNewPersonalName(), equalTo(
+                assertThat(defendantNameUpdated.getCaseId(), equalTo(caseId));
+                assertThat(defendantNameUpdated.getNewPersonalName(), equalTo(
                         new PersonalName(
                                 pleadOnline.getPersonalDetails().getTitle(),
                                 pleadOnline.getPersonalDetails().getFirstName(),
                                 pleadOnline.getPersonalDetails().getLastName()
                         )));
-                assertThat(defendantPersonalNameUpdated.getOldPersonalName(), not(equalTo(defendantPersonalNameUpdated.getNewPersonalName())));
+                assertThat(defendantNameUpdated.getOldPersonalName(), not(equalTo(defendantNameUpdated.getNewPersonalName())));
             } else if (e instanceof DefendantAddressUpdated) {
                 final DefendantAddressUpdated defendantAddressUpdated = (DefendantAddressUpdated) e;
 
@@ -721,7 +729,7 @@ public class PleadOnlineTest {
                         .collect(toList()));
     }
 
-    private static Case createTestCase(final String title, final UUID... extraOffenceIds) {
+    private static Case createTestCase(final String title, final String legalEntityName, final UUID... extraOffenceIds) {
         final Defendant defendant = new DefendantBuilder()
                 .withTitle(title)
                 .withFirstName(PERSON_FIRST_NAME)
@@ -732,6 +740,7 @@ public class PleadOnlineTest {
                 .withAddress(PERSON_ADDRESS)
                 .withContactDetails(PERSON_CONTACT_DETAILS)
                 .withOffences(extraOffenceIds)
+                .withLegalEntityName(legalEntityName)
                 .addOffence(randomUUID())
                 .build();
 

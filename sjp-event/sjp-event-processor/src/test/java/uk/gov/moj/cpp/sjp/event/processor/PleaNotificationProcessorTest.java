@@ -123,9 +123,9 @@ public class PleaNotificationProcessorTest {
                 new Address("82 Old Rd", "Leicester", "London", "UK", "United Kingdom", postcode),
                 new ContactDetails("07429 567901", "07429 567901", "07429 567999", email, null),
                 LocalDate.of(1981, 1, 1),
-                "JH41 1269B", "london", "TESTYJKZAAA09", null);
+                "JH41 1269B", "london", "TESTYJKZAAA09", null,null);
         return new OnlinePleaReceived(urn, UUID.randomUUID(), UUID.randomUUID(),
                 "6th March 2018", "French", TRUE, "Joe Cornish", "He was not there", outstandingFines,
-                personalDetails, null, null, emptyList(), null);
+                personalDetails, null, null, emptyList(), null, null, null);
     }
 }

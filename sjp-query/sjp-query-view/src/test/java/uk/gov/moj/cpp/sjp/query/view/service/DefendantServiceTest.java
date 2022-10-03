@@ -241,8 +241,8 @@ public class DefendantServiceTest {
         final DefendantDetail defendantDetail = new DefendantDetail(UUID.randomUUID(),
                 new PersonalDetails(null, null, "Dant",
                         null, Gender.MALE,
-                        "54321", null, null,null,null ,null),
-                null, 2);
+                        "54321", null, null),
+                null, 2,null,null,null);
         final CaseDetail caseDetail = CaseDetailBuilder.aCase().withCaseId(UUID.randomUUID()).build();
         defendantDetail.setCaseDetail(caseDetail);
 

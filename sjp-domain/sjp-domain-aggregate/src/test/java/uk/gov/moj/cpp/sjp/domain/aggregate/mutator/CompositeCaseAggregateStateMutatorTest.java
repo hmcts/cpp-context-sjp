@@ -314,7 +314,7 @@ public class CompositeCaseAggregateStateMutatorTest {
                 new Benefits(),
                 employmentStatus,
                 new ArrayList<>(),
-                now());
+                now(), BigDecimal.TEN, BigDecimal.ONE, new Integer(10), false);
 
         compositeCaseAggregateStateMutator.apply(financialMeansUpdated, caseAggregateState);
 

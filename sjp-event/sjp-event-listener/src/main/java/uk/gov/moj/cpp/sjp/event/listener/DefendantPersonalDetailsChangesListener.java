@@ -1,7 +1,6 @@
 package uk.gov.moj.cpp.sjp.event.listener;
 
 import static java.text.MessageFormat.format;
-import static java.util.Objects.isNull;
 import static uk.gov.justice.services.core.annotation.Component.EVENT_LISTENER;
 
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
@@ -11,7 +10,7 @@ import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.messaging.Metadata;
 import uk.gov.moj.cpp.sjp.event.DefendantAddressUpdated;
 import uk.gov.moj.cpp.sjp.event.DefendantDateOfBirthUpdated;
-import uk.gov.moj.cpp.sjp.event.DefendantPersonalNameUpdated;
+import uk.gov.moj.cpp.sjp.event.DefendantNameUpdated;
 import uk.gov.moj.cpp.sjp.persistence.entity.CaseDetail;
 import uk.gov.moj.cpp.sjp.persistence.repository.CaseRepository;
 
@@ -32,15 +31,15 @@ public class DefendantPersonalDetailsChangesListener {
     @Inject
     private CaseRepository caseRepository;
 
-    @Handles("sjp.events.defendant-personal-name-updated")
+    @Handles("sjp.events.defendant-name-updated")
     @Transactional
-    public void defendantPersonalNameUpdated(final JsonEnvelope envelope) {
-        final DefendantPersonalNameUpdated defendantPersonalNameUpdated = jsonObjectToObjectConverter
-                .convert(envelope.payloadAsJsonObject(), DefendantPersonalNameUpdated.class);
+    public void defendantNameUpdated(final JsonEnvelope envelope) {
+        final DefendantNameUpdated defendantNameUpdated = jsonObjectToObjectConverter
+                .convert(envelope.payloadAsJsonObject(), DefendantNameUpdated.class);
 
         recordDefendantDetailsUpdate(
-                defendantPersonalNameUpdated.getCaseId(),
-                defendantPersonalNameUpdated.getUpdatedAt(),
+                defendantNameUpdated.getCaseId(),
+                defendantNameUpdated.getUpdatedAt(),
                 envelope.metadata(),
                 CaseDetail::markDefendantNameUpdated);
     }

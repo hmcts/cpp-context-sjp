@@ -8,6 +8,7 @@ import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
 import uk.gov.justice.services.core.annotation.Handles;
 import uk.gov.justice.services.core.annotation.ServiceComponent;
 import uk.gov.justice.services.messaging.JsonEnvelope;
+import uk.gov.moj.cpp.sjp.domain.Address;
 import uk.gov.moj.cpp.sjp.event.DefendantDetailsUpdated;
 import uk.gov.moj.cpp.sjp.event.DefendantsNationalInsuranceNumberUpdated;
 import uk.gov.moj.cpp.sjp.event.listener.converter.AddressToAddressEntity;
@@ -15,6 +16,7 @@ import uk.gov.moj.cpp.sjp.event.listener.converter.ContactDetailsToContactDetail
 import uk.gov.moj.cpp.sjp.event.listener.handler.CaseSearchResultService;
 import uk.gov.moj.cpp.sjp.persistence.entity.CaseDetail;
 import uk.gov.moj.cpp.sjp.persistence.entity.DefendantDetail;
+import uk.gov.moj.cpp.sjp.persistence.entity.LegalEntityDetails;
 import uk.gov.moj.cpp.sjp.persistence.entity.PersonalDetails;
 import uk.gov.moj.cpp.sjp.persistence.repository.CaseRepository;
 
@@ -70,7 +72,7 @@ public class DefendantUpdatedListener {
         updateDefendant(caseDetail.getDefendant(), defendantDetailsUpdated);
         caseRepository.save(caseDetail);
 
-        LocalDate dateOfBirth = defendantDetailsUpdated.getDateOfBirth();
+        final LocalDate dateOfBirth = defendantDetailsUpdated.getDateOfBirth();
 
         caseSearchResultService.onDefendantDetailsUpdated(
                 defendantDetailsUpdated.getCaseId(),
@@ -78,10 +80,9 @@ public class DefendantUpdatedListener {
                 defendantDetailsUpdated.getFirstName(),
                 defendantDetailsUpdated.getLastName(),
                 dateOfBirth,
-                defendantDetailsUpdated.getUpdatedDate()
+                defendantDetailsUpdated.getUpdatedDate(),
+                defendantDetailsUpdated.getLegalEntityName()
         );
-
-
     }
 
     private void updateDefendant(final DefendantDetail defendantDetailEntity, final DefendantDetailsUpdated newData) {
@@ -89,9 +90,17 @@ public class DefendantUpdatedListener {
             defendantDetailEntity.setPersonalDetails(new PersonalDetails());
         }
 
+        if (defendantDetailEntity.getLegalEntityDetails() == null) {
+            defendantDetailEntity.setLegalEntityDetails(new LegalEntityDetails());
+        }
+
         final PersonalDetails entity = defendantDetailEntity.getPersonalDetails();
+        final LegalEntityDetails legalEntity = defendantDetailEntity.getLegalEntityDetails();
         ofNullable(newData.getFirstName()).ifPresent(entity::setFirstName);
         ofNullable(newData.getLastName()).ifPresent(entity::setLastName);
+        ofNullable(newData.getLegalEntityName()).ifPresent(legalEntity::setLegalEntityName);
+        final Address address = newData.getAddress();
+
         if (newData.isUpdateByOnlinePlea()) {
             ofNullable(newData.getNationalInsuranceNumber()).ifPresent(entity::setNationalInsuranceNumber);
             ofNullable(newData.getDateOfBirth()).ifPresent(entity::setDateOfBirth);
@@ -107,8 +116,9 @@ public class DefendantUpdatedListener {
             entity.setDriverLicenceDetails(newData.getDriverLicenceDetails());
         }
 
-        ofNullable(newData.getAddress()).map(addressToAddressEntity::convert).ifPresent(entity::setAddress);
-        ofNullable(newData.getContactDetails()).map(contactDetailsToContactDetailsEntity::convert).ifPresent(entity::setContactDetails);
-        ofNullable(newData.getRegion()).ifPresent(entity::setRegion);
+        ofNullable(address).map(addressToAddressEntity::convert).ifPresent(defendantDetailEntity::setAddress);
+
+        ofNullable(newData.getContactDetails()).map(contactDetailsToContactDetailsEntity::convert).ifPresent(defendantDetailEntity::setContactDetails);
+        ofNullable(newData.getRegion()).ifPresent(defendantDetailEntity::setRegion);
     }
 }

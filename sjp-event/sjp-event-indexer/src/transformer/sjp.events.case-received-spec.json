@@ -17,6 +17,7 @@
           "lastName": ["parties[0].lastName", "parties[0].aliases[0].lastName"],
           "dateOfBirth": "parties[0].dateOfBirth",
           "gender": "parties[0].gender",
+          "legalEntityName": ["parties[0].organisationName","parties[0].aliases[0].organisationName"],
           "address": {
             "address1": "parties[0].address1",
             "address2": "parties[0].address2",

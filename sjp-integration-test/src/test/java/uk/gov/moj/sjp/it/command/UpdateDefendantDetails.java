@@ -62,6 +62,9 @@ public class UpdateDefendantDetails {
         ofNullable(payloadBuilder.getLastName())
                 .ifPresent(lastName -> defendantDetailsUpdateBuilder.add("lastName", payloadBuilder.getLastName()));
 
+        ofNullable(payloadBuilder.getLegalEntityName())
+                .ifPresent(lastName -> defendantDetailsUpdateBuilder.add("legalEntityName", payloadBuilder.getLegalEntityName()));
+
         ofNullable(payloadBuilder.getDateOfBirth())
                 .map(dateOfBirth -> LocalDates.to(payloadBuilder.getDateOfBirth()))
                 .ifPresent(dateOfBirth -> defendantDetailsUpdateBuilder.add("dateOfBirth", dateOfBirth));
@@ -106,6 +109,7 @@ public class UpdateDefendantDetails {
         String title;
         String firstName;
         String lastName;
+        String legalEntityName;
         LocalDate dateOfBirth;
         Gender gender;
 
@@ -131,6 +135,7 @@ public class UpdateDefendantDetails {
 
             nationalInsuranceNumber = "QQ 12 34 56 C";
             driverNumber = "MORGA753116SM9IJ";
+            legalEntityName = null;
         }
 
         public static DefendantDetailsPayloadBuilder withDefaults() {
@@ -215,6 +220,10 @@ public class UpdateDefendantDetails {
 
         public String getDriverLicenceDetails() {
             return driverLicenceDetails;
+        }
+
+        public String getLegalEntityName() {
+            return legalEntityName;
         }
     }
 }

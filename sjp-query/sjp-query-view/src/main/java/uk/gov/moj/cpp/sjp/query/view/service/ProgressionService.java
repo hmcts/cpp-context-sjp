@@ -98,7 +98,7 @@ public class ProgressionService {
         return Objects.equals(firstName, personalDetails.getFirstName()) &&
                    Objects.equals(lastName, personalDetails.getLastName()) &&
                    Objects.equals(dateOfBirth, personalDetails.getDateOfBirth().toString()) &&
-                   Objects.equals(addressLine1, personalDetails.getAddress().getAddress1()) &&
-                   Objects.equals(postCode, personalDetails.getAddress().getPostcode());
+                   Objects.equals(addressLine1, defendant.getAddress().getAddress1()) &&
+                   Objects.equals(postCode, defendant.getAddress().getPostcode());
     }
 }

@@ -31,7 +31,7 @@ import org.hamcrest.Matcher;
 
 public class CasePoller {
 
-    private static final int POLLING_TIMEOUT = 40;
+    private static final int POLLING_TIMEOUT = 60;
     private static final int POLLING_INTERVAL = 1;
 
     public static JsonPath pollUntilCaseByIdIsOk(final UUID caseId) {

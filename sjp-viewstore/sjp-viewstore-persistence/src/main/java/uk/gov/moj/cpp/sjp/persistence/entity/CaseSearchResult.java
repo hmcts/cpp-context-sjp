@@ -68,12 +68,14 @@ public class CaseSearchResult implements Serializable {
     private ZonedDateTime dateAdded;
     @Column(name = "deprecated")
     private Boolean deprecated = false;
+    @Column(name = "legal_entity_name")
+    private String legalEntityName;
 
     public CaseSearchResult() {
         this.id = UUID.randomUUID();
     }
 
-    public CaseSearchResult(final UUID caseId, final UUID defendantId, final String firstName, final String lastName, final LocalDate dateOfBirth, final ZonedDateTime dateAdded) {
+    public CaseSearchResult(final UUID caseId, final UUID defendantId, final String firstName, final String lastName, final LocalDate dateOfBirth, final ZonedDateTime dateAdded, final String legalEntityName) {
         this();
         this.caseId = caseId;
         this.firstName = firstName;
@@ -83,6 +85,7 @@ public class CaseSearchResult implements Serializable {
         this.dateOfBirth = dateOfBirth;
         this.dateAdded = dateAdded;
         this.defendantId = defendantId;
+        this.legalEntityName = legalEntityName;
     }
 
     public CaseSummary getCaseSummary() {
@@ -104,7 +107,7 @@ public class CaseSearchResult implements Serializable {
     @SuppressWarnings("squid:S2384")
     @Access(AccessType.PROPERTY)
     @OneToMany()
-    @JoinColumn(name = "defendant_id", referencedColumnName = "defendant_id" )
+    @JoinColumn(name = "defendant_id", referencedColumnName = "defendant_id")
     public Set<OffenceSummary> getOffenceSummary() {
         return offenceSummary;
     }
@@ -206,6 +209,14 @@ public class CaseSearchResult implements Serializable {
 
     public void setDateOfBirth(final LocalDate dateOfBirth) {
         this.dateOfBirth = dateOfBirth;
+    }
+
+    public String getLegalEntityName() {
+        return legalEntityName;
+    }
+
+    public void setLegalEntityName(final String legalEntityName) {
+        this.legalEntityName = legalEntityName;
     }
 
     @Override

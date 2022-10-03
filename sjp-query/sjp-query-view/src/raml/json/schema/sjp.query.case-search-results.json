@@ -60,12 +60,24 @@
               },
               "outdated": {
                 "type": "boolean"
+              },
+              "legalEntityName": {
+                "type": "string"
               }
             },
             "additionalProperties": false,
-            "required": [
-              "firstName",
-              "lastName"
+            "anyOf": [
+              {
+                "required": [
+                  "firstName",
+                  "lastName"
+                ]
+              },
+              {
+                "required": [
+                  "legalEntityName"
+                ]
+              }
             ]
           },
           "listedInCriminalCourts": {

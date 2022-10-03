@@ -101,7 +101,7 @@ public class FinancialMeansListenerTest {
     @Test
     public void shouldSaveFinancialMeansUpdatedEvent() {
         final FinancialMeansUpdated financialMeansUpdated = FinancialMeansUpdated.createEvent(defendantId,
-                new Income(IncomeFrequency.WEEKLY, BigDecimal.valueOf(1000)), new Benefits(), "EMPLOYED");
+                new Income(IncomeFrequency.WEEKLY, BigDecimal.valueOf(1000)), new Benefits(), "EMPLOYED", null, null, null, null);
         setMocks(financialMeansUpdated);
 
         financialMeansListener.updateFinancialMeans(eventEnvelope);
@@ -117,7 +117,7 @@ public class FinancialMeansListenerTest {
     @Test
     public void shouldSaveFinancialMeansUpdatedEventAndSaveOnlinePlea() {
         final FinancialMeansUpdated financialMeansUpdated = FinancialMeansUpdated.createEventForOnlinePlea(defendantId,
-                new Income(IncomeFrequency.WEEKLY, BigDecimal.valueOf(1000)), new Benefits(), "EMPLOYED", null, now);
+                new Income(IncomeFrequency.WEEKLY, BigDecimal.valueOf(1000)), new Benefits(), "EMPLOYED", null, now, null, null, null, null);
         setMocks(financialMeansUpdated);
 
         financialMeansListener.updateFinancialMeans(eventEnvelope);

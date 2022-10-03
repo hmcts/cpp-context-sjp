@@ -39,6 +39,7 @@ import static uk.gov.moj.cpp.sjp.query.view.helper.PleaInfo.plea;
 import uk.gov.moj.cpp.sjp.domain.common.CaseStatus;
 import uk.gov.moj.cpp.sjp.domain.decision.DecisionType;
 import uk.gov.moj.cpp.sjp.domain.plea.PleaType;
+import uk.gov.moj.cpp.sjp.persistence.builder.LegalEntityDetailsBuilder;
 import uk.gov.moj.cpp.sjp.persistence.entity.AdjournOffenceDecision;
 import uk.gov.moj.cpp.sjp.persistence.entity.ApplicationType;
 import uk.gov.moj.cpp.sjp.persistence.entity.CaseApplication;
@@ -50,6 +51,7 @@ import uk.gov.moj.cpp.sjp.persistence.entity.DischargeOffenceDecision;
 import uk.gov.moj.cpp.sjp.persistence.entity.DischargePeriod;
 import uk.gov.moj.cpp.sjp.persistence.entity.DismissOffenceDecision;
 import uk.gov.moj.cpp.sjp.persistence.entity.FinancialPenaltyOffenceDecision;
+import uk.gov.moj.cpp.sjp.persistence.entity.LegalEntityDetails;
 import uk.gov.moj.cpp.sjp.persistence.entity.OffenceDecision;
 import uk.gov.moj.cpp.sjp.persistence.entity.OffenceDetail;
 import uk.gov.moj.cpp.sjp.persistence.entity.ReferForCourtHearingDecision;
@@ -130,6 +132,24 @@ public class CourtExtractDataServiceTest {
         assertEquals("Transport for London", caseCourtExtractView.get().getCaseDetails().getProsecutor());
         assertEquals("Theresa", caseCourtExtractView.get().getDefendant().getFirstName());
         assertEquals("May", caseCourtExtractView.get().getDefendant().getLastName());
+        assertEquals("6th Floor Windsor House", caseCourtExtractView.get().getCaseDetails().getProsecutorAddress().getLine1());
+        assertEquals("42-50 Victoria Street", caseCourtExtractView.get().getCaseDetails().getProsecutorAddress().getLine2());
+        assertEquals("London", caseCourtExtractView.get().getCaseDetails().getProsecutorAddress().getLine3());
+        assertEquals("SW1H 0TL", caseCourtExtractView.get().getCaseDetails().getProsecutorAddress().getPostcode());
+    }
+
+    @Test
+    public void shouldGetCaseDataForCompany() {
+        final CaseDetail caseDetail = buildCaseWithSingleDecisionAndSingleOffenceForCompany(caseId, DISMISS, decisionSavedAt, null, true);
+
+        when(caseService.getCase(caseId)).thenReturn(Optional.of(caseDetail));
+
+        final Optional<CaseCourtExtractView> caseCourtExtractView = this.courtExtractDataService.getCourtExtractData(caseId);
+
+        assertTrue(caseCourtExtractView.isPresent());
+        assertEquals(caseDetail.getUrn(), caseCourtExtractView.get().getCaseDetails().getReference());
+        assertEquals("Transport for London", caseCourtExtractView.get().getCaseDetails().getProsecutor());
+        assertEquals("Samba LTD", caseCourtExtractView.get().getDefendant().getLegalEntityName());
         assertEquals("6th Floor Windsor House", caseCourtExtractView.get().getCaseDetails().getProsecutorAddress().getLine1());
         assertEquals("42-50 Victoria Street", caseCourtExtractView.get().getCaseDetails().getProsecutorAddress().getLine2());
         assertEquals("London", caseCourtExtractView.get().getCaseDetails().getProsecutorAddress().getLine3());
@@ -533,6 +553,29 @@ public class CourtExtractDataServiceTest {
                 .withCaseId(caseId)
                 .withProsecutingAuthority("TFL")
                 .withDefendantDetail(aDefendantDetail()
+                        .withOffences(singletonList(buildOffenceDetailEntity(SEQUENCE_NUMBER_1, offence1Id)))
+                        .build())
+                .build();
+
+        final CaseDecision caseDecision = buildCaseDecisionEntity(entity.getId(), magistrate, savedAt);
+        caseDecision.setOffenceDecisions(asList(buildOffenceDecisionEntity(caseDecision.getId(), offence1Id, decisionType, pleaAtDecisionTime)));
+        entity.setCaseDecisions(asList(caseDecision));
+        return entity;
+    }
+
+    private CaseDetail buildCaseWithSingleDecisionAndSingleOffenceForCompany(final UUID caseId,
+                                                                   final DecisionType decisionType,
+                                                                   final ZonedDateTime savedAt,
+                                                                   final PleaInfo pleaAtDecisionTime,
+                                                                   boolean magistrate) {
+        final CaseDetail entity = aCase()
+                .withCaseId(caseId)
+                .withProsecutingAuthority("TFL")
+                .withDefendantDetail(aDefendantDetail()
+                        .withPersonalDetails(null)
+                        .withLegalEntityDetails(LegalEntityDetailsBuilder.buildLegalEntityDetails()
+                                .withLegalEntityName("Samba LTD")
+                                .build())
                         .withOffences(singletonList(buildOffenceDetailEntity(SEQUENCE_NUMBER_1, offence1Id)))
                         .build())
                 .build();

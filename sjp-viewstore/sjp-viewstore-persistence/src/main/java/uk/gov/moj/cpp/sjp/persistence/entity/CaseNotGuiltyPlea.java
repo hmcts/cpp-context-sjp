@@ -20,6 +20,8 @@ public class CaseNotGuiltyPlea {
 
     private final String lastName;
 
+    private final String legalEntityName;
+
     private final String prosecutingAuthority;
 
     private final CaseManagementStatus caseManagementStatus;
@@ -29,6 +31,7 @@ public class CaseNotGuiltyPlea {
                              final ZonedDateTime pleaDate,
                              final String firstName,
                              final String lastName,
+                             final String legalEntityName,
                              final String prosecutingAuthority,
                              final CaseManagementStatus caseManagementStatus) {
         this.id = id;
@@ -36,6 +39,7 @@ public class CaseNotGuiltyPlea {
         this.pleaDate = pleaDate;
         this.firstName = firstName;
         this.lastName = lastName;
+        this.legalEntityName = legalEntityName;
         this.prosecutingAuthority = prosecutingAuthority;
         this.caseManagementStatus = caseManagementStatus;
     }
@@ -52,8 +56,10 @@ public class CaseNotGuiltyPlea {
         return firstName;
     }
 
-    public String getLastName() {
-        return lastName;
+    public String getLastName() { return lastName; }
+
+    public String getLegalEntityName() {
+        return legalEntityName;
     }
 
     public String getUrn() {
@@ -86,6 +92,7 @@ public class CaseNotGuiltyPlea {
                 .append(pleaDate, that.pleaDate)
                 .append(firstName, that.firstName)
                 .append(lastName, that.lastName)
+                .append(legalEntityName, that.legalEntityName)
                 .append(prosecutingAuthority, that.prosecutingAuthority)
                 .append(caseManagementStatus, that.caseManagementStatus)
                 .isEquals();
@@ -99,6 +106,7 @@ public class CaseNotGuiltyPlea {
                 .append(pleaDate)
                 .append(firstName)
                 .append(lastName)
+                .append(legalEntityName)
                 .append(prosecutingAuthority)
                 .append(caseManagementStatus)
                 .toHashCode();

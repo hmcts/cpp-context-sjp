@@ -89,7 +89,7 @@ public abstract class CaseRepository extends AbstractEntityRepository<CaseDetail
     @Query(value = "SELECT cd FROM CaseDetail cd " +
             "INNER JOIN cd.defendant dd " +
             "WHERE (UPPER(cd.urn) = UPPER(:urn) OR UPPER(REGEXP_REPLACE(cd.urn, '^[a-zA-Z]+', '')) = UPPER(:urn)) " +
-            "AND UPPER(REPLACE(dd.personalDetails.address.postcode,' ','')) = UPPER(REPLACE(:postcode, ' ',''))", singleResult = SingleResultType.OPTIONAL)
+            "AND UPPER(REPLACE(dd.address.postcode,' ','')) = UPPER(REPLACE(:postcode, ' ',''))", singleResult = SingleResultType.OPTIONAL)
     public abstract CaseDetail findByUrnPostcode(@QueryParam("urn") String urn,
                                                  @QueryParam("postcode") String postcode);
 
@@ -126,11 +126,11 @@ public abstract class CaseRepository extends AbstractEntityRepository<CaseDetail
     public abstract String getProsecutingAuthority(@QueryParam("caseId") final UUID caseId);
 
     @Query(value = "SELECT new uk.gov.moj.cpp.sjp.persistence.entity.PendingCaseToPublishPerOffence" +
-            "(d.personalDetails.firstName, d.personalDetails.lastName, d.personalDetails.dateOfBirth," +
+            "(d.personalDetails.firstName, d.personalDetails.lastName, d.legalEntityDetails.legalEntityName, d.personalDetails.dateOfBirth," +
             "cd.id, cd.urn," +
-            "d.personalDetails.address.address1, d.personalDetails.address.address2," +
-            "d.personalDetails.address.address3, d.personalDetails.address.address4, d.personalDetails.address.address5," +
-            "d.personalDetails.address.postcode, o.code, o.startDate, o.wording, " +
+            "d.address.address1, d.address.address2," +
+            "d.address.address3, d.address.address4, d.address.address5," +
+            "d.address.postcode, o.code, o.startDate, o.wording, " +
             "o.pressRestriction.requested, o.pressRestriction.name, o.completed, cd.prosecutingAuthority) " +
             "FROM CaseDetail cd " +
             "LEFT OUTER JOIN cd.defendant d " +
@@ -141,11 +141,11 @@ public abstract class CaseRepository extends AbstractEntityRepository<CaseDetail
     public abstract List<PendingCaseToPublishPerOffence> findPublicTransparencyReportPendingCases();
 
     @Query(value = "SELECT new uk.gov.moj.cpp.sjp.persistence.entity.PendingCaseToPublishPerOffence" +
-            "(d.personalDetails.firstName, d.personalDetails.lastName, d.personalDetails.dateOfBirth," +
+            "(d.personalDetails.firstName, d.personalDetails.lastName, d.legalEntityDetails.legalEntityName, d.personalDetails.dateOfBirth," +
             "cd.id, cd.urn," +
-            "d.personalDetails.address.address1, d.personalDetails.address.address2," +
-            "d.personalDetails.address.address3, d.personalDetails.address.address4, d.personalDetails.address.address5," +
-            "d.personalDetails.address.postcode, o.code, o.startDate, o.wording," +
+            "d.address.address1, d.address.address2," +
+            "d.address.address3, d.address.address4, d.address.address5," +
+            "d.address.postcode, o.code, o.startDate, o.wording," +
             "o.pressRestriction.requested, o.pressRestriction.name, o.completed, cd.prosecutingAuthority) " +
             "FROM CaseDetail cd " +
             "LEFT OUTER JOIN cd.defendant d " +
@@ -155,7 +155,7 @@ public abstract class CaseRepository extends AbstractEntityRepository<CaseDetail
     public abstract List<PendingCaseToPublishPerOffence> findPressTransparencyReportPendingCases();
 
     @Query(value = "SELECT DISTINCT new uk.gov.moj.cpp.sjp.persistence.entity.CaseNotGuiltyPlea" +
-            "(e.id, e.urn, o.pleaDate, d.personalDetails.firstName, d.personalDetails.lastName, e.prosecutingAuthority, e.caseManagementStatus) " +
+            "(e.id, e.urn, o.pleaDate, d.personalDetails.firstName, d.personalDetails.lastName, d.legalEntityDetails.legalEntityName, e.prosecutingAuthority, e.caseManagementStatus) " +
             "FROM CaseDetail e " +
             "JOIN e.defendant d " +
             "JOIN d.offences o " +
@@ -167,7 +167,7 @@ public abstract class CaseRepository extends AbstractEntityRepository<CaseDetail
     public abstract List<CaseNotGuiltyPlea> findCasesNotGuiltyPleaByProsecutingAuthority(@QueryParam("prosecutingAuthority") String prosecutingAuthority);
 
     @Query(value = "SELECT DISTINCT new uk.gov.moj.cpp.sjp.persistence.entity.CaseNotGuiltyPlea" +
-            "(e.id, e.urn, o.pleaDate, d.personalDetails.firstName, d.personalDetails.lastName, e.prosecutingAuthority, e.caseManagementStatus) " +
+            "(e.id, e.urn, o.pleaDate, d.personalDetails.firstName, d.personalDetails.lastName, d.legalEntityDetails.legalEntityName, e.prosecutingAuthority, e.caseManagementStatus) " +
             "FROM CaseDetail e " +
             "JOIN e.defendant d " +
             "JOIN d.offences o " +
@@ -178,7 +178,7 @@ public abstract class CaseRepository extends AbstractEntityRepository<CaseDetail
     public abstract List<CaseNotGuiltyPlea> findCasesNotGuiltyPlea();
 
     @Query(value = "SELECT DISTINCT new uk.gov.moj.cpp.sjp.persistence.entity.CaseWithoutDefendantPostcode" +
-            "(e.id, e.urn, e.postingDate, d.personalDetails.firstName, d.personalDetails.lastName, e.prosecutingAuthority) " +
+            "(e.id, e.urn, e.postingDate, d.personalDetails.firstName, d.personalDetails.lastName, e.prosecutingAuthority,e.legalEntityDetails.legalEntityName) " +
             "FROM CaseDetail e " +
             "JOIN e.defendant d " +
             "WHERE e.completed = false " +

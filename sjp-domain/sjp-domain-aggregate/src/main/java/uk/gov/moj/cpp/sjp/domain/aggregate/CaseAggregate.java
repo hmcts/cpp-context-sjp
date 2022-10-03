@@ -58,6 +58,7 @@ import uk.gov.moj.cpp.sjp.domain.plea.PleaMethod;
 import uk.gov.moj.cpp.sjp.domain.plea.SetPleas;
 import uk.gov.moj.cpp.sjp.event.CCApplicationStatusCreated;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
 import java.util.List;
@@ -289,9 +290,13 @@ public class CaseAggregate implements Aggregate {
                                                   final Income income,
                                                   final Benefits benefits,
                                                   final Employer employer,
-                                                  final String employmentStatus) {
+                                                  final String employmentStatus,
+                                                  final BigDecimal grossTurnover,
+                                                  final BigDecimal netTurnover,
+                                                  final Integer numberOfEmployees,
+                                                  final Boolean tradingMoreThanTwelveMonths) {
         return apply(UpdateAllFinancialMeansAggregateHandler.INSTANCE.updateAllFinancialMeans(
-                userId, defendantId, income, benefits, employer, employmentStatus, state));
+                userId, defendantId, income, benefits, employer, employmentStatus, state, grossTurnover, netTurnover, numberOfEmployees, tradingMoreThanTwelveMonths));
     }
 
     public Stream<Object> saveDecision(final Decision decision, final Session session) {

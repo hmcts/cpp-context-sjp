@@ -3,7 +3,6 @@ package uk.gov.moj.cpp.sjp.event.listener;
 import static javax.json.Json.createObjectBuilder;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
 
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
 import uk.gov.justice.services.common.converter.jackson.ObjectMapperProducer;
@@ -75,6 +74,7 @@ public class DefendantDetailsMovedFromPeopleListenerTest {
         verify(caseSearchResultService).onDefendantDetailsUpdated(
                 CASE_ID,
                 aCase.getDefendant().getId(),
+                null,
                 null,
                 null,
                 null,

@@ -1,12 +1,14 @@
 package uk.gov.moj.cpp.sjp.query.view.response.onlineplea;
 
 import static java.util.Collections.unmodifiableList;
+import static java.util.Objects.nonNull;
 import static java.util.Optional.ofNullable;
 import static uk.gov.moj.cpp.sjp.domain.disability.DisabilityNeeds.disabilityNeedsOf;
 
 import uk.gov.moj.cpp.sjp.domain.IncomeFrequency;
 import uk.gov.moj.cpp.sjp.domain.Interpreter;
 import uk.gov.moj.cpp.sjp.domain.disability.DisabilityNeeds;
+import uk.gov.moj.cpp.sjp.domain.legalentity.LegalEntityFinancialMeans;
 import uk.gov.moj.cpp.sjp.persistence.entity.Address;
 import uk.gov.moj.cpp.sjp.persistence.entity.OnlinePlea;
 import uk.gov.moj.cpp.sjp.persistence.entity.OnlinePleaDetail;
@@ -40,6 +42,8 @@ public class OnlinePleaView {
 
     private Outgoings outgoings;
 
+    private OnlinePleaLegalEntityDetails onlinePleaLegalEntityDetails;
+
 
     public OnlinePleaView(final OnlinePlea onlinePlea) {
         this.caseId = onlinePlea.getCaseId();
@@ -55,15 +59,19 @@ public class OnlinePleaView {
                 .orElse(null);
 
         this.employment = ofNullable(onlinePlea.getEmployment())
-                .map(OnlinePleaView.Employment::new)
+                .map(Employment::new)
                 .orElse(null);
 
         this.employer = ofNullable(onlinePlea.getEmployer())
-                .map(OnlinePleaView.Employer::new)
+                .map(Employer::new)
                 .orElse(null);
 
         this.outgoings = ofNullable(onlinePlea.getOutgoings())
-                .map(OnlinePleaView.Outgoings::new)
+                .map(Outgoings::new)
+                .orElse(null);
+
+        this.onlinePleaLegalEntityDetails = ofNullable(onlinePlea.getLegalEntityDetails())
+                .map(OnlinePleaLegalEntityDetails::new)
                 .orElse(null);
     }
 
@@ -81,6 +89,10 @@ public class OnlinePleaView {
 
     public List<OnlinePleaDetailView> getOnlinePleaDetails() {
         return unmodifiableList(onlinePleaDetails);
+    }
+
+    public OnlinePleaLegalEntityDetails getOnlinePleaLegalEntityDetails() {
+        return onlinePleaLegalEntityDetails;
     }
 
     public void setOnlinePleaDetails(final List<OnlinePleaDetail> onlinePleaDetails) {
@@ -329,6 +341,66 @@ public class OnlinePleaView {
 
         public BigDecimal getOtherAmount() {
             return otherAmount;
+        }
+    }
+
+    public static class OnlinePleaLegalEntityDetails {
+
+        private String legalEntityName;
+        private String positionOfRepresentative;
+
+        private Address address;
+
+        private String homeTelephone;
+
+        private String mobile;
+
+        private String email;
+
+        private LegalEntityFinancialMeans legalEntityFinancialMeans;
+
+        public String getLegalEntityName() {
+            return legalEntityName;
+        }
+
+        public String getPositionOfRepresentative() {
+            return positionOfRepresentative;
+        }
+
+        public Address getAddress() {
+            return address;
+        }
+
+        public String getHomeTelephone() {
+            return homeTelephone;
+        }
+
+        public String getMobile() {
+            return mobile;
+        }
+
+        public String getEmail() {
+            return email;
+        }
+
+        public LegalEntityFinancialMeans getLegalEntityFinancialMeans() {
+            return legalEntityFinancialMeans;
+        }
+
+        public OnlinePleaLegalEntityDetails(final uk.gov.moj.cpp.sjp.persistence.entity.OnlinePleaLegalEntityDetails onlinePleaLegalEntityDetails) {
+            this.legalEntityName = onlinePleaLegalEntityDetails.getLegalEntityName();
+            this.address = onlinePleaLegalEntityDetails.getAddress();
+            this.homeTelephone = onlinePleaLegalEntityDetails.getHomeTelephone();
+            this.mobile  = onlinePleaLegalEntityDetails.getMobile();
+            this.email = onlinePleaLegalEntityDetails.getEmail();
+            this.positionOfRepresentative = onlinePleaLegalEntityDetails.getPositionOfRepresentative();
+            this.legalEntityFinancialMeans  = new LegalEntityFinancialMeans();
+            if (nonNull(onlinePleaLegalEntityDetails.getLegalEntityFinancialMeans())) {
+                this.legalEntityFinancialMeans.setGrossTurnover(onlinePleaLegalEntityDetails.getLegalEntityFinancialMeans().getGrossTurnover());
+                this.legalEntityFinancialMeans.setNetTurnover(onlinePleaLegalEntityDetails.getLegalEntityFinancialMeans().getNetTurnover());
+                this.legalEntityFinancialMeans.setTradingMoreThan12Months(onlinePleaLegalEntityDetails.getLegalEntityFinancialMeans().getTradingMoreThan12Months());
+                this.legalEntityFinancialMeans.setNumberOfEmployees(onlinePleaLegalEntityDetails.getLegalEntityFinancialMeans().getNumberOfEmployees());
+            }
         }
     }
 }

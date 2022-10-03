@@ -31,6 +31,7 @@ import uk.gov.moj.cpp.sjp.domain.decision.DecisionType;
 import uk.gov.moj.cpp.sjp.domain.decision.OffenceDecision;
 import uk.gov.moj.cpp.sjp.domain.decision.ReferForCourtHearing;
 import uk.gov.moj.cpp.sjp.domain.disability.DisabilityNeeds;
+import uk.gov.moj.cpp.sjp.domain.legalentity.LegalEntityDefendant;
 import uk.gov.moj.cpp.sjp.domain.onlineplea.PersonalDetails;
 import uk.gov.moj.cpp.sjp.domain.plea.Plea;
 import uk.gov.moj.cpp.sjp.domain.plea.PleaType;
@@ -81,6 +82,7 @@ public class CaseAggregateState implements AggregateState {
     private String defendantTitle;
     private String defendantFirstName;
     private String defendantLastName;
+    private String defendantLegalEntityName;
 
     private String defendantNationalInsuranceNumber;
     private LocalDate defendantDateOfBirth;
@@ -262,6 +264,14 @@ public class CaseAggregateState implements AggregateState {
 
     public void setDefendantAddress(final Address defendantAddress) {
         this.defendantAddress = defendantAddress;
+    }
+
+    public String getDefendantLegalEntityName() {
+        return defendantLegalEntityName;
+    }
+
+    public void setDefendantLegalEntityName(final String defendantLegalEntityName) {
+        this.defendantLegalEntityName = defendantLegalEntityName;
     }
 
     public CaseReadinessReason getReadinessReason() {
@@ -812,6 +822,31 @@ public class CaseAggregateState implements AggregateState {
             builder.withDriverLicenceDetails(personalDetails.getDriverLicenceDetails());
         }
 
+        if (!StringUtils.equals(personalDetails.getLegalEntityName(), getDefendantLegalEntityName())) {
+            builder.withLegalEntityName(personalDetails.getLegalEntityName());
+        }
+
+        if (builder.containsUpdate()) {
+            return builder
+                    .withUpdateByOnlinePlea(updatedByOnlinePlea)
+                    .withUpdatedDate(updatedOn)
+                    .build();
+        } else {
+            return null;
+        }
+    }
+
+    public DefendantDetailsUpdated getDefendantLegalEntityDetailsUpdateSummary(final LegalEntityDefendant legalEntityDefendant,
+                                                                    final boolean updatedByOnlinePlea,
+                                                                    final ZonedDateTime updatedOn) {
+
+        final DefendantDetailsUpdated.DefendantDetailsUpdatedBuilder builder = defendantDetailsUpdated()
+                .withCaseId(getCaseId())
+                .withDefendantId(getDefendantId());
+
+        getLegalEntityNameUpdateSummary(legalEntityDefendant, builder);
+        getAddressAndContactDetailsUpdateSummary(legalEntityDefendant, builder);
+
         if (builder.containsUpdate()) {
             return builder
                     .withUpdateByOnlinePlea(updatedByOnlinePlea)
@@ -832,6 +867,16 @@ public class CaseAggregateState implements AggregateState {
         }
     }
 
+    private void getAddressAndContactDetailsUpdateSummary(final LegalEntityDefendant legalEntityDefendant, final DefendantDetailsUpdated.DefendantDetailsUpdatedBuilder builder) {
+        if (!Objects.equals(legalEntityDefendant.getContactDetails(), getDefendantContactDetails())) {
+            builder.withContactDetails(legalEntityDefendant.getContactDetails());
+        }
+
+        if (!Objects.equals(legalEntityDefendant.getAddress(), getDefendantAddress())) {
+            builder.withAddress(legalEntityDefendant.getAddress());
+        }
+    }
+
     private void getNameAndTitleDetailsUpdateSummary(final PersonalDetails personalDetails, final boolean updatedByOnlinePlea, final DefendantDetailsUpdated.DefendantDetailsUpdatedBuilder builder) {
         if (!StringUtils.equals(personalDetails.getFirstName(), getDefendantFirstName())) {
             builder.withFirstName(personalDetails.getFirstName());
@@ -847,6 +892,12 @@ public class CaseAggregateState implements AggregateState {
 
         if (personalDetails.getGender() != null && !Objects.equals(personalDetails.getGender(), getDefendantGender())) {
             builder.withGender(personalDetails.getGender());
+        }
+    }
+
+    private void getLegalEntityNameUpdateSummary(final LegalEntityDefendant legalEntityDefendant, final DefendantDetailsUpdated.DefendantDetailsUpdatedBuilder builder) {
+        if (!StringUtils.equals(legalEntityDefendant.getName(), getDefendantLegalEntityName())) {
+            builder.withLegalEntityName(legalEntityDefendant.getName());
         }
     }
 
@@ -876,10 +927,11 @@ public class CaseAggregateState implements AggregateState {
 
     public void resolveConvictionCourtDetails(final List<ConvictingInformation> convictingInformation) {
         convictingInformation.forEach(
-                 convictingInfo ->
-                    this.offenceConvictionDetails.put(convictingInfo.getOffenceId(), convictingInfo)
-                );
+                convictingInfo ->
+                        this.offenceConvictionDetails.put(convictingInfo.getOffenceId(), convictingInfo)
+        );
     }
+
     public boolean offenceHasPreviousConviction(final UUID offenceId) {
         return offenceConvictionDetails.containsKey(offenceId);
     }

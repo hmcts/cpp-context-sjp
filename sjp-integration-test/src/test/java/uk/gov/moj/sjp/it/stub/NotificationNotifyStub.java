@@ -53,7 +53,7 @@ public class NotificationNotifyStub {
                 && commandPayload.getJSONObject("personalisation").getString("urn").equals(urn)
                 && commandPayload.getString("templateId").equals(templateId);
 
-        waitAtMost(Duration.ONE_MINUTE).until(() ->
+        waitAtMost(Duration.TEN_SECONDS).until(() ->
                 findAll(postRequestedFor(urlPathMatching(COMMAND_URL + ".*"))
                         .withHeader(CONTENT_TYPE, equalTo(COMMAND_MEDIA_TYPE)))
                         .stream()

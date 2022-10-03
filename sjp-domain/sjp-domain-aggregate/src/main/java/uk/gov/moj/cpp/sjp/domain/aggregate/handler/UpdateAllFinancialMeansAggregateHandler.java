@@ -1,6 +1,6 @@
 package uk.gov.moj.cpp.sjp.domain.aggregate.handler;
 
-import static java.util.stream.Stream.*;
+import static java.util.stream.Stream.concat;
 import static uk.gov.moj.cpp.sjp.domain.aggregate.handler.HandlerUtils.createRejectionEvents;
 
 import uk.gov.moj.cpp.sjp.domain.Benefits;
@@ -9,6 +9,7 @@ import uk.gov.moj.cpp.sjp.domain.FinancialMeans;
 import uk.gov.moj.cpp.sjp.domain.Income;
 import uk.gov.moj.cpp.sjp.domain.aggregate.state.CaseAggregateState;
 
+import java.math.BigDecimal;
 import java.util.UUID;
 import java.util.stream.Stream;
 
@@ -25,13 +26,17 @@ public class UpdateAllFinancialMeansAggregateHandler {
                                                   final Benefits benefits,
                                                   final Employer employer,
                                                   final String employmentStatus,
-                                                  final CaseAggregateState state) {
+                                                  final CaseAggregateState state,
+                                                  final BigDecimal grossTurnover,
+                                                  final BigDecimal netTurnover,
+                                                  final Integer numberOfEmployees,
+                                                  final Boolean tradingMoreThan12Months) {
 
 
         final FinancialMeans financialMeans = new FinancialMeans(defendantId,
                 income,
                 benefits,
-                employmentStatus);
+                employmentStatus, grossTurnover, netTurnover, numberOfEmployees, tradingMoreThan12Months);
         Stream<Object> finalStream = CaseFinancialMeansHandler.INSTANCE.getFinancialMeansEventStream(financialMeans);
 
         if (employer != null) {

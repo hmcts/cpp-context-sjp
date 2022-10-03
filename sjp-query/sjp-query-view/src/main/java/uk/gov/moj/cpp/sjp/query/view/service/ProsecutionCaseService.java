@@ -12,6 +12,7 @@ import static javax.json.Json.createObjectBuilder;
 import static org.apache.commons.lang3.StringUtils.isNotEmpty;
 import static uk.gov.justice.core.courts.ContactNumber.contactNumber;
 import static uk.gov.justice.core.courts.Defendant.defendant;
+import static uk.gov.justice.core.courts.LegalEntityDefendant.legalEntityDefendant;
 import static uk.gov.justice.core.courts.NotifiedPlea.notifiedPlea;
 import static uk.gov.justice.core.courts.NotifiedPleaValue.NOTIFIED_GUILTY;
 import static uk.gov.justice.core.courts.NotifiedPleaValue.NOTIFIED_NOT_GUILTY;
@@ -197,6 +198,11 @@ public class ProsecutionCaseService {
                 .withMitigation(pleaMitigation)
                 .withNumberOfPreviousConvictionsCited(defendantDetail.getNumPreviousConvictions())
                 .withPersonDefendant(personDefendantView)
+                .withLegalEntityDefendant(legalEntityDefendant()
+                        .withOrganisation(Organisation.organisation()
+                                .withName(defendantDetail.getLegalEntityDetails().getLegalEntityName())
+                                .build())
+                        .build())
                 .withOffences(offenceViews)
                 .withAliases(aliases)
                 .withCourtProceedingsInitiated(ZonedDateTime.now())
@@ -225,6 +231,7 @@ public class ProsecutionCaseService {
                 .withLastName(individualAlias.getString("lastName", null))
                 .withTitle(individualAlias.getString("title", null))
                 .withMiddleName(individualAlias.getString("givenName2", null))
+                .withLegalEntityName(individualAlias.getString("legalEntityName", null))
                 .build();
     }
 
@@ -339,7 +346,7 @@ public class ProsecutionCaseService {
                                                       final String nationalityId) {
         final PersonalDetails defendantPersonalDetails = defendantDetail.getPersonalDetails();
         final String interpreter = ofNullable(defendantDetail.getInterpreter()).map(InterpreterDetail::getLanguage).orElse(null);
-        final Person personDetailsView = createPersonDetailsView(defendantPersonalDetails, interpreter,
+        final Person personDetailsView = createPersonDetailsView(defendantDetail, interpreter,
                 defendantDetail.getDisabilityNeeds(), nationalityId,
                 ofNullable(prosecutionCaseFileDefendant));
 
@@ -395,9 +402,10 @@ public class ProsecutionCaseService {
                 .orElse(null);
     }
 
-    private Person createPersonDetailsView(final PersonalDetails defendantPersonalDetails, final String interpreter, final String disabilityNeeds,
+    private Person createPersonDetailsView(final DefendantDetail defendantDetail, final String interpreter, final String disabilityNeeds,
                                            final String nationalityId, final Optional<JsonObject> pcfDefendantDetails) {
 
+        final PersonalDetails defendantPersonalDetails = defendantDetail.getPersonalDetails();
         final Optional<JsonObject> pcfDefendantPersonalInformation = pcfDefendantDetails.flatMap(this::getProsecutionCaseFileDefendantPersonalInformation);
         return Person.person()
                 .withTitle(DefendantTitleParser.parse(defendantPersonalDetails.getTitle()))
@@ -418,8 +426,8 @@ public class ProsecutionCaseService {
                         .map(String::valueOf)
                         .orElse(null))
                 .withSpecificRequirements(createSpecialRequirement(pcfDefendantDetails, disabilityNeeds))
-                .withAddress(createAddressView(defendantPersonalDetails.getAddress()))
-                .withContact(createDefendantContactView(defendantPersonalDetails, pcfDefendantPersonalInformation))
+                .withAddress(createAddressView(defendantDetail.getAddress()))
+                .withContact(createDefendantContactView(defendantDetail, pcfDefendantPersonalInformation))
                 .build();
     }
 
@@ -432,8 +440,8 @@ public class ProsecutionCaseService {
         return Gender.NOT_SPECIFIED;
     }
 
-    private ContactNumber createDefendantContactView(final PersonalDetails defendantPersonalDetails, final Optional<JsonObject> caseFileDefendantPersonalInformation) {
-        final ContactDetails defendantContactDetails = defendantPersonalDetails.getContactDetails();
+    private ContactNumber createDefendantContactView(final DefendantDetail defendantDetail, final Optional<JsonObject> caseFileDefendantPersonalInformation) {
+        final ContactDetails defendantContactDetails = defendantDetail.getContactDetails();
         return contactNumber()
                 .withHome(ofNullable(defendantContactDetails).map(e -> defendantContactDetails.getHome()).orElse(null))
                 .withWork(caseFileDefendantPersonalInformation.map(personalInformation -> personalInformation.getString("work", null)).orElse(null))

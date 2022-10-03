@@ -15,7 +15,7 @@
     "onlinePleaDetails": {
       "type": "array",
       "items": {
-        "$ref" : "http://justice.gov.uk/json/schemas/domains/sjp/queries/online-plea-detail.json"
+        "$ref": "http://justice.gov.uk/json/schemas/domains/sjp/queries/online-plea-detail.json"
       }
     },
     "pleaDetails": {
@@ -74,87 +74,117 @@
         "driverNumber": {
           "type": "string"
         },
-        "driverLicenceDetails" : {
-          "type" : "string"
+        "driverLicenceDetails": {
+          "type": "string"
         }
       }
     },
-    "employment": {
+    "legalEntityDefendant": {
+      "id": "http://justice.gov.uk/json/schemas/domains/sjp/query/legal-entity-defendant.json",
       "type": "object",
       "properties": {
-        "incomePaymentFrequency": {
-          "type": "string"
-        },
-        "incomePaymentAmount": {
-          "type": "number"
-        },
-        "employmentStatus": {
-          "type": "string"
-        },
-        "employmentStatusDetails": {
-          "type": "string"
-        },
-        "benefitsClaimed": {
-          "type": "boolean"
-        },
-        "benefitsType": {
-          "type": "string"
-        },
-        "benefitsDeductPenaltyPreference": {
-          "type": "boolean"
-        }
-      }
-    },
-    "employer": {
-      "type": "object",
-      "properties": {
-        "employeeReference": {
-          "type": "string"
-        },
         "name": {
-          "type": "string"
-        },
-        "phone": {
           "type": "string"
         },
         "address": {
           "$ref": "http://justice.gov.uk/json/schemas/domains/sjp/address.json"
-        }
-      }
-    },
-    "outgoings": {
-      "type": "object",
-      "properties": {
-        "accommodationAmount": {
-          "type": "number"
         },
-        "councilTaxAmount": {
-          "type": "number"
+        "contactDetails": {
+          "$ref": "http://justice.gov.uk/json/schemas/domains/sjp/contact-details.json",
+          "required": [
+            "email"
+          ]
         },
-        "householdBillsAmount": {
-          "type": "number"
-        },
-        "travelExpensesAmount": {
-          "type": "number"
-        },
-        "childMaintenanceAmount": {
-          "type": "number"
-        },
-        "otherDescription": {
+        "incorporationNumber": {
           "type": "string"
         },
-        "otherAmount": {
-          "type": "number"
-        },
-        "monthlyAmount": {
-          "type": "number"
+        "position": {
+          "id": "http://justice.gov.uk/json/schemas/domains/sjp/query/position.json",
+          "type": "string",
+          "enum": [
+            "DIRECTOR",
+            "SECRETARY",
+            "SOLICITOR"
+          ]
         }
       }
     },
-    "disabilityNeeds" : {
-      "$ref": "http://cpp.moj.gov.uk/core/sjp/disability-needs.json"
-    }
-  },
-  "required": [ "caseId", "onlinePleaDetails" ],
-  "additionalProperties": true
-}
+      "employment": {
+        "type": "object",
+        "properties": {
+          "incomePaymentFrequency": {
+            "type": "string"
+          },
+          "incomePaymentAmount": {
+            "type": "number"
+          },
+          "employmentStatus": {
+            "type": "string"
+          },
+          "employmentStatusDetails": {
+            "type": "string"
+          },
+          "benefitsClaimed": {
+            "type": "boolean"
+          },
+          "benefitsType": {
+            "type": "string"
+          },
+          "benefitsDeductPenaltyPreference": {
+            "type": "boolean"
+          }
+        }
+      },
+      "employer": {
+        "type": "object",
+        "properties": {
+          "employeeReference": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "phone": {
+            "type": "string"
+          },
+          "address": {
+            "$ref": "http://justice.gov.uk/json/schemas/domains/sjp/address.json"
+          }
+        }
+      },
+      "outgoings": {
+        "type": "object",
+        "properties": {
+          "accommodationAmount": {
+            "type": "number"
+          },
+          "councilTaxAmount": {
+            "type": "number"
+          },
+          "householdBillsAmount": {
+            "type": "number"
+          },
+          "travelExpensesAmount": {
+            "type": "number"
+          },
+          "childMaintenanceAmount": {
+            "type": "number"
+          },
+          "otherDescription": {
+            "type": "string"
+          },
+          "otherAmount": {
+            "type": "number"
+          },
+          "monthlyAmount": {
+            "type": "number"
+          }
+        }
+      },
+      "disabilityNeeds": {
+        "$ref": "http://cpp.moj.gov.uk/core/sjp/disability-needs.json"
+      }
+    },
+    "required": ["caseId", "onlinePleaDetails"],
+    "additionalProperties": true
+  }

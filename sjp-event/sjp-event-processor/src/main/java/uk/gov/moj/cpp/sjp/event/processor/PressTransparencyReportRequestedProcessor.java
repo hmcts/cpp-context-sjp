@@ -1,5 +1,6 @@
 package uk.gov.moj.cpp.sjp.event.processor;
 
+import static java.lang.Boolean.TRUE;
 import static java.lang.String.format;
 import static java.time.LocalDate.parse;
 import static java.time.LocalDateTime.now;
@@ -146,8 +147,8 @@ public class PressTransparencyReportRequestedProcessor {
     }
 
     private void sendDocumentGenerationRequest(final JsonEnvelope eventEnvelope,
-                                           final UUID reportId,
-                                           final UUID payloadFileServiceUUID) {
+                                               final UUID reportId,
+                                               final UUID payloadFileServiceUUID) {
 
         final JsonObject docGeneratorPayload = createObjectBuilder()
                 .add("originatingSource", "sjp")
@@ -191,7 +192,7 @@ public class PressTransparencyReportRequestedProcessor {
             }
 
             final Boolean defendantIsAdultOrUnknownAge = defendantAge.map(this::isAdult).orElse(true);
-            if(defendantIsAdultOrUnknownAge) {
+            if (TRUE.equals(defendantIsAdultOrUnknownAge)) {
                 final JsonObjectBuilder readyCaseItem = createReadyCase(envelope, pendingCase);
                 readyCasesBuilder.add(readyCaseItem);
             }
@@ -200,7 +201,7 @@ public class PressTransparencyReportRequestedProcessor {
     }
 
     private JsonObjectBuilder createReadyCase(final JsonEnvelope envelope, final JsonObject pendingCase) {
-        final JsonObjectBuilder readyCase =  createObjectBuilder()
+        final JsonObjectBuilder readyCase = createObjectBuilder()
                 .add("caseUrn", pendingCase.getString("caseUrn"))
                 .add("defendantName", buildDefendantName(pendingCase))
                 .add("address", getDefendantAddress(pendingCase))
@@ -215,7 +216,11 @@ public class PressTransparencyReportRequestedProcessor {
     }
 
     private String buildDefendantName(final JsonObject pendingCase) {
-        return format("%s %s", pendingCase.getString("firstName", ""), pendingCase.getString("lastName","").toUpperCase());
+        if (pendingCase.containsKey("legalEntityName")) {
+            return pendingCase.getString("legalEntityName").toUpperCase();
+        } else {
+            return format("%s %s", pendingCase.getString("firstName", ""), pendingCase.getString("lastName", "").toUpperCase());
+        }
     }
 
     private String createDateOfBirth(final String defendantDateOfBirth) {
@@ -223,7 +228,7 @@ public class PressTransparencyReportRequestedProcessor {
             final LocalDate defendantDob = parse(defendantDateOfBirth);
             return format("%s (%d)", DATE_FORMAT.format(defendantDob), getAge(defendantDateOfBirth).orElse(0l));
         } catch (DateTimeParseException e) {
-            LOGGER.warn("error parsing defendant date of birth " +  defendantDateOfBirth, e);
+            LOGGER.warn("error parsing defendant date of birth " + defendantDateOfBirth, e);
             return "";
         }
     }
@@ -249,11 +254,11 @@ public class PressTransparencyReportRequestedProcessor {
             final boolean pressRestrictionRequested = pendingCasePressRestriction.getBoolean("requested");
 
             final JsonObjectBuilder readyCaseOffence = createObjectBuilder()
-                    .add("title", mapOffenceIntoOffenceTitleString(pendingCaseOffence,envelope))
+                    .add("title", mapOffenceIntoOffenceTitleString(pendingCaseOffence, envelope))
                     .add("wording", pendingCaseOffence.getString("offenceWording"))
                     .add("pressRestrictionRequested", pressRestrictionRequested);
 
-            if(pressRestrictionRequested) {
+            if (pressRestrictionRequested) {
                 readyCaseOffence.add("pressRestrictionName", pendingCasePressRestriction.getString("name", ""));
             }
 
@@ -299,9 +304,9 @@ public class PressTransparencyReportRequestedProcessor {
         final String county = pendingCase.containsKey("county") ? format(" %s,", pendingCase.getString("county")) : "";
         final String town = pendingCase.containsKey("town") ? format(" %s", pendingCase.getString("town")) : "";
         final String postcode = pendingCase.containsKey("postcode") ? format(" %s", pendingCase.getString("postcode")) : "";
-        if (nonNull(postcode) && ! postcode.isEmpty()) {
+        if (nonNull(postcode) && !postcode.isEmpty()) {
             return format("%s%s%s%s,%s", addressLine1, addressLine2, county, town, postcode).trim();
-        }else {
+        } else {
             return format("%s%s%s%s", addressLine1, addressLine2, county, town).trim();
 
         }
@@ -310,6 +315,7 @@ public class PressTransparencyReportRequestedProcessor {
     private List<JsonObject> getPendingCasesFromViewStore(final JsonEnvelope envelope) {
         return sjpService.getPendingCases(envelope, ExportType.PRESS);
     }
+
     private boolean hasDefendantDateOfBirth(final JsonObject pendingCase) {
         return pendingCase.containsKey(DEFENDANT_DATE_OF_BIRTH) && !isEmpty(pendingCase.getString(DEFENDANT_DATE_OF_BIRTH));
     }

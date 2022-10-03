@@ -31,7 +31,7 @@ import uk.gov.moj.cpp.sjp.domain.Defendant;
 import uk.gov.moj.cpp.sjp.domain.aggregate.CaseAggregate;
 import uk.gov.moj.cpp.sjp.domain.aggregate.CaseAggregateBaseTest;
 import uk.gov.moj.cpp.sjp.event.DefendantDetailsUpdated;
-import uk.gov.moj.cpp.sjp.event.DefendantPersonalNameUpdated;
+import uk.gov.moj.cpp.sjp.event.DefendantNameUpdated;
 
 import java.time.LocalDate;
 import java.util.UUID;
@@ -54,7 +54,7 @@ public class UpdateDefendantDetailsHandlerTest extends CaseAggregateBaseTest {
 
     @Spy
     private Enveloper enveloper = EnveloperFactory.createEnveloperWithEvents(
-            DefendantPersonalNameUpdated.class, DefendantDetailsUpdated.class);
+            DefendantNameUpdated.class, DefendantDetailsUpdated.class);
 
     @InjectMocks
     private UpdateDefendantDetailsHandler updateDefendantDetailsHandler;
@@ -107,7 +107,7 @@ public class UpdateDefendantDetailsHandlerTest extends CaseAggregateBaseTest {
                 streamContaining(
                         jsonEnvelope(
                                 withMetadataEnvelopedFrom(command)
-                                        .withName("sjp.events.defendant-personal-name-updated"),
+                                        .withName("sjp.events.defendant-name-updated"),
                                 payloadIsJson(withJsonPath("$.newPersonalName.firstName", equalTo(firstName)))),
                         jsonEnvelope(
                                 withMetadataEnvelopedFrom(command)

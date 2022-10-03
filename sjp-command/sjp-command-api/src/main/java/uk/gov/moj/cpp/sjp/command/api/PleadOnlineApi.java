@@ -34,6 +34,8 @@ public class PleadOnlineApi {
     private static final String PERSONAL_DETAILS = "personalDetails";
     private static final String EMPLOYER = "employer";
 
+    private static final String LEGAL_ENTITY = "legalEntityDefendant";
+
     @Inject
     private Sender sender;
 
@@ -69,10 +71,16 @@ public class PleadOnlineApi {
         checkValidationErrors(validationErrors);
 
         final JsonObjectBuilder pleaOnlineObjectBuilder = createObjectBuilderWithFilter(payload, field -> !asList(PERSONAL_DETAILS, EMPLOYER).contains(field));
+        if (payload.containsKey(PERSONAL_DETAILS))  {
+            pleaOnlineObjectBuilder.add(PERSONAL_DETAILS, replacePostcodeInPayload(payload, PERSONAL_DETAILS));
+        }
 
-        pleaOnlineObjectBuilder.add(PERSONAL_DETAILS, replacePostcodeInPayload(payload, PERSONAL_DETAILS));
         if (payload.containsKey(EMPLOYER)) {
             pleaOnlineObjectBuilder.add(EMPLOYER, replacePostcodeInPayload(payload, EMPLOYER));
+        }
+
+        if (payload.containsKey(LEGAL_ENTITY)) {
+            pleaOnlineObjectBuilder.add(LEGAL_ENTITY, replacePostcodeInPayload(payload, LEGAL_ENTITY));
         }
 
         sender.send(Envelope.envelopeFrom(

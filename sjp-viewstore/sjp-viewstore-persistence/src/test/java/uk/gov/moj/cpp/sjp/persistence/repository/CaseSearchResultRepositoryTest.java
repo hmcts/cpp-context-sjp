@@ -4,6 +4,7 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasSize;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
 
 import uk.gov.justice.services.common.converter.LocalDates;
@@ -38,6 +39,7 @@ public class CaseSearchResultRepositoryTest extends BaseTransactionalTest {
     private static final String PROSECUTING_AUTHORITY_1 = "PROC1";
     private static final String PROSECUTING_AUTHORITY_2 = "PROC2";
     private static final String PROSECUTING_AUTHORITY_WILDCARD = "%";
+    private static final String LEGAL_ENTITY_NAME = "legalEntityName";
     @Inject
     private CaseSearchResultRepository caseSearchResultRepository;
     @Inject
@@ -46,7 +48,7 @@ public class CaseSearchResultRepositoryTest extends BaseTransactionalTest {
     @Test
     public void shouldFindByLastName() {
 
-        createCaseSearchResult();
+        createCaseSearchResult(false);
 
         // check it is case insensitive
         final List<CaseSearchResult> results = caseSearchResultRepository.findByLastName(PROSECUTING_AUTHORITY_WILDCARD, LAST_NAME.toLowerCase());
@@ -84,7 +86,7 @@ public class CaseSearchResultRepositoryTest extends BaseTransactionalTest {
     @Test
     public void shouldFindByLastNameEvenThoughItWasChanged() {
         // given
-        final CaseSearchResult caseSearchResult = createCaseSearchResult();
+        final CaseSearchResult caseSearchResult = createCaseSearchResult(false);
         // when
         final List<CaseSearchResult> results = caseSearchResultRepository.findByLastName(PROSECUTING_AUTHORITY_1, LAST_NAME.toLowerCase());
         // then
@@ -124,7 +126,7 @@ public class CaseSearchResultRepositoryTest extends BaseTransactionalTest {
         // given last name was updated to LAST_NAME_UPDATED and a new case with LAST_NAME was created
         simulateDefendantLastNameChanged(LAST_NAME_UPDATED, afterUpdateBackForUpdatedButRevertedLastName.get(0).getCaseId());
         //simulateDefendantLastNameChanged(LAST_NAME_UPDATED, caseSearchResultRepository.findByUrn(PROSECUTING_AUTHORITY_1, URN));
-        createCaseSearchResult();
+        createCaseSearchResult(false);
         // when
         final List<CaseSearchResult> resultsAfterInsert = caseSearchResultRepository.findByLastName(PROSECUTING_AUTHORITY_1, LAST_NAME.toLowerCase());
         // then the results should contain 1 entry with LAST_NAME and 1 entry with LAST_NAME_UPDATED
@@ -141,7 +143,7 @@ public class CaseSearchResultRepositoryTest extends BaseTransactionalTest {
     @Test
     public void shouldFindByUrn() {
 
-        final CaseSearchResult caseSearchResult = createCaseSearchResult();
+        final CaseSearchResult caseSearchResult = createCaseSearchResult(false);
 
         // check it is case insensitive
         final List<CaseSearchResult> results = caseSearchResultRepository.findByUrn(PROSECUTING_AUTHORITY_WILDCARD, URN.toLowerCase());
@@ -164,7 +166,7 @@ public class CaseSearchResultRepositoryTest extends BaseTransactionalTest {
     @Test
     public void shouldFindByUrnOnlyLatest() {
         // given
-        final CaseSearchResult caseSearchResult = createCaseSearchResult();
+        final CaseSearchResult caseSearchResult = createCaseSearchResult(false);
         simulateDefendantLastNameChanged(LAST_NAME_UPDATED, caseSearchResult.getCaseId());
         simulateDefendantLastNameChanged(LAST_NAME, caseSearchResult.getCaseId());
 
@@ -182,7 +184,7 @@ public class CaseSearchResultRepositoryTest extends BaseTransactionalTest {
     @Test
     public void shouldFindByCaseId() {
 
-        final CaseSearchResult caseSearchResult = createCaseSearchResult();
+        final CaseSearchResult caseSearchResult = createCaseSearchResult(false);
         final UUID caseId = caseSearchResult.getCaseId();
 
         final List<CaseSearchResult> results = caseSearchResultRepository.findByCaseId(caseId);
@@ -196,15 +198,19 @@ public class CaseSearchResultRepositoryTest extends BaseTransactionalTest {
 
     @Test
     public void shouldCreateWithoutCaseSummary() {
-        final CaseSearchResult caseSearchResult = new CaseSearchResult(UUID.randomUUID(), UUID.randomUUID(), "firstName", "lastName", LocalDates.from("2001-02-03"), null);
+        final CaseSearchResult caseSearchResult = new CaseSearchResult(UUID.randomUUID(), UUID.randomUUID(), "firstName", "lastName", LocalDates.from("2001-02-03"), null, null);
 
         caseSearchResultRepository.save(caseSearchResult);
 
         assertThat(caseSearchResultRepository.findBy(caseSearchResult.getId()), notNullValue());
     }
 
-    private CaseSearchResult createCaseSearchResult() {
-        return createCaseSearchResultWithFirstname(FIRST_NAME, PROSECUTING_AUTHORITY_1);
+    private CaseSearchResult createCaseSearchResult(final boolean defendantIsCompany) {
+        if (defendantIsCompany) {
+            return createCaseSearchResultWithLegalEntity(UUID.randomUUID(), URN, PROSECUTING_AUTHORITY_1, LEGAL_ENTITY_NAME);
+        } else {
+            return createCaseSearchResultWithFirstname(FIRST_NAME, PROSECUTING_AUTHORITY_1);
+        }
     }
 
     private CaseSearchResult createCaseSearchResult(final String prosecutingAuthority) {
@@ -212,7 +218,11 @@ public class CaseSearchResultRepositoryTest extends BaseTransactionalTest {
     }
 
     private CaseSearchResult createCaseSearchResultWithFirstname(final String firstName, final String prosecutingAuthority) {
-        return createCaseSearchResultWith(UUID.randomUUID(), URN, firstName, LAST_NAME, prosecutingAuthority);
+        return createCaseSearchResultWith(UUID.randomUUID(), URN, firstName, LAST_NAME, prosecutingAuthority, LEGAL_ENTITY_NAME);
+    }
+
+    private CaseSearchResult createCaseSearchResultWithLegalEntityName(final String legalEntityName, final String prosecutingAuthority) {
+        return createCaseSearchResultWith(UUID.randomUUID(), URN, FIRST_NAME, LAST_NAME, prosecutingAuthority, legalEntityName);
     }
 
     private void simulateDefendantLastNameChanged(final String newLastName, final UUID caseId) {
@@ -231,11 +241,11 @@ public class CaseSearchResultRepositoryTest extends BaseTransactionalTest {
     }
 
     private CaseSearchResult createCaseSearchResultWith(final UUID caseId, final String urn, final String firstName, final String lastName) {
-        return createCaseSearchResultWith(caseId, urn, firstName, lastName, PROSECUTING_AUTHORITY_1);
+        return createCaseSearchResultWith(caseId, urn, firstName, lastName, PROSECUTING_AUTHORITY_1, LEGAL_ENTITY_NAME);
     }
 
     private CaseSearchResult createCaseSearchResultWith(
-            final UUID caseId, final String urn, final String firstName, final String lastName, final String prosecutingAuthority) {
+            final UUID caseId, final String urn, final String firstName, final String lastName, final String prosecutingAuthority, final String legalEntityName) {
         CaseSummary caseSummary = new CaseSummary();
         caseSummary.setId(caseId);
         caseSummary.setUrn(urn);
@@ -251,7 +261,36 @@ public class CaseSearchResultRepositoryTest extends BaseTransactionalTest {
         caseSearchResult.setDefendantId(UUID.randomUUID());
         caseSearchResult.setCurrentFirstName(firstName);
         caseSearchResult.setCurrentLastName(lastName);
+        caseSearchResult.setLegalEntityName(legalEntityName);
         caseSearchResult.setDateAdded(ZonedDateTime.ofInstant(Instant.ofEpochMilli(TIME.getAndAdd(100)), ZoneId.systemDefault()));
         return caseSearchResultRepository.save(caseSearchResult);
+    }
+
+    private CaseSearchResult createCaseSearchResultWithLegalEntity(
+            final UUID caseId, final String urn, final String prosecutingAuthority, final String legalEntityName) {
+        CaseSummary caseSummary = new CaseSummary();
+        caseSummary.setId(caseId);
+        caseSummary.setUrn(urn);
+        caseSummary.setProsecutingAuthority(prosecutingAuthority);
+        caseSummary = caseSummaryRepository.save(caseSummary);
+
+        final CaseSearchResult caseSearchResult = new CaseSearchResult();
+        caseSearchResult.setId(UUID.randomUUID());
+        caseSearchResult.setCaseId(caseSummary.getId());
+        caseSearchResult.setCaseSummary(caseSummary);
+        caseSearchResult.setDefendantId(UUID.randomUUID());
+        caseSearchResult.setLegalEntityName(legalEntityName);
+        caseSearchResult.setDateAdded(ZonedDateTime.ofInstant(Instant.ofEpochMilli(TIME.getAndAdd(100)), ZoneId.systemDefault()));
+        return caseSearchResultRepository.save(caseSearchResult);
+    }
+
+    @Test
+    public void shouldFindByLegalEntityName() {
+        createCaseSearchResult(true);
+        // check it is case insensitive
+        final List<CaseSearchResult> results = caseSearchResultRepository.findByLegalEntityName(PROSECUTING_AUTHORITY_WILDCARD, LEGAL_ENTITY_NAME.toLowerCase());
+
+        assertEquals(LEGAL_ENTITY_NAME, results.get(0).getLegalEntityName());
+        assertEquals(URN, results.get(0).getCaseSummary().getUrn());
     }
 }

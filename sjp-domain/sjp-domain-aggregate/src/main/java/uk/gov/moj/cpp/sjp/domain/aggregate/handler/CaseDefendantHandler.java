@@ -7,6 +7,7 @@ import uk.gov.moj.cpp.sjp.domain.Address;
 import uk.gov.moj.cpp.sjp.domain.Person;
 import uk.gov.moj.cpp.sjp.domain.PersonalName;
 import uk.gov.moj.cpp.sjp.domain.aggregate.state.CaseAggregateState;
+import uk.gov.moj.cpp.sjp.domain.legalentity.LegalEntityDefendant;
 import uk.gov.moj.cpp.sjp.event.CaseNotFound;
 import uk.gov.moj.cpp.sjp.event.DefendantAddressUpdated;
 import uk.gov.moj.cpp.sjp.event.DefendantDateOfBirthUpdated;
@@ -14,7 +15,7 @@ import uk.gov.moj.cpp.sjp.event.DefendantDetailsUpdateFailed;
 import uk.gov.moj.cpp.sjp.event.DefendantDetailsUpdated;
 import uk.gov.moj.cpp.sjp.event.DefendantDetailsUpdatesAcknowledged;
 import uk.gov.moj.cpp.sjp.event.DefendantNotFound;
-import uk.gov.moj.cpp.sjp.event.DefendantPersonalNameUpdated;
+import uk.gov.moj.cpp.sjp.event.DefendantNameUpdated;
 import uk.gov.moj.cpp.sjp.event.DefendantsNationalInsuranceNumberUpdated;
 import uk.gov.moj.cpp.sjp.event.ProsecutionAuthorityAccessDenied;
 
@@ -121,6 +122,7 @@ public class CaseDefendantHandler {
                 .withUpdateByOnlinePlea(updatedByOnlinePlea)
                 .withUpdatedDate(updatedDate)
                 .withRegion(person.getRegion())
+                .withLegalEntityName(person.getLegalEntityName())
                 .build();
         events.add(defendantDetailsUpdated);
 
@@ -171,20 +173,62 @@ public class CaseDefendantHandler {
         // Online plea doesn't update title
         final String defendantFirstName = state.getDefendantFirstName();
         final String defendantLastName = state.getDefendantLastName();
-
+        final String defendantLegalEntityName = state.getDefendantLegalEntityName();
         if (isTitleChanged(isOnlinePlea, person.getTitle(), state) ||
                 !StringUtils.equalsIgnoreCase(defendantFirstName, person.getFirstName()) ||
                 !StringUtils.equalsIgnoreCase(defendantLastName, person.getLastName())) {
 
-            events.add(new DefendantPersonalNameUpdated(
+            events.add(new DefendantNameUpdated(
                     state.getCaseId(),
                     new PersonalName(state.getDefendantTitle(), defendantFirstName, defendantLastName),
                     new PersonalName(person.getTitle(), person.getFirstName(), person.getLastName()),
+                    null,
+                    null,
+                    updatedDate));
+        } else if (isCompanyNameChanged(person.getLegalEntityName(), state)) {
+            events.add(new DefendantNameUpdated(
+                    state.getCaseId(),
+                    null,
+                    null,
+                    person.getLegalEntityName(),
+                    defendantLegalEntityName,
                     updatedDate));
         }
 
         return events.build();
     }
+
+    public Stream<Object> getLegalEntityDefendantWarningEvents(final LegalEntityDefendant legalEntityDefendant,
+                                                    final ZonedDateTime updatedDate,
+                                                    final CaseAggregateState state) {
+
+        final Stream.Builder<Object> events = Stream.builder();
+
+
+        final Address defendantAddress = state.getDefendantAddress();
+        if (defendantAddress != null && !defendantAddress.equals(legalEntityDefendant.getAddress())) {
+            events.add(new DefendantAddressUpdated(
+                    state.getCaseId(),
+                    defendantAddress,
+                    legalEntityDefendant.getAddress(),
+                    updatedDate));
+        }
+
+        // Online plea doesn't update title
+        final String defendantLegalEntityName = state.getDefendantLegalEntityName();
+         if (isCompanyNameChanged(legalEntityDefendant.getName(), state)) {
+            events.add(new DefendantNameUpdated(
+                    state.getCaseId(),
+                    null,
+                    null,
+                    legalEntityDefendant.getName(),
+                    defendantLegalEntityName,
+                    updatedDate));
+        }
+
+        return events.build();
+    }
+
 
     private boolean isTitleChanged(final boolean isOnlinePlea,
                                    final String title,
@@ -193,5 +237,12 @@ public class CaseDefendantHandler {
         final String defendantTitle = state.getDefendantTitle();
 
         return !isOnlinePlea && defendantTitle != null && !defendantTitle.equalsIgnoreCase(title);
+    }
+
+    private boolean isCompanyNameChanged(final String legalEntityName, final CaseAggregateState state) {
+
+        final String defendantLegalEntityName = state.getDefendantLegalEntityName();
+
+        return defendantLegalEntityName != null && !defendantLegalEntityName.equals(legalEntityName);
     }
 }

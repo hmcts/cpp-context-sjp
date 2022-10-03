@@ -22,6 +22,7 @@ import uk.gov.justice.json.schemas.domains.sjp.command.FinancialMeans;
 import uk.gov.justice.json.schemas.domains.sjp.command.Frequency;
 import uk.gov.justice.json.schemas.domains.sjp.command.Income;
 import uk.gov.justice.json.schemas.domains.sjp.command.Offence;
+import uk.gov.justice.json.schemas.domains.sjp.command.PersonalDetails;
 import uk.gov.justice.json.schemas.domains.sjp.command.Plea;
 import uk.gov.justice.json.schemas.domains.sjp.command.PleadOnline;
 import uk.gov.moj.cpp.sjp.domain.common.CaseStatus;
@@ -222,6 +223,12 @@ public class PleadOnlineValidatorTest {
 
     private static PleadOnline buildPleadOnline(final Plea plea, final FinancialMeans financialMeans) {
         return pleadOnline()
+                .withPersonalDetails(
+                        PersonalDetails.personalDetails()
+                                .withFirstName("first name")
+                                .withLastName("last name")
+                                .build()
+                )
                 .withOffences(singletonList(Offence.offence()
                         .withPlea(plea)
                         .build()))

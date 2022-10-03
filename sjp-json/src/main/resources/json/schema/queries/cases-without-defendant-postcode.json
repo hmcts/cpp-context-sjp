@@ -20,6 +20,9 @@
           "lastName": {
             "type": "string"
           },
+          "legalEntityName": {
+            "type": "string"
+          },
           "postingDate": {
             "$ref": "http://justice.gov.uk/json/schemas/domains/sjp/temporal.json#/definitions/date"
           },
@@ -27,11 +30,23 @@
             "type": "string"
           }
         },
-        "required": [
-          "id",
-          "urn",
-          "lastName",
-          "postingDate"
+        "anyOf": [
+          {
+            "required": [
+              "id",
+              "urn",
+              "lastName",
+              "postingDate"
+            ]
+          },
+          {
+            "required": [
+              "id",
+              "urn",
+              "legalEntityName",
+              "postingDate"
+            ]
+          }
         ]
       }
     },

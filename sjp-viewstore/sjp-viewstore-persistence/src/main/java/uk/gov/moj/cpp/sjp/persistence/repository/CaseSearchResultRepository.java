@@ -28,4 +28,12 @@ public interface CaseSearchResultRepository extends EntityRepository<CaseSearchR
     List<CaseSearchResult> findByUrn(@QueryParam("prosecutingAuthority") String prosecutingAuthority, @QueryParam("urn") String urn);
 
     List<CaseSearchResult> findByCaseId(UUID caseId);
+
+    @Query("from CaseSearchResult as r inner join fetch r.caseSummary as c where cast(r.id as string) IN " +
+            "(select cast(x.id as string) from CaseSearchResult as x where upper(x.legalEntityName) = upper(:legalEntityName) and x.caseId = r.caseId and x.dateAdded = " +
+            "(select max(z.dateAdded) from CaseSearchResult as z where z.caseId=x.caseId and upper(z.legalEntityName) = upper(:legalEntityName))" +
+            ") " +
+            "and r.caseSummary.prosecutingAuthority like :prosecutingAuthority " +
+            "order by r.legalEntityName ASC, c.postingDate DESC")
+    List<CaseSearchResult> findByLegalEntityName(@QueryParam("prosecutingAuthority") String prosecutingAuthority, @QueryParam("legalEntityName") String legalEntityName);
 }

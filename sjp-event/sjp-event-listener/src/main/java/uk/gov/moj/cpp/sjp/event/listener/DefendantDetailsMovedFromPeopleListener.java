@@ -1,5 +1,6 @@
 package uk.gov.moj.cpp.sjp.event.listener;
 
+import static java.util.Objects.nonNull;
 import static uk.gov.justice.services.core.annotation.Component.EVENT_LISTENER;
 
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
@@ -53,8 +54,9 @@ public class DefendantDetailsMovedFromPeopleListener {
                 caseDetail.getDefendant().getPersonalDetails().getLastName(),
                 caseDetail.getDefendant().getPersonalDetails().getDateOfBirth(),
                 envelope.metadata().createdAt()
-                        .orElseGet(caseDetail::getDateTimeCreated)
-        );
+                        .orElseGet(caseDetail::getDateTimeCreated),
+                nonNull(caseDetail.getDefendant().getLegalEntityDetails())?caseDetail.getDefendant().getLegalEntityDetails().getLegalEntityName():null);
+
     }
 
     private PersonalDetails createPersonalDetails(final DefendantDetailsMovedFromPeople event) {
@@ -65,8 +67,6 @@ public class DefendantDetailsMovedFromPeopleListener {
         personalDetails.setTitle(event.getTitle());
         personalDetails.setNationalInsuranceNumber(event.getNationalInsuranceNumber());
         personalDetails.setDateOfBirth(event.getDateOfBirth());
-        personalDetails.setAddress(addressToAddressEntity.convert(event.getAddress()));
-        personalDetails.setContactDetails(contactDetailsToContactDetailsEntity.convert(event.getContactNumber()));
 
         return personalDetails;
     }

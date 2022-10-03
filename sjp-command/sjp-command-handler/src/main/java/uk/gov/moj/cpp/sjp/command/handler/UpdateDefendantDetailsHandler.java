@@ -59,6 +59,7 @@ public class UpdateDefendantDetailsHandler extends BasePersonInfoHandler {
         final String dateOfBirth = getStringOrNull(payload, "dateOfBirth");
         final String email = getStringOrNull(payload, "email");
         final String email2 = getStringOrNull(payload, "email2");
+        final String legalEntityName = getStringOrNull(payload, "legalEntityName");
 
         final JsonObject contactNumberPayload = payload.getJsonObject("contactNumber");
         final String homeNumber = getStringOrNull(contactNumberPayload, "home");
@@ -73,7 +74,7 @@ public class UpdateDefendantDetailsHandler extends BasePersonInfoHandler {
         final CaseAggregate caseAggregate = aggregateService.get(eventStream, CaseAggregate.class);
 
         final ContactDetails contactDetails = new ContactDetails(homeNumber, mobileNumber, businessNumber, email, email2);
-        final Person person = new Person(title, firstName, lastName, birthDate, gender, nationalInsuranceNumber, driverNumber, driverLicenceDetails, address, contactDetails, region);
+        final Person person = new Person(title, firstName, lastName, birthDate, gender, nationalInsuranceNumber, driverNumber, driverLicenceDetails, address, contactDetails, region, legalEntityName);
 
         final Stream<Object> events = caseAggregate.updateDefendantDetails(getUserId(command), caseId, defendantId, person, createdAt);
 

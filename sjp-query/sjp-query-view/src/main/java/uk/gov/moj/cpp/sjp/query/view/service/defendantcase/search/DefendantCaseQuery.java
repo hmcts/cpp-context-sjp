@@ -43,7 +43,7 @@ public class DefendantCaseQuery {
         addQueryParam(criteriaBuilder, LASTNAME_QUERY_PARAM, personalDetails.getLastName());
         addQueryParam(criteriaBuilder, DOB_QUERY_PARAM, personalDetails.getDateOfBirth());
 
-        final Address address = personalDetails.getAddress();
+        final Address address = defendant.getAddress();
         if (address != null) {
             addQueryParam(criteriaBuilder, ADDRESS_LINE1_QUERY_PARAM, address.getAddress1());
             addQueryParam(criteriaBuilder, POSTCODE_QUERY_PARAM, address.getPostcode());

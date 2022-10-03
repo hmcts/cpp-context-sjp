@@ -5,7 +5,6 @@ import static java.util.Optional.ofNullable;
 import uk.gov.moj.cpp.sjp.event.DefendantDetailsUpdated;
 
 import java.time.LocalDate;
-import java.util.Optional;
 
 import javax.persistence.AttributeOverride;
 import javax.persistence.AttributeOverrides;
@@ -68,12 +67,6 @@ public class OnlinePleaPersonalDetails {
         ofNullable(defendantDetail.getPersonalDetails()).ifPresent( personalDetails ->  {
             this.firstName = personalDetails.getFirstName();
             this.lastName = personalDetails.getLastName();
-            this.address = personalDetails.getAddress();
-            ofNullable(personalDetails.getContactDetails()).ifPresent(contactDetails -> {
-                this.homeTelephone = contactDetails.getHome();
-                this.mobile = contactDetails.getMobile();
-                this.email = contactDetails.getEmail();
-            });
             this.dateOfBirth = personalDetails.getDateOfBirth();
             this.nationalInsuranceNumber = personalDetails.getNationalInsuranceNumber();
             this.driverNumber = personalDetails.getDriverNumber();

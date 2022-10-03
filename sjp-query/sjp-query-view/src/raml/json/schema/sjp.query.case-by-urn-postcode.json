@@ -77,6 +77,25 @@
         "address"
       ]
     },
+    "legalEntity": {
+      "type": "object",
+      "properties": {
+        "legalEntityName": {
+          "type": "string"
+        },
+        "contactDetails": {
+          "$ref": "http://justice.gov.uk/json/schemas/domains/sjp/contact-details.json"
+        },
+        "address": {
+          "$ref": "http://justice.gov.uk/json/schemas/domains/sjp/address.json"
+        }
+      },
+      "additionalProperties": true,
+      "required": [
+        "legalEntityName",
+        "address"
+      ]
+    },
     "defendant": {
       "type": "object",
       "properties": {
@@ -109,10 +128,21 @@
         }
       },
       "additionalProperties": true,
-      "required": [
-        "id",
-        "personalDetails",
-        "offences"
+      "anyOf": [
+        {
+          "required": [
+            "id",
+            "personalDetails",
+            "offences"
+          ]
+        },
+        {
+          "required": [
+            "id",
+            "legalEntity",
+            "offences"
+          ]
+        }
       ]
     }
   },

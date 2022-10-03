@@ -1,22 +1,5 @@
 package uk.gov.moj.sjp.it.helper;
 
-import com.jayway.restassured.path.json.JsonPath;
-import org.hamcrest.CoreMatchers;
-import org.hamcrest.Matcher;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import uk.gov.moj.cpp.sjp.domain.plea.PleaMethod;
-import uk.gov.moj.cpp.sjp.domain.plea.PleaType;
-import uk.gov.moj.sjp.it.pollingquery.CasePoller;
-import uk.gov.moj.sjp.it.util.HttpClientUtil;
-import uk.gov.moj.sjp.it.util.TopicUtil;
-
-import javax.jms.JMSException;
-import javax.jms.MessageConsumer;
-import javax.ws.rs.core.Response;
-import java.util.UUID;
-import java.util.concurrent.TimeUnit;
-
 import static com.jayway.awaitility.Awaitility.await;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
 import static java.lang.String.format;
@@ -32,6 +15,25 @@ import static uk.gov.moj.sjp.it.Constants.PUBLIC_EVENT_SET_PLEAS;
 import static uk.gov.moj.sjp.it.util.DefaultRequests.getCaseById;
 import static uk.gov.moj.sjp.it.util.RestPollerWithDefaults.pollWithDefaults;
 import static uk.gov.moj.sjp.it.util.TopicUtil.retrieveMessage;
+
+import uk.gov.moj.cpp.sjp.domain.plea.PleaMethod;
+import uk.gov.moj.cpp.sjp.domain.plea.PleaType;
+import uk.gov.moj.sjp.it.pollingquery.CasePoller;
+import uk.gov.moj.sjp.it.util.HttpClientUtil;
+import uk.gov.moj.sjp.it.util.TopicUtil;
+
+import java.util.UUID;
+import java.util.concurrent.TimeUnit;
+
+import javax.jms.JMSException;
+import javax.jms.MessageConsumer;
+import javax.ws.rs.core.Response;
+
+import com.jayway.restassured.path.json.JsonPath;
+import org.hamcrest.CoreMatchers;
+import org.hamcrest.Matcher;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class PleadOnlineHelper implements AutoCloseable {
 

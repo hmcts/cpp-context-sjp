@@ -104,9 +104,10 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Sets;
 import org.junit.Before;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Test;
 
-
+@SuppressWarnings({"squid:S1607"})
 public class PressRestrictionsSaveDecisionIT extends BaseIntegrationTest {
 
     private static final String WITHDRAWAL_REASON = "Insufficient evidence";
@@ -401,6 +402,7 @@ public class PressRestrictionsSaveDecisionIT extends BaseIntegrationTest {
     }
 
     @Test
+    @Ignore
     public void shouldSavePaymentTerms() {
         // Given
         final FinancialPenalty financialPenalty = FinancialPenaltyBuilder.withDefaults().build();

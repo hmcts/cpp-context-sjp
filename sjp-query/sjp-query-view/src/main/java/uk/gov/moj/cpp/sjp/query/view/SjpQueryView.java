@@ -69,6 +69,7 @@ import org.slf4j.LoggerFactory;
 @ServiceComponent(Component.QUERY_VIEW)
 public class SjpQueryView {
 
+
     private static final String FIELD_CASE_ID = "caseId";
     private static final String FIELD_URN = "urn";
     private static final String FIELD_CORRELATION_ID = "correlationId";
@@ -144,6 +145,9 @@ public class SjpQueryView {
     private OnlinePleaRepository.FinancialMeansOnlinePleaRepository onlinePleaRepository;
 
     @Inject
+    private OnlinePleaRepository.LegalEntityDetailsOnlinePleaRepository legalEntityDetailsOnlinePleaRepository;
+
+    @Inject
     private OnlinePleaDetailRepository onlinePleaDetailRepository;
 
     @Inject
@@ -176,10 +180,10 @@ public class SjpQueryView {
             final String prosecutingAuthority = caseView.getProsecutingAuthority();
             final Optional<String> userId = envelope.metadata().userId();
             boolean hasPotentialCase = false;
-            if (caseView.getDefendant() != null) {
+            if (nonNull(caseView.getDefendant()) && nonNull(caseView.getDefendant().getPersonalDetails())) {
                 final UUID defendantId = caseView.getDefendant().getId();
                 hasPotentialCase = defendantPotentialCaseService.
-                                            hasDefendantPotentialCase(envelope, defendantId);
+                        hasDefendantPotentialCase(envelope, defendantId);
             }
             caseView.setHasPotentialCase(hasPotentialCase);
             if (userId.isPresent()) {
@@ -201,7 +205,7 @@ public class SjpQueryView {
     @Handles("sjp.query.defendant-potential-cases")
     public JsonEnvelope findDefendantPotentialCases(final JsonEnvelope envelope) {
         final UUID defendantId = UUID.fromString(envelope.payloadAsJsonObject().
-                                                          getString(FIELD_DEFENDANT_ID));
+                getString(FIELD_DEFENDANT_ID));
         final PotentialCases potentialCases =
                 defendantPotentialCaseService.findDefendantPotentialCases(envelope, defendantId);
         return enveloper.withMetadataFrom(envelope, NAME_RESPONSE_POTENTIAL_CASES_SEARCH).apply(potentialCases);
@@ -306,7 +310,7 @@ public class SjpQueryView {
         final UUID defendantId = fromString(extract(envelope, FIELD_DEFENDANT_ID));
         final Optional<FinancialMeans> financialMeans = financialMeansService.getFinancialMeans(defendantId);
         return enveloper.withMetadataFrom(envelope, "sjp.query.financial-means")
-                .apply(financialMeans.orElseGet(() -> new FinancialMeans(null, null, null, null)));
+                .apply(financialMeans.orElseGet(() -> new FinancialMeans(null, null, null, null, null, null, null, null)));
     }
 
     @Handles("sjp.query.employer")
@@ -346,10 +350,18 @@ public class SjpQueryView {
         final UUID defendantId = fromString(extract(envelope, FIELD_DEFENDANT_ID));
         final OnlinePlea onlinePlea;
         if (userAndGroupsService.canSeeOnlinePleaFinances(envelope)) {
+            LOGGER.info("User is a legal advisor calling method findBy({})  with caseId {}", caseId, caseId);
             onlinePlea = onlinePleaRepository.findBy(caseId);
+            if (onlinePlea.getEmployment() == null && onlinePlea.getLegalEntityDetails() == null) {
+                OnlinePlea legalEntityFinanceDetails = legalEntityDetailsOnlinePleaRepository.findBy(caseId);
+                onlinePlea.setLegalEntityDetails(legalEntityFinanceDetails.getLegalEntityDetails());
+            }
+            LOGGER.info("Received online plea via finder method  findBy({}) {}", caseId, onlinePlea);
         } else {
+            LOGGER.info("User is a normal user online plea  findOnlinePleaWithoutFinances({}) with caseId {}", caseId, caseId);
             // Prosecutors cannot see finances.
             onlinePlea = onlinePleaRepository.findOnlinePleaWithoutFinances(caseId);
+            LOGGER.info("Received online plea via finder method  findOnlinePleaWithoutFinances({}) {}", caseId, onlinePlea);
         }
 
         final OnlinePleaView onlinePleaView = new OnlinePleaView(onlinePlea);
@@ -539,7 +551,7 @@ public class SjpQueryView {
     }
 
     private String getColumnSortedOn(final String sortField) {
-        return  SjpQueryView.CaseSortColumn.valueOf(sortField).getColumn();
+        return SjpQueryView.CaseSortColumn.valueOf(sortField).getColumn();
     }
 
     @SuppressWarnings("squid:S00115")
@@ -548,9 +560,11 @@ public class SjpQueryView {
         magistrate("magistrate");
 
         private final String column;
+
         CaseSortColumn(final String sortColumn) {
             this.column = sortColumn;
         }
+
         public String getColumn() {
             return this.column;
         }
@@ -562,9 +576,11 @@ public class SjpQueryView {
         desc("desc");
 
         private final String order;
+
         SortOrder(final String order) {
             this.order = order;
         }
+
         public String getOrder() {
             return this.order;
         }

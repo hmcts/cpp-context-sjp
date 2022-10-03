@@ -49,7 +49,7 @@ public class SysDocGeneratorStub {
 
     public static List<JSONObject> pollSysDocGenerationRequests(final Matcher<Collection<?>> matcher) {
         try {
-            final List<JSONObject> postRequests = await().atMost(30, SECONDS).until(() ->
+            final List<JSONObject> postRequests = await().atMost(90, SECONDS).until(() ->
                     findAll(postRequestedFor(urlPathMatching(SYS_DOC_GENERATOR_URL)))
                             .stream()
                             .map(LoggedRequest::getBodyAsString)

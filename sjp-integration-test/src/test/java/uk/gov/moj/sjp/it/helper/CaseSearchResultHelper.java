@@ -39,20 +39,22 @@ public class CaseSearchResultHelper {
     private final String lastName;
     private final LocalDate dateOfBirth;
     private final UUID searchUserId;
+    private final String legalEntityName;
 
     public CaseSearchResultHelper(final UUID searchUserId) {
-        this(null, null, null, searchUserId);
+        this(null, null, null, searchUserId, null);
     }
 
     public CaseSearchResultHelper(final String urn, final String defendantLastName, final LocalDate dateOfBirth) {
-        this(urn, defendantLastName, dateOfBirth, USER_ID);
+        this(urn, defendantLastName, dateOfBirth, USER_ID, null);
     }
 
-    private CaseSearchResultHelper(final String urn, final String defendantLastName, final LocalDate dateOfBirth, final UUID searchUserId) {
+    private CaseSearchResultHelper(final String urn, final String defendantLastName, final LocalDate dateOfBirth, final UUID searchUserId, final String legalEntityName) {
         this.urn = urn;
         this.lastName = defendantLastName;
         this.dateOfBirth = dateOfBirth;
         this.searchUserId = searchUserId;
+        this.legalEntityName = legalEntityName;
     }
 
     public void verifyPersonFound(final String urn, final String lastName) {

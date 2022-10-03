@@ -35,6 +35,7 @@ import uk.gov.moj.cpp.sjp.persistence.repository.CaseSearchResultRepository;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.List;
 import java.util.UUID;
 
 import javax.json.JsonObject;
@@ -172,43 +173,13 @@ public class CaseReceivedListenerTest {
                 false,
                 null,
                 ZonedDateTimes.fromString(caseCreatedOn),
-                new DefendantDetail(
-                        defendantId,
-                        new PersonalDetails(
-                                defendantTitle,
-                                defendantFirstName,
-                                defendantLastName,
-                                defendantDateOfBirth,
-                                defendantGender,
-                                nationalInsuranceNumber,
-                                driverNumber,
-                                null,
-                                new Address(
-                                        address1,
-                                        address2,
-                                        address3,
-                                        address4,
-                                        address5,
-                                        postcode),
-                                null,
-                        null),
-                        singletonList(
-                                new OffenceDetail.OffenceDetailBuilder()
-                                        .setId(offenceId)
-                                        .setChargeDate(chargeDate)
-                                        .setCode(offenceCode)
-                                        .setSequenceNumber(offenceSequenceNo)
-                                        .setStartDate(offenceCommittedDate)
-                                        .setWording(offenceWording)
-                                        .setWordingWelsh(offenceWordingWelsh)
-                                        .withCompensation(compensation)
-                                        .withLibraOffenceDateCode(1)
-                                        .withProsecutionFacts(prosecutionFacts)
-                                        .withWitnessStatement(witnessStatement)
-                                        .build()
-                        ),
-                        numPreviousConvictions
-                ),
+                new DefendantDetail(defendantId,
+                        buildPersonalDetails(),
+                        buildOffenceDetailList(),
+                        numPreviousConvictions,
+                        null,null,null,null,
+                        null,
+                        buildAddress(), null),
                 costs,
                 postingDate);
 
@@ -218,18 +189,18 @@ public class CaseReceivedListenerTest {
         final PersonalDetails actualPersonalDetails = actualDefendant.getPersonalDetails();
         final PersonalDetails expectedPersonalDetails = expectedDefendant.getPersonalDetails();
 
-        assertThat(actualPersonalDetails.getAddress().getAddress1(),
-                equalTo(expectedPersonalDetails.getAddress().getAddress1()));
-        assertThat(actualPersonalDetails.getAddress().getAddress2(),
-                equalTo(expectedPersonalDetails.getAddress().getAddress2()));
-        assertThat(actualPersonalDetails.getAddress().getAddress3(),
-                equalTo(expectedPersonalDetails.getAddress().getAddress3()));
-        assertThat(actualPersonalDetails.getAddress().getAddress4(),
-                equalTo(expectedPersonalDetails.getAddress().getAddress4()));
-        assertThat(actualPersonalDetails.getAddress().getAddress5(),
-                equalTo(expectedPersonalDetails.getAddress().getAddress5()));
-        assertThat(actualPersonalDetails.getAddress().getPostcode(),
-                equalTo(expectedPersonalDetails.getAddress().getPostcode()));
+        assertThat(actualDefendant.getAddress().getAddress1(),
+                equalTo(actualDefendant.getAddress().getAddress1()));
+        assertThat(actualDefendant.getAddress().getAddress2(),
+                equalTo(actualDefendant.getAddress().getAddress2()));
+        assertThat(actualDefendant.getAddress().getAddress3(),
+                equalTo(actualDefendant.getAddress().getAddress3()));
+        assertThat(actualDefendant.getAddress().getAddress4(),
+                equalTo(actualDefendant.getAddress().getAddress4()));
+        assertThat(actualDefendant.getAddress().getAddress5(),
+                equalTo(actualDefendant.getAddress().getAddress5()));
+        assertThat(actualDefendant.getAddress().getPostcode(),
+                equalTo(actualDefendant.getAddress().getPostcode()));
 
         assertThat(actualPersonalDetails.getFirstName(), equalTo(expectedPersonalDetails.getFirstName()));
         assertThat(actualPersonalDetails.getLastName(), equalTo(expectedPersonalDetails.getLastName()));
@@ -314,4 +285,43 @@ public class CaseReceivedListenerTest {
         return EnvelopeFactory.createEnvelope(CaseReceived.EVENT_NAME, caseReceivedEventPayload);
     }
 
+
+    private PersonalDetails buildPersonalDetails() {
+        return new PersonalDetails(
+                defendantTitle,
+                defendantFirstName,
+                defendantLastName,
+                defendantDateOfBirth,
+                defendantGender,
+                nationalInsuranceNumber,
+                driverNumber,
+                null);
+    }
+
+    private List<OffenceDetail> buildOffenceDetailList(){
+        return singletonList(
+                new OffenceDetail.OffenceDetailBuilder()
+                        .setId(offenceId)
+                        .setChargeDate(chargeDate)
+                        .setCode(offenceCode)
+                        .setSequenceNumber(offenceSequenceNo)
+                        .setStartDate(offenceCommittedDate)
+                        .setWording(offenceWording)
+                        .setWordingWelsh(offenceWordingWelsh)
+                        .withCompensation(compensation)
+                        .withLibraOffenceDateCode(1)
+                        .withProsecutionFacts(prosecutionFacts)
+                        .withWitnessStatement(witnessStatement)
+                        .build()
+        );
+    }
+    private Address buildAddress(){
+        return new Address(
+                address1,
+                address2,
+                address3,
+                address4,
+                address5,
+                postcode);
+    }
 }

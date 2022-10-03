@@ -61,6 +61,8 @@ import uk.gov.moj.cpp.sjp.domain.plea.PleaMethod;
 import uk.gov.moj.cpp.sjp.event.PleaUpdated;
 import uk.gov.moj.cpp.sjp.persistence.builder.CaseDetailBuilder;
 import uk.gov.moj.cpp.sjp.persistence.entity.CaseDetail;
+import uk.gov.moj.cpp.sjp.persistence.entity.DefendantDetail;
+import uk.gov.moj.cpp.sjp.persistence.entity.LegalEntityDetails;
 import uk.gov.moj.cpp.sjp.persistence.entity.OffenceDetail;
 import uk.gov.moj.cpp.sjp.persistence.entity.OnlinePlea;
 import uk.gov.moj.cpp.sjp.persistence.entity.OnlinePleaDetail;
@@ -115,6 +117,7 @@ import org.mockito.Mockito;
 import org.mockito.Spy;
 import org.mockito.runners.MockitoJUnitRunner;
 
+@SuppressWarnings("squid:S1607")
 @RunWith(MockitoJUnitRunner.class)
 public class SjpQueryViewTest {
 
@@ -127,6 +130,13 @@ public class SjpQueryViewTest {
     private static final UUID CORRELATION_ID = randomUUID();
     private static final UUID CASE_ID = randomUUID();
     private static final UUID APP_ID = randomUUID();
+    private static final String LEGAL_ENTITY_NAME = "Samba Team LTD";
+    private static final String FIRST_NAME = "Samba";
+    private static final String LAST_NAME = "Salsa";
+    private static final LocalDate DATE_OF_BIRTH = now().minusYears(40);
+    private static final String REGION = "region";
+    private static final String DEFENDANT_ID = randomUUID().toString();
+    private static final String COMPANY_DEFENDANT_ID = randomUUID().toString();
 
     @Rule
     public ExpectedException exceptionRule = ExpectedException.none();
@@ -160,6 +170,9 @@ public class SjpQueryViewTest {
 
     @Mock
     private OnlinePleaRepository.FinancialMeansOnlinePleaRepository onlinePleaRepository;
+
+    @Mock
+    private OnlinePleaRepository.LegalEntityDetailsOnlinePleaRepository legalEntityDetailsOnlinePleaRepository;
 
     @Mock
     private OnlinePleaDetailRepository onlinePleaDetailRepository;
@@ -372,7 +385,7 @@ public class SjpQueryViewTest {
 
         final Income income = new Income(IncomeFrequency.MONTHLY, BigDecimal.valueOf(1.1));
         final Benefits benefit = new Benefits(true, "benefitType", null);
-        final FinancialMeans financialMeans = new FinancialMeans(defendantId, income, benefit, "EMPLOYED");
+        final FinancialMeans financialMeans = new FinancialMeans(defendantId, income, benefit, "EMPLOYED", null, null, null, null);
 
         when(financialMeansService.getFinancialMeans(defendantId)).thenReturn(of(financialMeans));
 
@@ -519,6 +532,10 @@ public class SjpQueryViewTest {
         final JsonEnvelope response = mockAndVerifyPendingDatesToAvoid(caseId, randomUUID());
         assertThat(response, jsonEnvelope(metadata().withName("sjp.pending-dates-to-avoid"), payload().isJson(allOf(
                 withJsonPath("$.cases[0].caseId", equalTo(caseId.toString())),
+                withJsonPath("$.cases[0].firstName", equalTo(FIRST_NAME)),
+                withJsonPath("$.cases[0].lastName", equalTo(LAST_NAME)),
+                withJsonPath("$.cases[0].dateOfBirth", equalTo(DATE_OF_BIRTH.toString())),
+                withJsonPath("$.cases[1].legalEntityName", equalTo(LEGAL_ENTITY_NAME)),
                 withJsonPath("$.count", equalTo(2))
         ))));
     }
@@ -547,6 +564,7 @@ public class SjpQueryViewTest {
 
         when(userAndGroupsService.canSeeOnlinePleaFinances(queryEnvelope)).thenReturn(true);
         when(onlinePleaRepository.findBy(caseId)).thenReturn(onlinePlea);
+        when(legalEntityDetailsOnlinePleaRepository.findBy(caseId)).thenReturn(onlinePlea);
 
         final List<OnlinePleaDetail> onlinePleaDetails = getOnlinePleaDetails(offenceId);
         when(onlinePleaDetailRepository.findByCaseIdAndDefendantId(caseId, defendantId)).thenReturn(onlinePleaDetails);
@@ -630,27 +648,41 @@ public class SjpQueryViewTest {
         personalDetails.setFirstName("firstName");
         personalDetails.setLastName("lastName");
         personalDetails.setDateOfBirth(dateOfBirth);
-        personalDetails.markNameUpdated(ZonedDateTime.now());
         personalDetails.markDateOfBirthUpdated(ZonedDateTime.now());
-        personalDetails.markAddressUpdated(ZonedDateTime.now());
 
         String updatedOn = ZonedDateTime.now().format(DateTimeFormatter.ISO_LOCAL_DATE);
         DefendantDetailsUpdatesView.DefendantDetailsUpdate defendantDetailsUpdate = new DefendantDetailsUpdatesView.DefendantDetailsUpdate(
-                "firstName",
-                "lastName",
-                "defendantId",
-                "caseId",
-                "caseUrn",
+                FIRST_NAME,
+                LAST_NAME,
+                DEFENDANT_ID,
+                CASE_ID.toString(),
+                URN,
                 dateOfBirth.format(DateTimeFormatter.ISO_LOCAL_DATE),
                 true,
                 true,
                 true,
                 updatedOn,
-                "region");
+                REGION,
+                null);
+
+        DefendantDetailsUpdatesView.DefendantDetailsUpdate defendantDetailsUpdateCompany = new DefendantDetailsUpdatesView.DefendantDetailsUpdate(
+                null,
+                null,
+                COMPANY_DEFENDANT_ID,
+                CASE_ID.toString(),
+                URN,
+                null,
+                true,
+                false,
+                true,
+                updatedOn,
+                REGION,
+                LEGAL_ENTITY_NAME);
+
 
         when(defendantService.findDefendantDetailUpdates(queryEnvelope)).thenReturn(new DefendantDetailsUpdatesView(
-                1,
-                newArrayList(defendantDetailsUpdate)));
+                2,
+                newArrayList(defendantDetailsUpdate,defendantDetailsUpdateCompany)));
 
         final JsonEnvelope response = sjpQueryView.findDefendantDetailUpdates(queryEnvelope);
 
@@ -658,17 +690,22 @@ public class SjpQueryViewTest {
                 jsonEnvelope(
                         metadata().withName("sjp.query.defendant-details-updates"),
                         payload().isJson(allOf(
-                                withJsonPath("$.total", equalTo(1)),
-                                withJsonPath("$.defendantDetailsUpdates[0].firstName", equalTo("firstName")),
-                                withJsonPath("$.defendantDetailsUpdates[0].lastName", equalTo("lastName")),
-                                withJsonPath("$.defendantDetailsUpdates[0].defendantId", equalTo("defendantId")),
-                                withJsonPath("$.defendantDetailsUpdates[0].caseUrn", equalTo("caseUrn")),
-                                withJsonPath("$.defendantDetailsUpdates[0].caseId", equalTo("caseId")),
+                                withJsonPath("$.total", equalTo(2)),
+                                withJsonPath("$.defendantDetailsUpdates[0].firstName", equalTo(FIRST_NAME)),
+                                withJsonPath("$.defendantDetailsUpdates[0].lastName", equalTo(LAST_NAME)),
+                                withJsonPath("$.defendantDetailsUpdates[0].defendantId", equalTo(DEFENDANT_ID)),
+                                withJsonPath("$.defendantDetailsUpdates[0].caseUrn", equalTo(URN)),
+                                withJsonPath("$.defendantDetailsUpdates[0].caseId", equalTo(CASE_ID.toString())),
                                 withJsonPath("$.defendantDetailsUpdates[0].dateOfBirth", equalTo(dateOfBirth.format(DateTimeFormatter.ISO_LOCAL_DATE))),
                                 withJsonPath("$.defendantDetailsUpdates[0].nameUpdated", equalTo(true)),
                                 withJsonPath("$.defendantDetailsUpdates[0].dateOfBirthUpdated", equalTo(true)),
                                 withJsonPath("$.defendantDetailsUpdates[0].addressUpdated", equalTo(true)),
-                                withJsonPath("$.defendantDetailsUpdates[0].updatedOn", equalTo(updatedOn))
+                                withJsonPath("$.defendantDetailsUpdates[0].updatedOn", equalTo(updatedOn)),
+                                withJsonPath("$.defendantDetailsUpdates[1].legalEntityName", equalTo(LEGAL_ENTITY_NAME)),
+                                withJsonPath("$.defendantDetailsUpdates[1].nameUpdated", equalTo(true)),
+                                withJsonPath("$.defendantDetailsUpdates[1].region", equalTo(REGION)),
+                                withJsonPath("$.defendantDetailsUpdates[1].defendantId", equalTo(COMPANY_DEFENDANT_ID)),
+                                withJsonPath("$.defendantDetailsUpdates[1].caseId", equalTo(CASE_ID.toString()))
                         ))));
     }
 
@@ -1069,11 +1106,18 @@ public class SjpQueryViewTest {
         final JsonEnvelope queryEnvelope = envelope()
                 .with(metadataWithRandomUUID("sjp.query.pending-dates-to-avoid"))
                 .build();
+
         final List<PendingDatesToAvoid> pendingDatesToAvoidList = Stream.of(caseIds)
                 .map(CaseDetail::new)
                 .map(PendingDatesToAvoid::new)
                 .collect(toList());
+        final CaseDetail caseDetailWithPersonDetails = buildCaseDetail(false);
+        final CaseDetail caseDetailWithLegalEntityDetails = buildCaseDetail(true);
 
+        if (pendingDatesToAvoidList.size() > 0) {
+            pendingDatesToAvoidList.get(0).setCaseDetail(caseDetailWithPersonDetails);
+            pendingDatesToAvoidList.get(1).setCaseDetail(caseDetailWithLegalEntityDetails);
+        }
         when(datesToAvoidService.findCasesPendingDatesToAvoid(queryEnvelope)).thenReturn(
                 new CasesPendingDatesToAvoidView(pendingDatesToAvoidList, pendingDatesToAvoidList.size()));
 
@@ -1082,5 +1126,25 @@ public class SjpQueryViewTest {
         verify(datesToAvoidService).findCasesPendingDatesToAvoid(queryEnvelope);
 
         return response;
+    }
+
+    private CaseDetail buildCaseDetail(boolean isCompany) {
+        CaseDetail caseDetail = new CaseDetail();
+        DefendantDetail defendantDetail = new DefendantDetail();
+        defendantDetail.setAddress(new uk.gov.moj.cpp.sjp.persistence.entity.Address("Test crescent", null, null, null, null, "BH1 1HD"));
+
+        if (isCompany) {
+            LegalEntityDetails legalEntityDetails = new LegalEntityDetails();
+            legalEntityDetails.setLegalEntityName(LEGAL_ENTITY_NAME);
+            defendantDetail.setLegalEntityDetails(legalEntityDetails);
+        } else {
+            PersonalDetails personalDetails = new PersonalDetails();
+            personalDetails.setFirstName(FIRST_NAME);
+            personalDetails.setLastName(LAST_NAME);
+            personalDetails.setDateOfBirth(DATE_OF_BIRTH);
+            defendantDetail.setPersonalDetails(personalDetails);
+        }
+        caseDetail.setDefendant(defendantDetail);
+        return caseDetail;
     }
 }

@@ -11,7 +11,6 @@ import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Objects;
-import java.util.Optional;
 
 /**
  * Defines the instance returned when defendant personal detail updates are requested.
@@ -110,7 +109,12 @@ public class DefendantDetailsUpdatesView {
          */
         private final String updatedOn;
 
-        private String region;
+        private final String region;
+
+        /**
+         * The company name if defendant is company
+         */
+        private  String legalEntityName;
 
         @SuppressWarnings("squid:S00107")
         public DefendantDetailsUpdate(
@@ -124,7 +128,8 @@ public class DefendantDetailsUpdatesView {
                 final boolean dateOfBirthUpdated,
                 final boolean addressUpdated,
                 final String updatedOn,
-                final String region) {
+                final String region,
+                final String legalEntityName) {
 
             this.firstName = firstName;
             this.lastName = lastName;
@@ -137,6 +142,7 @@ public class DefendantDetailsUpdatesView {
             this.addressUpdated = addressUpdated;
             this.updatedOn = updatedOn;
             this.region = region;
+            this.legalEntityName = legalEntityName;
         }
 
         public String getLastName() {
@@ -183,6 +189,14 @@ public class DefendantDetailsUpdatesView {
             return region;
         }
 
+        public String getLegalEntityName() {
+            return legalEntityName;
+        }
+
+        public void setLegalEntityName(final String legalEntityName) {
+            this.legalEntityName = legalEntityName;
+        }
+
         public static DefendantDetailsUpdate of(UpdatedDefendantDetails defendantDetail) {
             return new DefendantDetailsUpdate(
                     defendantDetail.getFirstName(),
@@ -199,7 +213,8 @@ public class DefendantDetailsUpdatesView {
                     defendantDetail.getMostRecentUpdateDate()
                             .map(DateTimeFormatter.ISO_LOCAL_DATE::format)
                             .orElse(DateTimeFormatter.ISO_LOCAL_DATE.format(ZonedDateTime.now())),
-                    defendantDetail.getRegion());
+                    defendantDetail.getRegion(),
+                    defendantDetail.getLegalEntityName());
         }
 
         @Override

@@ -9,11 +9,14 @@ import static javax.json.Json.createObjectBuilder;
 import static org.apache.commons.lang3.StringUtils.isNotEmpty;
 import static uk.gov.moj.cpp.core.sjp.decision.DecisionType.REFER_FOR_COURT_HEARING;
 import static uk.gov.moj.cpp.sjp.event.processor.service.referral.helpers.NotifiedPleaViewHelper.createNotifiedPleaView;
-
+import uk.gov.justice.core.courts.ContactNumber;
 import uk.gov.justice.core.courts.CourtCentre;
+import uk.gov.justice.core.courts.LegalEntityDefendant;
+import uk.gov.justice.core.courts.Organisation;
 import uk.gov.justice.json.schemas.domains.sjp.Address;
 import uk.gov.justice.json.schemas.domains.sjp.ContactDetails;
 import uk.gov.justice.json.schemas.domains.sjp.Interpreter;
+import uk.gov.justice.json.schemas.domains.sjp.LegalEntityDetails;
 import uk.gov.justice.json.schemas.domains.sjp.PersonalDetails;
 import uk.gov.justice.json.schemas.domains.sjp.queries.CaseDecision;
 import uk.gov.justice.json.schemas.domains.sjp.queries.CaseDetails;
@@ -166,14 +169,17 @@ public class ProsecutionCasesViewHelper {
 
         final Defendant defendantDetails = caseDetails.getDefendant();
 
-        final PersonDefendantView personDefendantView = createPersonDefendantView(
-                defendantDetails,
-                caseFileDefendantDetails,
-                employer,
-                nationalityId,
-                ethnicityId,
-                defendantCourtOptions);
-
+        final PersonDefendantView personDefendantView = ofNullable(defendantDetails.getPersonalDetails())
+                .map(personalDetails -> createPersonDefendantView(
+                        defendantDetails,
+                        caseFileDefendantDetails,
+                        employer,
+                        nationalityId,
+                        ethnicityId,
+                        defendantCourtOptions))
+                .orElse(null);
+        final LegalEntityDefendant legalEntityDefendant = createLegalEntityDefendant(
+                defendantDetails);
         final String rrLabel = getPressRestriction(caseDecision)
                 .filter(PressRestriction::getRequested)
                 .flatMap(pressRestriction -> referenceDataService.getResultDefinition(D45_RESULT_CODE, now())
@@ -215,7 +221,7 @@ public class ProsecutionCasesViewHelper {
                 pleaMitigation,
                 offenceViews,
                 personDefendantView,
-                aliases);
+                aliases, legalEntityDefendant);
     }
 
     private Optional<PressRestriction> getPressRestriction(final CaseDecision caseDecision) {
@@ -419,4 +425,43 @@ public class ProsecutionCasesViewHelper {
                 .filter(StringUtils::isNotEmpty)
                 .findFirst();
     }
+    private static LegalEntityDefendant createLegalEntityDefendant(final Defendant defendant) {
+        final LegalEntityDetails defendantLegalEntityDetail = defendant.getLegalEntityDetails();
+        return new LegalEntityDefendant(createOrganisation(defendantLegalEntityDetail)
+        );
+    }
+
+    private static Organisation createOrganisation(final LegalEntityDetails defendantLegalEntityDetail) {
+        return ofNullable(defendantLegalEntityDetail)
+                .map(defendantLEDetail -> Organisation.organisation()
+                        .withAddress(createAddress(defendantLEDetail.getAddress()))
+                        .withName(defendantLEDetail.getLegalEntityName())
+                        .withContact(createContact(defendantLEDetail.getContactDetails())).build())
+                .orElse(null);
+    }
+
+    private static uk.gov.justice.core.courts.Address createAddress(final Address address) {
+
+        return Optional.ofNullable(address)
+                .map(add -> uk.gov.justice.core.courts.Address.address()
+                        .withAddress1(add.getAddress1())
+                        .withAddress2(add.getAddress2())
+                        .withAddress3(add.getAddress3())
+                        .withAddress4(add.getAddress4())
+                        .withAddress5(add.getAddress5())
+                        .withPostcode(add.getPostcode()).build())
+                .orElse(null);
+    }
+
+    private static ContactNumber createContact(final ContactDetails contactDetails) {
+
+        return Optional.ofNullable(contactDetails)
+                .map(cd -> ContactNumber.contactNumber()
+                        .withPrimaryEmail(cd.getEmail())
+                        .withSecondaryEmail(cd.getEmail2())
+                        .withMobile(cd.getBusiness())
+                        .withWork(cd.getBusiness()).build())
+                .orElse(null);
+    }
+
 }

@@ -1,9 +1,17 @@
 package uk.gov.moj.cpp.indexer.jolt;
 
+import static junit.framework.TestCase.assertEquals;
 import static junit.framework.TestCase.assertNotNull;
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
 import static uk.gov.moj.cpp.indexer.jolt.helper.AddressVerificationHelper.assertAddressDetails;
+import static uk.gov.moj.cpp.indexer.jolt.helper.Constants.DOB;
+import static uk.gov.moj.cpp.indexer.jolt.helper.Constants.FIRST_NAME;
+import static uk.gov.moj.cpp.indexer.jolt.helper.Constants.GENDER;
+import static uk.gov.moj.cpp.indexer.jolt.helper.Constants.LAST_NAME;
+import static uk.gov.moj.cpp.indexer.jolt.helper.Constants.LEGAL_ENTITY_NAME;
+import static uk.gov.moj.cpp.indexer.jolt.helper.Constants.ORGANISATION_NAME;
+import static uk.gov.moj.cpp.indexer.jolt.helper.Constants.TITLE;
 import static uk.gov.moj.cpp.indexer.jolt.helper.JoltInstanceHelper.initializeJolt;
 import static uk.gov.moj.cpp.indexer.jolt.helper.JsonHelper.readJson;
 import static uk.gov.moj.cpp.indexer.jolt.helper.JsonHelper.readJsonViaPath;
@@ -18,9 +26,6 @@ import org.junit.Before;
 import org.junit.Test;
 
 public class DefendantDetailsMovedFromPeopleTransformationTest {
-    private static final String TITLE = "title";
-    private static final String FIRST_NAME = "firstName";
-    private static final String LAST_NAME = "lastName";
 
     private final JoltTransformer joltTransformer = new JoltTransformer();
 
@@ -51,8 +56,9 @@ public class DefendantDetailsMovedFromPeopleTransformationTest {
         assertThat(defendant.getString(TITLE), is(inputDefendant.getString(TITLE)));
         assertThat(defendant.getString(FIRST_NAME), is(inputDefendant.getString(FIRST_NAME)));
         assertThat(defendant.getString(LAST_NAME), is(inputDefendant.getString(LAST_NAME)));
-        assertThat(defendant.getString("dateOfBirth"), is(inputDefendant.getString("dateOfBirth")));
-        assertThat(defendant.getString("gender"), is(inputDefendant.getString("gender")));
+        assertEquals(defendant.getString(ORGANISATION_NAME), inputDefendant.getString(LEGAL_ENTITY_NAME));
+        assertThat(defendant.getString(DOB), is(inputDefendant.getString(DOB)));
+        assertThat(defendant.getString(GENDER), is(inputDefendant.getString("gender")));
         assertThat(defendant.getString("_party_type"), is("DEFENDANT"));
 
         assertAliases(aliases, defendant);
@@ -62,8 +68,9 @@ public class DefendantDetailsMovedFromPeopleTransformationTest {
     }
 
     private void assertAliases(final JsonObject aliases, final JsonObject defendant) {
-        assertThat(aliases.getString(TITLE), is(defendant.getString(TITLE)));
-        assertThat(aliases.getString(FIRST_NAME), is(defendant.getString(FIRST_NAME)));
-        assertThat(aliases.getString(LAST_NAME), is(defendant.getString(LAST_NAME)));
+        assertEquals(aliases.getString(TITLE), defendant.getString(TITLE));
+        assertEquals(aliases.getString(FIRST_NAME), defendant.getString(FIRST_NAME));
+        assertEquals(aliases.getString(LAST_NAME), defendant.getString(LAST_NAME));
+        assertEquals(aliases.getString(ORGANISATION_NAME), defendant.getString(ORGANISATION_NAME));
     }
 }

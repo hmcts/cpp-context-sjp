@@ -1,6 +1,6 @@
 package uk.gov.moj.cpp.sjp.query.view.response;
 
-import uk.gov.moj.cpp.sjp.persistence.entity.Address;
+import uk.gov.moj.cpp.sjp.persistence.entity.DefendantDetail;
 import uk.gov.moj.cpp.sjp.persistence.entity.PersonalDetails;
 
 import java.time.LocalDate;
@@ -30,7 +30,7 @@ public class ResultOrdersView {
         private UUID caseId;
         private String urn;
         private DefendantView defendant;
-        private OrderView order;
+        private DefendantView.OrderView order;
 
         public UUID getCaseId() {
             return caseId;
@@ -44,7 +44,7 @@ public class ResultOrdersView {
             return defendant;
         }
 
-        public OrderView getOrder() {
+        public DefendantView.OrderView getOrder() {
             return order;
         }
 
@@ -61,18 +61,20 @@ public class ResultOrdersView {
                 return this;
             }
 
-            public Builder setDefendant(final PersonalDetails personalDetails) {
+            public Builder setDefendant(final DefendantDetail defendantDetail) {
+               final PersonalDetails personalDetails=defendantDetail.getPersonalDetails();
                 casesWithOrderView.defendant = new DefendantView(
                         personalDetails.getTitle(),
                         personalDetails.getFirstName(),
                         personalDetails.getLastName(),
                         personalDetails.getDateOfBirth(),
-                        new DefendantView.DefendantAddressView(personalDetails.getAddress()));
+                        null,
+                        new AddressView(defendantDetail.getAddress()));
                 return this;
             }
 
             public Builder setOrder(final UUID documentId, final ZonedDateTime dateMaterialAdded) {
-                casesWithOrderView.order = new OrderView(documentId, dateMaterialAdded);
+                casesWithOrderView.order = new DefendantView.OrderView(documentId, dateMaterialAdded);
                 return this;
             }
 
@@ -90,13 +92,15 @@ public class ResultOrdersView {
             private final String firstName;
             private final String lastName;
             private final LocalDate dateOfBirth;
-            private final DefendantAddressView address;
+            private final String legalEntityName;
+            private final AddressView address;
 
-            public DefendantView(final String title, final String firstName, final String lastName, final LocalDate dateOfBirth, final DefendantAddressView address) {
+            public DefendantView(final String title, final String firstName, final String lastName, final LocalDate dateOfBirth, final String legalEntityName, final AddressView address) {
                 this.title = title;
                 this.firstName = firstName;
                 this.lastName = lastName;
                 this.dateOfBirth = dateOfBirth;
+                this.legalEntityName = legalEntityName;
                 this.address = address;
             }
 
@@ -116,69 +120,32 @@ public class ResultOrdersView {
                 return dateOfBirth;
             }
 
-            public DefendantAddressView getAddress() {
+            public AddressView getAddress() {
                 return address;
             }
 
-            public static class DefendantAddressView {
-                private final String address1;
-                private final String address2;
-                private final String address3;
-                private final String address4;
-                private final String address5;
-                private final String postCode;
-
-                public DefendantAddressView(final Address address) {
-                    this.address1 = address.getAddress1();
-                    this.address2 = address.getAddress2();
-                    this.address3 = address.getAddress3();
-                    this.address4 = address.getAddress4();
-                    this.address5 = address.getAddress5();
-                    this.postCode = address.getPostcode();
-                }
-
-                public String getAddress1() {
-                    return address1;
-                }
-
-                public String getAddress2() {
-                    return address2;
-                }
-
-                public String getAddress3() {
-                    return address3;
-                }
-
-                public String getAddress4() {
-                    return address4;
-                }
-
-                public String getAddress5() {
-                    return address5;
-                }
-
-                public String getPostCode() {
-                    return postCode;
-                }
-            }
-        }
-
-        public static class OrderView {
-            private UUID documentId;
-
-            private ZonedDateTime addedAt;
-
-            public OrderView(final UUID documentId, final ZonedDateTime addedAt) {
-                this.documentId = documentId;
-                this.addedAt = addedAt;
+            public String getLegalEntityName() {
+                return legalEntityName;
             }
 
-            public UUID getDocumentId() {
-                return documentId;
-            }
 
-            public ZonedDateTime getAddedAt() {
-                return addedAt;
+            public static class OrderView {
+                private UUID documentId;
+
+                private ZonedDateTime addedAt;
+
+                public OrderView(final UUID documentId, final ZonedDateTime addedAt) {
+                    this.documentId = documentId;
+                    this.addedAt = addedAt;
+                }
+
+                public UUID getDocumentId() {
+                    return documentId;
+                }
+
+                public ZonedDateTime getAddedAt() {
+                    return addedAt;
+                }
             }
         }
     }

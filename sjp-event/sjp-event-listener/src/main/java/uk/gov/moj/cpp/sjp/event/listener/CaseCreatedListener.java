@@ -71,7 +71,8 @@ public class CaseCreatedListener {
                 caseDetail.getDefendant().getPersonalDetails().getFirstName(),
                 caseDetail.getDefendant().getPersonalDetails().getLastName(),
                 caseDetail.getDefendant().getPersonalDetails().getDateOfBirth(),
-                caseDetail.getDateTimeCreated()
+                caseDetail.getDateTimeCreated(),
+                caseDetail.getDefendant().getLegalEntityDetails().getLegalEntityName()
         );
     }
 }

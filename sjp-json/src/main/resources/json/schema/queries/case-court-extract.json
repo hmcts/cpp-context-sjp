@@ -11,13 +11,6 @@
     },
     "defendant": {
       "type": "object",
-      "required": [
-        "address",
-        "firstName",
-        "lastName",
-        "dateOfBirth",
-        "age"
-      ],
       "properties": {
         "address": {
           "type": "string"
@@ -33,8 +26,28 @@
         },
         "age": {
           "type": "integer"
+        },
+        "legalEntityName": {
+          "type": "string"
         }
-      }
+      },
+      "anyOf": [
+        {
+          "required": [
+            "address",
+            "firstName",
+            "lastName",
+            "dateOfBirth",
+            "age"
+          ]
+        },
+        {
+          "required": [
+            "legalEntityName",
+            "address"
+          ]
+        }
+      ]
     },
     "offences": {
       "type": "array",
@@ -151,8 +164,8 @@
       "type": "object",
       "properties": {
         "totalFine": {
-        "type": "string"
-       },
+          "type": "string"
+        },
         "totalToPay": {
           "type": "string"
         },

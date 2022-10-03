@@ -15,6 +15,7 @@ import uk.gov.moj.cpp.sjp.event.listener.converter.SjpCaseCreatedToCase;
 import uk.gov.moj.cpp.sjp.event.listener.handler.CaseSearchResultService;
 import uk.gov.moj.cpp.sjp.persistence.entity.CaseDetail;
 import uk.gov.moj.cpp.sjp.persistence.entity.DefendantDetail;
+import uk.gov.moj.cpp.sjp.persistence.entity.LegalEntityDetails;
 import uk.gov.moj.cpp.sjp.persistence.entity.PersonalDetails;
 import uk.gov.moj.cpp.sjp.persistence.repository.CaseRepository;
 
@@ -88,7 +89,9 @@ public class CaseCreatedListenerTest {
     protected void givenCaseReceivedEventIsRaised() {
         DefendantDetail defendantDetail = mock(DefendantDetail.class);
         PersonalDetails personalDetails = mock(PersonalDetails.class);
+        LegalEntityDetails legalEntityDetails=mock(LegalEntityDetails.class);
         when(defendantDetail.getPersonalDetails()).thenReturn(personalDetails);
+        when(defendantDetail.getLegalEntityDetails()).thenReturn(legalEntityDetails);
         when(caseDetail.getDefendant()).thenReturn(defendantDetail);
         when(envelope.payloadAsJsonObject()).thenReturn(payload);
         when(jsonObjectToObjectConverter.convert(payload, CaseReceived.class)).thenReturn(caseReceived);

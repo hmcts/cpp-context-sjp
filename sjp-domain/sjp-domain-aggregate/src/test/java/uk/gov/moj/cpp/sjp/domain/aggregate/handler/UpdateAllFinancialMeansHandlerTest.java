@@ -41,6 +41,11 @@ public class UpdateAllFinancialMeansHandlerTest {
         final Benefits benefits = new Benefits(true, "");
         final Employer employer = getEmployer(defendantId);
         final String employmentStatus = "EMPLOYED";
+        final BigDecimal grossTurnover = new BigDecimal(100);
+        final BigDecimal netTurnover = new BigDecimal(10);
+        final Integer numberOfEmployees = new Integer(10);
+        final Boolean tradingMoreThanTwelveMonths = false;
+
 
         final CaseAggregateState caseAggregateState = new CaseAggregateState();
         caseAggregateState.setCaseId(caseId);
@@ -52,10 +57,10 @@ public class UpdateAllFinancialMeansHandlerTest {
                 benefits,
                 employer,
                 employmentStatus,
-                caseAggregateState).collect(Collectors.toList());
+                caseAggregateState, grossTurnover, netTurnover, numberOfEmployees, tradingMoreThanTwelveMonths).collect(Collectors.toList());
 
         assertThat(eventList.size(), is(4));
-        assertThat(eventList.get(0), samePropertyValuesAs(FinancialMeansUpdated.createEvent(defendantId, income, benefits, employmentStatus)));
+        assertThat(eventList.get(0), samePropertyValuesAs(FinancialMeansUpdated.createEvent(defendantId, income, benefits, employmentStatus, grossTurnover, netTurnover, numberOfEmployees, tradingMoreThanTwelveMonths)));
         assertThat(eventList.get(1), samePropertyValuesAs(EmployerUpdated.createEvent(defendantId, employer)));
         assertThat(eventList.get(2), samePropertyValuesAs(new EmploymentStatusUpdated(defendantId, employmentStatus)));
         assertThat(eventList.get(3), samePropertyValuesAs(new AllFinancialMeansUpdated(defendantId, income, benefits, employmentStatus,employer)));
@@ -69,6 +74,10 @@ public class UpdateAllFinancialMeansHandlerTest {
         final Income income = new Income(IncomeFrequency.YEARLY, new BigDecimal(100.5));
         final Benefits benefits = new Benefits(true, "");
         final String employmentStatus = "UNEMPLOYED";
+        final BigDecimal grossTurnover = new BigDecimal(100);
+        final BigDecimal netTurnover = new BigDecimal(10);
+        final Integer numberOfEmployees = new Integer(10);
+        final Boolean tradingMoreThanTwelveMonths = false;
 
         final CaseAggregateState caseAggregateState = new CaseAggregateState();
         caseAggregateState.setCaseId(caseId);
@@ -80,10 +89,10 @@ public class UpdateAllFinancialMeansHandlerTest {
                 benefits,
                 null,
                 employmentStatus,
-                caseAggregateState).collect(Collectors.toList());
+                caseAggregateState, grossTurnover, netTurnover, numberOfEmployees, tradingMoreThanTwelveMonths).collect(Collectors.toList());
 
         assertThat(eventList.size(), is(3));
-        assertThat(eventList.get(0), samePropertyValuesAs(FinancialMeansUpdated.createEvent(defendantId, income, benefits, employmentStatus)));
+        assertThat(eventList.get(0), samePropertyValuesAs(FinancialMeansUpdated.createEvent(defendantId, income, benefits, employmentStatus, grossTurnover, netTurnover, numberOfEmployees, tradingMoreThanTwelveMonths)));
         assertThat(eventList.get(1), samePropertyValuesAs(new EmployerDeleted(defendantId)));
         assertThat(eventList.get(2), samePropertyValuesAs(new AllFinancialMeansUpdated(defendantId, income, benefits, employmentStatus,null)));
 

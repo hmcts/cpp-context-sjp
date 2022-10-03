@@ -31,7 +31,7 @@ import uk.gov.moj.cpp.sjp.event.DefendantAddressUpdated;
 import uk.gov.moj.cpp.sjp.event.DefendantDateOfBirthUpdated;
 import uk.gov.moj.cpp.sjp.event.DefendantDetailsUpdateFailed;
 import uk.gov.moj.cpp.sjp.event.DefendantDetailsUpdated;
-import uk.gov.moj.cpp.sjp.event.DefendantPersonalNameUpdated;
+import uk.gov.moj.cpp.sjp.event.DefendantNameUpdated;
 import uk.gov.moj.cpp.sjp.event.HearingLanguagePreferenceUpdatedForDefendant;
 import uk.gov.moj.cpp.sjp.event.InterpreterCancelledForDefendant;
 import uk.gov.moj.cpp.sjp.event.InterpreterUpdatedForDefendant;
@@ -132,9 +132,9 @@ public class CaseAggregateDefendantTest {
         );
 
         assertThat(events, hasSize(2));
-        final DefendantPersonalNameUpdated defendantPersonalNameUpdated = (DefendantPersonalNameUpdated) events.get(0);
-        assertThat(defendantPersonalNameUpdated.getOldPersonalName().getTitle(), is(" "));
-        assertThat(defendantPersonalNameUpdated.getNewPersonalName().getTitle(), is(""));
+        final DefendantNameUpdated defendantNameUpdated = (DefendantNameUpdated) events.get(0);
+        assertThat(defendantNameUpdated.getOldPersonalName().getTitle(), is(" "));
+        assertThat(defendantNameUpdated.getNewPersonalName().getTitle(), is(""));
 
         final DefendantDetailsUpdated defendantDetailsUpdated = (DefendantDetailsUpdated) events.get(1);
         assertThat(defendantDetailsUpdated.getTitle(), is(""));
@@ -150,7 +150,7 @@ public class CaseAggregateDefendantTest {
 
         assertThat(events, hasSize(2));
 
-        final DefendantPersonalNameUpdated personalNameUpdated = (DefendantPersonalNameUpdated) events.get(0);
+        final DefendantNameUpdated personalNameUpdated = (DefendantNameUpdated) events.get(0);
         assertThat(personalNameUpdated.getNewPersonalName().getFirstName(), is(newFirstName));
 
         final DefendantDetailsUpdated defendantDetailsUpdated = (DefendantDetailsUpdated) events.get(1);
@@ -167,7 +167,7 @@ public class CaseAggregateDefendantTest {
 
         assertThat(events, hasSize(2));
 
-        final DefendantPersonalNameUpdated personalNameUpdated = (DefendantPersonalNameUpdated) events.get(0);
+        final DefendantNameUpdated personalNameUpdated = (DefendantNameUpdated) events.get(0);
         assertThat(personalNameUpdated.getNewPersonalName().getLastName(), is(newLastName));
 
         final DefendantDetailsUpdated defendantDetailsUpdated = (DefendantDetailsUpdated) events.get(1);
@@ -368,8 +368,8 @@ public class CaseAggregateDefendantTest {
                                 defendantData.languageNeeds,
                                 defendantData.region,
                                 defendantData.asn,
-                                defendantData.pncIdentifier
-                        )).build(),
+                                defendantData.pncIdentifier,
+                                defendantData.legalEntityName)).build(),
                 clock.now()
         ).findFirst().get();
     }
@@ -386,7 +386,8 @@ public class CaseAggregateDefendantTest {
                 updatedDefendantData.driverLicenceDetails,
                 updatedDefendantData.address,
                 updatedDefendantData.contactDetails,
-                updatedDefendantData.region);
+                updatedDefendantData.region,
+                updatedDefendantData.legalEntityName);
 
         final Stream<Object> eventStream = caseAggregate.updateDefendantDetails(
                 userId,
@@ -418,6 +419,7 @@ public class CaseAggregateDefendantTest {
         private final String region = "testregion";
         private final String asn = "asn";
         private final String pncIdentifier = "pncId";
+        private final String legalEntityName = "legalEntityName";
 
         private DefendantData withNewTitle(final String newTitle) {
             this.title = newTitle;

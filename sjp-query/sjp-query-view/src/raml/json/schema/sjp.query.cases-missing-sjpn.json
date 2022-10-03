@@ -21,7 +21,7 @@
             "type": "string"
           },
           "prosecutingAuthority": {
-            "type" : "string"
+            "type": "string"
           },
           "defendant": {
             "type": "object",
@@ -49,13 +49,26 @@
               },
               "gender": {
                 "$ref": "http://justice.gov.uk/json/schemas/domains/sjp/gender.json"
+              },
+              "legalEntityName": {
+                "type": "string"
               }
             },
-            "required": [
-              "id",
-              "firstName",
-              "lastName",
-              "gender"
+            "anyOf": [
+              {
+                "required": [
+                  "id",
+                  "firstName",
+                  "lastName",
+                  "gender"
+                ]
+              },
+              {
+                "required": [
+                  "id",
+                  "legalEntityName"
+                ]
+              }
             ],
             "additionalProperties": false
           },

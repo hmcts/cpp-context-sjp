@@ -1,5 +1,7 @@
 package uk.gov.moj.cpp.sjp.query.view.response;
 
+import static java.util.Objects.nonNull;
+
 import uk.gov.moj.cpp.sjp.persistence.entity.PendingDatesToAvoid;
 
 import java.time.LocalDate;
@@ -16,7 +18,9 @@ public class CasePendingDatesToAvoidView {
 
     private final String lastName;
 
-    private final PersonalAddressView address;
+    private final String legalEntityName;
+
+    private final AddressView address;
 
     private final String referenceNumber;
 
@@ -27,12 +31,13 @@ public class CasePendingDatesToAvoidView {
     public CasePendingDatesToAvoidView(final PendingDatesToAvoid pendingDatesToAvoid) {
         this.caseId = pendingDatesToAvoid.getCaseId();
         this.pleaEntry = pendingDatesToAvoid.getPleaDate();
-        this.firstName = pendingDatesToAvoid.getCaseDetail().getDefendant().getPersonalDetails().getFirstName();
-        this.lastName = pendingDatesToAvoid.getCaseDetail().getDefendant().getPersonalDetails().getLastName();
-        this.address = new PersonalAddressView(pendingDatesToAvoid.getCaseDetail().getDefendant().getPersonalDetails().getAddress());
+        this.firstName = nonNull(pendingDatesToAvoid.getCaseDetail().getDefendant().getPersonalDetails()) ? pendingDatesToAvoid.getCaseDetail().getDefendant().getPersonalDetails().getFirstName() : null;
+        this.lastName = nonNull(pendingDatesToAvoid.getCaseDetail().getDefendant().getPersonalDetails()) ? pendingDatesToAvoid.getCaseDetail().getDefendant().getPersonalDetails().getLastName() : null;
+        this.address = new AddressView(pendingDatesToAvoid.getCaseDetail().getDefendant().getAddress());
         this.referenceNumber = pendingDatesToAvoid.getCaseDetail().getUrn();
-        this.dateOfBirth = pendingDatesToAvoid.getCaseDetail().getDefendant().getPersonalDetails().getDateOfBirth();
-        this.region = pendingDatesToAvoid.getCaseDetail().getDefendant().getPersonalDetails().getRegion();
+        this.dateOfBirth = nonNull(pendingDatesToAvoid.getCaseDetail().getDefendant().getPersonalDetails()) ? pendingDatesToAvoid.getCaseDetail().getDefendant().getPersonalDetails().getDateOfBirth() : null;
+        this.region = pendingDatesToAvoid.getCaseDetail().getDefendant().getRegion();
+        this.legalEntityName = nonNull(pendingDatesToAvoid.getCaseDetail().getDefendant().getLegalEntityDetails()) ? pendingDatesToAvoid.getCaseDetail().getDefendant().getLegalEntityDetails().getLegalEntityName() : null;
     }
 
     public UUID getCaseId() {
@@ -51,7 +56,7 @@ public class CasePendingDatesToAvoidView {
         return lastName;
     }
 
-    public PersonalAddressView getAddress() {
+    public AddressView getAddress() {
         return address;
     }
 
@@ -65,5 +70,9 @@ public class CasePendingDatesToAvoidView {
 
     public String getRegion() {
         return region;
+    }
+
+    public String getLegalEntityName() {
+        return legalEntityName;
     }
 }

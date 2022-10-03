@@ -38,6 +38,9 @@
     },
     "driverNumber": {
       "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/dvlaDriverLicence"
+    },
+    "legalEntityName": {
+      "type": "string"
     }
   }
 }

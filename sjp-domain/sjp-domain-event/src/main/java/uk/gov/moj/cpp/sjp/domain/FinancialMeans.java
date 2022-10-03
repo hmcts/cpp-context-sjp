@@ -1,6 +1,7 @@
 package uk.gov.moj.cpp.sjp.domain;
 
 import java.io.Serializable;
+import java.math.BigDecimal;
 import java.util.Objects;
 import java.util.UUID;
 
@@ -18,15 +19,31 @@ public class FinancialMeans implements Serializable {
     private final Benefits benefits;
     private final String employmentStatus;
 
+    private final BigDecimal  grossTurnover;
+
+    private final BigDecimal  netTurnover;
+
+    private final Integer numberOfEmployees;
+
+    private final Boolean tradingMoreThanTwelveMonths;
+
     @JsonCreator
     public FinancialMeans(@JsonProperty("defendantId") final UUID defendantId,
                           @JsonProperty("income") final Income income,
                           @JsonProperty("benefits") final Benefits benefits,
-                          @JsonProperty("employmentStatus") final String employmentStatus) {
+                          @JsonProperty("employmentStatus") final String employmentStatus,
+                          @JsonProperty("grossTurnover")  final BigDecimal grossTurnover,
+                          @JsonProperty("netTurnover")  final BigDecimal netTurnover,
+                          @JsonProperty("numberOfEmployees") final Integer numberOfEmployees,
+                          @JsonProperty("tradingMoreThanTwelveMonths") final Boolean tradingMoreThanTwelveMonths) {
         this.defendantId = defendantId;
         this.income = income;
         this.benefits = benefits;
         this.employmentStatus = employmentStatus;
+        this.grossTurnover = grossTurnover;
+        this.netTurnover = netTurnover;
+        this.numberOfEmployees = numberOfEmployees;
+        this.tradingMoreThanTwelveMonths = tradingMoreThanTwelveMonths;
     }
 
     public UUID getDefendantId() {
@@ -45,6 +62,22 @@ public class FinancialMeans implements Serializable {
         return employmentStatus;
     }
 
+    public BigDecimal getGrossTurnover() {
+        return grossTurnover;
+    }
+
+    public BigDecimal getNetTurnover() {
+        return netTurnover;
+    }
+
+    public Integer getNumberOfEmployees() {
+        return numberOfEmployees;
+    }
+
+    public Boolean getTradingMoreThanTwelveMonths() {
+        return tradingMoreThanTwelveMonths;
+    }
+
     @Override
     public boolean equals(final Object o) {
         if (this == o) {
@@ -54,14 +87,12 @@ public class FinancialMeans implements Serializable {
             return false;
         }
         final FinancialMeans that = (FinancialMeans) o;
-        return Objects.equals(defendantId, that.defendantId) &&
-                Objects.equals(income, that.income) &&
-                Objects.equals(benefits, that.benefits) &&
-                Objects.equals(employmentStatus, that.employmentStatus);
+        final boolean isFinancialMeansEquals = Objects.equals(grossTurnover, that.grossTurnover) && Objects.equals(netTurnover, that.netTurnover) && Objects.equals(numberOfEmployees, that.numberOfEmployees) && Objects.equals(tradingMoreThanTwelveMonths, that.tradingMoreThanTwelveMonths);
+        return Objects.equals(defendantId, that.defendantId) && Objects.equals(income, that.income) && Objects.equals(benefits, that.benefits) && Objects.equals(employmentStatus, that.employmentStatus) && isFinancialMeansEquals;
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(defendantId, income, benefits, employmentStatus);
+        return Objects.hash(defendantId, income, benefits, employmentStatus, grossTurnover, netTurnover, numberOfEmployees, tradingMoreThanTwelveMonths);
     }
 }

@@ -3,18 +3,20 @@ package uk.gov.moj.cpp.sjp.persistence.builder;
 
 import static java.util.Collections.singletonList;
 import static java.util.Objects.nonNull;
+import static uk.gov.justice.json.schemas.domains.sjp.Gender.FEMALE;
+import static uk.gov.moj.cpp.sjp.persistence.builder.PersonalDetailsBuilder.buildPersonalDetails;
 
-import uk.gov.justice.json.schemas.domains.sjp.Gender;
 import uk.gov.moj.cpp.sjp.domain.plea.PleaType;
 import uk.gov.moj.cpp.sjp.persistence.entity.Address;
 import uk.gov.moj.cpp.sjp.persistence.entity.CaseDetail;
-import uk.gov.moj.cpp.sjp.persistence.entity.ContactDetails;
 import uk.gov.moj.cpp.sjp.persistence.entity.DefendantDetail;
 import uk.gov.moj.cpp.sjp.persistence.entity.InterpreterDetail;
+import uk.gov.moj.cpp.sjp.persistence.entity.LegalEntityDetails;
 import uk.gov.moj.cpp.sjp.persistence.entity.OffenceDetail;
 import uk.gov.moj.cpp.sjp.persistence.entity.PersonalDetails;
 
 import java.time.LocalDate;
+import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.UUID;
 
@@ -30,20 +32,15 @@ public class DefendantDetailBuilder {
         defendantDetail = new DefendantDetail();
         defendantDetail.setId(UUID.randomUUID());
         defendantDetail.setPersonalDetails(
-                new PersonalDetails(
-                        "Mrs",
-                        "Theresa",
-                        "May",
-                        LocalDate.of(1960, 10, 8),
-                        Gender.FEMALE,
-                        null,
-                        null,
-                        null,
-                        new Address("10 Downing St", "Westminster", "London", "Greater London", "England", DEFAULT_POSTCODE),
-                        new ContactDetails(),
-                        null
-                )
-        );
+               buildPersonalDetails()
+                       .withTitle("Mrs")
+                       .withFirstName("Theresa")
+                       .withLastName("May")
+                       .withDateOfBirth(LocalDate.of(10960,10,8))
+                       .withGender(FEMALE)
+                       .build());
+        defendantDetail.setAddress(new Address("10 Downing St", "Westminster", "London", "Greater London", "England", DEFAULT_POSTCODE));
+        defendantDetail.setUpdatesAcknowledgedAt(ZonedDateTime.now());
         offenceBuilder = prepareOffenceBuilder();
     }
 
@@ -72,7 +69,7 @@ public class DefendantDetailBuilder {
     }
 
     public DefendantDetailBuilder withPostcode(final String postcode) {
-        defendantDetail.getPersonalDetails().setAddress(new Address("addr1", "addr2", "addr3", "addr4", "addr5", postcode));
+        defendantDetail.setAddress(new Address("addr1", "addr2", "addr3", "addr4", "addr5", postcode));
         return this;
     }
 
@@ -86,6 +83,10 @@ public class DefendantDetailBuilder {
         return this;
     }
 
+    public DefendantDetailBuilder withLegalEntityDetails(final LegalEntityDetails legalEntityDetails) {
+        defendantDetail.setLegalEntityDetails(legalEntityDetails);
+        return this;
+    }
     public DefendantDetailBuilder withLastName(final String lastName) {
         defendantDetail.getPersonalDetails().setLastName(lastName);
         return this;
@@ -103,6 +104,26 @@ public class DefendantDetailBuilder {
 
     public DefendantDetailBuilder withFirstName(final String firstName) {
         this.defendantDetail.getPersonalDetails().setFirstName(firstName);
+        return this;
+    }
+
+    public DefendantDetailBuilder withRegion(final String region) {
+        this.defendantDetail.setRegion(region);
+        return this;
+    }
+
+    public DefendantDetailBuilder withUpdatesAcknowledgedAt(final ZonedDateTime updatesAcknowledgedAt) {
+        this.defendantDetail.setUpdatesAcknowledgedAt(updatesAcknowledgedAt);
+        return this;
+    }
+
+    public DefendantDetailBuilder withAddressUpdatedAt(final ZonedDateTime addressUpdatedAt) {
+        this.defendantDetail.setAddressUpdatedAt(addressUpdatedAt);
+        return this;
+    }
+
+    public DefendantDetailBuilder withNameUpdatedAt(final ZonedDateTime nameUpdatedAt) {
+        this.defendantDetail.setNameUpdatedAt(nameUpdatedAt);
         return this;
     }
 

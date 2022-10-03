@@ -46,6 +46,9 @@ public class DefendantDetail implements Serializable {
     private PersonalDetails personalDetails;
 
     @Embedded
+    private LegalEntityDetails legalEntityDetails;
+
+    @Embedded
     private InterpreterDetail interpreter;
 
     @Column(name = "speak_welsh")
@@ -58,14 +61,32 @@ public class DefendantDetail implements Serializable {
     @JoinColumn(name = "case_id", nullable = false)
     private CaseDetail caseDetail;
 
-    @Column(name="disability_needs")
+    @Column(name = "disability_needs")
     private String disabilityNeeds;
 
-    @Column(name="asn")
+    @Column(name = "asn")
     private String asn;
 
-    @Column(name="pnc_identifier")
+    @Column(name = "pnc_identifier")
     private String pncIdentifier;
+
+    @Column(name = "region")
+    private String region;
+
+    @Column(name = "name_updated_at")
+    private ZonedDateTime nameUpdatedAt;
+
+    @Column(name = "address_updated_at")
+    private ZonedDateTime addressUpdatedAt;
+
+    @Column(name = "updates_acknowledged_at")
+    private ZonedDateTime updatesAcknowledgedAt;
+
+    @Embedded
+    private Address address;
+
+    @Embedded
+    private ContactDetails contactDetails;
 
     /**
      * Correlation / request id provided to staging enforcement
@@ -86,17 +107,23 @@ public class DefendantDetail implements Serializable {
     }
 
     public DefendantDetail(final UUID id) {
-        this(id, null, null, 0, null, null, null);
+        this(id, null, null, 0, null, null, null, null, null, null, null);
     }
 
     public DefendantDetail(final UUID id,
                            final PersonalDetails personalDetails,
                            final List<OffenceDetail> offences,
-                           final Integer numPreviousConvictions) {
+                           final Integer numPreviousConvictions,
+                           final LegalEntityDetails legalEntityDetails,
+                           final Address address,
+                           final ContactDetails contactDetails) {
         this.id = id;
         this.numPreviousConvictions = numPreviousConvictions;
         setOffences(offences);
         setPersonalDetails(personalDetails);
+        setLegalEntityDetails(legalEntityDetails);
+        setAddress(address);
+        setContactDetails(contactDetails);
     }
 
     public DefendantDetail(final UUID id,
@@ -105,14 +132,22 @@ public class DefendantDetail implements Serializable {
                            final Integer numPreviousConvictions,
                            final Boolean speakWelsh,
                            final String asn,
-                           final String pncIdentifier) {
+                           final String pncIdentifier,
+                           final String region,
+                           final LegalEntityDetails legalEntityDetails,
+                           final Address address,
+                           final ContactDetails contactDetails) {
         this.id = id;
         this.numPreviousConvictions = numPreviousConvictions;
         this.speakWelsh = speakWelsh;
         this.asn = asn;
         this.pncIdentifier = pncIdentifier;
+        this.region = region;
         setOffences(offences);
         setPersonalDetails(personalDetails);
+        setLegalEntityDetails(legalEntityDetails);
+        setAddress(address);
+        setContactDetails(contactDetails);
     }
 
     @Override
@@ -194,20 +229,25 @@ public class DefendantDetail implements Serializable {
         this.speakWelsh = speakWelsh;
     }
 
-    public void markNameUpdated(ZonedDateTime updateDate) {
-        personalDetails.markNameUpdated(updateDate);
+
+    public ZonedDateTime getNameUpdatedAt() {
+        return nameUpdatedAt;
     }
 
-    public void markAddressUpdated(ZonedDateTime updateDate) {
-        personalDetails.markAddressUpdated(updateDate);
+    public void markNameUpdated(final ZonedDateTime updateDate) {
+        this.nameUpdatedAt = updateDate;
+    }
+
+    public ZonedDateTime getAddressUpdatedAt() {
+        return addressUpdatedAt;
+    }
+
+    public void markAddressUpdated(final ZonedDateTime updateDate) {
+        this.addressUpdatedAt = updateDate;
     }
 
     public void markDateOfBirthUpdated(ZonedDateTime updateDate) {
         personalDetails.markDateOfBirthUpdated(updateDate);
-    }
-
-    public void acknowledgeDetailsUpdates(ZonedDateTime acknowledgedAt) {
-        personalDetails.acknowledgeUpdates(acknowledgedAt);
     }
 
     public String getDisabilityNeeds() {
@@ -248,5 +288,53 @@ public class DefendantDetail implements Serializable {
 
     public void setAccountNumber(final String accountNumber) {
         this.accountNumber = accountNumber;
+    }
+
+    public LegalEntityDetails getLegalEntityDetails() {
+        return legalEntityDetails;
+    }
+
+    public void setLegalEntityDetails(final LegalEntityDetails legalEntityDetails) {
+        this.legalEntityDetails = Optional.ofNullable(legalEntityDetails).orElseGet(LegalEntityDetails::new);
+    }
+
+    public String getRegion() {
+        return region;
+    }
+
+    public void setRegion(final String region) {
+        this.region = region;
+    }
+
+    public Address getAddress() {
+        return address;
+    }
+
+    public void setAddress(final Address address) {
+        this.address = address;
+    }
+
+    public ContactDetails getContactDetails() {
+        return contactDetails;
+    }
+
+    public void setContactDetails(final ContactDetails contactDetails) {
+        this.contactDetails = contactDetails;
+    }
+
+    public ZonedDateTime getUpdatesAcknowledgedAt() {
+        return updatesAcknowledgedAt;
+    }
+
+    public void setUpdatesAcknowledgedAt(final ZonedDateTime updatesAcknowledgedAt) {
+        this.updatesAcknowledgedAt = updatesAcknowledgedAt;
+    }
+
+    public void setNameUpdatedAt(final ZonedDateTime nameUpdatedAt) {
+        this.nameUpdatedAt = nameUpdatedAt;
+    }
+
+    public void setAddressUpdatedAt(final ZonedDateTime addressUpdatedAt) {
+        this.addressUpdatedAt = addressUpdatedAt;
     }
 }

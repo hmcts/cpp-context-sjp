@@ -50,7 +50,7 @@ public class UpdateAllFinancialMeansCommandHandler extends CaseCommandHandler {
                         transformedIncome,
                         transformedBenefits,
                         transformedEmployer,
-                        employmentStatus));
+                        employmentStatus, null, null, null, null));
     }
 
     private uk.gov.moj.cpp.sjp.domain.Employer transformEmployer(final UUID defendantId,

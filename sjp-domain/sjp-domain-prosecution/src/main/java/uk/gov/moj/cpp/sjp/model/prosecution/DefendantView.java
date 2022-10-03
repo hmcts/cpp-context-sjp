@@ -2,7 +2,7 @@ package uk.gov.moj.cpp.sjp.model.prosecution;
 
 
 import static java.util.Optional.ofNullable;
-
+import uk.gov.justice.core.courts.LegalEntityDefendant;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
@@ -19,13 +19,15 @@ public class DefendantView {
     private final PersonDefendantView personDefendant;
     private final List<DefendantAliasView> aliases;
 
+    private final LegalEntityDefendant legalEntityDefendant;
     public DefendantView(final UUID id,
                          final UUID prosecutionCaseId,
                          final Integer numberOfPreviousConvictionsCited,
                          final String mitigation,
                          final List<OffenceView> offences,
                          final PersonDefendantView personDefendant,
-                         final List<DefendantAliasView> aliases) {
+                         final List<DefendantAliasView> aliases,
+                         final LegalEntityDefendant legalEntityDefendant) {
 
         this.id = id;
         this.masterDefendantId = id;
@@ -35,8 +37,8 @@ public class DefendantView {
         this.offences = ofNullable(offences).map(LinkedList::new).orElse(null);
         this.personDefendant = personDefendant;
         this.aliases = ofNullable(aliases).map(LinkedList::new).orElse(null);
+        this.legalEntityDefendant = legalEntityDefendant;
     }
-
     public UUID getId() {
         return id;
     }
@@ -68,6 +70,9 @@ public class DefendantView {
     public List<DefendantAliasView> getAliases() {
         return ofNullable(aliases).map(Collections::unmodifiableList).orElse(null);
     }
+    public LegalEntityDefendant getLegalEntityDefendant() {
+        return legalEntityDefendant;
+    }
 
     public static Builder defendantView() {
         return new Builder();
@@ -81,7 +86,7 @@ public class DefendantView {
         private List<OffenceView> offences;
         private PersonDefendantView personDefendant;
         private List<DefendantAliasView> aliases;
-
+        private LegalEntityDefendant legalEntityDefendant;
         public Builder withId(final UUID id) {
             this.id = id;
             return this;
@@ -111,15 +116,20 @@ public class DefendantView {
             this.personDefendant = personDefendant;
             return this;
         }
-
+        public LegalEntityDefendant getLegalEntityDefendant() {
+            return legalEntityDefendant;
+        }
         public Builder withAliases(final List<DefendantAliasView> defendantAliasViews) {
             this.aliases = ofNullable(defendantAliasViews).map(LinkedList::new).orElse(null);
             return this;
         }
-
+        public Builder withLegalEntityDefendant(final LegalEntityDefendant legalEntityDefendant) {
+            this.legalEntityDefendant = legalEntityDefendant;
+            return this;
+        }
         public DefendantView build() {
             return new DefendantView(id, prosecutionCaseId, numberOfPreviousConvictionsCited, mitigation,
-                    offences, personDefendant, aliases);
+                    offences, personDefendant, aliases,legalEntityDefendant);
         }
     }
 }

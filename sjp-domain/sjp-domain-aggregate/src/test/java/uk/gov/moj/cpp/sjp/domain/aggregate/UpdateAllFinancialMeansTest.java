@@ -38,7 +38,7 @@ public class UpdateAllFinancialMeansTest extends CaseAggregateBaseTest {
         final String employmentStatus = "EMPLOYED";
         final Employer employer = getEmployer(defendantId);
         final Stream<Object> eventStream = caseAggregate.updateAllFinancialMeans(userId,
-                defendantId, income, benefits, employer, employmentStatus);
+                defendantId, income, benefits, employer, employmentStatus, null, null, null, false);
         final List<Object> events = eventStream.collect(toList());
 
         assertThat(events, hasSize(4));
@@ -73,13 +73,13 @@ public class UpdateAllFinancialMeansTest extends CaseAggregateBaseTest {
         final String previousEmploymentStatus = "EMPLOYED";
 
         final List<Object>  events = caseAggregate.updateAllFinancialMeans(userId,
-                defendantId, previousIncome, previousBenefits, previousEmployer, previousEmploymentStatus).collect(toList());
+                defendantId, previousIncome, previousBenefits, previousEmployer, previousEmploymentStatus, null, null, null, false).collect(toList());
 
         assertThat(events, hasSize(4));
 
         final String currentEmploymentStatus = "UNEMPLOYED";
         final List<Object>  newEvents = caseAggregate.updateAllFinancialMeans(userId,
-                defendantId, previousIncome, previousBenefits, null, currentEmploymentStatus).collect(toList());
+                defendantId, previousIncome, previousBenefits, null, currentEmploymentStatus, null, null, null, false).collect(toList());
 
         assertThat(newEvents, hasSize(3));
 

@@ -1,7 +1,5 @@
 package uk.gov.moj.cpp.sjp.event;
 
-import static java.util.Optional.ofNullable;
-
 import uk.gov.justice.domain.annotation.Event;
 import uk.gov.justice.json.schemas.domains.sjp.Gender;
 import uk.gov.moj.cpp.sjp.domain.Address;
@@ -9,7 +7,6 @@ import uk.gov.moj.cpp.sjp.domain.ContactDetails;
 
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
-import java.util.Optional;
 import java.util.UUID;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
@@ -35,6 +32,7 @@ public class DefendantDetailsUpdated {
     private final boolean updateByOnlinePlea;
     private final ZonedDateTime updatedDate;
     private final String region;
+    private final String legalEntityName;
 
     @JsonCreator
     private DefendantDetailsUpdated(@JsonProperty("caseId") UUID caseId, @JsonProperty("defendantId") UUID defendantId,
@@ -47,7 +45,8 @@ public class DefendantDetailsUpdated {
                                     @JsonProperty("contactDetails") ContactDetails contactDetails, @JsonProperty("address") Address address,
                                     @JsonProperty("updateByOnlinePlea") boolean updateByOnlinePlea,
                                     @JsonProperty("updatedDate") ZonedDateTime updatedDate,
-                                    @JsonProperty("region") String region) {
+                                    @JsonProperty("region") String region,
+                                    @JsonProperty("legalEntityName") String legalEntityName) {
         this.caseId = caseId;
         this.defendantId = defendantId;
         this.title = title;
@@ -63,6 +62,7 @@ public class DefendantDetailsUpdated {
         this.updateByOnlinePlea = updateByOnlinePlea;
         this.updatedDate = updatedDate;
         this.region = region;
+        this.legalEntityName = legalEntityName;
     }
 
     public static class DefendantDetailsUpdatedBuilder {
@@ -82,6 +82,7 @@ public class DefendantDetailsUpdated {
         private ZonedDateTime updatedDate;
         private boolean containsUpdate = false;
         private String region;
+        private String legalEntityName;
 
         public static DefendantDetailsUpdatedBuilder defendantDetailsUpdated() {
             return new DefendantDetailsUpdatedBuilder();
@@ -171,15 +172,21 @@ public class DefendantDetailsUpdated {
             return containsUpdate;
         }
 
-        public DefendantDetailsUpdatedBuilder withRegion(final String region){
+        public DefendantDetailsUpdatedBuilder withRegion(final String region) {
             this.region = region;
+            return this;
+        }
+
+        public DefendantDetailsUpdatedBuilder withLegalEntityName(final String legalEntityName) {
+            this.legalEntityName = legalEntityName;
+            this.containsUpdate = true;
             return this;
         }
 
         public DefendantDetailsUpdated build() {
             return new DefendantDetailsUpdated(caseId, defendantId, title, firstName,
                     lastName, dateOfBirth, gender, nationalInsuranceNumber, driverNumber, driverLicenceDetails,
-                    contactDetails, address, updateByOnlinePlea, updatedDate, region);
+                    contactDetails, address, updateByOnlinePlea, updatedDate, region, legalEntityName);
         }
     }
 
@@ -241,5 +248,9 @@ public class DefendantDetailsUpdated {
 
     public String getRegion() {
         return region;
+    }
+
+    public String getLegalEntityName() {
+        return legalEntityName;
     }
 }

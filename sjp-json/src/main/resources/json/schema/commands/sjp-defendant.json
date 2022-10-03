@@ -16,6 +16,9 @@
     "lastName": {
       "type": "string"
     },
+    "legalEntityName": {
+      "type": "string"
+    },
     "dateOfBirth": {
       "type": "string"
     },
@@ -28,8 +31,8 @@
     "driverNumber": {
       "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/dvlaDriverLicence"
     },
-    "driverLicenceDetails" : {
-      "type" : "string"
+    "driverLicenceDetails": {
+      "type": "string"
     },
     "hearingLanguage": {
       "$ref": "http://justice.gov.uk/json/schemas/domains/sjp/language.json"
@@ -64,7 +67,19 @@
     }
   },
   "additionalProperties": false,
-  "required": [
-    "address"
+  "anyOf": [
+    {
+      "required": [
+        "firstName",
+        "lastName",
+        "address"
+      ]
+    },
+    {
+      "required": [
+        "legalEntityName",
+        "address"
+      ]
+    }
   ]
 }

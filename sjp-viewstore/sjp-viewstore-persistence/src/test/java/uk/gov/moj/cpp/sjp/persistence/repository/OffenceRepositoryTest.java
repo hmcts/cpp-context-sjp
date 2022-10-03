@@ -10,8 +10,11 @@ import static org.hamcrest.Matchers.hasSize;
 import static org.junit.Assert.assertThat;
 
 import uk.gov.justice.services.test.utils.persistence.BaseTransactionalTest;
+import uk.gov.moj.cpp.sjp.persistence.entity.Address;
 import uk.gov.moj.cpp.sjp.persistence.entity.CaseDetail;
+import uk.gov.moj.cpp.sjp.persistence.entity.ContactDetails;
 import uk.gov.moj.cpp.sjp.persistence.entity.DefendantDetail;
+import uk.gov.moj.cpp.sjp.persistence.entity.LegalEntityDetails;
 import uk.gov.moj.cpp.sjp.persistence.entity.OffenceDetail;
 import uk.gov.moj.cpp.sjp.persistence.entity.PersonalDetails;
 
@@ -60,7 +63,10 @@ public class OffenceRepositoryTest extends BaseTransactionalTest {
                 UUID.randomUUID(),
                 new PersonalDetails(),
                 offenceIds.stream().map(this::createOffenceDetails).collect(toList()),
-                NUM_PREVIOUS_CONVICTIONS
+                NUM_PREVIOUS_CONVICTIONS,
+                new LegalEntityDetails(),
+                new Address(),
+                new ContactDetails()
         ));
 
         return caseDetail;

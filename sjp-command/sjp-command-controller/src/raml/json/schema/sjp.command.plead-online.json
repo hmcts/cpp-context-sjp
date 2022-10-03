@@ -52,6 +52,42 @@
       ],
       "additionalProperties": false
     },
+    "legalEntityDefendant": {
+      "id": "http://justice.gov.uk/json/schemas/domains/sjp/command/plea/legal-entity-defendant.json",
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "address": {
+          "$ref": "http://justice.gov.uk/json/schemas/domains/sjp/address.json"
+        },
+        "contactDetails": {
+          "$ref": "http://justice.gov.uk/json/schemas/domains/sjp/contact-details.json",
+          "required": [
+            "email"
+          ]
+        },
+        "incorporationNumber": {
+          "type": "string"
+        },
+        "position": {
+          "id": "http://justice.gov.uk/json/schemas/domains/sjp/command/plea/position.json",
+          "type": "string",
+          "enum": [
+            "DIRECTOR",
+            "SECRETARY",
+            "SOLICITOR"
+          ]
+        }
+      },
+      "required": [
+        "name",
+        "address",
+        "contactDetails"
+      ],
+      "additionalProperties": false
+    },
     "offences": {
       "type": "array",
       "items": {
@@ -149,6 +185,27 @@
         "employmentStatus": {
           "type": "string"
         }
+      }
+    },
+    "legalEntityFinancialMeans": {
+      "id": "http://justice.gov.uk/json/schemas/domains/sjp/command/plea/legal-entity-financial-means.json",
+      "type": "object",
+      "properties": {
+        "outstandingFines": {
+          "type": "boolean"
+        },
+        "tradingMoreThan12Months": {
+          "type": "boolean"
+        },
+        "numberOfEmployees": {
+          "type": "integer"
+        },
+        "grossTurnover": {
+          "type": "number"
+        },
+        "netTurnover": {
+          "type": "number"
+        }
       },
       "additionalProperties": false
     },
@@ -193,11 +250,23 @@
       "$ref": "http://cpp.moj.gov.uk/core/sjp/disability-needs.json"
     }
   },
-  "required": [
-    "caseId",
-    "defendantId",
-    "personalDetails",
-    "offences"
+  "anyOf": [
+    {
+      "required": [
+        "caseId",
+        "defendantId",
+        "personalDetails",
+        "offences"
+      ]
+    },
+    {
+      "required": [
+        "caseId",
+        "defendantId",
+        "legalEntityDefendant",
+        "offences"
+      ]
+    }
   ],
   "additionalProperties": false
 }

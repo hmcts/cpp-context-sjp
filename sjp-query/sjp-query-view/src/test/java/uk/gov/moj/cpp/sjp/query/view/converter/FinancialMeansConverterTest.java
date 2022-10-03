@@ -54,13 +54,18 @@ public class FinancialMeansConverterTest {
         final FinancialMeans financialMeansEntity = new FinancialMeans(UUID.randomUUID(),
                 income.getFrequency(), income.getAmount(), benefits.getClaimed(), benefits.getType(), employmentStatus);
 
-        final uk.gov.moj.cpp.sjp.domain.FinancialMeans financialMeans = financialMeansConverter.convertToFinancialMeans(financialMeansEntity);
+
+        final uk.gov.moj.cpp.sjp.domain.FinancialMeans financialMeans = financialMeansConverter.convertToFinancialMeans(financialMeansEntity, null);
 
         assertThat(financialMeans.getDefendantId(), equalTo(financialMeansEntity.getDefendantId()));
-        assertThat(financialMeans.getIncome().getFrequency(), equalTo(financialMeansEntity.getIncomePaymentFrequency()));
-        assertThat(financialMeans.getIncome().getAmount(), equalTo(financialMeansEntity.getIncomePaymentAmount()));
-        assertThat(financialMeans.getBenefits().getClaimed(), equalTo(financialMeansEntity.getBenefitsClaimed()));
-        assertThat(financialMeans.getBenefits().getType(), equalTo(financialMeansEntity.getBenefitsType()));
+        if(financialMeans.getIncome() != null) {
+            assertThat(financialMeans.getIncome().getFrequency(), equalTo(financialMeansEntity.getIncomePaymentFrequency()));
+            assertThat(financialMeans.getIncome().getAmount(), equalTo(financialMeansEntity.getIncomePaymentAmount()));
+        }
+        if(financialMeans.getBenefits() != null) {
+            assertThat(financialMeans.getBenefits().getClaimed(), equalTo(financialMeansEntity.getBenefitsClaimed()));
+            assertThat(financialMeans.getBenefits().getType(), equalTo(financialMeansEntity.getBenefitsType()));
+        }
         assertThat(financialMeans.getEmploymentStatus(), equalTo(financialMeansEntity.getEmploymentStatus()));
     }
 }

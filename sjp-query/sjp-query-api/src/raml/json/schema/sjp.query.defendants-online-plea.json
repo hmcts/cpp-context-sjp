@@ -74,8 +74,38 @@
         "driverNumber": {
           "type": "string"
         },
-        "driverLicenceDetails" : {
-          "type" : "string"
+        "driverLicenceDetails": {
+          "type": "string"
+        }
+      }
+    },
+    "legalEntityDefendant": {
+      "id": "http://justice.gov.uk/json/schemas/domains/sjp/query/legal-entity-defendant.json",
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "address": {
+          "$ref": "http://justice.gov.uk/json/schemas/domains/sjp/address.json"
+        },
+        "contactDetails": {
+          "$ref": "http://justice.gov.uk/json/schemas/domains/sjp/contact-details.json",
+          "required": [
+            "email"
+          ]
+        },
+        "incorporationNumber": {
+          "type": "string"
+        },
+        "position": {
+          "id": "http://justice.gov.uk/json/schemas/domains/sjp/query/position.json",
+          "type": "string",
+          "enum": [
+            "DIRECTOR",
+            "SECRETARY",
+            "SOLICITOR"
+          ]
         }
       }
     },
@@ -151,10 +181,13 @@
         }
       }
     },
-    "disabilityNeeds" : {
+    "disabilityNeeds": {
       "$ref": "http://cpp.moj.gov.uk/core/sjp/disability-needs.json"
     }
   },
-  "required": [ "caseId", "onlinePleaDetails" ],
+  "required": [
+    "caseId",
+    "onlinePleaDetails"
+  ],
   "additionalProperties": true
 }

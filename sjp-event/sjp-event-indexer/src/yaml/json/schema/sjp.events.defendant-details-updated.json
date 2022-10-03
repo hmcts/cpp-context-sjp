@@ -18,6 +18,9 @@
     "lastName": {
       "type": "string"
     },
+    "legalEntityName": {
+      "type": "string"
+    },
     "dateOfBirth": {
       "type": "string"
     },

@@ -1,5 +1,6 @@
 package uk.gov.moj.cpp.sjp.event.processor;
 
+import static java.util.Objects.nonNull;
 import static java.util.UUID.randomUUID;
 import static javax.json.Json.createObjectBuilder;
 import static uk.gov.justice.services.core.annotation.Component.EVENT_PROCESSOR;
@@ -49,11 +50,10 @@ public class PleaNotificationProcessor {
     @Handles("sjp.events.online-plea-received")
     public void sendPleaNotificationEmail(final JsonEnvelope envelope) {
         final OnlinePleaReceived onlinePleaReceived = jsonObjectConverter.convert(envelope.payloadAsJsonObject(), OnlinePleaReceived.class);
-
         final JsonObject emailNotification = createObjectBuilder()
                 .add("notificationId", randomUUID().toString())
-                .add("templateId", getTemplateId(onlinePleaReceived.getPersonalDetails().getAddress().getPostcode(), envelope))
-                .add("sendToAddress", onlinePleaReceived.getPersonalDetails().getContactDetails().getEmail())
+                .add("templateId", getTemplateId(nonNull(onlinePleaReceived.getPersonalDetails())?onlinePleaReceived.getPersonalDetails().getAddress().getPostcode() : onlinePleaReceived.getLegalEntityDefendant().getAddress().getPostcode(), envelope))
+                .add("sendToAddress", nonNull(onlinePleaReceived.getPersonalDetails()) ?  onlinePleaReceived.getPersonalDetails().getContactDetails().getEmail() : onlinePleaReceived.getLegalEntityDefendant().getContactDetails().getEmail())
                 .add("replyToAddress", replyToAddress)
                 .add("personalisation", createObjectBuilder()
                         .add("urn", onlinePleaReceived.getUrn())

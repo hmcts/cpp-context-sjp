@@ -109,7 +109,7 @@ public class UpdateEmployerTest {
     }
 
     private static FinancialMeans getFinancialMeans(final UUID defendantId, final EmploymentStatus employmentStatus) {
-        return new FinancialMeans(defendantId, null, null, employmentStatus.name());
+        return new FinancialMeans(defendantId, null, null, employmentStatus.name(), null, null, null, null);
     }
 
     private void assertEmployer(final EmployerUpdated employerUpdated, final Employer sourceEmployer) {

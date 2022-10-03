@@ -202,7 +202,7 @@ public class TransparencyReportRequestedProcessor {
         pendingCases.stream()
                 .forEach(pendingCase -> {
                     final JsonObjectBuilder pendingCaseBuilder = createObjectBuilder()
-                            .add("defendantName", pendingCase.getString("defendantName"))
+                            .add("defendantName",buildDefendantName(pendingCase))
                             .add("offenceTitle", buildOffenceTitleFromOffenceArray(pendingCase.getJsonArray(OFFENCES), isWelsh, envelope))
                             .add("prosecutorName", buildProsecutorName(pendingCase.getString("prosecutorName"), isWelsh, envelope));
 
@@ -282,6 +282,14 @@ public class TransparencyReportRequestedProcessor {
             LOGGER.warn("No welsh offence referencedata translations for offenceCode: {}", offenceCode);
             return offenceReferenceData.getString("title");
         });
+    }
+
+    private String buildDefendantName(final JsonObject pendingCase) {
+        if (pendingCase.containsKey("legalEntityName")) {
+            return pendingCase.getString("legalEntityName").toUpperCase();
+        } else {
+            return format("%s %s", pendingCase.getString("firstName", ""), pendingCase.getString("lastName", "").toUpperCase());
+        }
     }
 
 }

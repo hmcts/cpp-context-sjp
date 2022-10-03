@@ -26,6 +26,7 @@ import uk.gov.moj.cpp.sjp.domain.aggregate.handler.CaseEmployerHandler;
 import uk.gov.moj.cpp.sjp.domain.aggregate.handler.CaseLanguageHandler;
 import uk.gov.moj.cpp.sjp.domain.aggregate.handler.HandlerUtils;
 import uk.gov.moj.cpp.sjp.domain.aggregate.state.CaseAggregateState;
+import uk.gov.moj.cpp.sjp.domain.legalentity.LegalEntityDefendant;
 import uk.gov.moj.cpp.sjp.domain.onlineplea.Offence;
 import uk.gov.moj.cpp.sjp.domain.onlineplea.PersonalDetails;
 import uk.gov.moj.cpp.sjp.domain.onlineplea.PleadOnline;
@@ -155,11 +156,21 @@ public class OnlinePleaHandler {
         final PersonalDetails personalDetails = pleadOnline.getPersonalDetails();
         final UUID defendantId = pleadOnline.getDefendantId();
         final boolean updatedByOnlinePlea = true;
-        ofNullable(state.getDefendantDetailsUpdateSummary(personalDetails, updatedByOnlinePlea, createdOn))
-                .ifPresent(streamBuilder::add);
+        if(nonNull(personalDetails)) {
+            ofNullable(state.getDefendantDetailsUpdateSummary(personalDetails, updatedByOnlinePlea, createdOn))
+                    .ifPresent(streamBuilder::add);
+            caseDefendantHandler.getDefendantWarningEvents(personalDetails, createdOn, updatedByOnlinePlea, state)
+                    .forEach(streamBuilder::add);
+        }
 
-        caseDefendantHandler.getDefendantWarningEvents(personalDetails, createdOn, updatedByOnlinePlea, state)
-                .forEach(streamBuilder::add);
+        final LegalEntityDefendant legalEntityDefendant = pleadOnline.getLegalEntityDefendant();
+
+        if(nonNull(legalEntityDefendant)) {
+            ofNullable(state.getDefendantLegalEntityDetailsUpdateSummary(legalEntityDefendant, updatedByOnlinePlea, createdOn))
+                    .ifPresent(streamBuilder::add);
+            caseDefendantHandler.getLegalEntityDefendantWarningEvents(legalEntityDefendant, createdOn, state)
+                    .forEach(streamBuilder::add);
+        }
 
         if (anyUpdatesOnFinancialMeans(pleadOnline.getFinancialMeans(), pleadOnline.getOutgoings())) {
             final Optional<FinancialMeans> optionalFinancialMeans = Optional.ofNullable(
@@ -171,7 +182,12 @@ public class OnlinePleaHandler {
                     optionalFinancialMeans.map(FinancialMeans::getBenefits).orElse(null),
                     optionalFinancialMeans.map(FinancialMeans::getEmploymentStatus).orElse(null),
                     pleadOnline.getOutgoings(),
-                    createdOn));
+                    createdOn,
+                    optionalFinancialMeans.map(FinancialMeans::getGrossTurnover).orElse(null),
+                    optionalFinancialMeans.map(FinancialMeans::getNetTurnover).orElse(null),
+                    optionalFinancialMeans.map(FinancialMeans::getNumberOfEmployees).orElse(null),
+                    optionalFinancialMeans.map(FinancialMeans::getTradingMoreThanTwelveMonths).orElse(null)
+                    ));
         }
 
         if (nonNull(pleadOnline.getEmployer())) {
@@ -187,7 +203,7 @@ public class OnlinePleaHandler {
                 pleadOnline.getUnavailability(), pleadOnline.getInterpreterLanguage(), pleadOnline.getSpeakWelsh(),
                 pleadOnline.getWitnessDetails(), pleadOnline.getWitnessDispute(), pleadOnline.getOutstandingFines(), personalDetails,
                 pleadOnline.getFinancialMeans(), pleadOnline.getEmployer(), pleadOnline.getOutgoings(),
-                ofNullable(pleadOnline.getDisabilityNeeds()).orElse(NO_DISABILITY_NEEDS)));
+                ofNullable(pleadOnline.getDisabilityNeeds()).orElse(NO_DISABILITY_NEEDS), pleadOnline.getLegalEntityDefendant(), pleadOnline.getLegalEntityFinancialMeans()));
         return streamBuilder.build();
     }
 

@@ -32,6 +32,7 @@ public class Defendant extends Person {
 
     private final String pncIdentifier;
 
+
     @JsonCreator
     public Defendant(@JsonProperty("id") final UUID id,
                      @JsonProperty("title") final String title,
@@ -50,8 +51,9 @@ public class Defendant extends Person {
                      @JsonProperty("languageNeeds") final String languageNeeds,
                      @JsonProperty("region") final String region,
                      @JsonProperty("asn") final String asn,
-                     @JsonProperty("pncIdentifier") final String pncIdentifier) {
-        super(title, firstName, lastName, dateOfBirth, gender, nationalInsuranceNumber, driverNumber, driverLicenceDetails, address, contactDetails, region);
+                     @JsonProperty("pncIdentifier") final String pncIdentifier,
+                     @JsonProperty("legalEntityName")final String legalEntityName) {
+        super(title, firstName, lastName, dateOfBirth, gender, nationalInsuranceNumber, driverNumber, driverLicenceDetails, address, contactDetails, region, legalEntityName);
         this.id = id;
         this.numPreviousConvictions = numPreviousConvictions;
         this.offences = Optional.ofNullable(offences).map(Collections::unmodifiableList).orElseGet(Collections::emptyList);
@@ -147,7 +149,8 @@ public class Defendant extends Person {
                     defendant.getLanguageNeeds(),
                     defendant.getRegion(),
                     defendant.getAsn(),
-                    defendant.getPncIdentifier());
+                    defendant.getPncIdentifier(),
+                    defendant.getLegalEntityName());
         }
 
     }

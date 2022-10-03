@@ -19,6 +19,8 @@ import uk.gov.justice.services.test.utils.core.enveloper.EnveloperFactory;
 import uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMatcher;
 import uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMetadataMatcher;
 import uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopePayloadMatcher;
+import uk.gov.moj.cpp.sjp.persistence.entity.Address;
+import uk.gov.moj.cpp.sjp.persistence.entity.DefendantDetail;
 import uk.gov.moj.cpp.sjp.persistence.entity.PersonalDetails;
 import uk.gov.moj.cpp.sjp.query.view.response.ResultOrdersView;
 import uk.gov.moj.cpp.sjp.query.view.service.CaseService;
@@ -65,9 +67,17 @@ public class ResultOrdersTest {
         final UUID DOCUMENT_ID = UUID.randomUUID();
         final ZonedDateTime ADDED_AT = clock.now();
         final ResultOrdersView resultOrdersView = new ResultOrdersView();
+        final DefendantDetail defendantDetail=new DefendantDetail();
+        final Address address=new Address();
+        address.setAddress1("address1");
+        address.setAddress2("address2");
+        address.setAddress3("address3");
+        address.setPostcode("postcode");
+        defendantDetail.setAddress(address);
+
         resultOrdersView.addResultOrder(
                 ResultOrdersView.createResultOrderBuilder().setCaseId(CASE_ID).setUrn(URN)
-                        .setDefendant(new PersonalDetails()).setOrder(DOCUMENT_ID, ADDED_AT)
+                        .setDefendant(defendantDetail).setOrder(DOCUMENT_ID, ADDED_AT)
                         .build());
         when(caseService.findResultOrders(LocalDates.from(FROM_DATE), LocalDates.from(TO_DATE)))
                 .thenReturn(resultOrdersView);

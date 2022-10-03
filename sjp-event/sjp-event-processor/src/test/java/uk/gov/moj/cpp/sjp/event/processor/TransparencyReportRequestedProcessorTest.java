@@ -28,7 +28,6 @@ import uk.gov.justice.services.fileservice.api.FileStorer;
 import uk.gov.justice.services.messaging.Envelope;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.messaging.Metadata;
-import uk.gov.moj.cpp.sjp.event.processor.service.ExportType;
 import uk.gov.moj.cpp.sjp.event.processor.service.ReferenceDataOffencesService;
 import uk.gov.moj.cpp.sjp.event.processor.service.ReferenceDataService;
 import uk.gov.moj.cpp.sjp.event.processor.service.SjpService;
@@ -155,7 +154,6 @@ public class TransparencyReportRequestedProcessorTest {
 
 
     private void assertPayloadForDocumentGenerator(final JsonObject payload, final List<JsonObject> pendingCasesList, final Integer totalNumberOfRecords, final Boolean isWelsh) {
-        assertReadyCasesPayloadWithPendingCases(payload, pendingCasesList, "defendantName");
         assertReadyCasesPayloadWithPendingCases(payload, pendingCasesList, "postcode");
 
         assertThat(getPropertyFromPayload(payload, "readyCases", "prosecutorName"),

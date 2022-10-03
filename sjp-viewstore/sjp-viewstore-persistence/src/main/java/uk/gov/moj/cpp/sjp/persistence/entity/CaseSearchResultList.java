@@ -22,18 +22,20 @@ public class CaseSearchResultList {
     }
 
     public void setName(final UUID caseId, final UUID defendantId, final String newFirstName, final String newLastName,
-                        final LocalDate newDateOfBirth, final ZonedDateTime dateAdded) {
+                        final LocalDate newDateOfBirth, final ZonedDateTime dateAdded, final String newLegalEntityName) {
 
         final Optional<CaseSearchResult> latest = getCurrent();
 
-        final CaseSearchResult newEntry = new CaseSearchResult(caseId, defendantId, newFirstName, newLastName, newDateOfBirth, dateAdded);
+        final CaseSearchResult newEntry = new CaseSearchResult(caseId, defendantId, newFirstName, newLastName, newDateOfBirth, dateAdded, newLegalEntityName);
         latest.ifPresent(r -> {
             final String firstName = ofNullable(newFirstName).orElse(r.getFirstName());
             final String lastName = ofNullable(newLastName).orElse(r.getLastName());
+            final String legalEntityName = ofNullable(newLegalEntityName).orElse(r.getLegalEntityName());
             newEntry.setFirstName(firstName);
             newEntry.setLastName(lastName);
             newEntry.setCurrentFirstName(firstName);
             newEntry.setCurrentLastName(lastName);
+            newEntry.setLegalEntityName(legalEntityName);
             newEntry.setWithdrawalRequestedDate(r.getWithdrawalRequestedDate());
         });
 
@@ -61,10 +63,11 @@ public class CaseSearchResultList {
                 .orElse(true);
     }
 
-    public boolean hasNameChanged(final String newFirstName, final String newLastName) {
+    public boolean hasNameChanged(final String newFirstName, final String newLastName, final String newLegalEntityName) {
         return getCurrent()
                 .map(old -> equalsIgnoreCaseAndNull(newFirstName, old.getFirstName()) ||
-                        equalsIgnoreCaseAndNull(newLastName, old.getLastName()))
+                        equalsIgnoreCaseAndNull(newLastName, old.getLastName()) ||
+                        equalsIgnoreCaseAndNull(newLegalEntityName, old.getLegalEntityName()))
                 .orElse(true);
     }
 

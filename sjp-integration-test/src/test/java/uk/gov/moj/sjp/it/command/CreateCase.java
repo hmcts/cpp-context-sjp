@@ -42,6 +42,7 @@ public class CreateCase {
 
     private static final String WRITE_MEDIA_TYPE = "application/vnd.sjp.create-sjp-case+json";
     private final CreateCasePayloadBuilder payloadBuilder;
+
     private CreateCase(final CreateCasePayloadBuilder payloadBuilder) {
         this.payloadBuilder = payloadBuilder;
     }
@@ -101,6 +102,7 @@ public class CreateCase {
         payload.add("postingDate", LocalDates.to(payloadBuilder.postingDate));
 
         final JsonObjectBuilder addressBuilder = createObjectBuilder();
+        final JsonObjectBuilder contactDetailsBuilder = createObjectBuilder();
 
         ofNullable(payloadBuilder.defendantBuilder.addressBuilder.getAddress1()).ifPresent(a1 -> addressBuilder.add("address1", a1));
         ofNullable(payloadBuilder.defendantBuilder.addressBuilder.getAddress2()).ifPresent(a2 -> addressBuilder.add("address2", a2));
@@ -109,31 +111,34 @@ public class CreateCase {
         ofNullable(payloadBuilder.defendantBuilder.addressBuilder.getAddress5()).ifPresent(a5 -> addressBuilder.add("address5", a5));
         ofNullable(payloadBuilder.defendantBuilder.addressBuilder.getPostcode()).ifPresent(p -> addressBuilder.add("postcode", p));
 
-        final JsonObjectBuilder defendantBuilder = createObjectBuilder()
+        ofNullable(payloadBuilder.defendantBuilder.contactDetailsBuilder.getHome()).ifPresent(h -> contactDetailsBuilder.add("home", h));
+        ofNullable(payloadBuilder.defendantBuilder.contactDetailsBuilder.getMobile()).ifPresent(m -> contactDetailsBuilder.add("mobile", m));
+        ofNullable(payloadBuilder.defendantBuilder.contactDetailsBuilder.getEmail()).ifPresent(e -> contactDetailsBuilder.add("email", e));
+        ofNullable(payloadBuilder.defendantBuilder.contactDetailsBuilder.getEmail2()).ifPresent(e2 -> contactDetailsBuilder.add("email2", e2));
+
+        final JsonObjectBuilder defendantBuilder = createObjectBuilder();
+        if (payloadBuilder.defendantBuilder.legalEntityName != null) {
+            defendantBuilder.add("legalEntityName", payloadBuilder.defendantBuilder.legalEntityName);
+        } else if (payloadBuilder.defendantBuilder.firstName != null && payloadBuilder.defendantBuilder.lastName != null) {
+            defendantBuilder.add("firstName", payloadBuilder.defendantBuilder.firstName)
+                    .add("lastName", payloadBuilder.defendantBuilder.lastName);
+        }
+        defendantBuilder
                 .add("id", payloadBuilder.defendantBuilder.id.toString())
-                .add("firstName", payloadBuilder.defendantBuilder.firstName)
-                .add("lastName", payloadBuilder.defendantBuilder.lastName)
-                .add("nationalInsuranceNumber", payloadBuilder.defendantBuilder.nationalInsuranceNumber)
-                .add("driverNumber", payloadBuilder.defendantBuilder.driverNumber)
-                .add("gender", payloadBuilder.defendantBuilder.gender.toString())
                 .add("numPreviousConvictions", payloadBuilder.defendantBuilder.numPreviousConvictions)
                 .add("address", addressBuilder)
-                .add("contactDetails", createObjectBuilder()
-                        .add("home", payloadBuilder.defendantBuilder.contactDetailsBuilder.getHome())
-                        .add("mobile", payloadBuilder.defendantBuilder.contactDetailsBuilder.getMobile())
-                        .add("email", payloadBuilder.defendantBuilder.contactDetailsBuilder.getEmail())
-                        .add("email2", payloadBuilder.defendantBuilder.contactDetailsBuilder.getEmail2())
-                )
+                .add("contactDetails", contactDetailsBuilder)
                 .add("offences", createOffencesBuilder())
                 .add("asn", payloadBuilder.defendantBuilder.getAsn())
                 .add("pncIdentifier", payloadBuilder.defendantBuilder.getPncIdentifier());
 
-        if(nonNull(payloadBuilder.defendantBuilder.title))
+
+        if (nonNull(payloadBuilder.defendantBuilder.title)) {
             defendantBuilder.add("title", payloadBuilder.defendantBuilder.title);
-
-        if(nonNull(payloadBuilder.defendantBuilder.hearingLanguage))
+        }
+        if (nonNull(payloadBuilder.defendantBuilder.hearingLanguage)) {
             defendantBuilder.add("hearingLanguage", payloadBuilder.defendantBuilder.hearingLanguage.toString());
-
+        }
         ofNullable(payloadBuilder.defendantBuilder.dateOfBirth).map(LocalDates::to)
                 .ifPresent(dateOfBirth -> defendantBuilder.add("dateOfBirth", dateOfBirth));
 
@@ -142,6 +147,12 @@ public class CreateCase {
 
         ofNullable(payloadBuilder.defendantBuilder.driverNumber)
                 .ifPresent(driverNumber -> defendantBuilder.add("driverNumber", driverNumber));
+
+        ofNullable(payloadBuilder.defendantBuilder.gender)
+                .ifPresent(gender -> defendantBuilder.add("gender",gender.toString()));
+
+        ofNullable(payloadBuilder.defendantBuilder.nationalInsuranceNumber)
+                .ifPresent(nino -> defendantBuilder.add("nationalInsuranceNumber",nino));
 
         payload.add("defendant", defendantBuilder);
         return payload.build();
@@ -272,7 +283,7 @@ public class CreateCase {
         }
 
         public OffenceBuilder getOffenceBuilder(final UUID offenceId) {
-            return offenceBuilders.stream().filter(o-> o.getId().equals(offenceId)).findFirst().get();
+            return offenceBuilders.stream().filter(o -> o.getId().equals(offenceId)).findFirst().get();
         }
 
         public List<OffenceBuilder> getOffenceBuilders() {
@@ -345,13 +356,12 @@ public class CreateCase {
         String nationalInsuranceNumber;
         String driverNumber;
         String driverLicenceDetails;
-
         AddressBuilder addressBuilder;
         ContactDetailsBuilder contactDetailsBuilder;
-
         Language hearingLanguage;
         String asn;
         String pncIdentifier;
+        String legalEntityName;
 
         private DefendantBuilder() {
 
@@ -379,6 +389,7 @@ public class CreateCase {
             builder.hearingLanguage = null;
             builder.asn = "asn";
             builder.pncIdentifier = "pncId";
+            builder.legalEntityName = null;
 
             return builder;
         }
@@ -453,6 +464,16 @@ public class CreateCase {
             return this;
         }
 
+        public DefendantBuilder withGender(final Gender gender) {
+            this.gender = gender;
+            return this;
+        }
+
+        public DefendantBuilder withLegalEntityName(final String legalEntityName) {
+            this.legalEntityName = legalEntityName;
+            return this;
+        }
+
         public UUID getId() {
             return id;
         }
@@ -511,6 +532,10 @@ public class CreateCase {
 
         public String getPncIdentifier() {
             return pncIdentifier;
+        }
+
+        public String getLegalEntityName() {
+            return legalEntityName;
         }
     }
 
@@ -593,17 +618,17 @@ public class CreateCase {
         }
 
 
-        public OffenceBuilder withBackDuty(BigDecimal backDuty){
+        public OffenceBuilder withBackDuty(BigDecimal backDuty) {
             this.backDuty = backDuty;
             return this;
         }
 
-        public OffenceBuilder withBackDutyDateFrom(LocalDate backDutyDateFrom){
+        public OffenceBuilder withBackDutyDateFrom(LocalDate backDutyDateFrom) {
             this.backDutyDateFrom = backDutyDateFrom;
             return this;
         }
 
-        public OffenceBuilder withBackDutyDateTo(LocalDate backDutyDateTo){
+        public OffenceBuilder withBackDutyDateTo(LocalDate backDutyDateTo) {
             this.backDutyDateTo = backDutyDateTo;
             return this;
         }

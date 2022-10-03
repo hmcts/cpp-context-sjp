@@ -24,6 +24,19 @@ import static uk.gov.moj.cpp.sjp.persistence.repository.OnlinePleaRepository.FIE
 import static uk.gov.moj.cpp.sjp.persistence.repository.OnlinePleaRepository.FIELDS.EMPLOYMENT_STATUS_DETAILS;
 import static uk.gov.moj.cpp.sjp.persistence.repository.OnlinePleaRepository.FIELDS.HEARING_LANGUAGE;
 import static uk.gov.moj.cpp.sjp.persistence.repository.OnlinePleaRepository.FIELDS.INTERPRETER_LANGUAGE;
+import static uk.gov.moj.cpp.sjp.persistence.repository.OnlinePleaRepository.FIELDS.LEGALENTITY_ADDRESS_1;
+import static uk.gov.moj.cpp.sjp.persistence.repository.OnlinePleaRepository.FIELDS.LEGALENTITY_ADDRESS_2;
+import static uk.gov.moj.cpp.sjp.persistence.repository.OnlinePleaRepository.FIELDS.LEGALENTITY_ADDRESS_3;
+import static uk.gov.moj.cpp.sjp.persistence.repository.OnlinePleaRepository.FIELDS.LEGALENTITY_ADDRESS_4;
+import static uk.gov.moj.cpp.sjp.persistence.repository.OnlinePleaRepository.FIELDS.LEGALENTITY_ADDRESS_5;
+import static uk.gov.moj.cpp.sjp.persistence.repository.OnlinePleaRepository.FIELDS.LEGALENTITY_EMAIL;
+import static uk.gov.moj.cpp.sjp.persistence.repository.OnlinePleaRepository.FIELDS.LEGALENTITY_HOME;
+import static uk.gov.moj.cpp.sjp.persistence.repository.OnlinePleaRepository.FIELDS.LEGALENTITY_MOBILE;
+import static uk.gov.moj.cpp.sjp.persistence.repository.OnlinePleaRepository.FIELDS.LEGALENTITY_NAME;
+import static uk.gov.moj.cpp.sjp.persistence.repository.OnlinePleaRepository.FIELDS.LEGALENTITY_POSTCODE;
+import static uk.gov.moj.cpp.sjp.persistence.repository.OnlinePleaRepository.FIELDS.NET_TURNOVER;
+import static uk.gov.moj.cpp.sjp.persistence.repository.OnlinePleaRepository.FIELDS.GROSS_TURNOVER;
+import static uk.gov.moj.cpp.sjp.persistence.repository.OnlinePleaRepository.FIELDS.NUMBER_OF_EMPLOYEES;
 import static uk.gov.moj.cpp.sjp.persistence.repository.OnlinePleaRepository.FIELDS.OUTGOINGS_ACCOMMODATION_AMOUNT;
 import static uk.gov.moj.cpp.sjp.persistence.repository.OnlinePleaRepository.FIELDS.OUTGOINGS_CHILD_MAINTENANCE_AMOUNT;
 import static uk.gov.moj.cpp.sjp.persistence.repository.OnlinePleaRepository.FIELDS.OUTGOINGS_COUNCIL_TAX_AMOUNT;
@@ -47,11 +60,13 @@ import static uk.gov.moj.cpp.sjp.persistence.repository.OnlinePleaRepository.FIE
 import static uk.gov.moj.cpp.sjp.persistence.repository.OnlinePleaRepository.FIELDS.PERSON_POSTCODE;
 import static uk.gov.moj.cpp.sjp.persistence.repository.OnlinePleaRepository.FIELDS.PERSON_TELEPHONE_HOME;
 import static uk.gov.moj.cpp.sjp.persistence.repository.OnlinePleaRepository.FIELDS.PERSON_TELEPHONE_MOBILE;
+import static uk.gov.moj.cpp.sjp.persistence.repository.OnlinePleaRepository.FIELDS.TRADING_MORE_THAN_TWELVE_MONTHS;
 import static uk.gov.moj.cpp.sjp.persistence.repository.OnlinePleaRepository.FIELDS.UNAVAILABILITY;
 import static uk.gov.moj.cpp.sjp.persistence.repository.OnlinePleaRepository.FIELDS.WITNESS_DETAILS;
 import static uk.gov.moj.cpp.sjp.persistence.repository.OnlinePleaRepository.FIELDS.WITNESS_DISPUTE;
 
 import uk.gov.moj.cpp.sjp.persistence.entity.Address;
+import uk.gov.moj.cpp.sjp.persistence.entity.LegalEntityFinancialMeans;
 import uk.gov.moj.cpp.sjp.persistence.entity.OnlinePlea;
 
 import java.util.List;
@@ -107,7 +122,7 @@ public abstract class OnlinePleaRepository implements EntityRepository<OnlinePle
      * Hide employment, employer and outgoings.
      */
     @org.apache.deltaspike.data.api.Query(
-            value = "SELECT new OnlinePlea(op.caseId, op.pleaDetails, op.defendantId, op.personalDetails, op.submittedOn) FROM OnlinePlea op WHERE op.caseId = :caseId",
+            value = "SELECT new OnlinePlea(op.caseId, op.pleaDetails, op.defendantId, op.personalDetails, op.submittedOn, op.legalEntityDetails) FROM OnlinePlea op WHERE op.caseId = :caseId",
             singleResult = SingleResultType.OPTIONAL)
     public abstract OnlinePlea findOnlinePleaWithoutFinances(@QueryParam("caseId") final UUID caseId);
 
@@ -116,60 +131,92 @@ public abstract class OnlinePleaRepository implements EntityRepository<OnlinePle
     enum FIELDS {
         CASE_ID(OnlinePlea::getCaseId, "caseId"),
 
-        EMPLOYER_REFERENCE(o -> o.getEmployer().getEmployeeReference(), "employer", "employeeReference"),
-        EMPLOYER_NAME(o -> o.getEmployer().getName(), "employer", "name"),
-        EMPLOYER_PHONE(o -> o.getEmployer().getPhone(), "employer", "phone"),
-        EMPLOYER_ADDRESS_1(o -> o.getEmployer().getAddress().getAddress1(), "employer", "address", "address1"),
-        EMPLOYER_ADDRESS_2(o -> o.getEmployer().getAddress().getAddress2(), "employer", "address", "address2"),
-        EMPLOYER_ADDRESS_3(o -> o.getEmployer().getAddress().getAddress3(), "employer", "address", "address3"),
-        EMPLOYER_ADDRESS_4(o -> o.getEmployer().getAddress().getAddress4(), "employer", "address", "address4"),
-        EMPLOYER_ADDRESS_5(o -> o.getEmployer().getAddress().getAddress5(), "employer", "address", "address5"),
-        EMPLOYER_POSTCODE(o -> o.getEmployer().getAddress().getPostcode(), "employer", "address", "postcode"),
+        EMPLOYER_REFERENCE(o -> o.getEmployer().getEmployeeReference(), Constants.EMPLOYER, "employeeReference"),
+        EMPLOYER_NAME(o -> o.getEmployer().getName(), Constants.EMPLOYER, "name"),
+        EMPLOYER_PHONE(o -> o.getEmployer().getPhone(), Constants.EMPLOYER, "phone"),
+        EMPLOYER_ADDRESS_1(o -> o.getEmployer().getAddress().getAddress1(), Constants.EMPLOYER, Constants.ADDRESS, Constants.ADDRESS_1),
+        EMPLOYER_ADDRESS_2(o -> o.getEmployer().getAddress().getAddress2(), Constants.EMPLOYER, Constants.ADDRESS, Constants.ADDRESS_2),
+        EMPLOYER_ADDRESS_3(o -> o.getEmployer().getAddress().getAddress3(), Constants.EMPLOYER, Constants.ADDRESS, Constants.ADDRESS_3),
+        EMPLOYER_ADDRESS_4(o -> o.getEmployer().getAddress().getAddress4(), Constants.EMPLOYER, Constants.ADDRESS, Constants.ADDRESS_4),
+        EMPLOYER_ADDRESS_5(o -> o.getEmployer().getAddress().getAddress5(), Constants.EMPLOYER, Constants.ADDRESS, Constants.ADDRESS_5),
+        EMPLOYER_POSTCODE(o -> o.getEmployer().getAddress().getPostcode(), Constants.EMPLOYER, Constants.ADDRESS, Constants.POSTCODE),
 
-        EMPLOYMENT_INCOME_PAYMENT_AMOUNT(o -> o.getEmployment().getIncomePaymentAmount(), "employment", "incomePaymentAmount"),
-        EMPLOYMENT_INCOME_FREQUENCY(o -> o.getEmployment().getIncomePaymentFrequency(), "employment", "incomePaymentFrequency"),
-        EMPLOYMENT_BENEFITS_TYPE(o -> o.getEmployment().getBenefitsType(), "employment", "benefitsType"),
-        EMPLOYMENT_BENEFITS_CLAIMED(o -> o.getEmployment().getBenefitsClaimed(), "employment", "benefitsClaimed"),
-        EMPLOYMENT_BENEFITS_DEDUCT_PENALTY_PREFERENCE(o -> o.getEmployment().getBenefitsDeductPenaltyPreference(), "employment", "benefitsDeductPenaltyPreference"),
-        EMPLOYMENT_STATUS(o -> o.getEmployment().getEmploymentStatus(), "employment", "employmentStatus"),
-        EMPLOYMENT_STATUS_DETAILS(o -> o.getEmployment().getEmploymentStatusDetails(), "employment", "employmentStatusDetails"),
+        LEGALENTITY_POSITION(o -> o.getLegalEntityDetails().getPositionOfRepresentative(), Constants.LEGAL_ENTITY, "positionOfRepresentative"),
 
-        OUTGOINGS_ACCOMMODATION_AMOUNT(o -> o.getOutgoings().getAccommodationAmount(), "outgoings", "accommodationAmount"),
-        OUTGOINGS_COUNCIL_TAX_AMOUNT(o -> o.getOutgoings().getCouncilTaxAmount(), "outgoings", "councilTaxAmount"),
-        OUTGOINGS_HOUSEHOLD_BILLS_AMOUNT(o -> o.getOutgoings().getHouseholdBillsAmount(), "outgoings", "householdBillsAmount"),
-        OUTGOINGS_TRAVEL_EXPENSES_AMOUNT(o -> o.getOutgoings().getTravelExpensesAmount(), "outgoings", "travelExpensesAmount"),
-        OUTGOINGS_CHILD_MAINTENANCE_AMOUNT(o -> o.getOutgoings().getChildMaintenanceAmount(), "outgoings", "childMaintenanceAmount"),
-        OUTGOINGS_OTHER_DESCRIPTION(o -> o.getOutgoings().getOtherDescription(), "outgoings", "otherDescription"),
-        OUTGOINGS_OTHER_AMOUNT(o -> o.getOutgoings().getOtherAmount(), "outgoings", "otherAmount"),
+        LEGALENTITY_NAME(o -> o.getLegalEntityDetails().getLegalEntityName(), Constants.LEGAL_ENTITY, "legalEntityName"),
 
-        WITNESS_DISPUTE(o -> o.getPleaDetails().getWitnessDispute(), "pleaDetails", "witnessDispute"),
-        WITNESS_DETAILS(o -> o.getPleaDetails().getWitnessDetails(), "pleaDetails", "witnessDetails"),
-        UNAVAILABILITY(o -> o.getPleaDetails().getUnavailability(), "pleaDetails", "unavailability"),
-        INTERPRETER_LANGUAGE(o -> o.getPleaDetails().getInterpreterLanguage(), "pleaDetails", "interpreterLanguage"),
-        HEARING_LANGUAGE(o -> o.getPleaDetails().getSpeakWelsh(), "pleaDetails", "speakWelsh"),
+        LEGALENTITY_HOME(o -> o.getLegalEntityDetails().getHomeTelephone(), Constants.LEGAL_ENTITY, "homeTelephone"),
 
-        PERSON_FIRST_NAME(o -> o.getPersonalDetails().getFirstName(), "personalDetails", "firstName"),
-        PERSON_LAST_NAME(o -> o.getPersonalDetails().getLastName(), "personalDetails", "lastName"),
-        PERSON_TELEPHONE_HOME(o -> o.getPersonalDetails().getHomeTelephone(), "personalDetails", "homeTelephone"),
-        PERSON_TELEPHONE_MOBILE(o -> o.getPersonalDetails().getMobile(), "personalDetails", "mobile"),
-        PERSON_EMAIL(o -> o.getPersonalDetails().getEmail(), "personalDetails", "email"),
-        PERSON_DOB(o -> o.getPersonalDetails().getDateOfBirth(), "personalDetails", "dateOfBirth"),
-        PERSON_NI_NUMBER(o -> o.getPersonalDetails().getNationalInsuranceNumber(), "personalDetails", "nationalInsuranceNumber"),
-        PERSON_DRIVER_NUMBER(o -> o.getPersonalDetails().getDriverNumber(), "personalDetails", "driverNumber"),
-        PERSON_DRIVER_LICENCE_DETAILS(o -> o.getPersonalDetails().getDriverLicenceDetails(), "personalDetails", "driverLicenceDetails"),
-        PERSON_ADDRESS_1(o -> ofNullable(o.getPersonalDetails().getAddress()).map(Address::getAddress1).orElse(null), "personalDetails", "address", "address1"),
-        PERSON_ADDRESS_2(o -> ofNullable(o.getPersonalDetails().getAddress()).map(Address::getAddress2).orElse(null), "personalDetails", "address", "address2"),
-        PERSON_ADDRESS_3(o -> ofNullable(o.getPersonalDetails().getAddress()).map(Address::getAddress3).orElse(null), "personalDetails", "address", "address3"),
-        PERSON_ADDRESS_4(o -> ofNullable(o.getPersonalDetails().getAddress()).map(Address::getAddress4).orElse(null), "personalDetails", "address", "address4"),
-        PERSON_ADDRESS_5(o -> ofNullable(o.getPersonalDetails().getAddress()).map(Address::getAddress5).orElse(null), "personalDetails", "address", "address5"),
-        PERSON_POSTCODE(o -> ofNullable(o.getPersonalDetails().getAddress()).map(Address::getPostcode).orElse(null), "personalDetails", "address", "postcode"),
+        LEGALENTITY_MOBILE(o -> o.getLegalEntityDetails().getMobile(), Constants.LEGAL_ENTITY, "mobile"),
 
-        COME_TO_COURT(o -> ofNullable(o.getPleaDetails()).map(OnlinePlea.PleaDetails::getComeToCourt).orElse(null), "pleaDetails", "comeToCourt"),
+        LEGALENTITY_EMAIL(o -> o.getLegalEntityDetails().getEmail(), Constants.LEGAL_ENTITY, "email"),
 
-        OUTSTANDING_FINES(o -> ofNullable(o.getPleaDetails()).map(OnlinePlea.PleaDetails::getOutstandingFines).orElse(null), "pleaDetails", "outstandingFines"),
+        LEGALENTITY_ADDRESS_1(o -> ofNullable(o.getLegalEntityDetails().getAddress()).map(Address::getAddress1).orElse(null), Constants.LEGAL_ENTITY, Constants.ADDRESS, Constants.ADDRESS_1),
 
-        DISABILITY_NEEDS(o -> ofNullable(o.getPleaDetails()).map(OnlinePlea.PleaDetails::getDisabilityNeeds).orElse(null), "pleaDetails", "disabilityNeeds");
+        LEGALENTITY_ADDRESS_2(o -> ofNullable(o.getLegalEntityDetails().getAddress()).map(Address::getAddress2).orElse(null), Constants.LEGAL_ENTITY, Constants.ADDRESS, Constants.ADDRESS_2),
 
+        LEGALENTITY_ADDRESS_3(o -> ofNullable(o.getLegalEntityDetails().getAddress()).map(Address::getAddress3).orElse(null), Constants.LEGAL_ENTITY, Constants.ADDRESS, Constants.ADDRESS_3),
+
+        LEGALENTITY_ADDRESS_4(o -> ofNullable(o.getLegalEntityDetails().getAddress()).map(Address::getAddress4).orElse(null), Constants.LEGAL_ENTITY, Constants.ADDRESS, Constants.ADDRESS_4),
+
+        LEGALENTITY_ADDRESS_5(o -> ofNullable(o.getLegalEntityDetails().getAddress()).map(Address::getAddress5).orElse(null), Constants.LEGAL_ENTITY, Constants.ADDRESS, Constants.ADDRESS_5),
+
+        LEGALENTITY_POSTCODE(o -> ofNullable(o.getLegalEntityDetails().getAddress()).map(Address::getPostcode).orElse(null), Constants.LEGAL_ENTITY, Constants.ADDRESS, Constants.POSTCODE),
+
+        TRADING_MORE_THAN_TWELVE_MONTHS(o -> ofNullable(o.getLegalEntityDetails().getLegalEntityFinancialMeans()).map(LegalEntityFinancialMeans::getTradingMoreThan12Months).orElse(null), Constants.LEGAL_ENTITY, Constants.LEGAL_ENTITY_FINANCIAL_MEANS, Constants.TRADING_MORE_THAN_12_MONTHS),
+
+        GROSS_TURNOVER(o -> ofNullable(o.getLegalEntityDetails().getLegalEntityFinancialMeans()).map(LegalEntityFinancialMeans::getGrossTurnover).orElse(null), Constants.LEGAL_ENTITY, Constants.LEGAL_ENTITY_FINANCIAL_MEANS, Constants.GROSS_TURNOVER),
+
+        NET_TURNOVER(o -> ofNullable(o.getLegalEntityDetails().getLegalEntityFinancialMeans()).map(LegalEntityFinancialMeans::getNetTurnover).orElse(null), Constants.LEGAL_ENTITY, Constants.LEGAL_ENTITY_FINANCIAL_MEANS, Constants.NET_TURNOVER),
+
+        NUMBER_OF_EMPLOYEES(o -> ofNullable(o.getLegalEntityDetails().getLegalEntityFinancialMeans()).map(LegalEntityFinancialMeans::getNumberOfEmployees).orElse(null), Constants.LEGAL_ENTITY, Constants.LEGAL_ENTITY_FINANCIAL_MEANS, Constants.NUMBER_OF_EMPLOYEES),
+
+
+        EMPLOYMENT_INCOME_PAYMENT_AMOUNT(o -> o.getEmployment().getIncomePaymentAmount(), Constants.EMPLOYMENT, "incomePaymentAmount"),
+        EMPLOYMENT_INCOME_FREQUENCY(o -> o.getEmployment().getIncomePaymentFrequency(), Constants.EMPLOYMENT, "incomePaymentFrequency"),
+        EMPLOYMENT_BENEFITS_TYPE(o -> o.getEmployment().getBenefitsType(), Constants.EMPLOYMENT, "benefitsType"),
+        EMPLOYMENT_BENEFITS_CLAIMED(o -> o.getEmployment().getBenefitsClaimed(), Constants.EMPLOYMENT, "benefitsClaimed"),
+        EMPLOYMENT_BENEFITS_DEDUCT_PENALTY_PREFERENCE(o -> o.getEmployment().getBenefitsDeductPenaltyPreference(), Constants.EMPLOYMENT, "benefitsDeductPenaltyPreference"),
+        EMPLOYMENT_STATUS(o -> o.getEmployment().getEmploymentStatus(), Constants.EMPLOYMENT, "employmentStatus"),
+        EMPLOYMENT_STATUS_DETAILS(o -> o.getEmployment().getEmploymentStatusDetails(), Constants.EMPLOYMENT, "employmentStatusDetails"),
+
+        OUTGOINGS_ACCOMMODATION_AMOUNT(o -> o.getOutgoings().getAccommodationAmount(), Constants.OUTGOINGS, "accommodationAmount"),
+        OUTGOINGS_COUNCIL_TAX_AMOUNT(o -> o.getOutgoings().getCouncilTaxAmount(), Constants.OUTGOINGS, "councilTaxAmount"),
+        OUTGOINGS_HOUSEHOLD_BILLS_AMOUNT(o -> o.getOutgoings().getHouseholdBillsAmount(), Constants.OUTGOINGS, "householdBillsAmount"),
+        OUTGOINGS_TRAVEL_EXPENSES_AMOUNT(o -> o.getOutgoings().getTravelExpensesAmount(), Constants.OUTGOINGS, "travelExpensesAmount"),
+        OUTGOINGS_CHILD_MAINTENANCE_AMOUNT(o -> o.getOutgoings().getChildMaintenanceAmount(), Constants.OUTGOINGS, "childMaintenanceAmount"),
+        OUTGOINGS_OTHER_DESCRIPTION(o -> o.getOutgoings().getOtherDescription(), Constants.OUTGOINGS, "otherDescription"),
+        OUTGOINGS_OTHER_AMOUNT(o -> o.getOutgoings().getOtherAmount(), Constants.OUTGOINGS, "otherAmount"),
+
+        WITNESS_DISPUTE(o -> o.getPleaDetails().getWitnessDispute(), Constants.PLEA_DETAILS, "witnessDispute"),
+        WITNESS_DETAILS(o -> o.getPleaDetails().getWitnessDetails(), Constants.PLEA_DETAILS, "witnessDetails"),
+        UNAVAILABILITY(o -> o.getPleaDetails().getUnavailability(), Constants.PLEA_DETAILS, "unavailability"),
+        INTERPRETER_LANGUAGE(o -> o.getPleaDetails().getInterpreterLanguage(), Constants.PLEA_DETAILS, "interpreterLanguage"),
+        HEARING_LANGUAGE(o -> o.getPleaDetails().getSpeakWelsh(), Constants.PLEA_DETAILS, "speakWelsh"),
+
+        PERSON_FIRST_NAME(o -> o.getPersonalDetails().getFirstName(), Constants.PERSONAL_DETAILS, "firstName"),
+        PERSON_LAST_NAME(o -> o.getPersonalDetails().getLastName(), Constants.PERSONAL_DETAILS, "lastName"),
+        PERSON_TELEPHONE_HOME(o -> o.getPersonalDetails().getHomeTelephone(), Constants.PERSONAL_DETAILS, "homeTelephone"),
+        PERSON_TELEPHONE_MOBILE(o -> o.getPersonalDetails().getMobile(), Constants.PERSONAL_DETAILS, "mobile"),
+        PERSON_EMAIL(o -> o.getPersonalDetails().getEmail(), Constants.PERSONAL_DETAILS, "email"),
+        PERSON_DOB(o -> o.getPersonalDetails().getDateOfBirth(), Constants.PERSONAL_DETAILS, "dateOfBirth"),
+        PERSON_NI_NUMBER(o -> o.getPersonalDetails().getNationalInsuranceNumber(), Constants.PERSONAL_DETAILS, "nationalInsuranceNumber"),
+        PERSON_DRIVER_NUMBER(o -> o.getPersonalDetails().getDriverNumber(), Constants.PERSONAL_DETAILS, "driverNumber"),
+        PERSON_DRIVER_LICENCE_DETAILS(o -> o.getPersonalDetails().getDriverLicenceDetails(), Constants.PERSONAL_DETAILS, "driverLicenceDetails"),
+        PERSON_ADDRESS_1(o -> ofNullable(o.getPersonalDetails().getAddress()).map(Address::getAddress1).orElse(null), Constants.PERSONAL_DETAILS, Constants.ADDRESS, Constants.ADDRESS_1),
+        PERSON_ADDRESS_2(o -> ofNullable(o.getPersonalDetails().getAddress()).map(Address::getAddress2).orElse(null), Constants.PERSONAL_DETAILS, Constants.ADDRESS, Constants.ADDRESS_2),
+        PERSON_ADDRESS_3(o -> ofNullable(o.getPersonalDetails().getAddress()).map(Address::getAddress3).orElse(null), Constants.PERSONAL_DETAILS, Constants.ADDRESS, Constants.ADDRESS_3),
+        PERSON_ADDRESS_4(o -> ofNullable(o.getPersonalDetails().getAddress()).map(Address::getAddress4).orElse(null), Constants.PERSONAL_DETAILS, Constants.ADDRESS, Constants.ADDRESS_4),
+        PERSON_ADDRESS_5(o -> ofNullable(o.getPersonalDetails().getAddress()).map(Address::getAddress5).orElse(null), Constants.PERSONAL_DETAILS, Constants.ADDRESS, Constants.ADDRESS_5),
+        PERSON_POSTCODE(o -> ofNullable(o.getPersonalDetails().getAddress()).map(Address::getPostcode).orElse(null), Constants.PERSONAL_DETAILS, Constants.ADDRESS, Constants.POSTCODE),
+
+        COME_TO_COURT(o -> ofNullable(o.getPleaDetails()).map(OnlinePlea.PleaDetails::getComeToCourt).orElse(null), Constants.PLEA_DETAILS, "comeToCourt"),
+
+        OUTSTANDING_FINES(o -> ofNullable(o.getPleaDetails()).map(OnlinePlea.PleaDetails::getOutstandingFines).orElse(null), Constants.PLEA_DETAILS, "outstandingFines"),
+
+        DISABILITY_NEEDS(o -> ofNullable(o.getPleaDetails()).map(OnlinePlea.PleaDetails::getDisabilityNeeds).orElse(null), Constants.PLEA_DETAILS, "disabilityNeeds");
+
+        public static final String ADDRESS = "address";
         private String[] fieldPath;
         private Function<OnlinePlea, Object> fieldGetter;
 
@@ -188,6 +235,27 @@ public abstract class OnlinePleaRepository implements EntityRepository<OnlinePle
 
         public Object convertValue(OnlinePlea onlinePlea) {
             return fieldGetter.apply(onlinePlea);
+        }
+
+        private static class Constants {
+            public static final String ADDRESS_1 = "address1";
+            public static final String ADDRESS_2 = "address2";
+            public static final String ADDRESS_3 = "address3";
+            public static final String ADDRESS_4 = "address4";
+            public static final String ADDRESS_5 = "address5";
+            public static final String POSTCODE = "postcode";
+            public static final String ADDRESS = "address";
+            public static final String EMPLOYER = "employer";
+            public static final String LEGAL_ENTITY = "legalEntityDetails";
+            public static final String LEGAL_ENTITY_FINANCIAL_MEANS = "legalEntityFinancialMeans";
+            public static final String TRADING_MORE_THAN_12_MONTHS = "tradingMoreThan12Months";
+            public static final String GROSS_TURNOVER = "grossTurnover";
+            public static final String NET_TURNOVER = "netTurnover";
+            public static final String NUMBER_OF_EMPLOYEES = "numberOfEmployees";
+            public static final String EMPLOYMENT = "employment";
+            public static final String OUTGOINGS = "outgoings";
+            public static final String PLEA_DETAILS = "pleaDetails";
+            public static final String PERSONAL_DETAILS = "personalDetails";
         }
     }
 
@@ -294,6 +362,29 @@ public abstract class OnlinePleaRepository implements EntityRepository<OnlinePle
         final List<FIELDS> getFieldsToUpdate() {
             return asList(
                     OUTSTANDING_FINES
+            );
+        }
+    }
+
+    public abstract static class LegalEntityDetailsOnlinePleaRepository extends OnlinePleaRepository {
+        @Override
+        final List<FIELDS> getFieldsToUpdate() {
+            return asList(
+                    LEGALENTITY_NAME,
+                    LEGALENTITY_HOME,
+                    LEGALENTITY_MOBILE,
+                    LEGALENTITY_EMAIL,
+                    LEGALENTITY_ADDRESS_1,
+                    LEGALENTITY_ADDRESS_2,
+                    LEGALENTITY_ADDRESS_3,
+                    LEGALENTITY_ADDRESS_4,
+                    LEGALENTITY_ADDRESS_5,
+                    LEGALENTITY_POSTCODE,
+                    DISABILITY_NEEDS,
+                    TRADING_MORE_THAN_TWELVE_MONTHS,
+                    NUMBER_OF_EMPLOYEES,
+                    GROSS_TURNOVER,
+                    NET_TURNOVER
             );
         }
     }

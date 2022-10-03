@@ -17,7 +17,6 @@ import static uk.gov.moj.cpp.sjp.domain.plea.PleaType.NOT_GUILTY;
 
 import uk.gov.justice.json.schemas.domains.sjp.User;
 import uk.gov.justice.services.common.util.Clock;
-import uk.gov.justice.services.common.util.UtcClock;
 import uk.gov.justice.services.test.utils.common.helper.StoppedClock;
 import uk.gov.moj.cpp.sjp.domain.DefendantCourtInterpreter;
 import uk.gov.moj.cpp.sjp.domain.DefendantCourtOptions;
@@ -59,7 +58,7 @@ public class SetPleasHandlerTest {
 
     private final User user = user().withUserId(randomUUID()).withFirstName("Theresa").withLastName("May").build();
 
-    private final Clock clock = new StoppedClock(new UtcClock().now());
+    private final Clock clock = new StoppedClock(ZonedDateTime.now());
 
     private CaseAggregateState caseAggregateState;
 

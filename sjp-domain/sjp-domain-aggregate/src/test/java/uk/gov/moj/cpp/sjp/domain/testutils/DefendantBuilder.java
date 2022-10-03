@@ -38,6 +38,7 @@ public class DefendantBuilder {
     private String languageNeeds = RandomStringUtils.random(10);
     private String asn = "asn";
     private String pncIdentifier = "pncId";
+    private String legalEntityName = "legalEntityName";
 
     public DefendantBuilder addOffence(final UUID offenceId) {
         this.offences.add(createPressRestrictableOffence(offenceId, false));
@@ -119,6 +120,11 @@ public class DefendantBuilder {
         return this;
     }
 
+    public DefendantBuilder withLegalEntityName(final String legalEntityName) {
+        this.legalEntityName = legalEntityName;
+        return this;
+    }
+
     public Defendant build() {
         return new Defendant(
                 id,
@@ -138,7 +144,7 @@ public class DefendantBuilder {
                 languageNeeds,
                 region,
                 asn,
-                pncIdentifier
-        );
+                pncIdentifier,
+                legalEntityName);
     }
 }

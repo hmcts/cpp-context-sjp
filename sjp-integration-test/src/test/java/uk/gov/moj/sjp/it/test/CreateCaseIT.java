@@ -49,7 +49,6 @@ import javax.json.JsonValue;
 
 import com.jayway.jsonpath.matchers.JsonPathMatchers;
 import com.jayway.restassured.path.json.JsonPath;
-import org.junit.Assert;
 import org.junit.Test;
 
 /**
@@ -61,6 +60,88 @@ public class CreateCaseIT extends BaseIntegrationTest {
 
     private static final String DEFENDANT_REGION = "croydon";
     private static final String NATIONAL_COURT_CODE = "1080";
+
+
+    @Test
+    public void shouldSchemaValidationFailWhenNoLegalEntityAndPersonalDetails() {
+        final CreateCase.CreateCasePayloadBuilder createCase = createMultiOffenceCase(randomUUID(), TFL, newArrayList("CA03010"));
+        createCase.getDefendantBuilder().withFirstName(null);
+        createCase.getDefendantBuilder().withLastName(null);
+        createCase.getDefendantBuilder().withLegalEntityName(null);
+
+        final String response = CreateCase.createCaseForPayloadBuilder(createCase, BAD_REQUEST);
+
+        JsonObject responseJson = responseToJsonObject(response);
+        JsonValue validationErrors = responseJson.get("validationErrors");
+        String validationTrace = validationErrors.toString();
+
+        with(validationTrace)
+                .assertEquals("$.message", "#/defendant: #: only 1 subschema matches out of 2");
+        assertThat(validationTrace, containsString(format("#/defendant: required key [%s] not found", "firstName")));
+        assertThat(validationTrace, containsString(format("#/defendant: required key [%s] not found", "lastName")));
+        assertThat(validationTrace, containsString(format("#/defendant: required key [%s] not found", "legalEntityName")));
+    }
+
+    @Test
+    public void shouldCreateCaseWhenDefendantIsALegalEntity() {
+        final UUID caseId = randomUUID();
+        final ProsecutingAuthority prosecutingAuthority = TFL;
+        stubProsecutorQuery(prosecutingAuthority.name(), prosecutingAuthority.getFullName(), randomUUID());
+
+        final String offenceCode1 = "CA03010";
+        final String offenceCode2 = "CA03011";
+
+        stubQueryOffencesByCode(offenceCode1);
+        stubQueryOffencesByCode(offenceCode2);
+
+        final int fineLevel = 3;
+        final BigDecimal maxValue = BigDecimal.valueOf(1000);
+
+        stubOffenceFineLevelsQuery(fineLevel, maxValue);
+
+        final CreateCase.CreateCasePayloadBuilder createCase = createMultiOffenceCase(caseId, prosecutingAuthority,
+                newArrayList(offenceCode1, offenceCode2));
+
+        final CreateCase.DefendantBuilder defendant = createCase.getDefendantBuilder();
+        defendant.withAsn("12345");
+        defendant.withPncIdentifier("6789");
+        defendant.withLegalEntityName("test");
+        defendant.withFirstName(null);
+        defendant.withLastName(null);
+        defendant.withTitle(null);
+        defendant.withDateOfBirth(null);
+        defendant.withDriverNumber(null);
+        defendant.withGender(null);
+        defendant.withNationalInsuranceNumber(null);
+        defendant.withDriverLicenceDetails(null);
+
+        final Optional<JsonEnvelope> caseReceivedEvent = new EventListener()
+                .subscribe(CaseReceived.EVENT_NAME)
+                .run(() -> CreateCase.createCaseForPayloadBuilder(createCase))
+                .popEvent(CaseReceived.EVENT_NAME);
+
+        assertTrue(caseReceivedEvent.isPresent());
+
+        final JsonPath jsonResponse = CasePoller.pollUntilCaseByIdIsOk(caseId, JsonPathMatchers.withJsonPath("$.status", equalTo(CaseStatus.NO_PLEA_RECEIVED_READY_FOR_DECISION.name())));
+        assertThat(jsonResponse.get("id"), equalTo(caseId.toString()));
+        assertThat(jsonResponse.get("urn"), equalTo(createCase.getUrn()));
+        assertThat(jsonResponse.get("prosecutingAuthorityName"), equalTo(TFL.getFullName()));
+        assertThat(jsonResponse.get("defendant.asn") , equalTo(defendant.getAsn()));
+        assertThat(jsonResponse.get("defendant.pncIdentifier") , equalTo(defendant.getPncIdentifier()));
+        assertThat(jsonResponse.get("defendant.legalEntityDetails.legalEntityName") , equalTo(defendant.getLegalEntityName()));
+        assertThat(jsonResponse.get("defendant.legalEntityDetails.address.address1") , equalTo(defendant.getAddressBuilder().getAddress1()));
+        assertThat(jsonResponse.get("defendant.legalEntityDetails.address.address2") , equalTo(defendant.getAddressBuilder().getAddress2()));
+        assertThat(jsonResponse.get("defendant.legalEntityDetails.address.address3") , equalTo(defendant.getAddressBuilder().getAddress3()));
+        assertThat(jsonResponse.get("defendant.legalEntityDetails.address.address4") , equalTo(defendant.getAddressBuilder().getAddress4()));
+        assertThat(jsonResponse.get("defendant.legalEntityDetails.address.address5") , equalTo(defendant.getAddressBuilder().getAddress5()));
+        assertThat(jsonResponse.get("defendant.legalEntityDetails.address.postcode") , equalTo(defendant.getAddressBuilder().getPostcode()));
+
+        assertThat(jsonResponse.get("defendant.legalEntityDetails.contactDetails.mobile") , equalTo(defendant.getContactDetailsBuilder().getMobile()));
+        assertThat(jsonResponse.get("defendant.legalEntityDetails.contactDetails.email") , equalTo(defendant.getContactDetailsBuilder().getEmail()));
+        assertThat(jsonResponse.get("defendant.legalEntityDetails.contactDetails.home") , equalTo(defendant.getContactDetailsBuilder().getHome()));
+
+    }
+
 
     @Test
     public void shouldMultiOffenceCaseBeCreatedWithEnterpriseId() {
@@ -199,7 +280,7 @@ public class CreateCaseIT extends BaseIntegrationTest {
         String validationTrace = validationErrors.toString();
 
         with(validationTrace)
-                .assertEquals("$.message", "#/defendant/contactDetails: 2 schema violations found");
+                .assertEquals("$.message", "#/defendant: #: only 1 subschema matches out of 2");
         assertThat(validationTrace, containsString(format("#/defendant/contactDetails/email2: string [%s] does not match pattern", email2)));
         assertThat(validationTrace, containsString(format("#/defendant/contactDetails/email: string [%s] does not match pattern", email)));
     }

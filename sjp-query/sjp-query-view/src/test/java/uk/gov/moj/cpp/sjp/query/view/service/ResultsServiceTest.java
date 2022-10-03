@@ -254,13 +254,11 @@ public class ResultsServiceTest {
                 Gender.MALE,
                 "NINO",
                 "DriverLicense",
-                null,
-                address,
-                null,
                 null);
 
         DefendantDetail defendantDetail = new DefendantDetail(defendantId);
         defendantDetail.setPersonalDetails(personalDetails);
+        defendantDetail.setAddress(address);
 
         defendantDetail.setOffences(asList(offenceDetail1,offenceDetail2));
 

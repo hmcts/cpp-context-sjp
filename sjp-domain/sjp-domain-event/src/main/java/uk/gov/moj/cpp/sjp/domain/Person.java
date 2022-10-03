@@ -21,6 +21,7 @@ public class Person {
     private final Address address;
     private final ContactDetails contactDetails;
     private final String region;
+    private final String legalEntityName;
 
     @JsonCreator
     public Person(
@@ -34,8 +35,8 @@ public class Person {
             @JsonProperty("driverLicenceDetails") final String driverLicenceDetails,
             @JsonProperty("address") final Address address,
             @JsonProperty("contactDetails") final ContactDetails contactDetails,
-            @JsonProperty("region") final String region
-    ) {
+            @JsonProperty("region") final String region,
+            @JsonProperty("legalEntityName") final String legalEntityName) {
         this.title = title;
         this.firstName = firstName;
         this.lastName = lastName;
@@ -47,6 +48,7 @@ public class Person {
         this.address = address;
         this.contactDetails = contactDetails;
         this.region = region;
+        this.legalEntityName = legalEntityName;
     }
 
     public String getTitle() {
@@ -93,6 +95,10 @@ public class Person {
         return region;
     }
 
+    public String getLegalEntityName() {
+        return legalEntityName;
+    }
+
     @SuppressWarnings("squid:S1067")
     @Override
     public boolean equals(Object o) {
@@ -112,13 +118,14 @@ public class Person {
                 Objects.equals(driverNumber, that.driverNumber) &&
                 Objects.equals(address, that.address) &&
                 Objects.equals(contactDetails, that.contactDetails) &&
-                DomainUtils.equals(region, that.region);
+                DomainUtils.equals(region, that.region) &&
+                DomainUtils.equals(legalEntityName, that.legalEntityName);
     }
 
     @Override
     public int hashCode() {
         return DomainUtils.hash(title, firstName, lastName, dateOfBirth, gender, nationalInsuranceNumber,
-                driverNumber, address, contactDetails, region);
+                driverNumber, address, contactDetails, region, legalEntityName);
     }
 
 }

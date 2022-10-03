@@ -6,13 +6,17 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.closeTo;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 import uk.gov.justice.services.common.util.Clock;
 import uk.gov.justice.services.test.utils.persistence.BaseTransactionalTest;
 import uk.gov.moj.cpp.sjp.persistence.entity.Address;
 import uk.gov.moj.cpp.sjp.persistence.entity.CaseDetail;
+import uk.gov.moj.cpp.sjp.persistence.entity.LegalEntityFinancialMeans;
 import uk.gov.moj.cpp.sjp.persistence.entity.OnlinePlea;
+import uk.gov.moj.cpp.sjp.persistence.entity.OnlinePleaLegalEntityDetails;
 import uk.gov.moj.cpp.sjp.persistence.entity.OnlinePleaPersonalDetails;
 
 import java.math.BigDecimal;
@@ -31,6 +35,9 @@ import org.junit.runner.RunWith;
 @RunWith(CdiTestRunner.class)
 public class OnlinePleaRepositoryTest extends BaseTransactionalTest {
 
+    public static final String HOME = "123131231";
+    public static final String MOBILE = "12313131";
+    public static final String EMAIL = "test@test.com";
     @Inject
     private OnlinePleaRepository.FinancialMeansOnlinePleaRepository onlinePleaRepository;
 
@@ -42,6 +49,8 @@ public class OnlinePleaRepositoryTest extends BaseTransactionalTest {
 
     private UUID caseId;
 
+    private UUID caseId2;
+
     @Before
     public void set() {
         caseId = UUID.randomUUID();
@@ -49,7 +58,14 @@ public class OnlinePleaRepositoryTest extends BaseTransactionalTest {
         caseRepository.save(caseDetail);
 
         final OnlinePlea insertedOnlinePlea = buildOnlinePlea(caseDetail, clock.now());
+
+        caseId2 = UUID.randomUUID();
+        final CaseDetail caseDetail1 = getCaseWithDefendant(caseId2);
+        caseRepository.save(caseDetail1);
+
+        final OnlinePlea insertedOnlinePleaWithCompany = buildOnlinePleaWithLegalEntity(caseDetail1, clock.now(), HOME, MOBILE, EMAIL);
         onlinePleaRepository.save(insertedOnlinePlea);
+        onlinePleaRepository.save(insertedOnlinePleaWithCompany);
     }
 
     @Test
@@ -66,13 +82,27 @@ public class OnlinePleaRepositoryTest extends BaseTransactionalTest {
 
     @Test
     public void shouldDeleteOutgoingDataOnSettingItToNullInOnlinePleaData() {
-
         final OnlinePlea onlinePlea = onlinePleaRepository.findBy(caseId);
         assertThat("Outgoing financial means data should present", onlinePlea.getOutgoings() != null);
         onlinePlea.setOutgoings(null);
         onlinePleaRepository.save(onlinePlea);
         final OnlinePlea onlinePleaAfterModification = onlinePleaRepository.findBy(caseId);
         assertThat("Outgoing financial means data should be null after deleting it", onlinePleaAfterModification.getOutgoings() == null);
+    }
+
+    @Test
+    public void shouldRetrieveLegalEntityDetails() {
+        final OnlinePlea onlinePlea =  onlinePleaRepository.findBy(caseId2);
+        assertNotNull(onlinePlea.getLegalEntityDetails());
+        assertEquals("companyLegal", onlinePlea.getLegalEntityDetails().getLegalEntityName());
+        assertEquals("Director", onlinePlea.getLegalEntityDetails().getPositionOfRepresentative());
+        assertEquals( BigDecimal.valueOf(1000), onlinePlea.getLegalEntityDetails().getLegalEntityFinancialMeans().getGrossTurnover());
+        assertEquals(BigDecimal.valueOf(100), onlinePlea.getLegalEntityDetails().getLegalEntityFinancialMeans().getNetTurnover());
+        assertEquals(100, onlinePlea.getLegalEntityDetails().getLegalEntityFinancialMeans().getNumberOfEmployees().intValue());
+        assertEquals(true, onlinePlea.getLegalEntityDetails().getLegalEntityFinancialMeans().getTradingMoreThan12Months());
+        assertEquals(HOME, onlinePlea.getLegalEntityDetails().getHomeTelephone());
+        assertEquals(MOBILE, onlinePlea.getLegalEntityDetails().getMobile());
+        assertEquals(EMAIL, onlinePlea.getLegalEntityDetails().getEmail());
     }
 
     @Test
@@ -130,7 +160,7 @@ public class OnlinePleaRepositoryTest extends BaseTransactionalTest {
         pleaDetails.setWitnessDispute("witnessDispute");
         pleaDetails.setSpeakWelsh(true);
 
-        final OnlinePlea onlinePlea = new OnlinePlea(caseDetail.getId(), pleaDetails, caseDetail.getDefendant().getId(), personalDetails, onlinePleaSubmittedOn);
+        final OnlinePlea onlinePlea = new OnlinePlea(caseDetail.getId(), pleaDetails, caseDetail.getDefendant().getId(), personalDetails, onlinePleaSubmittedOn, null);
 
         final OnlinePlea.Employer employer = new OnlinePlea.Employer();
         employer.setName("employer_name");
@@ -144,6 +174,22 @@ public class OnlinePleaRepositoryTest extends BaseTransactionalTest {
         outgoings.setAccommodationAmount(BigDecimal.TEN);
         onlinePlea.setOutgoings(outgoings);
 
+        return onlinePlea;
+    }
+
+    private OnlinePlea buildOnlinePleaWithLegalEntity(final CaseDetail caseDetail1, final ZonedDateTime onlinePleaSubmittedOn, String home, String mobile, String email) {
+        final LegalEntityFinancialMeans legalEntityFinancialMeans = new LegalEntityFinancialMeans(true, 100, BigDecimal.valueOf(1000), BigDecimal.valueOf(100));
+        final Address address = new Address();
+        address.setAddress1("test");
+        address.setPostcode("MK9 1AN");
+        final OnlinePlea.PleaDetails pleaDetails = new OnlinePlea.PleaDetails();
+        pleaDetails.setInterpreterLanguage("interpreter");
+        pleaDetails.setUnavailability("unavailability");
+        pleaDetails.setWitnessDetails("witnessDetails");
+        pleaDetails.setWitnessDispute("witnessDispute");
+        pleaDetails.setSpeakWelsh(true);
+        final OnlinePleaLegalEntityDetails legalEntityDetails = new OnlinePleaLegalEntityDetails("companyLegal", "Director", legalEntityFinancialMeans, address, home, mobile, email);
+        final OnlinePlea onlinePlea = new OnlinePlea(caseDetail1.getId(), pleaDetails, caseDetail1.getDefendant().getId(), null, onlinePleaSubmittedOn, legalEntityDetails);
         return onlinePlea;
     }
 

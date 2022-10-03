@@ -30,6 +30,7 @@ import uk.gov.justice.json.schemas.domains.sjp.Address;
 import uk.gov.justice.json.schemas.domains.sjp.ContactDetails;
 import uk.gov.justice.json.schemas.domains.sjp.Gender;
 import uk.gov.justice.json.schemas.domains.sjp.Interpreter;
+import uk.gov.justice.json.schemas.domains.sjp.LegalEntityDetails;
 import uk.gov.justice.json.schemas.domains.sjp.PersonalDetails;
 import uk.gov.justice.json.schemas.domains.sjp.PleaType;
 import uk.gov.justice.json.schemas.domains.sjp.queries.CaseDecision;
@@ -996,5 +997,93 @@ public class ProsecutionCasesViewHelperTest {
 
     private static List<OffenceDecisionInformation> getReferredOffencesWithVerdict(VerdictType verdictType) {
         return singletonList(OffenceDecisionInformation.createOffenceDecisionInformation(OFFENCE_ID1, verdictType));
+    }
+
+    private LegalEntityDetails.Builder createDefendantLegalEntityDetails() {
+        return LegalEntityDetails.legalEntityDetails()
+                .withAddress(Address.address()
+                        .withAddress1("Address 1")
+                        .withAddress2("Address 2")
+                        .withAddress3("Address 3")
+                        .withAddress4("Address 4")
+                        .withAddress5("Address 5")
+                        .withPostcode("E11 12G")
+                        .build())
+                .withContactDetails(ContactDetails.contactDetails()
+                        .withBusiness("+1234132514")
+                        .withEmail("b.b@foo.bar")
+                        .withEmail2("b.b@bar.foo")
+                        .withHome("+5234132514")
+                        .withMobile("+6214132514")
+                        .build())
+                .withLegalEntityName("Minister Of Justice");
+
+    }
+    @Test
+    public void shouldSendLegalEntityDetailsWhenLegalEntityDetailsNotNull() {
+
+        final List<Offence> offences = singletonList(createOffence(OFFENCE_CJS_CODE1, OFFENCE_ID1, null, 1));
+
+        final LegalEntityDetails defendantLegalEntityDetails = createDefendantLegalEntityDetails().build();
+        final CaseDetails caseDetails = createCaseDetailsWithLegalEntity(defendantLegalEntityDetails, offences);
+        final JsonObject prosecutor = createProsecutor();
+        final CaseReferredForCourtHearing caseReferredForCourtHearing = caseReferredForCourtHearing()
+                .withReferredAt(DECISION_DATE)
+                .withReferredOffences(getReferredOffencesWithVerdict(VerdictType.PROVED_SJP))
+                .withDefendantCourtOptions(new DefendantCourtOptions(new DefendantCourtInterpreter(LANGUAGE_X, true), null, disabilityNeedsOf(DISABILITY_NEEDS)))
+                .withConvictionDate(CONVICTION_DATE)
+                .withConvictingCourt(new SessionCourt(COURT_HOUSE_CODE,LJA_CODE))
+                .build();
+        final CaseDecision caseDecision = createCaseDecisionWithPressRestriction(caseReferredForCourtHearing);
+        when(referenceDataService.getResultDefinition(any(), any())).thenReturn(Optional.of(createObjectBuilder()
+                .add("id", randomUUID().toString())
+                .add("label", D45_RESULT_LABEL)
+                .build()
+        ));
+
+        when(referenceDataOffencesService.getOffenceDefinitionId(mockCJSOffenceCodeToOffenceDefinition().get(OFFENCE_CJS_CODE1))).thenReturn(OFFENCE_DEFINITION_ID);
+        when(referenceDataOffencesService.getMaxPenalty(mockCJSOffenceCodeToOffenceDefinition().get(OFFENCE_CJS_CODE1))).thenReturn(OFFENCE_MAX_PENALTY);
+        final List<ProsecutionCaseView> prosecutionCaseViews = prosecutionCasesViewHelper.createProsecutionCaseViews(
+                caseDetails,
+                caseDecision,
+                prosecutor,
+                null,
+                null,
+                null,
+                null,
+                null,
+                caseReferredForCourtHearing,
+                OFFENCE_MITIGATION,
+                mockCJSOffenceCodeToOffenceDefinition(),
+                singletonList(offences.get(0)), null);
+        assertThat(prosecutionCaseViews, hasSize(1));
+        final ProsecutionCaseView prosecutionCaseView = prosecutionCaseViews.get(0);
+        final DefendantView defendantView = prosecutionCaseView.getDefendants().get(0);
+        final OffenceView offenceView1 = defendantView.getOffences().get(0);
+        assertThat(offenceView1.getReportingRestrictions(), notNullValue());
+        final ReportingRestrictionView reportingRestrictionView = offenceView1.getReportingRestrictions().get(0);
+        assertThat(reportingRestrictionView.getId(), notNullValue());
+        assertThat(reportingRestrictionView.getLabel(), equalTo(D45_RESULT_LABEL));
+        assertThat(reportingRestrictionView.getOrderedDate(), notNullValue());
+
+        assertThat(defendantView.getLegalEntityDefendant().getOrganisation().getName(), notNullValue());
+        assertThat(defendantView.getLegalEntityDefendant().getOrganisation().getAddress(), notNullValue());
+        assertThat(defendantView.getLegalEntityDefendant().getOrganisation().getContact(), notNullValue());
+    }
+
+    private CaseDetails createCaseDetailsWithLegalEntity(final LegalEntityDetails defendantLegalEntityDetails, List<Offence> offences) {
+        return caseDetails()
+                .withId(CASE_ID)
+                .withUrn(CASE_URN.toString())
+                .withDefendant(defendant()
+                        .withId(DEFENDANT_ID)
+                        .withInterpreter(Interpreter.interpreter()
+                                .withLanguage(LANGUAGE_E)
+                                .build())
+                        .withNumPreviousConvictions(DEFENDANT_NUM_PREVIOUS_CONVICTIONS)
+                        .withLegalEntityDetails(defendantLegalEntityDetails)
+                        .withOffences(offences)
+                        .build())
+                .build();
     }
 }

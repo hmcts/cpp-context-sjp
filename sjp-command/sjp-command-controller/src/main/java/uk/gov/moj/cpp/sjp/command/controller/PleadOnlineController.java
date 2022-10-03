@@ -17,15 +17,24 @@ public class PleadOnlineController extends RegionAwareController {
     static final String COMMAND_NAME = "sjp.command.plead-online";
     private static final String PERSONAL_DETAILS = "personalDetails";
 
+    private static final String LEGAL_ENTITY = "legalEntityDefendant";
+
     @Inject
     private Sender sender;
 
     @Handles(COMMAND_NAME)
     public void pleadOnline(final JsonEnvelope envelope) {
-        final JsonObject personDetails = enrichJsonWithRegion(envelope.payloadAsJsonObject().getJsonObject(PERSONAL_DETAILS));
-        final JsonObject newPayload = updateJsonObject(envelope.payloadAsJsonObject(), PERSONAL_DETAILS, personDetails);
-        sender.send(envelop(newPayload)
-                .withName(COMMAND_NAME)
-                .withMetadataFrom(envelope));
+        if (envelope.payloadAsJsonObject().containsKey(PERSONAL_DETAILS)) {
+            final JsonObject personDetails = enrichJsonWithRegion(envelope.payloadAsJsonObject().getJsonObject(PERSONAL_DETAILS));
+            final JsonObject newPayload = updateJsonObject(envelope.payloadAsJsonObject(), PERSONAL_DETAILS, personDetails);
+            sender.send(envelop(newPayload)
+                    .withName(COMMAND_NAME)
+                    .withMetadataFrom(envelope));
+        }
+        else if (envelope.payloadAsJsonObject().containsKey(LEGAL_ENTITY)) {
+            sender.send(envelop(envelope.payloadAsJsonObject())
+                    .withName(COMMAND_NAME)
+                    .withMetadataFrom(envelope));
+        }
     }
 }

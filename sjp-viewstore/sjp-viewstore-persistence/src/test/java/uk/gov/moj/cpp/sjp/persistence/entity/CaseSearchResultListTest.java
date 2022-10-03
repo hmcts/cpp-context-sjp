@@ -25,6 +25,7 @@ public class CaseSearchResultListTest {
     private static final UUID DEFENDANT_ID = randomUUID();
     private static final String FIRST_NAME = "Foo";
     private static final String LAST_NAME = "Bar";
+    private static final String LEGAL_ENTITY_NAME = "Legal entity name";
     private static final LocalDate DATE_OF_BIRTH = LocalDate.now();
     private static final ZonedDateTime DATE_ADDED = ZonedDateTime.now();
 
@@ -35,13 +36,13 @@ public class CaseSearchResultListTest {
         caseSearchResults.setLastName("Bar");
         final CaseSearchResultList caseSearchResultList = new CaseSearchResultList(singletonList(caseSearchResults));
 
-        assertThat(caseSearchResultList.hasNameChanged(null, null), is(false));
-        assertThat(caseSearchResultList.hasNameChanged(null, "Bar"), is(false));
-        assertThat(caseSearchResultList.hasNameChanged("Foo", null), is(false));
+        assertThat(caseSearchResultList.hasNameChanged(null, null,null), is(false));
+        assertThat(caseSearchResultList.hasNameChanged(null, "Bar",null), is(false));
+        assertThat(caseSearchResultList.hasNameChanged("Foo", null,null), is(false));
 
         caseSearchResults.setFirstName(null);
         caseSearchResults.setLastName(null);
-        assertThat(caseSearchResultList.hasNameChanged(null, null), is(false));
+        assertThat(caseSearchResultList.hasNameChanged(null, null,null), is(false));
     }
 
     @Test
@@ -51,13 +52,13 @@ public class CaseSearchResultListTest {
         caseSearchResults.setLastName("Bar");
         final CaseSearchResultList caseSearchResultList = new CaseSearchResultList(singletonList(caseSearchResults));
 
-        assertThat(caseSearchResultList.hasNameChanged("Will", "Smith"), is(true));
-        assertThat(caseSearchResultList.hasNameChanged("Will", caseSearchResults.getLastName()), is(true));
-        assertThat(caseSearchResultList.hasNameChanged(caseSearchResults.getFirstName(), "Smith"), is(true));
+        assertThat(caseSearchResultList.hasNameChanged("Will", "Smith",null), is(true));
+        assertThat(caseSearchResultList.hasNameChanged("Will", caseSearchResults.getLastName(),null), is(true));
+        assertThat(caseSearchResultList.hasNameChanged(caseSearchResults.getFirstName(), "Smith",null), is(true));
 
         caseSearchResults.setFirstName(null);
         caseSearchResults.setLastName(null);
-        assertThat(caseSearchResultList.hasNameChanged("Will", "Smith"), is(true));
+        assertThat(caseSearchResultList.hasNameChanged("Will", "Smith",null), is(true));
     }
 
     @Test
@@ -67,9 +68,9 @@ public class CaseSearchResultListTest {
         caseSearchResults.setLastName("Bar");
         final CaseSearchResultList caseSearchResultList = new CaseSearchResultList(singletonList(caseSearchResults));
 
-        assertThat(caseSearchResultList.hasNameChanged("fOO", "bAR"), is(false));
-        assertThat(caseSearchResultList.hasNameChanged("fOO", caseSearchResults.getLastName()), is(false));
-        assertThat(caseSearchResultList.hasNameChanged(caseSearchResults.getFirstName(), "bAR"), is(false));
+        assertThat(caseSearchResultList.hasNameChanged("fOO", "bAR",null), is(false));
+        assertThat(caseSearchResultList.hasNameChanged("fOO", caseSearchResults.getLastName(),null), is(false));
+        assertThat(caseSearchResultList.hasNameChanged(caseSearchResults.getFirstName(), "bAR",null), is(false));
     }
 
     @Test
@@ -77,7 +78,7 @@ public class CaseSearchResultListTest {
         final List<CaseSearchResult> actual = new ArrayList<>();
         final CaseSearchResultList caseSearchResultList = new CaseSearchResultList(actual);
 
-        caseSearchResultList.setName(CASE_ID, DEFENDANT_ID, FIRST_NAME, LAST_NAME, DATE_OF_BIRTH, DATE_ADDED);
+        caseSearchResultList.setName(CASE_ID, DEFENDANT_ID, FIRST_NAME, LAST_NAME, DATE_OF_BIRTH, DATE_ADDED, LEGAL_ENTITY_NAME);
 
         assertThat(actual, hasSize(1));
         assertThat(actual.get(0).getCaseId(), equalTo(CASE_ID));
@@ -90,6 +91,7 @@ public class CaseSearchResultListTest {
         assertThat(actual.get(0).getCurrentLastName(), equalTo(LAST_NAME));
         assertThat(actual.get(0).getDateOfBirth(), equalTo(DATE_OF_BIRTH));
         assertThat(actual.get(0).getDateAdded(), equalTo(DATE_ADDED));
+        assertThat(actual.get(0).getLegalEntityName(), equalTo(LEGAL_ENTITY_NAME));
         assertThat(actual.get(0).isDeprecated(), equalTo(false));
     }
 
@@ -98,10 +100,10 @@ public class CaseSearchResultListTest {
         final List<CaseSearchResult> actual = new ArrayList<>();
         final CaseSearchResultList caseSearchResultList = new CaseSearchResultList(actual);
 
-        caseSearchResultList.setName(CASE_ID, DEFENDANT_ID, FIRST_NAME, LAST_NAME, DATE_OF_BIRTH, DATE_ADDED);
-        caseSearchResultList.setName(CASE_ID, DEFENDANT_ID, "new_first_name", null, DATE_OF_BIRTH, DATE_ADDED);
-        caseSearchResultList.setName(CASE_ID, DEFENDANT_ID, null, "new_last_name", DATE_OF_BIRTH, DATE_ADDED);
-        caseSearchResultList.setName(CASE_ID, DEFENDANT_ID, null, null, DATE_OF_BIRTH, DATE_ADDED);
+        caseSearchResultList.setName(CASE_ID, DEFENDANT_ID, FIRST_NAME, LAST_NAME, DATE_OF_BIRTH, DATE_ADDED,null);
+        caseSearchResultList.setName(CASE_ID, DEFENDANT_ID, "new_first_name", null, DATE_OF_BIRTH, DATE_ADDED,null);
+        caseSearchResultList.setName(CASE_ID, DEFENDANT_ID, null, "new_last_name", DATE_OF_BIRTH, DATE_ADDED,null);
+        caseSearchResultList.setName(CASE_ID, DEFENDANT_ID, null, null, DATE_OF_BIRTH, DATE_ADDED,null);
 
         assertThat(actual.get(0), hasNames(FIRST_NAME, LAST_NAME));
         assertThat(actual.get(0), hasCurrentNames("new_first_name", "new_last_name"));
@@ -121,15 +123,15 @@ public class CaseSearchResultListTest {
         final List<CaseSearchResult> actual = new ArrayList<>();
         final CaseSearchResultList caseSearchResultList = new CaseSearchResultList(actual);
 
-        caseSearchResultList.setName(CASE_ID, DEFENDANT_ID, null, null, DATE_OF_BIRTH, DATE_ADDED);
+        caseSearchResultList.setName(CASE_ID, DEFENDANT_ID, null, null, DATE_OF_BIRTH, DATE_ADDED,null);
         assertThat(actual.get(0), hasNames(null, null));
         assertThat(actual.get(0), hasCurrentNames(null, null));
 
-        caseSearchResultList.setName(CASE_ID, DEFENDANT_ID, "new_first_name", "new_last_name", DATE_OF_BIRTH, DATE_ADDED);
+        caseSearchResultList.setName(CASE_ID, DEFENDANT_ID, "new_first_name", "new_last_name", DATE_OF_BIRTH, DATE_ADDED,null);
         assertThat(actual.get(0), hasCurrentNames("new_first_name", "new_last_name"));
         assertThat(actual.get(1), hasCurrentNames("new_first_name", "new_last_name"));
 
-        caseSearchResultList.setName(CASE_ID, DEFENDANT_ID, "Will", "Smith", DATE_OF_BIRTH, DATE_ADDED);
+        caseSearchResultList.setName(CASE_ID, DEFENDANT_ID, "Will", "Smith", DATE_OF_BIRTH, DATE_ADDED,null);
         assertThat(actual.get(0), hasCurrentNames("Will", "Smith"));
         assertThat(actual.get(1), hasCurrentNames("Will", "Smith"));
         assertThat(actual.get(2), hasCurrentNames("Will", "Smith"));
@@ -140,14 +142,14 @@ public class CaseSearchResultListTest {
         final List<CaseSearchResult> actual = new ArrayList<>();
         final CaseSearchResultList caseSearchResultList = new CaseSearchResultList(actual);
 
-        caseSearchResultList.setName(CASE_ID, DEFENDANT_ID, FIRST_NAME, LAST_NAME, DATE_OF_BIRTH, DATE_ADDED);
+        caseSearchResultList.setName(CASE_ID, DEFENDANT_ID, FIRST_NAME, LAST_NAME, DATE_OF_BIRTH, DATE_ADDED,null);
         assertThat(actual.get(0).isDeprecated(), equalTo(false));
 
-        caseSearchResultList.setName(CASE_ID, DEFENDANT_ID, FIRST_NAME, LAST_NAME, DATE_OF_BIRTH, DATE_ADDED);
+        caseSearchResultList.setName(CASE_ID, DEFENDANT_ID, FIRST_NAME, LAST_NAME, DATE_OF_BIRTH, DATE_ADDED,null);
         assertThat(actual.get(0).isDeprecated(), equalTo(true));
         assertThat(actual.get(1).isDeprecated(), equalTo(false));
 
-        caseSearchResultList.setName(CASE_ID, DEFENDANT_ID, FIRST_NAME, LAST_NAME, DATE_OF_BIRTH, DATE_ADDED);
+        caseSearchResultList.setName(CASE_ID, DEFENDANT_ID, FIRST_NAME, LAST_NAME, DATE_OF_BIRTH, DATE_ADDED,null);
         assertThat(actual.get(0).isDeprecated(), equalTo(true));
         assertThat(actual.get(1).isDeprecated(), equalTo(true));
         assertThat(actual.get(2).isDeprecated(), equalTo(false));

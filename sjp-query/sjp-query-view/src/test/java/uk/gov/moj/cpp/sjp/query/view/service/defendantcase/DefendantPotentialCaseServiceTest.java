@@ -183,8 +183,8 @@ public class DefendantPotentialCaseServiceTest {
         assertEquals(queryParamPayload.getString(FIRSTNAME_QUERY_PARAM), personalDetails.getFirstName());
         assertEquals(queryParamPayload.getString(LASTNAME_QUERY_PARAM), personalDetails.getLastName());
         assertEquals(queryParamPayload.getString(DOB_QUERY_PARAM), personalDetails.getDateOfBirth().toString());
-        assertEquals(queryParamPayload.getString(ADDRESS_LINE1_QUERY_PARAM), personalDetails.getAddress().getAddress1());
-        assertEquals(queryParamPayload.getString(POSTCODE_QUERY_PARAM), personalDetails.getAddress().getPostcode());
+        assertEquals(queryParamPayload.getString(ADDRESS_LINE1_QUERY_PARAM), defendant.getAddress().getAddress1());
+        assertEquals(queryParamPayload.getString(POSTCODE_QUERY_PARAM), defendant.getAddress().getPostcode());
     }
 
     @Test
@@ -627,7 +627,7 @@ public class DefendantPotentialCaseServiceTest {
         personalDetails.setFirstName(firstName);
         personalDetails.setLastName(lastName);
         personalDetails.setDateOfBirth(LocalDate.parse(dob));
-        personalDetails.setAddress(new Address(addressLine1, "", "", "", "", postCode));
+        defendantDetail.setAddress(new Address(addressLine1, "", "", "", "", postCode));
         defendantDetail.setPersonalDetails(personalDetails);
 
         final List<OffenceDetail> offences = new LinkedList<>();
@@ -748,8 +748,8 @@ public class DefendantPotentialCaseServiceTest {
                                    personalDetails.getFirstName(),
                                    personalDetails.getLastName(),
                                    personalDetails.getDateOfBirth(),
-                                   personalDetails.getAddress().getAddress1(),
-                                   personalDetails.getAddress().getPostcode(),
+                                   defendant.getAddress().getAddress1(),
+                                   defendant.getAddress().getPostcode(),
                                    hearingDateStr);
 
         return caseResult;

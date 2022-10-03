@@ -41,6 +41,7 @@ public class UpdatedDefendantDetailsBuilder {
                 null,
                 "caseUrn",
                 UUID.randomUUID(),
-                region);
+                region,
+                null);
     }
 }

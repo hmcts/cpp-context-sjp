@@ -48,21 +48,39 @@
           "driverNumber": {
             "type": "string"
           },
-          "driverLicenceDetails" : {
-            "type" : "string"
+          "driverLicenceDetails": {
+            "type": "string"
+          },
+          "legalEntityName": {
+            "type": "string"
           }
         },
-        "required": [
-          "firstName",
-          "lastName",
-          "defendantId",
-          "caseId",
-          "caseUrn",
-          "dateOfBirth",
-          "nameUpdated",
-          "dateOfBirthUpdated",
-          "addressUpdated",
-          "updatedOn"
+        "anyOf": [
+          {
+            "required": [
+              "firstName",
+              "lastName",
+              "defendantId",
+              "caseId",
+              "caseUrn",
+              "dateOfBirth",
+              "nameUpdated",
+              "dateOfBirthUpdated",
+              "addressUpdated",
+              "updatedOn"
+            ]
+          },
+          {
+            "required": [
+              "legalEntityName",
+              "defendantId",
+              "caseId",
+              "caseUrn",
+              "nameUpdated",
+              "addressUpdated",
+              "updatedOn"
+            ]
+          }
         ],
         "additionalProperties": false
       }

@@ -73,6 +73,7 @@ public class DefendantDetailsIT extends BaseIntegrationTest {
     private static final String DEFENDANT_DETAILS_UPDATES_ACKNOWLEDGED_PUBLIC_EVENT = "public.sjp.defendant-details-updates-acknowledged";
     private final UUID caseIdOne = randomUUID();
     private final UUID caseIdTwo = randomUUID();
+    private final UUID caseIdThree = randomUUID();
     private final UUID tvlUserUid = randomUUID();
     private CreateCase.CreateCasePayloadBuilder createCasePayloadBuilder;
 

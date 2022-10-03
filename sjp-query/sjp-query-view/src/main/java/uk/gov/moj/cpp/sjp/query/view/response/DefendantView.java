@@ -2,6 +2,7 @@ package uk.gov.moj.cpp.sjp.query.view.response;
 
 
 import static java.util.Comparator.comparing;
+import static java.util.Objects.nonNull;
 import static java.util.stream.Collectors.toList;
 import static uk.gov.moj.cpp.sjp.domain.disability.DisabilityNeeds.disabilityNeedsOf;
 
@@ -23,14 +24,16 @@ public class DefendantView {
     private final Boolean speakWelsh;
     private final Integer numPreviousConvictions;
     private final PersonalDetailsView personalDetails;
+    private final LegalEntityDetailsView legalEntityDetails;
     private final DisabilityNeeds disabilityNeeds;
     private final String asn;
     private final String pncIdentifier;
     private final String gobAccountNumber;
 
+
     public DefendantView(DefendantDetail defendant) {
         this.id = defendant.getId();
-        this.personalDetails = new PersonalDetailsView(defendant.getPersonalDetails());
+        this.personalDetails = nonNull(defendant.getPersonalDetails()) ? new PersonalDetailsView(defendant) : null;
         this.offences = constructDefendantChargeView(defendant);
         this.caseId = defendant.getCaseDetail().getId();
         this.interpreter = Interpreter.of(
@@ -43,6 +46,7 @@ public class DefendantView {
         this.asn = defendant.getAsn();
         this.pncIdentifier = defendant.getPncIdentifier();
         this.gobAccountNumber = defendant.getAccountNumber();
+        this.legalEntityDetails = nonNull(defendant.getLegalEntityDetails()) ? new LegalEntityDetailsView(defendant) : null;
     }
 
     public List<OffenceView> getOffences() {
@@ -87,6 +91,10 @@ public class DefendantView {
 
     public String getGobAccountNumber() {
         return gobAccountNumber;
+    }
+
+    public LegalEntityDetailsView getLegalEntityDetails() {
+        return legalEntityDetails;
     }
 
     private static List<OffenceView> constructDefendantChargeView(final DefendantDetail defendant) {

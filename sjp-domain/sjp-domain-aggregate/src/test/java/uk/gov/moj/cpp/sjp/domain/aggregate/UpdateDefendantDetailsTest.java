@@ -14,7 +14,7 @@ import uk.gov.moj.cpp.sjp.domain.Person;
 import uk.gov.moj.cpp.sjp.event.DefendantAddressUpdated;
 import uk.gov.moj.cpp.sjp.event.DefendantDateOfBirthUpdated;
 import uk.gov.moj.cpp.sjp.event.DefendantDetailsUpdated;
-import uk.gov.moj.cpp.sjp.event.DefendantPersonalNameUpdated;
+import uk.gov.moj.cpp.sjp.event.DefendantNameUpdated;
 
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
@@ -93,7 +93,7 @@ public class UpdateDefendantDetailsTest extends CaseAggregateBaseTest {
                         person.getAddress().getPostcode()
                 ),
                 person.getContactDetails(),
-                person.getRegion());
+                person.getRegion(), person.getLegalEntityName());
 
         events = caseAggregate.updateDefendantDetails(userId, caseId, defendantId, updatedPerson, clock.now())
                 .collect(toList());
@@ -101,7 +101,7 @@ public class UpdateDefendantDetailsTest extends CaseAggregateBaseTest {
         assertThat(events, contains(
                 instanceOf(DefendantDateOfBirthUpdated.class),
                 instanceOf(DefendantAddressUpdated.class),
-                instanceOf(DefendantPersonalNameUpdated.class),
+                instanceOf(DefendantNameUpdated.class),
                 instanceOf(DefendantDetailsUpdated.class)));
 
         final DefendantDateOfBirthUpdated defendantDateOfBirthUpdated = (DefendantDateOfBirthUpdated) events.get(0);
@@ -114,10 +114,10 @@ public class UpdateDefendantDetailsTest extends CaseAggregateBaseTest {
         assertThat(defendantAddressUpdated.getNewAddress().getAddress1(), is(ADDRESS_1_UPDATED));
         assertThat(defendantAddressUpdated.getUpdatedAt(), is(updateDate));
 
-        final DefendantPersonalNameUpdated defendantPersonalNameUpdated = (DefendantPersonalNameUpdated) events.get(2);
-        assertThat(defendantPersonalNameUpdated.getOldPersonalName().getFirstName(), is(person.getFirstName()));
-        assertThat(defendantPersonalNameUpdated.getNewPersonalName().getFirstName(), is(FIRST_NAME_UPDATED));
-        assertThat(defendantPersonalNameUpdated.getUpdatedAt(), is(updateDate));
+        final DefendantNameUpdated defendantNameUpdated = (DefendantNameUpdated) events.get(2);
+        assertThat(defendantNameUpdated.getOldPersonalName().getFirstName(), is(person.getFirstName()));
+        assertThat(defendantNameUpdated.getNewPersonalName().getFirstName(), is(FIRST_NAME_UPDATED));
+        assertThat(defendantNameUpdated.getUpdatedAt(), is(updateDate));
 
         final DefendantDetailsUpdated defendantDetailsUpdated1 = (DefendantDetailsUpdated) events.get(3);
         assertThat(defendantDetailsUpdated1.getDriverNumber(), is(updatedPerson.getDriverNumber()));
@@ -139,14 +139,14 @@ public class UpdateDefendantDetailsTest extends CaseAggregateBaseTest {
                 person.getDriverLicenceDetails(),
                 person.getAddress(),
                 person.getContactDetails(),
-                person.getRegion());
+                person.getRegion(), person.getLegalEntityName());
 
         final List<Object> events = caseAggregate.updateDefendantDetails(userId, caseId, defendantId, personWithoutTitle, clock.now())
                 .collect(toList());
 
         assertThat("has defendant details updated event", events,
                 contains(
-                        instanceOf(DefendantPersonalNameUpdated.class),
+                        instanceOf(DefendantNameUpdated.class),
                         instanceOf(DefendantDetailsUpdated.class)
                 )
         );

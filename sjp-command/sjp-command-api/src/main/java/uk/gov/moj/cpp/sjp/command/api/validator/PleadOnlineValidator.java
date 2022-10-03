@@ -5,6 +5,7 @@ import static java.lang.Boolean.TRUE;
 import static java.util.Collections.emptyMap;
 import static java.util.Collections.singletonList;
 import static java.util.Collections.singletonMap;
+import static java.util.Objects.nonNull;
 import static org.apache.commons.collections.CollectionUtils.isEmpty;
 import static org.apache.commons.lang3.StringUtils.isEmpty;
 import static org.apache.commons.lang3.StringUtils.ordinalIndexOf;
@@ -15,6 +16,7 @@ import uk.gov.justice.json.schemas.domains.sjp.command.FinancialMeans;
 import uk.gov.justice.json.schemas.domains.sjp.command.Offence;
 import uk.gov.justice.json.schemas.domains.sjp.command.Plea;
 import uk.gov.justice.json.schemas.domains.sjp.command.PleadOnline;
+import uk.gov.justice.json.schemas.domains.sjp.command.plea.LegalEntityFinancialMeans;
 
 import java.util.Arrays;
 import java.util.HashSet;
@@ -55,7 +57,11 @@ public class PleadOnlineValidator {
                 .map(Offence::getPlea)
                 .anyMatch(Plea.GUILTY::equals);
 
-        if (anyGuiltyPlea && hasEmptyFinancialMeans(pleadOnline.getFinancialMeans())) {
+        if (nonNull(pleadOnline.getPersonalDetails()) && anyGuiltyPlea && hasEmptyFinancialMeans(pleadOnline.getFinancialMeans())) {
+            return PLEA_GUILTY_WITHOUT_FINANCIAL_MEANS;
+        }
+
+        if (nonNull(pleadOnline.getLegalEntityDefendant()) && anyGuiltyPlea && hasEmptyLegalEntityFinancialMeans(pleadOnline.getLegalEntityFinancialMeans())) {
             return PLEA_GUILTY_WITHOUT_FINANCIAL_MEANS;
         }
 
@@ -69,20 +75,25 @@ public class PleadOnlineValidator {
                 isEmpty(financialMeans.getEmploymentStatus());
     }
 
+    private static boolean hasEmptyLegalEntityFinancialMeans(final LegalEntityFinancialMeans financialMeans) {
+        return financialMeans == null ||
+                financialMeans.getNetTurnover() == null;
+    }
+
     public Map<String, List<String>> validate(final JsonObject caseDetail) {
-        if (caseStatusProhibited(caseDetail) ||
-                !checkCaseDetailField(caseDetail, "completed", FALSE) ||
-                !checkCaseDetailField(caseDetail, "assigned", FALSE) ||
-                offenceHasPendingWithdrawal(caseDetail)) {
+        if (caseStatusProhibited(caseDetail).equals(TRUE) ||
+                FALSE.equals(checkCaseDetailField(caseDetail, "completed", FALSE)) ||
+                FALSE.equals(checkCaseDetailField(caseDetail, "assigned", FALSE)) ||
+                TRUE.equals(offenceHasPendingWithdrawal(caseDetail).equals(TRUE))) {
             return CASE_HAS_BEEN_REVIEWED;
         }
         if (checkCaseAdjournedTo(caseDetail) ||
                 offenceWithConviction(caseDetail) ||
-                offenceHasConvictionDate(caseDetail)) {
+                TRUE.equals(offenceHasConvictionDate(caseDetail))) {
             return CASE_ADJOURNED_POST_CONVICTION;
         }
 
-        if (caseAlreadyPleaded(caseDetail)) {
+        if (TRUE.equals(caseAlreadyPleaded(caseDetail))) {
             return PLEA_ALREADY_SUBMITTED;
         }
         return emptyMap();
@@ -93,6 +104,7 @@ public class PleadOnlineValidator {
                 .filter(PROHIBITED_CASE_STATES::contains)
                 .isPresent();
     }
+
     private Boolean checkCaseAdjournedTo(final JsonObject caseDetail) {
         return Optional.ofNullable(caseDetail.getString("adjournedTo", null))
                 .isPresent();
@@ -103,18 +115,21 @@ public class PleadOnlineValidator {
                 .filter(fieldValue::equals)
                 .isPresent();
     }
+
     private Boolean offenceHasPendingWithdrawal(final JsonObject caseDetail) {
         return getOffences(caseDetail)
                 .map(offence -> offence.getBoolean("pendingWithdrawal", FALSE))
                 .anyMatch(TRUE::equals);
     }
+
     private Boolean offenceWithConviction(final JsonObject caseDetail) {
         return getOffences(caseDetail)
-                .anyMatch(offence -> offence.getString("conviction",null)!=null);
+                .anyMatch(offence -> offence.getString("conviction", null) != null);
     }
+
     private Boolean offenceHasConvictionDate(final JsonObject caseDetail) {
         return getOffences(caseDetail)
-                .anyMatch(offence -> offence.getString("convictionDate",null)!=null);
+                .anyMatch(offence -> offence.getString("convictionDate", null) != null);
     }
 
     private Boolean caseAlreadyPleaded(final JsonObject caseDetail) {

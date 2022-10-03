@@ -12,6 +12,9 @@
     "personalDetails": {
       "$ref" : "http://justice.gov.uk/json/schemas/domains/sjp/personal-details.json"
     },
+    "legalEntityDetails": {
+      "$ref" : "http://justice.gov.uk/json/schemas/domains/sjp/legal-entity-details.json"
+    },
     "offences": {
       "type": "array",
       "items": {

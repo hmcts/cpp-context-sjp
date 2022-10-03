@@ -189,7 +189,7 @@ public class CaseDetail implements Serializable {
     }
 
     public void acknowledgeDefendantDetailsUpdates(final ZonedDateTime acknowledgedAt) {
-        defendant.acknowledgeDetailsUpdates(acknowledgedAt);
+        defendant.setUpdatesAcknowledgedAt(acknowledgedAt);
     }
 
     public String getUrn() {

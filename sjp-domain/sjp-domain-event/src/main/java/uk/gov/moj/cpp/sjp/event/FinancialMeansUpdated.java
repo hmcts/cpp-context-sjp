@@ -8,6 +8,7 @@ import uk.gov.moj.cpp.sjp.domain.Benefits;
 import uk.gov.moj.cpp.sjp.domain.Income;
 import uk.gov.moj.cpp.sjp.domain.Outgoing;
 
+import java.math.BigDecimal;
 import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.UUID;
@@ -28,6 +29,14 @@ public class FinancialMeansUpdated {
     private boolean updatedByOnlinePlea;
     private ZonedDateTime updatedDate;
 
+    private BigDecimal grossTurnover;
+
+    private BigDecimal  netTurnover;
+
+    private Integer numberOfEmployees;
+
+    private Boolean tradingMoreThanTwelveMonths;
+
     @JsonCreator
     @SuppressWarnings("unused") // used during deserialization
     private FinancialMeansUpdated(@JsonProperty("defendantId") final UUID defendantId,
@@ -36,7 +45,11 @@ public class FinancialMeansUpdated {
                                   @JsonProperty("employmentStatus") final String employmentStatus,
                                   @JsonProperty("outgoings") final List<Outgoing> outgoings,
                                   @JsonProperty("updatedByOnlinePlea") final boolean updatedByOnlinePlea,
-                                  @JsonProperty("updatedDate") final ZonedDateTime updatedDate) {
+                                  @JsonProperty("updatedDate") final ZonedDateTime updatedDate,
+                                  @JsonProperty("grossTurnover") final BigDecimal grossTurnover,
+                                  @JsonProperty("netTurnover") final BigDecimal netTurnover,
+                                  @JsonProperty("numberOfEmployees") final Integer numberOfEmployees,
+                                  @JsonProperty("tradingMoreThanTwelveMonths") final Boolean tradingMoreThanTwelveMonths) {
         this.defendantId = defendantId;
         this.income = income;
         this.benefits = benefits;
@@ -44,17 +57,25 @@ public class FinancialMeansUpdated {
         this.outgoings = outgoings;
         this.updatedByOnlinePlea = updatedByOnlinePlea;
         this.updatedDate = updatedDate;
+        this.grossTurnover = grossTurnover;
+        this.netTurnover = netTurnover;
+        this.numberOfEmployees = numberOfEmployees;
+        this.tradingMoreThanTwelveMonths = tradingMoreThanTwelveMonths;
     }
 
     public static FinancialMeansUpdated createEvent(final UUID defendantId, final Income income, final Benefits benefits,
-                                                    final String employmentStatus) {
-        return new FinancialMeansUpdated(defendantId, income, benefits, employmentStatus, emptyList(), false, null);
+                                                    final String employmentStatus, final BigDecimal grossTurnover, final BigDecimal netTurnover, final Integer numberOfEmployees, final Boolean tradingMoreThanTwelveMonths) {
+        return new FinancialMeansUpdated(defendantId, income, benefits, employmentStatus, emptyList(), false, null, grossTurnover, netTurnover, numberOfEmployees, tradingMoreThanTwelveMonths);
     }
 
     public static FinancialMeansUpdated createEventForOnlinePlea(final UUID defendantId, final Income income, final Benefits benefits,
                                                                  final String employmentStatus, final List<Outgoing> outgoings,
-                                                                 final ZonedDateTime updatedDate) {
-        return new FinancialMeansUpdated(defendantId, income, benefits, employmentStatus, outgoings, true, updatedDate);
+                                                                 final ZonedDateTime updatedDate,
+                                                                 final BigDecimal grossTurnover,
+                                                                 final BigDecimal netTurnover,
+                                                                 final Integer numberOfEmployees,
+                                                                 final Boolean tradingMoreThanTwelveMonths) {
+        return new FinancialMeansUpdated(defendantId, income, benefits, employmentStatus, outgoings, true, updatedDate, grossTurnover, netTurnover, numberOfEmployees, tradingMoreThanTwelveMonths);
     }
 
     public UUID getDefendantId() {
@@ -83,5 +104,21 @@ public class FinancialMeansUpdated {
 
     public ZonedDateTime getUpdatedDate() {
         return updatedDate;
+    }
+
+    public BigDecimal getGrossTurnover() {
+        return grossTurnover;
+    }
+
+    public BigDecimal getNetTurnover() {
+        return netTurnover;
+    }
+
+    public Integer getNumberOfEmployees() {
+        return numberOfEmployees;
+    }
+
+    public Boolean getTradingMoreThanTwelveMonths() {
+        return tradingMoreThanTwelveMonths;
     }
 }

@@ -10,7 +10,7 @@ import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.sjp.event.DefendantAddressUpdated;
 import uk.gov.moj.cpp.sjp.event.DefendantDateOfBirthUpdated;
-import uk.gov.moj.cpp.sjp.event.DefendantPersonalNameUpdated;
+import uk.gov.moj.cpp.sjp.event.DefendantNameUpdated;
 import uk.gov.moj.cpp.sjp.persistence.entity.CaseDetail;
 import uk.gov.moj.cpp.sjp.persistence.entity.DefendantDetail;
 import uk.gov.moj.cpp.sjp.persistence.entity.PersonalDetails;
@@ -42,7 +42,7 @@ public class DefendantPersonalDetailsUpdatedTest {
     private JsonObject payload;
 
     @Mock
-    private DefendantPersonalNameUpdated defendantPersonalNameUpdated;
+    private DefendantNameUpdated defendantNameUpdated;
 
     @Mock
     private DefendantDateOfBirthUpdated defendantDateOfBirthUpdated;
@@ -64,16 +64,16 @@ public class DefendantPersonalDetailsUpdatedTest {
         ZonedDateTime eventCreationTime = ZonedDateTime.now(UTC);
 
         final JsonEnvelope envelope = envelopeFrom(
-                metadataWithRandomUUID("sjp.events.defendant-personal-name-updated")
+                metadataWithRandomUUID("sjp.events.defendant-name-updated")
                         .createdAt(eventCreationTime),
                 payload);
 
-        when(jsonObjectToObjectConverter.convert(payload, DefendantPersonalNameUpdated.class)).thenReturn(defendantPersonalNameUpdated);
-        when(caseRepository.findBy(defendantPersonalNameUpdated.getCaseId())).thenReturn(caseDetail);
+        when(jsonObjectToObjectConverter.convert(payload, DefendantNameUpdated.class)).thenReturn(defendantNameUpdated);
+        when(caseRepository.findBy(defendantNameUpdated.getCaseId())).thenReturn(caseDetail);
         when(caseDetail.getDefendant()).thenReturn(defendantDetail);
         when(defendantDetail.getPersonalDetails()).thenReturn(personalDetails);
 
-        defendantPersonalDetailsChangesListener.defendantPersonalNameUpdated(envelope);
+        defendantPersonalDetailsChangesListener.defendantNameUpdated(envelope);
 
         verify(caseDetail).markDefendantNameUpdated(eventCreationTime);
         verify(caseRepository).save(caseDetail);
@@ -82,19 +82,19 @@ public class DefendantPersonalDetailsUpdatedTest {
     @Test
     public void shouldUpdateDefendantNameChangedTimestamp() {
         final JsonEnvelope envelope = envelopeFrom(
-                metadataWithRandomUUID("sjp.events.defendant-personal-name-updated"),
+                metadataWithRandomUUID("sjp.events.defendant-name-updated"),
                 payload);
 
-        when(jsonObjectToObjectConverter.convert(payload, DefendantPersonalNameUpdated.class)).thenReturn(defendantPersonalNameUpdated);
-        when(caseRepository.findBy(defendantPersonalNameUpdated.getCaseId())).thenReturn(caseDetail);
+        when(jsonObjectToObjectConverter.convert(payload, DefendantNameUpdated.class)).thenReturn(defendantNameUpdated);
+        when(caseRepository.findBy(defendantNameUpdated.getCaseId())).thenReturn(caseDetail);
 
         ZonedDateTime updatedAt = ZonedDateTime.now(UTC);
-        when(defendantPersonalNameUpdated.getUpdatedAt()).thenReturn(updatedAt);
+        when(defendantNameUpdated.getUpdatedAt()).thenReturn(updatedAt);
 
         when(caseDetail.getDefendant()).thenReturn(defendantDetail);
         when(defendantDetail.getPersonalDetails()).thenReturn(personalDetails);
 
-        defendantPersonalDetailsChangesListener.defendantPersonalNameUpdated(envelope);
+        defendantPersonalDetailsChangesListener.defendantNameUpdated(envelope);
 
         verify(caseDetail).markDefendantNameUpdated(updatedAt);
         verify(caseRepository).save(caseDetail);

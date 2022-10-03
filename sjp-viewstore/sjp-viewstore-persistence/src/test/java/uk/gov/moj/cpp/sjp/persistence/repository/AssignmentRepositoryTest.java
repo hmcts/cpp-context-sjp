@@ -5,14 +5,18 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.apache.deltaspike.testcontrol.api.junit.CdiTestRunner;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+
 import uk.gov.justice.services.test.utils.persistence.BaseTransactionalTest;
 import uk.gov.moj.cpp.sjp.domain.AssignmentCandidate;
 import uk.gov.moj.cpp.sjp.domain.CaseReadinessReason;
 import uk.gov.moj.cpp.sjp.domain.SessionType;
 import uk.gov.moj.cpp.sjp.domain.plea.PleaType;
 import uk.gov.moj.cpp.sjp.persistence.builder.CaseDetailBuilder;
+import uk.gov.moj.cpp.sjp.persistence.entity.Address;
 import uk.gov.moj.cpp.sjp.persistence.entity.CaseDetail;
+import uk.gov.moj.cpp.sjp.persistence.entity.ContactDetails;
 import uk.gov.moj.cpp.sjp.persistence.entity.DefendantDetail;
+import uk.gov.moj.cpp.sjp.persistence.entity.LegalEntityDetails;
 import uk.gov.moj.cpp.sjp.persistence.entity.OffenceDetail;
 import uk.gov.moj.cpp.sjp.persistence.entity.PendingDatesToAvoid;
 import uk.gov.moj.cpp.sjp.persistence.entity.PersonalDetails;
@@ -21,6 +25,7 @@ import uk.gov.moj.cpp.sjp.persistence.entity.StreamStatus;
 
 import javax.inject.Inject;
 import javax.persistence.EntityManager;
+
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
 import java.time.temporal.ChronoUnit;
@@ -374,7 +379,6 @@ public class AssignmentRepositoryTest extends BaseTransactionalTest {
         }
 
 
-
         private CaseSaver notGuiltyWithDatesToAvoid() {
             return plea(NOT_GUILTY)
                     .datesToAvoid("dates-to-avoid")
@@ -432,7 +436,7 @@ public class AssignmentRepositoryTest extends BaseTransactionalTest {
                     .setSequenceNumber(1)
                     .build();
 
-            final DefendantDetail defendant = new DefendantDetail(defendantId, new PersonalDetails(), singletonList(offence), 2);
+            final DefendantDetail defendant = new DefendantDetail(defendantId, new PersonalDetails(), singletonList(offence), 2, new LegalEntityDetails(), new Address(), new ContactDetails());
 
             final CaseDetail caseDetail = CaseDetailBuilder.aCase()
                     .withCaseId(caseId)

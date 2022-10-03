@@ -88,7 +88,7 @@ public class OnlinePleaConverterTest {
         final ZonedDateTime now = clock.now();
         final String employmentStatus = OnlinePleaConverter.OnlinePleaEmploymentStatus.EMPLOYED.name();
         final FinancialMeansUpdated financialMeansUpdated = FinancialMeansUpdated.createEventForOnlinePlea(defendantId,
-                income, benefits, employmentStatus, null, now);
+                income, benefits, employmentStatus, null, now, null, null, null, null);
 
         final OnlinePlea onlinePlea = onlinePleaConverter.convertToOnlinePleaEntity(defendantDetail.getCaseDetail().getId(), financialMeansUpdated);
 
@@ -104,7 +104,7 @@ public class OnlinePleaConverterTest {
     public void shouldConvertToOnlinePleaEntityForFinancialMeansWithUnknownEmploymentStatus() {
         final String employmentStatus = "different status";
         final FinancialMeansUpdated financialMeansUpdated = FinancialMeansUpdated.createEventForOnlinePlea(defendantId,
-                income, benefits, employmentStatus, null, now);
+                income, benefits, employmentStatus, null, now, null, null, null, null);
         final OnlinePlea onlinePlea = onlinePleaConverter.convertToOnlinePleaEntity(defendantDetail.getCaseDetail().getId(), financialMeansUpdated);
 
         assertThat(onlinePlea.getEmployment().getEmploymentStatus(), equalTo(OnlinePleaConverter.OnlinePleaEmploymentStatus.OTHER.name()));
@@ -127,7 +127,7 @@ public class OnlinePleaConverterTest {
         final List<Outgoing> outgoings = generateOutgoings(accommodationAmount, councilTaxAmount, householdBillsAmount,
                 travelAmount, childMaintenanceAmount, otherDescription, otherAmount, null, null);
         final FinancialMeansUpdated financialMeansUpdated = FinancialMeansUpdated.createEventForOnlinePlea(defendantId,
-                income, benefits, OnlinePleaConverter.OnlinePleaEmploymentStatus.UNEMPLOYED.name(), outgoings, now);
+                income, benefits, OnlinePleaConverter.OnlinePleaEmploymentStatus.UNEMPLOYED.name(), outgoings, now, null, null, null, null);
 
         final OnlinePlea onlinePlea = onlinePleaConverter.convertToOnlinePleaEntity(defendantDetail.getCaseDetail().getId(), financialMeansUpdated);
 
@@ -153,7 +153,7 @@ public class OnlinePleaConverterTest {
         final List<Outgoing> outgoings = generateOutgoings(null, null, null,
                 null, null, null, otherAmount, null, null);
         final FinancialMeansUpdated financialMeansUpdated = FinancialMeansUpdated.createEventForOnlinePlea(defendantId,
-                income, benefits, OnlinePleaConverter.OnlinePleaEmploymentStatus.UNEMPLOYED.name(), outgoings, now);
+                income, benefits, OnlinePleaConverter.OnlinePleaEmploymentStatus.UNEMPLOYED.name(), outgoings, now, null, null, null, null);
 
         final OnlinePlea onlinePlea = onlinePleaConverter.convertToOnlinePleaEntity(defendantDetail.getCaseDetail().getId(), financialMeansUpdated);
 
@@ -187,7 +187,7 @@ public class OnlinePleaConverterTest {
         final List<Outgoing> outgoings = generateOutgoings(accommodationAmount, councilTaxAmount, householdBillsAmount,
                 travelAmount, childMaintenanceAmount, otherDescription, otherAmount, secondOtherDescription, secondOtherAmount);
         final FinancialMeansUpdated financialMeansUpdated = FinancialMeansUpdated.createEventForOnlinePlea(defendantId,
-                income, benefits, OnlinePleaConverter.OnlinePleaEmploymentStatus.UNEMPLOYED.name(), outgoings, now);
+                income, benefits, OnlinePleaConverter.OnlinePleaEmploymentStatus.UNEMPLOYED.name(), outgoings, now, null, null, null, null);
 
         onlinePleaConverter.convertToOnlinePleaEntity(defendantDetail.getCaseDetail().getId(), financialMeansUpdated);
     }

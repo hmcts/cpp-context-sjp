@@ -31,7 +31,7 @@ public class PersonToPersonalDetailsEntityTest {
 
     @Test
     public void shouldConvertPersonToPersonalDetailsEntity() {
-        uk.gov.moj.cpp.sjp.domain.Person inputPerson = CaseBuilder.aDefaultSjpCase().build().getDefendant();
+        Person inputPerson = CaseBuilder.aDefaultSjpCase().build().getDefendant();
 
         final Address mockedAddress = mock(Address.class);
         when(addressToAddressEntityConverter.convert(inputPerson.getAddress())).thenReturn(mockedAddress);
@@ -49,10 +49,7 @@ public class PersonToPersonalDetailsEntityTest {
                 inputPerson.getGender(),
                 inputPerson.getNationalInsuranceNumber(),
                 inputPerson.getDriverNumber(),
-                inputPerson.getDriverLicenceDetails(),
-                mockedAddress,
-                mockedContactDetails,
-                inputPerson.getRegion());
+                inputPerson.getDriverLicenceDetails());
 
         assertTrue(reflectionEquals(outputPersonalDetails, expectedPerson));
     }

@@ -28,18 +28,19 @@ public abstract class DefendantRepository implements EntityRepository<DefendantD
             "dd.personalDetails.lastName, " +
             "dd.personalDetails.dateOfBirth, " +
             "dd.id, " +
-            "dd.personalDetails.addressUpdatedAt, " +
+            "dd.addressUpdatedAt, " +
             "dd.personalDetails.dateOfBirthUpdatedAt, " +
-            "dd.personalDetails.nameUpdatedAt, " +
+            "dd.nameUpdatedAt, " +
             "cd.urn, " +
             "cd.id, " +
-            "dd.personalDetails.region" +
+            "dd.region," +
+            "dd.legalEntityDetails.legalEntityName"+
             ") FROM DefendantDetail dd " +
             "INNER JOIN dd.caseDetail cd " +
             "WHERE cd.prosecutingAuthority LIKE :prosecutingAuthority " +
-            "AND (((dd.personalDetails.addressUpdatedAt BETWEEN :fromDate and :toDate) AND (dd.personalDetails.addressUpdatedAt IS NOT NULL AND dd.personalDetails.updatesAcknowledgedAt is NULL OR dd.personalDetails.addressUpdatedAt > dd.personalDetails.updatesAcknowledgedAt)) " +
-            "OR ((dd.personalDetails.dateOfBirthUpdatedAt BETWEEN :fromDate and :toDate) AND (dd.personalDetails.dateOfBirthUpdatedAt IS NOT NULL AND dd.personalDetails.updatesAcknowledgedAt IS NULL OR dd.personalDetails.dateOfBirthUpdatedAt > dd.personalDetails.updatesAcknowledgedAt)) " +
-            "OR ((dd.personalDetails.nameUpdatedAt BETWEEN :fromDate and :toDate) AND (dd.personalDetails.nameUpdatedAt IS NOT NULL AND dd.personalDetails.updatesAcknowledgedAt IS NULL OR dd.personalDetails.nameUpdatedAt > dd.personalDetails.updatesAcknowledgedAt)))";
+            "AND (((dd.addressUpdatedAt BETWEEN :fromDate and :toDate) AND (dd.addressUpdatedAt IS NOT NULL AND dd.updatesAcknowledgedAt is NULL OR dd.addressUpdatedAt > dd.updatesAcknowledgedAt)) " +
+            "OR ((dd.personalDetails.dateOfBirthUpdatedAt BETWEEN :fromDate and :toDate) AND (dd.personalDetails.dateOfBirthUpdatedAt IS NOT NULL AND dd.updatesAcknowledgedAt IS NULL OR dd.personalDetails.dateOfBirthUpdatedAt > dd.updatesAcknowledgedAt)) " +
+            "OR ((dd.nameUpdatedAt BETWEEN :fromDate and :toDate) AND (dd.nameUpdatedAt IS NOT NULL AND dd.updatesAcknowledgedAt IS NULL OR dd.nameUpdatedAt > dd.updatesAcknowledgedAt)))";
     @Inject
     private EntityManager entityManager;
 

@@ -140,6 +140,7 @@ public class CaseSearchResultsView {
             private final String firstName;
             private final String lastName;
             private final LocalDate dateOfBirth;
+            private final String legalEntityName;
             private final boolean outdated;
 
             public CaseSearchResultDefendantView(final CaseSearchResult caseSearchResult) {
@@ -147,6 +148,7 @@ public class CaseSearchResultsView {
                 this.lastName = caseSearchResult.getCurrentLastName();
                 this.dateOfBirth = caseSearchResult.getDateOfBirth();
                 this.outdated = caseSearchResult.isDeprecated();
+                this.legalEntityName = caseSearchResult.getLegalEntityName();
             }
 
             public String getFirstName() {
@@ -163,6 +165,10 @@ public class CaseSearchResultsView {
 
             public boolean isOutdated() {
                 return outdated;
+            }
+
+            public String getLegalEntityName() {
+                return legalEntityName;
             }
         }
     }

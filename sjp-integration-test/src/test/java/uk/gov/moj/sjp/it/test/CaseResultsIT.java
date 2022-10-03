@@ -4,6 +4,7 @@ import static java.time.Month.JULY;
 import static java.util.Collections.singletonList;
 import static java.util.UUID.randomUUID;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.is;
 import static uk.gov.moj.cpp.sjp.domain.SessionType.MAGISTRATE;
 import static uk.gov.moj.sjp.it.Constants.DEFAULT_OFFENCE_CODE;
 import static uk.gov.moj.sjp.it.Constants.OFFENCE_DATE_CODE_FOR_BETWEEN;
@@ -156,11 +157,10 @@ public class CaseResultsIT extends BaseIntegrationTest {
         final JsonArray prosecutionCasesArray = hearingResultedPayload.getJsonObject("hearing").getJsonArray("prosecutionCases");
         final JsonObject convictingCourt = prosecutionCasesArray.getJsonObject(0).getJsonArray("defendants").getJsonObject(0).getJsonArray("offences").getJsonObject(0).getJsonObject("convictingCourt");
         final String convictingDate = prosecutionCasesArray.getJsonObject(0).getJsonArray("defendants").getJsonObject(0).getJsonArray("offences").getJsonObject(0).getString("convictionDate");
-        assertThat(!convictingCourt.isEmpty(), Matchers.is(true));
-        assertThat(convictingCourt.getString("code"),Matchers.is("B01LY"));
-        assertThat(!convictingDate.isEmpty(), Matchers.is(true));
-        assertThat(convictingDate, Matchers.is(LocalDate.now().toString()));
-        assertThat(jsonEnvelopePublicHearingResulted.isPresent(), Matchers.is(true));
+        assertThat(!convictingCourt.isEmpty(), is(true));
+        assertThat(convictingCourt.getString("code"), is("B01LY"));
+        assertThat(!convictingDate.isEmpty(), is(true));
+        assertThat(convictingDate, is(LocalDate.now().toString()));
 
 
     }
@@ -186,7 +186,7 @@ public class CaseResultsIT extends BaseIntegrationTest {
         // Then
 
         final Optional<JsonEnvelope> jsonEnvelopePublicHearingResulted = eventListener.popEvent(PUBLIC_EVENTS_HEARING_HEARING_RESULTED);
-        assertThat(jsonEnvelopePublicHearingResulted.isPresent(), Matchers.is(true));
+        assertThat(jsonEnvelopePublicHearingResulted.isPresent(), is(true));
     }
 
     @Test
@@ -212,7 +212,7 @@ public class CaseResultsIT extends BaseIntegrationTest {
         // Then
 
         final Optional<JsonEnvelope> jsonEnvelopePublicHearingResulted = eventListener.popEvent(PUBLIC_EVENTS_HEARING_HEARING_RESULTED);
-        assertThat(jsonEnvelopePublicHearingResulted.isPresent(), Matchers.is(true));
+        assertThat(jsonEnvelopePublicHearingResulted.isPresent(), is(true));
     }
 
 

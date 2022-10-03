@@ -1,9 +1,12 @@
 package uk.gov.moj.cpp.sjp.domain.onlineplea;
 
+
 import uk.gov.moj.cpp.sjp.domain.Employer;
 import uk.gov.moj.cpp.sjp.domain.FinancialMeans;
 import uk.gov.moj.cpp.sjp.domain.Outgoing;
 import uk.gov.moj.cpp.sjp.domain.disability.DisabilityNeeds;
+import uk.gov.moj.cpp.sjp.domain.legalentity.LegalEntityDefendant;
+import uk.gov.moj.cpp.sjp.domain.legalentity.LegalEntityFinancialMeans;
 
 import java.util.List;
 import java.util.UUID;
@@ -30,6 +33,11 @@ public class PleadOnline {
     private final Boolean comeToCourt;
     private final DisabilityNeeds disabilityNeeds;
 
+    private final LegalEntityDefendant legalEntityDefendant;
+
+    private final LegalEntityFinancialMeans legalEntityFinancialMeans;
+
+
     @JsonCreator
     public PleadOnline(@JsonProperty("defendantId") final UUID defendantId,
                        @JsonProperty("offences") final List<Offence> offences,
@@ -44,7 +52,9 @@ public class PleadOnline {
                        @JsonProperty("employer") final Employer employer,
                        @JsonProperty("outgoings") final List<Outgoing> outgoings,
                        @JsonProperty("comeToCourt") final Boolean comeToCourt,
-                       @JsonProperty("disabilityNeeds") final DisabilityNeeds disabilityNeeds) {
+                       @JsonProperty("disabilityNeeds") final DisabilityNeeds disabilityNeeds,
+                       @JsonProperty("legalEntityDefendant") final LegalEntityDefendant legalEntityDefendant,
+                       @JsonProperty("legalEntityFinancialMeans") final LegalEntityFinancialMeans legalEntityFinancialMeans) {
         this.defendantId = defendantId;
         this.offences = offences;
         this.unavailability = unavailability;
@@ -59,6 +69,8 @@ public class PleadOnline {
         this.comeToCourt = comeToCourt;
         this.outstandingFines = outstandingFines;
         this.disabilityNeeds = disabilityNeeds;
+        this.legalEntityDefendant = legalEntityDefendant;
+        this.legalEntityFinancialMeans = legalEntityFinancialMeans;
     }
 
     public UUID getDefendantId() {
@@ -116,4 +128,9 @@ public class PleadOnline {
     public DisabilityNeeds getDisabilityNeeds() {
         return disabilityNeeds;
     }
+
+    public LegalEntityDefendant getLegalEntityDefendant() { return legalEntityDefendant;}
+
+    public  LegalEntityFinancialMeans getLegalEntityFinancialMeans() { return legalEntityFinancialMeans; }
+
 }

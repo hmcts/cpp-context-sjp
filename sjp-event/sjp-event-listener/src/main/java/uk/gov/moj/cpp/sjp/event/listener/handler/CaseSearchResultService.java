@@ -16,14 +16,14 @@ public class CaseSearchResultService {
     private CaseSearchResultRepository repository;
 
     @Transactional
-    public void onDefendantDetailsUpdated(final UUID caseId, final UUID defendantId, final String newFirstName, final String newLastName, final LocalDate newDateOfBirth, final ZonedDateTime dateAdded) {
+    public void onDefendantDetailsUpdated(final UUID caseId, final UUID defendantId, final String newFirstName, final String newLastName, final LocalDate newDateOfBirth, final ZonedDateTime dateAdded, final String newLegalEntityName) {
         final CaseSearchResultList existingEntryList = new CaseSearchResultList(repository.findByCaseId(caseId));
 
         if (existingEntryList.hasDateOfBirthChanged(newDateOfBirth)) {
             existingEntryList.setDateOfBirth(newDateOfBirth);
         }
-        if (existingEntryList.hasNameChanged(newFirstName, newLastName)) {
-            existingEntryList.setName(caseId, defendantId, newFirstName, newLastName, newDateOfBirth, dateAdded);
+        if (existingEntryList.hasNameChanged(newFirstName, newLastName, newLegalEntityName)) {
+            existingEntryList.setName(caseId, defendantId, newFirstName, newLastName, newDateOfBirth, dateAdded, newLegalEntityName);
         }
 
         existingEntryList.forEach(repository::save);

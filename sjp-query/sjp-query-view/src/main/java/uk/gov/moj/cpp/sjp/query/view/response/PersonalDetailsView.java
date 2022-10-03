@@ -4,6 +4,7 @@ import static java.util.Objects.nonNull;
 import static java.util.Optional.ofNullable;
 
 import uk.gov.justice.json.schemas.domains.sjp.Gender;
+import uk.gov.moj.cpp.sjp.persistence.entity.DefendantDetail;
 import uk.gov.moj.cpp.sjp.persistence.entity.PersonalDetails;
 
 import java.time.LocalDate;
@@ -26,7 +27,7 @@ public class PersonalDetailsView {
 
     private String driverLicenceDetails;
 
-    private PersonalAddressView address;
+    private AddressView address;
 
     private ContactDetailsView contactDetails;
 
@@ -36,7 +37,8 @@ public class PersonalDetailsView {
 
     private Boolean nameChanged;
 
-    public PersonalDetailsView(final PersonalDetails personalDetails) {
+    public PersonalDetailsView(final DefendantDetail defendantDetail) {
+        final PersonalDetails personalDetails = defendantDetail.getPersonalDetails();
         if (personalDetails != null) {
             this.title = personalDetails.getTitle();
             this.firstName = personalDetails.getFirstName();
@@ -44,13 +46,13 @@ public class PersonalDetailsView {
             this.dateOfBirth = personalDetails.getDateOfBirth();
             this.gender = personalDetails.getGender();
             this.nationalInsuranceNumber = personalDetails.getNationalInsuranceNumber();
-            this.address = ofNullable(personalDetails.getAddress()).map(PersonalAddressView::new).orElse(null);
             this.driverNumber = personalDetails.getDriverNumber();
             this.driverLicenceDetails = personalDetails.getDriverLicenceDetails();
-            this.contactDetails = new ContactDetailsView(personalDetails.getContactDetails());
-            this.addressChanged = nonNull(personalDetails.getAddressUpdatedAt());
+            this.addressChanged = nonNull(defendantDetail.getAddressUpdatedAt());
             this.dobChanged = nonNull(personalDetails.getDateOfBirthUpdatedAt());
-            this.nameChanged = nonNull(personalDetails.getNameUpdatedAt());
+            this.nameChanged = nonNull(defendantDetail.getNameUpdatedAt());
+            this.address = ofNullable(defendantDetail.getAddress()).map(AddressView::new).orElse(null);
+            this.contactDetails = new ContactDetailsView(defendantDetail.getContactDetails());
         }
     }
 
@@ -86,14 +88,6 @@ public class PersonalDetailsView {
         return driverLicenceDetails;
     }
 
-    public PersonalAddressView getAddress() {
-        return address;
-    }
-
-    public ContactDetailsView getContactDetails() {
-        return contactDetails;
-    }
-
     public Boolean isNameChanged() {
         return nameChanged;
     }
@@ -106,4 +100,11 @@ public class PersonalDetailsView {
         return dobChanged;
     }
 
+    public AddressView getAddress() {
+        return address;
+    }
+
+    public ContactDetailsView getContactDetails() {
+        return contactDetails;
+    }
 }

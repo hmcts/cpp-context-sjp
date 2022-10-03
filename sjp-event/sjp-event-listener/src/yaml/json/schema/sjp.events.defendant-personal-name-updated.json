@@ -1,6 +1,6 @@
 {
   "$schema": "http://json-schema.org/draft-04/schema#",
-  "id": "http://justice.gov.uk/json/schemas/domains/sjp/events/defendant-personal-name.json",
+  "id": "http://justice.gov.uk/json/schemas/domains/sjp/events/defendant-name.json",
   "definitions": {
     "personalName": {
       "type": "object",
@@ -27,6 +27,12 @@
     },
     "newPersonalName": {
       "$ref": "#/definitions/personalName"
+    },
+    "oldLegalEntityName": {
+      "type": "string"
+    },
+    "newLegalEntityName": {
+      "type": "string"
     }
   },
   "additionalProperties": true,

@@ -1,6 +1,7 @@
 package uk.gov.moj.cpp.sjp.domain.testutils;
 
 import static java.util.Collections.singletonList;
+import static java.util.Objects.nonNull;
 import static java.util.stream.Collectors.toList;
 import static uk.gov.moj.cpp.sjp.domain.disability.DisabilityNeeds.disabilityNeedsOf;
 import static uk.gov.moj.cpp.sjp.domain.plea.PleaType.GUILTY;
@@ -15,6 +16,8 @@ import uk.gov.moj.cpp.sjp.domain.Income;
 import uk.gov.moj.cpp.sjp.domain.IncomeFrequency;
 import uk.gov.moj.cpp.sjp.domain.Outgoing;
 import uk.gov.moj.cpp.sjp.domain.disability.DisabilityNeeds;
+import uk.gov.moj.cpp.sjp.domain.legalentity.LegalEntityDefendant;
+import uk.gov.moj.cpp.sjp.domain.legalentity.LegalEntityFinancialMeans;
 import uk.gov.moj.cpp.sjp.domain.onlineplea.Offence;
 import uk.gov.moj.cpp.sjp.domain.onlineplea.PersonalDetails;
 import uk.gov.moj.cpp.sjp.domain.onlineplea.PleadOnline;
@@ -52,6 +55,7 @@ public class StoreOnlinePleaBuilder {
 
     public static final String PERSON_FIRST_NAME = "Derek";
     public static final String PERSON_LAST_NAME = "Smith";
+    public static final String LEGAL_ENTITY_NAME = "legalEntityName";
 
     private static final String PERSON_ADDRESS_1 = "1 test road";
     private static final String PERSON_ADDRESS_2 = "Tulse Hill";
@@ -76,60 +80,61 @@ public class StoreOnlinePleaBuilder {
     private static final String OUTGOING_DESCRIPTION = "Accommodation";
     private static final BigDecimal OUTGOING_AMOUNT = BigDecimal.valueOf(400.50);
 
-    public static PleadOnline defaultStoreOnlinePleaWithGuiltyPlea(final UUID offenceId, final UUID defendantId) {
+    public static PleadOnline defaultStoreOnlinePleaWithGuiltyPlea(final UUID offenceId, final UUID defendantId, final LegalEntityDefendant legalEntityDefendant, LegalEntityFinancialMeans legalEntityFinancialMeans) {
         final List<Offence> offences = singletonList(
                 new Offence(offenceId, GUILTY, MITIGATION, null)
         );
-        return generatePleadOnline(false, defendantId, offences, null, null, false, DISABILITY_NEEDS);
+        return generatePleadOnline(false, defendantId, offences, null, null, false, DISABILITY_NEEDS, legalEntityDefendant, legalEntityFinancialMeans);
     }
 
     public static PleadOnline defaultStoreOnlinePleaWithGuiltyRequestHearingPlea(final UUID offenceId, final UUID defendantId,
-                                                                                 final String interpreterLanguage, final Boolean speakWelsh) {
+                                                                                 final String interpreterLanguage, final Boolean speakWelsh, final LegalEntityDefendant legalEntityDefendant, LegalEntityFinancialMeans legalEntityFinancialMeans) {
         final List<Offence> offences = singletonList(
                 new Offence(offenceId, GUILTY, MITIGATION, null)
         );
-        return generatePleadOnline(false, defendantId, offences, interpreterLanguage, speakWelsh, true, DISABILITY_NEEDS);
+        return generatePleadOnline(false, defendantId, offences, interpreterLanguage, speakWelsh, true, DISABILITY_NEEDS, legalEntityDefendant, legalEntityFinancialMeans);
     }
 
-    public static PleadOnline defaultStoreOnlinePleaWithNotGuiltyPlea(UUID offenceId, UUID defendantId, String interpreterLanguage, Boolean speakWelsh, boolean includeTrialRequestedFields) {
+    public static PleadOnline defaultStoreOnlinePleaWithNotGuiltyPlea(UUID offenceId, UUID defendantId, String interpreterLanguage, Boolean speakWelsh, boolean includeTrialRequestedFields, LegalEntityDefendant legalEntityDefendant, LegalEntityFinancialMeans legalEntityFinancialMeans) {
         final List<Offence> offences = singletonList(
                 new Offence(offenceId, NOT_GUILTY, null, NOT_GUILTY_BECAUSE)
         );
-        return generatePleadOnline(includeTrialRequestedFields, defendantId, offences, interpreterLanguage, speakWelsh, true, DISABILITY_NEEDS);
+        return generatePleadOnline(includeTrialRequestedFields, defendantId, offences, interpreterLanguage, speakWelsh, true, DISABILITY_NEEDS, legalEntityDefendant, legalEntityFinancialMeans);
     }
 
-    public static PleadOnline defaultStoreOnlinePleaWithGuiltyPlea(final UUID offenceId, final UUID defendantId, final boolean newName, final boolean newAddress, final boolean newDob) {
+    public static PleadOnline defaultStoreOnlinePleaWithGuiltyPlea(final UUID offenceId, final UUID defendantId, final boolean newName, final boolean newAddress, final boolean newDob, final LegalEntityDefendant legalEntityDefendant, final LegalEntityFinancialMeans legalEntityFinancialMeans) {
         final List<Offence> offences = singletonList(
                 new Offence(offenceId, GUILTY, MITIGATION, null)
         );
-        return generatePleadOnline(false, defendantId, offences, null, null, newName, newAddress, newDob, false, DISABILITY_NEEDS);
+        return generatePleadOnline(false, defendantId, offences, null, null, newName, newAddress, newDob, false, DISABILITY_NEEDS, false, legalEntityFinancialMeans);
     }
 
     private static PleadOnline generatePleadOnline(final boolean includeTrialRequestedFields, final UUID defendantId,
                                                    final List<Offence> offences, final String interpreterLanguage,
                                                    final Boolean speakWelsh, final Boolean comeToCourt,
-                                                   final DisabilityNeeds disabilityNeeds) {
-        return generatePleadOnline(includeTrialRequestedFields, defendantId, offences, interpreterLanguage, speakWelsh, false, false, false, comeToCourt, disabilityNeeds);
+                                                   final DisabilityNeeds disabilityNeeds, final LegalEntityDefendant legalEntityDefendant, final LegalEntityFinancialMeans legalEntityFinancialMeans) {
+        return generatePleadOnline(includeTrialRequestedFields, defendantId, offences, interpreterLanguage, speakWelsh, false, false, false, comeToCourt, disabilityNeeds, false, legalEntityFinancialMeans);
     }
 
     private static PleadOnline generatePleadOnline(final boolean includeTrialRequestedFields, final UUID defendantId,
                                                    final List<Offence> offences, final String interpreterLanguage,
                                                    final Boolean speakWelsh, final boolean newName,
                                                    final boolean newAddress, final boolean newDob,
-                                                   final Boolean comeToCourt, final DisabilityNeeds disabilityNeeds) {
+                                                   final Boolean comeToCourt, final DisabilityNeeds disabilityNeeds, final boolean newLegalEntityDefendantName, final LegalEntityFinancialMeans legalEntityFinancialMeans) {
 
         final String firstName = newName ? "Norman" : PERSON_FIRST_NAME;
         final String address1 = newAddress ? "1 New Amsterdam Rd" : PERSON_ADDRESS_1;
+        final String legalEntityName = newLegalEntityDefendantName ? "Samba LTD" : LEGAL_ENTITY_NAME;
         final LocalDate dob = newDob ? LocalDate.now().minusYears(18) : PERSON_DOB;
         final Boolean outstandingFines = true;
 
         final PersonalDetails person = new PersonalDetails(firstName, PERSON_LAST_NAME,
                 new Address(address1, PERSON_ADDRESS_2, PERSON_ADDRESS_3, PERSON_ADDRESS_4, PERSON_ADDRESS_5, PERSON_POSTCODE),
-                PERSON_CONTACT_DETAILS, dob, PERSON_NI_NUMBER, PERSON_REGION, PERSON_DRIVER_NUMBER, null);
+                PERSON_CONTACT_DETAILS, dob, PERSON_NI_NUMBER, PERSON_REGION, PERSON_DRIVER_NUMBER, null,legalEntityName);
 
 
         final FinancialMeans financialMeans = new FinancialMeans(null, new Income(IncomeFrequency.MONTHLY, INCOME_AMOUNT),
-                new Benefits(BENEFITS_CLAIMED, BENEFITS_TYPE, BENEFITS_DEDUCT), EMPLOYMENT_STATUS);
+                new Benefits(BENEFITS_CLAIMED, BENEFITS_TYPE, BENEFITS_DEDUCT), EMPLOYMENT_STATUS, nonNull(legalEntityFinancialMeans) ? legalEntityFinancialMeans.getGrossTurnover() : null, nonNull(legalEntityFinancialMeans) ? legalEntityFinancialMeans.getNetTurnover() : null, nonNull(legalEntityFinancialMeans) ? legalEntityFinancialMeans.getNumberOfEmployees():null, nonNull(legalEntityFinancialMeans) ? legalEntityFinancialMeans.getTradingMoreThan12Months() : null);
         final Employer employer = new Employer(null, EMPLOYER_NAME, EMPLOYER_REFERENCE, EMPLOYER_PHONE, EMPLOYER_ADDRESS);
 
         final List<Outgoing> outgoings = singletonList(
@@ -137,14 +142,14 @@ public class StoreOnlinePleaBuilder {
         );
         if (includeTrialRequestedFields) {
             return new PleadOnline(defendantId, offences, UNAVAILABILITY, interpreterLanguage, speakWelsh,
-                    WITNESS_DETAILS, WITNESS_DISPUTE, outstandingFines, person, financialMeans, employer, outgoings, comeToCourt, disabilityNeeds);
+                    WITNESS_DETAILS, WITNESS_DISPUTE, outstandingFines, person, financialMeans, employer, outgoings, comeToCourt, disabilityNeeds, null, legalEntityFinancialMeans);
         } else {
             return new PleadOnline(defendantId, offences, null, interpreterLanguage, speakWelsh,
-                    null, null, outstandingFines, person, financialMeans, employer, outgoings, comeToCourt, disabilityNeeds);
+                    null, null, outstandingFines, person, financialMeans, employer, outgoings, comeToCourt, disabilityNeeds, null, legalEntityFinancialMeans);
         }
     }
 
-    public static PleadOnline defaultStoreOnlinePleaForMultipleOffences(Object[][] pleaInformationArray, UUID defendantId, String interpreterLanguage, Boolean speakWelsh, Boolean comeToCourt) {
+    public static PleadOnline defaultStoreOnlinePleaForMultipleOffences(Object[][] pleaInformationArray, UUID defendantId, String interpreterLanguage, Boolean speakWelsh, Boolean comeToCourt, LegalEntityDefendant legalEntityDefendant, LegalEntityFinancialMeans legalEntityFinancialMeans) {
         final Boolean outstandingFines = true;
         final List<Offence> offences = Arrays.stream(pleaInformationArray)
                 .map(pleaInformation -> {
@@ -158,9 +163,9 @@ public class StoreOnlinePleaBuilder {
                 .collect(toList());
 
         final PersonalDetails person = new PersonalDetails(PERSON_FIRST_NAME, PERSON_LAST_NAME, PERSON_ADDRESS,
-                PERSON_CONTACT_DETAILS, PERSON_DOB, PERSON_NI_NUMBER, PERSON_REGION, PERSON_DRIVER_NUMBER, null);
+                PERSON_CONTACT_DETAILS, PERSON_DOB, PERSON_NI_NUMBER, PERSON_REGION, PERSON_DRIVER_NUMBER, null,null);
         final FinancialMeans financialMeans = new FinancialMeans(null, new Income(IncomeFrequency.MONTHLY, INCOME_AMOUNT),
-                new Benefits(BENEFITS_CLAIMED, BENEFITS_TYPE, BENEFITS_DEDUCT), EMPLOYMENT_STATUS);
+                new Benefits(BENEFITS_CLAIMED, BENEFITS_TYPE, BENEFITS_DEDUCT), EMPLOYMENT_STATUS, nonNull(legalEntityFinancialMeans) ? legalEntityFinancialMeans.getGrossTurnover() : null, nonNull(legalEntityFinancialMeans) ? legalEntityFinancialMeans.getNetTurnover() : null, nonNull(legalEntityFinancialMeans) ? legalEntityFinancialMeans.getNumberOfEmployees() :  null, nonNull(legalEntityFinancialMeans) ? legalEntityFinancialMeans.getTradingMoreThan12Months() : null);
         final Employer employer = new Employer(null, EMPLOYER_NAME, EMPLOYER_REFERENCE, EMPLOYER_PHONE, EMPLOYER_ADDRESS);
 
         final List<Outgoing> outgoings = singletonList(
@@ -168,6 +173,6 @@ public class StoreOnlinePleaBuilder {
         );
 
         return new PleadOnline(defendantId, offences, UNAVAILABILITY, interpreterLanguage, speakWelsh,
-                WITNESS_DETAILS, WITNESS_DISPUTE, outstandingFines, person, financialMeans, employer, outgoings, comeToCourt, DISABILITY_NEEDS);
+                WITNESS_DETAILS, WITNESS_DISPUTE, outstandingFines, person, financialMeans, employer, outgoings, comeToCourt, DISABILITY_NEEDS, legalEntityDefendant, legalEntityFinancialMeans);
     }
 }

@@ -113,8 +113,8 @@ subscriptions_descriptor:
               - name: sjp.events.defendant-date-of-birth-updated
                 schema_uri: http://justice.gov.uk/json/schemas/domains/sjp/events/defendant-date-of-birth-updated.json
 
-              - name: sjp.events.defendant-personal-name-updated
-                schema_uri: http://justice.gov.uk/json/schemas/domains/sjp/events/defendant-personal-name.json
+              - name: sjp.events.defendant-name-updated
+                schema_uri: http://justice.gov.uk/json/schemas/domains/sjp/events/defendant-name.json
 
               - name: sjp.events.online-plea-received
                 schema_uri: http://justice.gov.uk/json/schemas/domains/sjp/events/online-plea-received.json

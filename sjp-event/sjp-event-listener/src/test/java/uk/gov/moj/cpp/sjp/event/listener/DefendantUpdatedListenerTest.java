@@ -123,19 +123,7 @@ public class DefendantUpdatedListenerTest {
         caseDetail.getDefendant().setPersonalDetails(
                 new PersonalDetails(
                         previousTitle, "Joe", "Blogs", LocalDate.of(1965, 8, 6),
-                        previousGender, previousNiNumber, null, null,
-                        new uk.gov.moj.cpp.sjp.persistence.entity.Address(
-                                "address1",
-                                "address2",
-                                "address3",
-                                "address4",
-                                "address5",
-                                "postcode"),
-                        new uk.gov.moj.cpp.sjp.persistence.entity.ContactDetails(
-                                "test@test.com",
-                                "0207 886432",
-                                "07563 489883"),
-                        null));
+                        previousGender, previousNiNumber, null, null));
 
         when(caseRepository.findCaseDefendant(caseId)).thenReturn(caseDetail.getDefendant());
         when(caseSearchResultRepository.findByCaseId(caseId)).thenReturn(Lists.newArrayList(buildCaseSearchResult(caseDetail)));
@@ -150,6 +138,7 @@ public class DefendantUpdatedListenerTest {
         if (nationalInsuranceNumberSuppliedInRequest) {
             defendantDetailsUpdatedBuilder.withNationalInsuranceNumber("NH42 1568G");
         }
+
         final DefendantDetailsUpdated defendantDetailsUpdated = defendantDetailsUpdatedBuilder.build();
         setupMocks(defendantDetailsUpdated.getCaseId());
 
@@ -184,8 +173,9 @@ public class DefendantUpdatedListenerTest {
         final DefendantDetail defendant = actualPersonalDetailsCaptor.getValue().getDefendant();
         assertTrue(reflectionEquals(expectedPersonalDetails, defendant.getPersonalDetails(),
                 "contactDetails", "address"));
-        assertTrue(reflectionEquals(expectedPersonalDetails.getContactDetails(), defendant.getPersonalDetails().getContactDetails()));
-        assertTrue(reflectionEquals(expectedPersonalDetails.getAddress(), defendant.getPersonalDetails().getAddress()));
+        assertTrue(reflectionEquals(defendantDetailsUpdated.getContactDetails().getEmail(), defendant.getContactDetails().getEmail()));
+        assertTrue(reflectionEquals(defendantDetailsUpdated.getAddress().getAddress1(), "address1"));
+        assertTrue(reflectionEquals(defendantDetailsUpdated.getAddress().getPostcode(), "postcode"));
 
         assertThat(actualSearchResultsCaptor.getAllValues(), hasSize(expectedSaveInvocations));
         for (int i = 0; i < expectedSearchResults.size(); i++) {
@@ -305,19 +295,7 @@ public class DefendantUpdatedListenerTest {
         }
         return new PersonalDetails(title, defendantDetailsUpdated.getFirstName(),
                 defendantDetailsUpdated.getLastName(), defendantDetailsUpdated.getDateOfBirth(), gender,
-                nationalInsuranceNumber, defendantDetailsUpdated.getDriverNumber(), defendantDetailsUpdated.getDriverLicenceDetails(),
-                new uk.gov.moj.cpp.sjp.persistence.entity.Address(
-                        defendantDetailsUpdated.getAddress().getAddress1(),
-                        defendantDetailsUpdated.getAddress().getAddress2(),
-                        defendantDetailsUpdated.getAddress().getAddress3(),
-                        defendantDetailsUpdated.getAddress().getAddress4(),
-                        defendantDetailsUpdated.getAddress().getAddress5(),
-                        defendantDetailsUpdated.getAddress().getPostcode()),
-                new uk.gov.moj.cpp.sjp.persistence.entity.ContactDetails(
-                        defendantDetailsUpdated.getContactDetails().getEmail(),
-                        defendantDetailsUpdated.getContactDetails().getHome(),
-                        defendantDetailsUpdated.getContactDetails().getMobile()),
-                null);
+                nationalInsuranceNumber, defendantDetailsUpdated.getDriverNumber(), defendantDetailsUpdated.getDriverLicenceDetails());
     }
 
     private CaseSearchResult buildCaseSearchResult(final CaseDetail caseDetail) {
@@ -327,7 +305,7 @@ public class DefendantUpdatedListenerTest {
                 caseDetail.getDefendant().getPersonalDetails().getFirstName(),
                 caseDetail.getDefendant().getPersonalDetails().getLastName(),
                 caseDetail.getDefendant().getPersonalDetails().getDateOfBirth(),
-                clock.now()
+                clock.now(),null
         );
     }
 
@@ -338,6 +316,25 @@ public class DefendantUpdatedListenerTest {
                 defendantDetailsUpdated.getFirstName(),
                 defendantDetailsUpdated.getLastName(),
                 defendantDetailsUpdated.getDateOfBirth(),
-                clock.now());
+                clock.now(),null);
+    }
+
+    private Address buildAddress(){
+        return new Address(
+                "address1",
+                "address2",
+                "address3",
+                "address4",
+                "address5",
+                "postcode");
+
+    }
+    private ContactDetails buildContactDetails(){
+        return new ContactDetails(
+                "0207 886432",
+                "0207 886432",
+                "07563 489883",
+                "test@test.com",
+                null);
     }
 }

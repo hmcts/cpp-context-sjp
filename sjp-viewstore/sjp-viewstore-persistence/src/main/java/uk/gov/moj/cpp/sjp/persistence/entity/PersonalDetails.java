@@ -9,7 +9,6 @@ import java.util.Objects;
 
 import javax.persistence.Column;
 import javax.persistence.Embeddable;
-import javax.persistence.Embedded;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
 
@@ -43,30 +42,10 @@ public class PersonalDetails implements Serializable {
     @Column(name = "driver_licence_details")
     private String driverLicenceDetails;
 
-    @Embedded
-    private Address address;
-
-    @Embedded
-    private ContactDetails contactDetails;
-
-    @Column(name = "address_updated_at")
-    private ZonedDateTime addressUpdatedAt;
-
     @Column(name = "dob_updated_at")
     private ZonedDateTime dateOfBirthUpdatedAt;
 
-    @Column(name = "name_updated_at")
-    private ZonedDateTime nameUpdatedAt;
-
-    @Column(name = "updates_acknowledged_at")
-    private ZonedDateTime updatesAcknowledgedAt;
-
-    @Column(name = "region")
-    private String region;
-
     public PersonalDetails() {
-        this.address = new Address();
-        this.contactDetails = new ContactDetails();
     }
 
     public PersonalDetails(final String title,
@@ -76,10 +55,7 @@ public class PersonalDetails implements Serializable {
                            final Gender gender,
                            final String nationalInsuranceNumber,
                            final String driverNumber,
-                           final String driverLicenceDetails,
-                           final Address address,
-                           final ContactDetails contactDetails,
-                           final String region) {
+                           final String driverLicenceDetails) {
 
         this.title = title;
         this.firstName = firstName;
@@ -89,9 +65,6 @@ public class PersonalDetails implements Serializable {
         this.nationalInsuranceNumber = nationalInsuranceNumber;
         this.driverNumber = driverNumber;
         this.driverLicenceDetails = driverLicenceDetails;
-        this.address = address;
-        this.contactDetails = contactDetails;
-        this.region = region;
     }
 
     public String getTitle() {
@@ -158,56 +131,12 @@ public class PersonalDetails implements Serializable {
         return driverLicenceDetails;
     }
 
-    public Address getAddress() {
-        return address;
-    }
-
-    public void setAddress(Address address) {
-        this.address = address;
-    }
-
-    public ContactDetails getContactDetails() {
-        return contactDetails;
-    }
-
-    public void setContactDetails(ContactDetails contactDetails) {
-        this.contactDetails = contactDetails;
-    }
-
-    public ZonedDateTime getAddressUpdatedAt() {
-        return addressUpdatedAt;
-    }
-
-    public void markAddressUpdated(final ZonedDateTime updateDate) {
-        this.addressUpdatedAt = updateDate;
-    }
-
     public ZonedDateTime getDateOfBirthUpdatedAt() {
         return dateOfBirthUpdatedAt;
     }
 
     public void markDateOfBirthUpdated(final ZonedDateTime updateDate) {
         this.dateOfBirthUpdatedAt = updateDate;
-    }
-
-    public ZonedDateTime getNameUpdatedAt() {
-        return nameUpdatedAt;
-    }
-
-    public void markNameUpdated(final ZonedDateTime updateDate) {
-        this.nameUpdatedAt = updateDate;
-    }
-
-    public void acknowledgeUpdates(final ZonedDateTime acknowledgementTime) {
-        this.updatesAcknowledgedAt = acknowledgementTime;
-    }
-
-    public String getRegion() {
-        return region;
-    }
-
-    public void setRegion(String region) {
-        this.region = region;
     }
 
     @Override
@@ -229,17 +158,12 @@ public class PersonalDetails implements Serializable {
                 Objects.equals(nationalInsuranceNumber, that.nationalInsuranceNumber) &&
                 Objects.equals(driverNumber, that.driverNumber) &&
                 Objects.equals(driverLicenceDetails, that.driverLicenceDetails) &&
-                Objects.equals(address, that.address) &&
-                Objects.equals(contactDetails, that.contactDetails) &&
-                Objects.equals(addressUpdatedAt, that.addressUpdatedAt) &&
-                Objects.equals(dateOfBirthUpdatedAt, that.dateOfBirthUpdatedAt) &&
-                Objects.equals(nameUpdatedAt, that.nameUpdatedAt) &&
-                Objects.equals(region, that.region);
+                Objects.equals(dateOfBirthUpdatedAt, that.dateOfBirthUpdatedAt);
     }
 
     @Override
     public int hashCode() {
         return Objects.hash(title, firstName, lastName, dateOfBirth, gender, nationalInsuranceNumber,
-                driverNumber, driverLicenceDetails, address, contactDetails, addressUpdatedAt, dateOfBirthUpdatedAt, nameUpdatedAt, region);
+                driverNumber, driverLicenceDetails, dateOfBirthUpdatedAt);
     }
 }

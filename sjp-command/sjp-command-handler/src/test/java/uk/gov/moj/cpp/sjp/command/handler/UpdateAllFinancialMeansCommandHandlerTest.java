@@ -78,6 +78,14 @@ public class UpdateAllFinancialMeansCommandHandlerTest {
     private ArgumentCaptor<uk.gov.moj.cpp.sjp.domain.Income> incomeArgumentCaptor;
 
     @Captor
+    private ArgumentCaptor<BigDecimal> grossTurnoverArgumentCaptor;
+
+    @Captor
+    private ArgumentCaptor<Integer> numberOfEmployeesArgumentCaptor;
+
+    @Captor
+    private ArgumentCaptor<Boolean> tradingForMoreThan12MonthsArgumentCaptor;
+    @Captor
     private ArgumentCaptor<uk.gov.moj.cpp.sjp.domain.Benefits> benefitsArgumentCaptor;
 
     @Captor
@@ -100,6 +108,10 @@ public class UpdateAllFinancialMeansCommandHandlerTest {
         final Benefits benefits = new Benefits(true, "Benefits type");
         final UUID defendantId = randomUUID();
         final String empStatus = EmploymentStatus.EMPLOYED.name();
+        final BigDecimal grossTurnover = new BigDecimal(100);
+        final BigDecimal netTurnover = new BigDecimal(10);
+        final Integer numberOfEmployees = new Integer(10);
+        final Boolean tradingMoreThanTwelveMonths = false;
 
         final UpdateAllFinancialMeans updateAllFinancialMeans = getUpdateAllFinancialMeansPayload(caseId, defendantId, income, benefits, EmploymentStatus.EMPLOYED, null);
 
@@ -107,7 +119,7 @@ public class UpdateAllFinancialMeansCommandHandlerTest {
         final uk.gov.moj.cpp.sjp.domain.Benefits transformedBenefits = new uk.gov.moj.cpp.sjp.domain.Benefits(benefits.getClaimed(), benefits.getType());
 
         final FinancialMeansUpdated financialMeansUpdated = FinancialMeansUpdated
-                .createEvent(defendantId, transformedIncome, transformedBenefits, empStatus);
+                .createEvent(defendantId, transformedIncome, transformedBenefits, empStatus, grossTurnover, netTurnover, numberOfEmployees, tradingMoreThanTwelveMonths);
         final EmployerUpdated employerUpdated = getEmployerUpdated(defendantId);
 
         when(eventSource.getStreamById(caseId)).thenReturn(eventStream);
@@ -117,7 +129,7 @@ public class UpdateAllFinancialMeansCommandHandlerTest {
                 any(uk.gov.moj.cpp.sjp.domain.Income.class),
                 any(uk.gov.moj.cpp.sjp.domain.Benefits.class),
                 any(uk.gov.moj.cpp.sjp.domain.Employer.class),
-                anyString())).thenReturn(Stream.of(financialMeansUpdated, employerUpdated));
+                anyString(), any(BigDecimal.class), any(BigDecimal.class), any(Integer.class), any(Boolean.class))).thenReturn(Stream.of(financialMeansUpdated, employerUpdated));
 
         final Envelope<UpdateAllFinancialMeans> command = Envelope.envelopeFrom(
                 metadataWithRandomUUID("sjp.command.update-all-financial-means").
@@ -132,7 +144,7 @@ public class UpdateAllFinancialMeansCommandHandlerTest {
                 incomeArgumentCaptor.capture(),
                 benefitsArgumentCaptor.capture(),
                 employerArgumentCaptor.capture(),
-                empStatusArgumentCaptor.capture());
+                empStatusArgumentCaptor.capture(), grossTurnoverArgumentCaptor.capture(), grossTurnoverArgumentCaptor.capture(), numberOfEmployeesArgumentCaptor.capture(), tradingForMoreThan12MonthsArgumentCaptor.capture());
 
         assertThat(userIdArgumentCaptor.getValue(), is(userId));
         assertThat(defendantIdArgumentCaptor.getValue(), is(defendantId));
@@ -198,9 +210,12 @@ public class UpdateAllFinancialMeansCommandHandlerTest {
 
         final uk.gov.moj.cpp.sjp.domain.Income transformedIncome = new uk.gov.moj.cpp.sjp.domain.Income(IncomeFrequency.valueOf(income.getFrequency().toString()), income.getAmount());
         final uk.gov.moj.cpp.sjp.domain.Benefits transformedBenefits = new uk.gov.moj.cpp.sjp.domain.Benefits(benefits.getClaimed(), benefits.getType());
-
+        final BigDecimal grossTurnover = new BigDecimal(100);
+        final BigDecimal netTurnover = new BigDecimal(10);
+        final Integer numberOfEmployees = new Integer(10);
+        final Boolean tradingMoreThanTwelveMonths = false;
         final FinancialMeansUpdated financialMeansUpdated = FinancialMeansUpdated
-                .createEvent(defendantId, transformedIncome, transformedBenefits, "OddJobs");
+                .createEvent(defendantId, transformedIncome, transformedBenefits, "OddJobs", grossTurnover, netTurnover, numberOfEmployees, tradingMoreThanTwelveMonths);
 
         when(eventSource.getStreamById(caseId)).thenReturn(eventStream);
         when(aggregateService.get(eventStream, CaseAggregate.class)).thenReturn(caseAggregate);
@@ -209,7 +224,7 @@ public class UpdateAllFinancialMeansCommandHandlerTest {
                 any(uk.gov.moj.cpp.sjp.domain.Income.class),
                 any(uk.gov.moj.cpp.sjp.domain.Benefits.class),
                 any(uk.gov.moj.cpp.sjp.domain.Employer.class),
-                anyString())).thenReturn(Stream.of(financialMeansUpdated));
+                anyString(), any(), any(), any(), any())).thenReturn(Stream.of(financialMeansUpdated));
 
         final Envelope<UpdateAllFinancialMeans> command = Envelope.envelopeFrom(
                 metadataWithRandomUUID("sjp.command.update-all-financial-means").
@@ -224,7 +239,7 @@ public class UpdateAllFinancialMeansCommandHandlerTest {
                 incomeArgumentCaptor.capture(),
                 benefitsArgumentCaptor.capture(),
                 employerArgumentCaptor.capture(),
-                empStatusArgumentCaptor.capture());
+                empStatusArgumentCaptor.capture(), grossTurnoverArgumentCaptor.capture(), grossTurnoverArgumentCaptor.capture(), numberOfEmployeesArgumentCaptor.capture(), tradingForMoreThan12MonthsArgumentCaptor.capture());
 
         assertThat(userIdArgumentCaptor.getValue(), is(userId));
         assertThat(defendantIdArgumentCaptor.getValue(), is(defendantId));

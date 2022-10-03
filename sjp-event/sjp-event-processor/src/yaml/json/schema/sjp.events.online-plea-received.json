@@ -122,6 +122,58 @@
       },
       "additionalProperties": false
     },
+    "legalEntityDefendant": {
+      "id": "http://justice.gov.uk/json/schemas/domains/sjp/command/plea/legal-entity-defendant.json",
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "address": {
+          "$ref": "http://justice.gov.uk/json/schemas/domains/sjp/address.json"
+        },
+        "contactDetails": {
+          "$ref": "http://justice.gov.uk/json/schemas/domains/sjp/contact-details.json",
+          "required": [
+            "email"
+          ]
+        },
+        "incorporationNumber": {
+          "type": "string"
+        },
+        "position": {
+          "id": "http://justice.gov.uk/json/schemas/domains/sjp/command/plea/position.json",
+          "type": "string",
+          "enum": [
+            "DIRECTOR",
+            "SECRETARY",
+            "SOLICITOR"
+          ]
+        }
+      }
+    },
+    "legalEntityFinancialMeans": {
+      "id": "http://cpp.moj.gov.uk/prosecution/casefile/plea/json/schemas/legal-entity-financial-means.json",
+      "type": "object",
+      "properties": {
+        "outstandingFines": {
+          "type": "boolean"
+        },
+        "tradingMoreThan12Months": {
+          "type": "boolean"
+        },
+        "numberOfEmployees": {
+          "type": "integer"
+        },
+        "grossTurnover": {
+          "type": "number"
+        },
+        "netTurnover": {
+          "type": "number"
+        }
+      },
+      "additionalProperties": false
+    },
     "employer": {
       "type": "object",
       "properties": {
@@ -163,11 +215,23 @@
       "$ref": "http://cpp.moj.gov.uk/core/sjp/disability-needs.json"
     }
   },
-  "required": [
-    "urn",
-    "caseId",
-    "defendantId",
-    "personalDetails"
+  "anyOf": [
+    {
+      "required": [
+        "urn",
+        "caseId",
+        "defendantId",
+        "personalDetails"
+      ]
+    },
+    {
+      "required": [
+        "urn",
+        "caseId",
+        "defendantId",
+        "legalEntityDefendant"
+      ]
+    }
   ],
   "additionalProperties": false
 }

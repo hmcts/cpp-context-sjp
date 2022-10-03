@@ -18,6 +18,9 @@
     "dateOfBirth": {
       "type": "string"
     },
+    "legalEntityName": {
+      "type": "string"
+    },
     "gender": {
       "$ref": "http://justice.gov.uk/json/schemas/domains/sjp/gender.json"
     },

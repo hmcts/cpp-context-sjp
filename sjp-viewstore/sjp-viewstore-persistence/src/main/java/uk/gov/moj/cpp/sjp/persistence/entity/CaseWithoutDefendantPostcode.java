@@ -20,19 +20,23 @@ public class CaseWithoutDefendantPostcode {
 
     private final String prosecutingAuthority;
 
+    private final String legalEntityName;
+
 
     public CaseWithoutDefendantPostcode(final UUID id,
                                         final String urn,
                                         final LocalDate postingDate,
                                         final String firstName,
                                         final String lastName,
-                                        final String prosecutingAuthority) {
+                                        final String prosecutingAuthority,
+                                        final String legalEntityName) {
         this.id = id;
         this.urn = urn;
         this.postingDate = postingDate;
         this.firstName = firstName;
         this.lastName = lastName;
         this.prosecutingAuthority = prosecutingAuthority;
+        this.legalEntityName = legalEntityName;
     }
 
     public UUID getId() {
@@ -59,6 +63,10 @@ public class CaseWithoutDefendantPostcode {
         return prosecutingAuthority;
     }
 
+    public String getLegalEntityName() {
+        return legalEntityName;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) {
@@ -78,6 +86,7 @@ public class CaseWithoutDefendantPostcode {
                 .append(firstName, that.firstName)
                 .append(lastName, that.lastName)
                 .append(prosecutingAuthority, that.prosecutingAuthority)
+                .append(legalEntityName,that.legalEntityName)
                 .isEquals();
     }
 
@@ -90,6 +99,7 @@ public class CaseWithoutDefendantPostcode {
                 .append(firstName)
                 .append(lastName)
                 .append(prosecutingAuthority)
+                .append(legalEntityName)
                 .toHashCode();
     }
 }

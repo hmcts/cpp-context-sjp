@@ -1,7 +1,10 @@
 package uk.gov.moj.cpp.sjp.query.view.response;
 
+import static java.util.Objects.nonNull;
+
 import uk.gov.justice.json.schemas.domains.sjp.Gender;
 import uk.gov.moj.cpp.sjp.persistence.entity.DefendantDetail;
+import uk.gov.moj.cpp.sjp.persistence.entity.LegalEntityDetails;
 import uk.gov.moj.cpp.sjp.persistence.entity.PersonalDetails;
 
 import java.time.LocalDate;
@@ -17,18 +20,21 @@ public class DefendantSummaryView {
     private final String nationalInsuranceNumber;
     private final String driverNumber;
     private final String driverLicenceDetails;
+    private final String legalEntityName;
 
-    public DefendantSummaryView(final DefendantDetail defendant){
+    public DefendantSummaryView(final DefendantDetail defendant) {
         this.id = defendant.getId().toString();
         final PersonalDetails personalDetails = defendant.getPersonalDetails();
-        this.title = personalDetails.getTitle();
-        this.firstName = personalDetails.getFirstName();
-        this.lastName = personalDetails.getLastName();
-        this.dateOfBirth = personalDetails.getDateOfBirth();
-        this.gender = personalDetails.getGender();
-        this.nationalInsuranceNumber = personalDetails.getNationalInsuranceNumber();
-        this.driverNumber = personalDetails.getDriverNumber();
-        this.driverLicenceDetails = personalDetails.getDriverLicenceDetails();
+        final LegalEntityDetails legalEntityDetails = defendant.getLegalEntityDetails();
+        this.title = nonNull(personalDetails) ? personalDetails.getTitle() : null;
+        this.firstName = nonNull(personalDetails) ? personalDetails.getFirstName() : null;
+        this.lastName = nonNull(personalDetails) ? personalDetails.getLastName() : null;
+        this.dateOfBirth = nonNull(personalDetails) ? personalDetails.getDateOfBirth() : null;
+        this.gender = nonNull(personalDetails) ? personalDetails.getGender() : null;
+        this.nationalInsuranceNumber = nonNull(personalDetails) ? personalDetails.getNationalInsuranceNumber() : null;
+        this.driverNumber = nonNull(personalDetails) ? personalDetails.getDriverNumber() : null;
+        this.driverLicenceDetails = nonNull(personalDetails) ? personalDetails.getDriverLicenceDetails() : null;
+        this.legalEntityName = nonNull(legalEntityDetails) ? legalEntityDetails.getLegalEntityName() : null;
     }
 
     public String getId() {
@@ -65,5 +71,9 @@ public class DefendantSummaryView {
 
     public String getDriverLicenceDetails() {
         return driverLicenceDetails;
+    }
+
+    public String getLegalEntityName() {
+        return legalEntityName;
     }
 }

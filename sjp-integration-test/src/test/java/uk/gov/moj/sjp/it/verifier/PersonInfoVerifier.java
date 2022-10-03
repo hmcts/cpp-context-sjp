@@ -10,8 +10,6 @@ import static uk.gov.moj.sjp.it.util.DefaultRequests.getCaseById;
 import static uk.gov.moj.sjp.it.util.RestPollerWithDefaults.pollWithDefaults;
 
 import uk.gov.justice.services.common.converter.LocalDates;
-import uk.gov.moj.cpp.sjp.persistence.entity.Address;
-import uk.gov.moj.cpp.sjp.persistence.entity.ContactDetails;
 import uk.gov.moj.cpp.sjp.persistence.entity.PersonalDetails;
 import uk.gov.moj.sjp.it.command.CreateCase;
 import uk.gov.moj.sjp.it.command.UpdateDefendantDetails;
@@ -47,22 +45,7 @@ public class PersonInfoVerifier {
                 defendantBuilder.getGender(),
                 defendantBuilder.getNationalInsuranceNumber(),
                 defendantBuilder.getDriverNumber(),
-                defendantBuilder.getDriverLicenceDetails(),
-                new Address(
-                        defendantBuilder.getAddressBuilder().getAddress1(),
-                        defendantBuilder.getAddressBuilder().getAddress2(),
-                        defendantBuilder.getAddressBuilder().getAddress3(),
-                        defendantBuilder.getAddressBuilder().getAddress4(),
-                        defendantBuilder.getAddressBuilder().getAddress5(),
-                        defendantBuilder.getAddressBuilder().getPostcode()
-                ),
-                new ContactDetails(
-                        defendantBuilder.getContactDetailsBuilder().getEmail(),
-                        defendantBuilder.getContactDetailsBuilder().getHome(),
-                        defendantBuilder.getContactDetailsBuilder().getMobile()
-                ),
-                null
-        );
+                defendantBuilder.getDriverLicenceDetails());
 
         return new PersonInfoVerifier(createCasePayloadBuilder.getId(), personalDetails);
     }
@@ -76,22 +59,7 @@ public class PersonInfoVerifier {
                 payloadBuilder.getGender(),
                 payloadBuilder.getNationalInsuranceNumber(),
                 payloadBuilder.getDriverNumber(),
-                payloadBuilder.getDriverLicenceDetails(),
-                new Address(
-                        payloadBuilder.getAddressBuilder().getAddress1(),
-                        payloadBuilder.getAddressBuilder().getAddress2(),
-                        payloadBuilder.getAddressBuilder().getAddress3(),
-                        payloadBuilder.getAddressBuilder().getAddress4(),
-                        payloadBuilder.getAddressBuilder().getAddress5(),
-                        payloadBuilder.getAddressBuilder().getPostcode()
-                ),
-                new ContactDetails(
-                        payloadBuilder.getContactDetailsBuilder().getEmail(),
-                        payloadBuilder.getContactDetailsBuilder().getHome(),
-                        payloadBuilder.getContactDetailsBuilder().getMobile()
-                ),
-                null
-        );
+                payloadBuilder.getDriverLicenceDetails());
 
         return new PersonInfoVerifier(caseId, personalDetails);
     }
@@ -119,22 +87,13 @@ public class PersonInfoVerifier {
                 withJsonPath("$.defendant.personalDetails.firstName", equalTo(personalDetails.getFirstName())),
                 withJsonPath("$.defendant.personalDetails.lastName", equalTo(personalDetails.getLastName())),
                 withJsonPath("$.defendant.personalDetails.gender", equalTo(personalDetails.getGender().toString())),
-                withJsonPath("$.defendant.personalDetails.dateOfBirth", equalTo(LocalDates.to(personalDetails.getDateOfBirth()))),
-                withJsonPath("$.defendant.personalDetails.address.address1", equalTo(personalDetails.getAddress().getAddress1())),
-                withJsonPath("$.defendant.personalDetails.address.address2", equalTo(personalDetails.getAddress().getAddress2())),
-                withJsonPath("$.defendant.personalDetails.address.address3", equalTo(personalDetails.getAddress().getAddress3())),
-                withJsonPath("$.defendant.personalDetails.address.address4", equalTo(personalDetails.getAddress().getAddress4())),
-                withJsonPath("$.defendant.personalDetails.address.address5", equalTo(personalDetails.getAddress().getAddress5())),
-                withJsonPath("$.defendant.personalDetails.address.postcode", equalTo(personalDetails.getAddress().getPostcode()))
+                withJsonPath("$.defendant.personalDetails.dateOfBirth", equalTo(LocalDates.to(personalDetails.getDateOfBirth())))
         );
     }
 
     private List<Matcher> getContactsAndNiNumberMatchers(final PersonalDetails personalDetails) {
         return Lists.newArrayList(
-                withJsonPath("$.defendant.personalDetails.nationalInsuranceNumber", equalTo(personalDetails.getNationalInsuranceNumber())),
-                withJsonPath("$.defendant.personalDetails.contactDetails.email", equalTo(personalDetails.getContactDetails().getEmail())),
-                withJsonPath("$.defendant.personalDetails.contactDetails.home", equalTo(personalDetails.getContactDetails().getHome())),
-                withJsonPath("$.defendant.personalDetails.contactDetails.mobile", equalTo(personalDetails.getContactDetails().getMobile()))
+                withJsonPath("$.defendant.personalDetails.nationalInsuranceNumber", equalTo(personalDetails.getNationalInsuranceNumber()))
         );
     }
 

@@ -30,7 +30,7 @@ public class FinancialMeansHandlerTest extends CaseCommandHandlerTest {
 
         final Income income = new Income(IncomeFrequency.MONTHLY, BigDecimal.valueOf(1000.50));
         final Benefits benefits = new Benefits(true, "Benefits type");
-        final FinancialMeans financialMeans = new FinancialMeans(UUID.randomUUID(), income, benefits, "EMPLOYED");
+        final FinancialMeans financialMeans = new FinancialMeans(UUID.randomUUID(), income, benefits, "EMPLOYED", null, null, null, null);
 
         when(converter.convert(jsonObject, FinancialMeans.class)).thenReturn(financialMeans);
         when(caseAggregate.updateFinancialMeans(userId, financialMeans)).thenReturn(events);

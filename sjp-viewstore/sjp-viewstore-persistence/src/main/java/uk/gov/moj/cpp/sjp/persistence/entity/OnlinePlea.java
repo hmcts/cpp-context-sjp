@@ -55,6 +55,9 @@ public class OnlinePlea {
     private OnlinePleaPersonalDetails personalDetails;
 
     @Embedded
+    private OnlinePleaLegalEntityDetails legalEntityDetails;
+
+    @Embedded
     private PleaDetails pleaDetails;
 
     @Embedded
@@ -134,10 +137,11 @@ public class OnlinePlea {
      * Used in {@link OnlinePleaRepository#findOnlinePleaWithoutFinances} to filter finances It must
      * include every field apart finances (employment, employer, outgoings)
      */
-    public OnlinePlea(final UUID caseId, final PleaDetails pleaDetails, final UUID defendantId, final OnlinePleaPersonalDetails personalDetails, final ZonedDateTime submittedOn) {
+    public OnlinePlea(final UUID caseId, final PleaDetails pleaDetails, final UUID defendantId, final OnlinePleaPersonalDetails personalDetails, final ZonedDateTime submittedOn, final OnlinePleaLegalEntityDetails legalEntityDetails) {
         this(caseId, pleaDetails, submittedOn);
         this.defendantId = defendantId;
         this.personalDetails = personalDetails;
+        this.legalEntityDetails = legalEntityDetails;
     }
 
     private OnlinePlea(final UUID caseId, final UUID defendantId, final ZonedDateTime submittedOn) {
@@ -214,6 +218,14 @@ public class OnlinePlea {
 
     public void setOutgoings(final Outgoings outgoings) {
         this.outgoings = outgoings;
+    }
+
+    public OnlinePleaLegalEntityDetails getLegalEntityDetails() {
+        return legalEntityDetails;
+    }
+
+    public void setLegalEntityDetails(final OnlinePleaLegalEntityDetails legalEntityDetails) {
+        this.legalEntityDetails = legalEntityDetails;
     }
 
     @Embeddable

@@ -1,0 +1,19 @@
+{
+  "caseId": "bbfbb752-9dae-48e4-a69d-f132998f737d",
+  "defendantId": "ccfbb752-9dae-48e4-a69d-f132998f7311",
+  "legalEntityName": "Samba LTD",
+  "email": "email@email.com",
+  "address": {
+    "address1": "14 Shaftesbury Road",
+    "address2": "Croydon",
+    "address3": "Wales",
+    "address4": "US",
+    "address5": "New London",
+    "postcode": "IG6 1JY"
+  },
+  "contactNumber": {
+    "home": "02087654321",
+    "mobile": "07123456789"
+  },
+  "nationalInsuranceNumber": "QQ 12 34 56 C"
+}

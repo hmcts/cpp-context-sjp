@@ -76,14 +76,14 @@ public class DatesToAvoidService {
 
         return pendingCases
                 .stream()
-                .filter(pendingCase -> regionName.equalsIgnoreCase(pendingCase.getCaseDetail().getDefendant().getPersonalDetails().getRegion()))
+                .filter(pendingCase -> regionName.equalsIgnoreCase(pendingCase.getCaseDetail().getDefendant().getRegion()))
                 .collect(Collectors.toList());
     }
 
     private List<PendingDatesToAvoid> filterByUnknownRegion(final List<PendingDatesToAvoid> pendingCases) {
         return pendingCases
                 .stream()
-                .filter(line -> isBlank(line.getCaseDetail().getDefendant().getPersonalDetails().getRegion()))
+                .filter(line -> isBlank(line.getCaseDetail().getDefendant().getRegion()))
                 .collect(Collectors.toList());
     }
 

@@ -154,15 +154,12 @@ public class SjpCaseDecisionToHearingResultConverter {
                 .withProsecutionCases(prosecutionCasesConverter.convert(sjpSessionEnvelope.payloadAsJsonObject(), caseDetails, sourceMetadata, resultsAggregate))
                 .withIsBoxHearing(false);
 
-        final PublicHearingResulted publicHearingResulted = publicHearingResulted()
+        return publicHearingResulted()
                 .withHearing(hearingBuilder.build())
                 .withSharedTime(caseListedInCcForReferToCourtEnvelope
                         .payload().getDecisionSaved()
                         .getSavedAt())
                 .build();
-        
-        return publicHearingResulted;
     }
-
 
 }

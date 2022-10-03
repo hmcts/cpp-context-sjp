@@ -21,6 +21,7 @@ public class UpdatedDefendantDetails {
     private final String caseUrn;
     private final UUID caseId;
     private final String region;
+    private final String legalEntityName;
 
     @SuppressWarnings("squid:S00107")
     public UpdatedDefendantDetails(
@@ -33,7 +34,8 @@ public class UpdatedDefendantDetails {
             final ZonedDateTime nameUpdatedAt,
             final String caseUrn,
             final UUID caseId,
-            final String region) {
+            final String region,
+            final String legalEntityName) {
 
         this.firstName = firstName;
         this.lastName = lastName;
@@ -45,6 +47,7 @@ public class UpdatedDefendantDetails {
         this.caseUrn = caseUrn;
         this.caseId = caseId;
         this.region = region;
+        this.legalEntityName = legalEntityName;
     }
 
     /**
@@ -108,6 +111,10 @@ public class UpdatedDefendantDetails {
         return region;
     }
 
+    public String getLegalEntityName() {
+        return legalEntityName;
+    }
+
     @SuppressWarnings("squid:S1067")
     @Override
     public boolean equals(final Object o) {
@@ -128,7 +135,8 @@ public class UpdatedDefendantDetails {
                 Objects.equal(nameUpdatedAt, that.nameUpdatedAt) &&
                 Objects.equal(caseUrn, that.caseUrn) &&
                 Objects.equal(caseId, that.caseId) &&
-                Objects.equal(region, that.region);
+                Objects.equal(region, that.region)&&
+                Objects.equal(legalEntityName, that.legalEntityName);
     }
 
     @Override
@@ -143,6 +151,7 @@ public class UpdatedDefendantDetails {
                 nameUpdatedAt,
                 caseUrn,
                 caseId,
-                region);
+                region,
+                legalEntityName);
     }
 }

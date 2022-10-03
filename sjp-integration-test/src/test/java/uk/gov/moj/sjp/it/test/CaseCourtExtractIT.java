@@ -6,6 +6,7 @@ import static java.time.Month.JULY;
 import static java.time.format.DateTimeFormatter.ofPattern;
 import static java.util.Arrays.asList;
 import static java.util.Collections.singletonList;
+import static java.util.Objects.nonNull;
 import static java.util.UUID.fromString;
 import static java.util.UUID.randomUUID;
 import static javax.json.Json.createObjectBuilder;
@@ -125,6 +126,7 @@ public class CaseCourtExtractIT extends BaseIntegrationTest {
     private final UUID offenceId = UUID.fromString("7884634a-8b25-4650-be3b-7ca393309001");
     private final UUID offence2d = UUID.fromString("7884634a-8b25-4650-be3b-7ca393309002");
     private final UUID defendantId = randomUUID();
+    private final String legalEntityName = "Samba LTD";
     private final UUID magistrateSessionId = randomUUID();
     private final UUID delegatedPowersSessionId = randomUUID();
     private final User user = new User("John", "Smith", USER_ID);
@@ -165,6 +167,14 @@ public class CaseCourtExtractIT extends BaseIntegrationTest {
 
         CaseAssignmentRestrictionHelper.provisionCaseAssignmentRestrictions(Sets.newHashSet(TFL, TVL, DVLA));
 
+        stubRegionByPostcode(NATIONAL_COURT_CODE, DEFENDANT_REGION);
+        stubResultDefinitions();
+        stubResultIds();
+
+    }
+
+    @Test
+    public void shouldGenerateCourtExtract() {
         final CreateCase.CreateCasePayloadBuilder caseBuilder = CreateCase
                 .CreateCasePayloadBuilder
                 .withDefaults()
@@ -176,16 +186,9 @@ public class CaseCourtExtractIT extends BaseIntegrationTest {
                         CreateCase.OffenceBuilder.withDefaults().withId(offence2d))
                 .withOffenceCode(DEFAULT_OFFENCE_CODE)
                 .withUrn(urn);
-
-        stubEnforcementAreaByPostcode(caseBuilder.getDefendantBuilder().getAddressBuilder().getPostcode(), NATIONAL_COURT_CODE, "Bedfordshire Magistrates' Court");
-        stubRegionByPostcode(NATIONAL_COURT_CODE, DEFENDANT_REGION);
-        stubResultDefinitions();
-        stubResultIds();
         createCaseAndWaitUntilReady(caseBuilder);
-    }
+        stubEnforcementAreaByPostcode(caseBuilder.getDefendantBuilder().getAddressBuilder().getPostcode(), NATIONAL_COURT_CODE, "Bedfordshire Magistrates' Court");
 
-    @Test
-    public void shouldGenerateCourtExtract() {
         setPlea(GUILTY_REQUEST_HEARING);
 
         adjournCase();
@@ -204,7 +207,53 @@ public class CaseCourtExtractIT extends BaseIntegrationTest {
     }
 
     @Test
+    public void shouldGenerateCourtExtractForCompany() {
+        final CreateCase.CreateCasePayloadBuilder caseBuilder = CreateCase
+                .CreateCasePayloadBuilder
+                .withDefaults()
+                .withDefendantBuilder(CreateCase.DefendantBuilder.defaultDefendant().withLegalEntityName(legalEntityName))
+                .withId(caseId)
+                .withProsecutingAuthority(prosecutingAuthority)
+                .withDefendantId(defendantId)
+                .withDefendantDateOfBirth(defendantDateOfBirth)
+                .withOffenceBuilders(CreateCase.OffenceBuilder.withDefaults().withId(offenceId),
+                        CreateCase.OffenceBuilder.withDefaults().withId(offence2d))
+                .withOffenceCode(DEFAULT_OFFENCE_CODE)
+                .withUrn(urn);
+        createCaseAndWaitUntilReady(caseBuilder);
+        stubEnforcementAreaByPostcode(caseBuilder.getDefendantBuilder().getAddressBuilder().getPostcode(), NATIONAL_COURT_CODE, "Bedfordshire Magistrates' Court");
+        setPlea(GUILTY_REQUEST_HEARING);
+
+        adjournCase();
+
+        setPlea(GUILTY);
+
+        expireAdjournment();
+
+        dismissCase();
+
+        waitUntilNewDecision();
+
+        verifyCourtExtractResponse();
+
+        verifyCourtExtractGenerationRequestForCompany();
+    }
+
+    @Test
     public void shouldGenerateCourtExtractWithDecisionPostApplication() {
+        final CreateCase.CreateCasePayloadBuilder caseBuilder = CreateCase
+                .CreateCasePayloadBuilder
+                .withDefaults()
+                .withId(caseId)
+                .withProsecutingAuthority(prosecutingAuthority)
+                .withDefendantId(defendantId)
+                .withDefendantDateOfBirth(defendantDateOfBirth)
+                .withOffenceBuilders(CreateCase.OffenceBuilder.withDefaults().withId(offenceId),
+                        CreateCase.OffenceBuilder.withDefaults().withId(offence2d))
+                .withOffenceCode(DEFAULT_OFFENCE_CODE)
+                .withUrn(urn);
+        createCaseAndWaitUntilReady(caseBuilder);
+        stubEnforcementAreaByPostcode(caseBuilder.getDefendantBuilder().getAddressBuilder().getPostcode(), NATIONAL_COURT_CODE, "Bedfordshire Magistrates' Court");
 
         setPlea(GUILTY_REQUEST_HEARING);
 
@@ -229,6 +278,20 @@ public class CaseCourtExtractIT extends BaseIntegrationTest {
 
     @Test
     public void shouldGenerateCourtExtractWithDecisionApplicationAndPaymentAndCollection() {
+        final CreateCase.CreateCasePayloadBuilder caseBuilder = CreateCase
+                .CreateCasePayloadBuilder
+                .withDefaults()
+                .withId(caseId)
+                .withProsecutingAuthority(prosecutingAuthority)
+                .withDefendantId(defendantId)
+                .withDefendantDateOfBirth(defendantDateOfBirth)
+                .withOffenceBuilders(CreateCase.OffenceBuilder.withDefaults().withId(offenceId),
+                        CreateCase.OffenceBuilder.withDefaults().withId(offence2d))
+                .withOffenceCode(DEFAULT_OFFENCE_CODE)
+                .withUrn(urn);
+        createCaseAndWaitUntilReady(caseBuilder);
+        stubEnforcementAreaByPostcode(caseBuilder.getDefendantBuilder().getAddressBuilder().getPostcode(), NATIONAL_COURT_CODE, "Bedfordshire Magistrates' Court");
+
         setPlea(GUILTY);
 
         dischargeCase();
@@ -273,6 +336,36 @@ public class CaseCourtExtractIT extends BaseIntegrationTest {
 
         assertThat(JsonHelper.lenientCompare(expectedTemplatePayload.getJsonObject("caseDetails"),
                 actualPayload.getJSONObject("caseDetails")), is(true));
+    }
+
+    private void verifyCourtExtractGenerationRequestForCompany() {
+
+        final JSONObject documentGenerationRequest = pollDocumentGenerationRequests(hasSize(1)).get(0);
+
+        assertThat(documentGenerationRequest.getString("templateName"), is("CourtExtract"));
+        assertThat(documentGenerationRequest.getString("conversionFormat"), is("pdf"));
+
+        final JSONObject actualPayload = documentGenerationRequest.getJSONObject("templatePayload");
+        JsonObject expectedTemplatePayload= null;
+
+        final JsonObject expectedPayload = getExpectedJsonObject("CourtExtractIT/system-document-generator-command-company.json");
+
+        // To avoid flaky tests, the 'generationTime' is not verified
+
+        if(nonNull(expectedPayload)) {
+            expectedTemplatePayload = expectedPayload.getJsonObject("templatePayload");
+        }
+        if(nonNull(expectedTemplatePayload)) {
+        assertThat(JsonHelper.lenientCompare(expectedTemplatePayload.getJsonObject("defendant"),
+                actualPayload.getJSONObject("defendant")), is(true));
+
+
+        assertThat(JsonHelper.lenientCompare(expectedTemplatePayload.getJsonArray("decisionCourtExtractView").getJsonObject(0).getJsonArray("offencesApplicationsDecisions").getJsonObject(0),
+                actualPayload.getJSONArray("decisionCourtExtractView").getJSONObject(0).getJSONArray("offencesApplicationsDecisions").getJSONObject(0)), is(true));
+
+            assertThat(JsonHelper.lenientCompare(expectedTemplatePayload.getJsonObject("caseDetails"),
+                    actualPayload.getJSONObject("caseDetails")), is(true));
+        }
     }
 
     private void verifyCourtExtractGenerationRequestWithApplication() {

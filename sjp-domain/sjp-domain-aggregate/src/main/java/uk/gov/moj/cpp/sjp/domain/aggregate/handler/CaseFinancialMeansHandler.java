@@ -43,7 +43,11 @@ public class CaseFinancialMeansHandler {
                 financialMeans.getDefendantId(),
                 financialMeans.getIncome(),
                 financialMeans.getBenefits(),
-                financialMeans.getEmploymentStatus()));
+                financialMeans.getEmploymentStatus(),
+                financialMeans.getGrossTurnover(),
+                financialMeans.getNetTurnover(),
+                financialMeans.getNumberOfEmployees(),
+                financialMeans.getTradingMoreThanTwelveMonths()));
     }
 
     public Stream<Object> getAllFinancialMeansUpdatedEventStream(final UUID defendantId, final Income income, final Benefits benefits, final Employer employer, final String employmentStatus) {

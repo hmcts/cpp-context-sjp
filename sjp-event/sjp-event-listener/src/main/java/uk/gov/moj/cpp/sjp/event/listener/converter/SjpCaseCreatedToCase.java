@@ -4,8 +4,11 @@ import static java.util.stream.Collectors.toList;
 
 import uk.gov.justice.services.common.converter.Converter;
 import uk.gov.moj.cpp.sjp.event.SjpCaseCreated;
+import uk.gov.moj.cpp.sjp.persistence.entity.Address;
 import uk.gov.moj.cpp.sjp.persistence.entity.CaseDetail;
+import uk.gov.moj.cpp.sjp.persistence.entity.ContactDetails;
 import uk.gov.moj.cpp.sjp.persistence.entity.DefendantDetail;
+import uk.gov.moj.cpp.sjp.persistence.entity.LegalEntityDetails;
 import uk.gov.moj.cpp.sjp.persistence.entity.PersonalDetails;
 
 import javax.inject.Inject;
@@ -34,7 +37,10 @@ public class SjpCaseCreatedToCase implements Converter<SjpCaseCreated, CaseDetai
                 sjpCaseCreated.getDefendantId(),
                 new PersonalDetails(),
                 sjpCaseCreated.getOffences().stream().map(offenceToOffenceDetailConverter::convert).collect(toList()),
-                sjpCaseCreated.getNumPreviousConvictions());
+                sjpCaseCreated.getNumPreviousConvictions(),
+                new LegalEntityDetails(),
+                new Address(),
+                new ContactDetails());
     }
 
 }

@@ -20,6 +20,9 @@
           "lastName": {
             "type": "string"
           },
+          "legalEntityName": {
+            "type": "string"
+          },
           "pleaDate": {
             "$ref": "http://justice.gov.uk/json/schemas/domains/sjp/temporal.json#/definitions/date-time"
           },
@@ -27,17 +30,30 @@
             "type": "string"
           },
           "caseManagementStatus": {
-            "$ref" : "http://justice.gov.uk/json/schemas/domains/sjp/case-management-status.json"
+            "$ref": "http://justice.gov.uk/json/schemas/domains/sjp/case-management-status.json"
           }
         },
         "additionalProperties": false,
-        "required": [
-          "id",
-          "urn",
-          "firstName",
-          "lastName",
-          "prosecutingAuthority",
-          "caseManagementStatus"
+        "anyOf": [
+          {
+            "required": [
+              "id",
+              "urn",
+              "firstName",
+              "lastName",
+              "prosecutingAuthority",
+              "caseManagementStatus"
+            ]
+          },
+          {
+            "required": [
+              "id",
+              "urn",
+              "legalEntityName",
+              "prosecutingAuthority",
+              "caseManagementStatus"
+            ]
+          }
         ]
       }
     }

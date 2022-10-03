@@ -17,6 +17,8 @@ public class CaseNotGuiltyPleaView {
 
     private final String lastName;
 
+    private final String legalEntityName;
+
     private final String prosecutingAuthority;
 
     private final CaseManagementStatus caseManagementStatus;
@@ -26,6 +28,7 @@ public class CaseNotGuiltyPleaView {
                                  final ZonedDateTime pleaDate,
                                  final String firstName,
                                  final String lastName,
+                                 final String legalEntityName,
                                  final String prosecutingAuthority,
                                  final CaseManagementStatus caseManagementStatus) {
         this.id = id;
@@ -33,6 +36,7 @@ public class CaseNotGuiltyPleaView {
         this.pleaDate = pleaDate;
         this.firstName = firstName;
         this.lastName = lastName;
+        this.legalEntityName = legalEntityName;
         this.prosecutingAuthority = prosecutingAuthority;
         this.caseManagementStatus = caseManagementStatus;
     }
@@ -51,6 +55,10 @@ public class CaseNotGuiltyPleaView {
 
     public String getLastName() {
         return lastName;
+    }
+
+    public String getLegalEntityName() {
+        return legalEntityName;
     }
 
     public String getUrn() {

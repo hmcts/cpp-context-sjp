@@ -78,8 +78,6 @@ import uk.gov.moj.cpp.sjp.domain.plea.PleaMethod;
 import uk.gov.moj.cpp.sjp.domain.plea.PleaType;
 import uk.gov.moj.cpp.sjp.domain.verdict.VerdictType;
 import uk.gov.moj.cpp.sjp.event.CaseReferredForCourtHearing;
-import uk.gov.moj.cpp.sjp.persistence.entity.Address;
-import uk.gov.moj.cpp.sjp.persistence.entity.ContactDetails;
 import uk.gov.moj.cpp.sjp.persistence.entity.PersonalDetails;
 import uk.gov.moj.sjp.it.command.CreateCase;
 import uk.gov.moj.sjp.it.helper.CaseSearchResultHelper;
@@ -123,20 +121,18 @@ import org.json.JSONObject;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-
+@SuppressWarnings({"squid:S1607"})
 public class PleadOnlineIT extends BaseIntegrationTest {
     private static final String TEMPLATE_PLEA_NOT_GUILTY_PAYLOAD = "raml/json/sjp.command.plead-online__not-guilty.json";
+    private static final String TEMPLATE_PLEA_NOT_GUILTY_PAYLOAD_ORGANISATION= "raml/json/sjp.command.plead-online__not-guilty_legal_entity.json";
     private static final String TEMPLATE_PLEA_MULTI_OFFENCE_PAYLOAD = "raml/json/sjp.command.plead-online__multi_offence.json";
     private static final String TEMPLATE_PLEA_MULTI_OFFENCE_CUSTOM_V2 = "raml/json/sjp.command.plead-online__multi_offence_v2.json";
     private static final String TEMPLATE_PLEA_GUILTY_PAYLOAD = "raml/json/sjp.command.plead-online__guilty.json";
-    private static final String TEMPLATE_PLEA_GUILTY_PAYLOAD_WITH_DRIVER_LICENCE_DETAILS = "raml/json/sjp.command.plead-online__guilty_with_driver_licence_details.json";
     private static final String TEMPLATE_PLEA_GUILTY_PAYLOAD_WITH_DRIVER_NUMBER = "raml/json/sjp.command.plead-online__guilty_with_driver_number.json";
     private static final String TEMPLATE_PLEA_GUILTY_REQUEST_HEARING_PAYLOAD = "raml/json/sjp.command.plead-online__guilty_request_hearing.json";
     private static final String TEMPLATE_PLEA_MULTI_OFFENCE_NO_CHANGE_PERSONAL_DETAILS_PAYLOAD = "raml/json/sjp.command.plead-online__david-lloyd.json";
     private static final String TEMPLATE_PLEA_GUILTY_WITH_FINANCIAL_MEANS_RESPONSE = "raml/json/sjp.command.plead-online__guilty_with_finances_response.json";
-    private static final String TEMPLATE_PLEA_GUILTY_WITH_DRIVER_LICENCE_DETAILS_RESPONSE = "raml/json/sjp.command.plead-online__guilty_with_driver_licence_details_response.json";
     private static final String TEMPLATE_PLEA_GUILTY_WITH_FINANCIAL_MEANS_CASE_RESPONSE = "raml/json/sjp.command.plead-online__guilty_with_finances_case_response.json";
-    private static final String TEMPLATE_PLEA_GUILTY_WITH_DRIVER_LICENCE_DETAILS_CASE_RESPONSE = "raml/json/sjp.command.plead-online__guilty_with_driver_licence_details_case_response.json";
     private static final String TEMPLATE_PLEA_NOT_GUILTY_WITHOUT_FINANCIAL_MEANS_RESPONSE = "raml/json/sjp.command.plead-online__not-guilty_without_finances_response.json";
     private static final String TEMPLATE_PLEA_NOT_GUILTY_WITHOUT_FINANCIAL_MEANS_AND_OUTGOINGS_RESPONSE = "raml/json/sjp.command.plead-online__not-guilty_without_finances_and_outgoings_response.json";
     private static final String TEMPLATE_PLEA_NOT_GUILTY_WITHOUT_OUTGOINGS_RESPONSE = "raml/json/sjp.command.plead-online__not-guilty_without_outgoings_response.json";
@@ -223,11 +219,8 @@ public class PleadOnlineIT extends BaseIntegrationTest {
         //fields that we do not override
         final String title = personInfoVerifier.getPersonalDetails().getTitle();
         final Gender gender = personInfoVerifier.getPersonalDetails().getGender();
-        return new PersonalDetails(title, firstName, lastName, LocalDate.parse(dateOfBirth), gender, nationalInsuranceNumber, driverNumber, driverLicenceDetails,
-                new Address(address1, address2, address3, address4, address5, postcode),
-                new ContactDetails(email, homeNumber, mobileNumber),
-                null
-        );
+        return new PersonalDetails(title, firstName, lastName, LocalDate.parse(dateOfBirth), gender, nationalInsuranceNumber, driverNumber, driverLicenceDetails);
+
     }
 
     private void pleadOnlineAndConfirmSuccess(final PleaType pleaType, final PleadOnlineHelper pleadOnlineHelper, final CaseSearchResultHelper caseSearchResultHelper) {
@@ -264,6 +257,31 @@ public class PleadOnlineIT extends BaseIntegrationTest {
         userIds.forEach(userId -> getOnlinePlea(createCasePayloadBuilder.getId().toString(),
                 createCasePayloadBuilder.getDefendantBuilder().getId().toString(),
                 expectedResult, userId));
+        verifyOnlinePleaReceivedAndUpdatedCaseDetailsFlag(createCasePayloadBuilder.getId(), true);
+        verifyNotification("criminal@gmail.com", createCasePayloadBuilder.getUrn(), ENGLISH_TEMPLATE_ID);
+    }
+
+
+    private void pleadOnlineAndConfirmSuccessLegalEntity(final PleaType pleaType, final PleadOnlineHelper pleadOnlineHelper, final CaseSearchResultHelper caseSearchResultHelper,
+                                              final Collection<UUID> userIds, final boolean expectToHaveFinances) {
+        assumeThat(userIds, not(empty()));
+        //checks person-info before plead-online
+        personInfoVerifier.verifyPersonInfo();
+        //runs plea-online
+        verifyOnlinePleaReceivedAndUpdatedCaseDetailsFlag(createCasePayloadBuilder.getId(), false);
+        final JSONObject pleaPayload = new JSONObject(getPayload(TEMPLATE_PLEA_NOT_GUILTY_PAYLOAD_ORGANISATION));
+        //set offence.id to match setup data
+        pleaPayload.getJSONArray("offences").getJSONObject(0).put("id", createCasePayloadBuilder.getOffenceId().toString());
+        pleadOnlineHelper.pleadOnline(pleaPayload.toString());
+        //verify plea
+        pleadOnlineHelper.verifyInPublicTopic(createCasePayloadBuilder.getId(), createCasePayloadBuilder.getOffenceId(), pleaType, null);
+        pleadOnlineHelper.verifyPleaUpdated(createCasePayloadBuilder.getId(), pleaType, PleaMethod.ONLINE);
+        caseSearchResultHelper.verifyPleaReceivedDate();
+        //verify employer
+        final String defendantId = pleadOnlineHelper.getCaseDefendantId().toString();
+        //verify financial-means
+        financialMeansHelper.getFinancialMeans(defendantId, getFinancialMeansUpdatedPayloadContentMatcher(pleaPayload, defendantId));
+        financialMeansHelper.getEventFromPublicTopic(getFinancialMeansUpdatedPayloadContentMatcher(pleaPayload, defendantId));
         verifyOnlinePleaReceivedAndUpdatedCaseDetailsFlag(createCasePayloadBuilder.getId(), true);
         verifyNotification("criminal@gmail.com", createCasePayloadBuilder.getUrn(), ENGLISH_TEMPLATE_ID);
     }
@@ -573,6 +591,11 @@ public class PleadOnlineIT extends BaseIntegrationTest {
     }
 
     @Test
+    public void shouldPleadGuiltyOnlineLegalEntity() {
+        pleadGuiltyOnlineWithUserAndExpectedFinancesLegalEntity(DEFAULT_STUBBED_USER_ID, true);
+    }
+
+    @Test
     public void shouldShowFinancesForProsecutors() {
         verifyGroupsCanSeeDefendantFinances(true, asList(LEGAL_ADVISERS_GROUP, COURT_ADMINISTRATORS_GROUP));
     }
@@ -769,6 +792,16 @@ public class PleadOnlineIT extends BaseIntegrationTest {
         }
     }
 
+    private void pleadGuiltyOnlineWithUserAndExpectedFinancesLegalEntity(final Collection<UUID> userIds, final boolean expectToHaveFinances) {
+        try (final PleadOnlineHelper pleadOnlineHelper = new PleadOnlineHelper(createCasePayloadBuilder.getId())) {
+            final CaseSearchResultHelper caseSearchResultHelper = new CaseSearchResultHelper(
+                    createCasePayloadBuilder.getUrn(),
+                    createCasePayloadBuilder.getDefendantBuilder().getLastName(),
+                    createCasePayloadBuilder.getDefendantBuilder().getDateOfBirth());
+            pleadOnlineAndConfirmSuccessLegalEntity(NOT_GUILTY, pleadOnlineHelper, caseSearchResultHelper, userIds, expectToHaveFinances);
+        }
+    }
+
     private JSONObject getOnlinePleaPayload(final PleaType pleaType) {
         String templateRequest = null;
         if (pleaType.equals(PleaType.NOT_GUILTY)) {
@@ -836,6 +869,25 @@ public class PleadOnlineIT extends BaseIntegrationTest {
         return isJson(allOf(
                 fieldMatchers.<Matcher<ReadContext>>toArray(new Matcher[fieldMatchers.size()])
         ));
+    }
+
+    private List<Matcher> getCommonFieldLegalEntityMatchers(final JSONObject onlinePleaPayload, final String caseId, final String defendantId, final boolean expectToHaveFinances) {
+        final JSONObject legalEntityDefendant = onlinePleaPayload.getJSONObject("legalEntityDefendant");
+        final JSONObject legalEntityFinancialMeans = onlinePleaPayload.getJSONObject("legalEntityFinancialMeans");
+        final JSONObject financialMeans = onlinePleaPayload.getJSONObject("financialMeans");
+        final JSONObject accommodationOutgoing = onlinePleaPayload.getJSONArray("outgoings").getJSONObject(0);
+        final JSONObject councilTaxOutgoing = onlinePleaPayload.getJSONArray("outgoings").getJSONObject(1);
+        final JSONObject householdBillsOutgoing = onlinePleaPayload.getJSONArray("outgoings").getJSONObject(2);
+        final JSONObject travelExpensesOutgoing = onlinePleaPayload.getJSONArray("outgoings").getJSONObject(3);
+        final JSONObject childMaintenanceOutgoing = onlinePleaPayload.getJSONArray("outgoings").getJSONObject(4);
+        final JSONObject otherOutgoing = onlinePleaPayload.getJSONArray("outgoings").getJSONObject(5);
+        final List<Matcher> matchers = new ArrayList<>(asList(
+                withJsonPath("$.caseId", equalTo(caseId)),
+                withJsonPath("$.defendantId", equalTo(defendantId))
+
+                //personal details
+        ));
+        return matchers;
     }
 
     private List<Matcher> getCommonFieldMatchers(final JSONObject onlinePleaPayload, final String caseId, final String defendantId, final boolean expectToHaveFinances) {

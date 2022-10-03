@@ -6,11 +6,7 @@
   "costs": 1.23,
   "postingDate": "2015-12-02",
   "defendant": {
-    "title": "Mr",
-    "firstName": "David",
-    "lastName": "LLOYD",
-    "dateOfBirth": "1980-07-15",
-    "gender": "Male",
+    "legalEntityName": "David",
     "numPreviousConvictions": 2,
     "address": {
       "address1": "14 Tottenham Court Road",

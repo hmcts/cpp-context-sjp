@@ -1,0 +1,32 @@
+{
+  "urn": "TFL123",
+  "caseId": "1fb5e324-0d69-420f-b12c-7b45de626294",
+  "defendantId": "4e89fdec-b86a-4f5e-8887-6f0daf209edc",
+  "legalEntityDefendant": {
+    "legalEntityName": "Salsa LTD",
+    "address": {
+      "address1": "9 Churchill Road",
+      "address2": "London",
+      "address3": "England",
+      "address4": "UK",
+      "address5": "Greater London",
+      "postcode": "W1T 1JY"
+    },
+    "contactDetails": {
+      "home": "0208000888",
+      "mobile": "07890123123",
+      "email": "salsa@gmail.com"
+    }
+  },
+  "witnessDispute": "They are lying",
+  "witnessDetails": "My mate Dave",
+  "unavailability": "I'm on holiday November 17 to 19",
+  "interpreterLanguage": "French",
+  "speakWelsh": false,
+  "financialMeans": {
+    "income": {
+      "amount": 200.25,
+      "frequency": "MONTHLY"
+    }
+  }
+}

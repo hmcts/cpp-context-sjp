@@ -76,7 +76,7 @@ public class ProgressionServiceTest {
         personalDetails.setFirstName("John");
         personalDetails.setLastName("Smith");
         personalDetails.setDateOfBirth(LocalDate.parse("1980-10-12"));
-        personalDetails.setAddress(new Address("2 Kings Avenue", "", "", "", "", "WC1E 1EE"));
+        defendantDetail.setAddress(new Address("2 Kings Avenue", "", "", "", "", "WC1E 1EE"));
         defendantDetail.setPersonalDetails(personalDetails);
 
         return defendantDetail;
@@ -92,8 +92,8 @@ public class ProgressionServiceTest {
                                            add("lastName", personalDetails.getLastName()).
                                            add("dateOfBirth", personalDetails.getDateOfBirth().toString()).
                                            add("address", createObjectBuilder().
-                                                            add("address1", personalDetails.getAddress().getAddress1()).
-                                                            add("postcode", personalDetails.getAddress().getPostcode()).
+                                                            add("address1", defaultDefendant.getAddress().getAddress1()).
+                                                            add("postcode", defaultDefendant.getAddress().getPostcode()).
                                                           build()).
                                          build();
 

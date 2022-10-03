@@ -8,6 +8,7 @@ import static java.util.Optional.ofNullable;
 
 import uk.gov.moj.cpp.sjp.persistence.entity.Address;
 import uk.gov.moj.cpp.sjp.persistence.entity.DefendantDetail;
+import uk.gov.moj.cpp.sjp.persistence.entity.LegalEntityDetails;
 import uk.gov.moj.cpp.sjp.persistence.entity.PersonalDetails;
 
 import java.time.format.DateTimeFormatter;
@@ -17,22 +18,23 @@ import java.time.format.DateTimeFormatter;
  */
 public class DefendantDetailsView {
 
-    private String address;
+    private final String address;
 
-    private String firstName;
+    private final String firstName;
 
-    private String lastName;
+    private final String lastName;
 
-    private String dateOfBirth;
+    private final String dateOfBirth;
 
-    private String age;
+    private final String age;
+
+    private final String legalEntityName;
 
     private static final DateTimeFormatter DATE_FORMAT = ofPattern("dd MMMM yyyy");
 
     public DefendantDetailsView(final DefendantDetail defendant) {
-        this.address = ofNullable(defendant.getPersonalDetails()).
-                map(PersonalDetails::getAddress).
-                map(this::addressString).
+        this.address = ofNullable(defendant.getAddress())
+                .map(this::addressString).
                 orElse(null);
 
         this.firstName = ofNullable(defendant.getPersonalDetails()).
@@ -48,6 +50,9 @@ public class DefendantDetailsView {
                 map(PersonalDetails::getDateOfBirth).
                 map(birthDate -> String.valueOf(between(birthDate, now()).getYears())).
                 orElse(null);
+
+        this.legalEntityName = ofNullable(defendant.getLegalEntityDetails()).
+                map(LegalEntityDetails::getLegalEntityName).orElse(null);
 
     }
 
@@ -80,5 +85,9 @@ public class DefendantDetailsView {
 
     public String getAge() {
         return age;
+    }
+
+    public String getLegalEntityName() {
+        return legalEntityName;
     }
 }

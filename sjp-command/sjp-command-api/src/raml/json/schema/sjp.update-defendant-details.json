@@ -17,6 +17,11 @@
       "minLength": 1,
       "maxLength": 255
     },
+    "legalEntityName": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 255
+    },
     "dateOfBirth": {
       "type": "string"
     },
@@ -42,9 +47,18 @@
       "type" : "string"
     }
   },
-  "required": [
-    "firstName",
-    "lastName",
-    "gender"
+  "anyOf": [
+    {
+      "required": [
+        "firstName",
+        "lastName",
+        "gender"
+      ]
+    },
+    {
+      "required": [
+        "legalEntityName"
+      ]
+    }
   ]
 }

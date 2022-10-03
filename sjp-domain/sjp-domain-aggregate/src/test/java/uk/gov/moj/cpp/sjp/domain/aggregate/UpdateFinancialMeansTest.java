@@ -34,7 +34,7 @@ public class UpdateFinancialMeansTest extends CaseAggregateBaseTest {
 
         final Income income = new Income(IncomeFrequency.MONTHLY, BigDecimal.valueOf(1000.50));
         final Benefits benefits = new Benefits(false, EMPTY);
-        final FinancialMeans financialMeans = new FinancialMeans(defendantId, income, benefits, "EMPLOYED");
+        final FinancialMeans financialMeans = new FinancialMeans(defendantId, income, benefits, "EMPLOYED", null, null, null, null);
 
         final Stream<Object> eventStream = caseAggregate.updateFinancialMeans(userId, financialMeans);
         final List<Object> events = eventStream.collect(toList());
@@ -55,7 +55,7 @@ public class UpdateFinancialMeansTest extends CaseAggregateBaseTest {
         final UUID defendantId = UUID.randomUUID();
         final Income income = new Income(IncomeFrequency.MONTHLY, BigDecimal.valueOf(1000.50));
         final Benefits benefits = new Benefits(false, EMPTY);
-        final FinancialMeans financialMeans = new FinancialMeans(defendantId, income, benefits, "EMPLOYED");
+        final FinancialMeans financialMeans = new FinancialMeans(defendantId, income, benefits, "EMPLOYED", null, null, null, null);
 
         final Stream<Object> eventStream = caseAggregate.updateFinancialMeans(userId, financialMeans);
         final List<Object> events = eventStream.collect(toList());

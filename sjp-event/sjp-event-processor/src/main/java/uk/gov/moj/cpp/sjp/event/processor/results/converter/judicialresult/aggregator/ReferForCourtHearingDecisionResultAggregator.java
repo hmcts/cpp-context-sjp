@@ -17,10 +17,13 @@ import static uk.gov.moj.cpp.sjp.event.processor.results.converter.judicialresul
 import static uk.gov.moj.cpp.sjp.event.processor.results.converter.judicialresult.JPrompt.SUMRCC_REASONS_IDS_FOR_REFERRING_TO_COURT;
 import static uk.gov.moj.cpp.sjp.event.processor.results.converter.judicialresult.JResultCode.SUMRCC;
 
+import java.util.Comparator;
 import uk.gov.justice.core.courts.Address;
 import uk.gov.justice.core.courts.CourtCentre;
+import uk.gov.justice.core.courts.HearingDay;
 import uk.gov.justice.core.courts.JudicialResult;
 import uk.gov.justice.core.courts.JudicialResultPrompt;
+import uk.gov.justice.core.courts.NextHearing;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.sjp.domain.decision.OffenceDecision;
 import uk.gov.moj.cpp.sjp.domain.decision.ReferForCourtHearing;
@@ -120,11 +123,24 @@ public class ReferForCourtHearingDecisionResultAggregator extends DecisionResult
                             .withOrderedDate(resultedOn.format(DATE_FORMAT))
                             .withResultText(getResultText(judicialResultPrompts, resultDefinition.getString(LABEL)))
                             .withJudicialResultPrompts(getCheckJudicialPromptsEmpty(judicialResultPrompts))
+                            .withNextHearing(getNextHearing(caseOffenceListedInCriminalCourts))
                             .build());
             judicialResultsMap.put(offenceId, judicialResults);
         });
 
         return judicialResultsMap;
+    }
+
+    private NextHearing getNextHearing(final CaseOffenceListedInCriminalCourts caseOffenceListedInCriminalCourts) {
+        final HearingDay hearingDay = caseOffenceListedInCriminalCourts.getHearingDays().stream().min(Comparator.comparing(HearingDay::getSittingDay))
+                .orElseGet(() -> HearingDay.hearingDay().build());
+
+        return NextHearing.nextHearing()
+                .withCourtCentre(caseOffenceListedInCriminalCourts.getCourtCentre())
+                .withListedStartDateTime(hearingDay.getSittingDay())
+                .withType(caseOffenceListedInCriminalCourts.getHearingType())
+                .withEstimatedMinutes(hearingDay.getListedDurationMinutes())
+                .build();
     }
 
     private void populateCourtTimingDetails(final JsonObject resultDefinition,

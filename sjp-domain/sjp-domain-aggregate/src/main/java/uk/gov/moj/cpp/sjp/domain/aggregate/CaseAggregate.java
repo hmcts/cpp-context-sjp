@@ -4,6 +4,7 @@ import static uk.gov.moj.cpp.sjp.domain.aggregate.handler.EnforcementCheckIfNoti
 
 import uk.gov.justice.core.courts.CourtCentre;
 import uk.gov.justice.core.courts.HearingDay;
+import uk.gov.justice.core.courts.HearingType;
 import uk.gov.justice.domain.aggregate.Aggregate;
 import uk.gov.justice.json.schemas.domains.sjp.ApplicationStatus;
 import uk.gov.justice.json.schemas.domains.sjp.Note;
@@ -88,7 +89,8 @@ public class CaseAggregate implements Aggregate {
                                                            final List<UUID> defendantOffences,
                                                            final UUID hearingId,
                                                            final CourtCentre courtCentre,
-                                                           final List<HearingDay> hearingDays) {
+                                                           final List<HearingDay> hearingDays,
+                                                           final HearingType hearingType) {
         if (state.isCaseReceived()
                 && state.isCaseReferredForCourtHearing()) {
             final Stream<Object> stream = apply(CaseCoreHandler.INSTANCE.updateCaseOffenceListedInCcForReferToCourt(
@@ -97,7 +99,8 @@ public class CaseAggregate implements Aggregate {
                     defendantOffences,
                     hearingId,
                     courtCentre,
-                    hearingDays));
+                    hearingDays,
+                    hearingType));
 
             // if the case is not already listed and all the offences are listed
             if (!state.getCaseListed()

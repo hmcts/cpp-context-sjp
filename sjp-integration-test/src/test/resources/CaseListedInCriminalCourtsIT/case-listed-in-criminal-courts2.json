@@ -19,5 +19,9 @@
     "roomName": "JK2Y7hu0Tc",
     "welshName": "${welshName}",
     "welshRoomName": "welshRoomName"
+  },
+  "hearingType" : {
+    "description" : "trial",
+    "id" : "3f0e7f4e-098b-4e51-95c6-483711f49f21"
   }
 }

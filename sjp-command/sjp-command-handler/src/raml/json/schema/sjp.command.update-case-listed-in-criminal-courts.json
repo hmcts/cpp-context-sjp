@@ -28,6 +28,9 @@
       "items": {
         "$ref": "http://justice.gov.uk/core/courts/hearingDay.json"
       }
+    },
+    "hearingType": {
+      "$ref": "http://justice.gov.uk/core/courts/hearingType.json"
     }
   },
   "additionalProperties": false,

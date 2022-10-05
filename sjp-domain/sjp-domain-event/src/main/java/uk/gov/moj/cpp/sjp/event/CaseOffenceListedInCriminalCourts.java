@@ -4,6 +4,7 @@ import static java.util.Collections.unmodifiableList;
 
 import uk.gov.justice.core.courts.CourtCentre;
 import uk.gov.justice.core.courts.HearingDay;
+import uk.gov.justice.core.courts.HearingType;
 import uk.gov.justice.domain.annotation.Event;
 
 import java.io.Serializable;
@@ -25,6 +26,7 @@ public class CaseOffenceListedInCriminalCourts implements Serializable {
     private final UUID hearingId;
     private final CourtCentre courtCentre;
     private final List<HearingDay> hearingDays;
+    private final HearingType hearingType;
 
     @JsonCreator
     public CaseOffenceListedInCriminalCourts(@JsonProperty("caseId") final UUID caseId,
@@ -32,13 +34,15 @@ public class CaseOffenceListedInCriminalCourts implements Serializable {
                                              @JsonProperty("defendantOffences") final List<UUID> defendantOffences,
                                              @JsonProperty("hearingId") final UUID hearingId,
                                              @JsonProperty("courtCentre") final CourtCentre courtCentre,
-                                             @JsonProperty("hearingDays") final List<HearingDay> hearingDays) {
+                                             @JsonProperty("hearingDays") final List<HearingDay> hearingDays,
+                                             @JsonProperty("hearingType") final HearingType hearingType) {
         this.caseId = caseId;
         this.defendantId = defendantId;
         this.defendantOffences = defendantOffences;
         this.hearingId = hearingId;
         this.hearingDays = hearingDays;
         this.courtCentre = courtCentre;
+        this.hearingType = hearingType;
     }
 
     public UUID getCaseId() {
@@ -65,5 +69,7 @@ public class CaseOffenceListedInCriminalCourts implements Serializable {
         return unmodifiableList(hearingDays);
     }
 
-
+    public HearingType getHearingType() {
+        return hearingType;
+    }
 }

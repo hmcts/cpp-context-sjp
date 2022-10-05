@@ -40,6 +40,7 @@ import static uk.gov.moj.sjp.it.stub.SchedulingStub.stubStartSjpSessionCommand;
 import static uk.gov.moj.sjp.it.stub.UsersGroupsStub.stubForUserDetails;
 import static uk.gov.moj.sjp.it.util.Defaults.DEFAULT_LONDON_COURT_HOUSE_OU_CODE;
 import static uk.gov.moj.sjp.it.util.FileUtil.getFileContentAsJson;
+import static org.hamcrest.Matchers.notNullValue;
 
 import uk.gov.justice.json.schemas.domains.sjp.User;
 import uk.gov.justice.json.schemas.domains.sjp.events.CaseNoteAdded;
@@ -219,6 +220,7 @@ public class CaseListedInCriminalCourtsIT extends BaseIntegrationTest {
 
         jsonEnvelope = eventListener.popEvent(PUBLIC_EVENTS_HEARING_HEARING_RESULTED);
         assertThat(jsonEnvelope.isPresent(), Matchers.is(true));
+        assertThat(jsonEnvelope.get().payloadAsJsonObject().getJsonObject("hearing").getJsonArray("prosecutionCases").getJsonObject(0).getJsonArray("defendants").getJsonObject(0).getJsonArray("offences").getJsonObject(0).getJsonArray("judicialResults").getJsonObject(0).getJsonObject("nextHearing"), notNullValue());
     }
 
     private void raisePublicReferredToCourtEvent(final JsonObject payload) {

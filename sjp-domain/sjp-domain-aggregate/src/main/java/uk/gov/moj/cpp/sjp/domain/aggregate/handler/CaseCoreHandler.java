@@ -12,6 +12,7 @@ import static uk.gov.moj.cpp.sjp.event.session.CaseAssignmentRejected.RejectReas
 
 import uk.gov.justice.core.courts.CourtCentre;
 import uk.gov.justice.core.courts.HearingDay;
+import uk.gov.justice.core.courts.HearingType;
 import uk.gov.justice.json.schemas.domains.sjp.ApplicationStatus;
 import uk.gov.moj.cpp.sjp.domain.Case;
 import uk.gov.moj.cpp.sjp.domain.CaseAssignmentType;
@@ -105,8 +106,9 @@ public class CaseCoreHandler {
                                                                      final List<UUID> defendantOffences,
                                                                      final UUID hearingId,
                                                                      final CourtCentre courtCentre,
-                                                                     final List<HearingDay> hearingDays) {
-        return Stream.of(new CaseOffenceListedInCriminalCourts(caseId, defendantId,defendantOffences, hearingId, courtCentre, hearingDays));
+                                                                     final List<HearingDay> hearingDays,
+                                                                     final HearingType hearingType) {
+        return Stream.of(new CaseOffenceListedInCriminalCourts(caseId, defendantId,defendantOffences, hearingId, courtCentre, hearingDays, hearingType));
     }
 
     public Stream<Object> updateCaseListedInCcForReferToCourt(final List<CaseOffenceListedInCriminalCourts> offenceHearings,

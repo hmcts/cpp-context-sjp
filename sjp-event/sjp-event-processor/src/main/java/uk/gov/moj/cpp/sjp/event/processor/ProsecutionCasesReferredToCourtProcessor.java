@@ -1,6 +1,5 @@
 package uk.gov.moj.cpp.sjp.event.processor;
 
-import static javax.json.Json.createArrayBuilder;
 import static javax.json.Json.createObjectBuilder;
 import static uk.gov.justice.services.core.annotation.Component.EVENT_PROCESSOR;
 
@@ -39,7 +38,8 @@ public class ProsecutionCasesReferredToCourtProcessor {
                 .add("defendantOffences", payload.getJsonArray("defendantOffences"))
                 .add("hearingId", payload.getString("hearingId"))
                 .add("courtCentre", courtCenter)
-                .add("hearingDays", payload.getJsonArray("hearingDays"));
+                .add("hearingDays", payload.getJsonArray("hearingDays"))
+                .add("hearingType", payload.getJsonObject("hearingType"));
 
         sender.send(enveloper.withMetadataFrom(prosecutionCasesReferredToCourtEvent, "sjp.command.update-case-listed-in-criminal-courts").
                 apply(objectBuilder.build()));

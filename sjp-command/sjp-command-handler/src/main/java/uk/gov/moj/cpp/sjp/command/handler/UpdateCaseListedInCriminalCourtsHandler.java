@@ -2,6 +2,7 @@ package uk.gov.moj.cpp.sjp.command.handler;
 
 import uk.gov.justice.core.courts.CourtCentre;
 import uk.gov.justice.core.courts.HearingDay;
+import uk.gov.justice.core.courts.HearingType;
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
 import uk.gov.justice.services.common.converter.jackson.ObjectMapperProducer;
 import uk.gov.justice.services.core.annotation.Component;
@@ -26,6 +27,7 @@ public class UpdateCaseListedInCriminalCourtsHandler extends CaseCommandHandler 
     public static final String DEFENDANT_OFFENCES = "defendantOffences";
     public static final String COURT_CENTRE = "courtCentre";
     public static final String HEARING_DAYS = "hearingDays";
+    public static final String HEARING_TYPE = "hearingType";
 
     private final JsonObjectToObjectConverter jsonObjectToObjectConverter = new JsonObjectToObjectConverter(new ObjectMapperProducer().objectMapper());
 
@@ -54,13 +56,16 @@ public class UpdateCaseListedInCriminalCourtsHandler extends CaseCommandHandler 
                         .map(e -> this.jsonObjectToObjectConverter.convert(e, HearingDay.class))
                         .collect(Collectors.toList());
 
+        final HearingType hearingType = this.jsonObjectToObjectConverter.convert(payload.getJsonObject(HEARING_TYPE), HearingType.class);
+
         applyToCaseAggregate(updateCaseListedInCriminalCourtsCommand,
                 aCase -> aCase.updateCaseListedInCriminalCourts(caseId,
                         defendantId,
                         defendantOffences,
                         hearingId,
                         courtCentre,
-                        hearingDays));
+                        hearingDays,
+                        hearingType));
     }
 
 }

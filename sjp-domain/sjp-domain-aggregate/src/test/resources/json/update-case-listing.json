@@ -17,5 +17,9 @@
       "listingSequence": 0,
       "sittingDay": "2020-04-10T10:00:00.000Z"
     }
-  ]
+  ],
+  "hearingType" : {
+    "description" : "trial",
+    "id" : "3f0e7f4e-098b-4e51-95c6-483711f49f21"
+  }
 }

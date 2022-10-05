@@ -102,6 +102,10 @@ public class ProsecutionCasesReferredToCourtProcessorTest {
                                 .add("roomId", "d7020fe0-cd97-4ce0-84c2-fd00ff0bc48a"))
                         .add("hearingId", hearingId.toString())
                         .add("hearingDays", populateCorrectedHearingDays())
+                        .add("hearingType", createObjectBuilder()
+                                .add("description", "trial")
+                                .add("id", "3f0e7f4e-098b-4e51-95c6-483711f49f21")
+                                .build())
                         .build()
                 )
         );

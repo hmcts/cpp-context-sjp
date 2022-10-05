@@ -7,6 +7,7 @@ import static javax.json.Json.createObjectBuilder;
 import static org.hamcrest.CoreMatchers.anyOf;
 import static org.hamcrest.CoreMatchers.hasItem;
 import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Matchers.any;
@@ -22,6 +23,7 @@ import static uk.gov.moj.cpp.sjp.event.processor.results.converter.judicialresul
 import uk.gov.justice.core.courts.Address;
 import uk.gov.justice.core.courts.CourtCentre;
 import uk.gov.justice.core.courts.HearingDay;
+import uk.gov.justice.core.courts.HearingType;
 import uk.gov.justice.core.courts.JudicialResult;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.sjp.domain.DefendantCourtInterpreter;
@@ -56,6 +58,7 @@ public class ReferForCourtHearingDecisionResultAggregatorTest extends  BaseDecis
     private CourtCentreConverter courtCentreConverter;
 
     private CourtCentre courtCentre = courtCentre().build();
+    private HearingType hearingType = new HearingType(null, null, null);
 
     private final DefendantCourtOptions courtOptions =
             new DefendantCourtOptions(
@@ -102,7 +105,7 @@ public class ReferForCourtHearingDecisionResultAggregatorTest extends  BaseDecis
                 .build());
         final CourtCentre courtCentre = createCourtCenter();
         final CaseOffenceListedInCriminalCourts caseOffenceListedInCriminalCourts =
-                new CaseOffenceListedInCriminalCourts(caseId, defendantId, Arrays.asList(offence1Id), hearingId, courtCentre, hearingDays);
+                new CaseOffenceListedInCriminalCourts(caseId, defendantId, Arrays.asList(offence1Id), hearingId, courtCentre, hearingDays, hearingType);
 
         final CaseListedInCriminalCourtsV2 caseListedInCcForReferToCourt =
                 new CaseListedInCriminalCourtsV2(Arrays.asList(caseOffenceListedInCriminalCourts), null, caseId);
@@ -125,8 +128,13 @@ public class ReferForCourtHearingDecisionResultAggregatorTest extends  BaseDecis
                         Matchers.hasProperty("judicialResultPromptTypeId", Matchers.is(fromString("66868c04-72c4-46d9-a4fc-860a82107475"))),
                         Matchers.hasProperty("promptReference", Matchers.is("hCHOUSEOrganisationName")),
                         Matchers.hasProperty("value", Matchers.is("Court Name")))
-
         ));
+
+        assertThat(judicialResult.getNextHearing(), notNullValue());
+        assertThat(judicialResult.getNextHearing().getCourtCentre(), is(courtCentre));
+        assertThat(judicialResult.getNextHearing().getListedStartDateTime(), is(hearingDays.get(0).getSittingDay()));
+        assertThat(judicialResult.getNextHearing().getType(), is(hearingType));
+        assertThat(judicialResult.getNextHearing().getEstimatedMinutes(), is(hearingDays.get(0).getListedDurationMinutes()));
     }
 
     @Test
@@ -150,7 +158,7 @@ public class ReferForCourtHearingDecisionResultAggregatorTest extends  BaseDecis
         final CourtCentre courtCentre = createCourtCenterWithEmptyAddresses();
 
         final CaseOffenceListedInCriminalCourts caseOffenceListedInCriminalCourts =
-                new CaseOffenceListedInCriminalCourts(caseId, defendantId, Arrays.asList(offence1Id), hearingId, courtCentre, hearingDays);
+                new CaseOffenceListedInCriminalCourts(caseId, defendantId, Arrays.asList(offence1Id), hearingId, courtCentre, hearingDays, hearingType);
 
         final CaseListedInCriminalCourtsV2 caseListedInCcForReferToCourt =
                 new CaseListedInCriminalCourtsV2(Arrays.asList(caseOffenceListedInCriminalCourts), null, caseId);
@@ -174,6 +182,12 @@ public class ReferForCourtHearingDecisionResultAggregatorTest extends  BaseDecis
                         Matchers.hasProperty("value", Matchers.is("Court Name"))
         )));
         assertThat(resultsAggregate.getFinalOffence(offenceDecision.getOffenceIds().get(0)),Matchers.is(nullValue()));
+
+        assertThat(judicialResult.getNextHearing(), notNullValue());
+        assertThat(judicialResult.getNextHearing().getCourtCentre(), is(courtCentre));
+        assertThat(judicialResult.getNextHearing().getListedStartDateTime(), is(hearingDays.get(0).getSittingDay()));
+        assertThat(judicialResult.getNextHearing().getType(), is(hearingType));
+        assertThat(judicialResult.getNextHearing().getEstimatedMinutes(), is(hearingDays.get(0).getListedDurationMinutes()));
 
     }
 

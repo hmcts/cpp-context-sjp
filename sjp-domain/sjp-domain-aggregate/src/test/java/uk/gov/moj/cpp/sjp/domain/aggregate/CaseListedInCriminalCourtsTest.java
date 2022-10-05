@@ -16,6 +16,7 @@ import static uk.gov.moj.cpp.sjp.domain.verdict.VerdictType.FOUND_GUILTY;
 import uk.gov.justice.core.courts.Address;
 import uk.gov.justice.core.courts.CourtCentre;
 import uk.gov.justice.core.courts.HearingDay;
+import uk.gov.justice.core.courts.HearingType;
 import uk.gov.justice.json.schemas.domains.sjp.User;
 import uk.gov.justice.services.common.converter.ObjectToJsonObjectConverter;
 import uk.gov.justice.services.common.converter.jackson.ObjectMapperProducer;
@@ -52,6 +53,7 @@ public class CaseListedInCriminalCourtsTest extends CaseAggregateBaseTest {
     final ZonedDateTime savedAt = ZonedDateTime.now();
     final UUID REFERRAL_REASON_ID = randomUUID();
     final UUID userId = randomUUID();
+    final HearingType hearingType = new HearingType(null, null, null);
 
 
     @Before
@@ -100,7 +102,7 @@ public class CaseListedInCriminalCourtsTest extends CaseAggregateBaseTest {
         defendantOffences.add(offenceId);
         final List<HearingDay> hearingDayList = new ArrayList<>();
 
-        final Stream<Object> eventsStream = caseAggregate.updateCaseListedInCriminalCourts(caseId, defendantId, defendantOffences, hearingId, createCourtCenter(), hearingDayList);
+        final Stream<Object> eventsStream = caseAggregate.updateCaseListedInCriminalCourts(caseId, defendantId, defendantOffences, hearingId, createCourtCenter(), hearingDayList, hearingType);
         final List<Object> events = eventsStream.collect(Collectors.toList());
 
         assertThat(events, hasSize(2));
@@ -111,6 +113,7 @@ public class CaseListedInCriminalCourtsTest extends CaseAggregateBaseTest {
         assertThat(caseListedInCcForReferToCourt.getCaseId(), equalTo(caseId));
         assertThat(caseListedInCcForReferToCourt.getCourtCentre().getName(), equalTo(hearingCourtName));
         assertThat(caseListedInCcForReferToCourt.getCourtCentre().getRoomName(), equalTo(roomName));
+        assertThat(caseListedInCcForReferToCourt.getHearingType(), equalTo(hearingType));
     }
 
     @Test
@@ -124,7 +127,7 @@ public class CaseListedInCriminalCourtsTest extends CaseAggregateBaseTest {
         final List<UUID> defendantOffences = new ArrayList<>();
         final List<HearingDay> hearingDayList = new ArrayList<>();
 
-        final Stream<Object> eventsStream = caseAggregate.updateCaseListedInCriminalCourts(caseId, defendantId, defendantOffences, hearingId, createCourtCenter(), hearingDayList);
+        final Stream<Object> eventsStream = caseAggregate.updateCaseListedInCriminalCourts(caseId, defendantId, defendantOffences, hearingId, createCourtCenter(), hearingDayList, hearingType);
         final List<Object> events = eventsStream.collect(Collectors.toList());
 
         assertThat(events, hasSize(0));
@@ -135,7 +138,7 @@ public class CaseListedInCriminalCourtsTest extends CaseAggregateBaseTest {
         final UUID hearingId = randomUUID();
         final List<HearingDay> hearingDayList = new ArrayList<>();
 
-        final Stream<Object> eventsStream = caseAggregate.updateCaseListedInCriminalCourts(caseId, null, null, hearingId, createCourtCenter(), hearingDayList);
+        final Stream<Object> eventsStream = caseAggregate.updateCaseListedInCriminalCourts(caseId, null, null, hearingId, createCourtCenter(), hearingDayList, hearingType);
         final List<Object> events = eventsStream.collect(Collectors.toList());
         assertThat(events, hasSize(0));
     }

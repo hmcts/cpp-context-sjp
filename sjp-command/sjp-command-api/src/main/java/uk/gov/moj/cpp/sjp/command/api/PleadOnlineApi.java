@@ -18,14 +18,21 @@ import uk.gov.justice.services.core.sender.Sender;
 import uk.gov.justice.services.messaging.Envelope;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.sjp.command.api.validator.PleadOnlineValidator;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 
+import java.io.StringReader;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 import javax.inject.Inject;
 import javax.json.Json;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
+import javax.json.JsonReader;
 
 @ServiceComponent(COMMAND_API)
 public class PleadOnlineApi {
@@ -53,6 +60,9 @@ public class PleadOnlineApi {
 
     @Inject
     private ObjectToJsonObjectConverter objectToJsonObjectConverter;
+
+    @Inject
+    private ObjectMapper mapper;
 
     @Handles("sjp.plead-online")
     public void pleadOnline(final Envelope<PleadOnline> envelope) {
@@ -89,6 +99,25 @@ public class PleadOnlineApi {
                 pleaOnlineObjectBuilder.build()));
     }
 
+    @Handles("sjp.plead-online-pcq-visited")
+    public void pleadOnlinePcqVisited(final JsonEnvelope envelope) throws JsonProcessingException {
+
+        final JsonObject payload = envelope.payloadAsJsonObject();
+        final JsonNode jsonNode = mapper.valueToTree(payload);
+        JsonObject updatedPayload = payload;
+
+        if (Objects.nonNull(jsonNode.path("type"))) {
+            final ObjectNode objectNode = (ObjectNode) jsonNode;
+            objectNode.remove("type");
+            updatedPayload = jsonFromString(mapper.writeValueAsString(jsonNode));
+        }
+
+        sender.send(Envelope.envelopeFrom(
+                metadataFrom(envelope.metadata())
+                        .withName("sjp.command.plead-online-pcq-visited").build(),
+                updatedPayload));
+    }
+
     private void checkValidationErrors(Map<String, List<String>> validationErrors) {
         if (!validationErrors.isEmpty()) {
             throw new BadRequestException(objectToJsonValueConverter.convert(validationErrors).toString());
@@ -119,4 +148,10 @@ public class PleadOnlineApi {
         return objectToUpdateBuilder;
     }
 
+    private static JsonObject jsonFromString(final String jsonObjectStr) {
+        final JsonReader jsonReader = Json.createReader(new StringReader(jsonObjectStr));
+        final JsonObject object = jsonReader.readObject();
+        jsonReader.close();
+        return object;
+    }
 }

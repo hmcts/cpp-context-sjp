@@ -39,6 +39,7 @@ public class DefendantBuilder {
     private String asn = "asn";
     private String pncIdentifier = "pncId";
     private String legalEntityName = "legalEntityName";
+    private UUID pcqId = DefaultTestData.PCQ_ID;
 
     public DefendantBuilder addOffence(final UUID offenceId) {
         this.offences.add(createPressRestrictableOffence(offenceId, false));
@@ -125,6 +126,11 @@ public class DefendantBuilder {
         return this;
     }
 
+    public DefendantBuilder withPcqId(final UUID pcqId) {
+        this.pcqId = pcqId;
+        return this;
+    }
+
     public Defendant build() {
         return new Defendant(
                 id,
@@ -145,6 +151,7 @@ public class DefendantBuilder {
                 region,
                 asn,
                 pncIdentifier,
-                legalEntityName);
+                legalEntityName,
+                pcqId);
     }
 }

@@ -132,6 +132,7 @@ public class CaseReceivedListenerTest {
     private static final String prosecutionFacts = "this is prosecution facts";
     private static final String witnessStatement = "this is witness statement";
     private static final BigDecimal compensation = BigDecimal.valueOf(2.34);
+    private static final UUID pcqId = UUID.randomUUID();
 
     @Test
     public void shouldSaveTheCaseAndSearchResult() {
@@ -177,9 +178,9 @@ public class CaseReceivedListenerTest {
                         buildPersonalDetails(),
                         buildOffenceDetailList(),
                         numPreviousConvictions,
-                        null,null,null,null,
+                        null, null, null, null,
                         null,
-                        buildAddress(), null),
+                        buildAddress(), null, null),
                 costs,
                 postingDate);
 
@@ -256,6 +257,7 @@ public class CaseReceivedListenerTest {
                         .add("dateOfBirth", LocalDates.to(defendantDateOfBirth))
                         .add("gender", defendantGender.toString())
                         .add("numPreviousConvictions", numPreviousConvictions)
+                        .add("pcqId", pcqId.toString())
                         .add("address", createObjectBuilder()
                                 .add("address1", address1)
                                 .add("address2", address2)
@@ -298,7 +300,7 @@ public class CaseReceivedListenerTest {
                 null);
     }
 
-    private List<OffenceDetail> buildOffenceDetailList(){
+    private List<OffenceDetail> buildOffenceDetailList() {
         return singletonList(
                 new OffenceDetail.OffenceDetailBuilder()
                         .setId(offenceId)
@@ -315,7 +317,8 @@ public class CaseReceivedListenerTest {
                         .build()
         );
     }
-    private Address buildAddress(){
+
+    private Address buildAddress() {
         return new Address(
                 address1,
                 address2,

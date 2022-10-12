@@ -32,6 +32,7 @@ public class Defendant extends Person {
 
     private final String pncIdentifier;
 
+    private final UUID pcqId;
 
     @JsonCreator
     public Defendant(@JsonProperty("id") final UUID id,
@@ -52,7 +53,8 @@ public class Defendant extends Person {
                      @JsonProperty("region") final String region,
                      @JsonProperty("asn") final String asn,
                      @JsonProperty("pncIdentifier") final String pncIdentifier,
-                     @JsonProperty("legalEntityName")final String legalEntityName) {
+                     @JsonProperty("legalEntityName")final String legalEntityName,
+                     @JsonProperty("pcqId") final UUID pcqId) {
         super(title, firstName, lastName, dateOfBirth, gender, nationalInsuranceNumber, driverNumber, driverLicenceDetails, address, contactDetails, region, legalEntityName);
         this.id = id;
         this.numPreviousConvictions = numPreviousConvictions;
@@ -61,6 +63,7 @@ public class Defendant extends Person {
         this.languageNeeds = languageNeeds;
         this.asn = asn;
         this.pncIdentifier = pncIdentifier;
+        this.pcqId = pcqId;
     }
 
     public UUID getId() {
@@ -91,6 +94,10 @@ public class Defendant extends Person {
         return pncIdentifier;
     }
 
+    public UUID getPcqId() {
+        return pcqId;
+    }
+
     @Override
     public boolean equals(final Object o) {
         if (this == o) {
@@ -110,6 +117,7 @@ public class Defendant extends Person {
                 .append(languageNeeds, defendant.languageNeeds)
                 .append(asn, defendant.getAsn())
                 .append(pncIdentifier, defendant.getPncIdentifier())
+                .append(pcqId, defendant.getPcqId())
                 .isEquals();
     }
 
@@ -150,7 +158,8 @@ public class Defendant extends Person {
                     defendant.getRegion(),
                     defendant.getAsn(),
                     defendant.getPncIdentifier(),
-                    defendant.getLegalEntityName());
+                    defendant.getLegalEntityName(),
+                    defendant.getPcqId());
         }
 
     }

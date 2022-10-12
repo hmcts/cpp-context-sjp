@@ -127,6 +127,9 @@
     "witnessDetails": {
       "type": "string"
     },
+    "pcqId": {
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+    },
     "outstandingFines": {
       "type": "boolean"
     },

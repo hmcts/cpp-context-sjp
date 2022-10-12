@@ -64,6 +64,9 @@
     },
     "pncIdentifier": {
       "type": "string"
+    },
+    "pcqId" : {
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
     }
   },
   "additionalProperties": false,

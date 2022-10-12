@@ -54,7 +54,7 @@ public class DefendantToDefendantDetailsTest {
                 RandomStringUtils.random(16), RandomStringUtils.random(50),
                 new uk.gov.moj.cpp.sjp.domain.Address("l1", "l2", "l3", "l4", "l5", "p"),
                 new uk.gov.moj.cpp.sjp.domain.ContactDetails("home", "mobile", "business" , "email1@abc.com", "email2@abc.com"),
-                3, asList(mock(Offence.class), mock(Offence.class)), Language.W, "languageNeeds", "region", "asn", "pncId", "legalEntityName");
+                3, asList(mock(Offence.class), mock(Offence.class)), Language.W, "languageNeeds", "region", "asn", "pncId", "legalEntityName", UUID.randomUUID());
 
         final PersonalDetails mockedPersonalDetails = mock(PersonalDetails.class);
         when(personToPersonalDetailsEntity.convert(inputDefendant)).thenReturn(mockedPersonalDetails);
@@ -86,7 +86,8 @@ public class DefendantToDefendantDetailsTest {
                 "pncId",
                 mockedLegalEntityDetails,
                 null,
-                null);
+                null,
+                inputDefendant.getPcqId());
 
         assertTrue(reflectionEquals(outputDefendant, expectedDefendant));
     }

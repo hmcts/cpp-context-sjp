@@ -1,5 +1,8 @@
 package uk.gov.moj.cpp.sjp.event;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import uk.gov.justice.domain.annotation.Event;
 import uk.gov.justice.json.schemas.domains.sjp.Gender;
 import uk.gov.moj.cpp.sjp.domain.Address;
@@ -9,9 +12,7 @@ import java.time.LocalDate;
 import java.time.ZonedDateTime;
 import java.util.UUID;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.annotation.JsonProperty;
+import static java.util.Objects.nonNull;
 
 @JsonIgnoreProperties("personId")
 @Event("sjp.events.defendant-details-updated")
@@ -33,6 +34,7 @@ public class DefendantDetailsUpdated {
     private final ZonedDateTime updatedDate;
     private final String region;
     private final String legalEntityName;
+    private final UUID pcqId;
 
     @JsonCreator
     private DefendantDetailsUpdated(@JsonProperty("caseId") UUID caseId, @JsonProperty("defendantId") UUID defendantId,
@@ -46,7 +48,8 @@ public class DefendantDetailsUpdated {
                                     @JsonProperty("updateByOnlinePlea") boolean updateByOnlinePlea,
                                     @JsonProperty("updatedDate") ZonedDateTime updatedDate,
                                     @JsonProperty("region") String region,
-                                    @JsonProperty("legalEntityName") String legalEntityName) {
+                                    @JsonProperty("legalEntityName") String legalEntityName,
+                                    @JsonProperty("pcqId") UUID pcqId) {
         this.caseId = caseId;
         this.defendantId = defendantId;
         this.title = title;
@@ -63,6 +66,7 @@ public class DefendantDetailsUpdated {
         this.updatedDate = updatedDate;
         this.region = region;
         this.legalEntityName = legalEntityName;
+        this.pcqId = pcqId;
     }
 
     public static class DefendantDetailsUpdatedBuilder {
@@ -83,6 +87,7 @@ public class DefendantDetailsUpdated {
         private boolean containsUpdate = false;
         private String region;
         private String legalEntityName;
+        private UUID pcqId;
 
         public static DefendantDetailsUpdatedBuilder defendantDetailsUpdated() {
             return new DefendantDetailsUpdatedBuilder();
@@ -95,6 +100,12 @@ public class DefendantDetailsUpdated {
 
         public DefendantDetailsUpdatedBuilder withDefendantId(final UUID defendantId) {
             this.defendantId = defendantId;
+            return this;
+        }
+
+        public DefendantDetailsUpdatedBuilder withPcqId(final UUID pcqId) {
+            this.pcqId = pcqId;
+            this.containsUpdate = true;
             return this;
         }
 
@@ -186,7 +197,7 @@ public class DefendantDetailsUpdated {
         public DefendantDetailsUpdated build() {
             return new DefendantDetailsUpdated(caseId, defendantId, title, firstName,
                     lastName, dateOfBirth, gender, nationalInsuranceNumber, driverNumber, driverLicenceDetails,
-                    contactDetails, address, updateByOnlinePlea, updatedDate, region, legalEntityName);
+                    contactDetails, address, updateByOnlinePlea, updatedDate, region, legalEntityName, pcqId);
         }
     }
 
@@ -252,5 +263,9 @@ public class DefendantDetailsUpdated {
 
     public String getLegalEntityName() {
         return legalEntityName;
+    }
+
+    public UUID getPcqId() {
+        return pcqId;
     }
 }

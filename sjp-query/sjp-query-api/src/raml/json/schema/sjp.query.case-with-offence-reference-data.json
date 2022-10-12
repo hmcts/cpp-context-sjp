@@ -92,6 +92,9 @@
         "personalDetails": {
           "$ref": "#/definitions/personalDetails"
         },
+        "pcqId" : {
+          "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+        },
         "interpreter": {
           "type": "object",
           "properties": {

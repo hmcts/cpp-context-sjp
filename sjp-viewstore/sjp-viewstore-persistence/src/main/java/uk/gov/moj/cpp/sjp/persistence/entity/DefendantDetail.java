@@ -95,6 +95,9 @@ public class DefendantDetail implements Serializable {
     @Column(name = "correlation_id")
     private UUID correlationId;
 
+    @Column(name = "pcq_id")
+    private UUID pcqId;
+
     /**
      * Libra / GOB account number provided by staging enforcement
      * once financial impositions have been exported.
@@ -107,7 +110,8 @@ public class DefendantDetail implements Serializable {
     }
 
     public DefendantDetail(final UUID id) {
-        this(id, null, null, 0, null, null, null, null, null, null, null);
+        this(id, null, null, 0, null, null, null,
+                null, null, null, null, null);
     }
 
     public DefendantDetail(final UUID id,
@@ -136,13 +140,15 @@ public class DefendantDetail implements Serializable {
                            final String region,
                            final LegalEntityDetails legalEntityDetails,
                            final Address address,
-                           final ContactDetails contactDetails) {
+                           final ContactDetails contactDetails,
+                           final UUID pcqId) {
         this.id = id;
         this.numPreviousConvictions = numPreviousConvictions;
         this.speakWelsh = speakWelsh;
         this.asn = asn;
         this.pncIdentifier = pncIdentifier;
         this.region = region;
+        this.pcqId = pcqId;
         setOffences(offences);
         setPersonalDetails(personalDetails);
         setLegalEntityDetails(legalEntityDetails);
@@ -336,5 +342,13 @@ public class DefendantDetail implements Serializable {
 
     public void setAddressUpdatedAt(final ZonedDateTime addressUpdatedAt) {
         this.addressUpdatedAt = addressUpdatedAt;
+    }
+
+    public UUID getPcqId() {
+        return pcqId;
+    }
+
+    public void setPcqId(final UUID pcqId) {
+        this.pcqId = pcqId;
     }
 }

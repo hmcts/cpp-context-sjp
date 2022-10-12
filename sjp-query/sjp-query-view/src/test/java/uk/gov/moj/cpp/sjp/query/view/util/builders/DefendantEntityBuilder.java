@@ -25,6 +25,7 @@ public class DefendantEntityBuilder {
     private LegalEntityDetails legalEntityDetails;
     private Address address;
     private ContactDetails contactDetails;
+    private UUID pcqId;
 
     private static final String ASN = "ASN";
     private static final String PSF_IDENTIFIER = "PCF IDENTIFIER";
@@ -40,7 +41,8 @@ public class DefendantEntityBuilder {
                                    final String region,
                                    final LegalEntityDetails legalEntityDetails,
                                    final Address address,
-                                   final ContactDetails contactDetails) {
+                                   final ContactDetails contactDetails,
+                                   final UUID pcqId) {
         this.id = id;
         this.offences = offences;
         this.personalDetails = personalDetails;
@@ -52,6 +54,7 @@ public class DefendantEntityBuilder {
         this.legalEntityDetails = legalEntityDetails;
         this.address = address;
         this.contactDetails = contactDetails;
+        this.pcqId = pcqId;
     }
 
     public static DefendantEntityBuilder withDefaults() {
@@ -66,7 +69,8 @@ public class DefendantEntityBuilder {
                 REGION,
                 null,
                 null,
-                null);
+                null,
+                randomUUID());
     }
 
     public DefendantDetail build() {
@@ -81,7 +85,8 @@ public class DefendantEntityBuilder {
                 region,
                 legalEntityDetails,
                 address,
-                contactDetails
+                contactDetails,
+                pcqId
         );
     }
 
@@ -102,6 +107,11 @@ public class DefendantEntityBuilder {
 
     public DefendantEntityBuilder withContactDetails(final ContactDetails contactDetails) {
         this.contactDetails = contactDetails;
+        return this;
+    }
+
+    public DefendantEntityBuilder withPcqId(final UUID pcqId) {
+        this.pcqId = pcqId;
         return this;
     }
 }

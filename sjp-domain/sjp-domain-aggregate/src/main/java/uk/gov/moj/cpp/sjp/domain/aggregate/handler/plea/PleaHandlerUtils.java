@@ -74,6 +74,7 @@ final class PleaHandlerUtils {
             final List hearingEvents = updateHearingRequirements(userId, defendantId,
                     pleasRequested.getDefendantCourtOptions(), state, caseLanguageHandler, pleaMethod, pleadAt);
             hearingEvents.forEach(streamBuilder::add);
+
         });
 
         if (POSTAL.equals(pleaMethod)) {

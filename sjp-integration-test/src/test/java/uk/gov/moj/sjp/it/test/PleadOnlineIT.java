@@ -1,5 +1,61 @@
 package uk.gov.moj.sjp.it.test;
 
+import com.google.common.collect.Sets;
+import com.jayway.jsonpath.ReadContext;
+import com.jayway.restassured.path.json.JsonPath;
+import org.apache.commons.lang.text.StrSubstitutor;
+import org.hamcrest.Matcher;
+import org.hamcrest.Matchers;
+import org.json.JSONObject;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+import uk.gov.justice.json.schemas.domains.sjp.Gender;
+import uk.gov.justice.json.schemas.domains.sjp.User;
+import uk.gov.justice.services.messaging.JsonEnvelope;
+import uk.gov.moj.cpp.sjp.domain.DefendantCourtInterpreter;
+import uk.gov.moj.cpp.sjp.domain.DefendantCourtOptions;
+import uk.gov.moj.cpp.sjp.domain.decision.OffenceDecisionInformation;
+import uk.gov.moj.cpp.sjp.domain.decision.ReferForCourtHearing;
+import uk.gov.moj.cpp.sjp.domain.plea.PleaMethod;
+import uk.gov.moj.cpp.sjp.domain.plea.PleaType;
+import uk.gov.moj.cpp.sjp.domain.verdict.VerdictType;
+import uk.gov.moj.cpp.sjp.event.CaseReferredForCourtHearing;
+import uk.gov.moj.cpp.sjp.persistence.entity.Address;
+import uk.gov.moj.cpp.sjp.persistence.entity.ContactDetails;
+import uk.gov.moj.cpp.sjp.persistence.entity.PersonalDetails;
+import uk.gov.moj.sjp.it.command.CreateCase;
+import uk.gov.moj.sjp.it.helper.CaseSearchResultHelper;
+import uk.gov.moj.sjp.it.helper.CitizenHelper;
+import uk.gov.moj.sjp.it.helper.DecisionHelper;
+import uk.gov.moj.sjp.it.helper.EmployerHelper;
+import uk.gov.moj.sjp.it.helper.EventListener;
+import uk.gov.moj.sjp.it.helper.FinancialMeansHelper;
+import uk.gov.moj.sjp.it.helper.PleadOnlineHelper;
+import uk.gov.moj.sjp.it.model.DecisionCommand;
+import uk.gov.moj.sjp.it.model.ProsecutingAuthority;
+import uk.gov.moj.sjp.it.pollingquery.CasePoller;
+import uk.gov.moj.sjp.it.stub.UsersGroupsStub;
+import uk.gov.moj.sjp.it.util.CaseAssignmentRestrictionHelper;
+import uk.gov.moj.sjp.it.util.Defaults;
+import uk.gov.moj.sjp.it.util.HttpClientUtil;
+import uk.gov.moj.sjp.it.util.SjpDatabaseCleaner;
+import uk.gov.moj.sjp.it.verifier.PersonInfoVerifier;
+
+import javax.json.JsonObject;
+import javax.json.JsonObjectBuilder;
+import javax.json.JsonValue;
+import javax.ws.rs.core.Response;
+import java.io.StringReader;
+import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.UUID;
+
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.isJson;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withoutJsonPath;
@@ -7,6 +63,7 @@ import static java.time.LocalDate.now;
 import static java.util.Arrays.asList;
 import static java.util.Collections.singleton;
 import static java.util.Collections.singletonList;
+import static java.util.Objects.nonNull;
 import static java.util.UUID.fromString;
 import static java.util.UUID.randomUUID;
 import static java.util.stream.Collectors.toList;
@@ -127,6 +184,8 @@ public class PleadOnlineIT extends BaseIntegrationTest {
     private static final String TEMPLATE_PLEA_NOT_GUILTY_PAYLOAD_ORGANISATION= "raml/json/sjp.command.plead-online__not-guilty_legal_entity.json";
     private static final String TEMPLATE_PLEA_MULTI_OFFENCE_PAYLOAD = "raml/json/sjp.command.plead-online__multi_offence.json";
     private static final String TEMPLATE_PLEA_MULTI_OFFENCE_CUSTOM_V2 = "raml/json/sjp.command.plead-online__multi_offence_v2.json";
+    private static final String TEMPLATE_PLEA_PCQ_VISITED = "raml/json/sjp.command.plead-online-pcq-visited.json";
+    private static final String TEMPLATE_PLEA_PCQ_NOT_VISITED = "raml/json/sjp.command.plead-online-pcq-not-visited.json";
     private static final String TEMPLATE_PLEA_GUILTY_PAYLOAD = "raml/json/sjp.command.plead-online__guilty.json";
     private static final String TEMPLATE_PLEA_GUILTY_PAYLOAD_WITH_DRIVER_NUMBER = "raml/json/sjp.command.plead-online__guilty_with_driver_number.json";
     private static final String TEMPLATE_PLEA_GUILTY_REQUEST_HEARING_PAYLOAD = "raml/json/sjp.command.plead-online__guilty_request_hearing.json";
@@ -430,6 +489,103 @@ public class PleadOnlineIT extends BaseIntegrationTest {
     }
 
     @Test
+    public void shouldUpdateDefendantsCurrentPcqVisitedFlag() {
+        final UUID offenceId1 = randomUUID();
+        final UUID offenceId2 = randomUUID();
+        final UUID offenceId3 = randomUUID();
+        final UUID caseId = randomUUID();
+        //with pcqVisited = false
+        final CreateCase.DefendantBuilder defendantBuilder = CreateCase.DefendantBuilder.withDefaults(null);
+        final LocalDate postingDate = now().minusDays(NOTICE_PERIOD_IN_DAYS + 1);
+        this.createCasePayloadBuilder = createCase(caseId, defendantBuilder, offenceId1, offenceId2, offenceId3, postingDate);
+        try (final PleadOnlineHelper pleadOnlineHelper = new PleadOnlineHelper(caseId, defendantBuilder.getId())) {
+            final Map<String, String> values = new HashMap<>();
+            values.put("offenceId1", offenceId1.toString());
+            values.put("offenceId2", offenceId2.toString());
+            values.put("offenceId3", offenceId3.toString());
+            values.put("plea1", GUILTY.name());
+            values.put("plea2", NOT_GUILTY.name());
+            values.put("plea3", GUILTY.name());
+            values.put("mitigation", "I was drunk at the time");
+            values.put("notGuiltyBecause", "I was forced to do it");
+            values.put("firstName", "Anewname");
+            values.put("email", "anotheremail@test.com");
+            verifyOnlinePleaReceivedAndUpdatedCaseDetailsFlag(createCasePayloadBuilder.getId(), false);
+            final JsonPath pleadOnlinePayload = JsonPath.from(new StrSubstitutor(values).replace(getPayload(TEMPLATE_PLEA_MULTI_OFFENCE_CUSTOM_V2)));
+            //online-plea is submitted here
+            pleadOnlineHelper.pleadOnline(pleadOnlinePayload.prettify());
+            final CaseSearchResultHelper caseSearchResultHelper = new CaseSearchResultHelper(
+                    createCasePayloadBuilder.getUrn(),
+                    createCasePayloadBuilder.getDefendantBuilder().getLastName(),
+                    createCasePayloadBuilder.getDefendantBuilder().getDateOfBirth());
+            caseSearchResultHelper.verifyPleaReceivedDate();
+            caseSearchResultHelper.verify(createCasePayloadBuilder.getUrn(), allOf(
+                    withJsonPath("$.results[*]", hasItem(isJson(allOf(
+                            withJsonPath("defendant.firstName", equalTo("Anewname")),
+                            withJsonPath("defendant.lastName", equalTo(defendantBuilder.getLastName()))
+                    ))))));
+        }
+    }
+
+    @Test
+    public void shouldUpdatePcqVisitedFlagForDefendant() {
+        final UUID offenceId1 = randomUUID();
+        final UUID offenceId2 = randomUUID();
+        final UUID offenceId3 = randomUUID();
+        final UUID caseId = randomUUID();
+        UUID pcqId = randomUUID();
+        //with pcqVisited = false
+        final CreateCase.DefendantBuilder defendantBuilder = CreateCase.DefendantBuilder.withDefaults(pcqId);
+        final LocalDate postingDate = now().minusDays(NOTICE_PERIOD_IN_DAYS + 1);
+        this.createCasePayloadBuilder = createCase(caseId, defendantBuilder, offenceId1, offenceId2, offenceId3, postingDate);
+        try (final PleadOnlineHelper pleadOnlineHelper = new PleadOnlineHelper(caseId, defendantBuilder.getId(), defendantBuilder.getPcqId())) {
+            verifyOnlinePleaReceivedAndUpdatedCaseDetailsFlag(createCasePayloadBuilder.getId(), false);
+
+            //online-plea-pcq-visited-command is submitted here
+            final String payload = getPayload(TEMPLATE_PLEA_PCQ_VISITED);
+            pleadOnlineHelper.pleadOnlinePcqVisited(payload);
+            pcqId = UUID.fromString(new JSONObject(payload).getString("pcqId"));
+            pleadOnlineHelper.verifyInPrivateTopic(caseId, defendantBuilder.getId(), pcqId);
+
+            final CitizenHelper citizenHelper = new CitizenHelper();
+            final String urn = createCasePayloadBuilder.getUrn();
+            final String urnWithoutPrefix = urn.replaceAll("(\\p{Alpha})", "");
+            final String postcode = defendantBuilder.getAddressBuilder().getPostcode();
+            // verifies the query call made by the online-plea application for the query & checks if pcqVisited is true.
+            citizenHelper.verifyCaseByPersonUrnWithoutPrefixAndPostcode(urnWithoutPrefix, urn, postcode, pcqId);
+        }
+    }
+
+    //CCT-1324 - Change for only command here
+    @Test
+    public void shouldNotUpdatePcqVisitedFlagForDefendant() {
+        final UUID offenceId1 = randomUUID();
+        final UUID offenceId2 = randomUUID();
+        final UUID offenceId3 = randomUUID();
+        final UUID caseId = randomUUID();
+        UUID pcqId = randomUUID();
+
+        final CreateCase.DefendantBuilder defendantBuilder = CreateCase.DefendantBuilder.withDefaults(pcqId);
+        final LocalDate postingDate = now().minusDays(NOTICE_PERIOD_IN_DAYS + 1);
+        this.createCasePayloadBuilder = createCase(caseId, defendantBuilder, offenceId1, offenceId2, offenceId3, postingDate);
+        try (final PleadOnlineHelper pleadOnlineHelper = new PleadOnlineHelper(caseId, defendantBuilder.getId(), defendantBuilder.getPcqId())) {
+            verifyOnlinePleaReceivedAndUpdatedCaseDetailsFlag(createCasePayloadBuilder.getId(), false);
+            //online-plea-pcq-visited-command is submitted here
+            final String payload = getPayload(TEMPLATE_PLEA_PCQ_NOT_VISITED);
+            pleadOnlineHelper.pleadOnlinePcqVisited(payload);
+            pleadOnlineHelper.verifyInPrivateTopic(caseId, defendantBuilder.getId(), null);
+
+            final CitizenHelper citizenHelper = new CitizenHelper();
+            final String urn = createCasePayloadBuilder.getUrn();
+            final String urnWithoutPrefix = urn.replaceAll("(\\p{Alpha})", "");
+            final String postcode = defendantBuilder.getAddressBuilder().getPostcode();
+            // verifies the query call made by the online-plea application for the query & checks if pcqVisited is false.
+            citizenHelper.verifyCaseByPersonUrnWithoutPrefixAndPostcode(urnWithoutPrefix, urn, postcode, pcqId);
+        }
+    }
+
+
+    @Test
     public void shouldUpdateDefendantsCurrentFirstName() {
         final UUID offenceId1 = randomUUID();
         final UUID offenceId2 = randomUUID();
@@ -712,6 +868,7 @@ public class PleadOnlineIT extends BaseIntegrationTest {
         expectedParams.put("pleaDate", pleaDate);
         expectedParams.put("caseStatus", caseStatus);
         expectedParams.put("speakWelsh", "false");
+        expectedParams.put("pcqId", response.getString("defendant.pcqId"));
         final JsonPath expectedResponse = fillTemplate(templatePath, expectedParams);
         assertEquals(expectedResponse.prettify(), response.prettify());
     }

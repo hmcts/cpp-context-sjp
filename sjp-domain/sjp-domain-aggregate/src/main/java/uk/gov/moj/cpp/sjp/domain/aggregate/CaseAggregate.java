@@ -55,6 +55,7 @@ import uk.gov.moj.cpp.sjp.domain.common.CaseManagementStatus;
 import uk.gov.moj.cpp.sjp.domain.common.CaseState;
 import uk.gov.moj.cpp.sjp.domain.decision.Decision;
 import uk.gov.moj.cpp.sjp.domain.onlineplea.PleadOnline;
+import uk.gov.moj.cpp.sjp.domain.onlineplea.PleadOnlinePcqVisited;
 import uk.gov.moj.cpp.sjp.domain.plea.PleaMethod;
 import uk.gov.moj.cpp.sjp.domain.plea.SetPleas;
 import uk.gov.moj.cpp.sjp.event.CCApplicationStatusCreated;
@@ -218,6 +219,10 @@ public class CaseAggregate implements Aggregate {
 
     public Stream<Object> pleadOnline(final UUID caseId, final PleadOnline pleadOnline, final ZonedDateTime createdOn, final UUID userId) {
         return applyAndResolveCaseReadiness(() -> OnlinePleaHandler.INSTANCE.pleadOnline(caseId, pleadOnline, createdOn, state, userId));
+    }
+
+    public Stream<Object> pleadOnlinePcqVisited(final UUID caseId, final PleadOnlinePcqVisited pleadOnlinePcqVisited, final ZonedDateTime createdOn) {
+        return applyAndResolveCaseReadiness(() -> OnlinePleaHandler.INSTANCE.pleadOnlinePcqVisited(caseId, pleadOnlinePcqVisited, createdOn, state));
     }
 
     public Stream<Object> markAsLegalSocChecked(final UUID caseId, final UUID checkedBy, final ZonedDateTime checkedAt) {

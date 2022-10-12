@@ -14,6 +14,7 @@ final class CaseReceivedMutator implements AggregateStateMutator<CaseReceived, C
     private CaseReceivedMutator() {
     }
 
+    @SuppressWarnings("squid:S1125")
     @Override
     public void apply(final CaseReceived event, final CaseAggregateState state) {
         state.setCaseId(event.getCaseId());
@@ -45,6 +46,7 @@ final class CaseReceivedMutator implements AggregateStateMutator<CaseReceived, C
         state.setPostingDate(event.getPostingDate());
         state.setDefendantRegion(event.getDefendant().getRegion());
         state.setDefendantDriverNumber(event.getDefendant().getDriverNumber());
+        state.setPcqId(event.getDefendant().getPcqId());
         state.setCosts(event.getCosts());
         state.setManagedByAtcm(true);
 

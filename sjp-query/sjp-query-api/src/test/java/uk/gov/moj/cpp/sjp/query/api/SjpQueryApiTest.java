@@ -115,7 +115,7 @@ public class SjpQueryApiTest {
 
         final JsonObject address = createObjectBuilder().add("postcode", postcode).build();
         final JsonObject personalDetails = createObjectBuilder().add("address", address).build();
-        final JsonObject defendant = createObjectBuilder().add("personalDetails", personalDetails).build();
+        final JsonObject defendant = createObjectBuilder().add("personalDetails", personalDetails).add("pcqId", randomUUID().toString()).build();
 
         final JsonEnvelope caseDetails = envelope()
                 .withPayloadOf(randomUUID().toString(), "id")

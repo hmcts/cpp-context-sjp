@@ -7,6 +7,7 @@ import uk.gov.justice.services.core.annotation.ServiceComponent;
 import uk.gov.justice.services.eventsourcing.source.core.exception.EventStreamException;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.sjp.domain.onlineplea.PleadOnline;
+import uk.gov.moj.cpp.sjp.domain.onlineplea.PleadOnlinePcqVisited;
 
 import java.util.UUID;
 
@@ -27,5 +28,14 @@ public class PleadOnlineHandler extends CaseCommandHandler {
         final UUID userId = getUserId(command);
 
         applyToCaseAggregate(command, aCase -> aCase.pleadOnline(caseId, pleadOnline, clock.now(), userId));
+    }
+
+    @Handles("sjp.command.plead-online-pcq-visited")
+    public void pleadOnlinePcqVisited(final JsonEnvelope command) throws EventStreamException {
+        final JsonObject payload = command.payloadAsJsonObject();
+        final UUID caseId = getCaseId(payload);
+        final PleadOnlinePcqVisited pleadOnlinePcqVisited = converter.convert(payload, PleadOnlinePcqVisited.class);
+
+        applyToCaseAggregate(command, aCase -> aCase.pleadOnlinePcqVisited(caseId, pleadOnlinePcqVisited, clock.now()));
     }
 }

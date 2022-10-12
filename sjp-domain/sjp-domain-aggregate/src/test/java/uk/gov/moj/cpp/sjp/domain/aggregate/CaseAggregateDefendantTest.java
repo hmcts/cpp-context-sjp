@@ -49,6 +49,7 @@ public class CaseAggregateDefendantTest {
 
     private final UUID caseId = UUID.randomUUID();
     private final UUID defendantId = UUID.randomUUID();
+    private final UUID pcqId = UUID.randomUUID();
     private final Gender gender = Gender.MALE;
     private final String firstName = "Random";
     private final String lastName = "Guy";
@@ -369,7 +370,8 @@ public class CaseAggregateDefendantTest {
                                 defendantData.region,
                                 defendantData.asn,
                                 defendantData.pncIdentifier,
-                                defendantData.legalEntityName)).build(),
+                                defendantData.legalEntityName,
+                                defendantData.pcqId)).build(),
                 clock.now()
         ).findFirst().get();
     }
@@ -420,6 +422,7 @@ public class CaseAggregateDefendantTest {
         private final String asn = "asn";
         private final String pncIdentifier = "pncId";
         private final String legalEntityName = "legalEntityName";
+        private final UUID pcqId = CaseAggregateDefendantTest.this.pcqId;
 
         private DefendantData withNewTitle(final String newTitle) {
             this.title = newTitle;

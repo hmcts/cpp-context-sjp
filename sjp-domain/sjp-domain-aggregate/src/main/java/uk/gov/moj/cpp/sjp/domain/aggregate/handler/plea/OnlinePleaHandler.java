@@ -30,12 +30,14 @@ import uk.gov.moj.cpp.sjp.domain.legalentity.LegalEntityDefendant;
 import uk.gov.moj.cpp.sjp.domain.onlineplea.Offence;
 import uk.gov.moj.cpp.sjp.domain.onlineplea.PersonalDetails;
 import uk.gov.moj.cpp.sjp.domain.onlineplea.PleadOnline;
+import uk.gov.moj.cpp.sjp.domain.onlineplea.PleadOnlinePcqVisited;
 import uk.gov.moj.cpp.sjp.domain.plea.Plea;
 import uk.gov.moj.cpp.sjp.domain.plea.PleaType;
 import uk.gov.moj.cpp.sjp.domain.plea.SetPleas;
 import uk.gov.moj.cpp.sjp.event.CaseUpdateRejected;
 import uk.gov.moj.cpp.sjp.event.FinancialMeansUpdated;
 import uk.gov.moj.cpp.sjp.event.OffenceNotFound;
+import uk.gov.moj.cpp.sjp.event.OnlinePleaPcqVisitedReceived;
 import uk.gov.moj.cpp.sjp.event.OnlinePleaReceived;
 import uk.gov.moj.cpp.sjp.event.OutstandingFinesUpdated;
 import uk.gov.moj.cpp.sjp.event.TrialRequested;
@@ -49,7 +51,6 @@ import java.util.stream.Stream;
 import com.google.common.annotations.VisibleForTesting;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 
 
 public class OnlinePleaHandler {
@@ -88,6 +89,10 @@ public class OnlinePleaHandler {
         ).orElse(this.createPleadOnlineEvents(caseId, pleadOnline, createdOn, state, userId));
     }
 
+    public Stream<Object> pleadOnlinePcqVisited(final UUID caseId, final PleadOnlinePcqVisited pleadOnlinePcqVisited, final ZonedDateTime createdOn, CaseAggregateState state) {
+        return this.createPleadOnlinePcqVisitedEvent(caseId, pleadOnlinePcqVisited, createdOn, state);
+    }
+
     private Stream<Object> createPleadOnlineEvents(final UUID caseId, final PleadOnline pleadOnline, final ZonedDateTime createdOn, CaseAggregateState state, final UUID userId) {
 
         final Optional<Offence> offencePreviouslySubmitted = pleadOnline.getOffences().stream().filter(offence -> state.getOffenceIdsWithPleas().contains(offence.getId())).findAny();
@@ -117,7 +122,23 @@ public class OnlinePleaHandler {
 
     }
 
-    private SetPleas mapToSetPleas(final PleadOnline pleadOnline){
+    private Stream<Object> createPleadOnlinePcqVisitedEvent(final UUID caseId, final PleadOnlinePcqVisited pleadOnlinePcqVisited,
+                                                            final ZonedDateTime createdOn, CaseAggregateState state) {
+
+        final Stream.Builder<Object> streamBuilder = Stream.builder();
+
+        final boolean updatedByOnlinePlea = true;
+        ofNullable(state.getDefendantDetailsUpdated(updatedByOnlinePlea, createdOn, pleadOnlinePcqVisited.getPcqId()))
+                .ifPresent(streamBuilder::add);
+
+        streamBuilder.add(new OnlinePleaPcqVisitedReceived(caseId, pleadOnlinePcqVisited.getUrn(),
+                pleadOnlinePcqVisited.getDefendantId(), pleadOnlinePcqVisited.getPcqId()));
+
+        return streamBuilder.build();
+
+    }
+
+    private SetPleas mapToSetPleas(final PleadOnline pleadOnline) {
         final Interpreter interpreter = Interpreter.of(pleadOnline.getInterpreterLanguage());
         final DefendantCourtInterpreter defendantCourtInterpreter = new DefendantCourtInterpreter(interpreter.getLanguage(), interpreter.isNeeded());
         final Boolean welshHearing = pleadOnline.getSpeakWelsh();
@@ -126,7 +147,7 @@ public class OnlinePleaHandler {
                 isTrue(welshHearing),
                 pleadOnline.getDisabilityNeeds());
 
-        final List<Plea> pleas = pleadOnline.getOffences().stream().map( offence ->
+        final List<Plea> pleas = pleadOnline.getOffences().stream().map(offence ->
         {
             PleaType type = offence.getPlea();
             if (offence.getPlea().equals(GUILTY) && isTrue(pleadOnline.getComeToCourt())) {
@@ -139,10 +160,10 @@ public class OnlinePleaHandler {
     }
 
     private Stream<Object> addAdditionalEventsToStreamForStoreOnlinePlea(final PleadOnline pleadOnline,
-                                                               final ZonedDateTime createdOn,
-                                                               final CaseAggregateState state) {
+                                                                         final ZonedDateTime createdOn,
+                                                                         final CaseAggregateState state) {
 
-        if (!isThePleaNewOrDifferentThanPrevious(pleadOnline, state)){
+        if (!isThePleaNewOrDifferentThanPrevious(pleadOnline, state)) {
             return Stream.builder().build();
         }
 

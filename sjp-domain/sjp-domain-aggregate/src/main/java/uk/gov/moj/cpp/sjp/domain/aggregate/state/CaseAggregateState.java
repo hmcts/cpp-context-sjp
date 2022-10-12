@@ -95,6 +95,7 @@ public class CaseAggregateState implements AggregateState {
     private List<Plea> pleas = new ArrayList<>();
     private LocalDate postingDate;
     private BigDecimal costs;
+    private UUID pcqId;
 
     private ZonedDateTime markedReadyForDecision;
 
@@ -320,6 +321,14 @@ public class CaseAggregateState implements AggregateState {
 
     public void setDefendantGender(final Gender defendantGender) {
         this.defendantGender = defendantGender;
+    }
+
+    public void setPcqId(final UUID pcqId) {
+        this.pcqId = pcqId;
+    }
+
+    public UUID getPcqId() {
+        return pcqId;
     }
 
     public void addOffenceIdsForDefendant(UUID defendantId, Set<UUID> offenceIds) {
@@ -846,6 +855,25 @@ public class CaseAggregateState implements AggregateState {
 
         getLegalEntityNameUpdateSummary(legalEntityDefendant, builder);
         getAddressAndContactDetailsUpdateSummary(legalEntityDefendant, builder);
+
+        if (builder.containsUpdate()) {
+            return builder
+                    .withUpdateByOnlinePlea(updatedByOnlinePlea)
+                    .withUpdatedDate(updatedOn)
+                    .build();
+        } else {
+            return null;
+        }
+    }
+
+    public DefendantDetailsUpdated getDefendantDetailsUpdated(final boolean updatedByOnlinePlea,
+                                                              final ZonedDateTime updatedOn,
+                                                              final UUID pcqId) {
+
+        final DefendantDetailsUpdated.DefendantDetailsUpdatedBuilder builder = defendantDetailsUpdated()
+                .withCaseId(getCaseId())
+                .withPcqId(pcqId)
+                .withDefendantId(getDefendantId());
 
         if (builder.containsUpdate()) {
             return builder

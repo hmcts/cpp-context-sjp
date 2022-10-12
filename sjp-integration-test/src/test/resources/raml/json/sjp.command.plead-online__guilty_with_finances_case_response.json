@@ -80,7 +80,8 @@
     "id": "${defendantId}",
     "speakWelsh": false,
     "asn": "asn",
-    "pncIdentifier": "pncId"
+    "pncIdentifier": "pncId",
+    "pcqId": "${pcqId}"
   },
   "caseDocuments": [
   ],

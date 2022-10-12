@@ -8,7 +8,6 @@ public class DefaultTestData {
 
     public static final UUID CASE_ID = UUID.randomUUID();
     public static final String CASE_ID_STR = CASE_ID.toString();
-
     public static final UUID DEFENDANT_ID = UUID.randomUUID();
     public static final UUID CASE_DOCUMENT_ID = UUID.randomUUID();
     public static final String CASE_DOCUMENT_ID_STR = CASE_DOCUMENT_ID.toString();
@@ -22,4 +21,5 @@ public class DefaultTestData {
     public static final String REOPEN_UPDATE_LIBRA_NUMBER = "LIBRA9999999";
     public static final String REOPEN_UPDATE_REASON = "No particular reason";
     public static final LocalDate EXPECTED_DATE_READY = LocalDate.of(2015, 12, 31);
+    public static final UUID PCQ_ID = UUID.randomUUID();
 }

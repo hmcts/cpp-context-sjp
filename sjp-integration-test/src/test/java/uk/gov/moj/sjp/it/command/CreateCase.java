@@ -1,5 +1,29 @@
 package uk.gov.moj.sjp.it.command;
 
+import org.apache.commons.lang3.RandomStringUtils;
+import uk.gov.justice.json.schemas.domains.sjp.Gender;
+import uk.gov.justice.json.schemas.domains.sjp.Language;
+import uk.gov.justice.services.common.converter.LocalDates;
+import uk.gov.moj.cpp.sjp.domain.decision.PressRestriction;
+import uk.gov.moj.sjp.it.command.builder.AddressBuilder;
+import uk.gov.moj.sjp.it.command.builder.ContactDetailsBuilder;
+import uk.gov.moj.sjp.it.model.ProsecutingAuthority;
+import uk.gov.moj.sjp.it.util.UrnProvider;
+
+import javax.json.Json;
+import javax.json.JsonArrayBuilder;
+import javax.json.JsonObject;
+import javax.json.JsonObjectBuilder;
+import javax.ws.rs.core.Response;
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.List;
+import java.util.UUID;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collectors;
+
 import static com.google.common.collect.Lists.newArrayList;
 import static java.util.Objects.nonNull;
 import static java.util.Objects.requireNonNull;
@@ -10,32 +34,6 @@ import static javax.json.Json.createObjectBuilder;
 import static javax.ws.rs.core.Response.Status.ACCEPTED;
 import static uk.gov.moj.sjp.it.Constants.DEFAULT_OFFENCE_CODE;
 import static uk.gov.moj.sjp.it.util.HttpClientUtil.getPostCallResponse;
-
-import uk.gov.justice.json.schemas.domains.sjp.Gender;
-import uk.gov.justice.json.schemas.domains.sjp.Language;
-import uk.gov.justice.services.common.converter.LocalDates;
-import uk.gov.moj.cpp.sjp.domain.decision.PressRestriction;
-import uk.gov.moj.sjp.it.command.builder.AddressBuilder;
-import uk.gov.moj.sjp.it.command.builder.ContactDetailsBuilder;
-import uk.gov.moj.sjp.it.model.ProsecutingAuthority;
-import uk.gov.moj.sjp.it.util.UrnProvider;
-
-import java.math.BigDecimal;
-import java.time.LocalDate;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.List;
-import java.util.UUID;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.stream.Collectors;
-
-import javax.json.Json;
-import javax.json.JsonArrayBuilder;
-import javax.json.JsonObject;
-import javax.json.JsonObjectBuilder;
-import javax.ws.rs.core.Response;
-
-import org.apache.commons.lang3.RandomStringUtils;
 
 public class CreateCase {
     private static final String ADD_FINANCIAL_IMPOSITION_WRITE_MEDIA_TYPE = "application/vnd.sjp.add-financial-imposition-account-number-bdf+json";
@@ -132,6 +130,8 @@ public class CreateCase {
                 .add("asn", payloadBuilder.defendantBuilder.getAsn())
                 .add("pncIdentifier", payloadBuilder.defendantBuilder.getPncIdentifier());
 
+        ofNullable(payloadBuilder.defendantBuilder.getPcqId())
+                .ifPresent(pcqId -> defendantBuilder.add("pcqId", payloadBuilder.defendantBuilder.getPcqId().toString()));
 
         if (nonNull(payloadBuilder.defendantBuilder.title)) {
             defendantBuilder.add("title", payloadBuilder.defendantBuilder.title);
@@ -362,6 +362,7 @@ public class CreateCase {
         String asn;
         String pncIdentifier;
         String legalEntityName;
+        UUID pcqId;
 
         private DefendantBuilder() {
 
@@ -391,8 +392,32 @@ public class CreateCase {
             builder.pncIdentifier = "pncId";
             builder.legalEntityName = null;
 
+            builder.pcqId = randomUUID();
             return builder;
         }
+
+        public static DefendantBuilder withDefaults(UUID pcqId) {
+            final DefendantBuilder builder = new DefendantBuilder();
+
+            builder.id = randomUUID();
+            builder.title = "Mr";
+            builder.firstName = "David";
+            builder.lastName = "LLOYD";
+            builder.dateOfBirth = LocalDates.from("1980-07-15");
+            builder.gender = Gender.MALE;
+            builder.numPreviousConvictions = 2;
+            builder.nationalInsuranceNumber = "BB123456B";
+            builder.driverNumber = "MORGA753116SM9IJ";
+            builder.driverLicenceDetails = "test";
+            builder.addressBuilder = AddressBuilder.withDefaults();
+            builder.contactDetailsBuilder = ContactDetailsBuilder.withDefaults();
+            builder.hearingLanguage = null;
+            builder.asn = "asn";
+            builder.pncIdentifier = "pncId";
+            builder.pcqId = pcqId;
+            return builder;
+        }
+
 
         public DefendantBuilder withId(final UUID id) {
             this.id = id;
@@ -474,6 +499,11 @@ public class CreateCase {
             return this;
         }
 
+        public DefendantBuilder withPcqId(final UUID pcqId) {
+            this.pcqId = pcqId;
+            return this;
+        }
+
         public UUID getId() {
             return id;
         }
@@ -537,6 +567,11 @@ public class CreateCase {
         public String getLegalEntityName() {
             return legalEntityName;
         }
+
+        public UUID getPcqId() {
+            return pcqId;
+        }
+
     }
 
     public static class OffenceBuilder {

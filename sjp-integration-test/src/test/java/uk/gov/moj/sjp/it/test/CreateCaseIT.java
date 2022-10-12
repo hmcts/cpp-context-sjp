@@ -8,6 +8,7 @@ import static java.util.UUID.randomUUID;
 import static java.util.stream.Collectors.toList;
 import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
 import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.Matchers.blankOrNullString;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.core.Is.is;
@@ -178,6 +179,7 @@ public class CreateCaseIT extends BaseIntegrationTest {
         assertThat(jsonResponse.get("enterpriseId"), equalTo(createCase.getEnterpriseId()));
         assertThat(jsonResponse.get("status"), equalTo(CaseStatus.NO_PLEA_RECEIVED_READY_FOR_DECISION.name()));
         assertThat(jsonResponse.get("defendant.id"), equalTo(defendant.getId().toString()));
+        assertThat(jsonResponse.get("defendant.pcqId"), is(notNullValue()));
         assertThat(jsonResponse.get("defendant.personalDetails.title"), equalTo(defendant.getTitle()));
         assertThat(jsonResponse.get("defendant.personalDetails.firstName"), equalTo(defendant.getFirstName()));
         assertThat(jsonResponse.get("defendant.personalDetails.lastName"), equalTo(defendant.getLastName()));
@@ -243,6 +245,7 @@ public class CreateCaseIT extends BaseIntegrationTest {
         assertThat(jsonResponse.get("enterpriseId"), equalTo(createCase.getEnterpriseId()));
         assertThat(jsonResponse.get("status"), equalTo(CaseStatus.NO_PLEA_RECEIVED_READY_FOR_DECISION.name()));
         assertThat(jsonResponse.get("defendant.id"), equalTo(defendant.getId().toString()));
+        assertThat(jsonResponse.get("defendant.pcqId"), is(notNullValue()));
         assertThat(jsonResponse.get("defendant.personalDetails.title"), equalTo(defendant.getTitle()));
         assertThat(jsonResponse.get("defendant.personalDetails.firstName"), equalTo(defendant.getFirstName()));
         assertThat(jsonResponse.get("defendant.personalDetails.lastName"), equalTo(defendant.getLastName()));
@@ -447,6 +450,7 @@ public class CreateCaseIT extends BaseIntegrationTest {
         assertThat(jsonResponse.get("urn"), equalTo(createCase.getUrn()));
         assertThat(jsonResponse.get("prosecutingAuthorityName"), equalTo(TFL.getFullName()));
         assertThat(jsonResponse.get("defendant.asn") , equalTo(defendant.getAsn()));
+        assertThat(jsonResponse.get("defendant.pcqId"), is(notNullValue()));
         assertThat(jsonResponse.get("defendant.pncIdentifier") , equalTo(defendant.getPncIdentifier()));
     }
 
@@ -487,6 +491,7 @@ public class CreateCaseIT extends BaseIntegrationTest {
         assertThat(jsonResponse.get("id"), equalTo(caseId.toString()));
         assertThat(jsonResponse.get("urn"), equalTo(createCase.getUrn()));
         assertThat(jsonResponse.get("prosecutingAuthorityName"), equalTo(TVL.getFullName()));
+        assertThat(jsonResponse.get("defendant.pcqId"), is(notNullValue()));
         assertThat(jsonResponse.get("defendant.offences[0].endorsable"), equalTo(true));
         assertThat(jsonResponse.get("defendant.offences[1].endorsable"), equalTo(true));
     }

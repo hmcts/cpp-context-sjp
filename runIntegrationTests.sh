@@ -166,7 +166,7 @@ function integrationTests() {
 }
 
 function buildDeployAndTest() {
-   buildWars
+  buildWars
   deployAndTest
 }
 

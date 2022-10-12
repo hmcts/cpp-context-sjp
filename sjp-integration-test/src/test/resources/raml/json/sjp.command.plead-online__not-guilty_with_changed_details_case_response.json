@@ -81,7 +81,8 @@
     },
     "id": "${defendantId}",
     "asn": "asn",
-    "pncIdentifier": "pncId"
+    "pncIdentifier": "pncId",
+    "pcqId": "${pcqId}"
   },
   "caseDocuments": [
   ],

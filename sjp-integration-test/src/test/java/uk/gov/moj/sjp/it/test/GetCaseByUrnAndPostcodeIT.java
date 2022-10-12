@@ -10,6 +10,8 @@ import uk.gov.moj.sjp.it.model.ProsecutingAuthority;
 import uk.gov.moj.sjp.it.command.CreateCase;
 import uk.gov.moj.sjp.it.helper.CitizenHelper;
 
+import java.util.UUID;
+
 import javax.json.Json;
 import javax.json.JsonObject;
 
@@ -21,6 +23,7 @@ public class GetCaseByUrnAndPostcodeIT extends BaseIntegrationTest {
     private static final String POSTCODE = "W1T 1JY";
     private static final String OFFENCE_CODE = "CA03010";
     private static String urn;
+    private static UUID pcqId;
     private CitizenHelper citizenHelper = new CitizenHelper();
     private static final String NATIONAL_COURT_CODE = "1080";
 
@@ -34,6 +37,7 @@ public class GetCaseByUrnAndPostcodeIT extends BaseIntegrationTest {
         stubProsecutorQuery(prosecutingAuthority.name(), prosecutingAuthority.getFullName(), randomUUID());
 
         urn = createCasePayloadBuilder.getUrn();
+        pcqId = createCasePayloadBuilder.getDefendantBuilder().getPcqId();
 
         stubQueryOffencesByCode(OFFENCE_CODE);
     }
@@ -57,6 +61,6 @@ public class GetCaseByUrnAndPostcodeIT extends BaseIntegrationTest {
     @Test
     public void shouldFindCaseByUrnWithoutPrefixAndPostcode() {
         final String urnWithoutPrefix = urn.replaceAll("(\\p{Alpha})", "");
-        citizenHelper.verifyCaseByPersonUrnWithoutPrefixAndPostcode(urnWithoutPrefix, urn, POSTCODE);
+        citizenHelper.verifyCaseByPersonUrnWithoutPrefixAndPostcode(urnWithoutPrefix, urn, POSTCODE, pcqId);
     }
 }

@@ -101,6 +101,7 @@ public class DefendantUpdatedListener {
         ofNullable(newData.getLegalEntityName()).ifPresent(legalEntity::setLegalEntityName);
         final Address address = newData.getAddress();
 
+        ofNullable(newData.getPcqId()).ifPresent(defendantDetailEntity:: setPcqId);
         if (newData.isUpdateByOnlinePlea()) {
             ofNullable(newData.getNationalInsuranceNumber()).ifPresent(entity::setNationalInsuranceNumber);
             ofNullable(newData.getDateOfBirth()).ifPresent(entity::setDateOfBirth);

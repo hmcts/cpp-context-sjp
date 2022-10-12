@@ -1,6 +1,7 @@
 package uk.gov.moj.cpp.sjp.command.controller;
 
 import static uk.gov.justice.services.core.annotation.Component.COMMAND_CONTROLLER;
+import static uk.gov.justice.services.core.enveloper.Enveloper.envelop;
 
 import uk.gov.justice.services.core.annotation.Handles;
 import uk.gov.justice.services.core.annotation.ServiceComponent;
@@ -181,6 +182,9 @@ public class NoActionController {
     public void resolveConvictionCourtBdf(final JsonEnvelope envelope) {
         send(envelope);
     }
+
+    @Handles("sjp.command.plead-online-pcq-visited")
+    public void pleadOnlinePcqVisited(final JsonEnvelope envelope) { send(envelope); }
 
     private void send(final Envelope<?> envelope) {
         sender.send(envelope);

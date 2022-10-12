@@ -89,6 +89,9 @@
         "numPreviousConvictions": {
           "type": "integer"
         },
+        "pcqId" : {
+          "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+        },
         "personalDetails": {
           "$ref": "#/definitions/personalDetails"
         },

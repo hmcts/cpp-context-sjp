@@ -77,7 +77,6 @@ public class AddRequestForOutstandingFinesIT extends BaseIntegrationTest {
         CaseHelper.pollUntilCaseReady(caseIdOne);
         final JsonPath jsonPath = CasePoller.pollUntilCaseByIdIsOk(caseIdOne);
         final String defendantId = jsonPath.getString("defendant.id");
-        System.out.println(jsonPath.toString());
 
         final String path = "/add-request-for-outstanding-fines";
         final String mediaType = "application/vnd.sjp.add-request-for-outstanding-fines+json";

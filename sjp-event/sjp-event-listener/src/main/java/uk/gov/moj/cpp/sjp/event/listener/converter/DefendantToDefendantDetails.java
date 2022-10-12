@@ -48,6 +48,7 @@ public class DefendantToDefendantDetails implements Converter<Defendant, Defenda
                 defendant.getRegion(),
                 legalEntityDetails,
                 address,
-                contactDetails);
+                contactDetails,
+                defendant.getPcqId());
     }
 }

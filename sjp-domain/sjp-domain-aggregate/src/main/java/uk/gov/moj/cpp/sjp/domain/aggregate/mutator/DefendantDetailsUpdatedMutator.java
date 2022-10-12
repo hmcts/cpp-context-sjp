@@ -25,5 +25,6 @@ final class DefendantDetailsUpdatedMutator implements AggregateStateMutator<Defe
         ofNullable(event.getRegion()).ifPresent(state::setDefendantRegion);
         ofNullable(event.getDriverNumber()).ifPresent(state::setDefendantDriverNumber);
         ofNullable(event.getDriverLicenceDetails()).ifPresent(state::setDefendantDriverLicenceDetails);
+        ofNullable(event.getPcqId()).ifPresent(state::setPcqId);
     }
 }

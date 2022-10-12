@@ -64,6 +64,9 @@
     "outstandingFines": {
       "type": "boolean"
     },
+    "pcqId" : {
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+    },
     "interpreterLanguage": {
       "type": "string"
     },

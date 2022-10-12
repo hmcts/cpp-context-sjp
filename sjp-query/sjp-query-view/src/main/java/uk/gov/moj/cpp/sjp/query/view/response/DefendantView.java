@@ -29,6 +29,7 @@ public class DefendantView {
     private final String asn;
     private final String pncIdentifier;
     private final String gobAccountNumber;
+    private final UUID pcqId;
 
 
     public DefendantView(DefendantDetail defendant) {
@@ -47,6 +48,7 @@ public class DefendantView {
         this.pncIdentifier = defendant.getPncIdentifier();
         this.gobAccountNumber = defendant.getAccountNumber();
         this.legalEntityDetails = nonNull(defendant.getLegalEntityDetails()) ? new LegalEntityDetailsView(defendant) : null;
+        this.pcqId = defendant.getPcqId();
     }
 
     public List<OffenceView> getOffences() {
@@ -96,6 +98,8 @@ public class DefendantView {
     public LegalEntityDetailsView getLegalEntityDetails() {
         return legalEntityDetails;
     }
+
+    public UUID getPcqId() { return pcqId; }
 
     private static List<OffenceView> constructDefendantChargeView(final DefendantDetail defendant) {
         return defendant.getOffences().stream()

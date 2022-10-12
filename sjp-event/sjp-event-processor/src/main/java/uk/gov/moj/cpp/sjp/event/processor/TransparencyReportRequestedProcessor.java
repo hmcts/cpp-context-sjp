@@ -41,6 +41,7 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 import javax.inject.Inject;
+import javax.json.Json;
 import javax.json.JsonArray;
 import javax.json.JsonArrayBuilder;
 import javax.json.JsonObject;
@@ -52,6 +53,7 @@ import com.google.common.collect.Table;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+@SuppressWarnings({"squid:S1067"})
 @ServiceComponent(EVENT_PROCESSOR)
 public class TransparencyReportRequestedProcessor {
 
@@ -60,7 +62,21 @@ public class TransparencyReportRequestedProcessor {
     private static final String TEMPLATE_IDENTIFIER = "PendingCasesEnglish";
     private static final String TEMPLATE_IDENTIFIER_WELSH = "PendingCasesWelsh";
     private static final int DEFENDANT_IS_18 = 18;
+    private static final String SJP_OFFENCES = "sjpOffences";
     private static final String OFFENCES = "offences";
+    private static final String PUBLIC_EVENT_SJP_PENDING_CASES_PUBLIC_LIST_GENERATED = "public.sjp.pending-cases-public-list-generated";
+    public static final String DEFENDANT_NAME = "defendantName";
+    public static final String PROSECUTOR_NAME = "prosecutorName";
+    public static final String TITLE = "title";
+    public static final String FIRST_NAME = "firstName";
+    public static final String LAST_NAME = "lastName";
+    public static final String ADDRESS_LINE_1 = "addressLine1";
+    public static final String COUNTY = "county";
+    public static final String TOWN = "town";
+    public static final String POSTCODE = "postcode";
+    public static final String ADDRESS_LINE_2 = "addressLine2";
+    public static final String EMPTY = "";
+    public static final String STRING_FORMAT = "%s,";
 
     private Table<String, String, JsonObject> offenceDataTable;
     private Table<String, Boolean, String> prosecutorDataTable;
@@ -93,15 +109,37 @@ public class TransparencyReportRequestedProcessor {
         final List<JsonObject> filteredCases = getFilteredCases(allPendingCasesFromViewStore);
         storeReportMetadata(envelope, transparencyReportId, filteredCases);
         try {
-            final JsonObject payloadForDocumentGenerationEnglish = buildPayloadForDocumentGeneration(filteredCases, false, envelope);
-            final String englishPayloadFileName = String.format("transparency-report-template-parameters.english.%s.json", transparencyReportId.toString());
+            final JsonObject payloadForDocumentGenerationEnglish = buildPayload(filteredCases, false,  false, envelope);
+            final String englishPayloadFileName = String.format("transparency-report-template-parameters.english.%s.json", transparencyReportId);
             final UUID englishPayloadFileId = storeDocumentGeneratorPayload(payloadForDocumentGenerationEnglish, englishPayloadFileName, TEMPLATE_IDENTIFIER);
             requestDocumentGeneration(envelope, transparencyReportId, TEMPLATE_IDENTIFIER, englishPayloadFileId);
 
-            final JsonObject payloadForDocumentGenerationWelsh = buildPayloadForDocumentGeneration(filteredCases, true, envelope);
-            final String welshPayloadFileName = String.format("transparency-report-template-parameters.welsh.%s.json", transparencyReportId.toString());
+            final JsonObject payloadForPublicEventInEnglish= buildPayload(filteredCases, false, true, envelope);
+            if (LOGGER.isInfoEnabled()) {
+                LOGGER.info("publishing Sjp public event for english report {}, {}", PUBLIC_EVENT_SJP_PENDING_CASES_PUBLIC_LIST_GENERATED, payloadForPublicEventInEnglish);
+            }
+            final JsonObjectBuilder pendingListEnglishBuilder = Json.createObjectBuilder()
+                    .add("language", "ENGLISH")
+                    .add("listPayload", payloadForPublicEventInEnglish);
+            sender.send(Envelope.envelopeFrom(metadataFrom(envelope.metadata())
+                            .withName(PUBLIC_EVENT_SJP_PENDING_CASES_PUBLIC_LIST_GENERATED),
+                    pendingListEnglishBuilder.build()));
+
+            final JsonObject payloadForDocumentGenerationWelsh = buildPayload(filteredCases, true, false, envelope);
+            final String welshPayloadFileName = String.format("transparency-report-template-parameters.welsh.%s.json", transparencyReportId);
             final UUID welshPayloadFileId = storeDocumentGeneratorPayload(payloadForDocumentGenerationWelsh, welshPayloadFileName, TEMPLATE_IDENTIFIER_WELSH);
             requestDocumentGeneration(envelope, transparencyReportId, TEMPLATE_IDENTIFIER_WELSH, welshPayloadFileId);
+
+            final JsonObject payloadForPublicEventInWelsh= buildPayload(filteredCases, true, true, envelope);
+            if (LOGGER.isInfoEnabled()) {
+                LOGGER.info("publishing Sjp public event for welsh report {}, {}", PUBLIC_EVENT_SJP_PENDING_CASES_PUBLIC_LIST_GENERATED, payloadForPublicEventInEnglish);
+            }
+            final JsonObjectBuilder pendingListWelshBuilder = Json.createObjectBuilder()
+                    .add("language", "WELSH")
+                    .add("listPayload", payloadForPublicEventInWelsh);
+            sender.send(Envelope.envelopeFrom(metadataFrom(envelope.metadata())
+                            .withName(PUBLIC_EVENT_SJP_PENDING_CASES_PUBLIC_LIST_GENERATED),
+                    pendingListWelshBuilder.build()));
 
         } catch (FileServiceException e) {
             throw new RuntimeException("IO Exception happened during transparency report generation", e);
@@ -141,14 +179,14 @@ public class TransparencyReportRequestedProcessor {
         return true;
     }
 
-    private JsonObject buildPayloadForDocumentGeneration(final List<JsonObject> pendingCases, boolean isWelsh, final JsonEnvelope envelope) {
+    private JsonObject buildPayload(final List<JsonObject> pendingCases, boolean isWelsh, final boolean isPayloadForPublicEvent, final JsonEnvelope envelope) {
         return createObjectBuilder()
                 .add("generatedDateAndTime", formatDateTimeForReport(now(), isWelsh))
                 .add("totalNumberOfRecords", pendingCases.size())
-                .add("readyCases", createPendingCasesJsonArrayBuilderFromListOfPendingCases(pendingCases, isWelsh, envelope))
+                .add("readyCases", isPayloadForPublicEvent?createPendingCasesJsonArrayBuilderFromListOfPendingCasesForPublicEvent(pendingCases, isWelsh, envelope):
+                            createPendingCasesJsonArrayBuilderFromListOfPendingCases(pendingCases, isWelsh, envelope))
                 .build();
     }
-
     private void requestDocumentGeneration(final JsonEnvelope eventEnvelope,
                                            final UUID transparencyReportId,
                                            final String template,
@@ -164,8 +202,8 @@ public class TransparencyReportRequestedProcessor {
 
         sender.sendAsAdmin(
                 Envelope.envelopeFrom(
-                    metadataFrom(eventEnvelope.metadata()).withName("systemdocgenerator.generate-document"),
-                    docGeneratorPayload
+                        metadataFrom(eventEnvelope.metadata()).withName("systemdocgenerator.generate-document"),
+                        docGeneratorPayload
                 )
         );
 
@@ -176,7 +214,7 @@ public class TransparencyReportRequestedProcessor {
 
         final JsonObject metadata = createObjectBuilder()
                 .add("fileName", fileName)
-                .add("conversionFormat","pdf")
+                .add("conversionFormat", "pdf")
                 .add("templateName", templateIdentifier)
                 .add("numberOfPages", 1)
                 .add("fileSize", jsonPayloadInBytes.length)
@@ -199,22 +237,47 @@ public class TransparencyReportRequestedProcessor {
 
     private JsonArrayBuilder createPendingCasesJsonArrayBuilderFromListOfPendingCases(final List<JsonObject> pendingCases, final Boolean isWelsh, final JsonEnvelope envelope) {
         final JsonArrayBuilder pendingCasesBuilder = createArrayBuilder();
-        pendingCases.stream()
+        pendingCases
                 .forEach(pendingCase -> {
                     final JsonObjectBuilder pendingCaseBuilder = createObjectBuilder()
                             .add("defendantName",buildDefendantName(pendingCase))
                             .add("offenceTitle", buildOffenceTitleFromOffenceArray(pendingCase.getJsonArray(OFFENCES), isWelsh, envelope))
-                            .add("prosecutorName", buildProsecutorName(pendingCase.getString("prosecutorName"), isWelsh, envelope));
+                            .add(PROSECUTOR_NAME, buildProsecutorName(pendingCase.getString(PROSECUTOR_NAME), isWelsh, envelope));
 
-                     ofNullable(pendingCase.getString("postcode", null))
-                             .ifPresent(postcode -> pendingCaseBuilder.add("postcode",getPostcodePrefix (postcode)));
+                    ofNullable(pendingCase.getString(POSTCODE, null))
+                            .ifPresent(postcode -> pendingCaseBuilder.add(POSTCODE, getPostcodePrefix(postcode)));
 
                     pendingCasesBuilder.add(pendingCaseBuilder);
                 });
         return pendingCasesBuilder;
     }
+
+    private JsonArrayBuilder createPendingCasesJsonArrayBuilderFromListOfPendingCasesForPublicEvent(final List<JsonObject> pendingCases, final Boolean isWelsh, final JsonEnvelope envelope) {
+        final JsonArrayBuilder pendingCasesBuilder = createArrayBuilder();
+        pendingCases
+                .forEach(pendingCase -> {
+                    final JsonObjectBuilder pendingCaseBuilder = createObjectBuilder()
+                            .add(DEFENDANT_NAME, pendingCase.getString(DEFENDANT_NAME))
+                            .add(FIRST_NAME, pendingCase.containsKey(FIRST_NAME) ? format(STRING_FORMAT, pendingCase.getString(FIRST_NAME)) : EMPTY)
+                            .add(LAST_NAME, pendingCase.containsKey(LAST_NAME) ? format(STRING_FORMAT, pendingCase.getString(LAST_NAME)) : EMPTY)
+                            .add(ADDRESS_LINE_1, pendingCase.containsKey(ADDRESS_LINE_1) ? format(STRING_FORMAT, pendingCase.getString(ADDRESS_LINE_1)) : EMPTY)
+                            .add(ADDRESS_LINE_1, pendingCase.containsKey(ADDRESS_LINE_2) ? format(STRING_FORMAT, pendingCase.getString(ADDRESS_LINE_2)) : EMPTY)
+                            .add(COUNTY, pendingCase.containsKey(COUNTY) ? format(STRING_FORMAT, pendingCase.getString(COUNTY)) : EMPTY)
+                            .add(TOWN, pendingCase.containsKey(TOWN) ? format(STRING_FORMAT, pendingCase.getString(TOWN)) : EMPTY)
+                            .add(POSTCODE, pendingCase.containsKey(POSTCODE) ? format(STRING_FORMAT, pendingCase.getString(POSTCODE)) : EMPTY)
+                            .add(SJP_OFFENCES, buildOffencesArrayFromOffenceArrayForPublicEvent(pendingCase.getJsonArray(OFFENCES), isWelsh, envelope))
+                            .add(PROSECUTOR_NAME, buildProsecutorName(pendingCase.getString(PROSECUTOR_NAME), isWelsh, envelope));
+
+                    ofNullable(pendingCase.getString(POSTCODE, null))
+                            .ifPresent(postcode -> pendingCaseBuilder.add(POSTCODE, getPostcodePrefix(postcode)));
+
+                    pendingCasesBuilder.add(pendingCaseBuilder);
+                });
+        return pendingCasesBuilder;
+    }
+
     private String getPostcodePrefix(final String postcode) {
-        return  length(postcode) > 2 ? postcode.substring(0, 2) : postcode;
+        return length(postcode) > 2 ? postcode.substring(0, 2) : postcode;
 
     }
 
@@ -266,6 +329,25 @@ public class TransparencyReportRequestedProcessor {
         return getOffenceTitle(offenceReferenceData, offenceCode, isWelsh);
     }
 
+    private JsonArray buildOffencesArrayFromOffenceArrayForPublicEvent(final JsonArray pendingCaseOffences, final Boolean isWelsh, final JsonEnvelope envelope) {
+        final JsonArrayBuilder readyCaseOffences = createArrayBuilder();
+        pendingCaseOffences.getValuesAs(JsonObject.class).forEach(pendingCaseOffence -> {
+            final JsonObject pendingCasePressRestriction = pendingCaseOffence.getJsonObject("pressRestriction");
+            final boolean pressRestrictionRequested = pendingCasePressRestriction.getBoolean("requested");
+
+            final JsonObjectBuilder readyCaseOffence = createObjectBuilder()
+                    .add(TITLE, mapOffenceIntoOffenceTitleString(pendingCaseOffence, isWelsh, envelope));
+
+            if (pressRestrictionRequested) {
+                readyCaseOffence.add("pressRestrictionRequested", pressRestrictionRequested);
+                readyCaseOffence.add("pressRestrictionName", pendingCasePressRestriction.getString("name", EMPTY));
+            }
+
+            readyCaseOffences.add(readyCaseOffence);
+        });
+        return readyCaseOffences.build();
+    }
+
     private JsonArrayBuilder createJsonArrayWithCaseIds(final List<JsonObject> pendingCases) {
         final JsonArrayBuilder pendingCasesBuilder = createArrayBuilder();
         pendingCases.stream().map(e -> e.getString("caseId")).forEach(pendingCasesBuilder::add);
@@ -274,13 +356,13 @@ public class TransparencyReportRequestedProcessor {
 
     private String getOffenceTitle(final JsonObject offenceReferenceData, final String offenceCode, final Boolean isWelsh) {
         if (!isWelsh) {
-            return offenceReferenceData.getString("title");
+            return offenceReferenceData.getString(TITLE);
         }
 
         final Optional<String> offenceTitleWelshOptional = JsonObjects.getString(offenceReferenceData, "details", "document", "welsh", "welshoffencetitle");
         return offenceTitleWelshOptional.orElseGet(() -> {
             LOGGER.warn("No welsh offence referencedata translations for offenceCode: {}", offenceCode);
-            return offenceReferenceData.getString("title");
+            return offenceReferenceData.getString(TITLE);
         });
     }
 

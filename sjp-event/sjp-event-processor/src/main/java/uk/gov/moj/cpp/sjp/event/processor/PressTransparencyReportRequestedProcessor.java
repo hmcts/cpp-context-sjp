@@ -45,6 +45,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 import javax.inject.Inject;
+import javax.json.Json;
 import javax.json.JsonArray;
 import javax.json.JsonArrayBuilder;
 import javax.json.JsonObject;
@@ -67,7 +68,22 @@ public class PressTransparencyReportRequestedProcessor {
 
     private static final int ADULT_AGE = 18;
     private static final String DEFENDANT_DATE_OF_BIRTH = "defendantDateOfBirth";
-
+    public static final String PUBLIC_SJP_PRESS_TRANSPARENCY_REPORT_GENERATED = "public.sjp.press-transparency-report-generated";
+    public static final String CASE_URN = "caseUrn";
+    public static final String FIRST_NAME = "firstName";
+    public static final String LAST_NAME = "lastName";
+    public static final String ADDRESS_LINE_1 = "addressLine1";
+    public static final String ADDRESS_LINE_2 = "addressLine2";
+    public static final String COUNTY = "county";
+    public static final String TOWN = "town";
+    public static final String POSTCODE = "postcode";
+    public static final String DEFENDANT_NAME = "defendantName";
+    public static final String OFFENCES = "offences";
+    public static final String PROSECUTOR_NAME = "prosecutorName";
+    public static final String EMPTY = "";
+    public static final String STRING_FORMAT_COMMA = " %s,";
+    public static final String STRING_FORMAT = " %s";
+    public static final String SJP_OFFENCES = "sjpOffences";
 
     @Inject
     private FileStorer fileStorer;
@@ -99,13 +115,26 @@ public class PressTransparencyReportRequestedProcessor {
         final JsonObject eventPayload = envelope.payloadAsJsonObject();
         final UUID reportId = fromString(eventPayload.getString("pressTransparencyReportId"));
         try {
-            final JsonObject payloadForDocumentGeneration = buildPayloadForDocumentGeneration(pendingCasesFromViewStore, envelope);
+            final JsonObject payloadForDocumentGeneration = buildPayload(pendingCasesFromViewStore, false, envelope);
             requestDocumentGeneration(envelope, reportId, payloadForDocumentGeneration);
-
+            sendPublicEvent(envelope, buildPayload(pendingCasesFromViewStore, true,  envelope));
             storeReportMetadata(envelope, reportId, pendingCasesFromViewStore);
         } catch (FileServiceException e) {
             throw new RuntimeException("IO Exception happened during press transparency report generation", e);
         }
+    }
+
+    private void sendPublicEvent(final JsonEnvelope envelope, final JsonObject payloadForDocumentGeneration) {
+        LOGGER.info("publishing public event for sjp pending cases for public list in english");
+        final JsonObjectBuilder pendingListEnglishBuilder = Json.createObjectBuilder()
+                .add("language", "ENGLISH")
+                .add("listPayload", payloadForDocumentGeneration);
+        if (LOGGER.isInfoEnabled()) {
+            LOGGER.info("publishing Sjp public event for press report {}, {}", PUBLIC_SJP_PRESS_TRANSPARENCY_REPORT_GENERATED, payloadForDocumentGeneration);
+        }
+        sender.send(Envelope.envelopeFrom(metadataFrom(envelope.metadata())
+                        .withName(PUBLIC_SJP_PRESS_TRANSPARENCY_REPORT_GENERATED),
+                pendingListEnglishBuilder.build()));
     }
 
     private void storeReportMetadata(final JsonEnvelope envelope,
@@ -172,8 +201,8 @@ public class PressTransparencyReportRequestedProcessor {
         prosecutorDataMap = new HashMap<>();
     }
 
-    private JsonObject buildPayloadForDocumentGeneration(final List<JsonObject> pendingCasesFromViewStore, final JsonEnvelope envelope) {
-        final JsonArray readyCases = createReadyCases(pendingCasesFromViewStore, envelope).build();
+    private JsonObject buildPayload(final List<JsonObject> pendingCasesFromViewStore, final boolean isPayloadForPublicEvent, final JsonEnvelope envelope) {
+        final JsonArray readyCases = createReadyCases(pendingCasesFromViewStore, isPayloadForPublicEvent, envelope).build();
         return createObjectBuilder()
                 .add("generatedDateAndTime", formatDateTimeForReport(now(), false))
                 .add("totalNumberOfRecords", readyCases.size())
@@ -181,19 +210,20 @@ public class PressTransparencyReportRequestedProcessor {
                 .build();
     }
 
-    private JsonArrayBuilder createReadyCases(final List<JsonObject> pendingCases,
+
+    private JsonArrayBuilder createReadyCases(final List<JsonObject> pendingCases, final boolean isPayloadForPublicEvent,
                                               final JsonEnvelope envelope) {
         final JsonArrayBuilder readyCasesBuilder = createArrayBuilder();
 
         pendingCases.forEach(pendingCase -> {
             Optional<Long> defendantAge = empty();
-            if (!isEmpty(pendingCase.getString(DEFENDANT_DATE_OF_BIRTH, ""))) {
+            if (!isEmpty(pendingCase.getString(DEFENDANT_DATE_OF_BIRTH, EMPTY))) {
                 defendantAge = getAge(pendingCase.getString(DEFENDANT_DATE_OF_BIRTH));
             }
 
             final Boolean defendantIsAdultOrUnknownAge = defendantAge.map(this::isAdult).orElse(true);
-            if (TRUE.equals(defendantIsAdultOrUnknownAge)) {
-                final JsonObjectBuilder readyCaseItem = createReadyCase(envelope, pendingCase);
+            if(defendantIsAdultOrUnknownAge) {
+                final JsonObjectBuilder readyCaseItem = isPayloadForPublicEvent? createReadyCaseForPublishEvent(envelope, pendingCase):createReadyCase(envelope, pendingCase);
                 readyCasesBuilder.add(readyCaseItem);
             }
         });
@@ -201,12 +231,33 @@ public class PressTransparencyReportRequestedProcessor {
     }
 
     private JsonObjectBuilder createReadyCase(final JsonEnvelope envelope, final JsonObject pendingCase) {
-        final JsonObjectBuilder readyCase = createObjectBuilder()
-                .add("caseUrn", pendingCase.getString("caseUrn"))
-                .add("defendantName", buildDefendantName(pendingCase))
+        final JsonObjectBuilder readyCase =  createObjectBuilder()
+                .add(CASE_URN, pendingCase.getString(CASE_URN))
+                .add(DEFENDANT_NAME, buildDefendantName(pendingCase))
                 .add("address", getDefendantAddress(pendingCase))
-                .add("offences", createReadyCaseOffences(pendingCase.getJsonArray("offences"), envelope))
-                .add("prosecutorName", buildProsecutorName(pendingCase.getString("prosecutorName"), envelope));
+                .add(OFFENCES, createReadyCaseOffences(pendingCase.getJsonArray(OFFENCES), envelope))
+                .add(PROSECUTOR_NAME, buildProsecutorName(pendingCase.getString(PROSECUTOR_NAME), envelope));
+
+        if (hasDefendantDateOfBirth(pendingCase)) {
+            readyCase.add("dateOfBirth", createDateOfBirth(pendingCase.getString(DEFENDANT_DATE_OF_BIRTH)));
+        }
+
+        return readyCase;
+    }
+
+    private JsonObjectBuilder createReadyCaseForPublishEvent(final JsonEnvelope envelope, final JsonObject pendingCase) {
+        final JsonObjectBuilder readyCase =  createObjectBuilder()
+                .add(CASE_URN, pendingCase.getString(CASE_URN))
+                .add(FIRST_NAME, pendingCase.getString(FIRST_NAME))
+                .add(LAST_NAME, pendingCase.getString(LAST_NAME))
+                .add(ADDRESS_LINE_1, pendingCase.containsKey(ADDRESS_LINE_1) ? format("%s,", pendingCase.getString(ADDRESS_LINE_1)) : EMPTY)
+                .add(ADDRESS_LINE_2, pendingCase.containsKey(ADDRESS_LINE_2) ? format("%s,", pendingCase.getString(ADDRESS_LINE_2)) : EMPTY)
+                .add(COUNTY, pendingCase.containsKey(COUNTY) ? format("%s,", pendingCase.getString(COUNTY)) : EMPTY)
+                .add(TOWN, pendingCase.containsKey(TOWN) ? format("%s,", pendingCase.getString(TOWN)) : EMPTY)
+                .add(POSTCODE, pendingCase.containsKey(POSTCODE) ? format("%s,", pendingCase.getString(POSTCODE)) : EMPTY)
+                .add(DEFENDANT_NAME, buildDefendantName(pendingCase))
+                .add(SJP_OFFENCES, createReadyCaseOffences(pendingCase.getJsonArray(OFFENCES), envelope))
+                .add(PROSECUTOR_NAME, buildProsecutorName(pendingCase.getString(PROSECUTOR_NAME), envelope));
 
         if (hasDefendantDateOfBirth(pendingCase)) {
             readyCase.add("dateOfBirth", createDateOfBirth(pendingCase.getString(DEFENDANT_DATE_OF_BIRTH)));
@@ -228,8 +279,8 @@ public class PressTransparencyReportRequestedProcessor {
             final LocalDate defendantDob = parse(defendantDateOfBirth);
             return format("%s (%d)", DATE_FORMAT.format(defendantDob), getAge(defendantDateOfBirth).orElse(0l));
         } catch (DateTimeParseException e) {
-            LOGGER.warn("error parsing defendant date of birth " + defendantDateOfBirth, e);
-            return "";
+            LOGGER.warn("error parsing defendant date of birth " +  defendantDateOfBirth, e);
+            return EMPTY;
         }
     }
 
@@ -258,8 +309,8 @@ public class PressTransparencyReportRequestedProcessor {
                     .add("wording", pendingCaseOffence.getString("offenceWording"))
                     .add("pressRestrictionRequested", pressRestrictionRequested);
 
-            if (pressRestrictionRequested) {
-                readyCaseOffence.add("pressRestrictionName", pendingCasePressRestriction.getString("name", ""));
+            if(pressRestrictionRequested) {
+                readyCaseOffence.add("pressRestrictionName", pendingCasePressRestriction.getString("name", EMPTY));
             }
 
             readyCaseOffences.add(readyCaseOffence);
@@ -299,12 +350,12 @@ public class PressTransparencyReportRequestedProcessor {
     }
 
     private String getDefendantAddress(final JsonObject pendingCase) {
-        final String addressLine1 = pendingCase.containsKey("addressLine1") ? format("%s,", pendingCase.getString("addressLine1")) : "";
-        final String addressLine2 = pendingCase.containsKey("addressLine2") ? format(" %s,", pendingCase.getString("addressLine2")) : "";
-        final String county = pendingCase.containsKey("county") ? format(" %s,", pendingCase.getString("county")) : "";
-        final String town = pendingCase.containsKey("town") ? format(" %s", pendingCase.getString("town")) : "";
-        final String postcode = pendingCase.containsKey("postcode") ? format(" %s", pendingCase.getString("postcode")) : "";
-        if (nonNull(postcode) && !postcode.isEmpty()) {
+        final String addressLine1 = pendingCase.containsKey(ADDRESS_LINE_1) ? format(STRING_FORMAT_COMMA, pendingCase.getString(ADDRESS_LINE_1)) : EMPTY;
+        final String addressLine2 = pendingCase.containsKey(ADDRESS_LINE_2) ? format(STRING_FORMAT_COMMA, pendingCase.getString(ADDRESS_LINE_2)) : EMPTY;
+        final String county = pendingCase.containsKey(COUNTY) ? format(STRING_FORMAT_COMMA, pendingCase.getString(COUNTY)) : EMPTY;
+        final String town = pendingCase.containsKey(TOWN) ? format(STRING_FORMAT, pendingCase.getString(TOWN)) : EMPTY;
+        final String postcode = pendingCase.containsKey(POSTCODE) ? format(STRING_FORMAT, pendingCase.getString(POSTCODE)) : EMPTY;
+        if (nonNull(postcode) && ! postcode.isEmpty()) {
             return format("%s%s%s%s,%s", addressLine1, addressLine2, county, town, postcode).trim();
         } else {
             return format("%s%s%s%s", addressLine1, addressLine2, county, town).trim();

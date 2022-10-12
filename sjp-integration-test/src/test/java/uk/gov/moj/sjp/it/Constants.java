@@ -30,6 +30,7 @@ public class Constants {
     public static final String SJP_EVENTS_ALL_OFFENCES_WITHDRAWAL_REQUESTED = AllOffencesWithdrawalRequested.EVENT_NAME;
     public static final String EVENT_OFFENCES_WITHDRAWAL_STATUS_SET = "sjp.events.offences-withdrawal-status-set";
     public static final String PUBLIC_EVENT_OFFENCES_WITHDRAWAL_STATUS_SET = "public.sjp.offences-withdrawal-status-set";
+    public static final String PUBLIC_EVENT_SJP_PENDING_CASES_PUBLIC_LIST_GENERATED = "public-sjp-pending-cases-public-list-generated";
     public static final String PUBLIC_SJP_ALL_OFFENCES_WITHDRAWAL_REQUEST_CANCELLED = "public.sjp.all-offences-withdrawal-request-cancelled";
     public static final String SJP_EVENTS_ALL_OFFENCES_WITHDRAWAL_REQUEST_CANCELLED = AllOffencesWithdrawalRequestCancelled.EVENT_NAME;
     public static final String PUBLIC_SJP_CASE_UPDATE_REJECTED = "public.sjp.case-update-rejected";

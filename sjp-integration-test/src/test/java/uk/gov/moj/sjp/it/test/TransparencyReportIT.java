@@ -20,6 +20,8 @@ import static uk.gov.moj.cpp.sjp.domain.SessionType.MAGISTRATE;
 import static uk.gov.moj.cpp.sjp.domain.decision.OffenceDecisionInformation.createOffenceDecisionInformation;
 import static uk.gov.moj.cpp.sjp.domain.verdict.VerdictType.NO_VERDICT;
 import static uk.gov.moj.sjp.it.Constants.NOTICE_PERIOD_IN_DAYS;
+import static uk.gov.moj.sjp.it.Constants.PUBLIC_EVENT_OFFENCES_WITHDRAWAL_STATUS_SET;
+import static uk.gov.moj.sjp.it.Constants.PUBLIC_EVENT_SJP_PENDING_CASES_PUBLIC_LIST_GENERATED;
 import static uk.gov.moj.sjp.it.command.CreateCase.CreateCasePayloadBuilder;
 import static uk.gov.moj.sjp.it.command.CreateCase.DefendantBuilder.defaultDefendant;
 import static uk.gov.moj.sjp.it.command.CreateCase.createCaseForPayloadBuilder;
@@ -47,8 +49,10 @@ import static uk.gov.moj.sjp.it.util.ActivitiHelper.executeTimerJobs;
 import static uk.gov.moj.sjp.it.util.ActivitiHelper.pollUntilProcessExists;
 import static uk.gov.moj.sjp.it.util.CaseAssignmentRestrictionHelper.provisionCaseAssignmentRestrictions;
 import static uk.gov.moj.sjp.it.util.Defaults.DEFAULT_LONDON_COURT_HOUSE_OU_CODE;
+import static uk.gov.moj.sjp.it.util.TopicUtil.retrieveMessageAsJsonObject;
 
 import uk.gov.justice.json.schemas.domains.sjp.User;
+import uk.gov.justice.services.messaging.DefaultJsonObjectEnvelopeConverter;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.test.utils.core.messaging.MessageProducerClient;
 import uk.gov.moj.cpp.sjp.domain.SessionType;
@@ -70,6 +74,7 @@ import uk.gov.moj.sjp.it.helper.TransparencyReportHelper;
 import uk.gov.moj.sjp.it.model.DecisionCommand;
 import uk.gov.moj.sjp.it.model.ProsecutingAuthority;
 import uk.gov.moj.sjp.it.util.SjpDatabaseCleaner;
+import uk.gov.moj.sjp.it.util.TopicUtil;
 
 import java.io.IOException;
 import java.time.LocalDate;
@@ -81,6 +86,7 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+import javax.jms.MessageConsumer;
 import javax.json.JsonArray;
 import javax.json.JsonObject;
 import javax.json.JsonString;
@@ -104,6 +110,8 @@ public class TransparencyReportIT extends BaseIntegrationTest {
 
     private static final String SJP_EVENTS_TRANSPARENCY_REPORT_REQUESTED = "sjp.events.transparency-report-requested";
     private static final String SJP_EVENTS_TRANSPARENCY_REPORT_GENERATION_STARTED = "sjp.events.transparency-report-generation-started";
+
+    private final MessageConsumer publicMessageConsumer = TopicUtil.publicEvents.createConsumerForMultipleSelectors(PUBLIC_EVENT_SJP_PENDING_CASES_PUBLIC_LIST_GENERATED);
 
     @Before
     public void setUp() throws Exception {
@@ -209,6 +217,26 @@ public class TransparencyReportIT extends BaseIntegrationTest {
 
         final String welshContent = transparencyReportHelper.requestToGetTransparencyReportContent(generatedDocumentWelshId.toString());
         validateThePdfContent(welshContent);
+
+        final JsonEnvelope sjpCaseListEnglish = getEventFromTopic(publicMessageConsumer);
+        verifySJPPendingPublicListEvent(sjpCaseListEnglish, "ENGLISH",2);
+        final JsonEnvelope sjpCaseListWelsh = getEventFromTopic(publicMessageConsumer);
+        verifySJPPendingPublicListEvent(sjpCaseListWelsh, "WELSH", 2);
+
+    }
+
+    private void verifySJPPendingPublicListEvent(final JsonEnvelope event, final String language, final int numberOfCases) {
+        assertThat(event, notNullValue());
+        final JsonObject payload = event.payloadAsJsonObject();
+        assertThat(payload, notNullValue());
+        assertThat(language, is(payload.getString("language")));
+        final JsonObject listPayload = payload.getJsonObject("listPayload");
+        assertThat(numberOfCases, is(listPayload.getInt("totalNumberOfRecords")));
+    }
+
+    private JsonEnvelope getEventFromTopic(final MessageConsumer messageConsumer) {
+        return retrieveMessageAsJsonObject(messageConsumer)
+                .map(event -> new DefaultJsonObjectEnvelopeConverter().asEnvelope(event)).orElse(null);
     }
 
     @Test
@@ -289,7 +317,7 @@ public class TransparencyReportIT extends BaseIntegrationTest {
         final User user = new User("John", "Smith", USER_ID);
         final UUID sessionId = randomUUID();
 
-        final DefendantBuilder defendant = defaultDefendant().withRandomLastName().withDateOfBirth(LocalDate.of(2000,9,18));
+        final DefendantBuilder defendant = defaultDefendant().withRandomLastName().withDateOfBirth(LocalDate.of(2000, 9, 18));
 
         stubEnforcementAreaByPostcode(defendant.getAddressBuilder().getPostcode(), "1080", "Bedfordshire Magistrates' Court");
         stubRegionByPostcode("1080", "TestRegion");
@@ -476,11 +504,11 @@ public class TransparencyReportIT extends BaseIntegrationTest {
         final LocalDate postingDate = now().minusDays(NOTICE_PERIOD_IN_DAYS + 1);
 
         final CreateCase.OffenceBuilder offence1 = CreateCase.OffenceBuilder.withDefaults()
-                .withId(offenceId1).withPressRestrictable(true).withOffenceCommittedDate(LocalDate.of(2019,8,11));
+                .withId(offenceId1).withPressRestrictable(true).withOffenceCommittedDate(LocalDate.of(2019, 8, 11));
         final CreateCase.OffenceBuilder offence2 = CreateCase.OffenceBuilder.withDefaults()
-                .withId(offenceId2).withPressRestrictable(true).withOffenceCommittedDate(LocalDate.of(2019,8,11));;
+                .withId(offenceId2).withPressRestrictable(true).withOffenceCommittedDate(LocalDate.of(2019, 8, 11));
         final CreateCase.OffenceBuilder offence3 = CreateCase.OffenceBuilder.withDefaults()
-                .withId(offenceId3).withPressRestrictable(false).withOffenceCommittedDate(LocalDate.of(2019,8,11));;
+                .withId(offenceId3).withPressRestrictable(false).withOffenceCommittedDate(LocalDate.of(2019, 8, 11));
 
         final CreateCasePayloadBuilder createCasePayloadBuilder = CreateCasePayloadBuilder
                 .withDefaults()

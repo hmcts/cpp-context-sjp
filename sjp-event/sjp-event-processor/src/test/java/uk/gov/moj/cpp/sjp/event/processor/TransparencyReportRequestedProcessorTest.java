@@ -6,12 +6,11 @@ import static java.util.stream.Collectors.toList;
 import static java.util.stream.IntStream.range;
 import static javax.json.Json.createArrayBuilder;
 import static javax.json.Json.createObjectBuilder;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.everyItem;
 import static org.hamcrest.Matchers.isIn;
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsNull.notNullValue;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThat;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
@@ -28,6 +27,7 @@ import uk.gov.justice.services.fileservice.api.FileStorer;
 import uk.gov.justice.services.messaging.Envelope;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.messaging.Metadata;
+import uk.gov.justice.services.messaging.spi.DefaultEnvelope;
 import uk.gov.moj.cpp.sjp.event.processor.service.ReferenceDataOffencesService;
 import uk.gov.moj.cpp.sjp.event.processor.service.ReferenceDataService;
 import uk.gov.moj.cpp.sjp.event.processor.service.SjpService;
@@ -56,6 +56,8 @@ import org.mockito.runners.MockitoJUnitRunner;
 @RunWith(MockitoJUnitRunner.class)
 public class TransparencyReportRequestedProcessorTest {
 
+    private static final String PUBLIC_EVENT_SJP_PENDING_CASES_PUBLIC_LIST_GENERATED = "public.sjp.pending-cases-public-list-generated";
+
     @InjectMocks
     private TransparencyReportRequestedProcessor processor;
 
@@ -82,6 +84,9 @@ public class TransparencyReportRequestedProcessorTest {
 
     @Captor
     private ArgumentCaptor<JsonEnvelope> storeTransparencyReportCommandEnvelopeCaptor;
+
+    @Captor
+    private ArgumentCaptor<DefaultEnvelope> sjpPendingListPublicEnvelopeCaptor;
 
 
     @Test
@@ -147,10 +152,25 @@ public class TransparencyReportRequestedProcessorTest {
         assertPayloadForDocumentGenerator(payloadForDocumentGenerationCaptor.getAllValues().get(1), expectedWelshTemplateName,
                 transparencyReportId.toString(), welshPayloadFileUUID.toString());
 
-        verify(sender).send(storeTransparencyReportCommandEnvelopeCaptor.capture());
-        assertTransparencyReportEnvelope(storeTransparencyReportCommandEnvelopeCaptor.getValue(), transparencyReportId, caseIds);
+        verify(sender, times(3)).send(storeTransparencyReportCommandEnvelopeCaptor.capture());
+        assertTransparencyReportEnvelope(storeTransparencyReportCommandEnvelopeCaptor.getAllValues().get(0), transparencyReportId, caseIds);
+        assertSJPPendingPublicListEnvelope(storeTransparencyReportCommandEnvelopeCaptor.getAllValues().get(1), "ENGLISH", numberOfPendingCasesForExport, prosecutorEnglish);
+        assertSJPPendingPublicListEnvelope(storeTransparencyReportCommandEnvelopeCaptor.getAllValues().get(2), "WELSH", numberOfPendingCasesForExport, prosecutorWelsh);
     }
 
+    private void assertSJPPendingPublicListEnvelope(final Envelope jsonEnvelope, final String language, final Integer numberOfPendingCasesForExport, final String prosecutorName) {
+        assertThat(jsonEnvelope.metadata().name(), is(PUBLIC_EVENT_SJP_PENDING_CASES_PUBLIC_LIST_GENERATED));
+        final JsonObject eventPayload = (JsonObject) jsonEnvelope.payload();
+        assertThat(language, is(eventPayload.getString("language")));
+        final JsonObject payload = eventPayload.getJsonObject("listPayload");
+        assertThat(payload.getInt("totalNumberOfRecords"), is(numberOfPendingCasesForExport));
+        final JsonArray readyCases = payload.getJsonArray("readyCases");
+        assertThat(numberOfPendingCasesForExport, is(readyCases.size()));
+        readyCases.getValuesAs(JsonObject.class).forEach(jsonObject -> {
+            assertThat(jsonObject.getString("prosecutorName"), is(prosecutorName));
+            assertThat(jsonObject.getJsonArray("sjpOffences"), notNullValue());
+        });
+    }
 
 
     private void assertPayloadForDocumentGenerator(final JsonObject payload, final List<JsonObject> pendingCasesList, final Integer totalNumberOfRecords, final Boolean isWelsh) {
@@ -192,7 +212,7 @@ public class TransparencyReportRequestedProcessorTest {
         assertThat(payload.getString("transparencyReportId"), is(transparencyReportId.toString()));
         final JsonArray caseIdsJsonArray = payload.getJsonArray("caseIds");
         assertThat(caseIdsJsonArray.size(), is(caseIds.size()));
-        assertEquals(range(0, caseIds.size()).mapToObj(idx -> fromString(caseIdsJsonArray.getString(idx))).collect(toList()), caseIds);
+        assertThat(range(0, caseIds.size()).mapToObj(idx -> fromString(caseIdsJsonArray.getString(idx))).collect(toList()), is(caseIds));
     }
 
     private void assertPayloadForDocumentGenerator(final Envelope<JsonObject> envelopeForDocumentGenerator, final String templateName,

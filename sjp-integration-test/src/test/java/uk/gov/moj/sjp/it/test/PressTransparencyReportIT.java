@@ -62,9 +62,12 @@ public class PressTransparencyReportIT extends BaseIntegrationTest {
     private static final String SJP_EVENTS_PRESS_TRANSPARENCY_REPORT_GENERATION_STARTED = "sjp.events.press-transparency-report-generation-started";
     private static final String SJP_EVENTS_PRESS_TRANSPARENCY_REPORT_METADATA_ADDED = "sjp.events.press-transparency-report-metadata-added";
     private static final String SJP_EVENTS_PRESS_TRANSPARENCY_REPORT_GENERATION_FAILED = "sjp.events.press-transparency-report-generation-failed";
+    private static final String SJP_PUBLIC_EVENT_PRESS_TRANSPARENCY_REPORT_GENERATED = "public.sjp.press-transparency-report-generated";
     private final UUID caseId1 = randomUUID(), caseId2 = randomUUID();
     private final UUID offenceId1 = randomUUID(), offenceId2 = randomUUID();
     private PressTransparencyReportHelper pressTransparencyReportHelper = new PressTransparencyReportHelper();
+    private final EventListener eventListener = new EventListener();
+
 
     @Before
     public void setUp() throws Exception {
@@ -74,6 +77,7 @@ public class PressTransparencyReportIT extends BaseIntegrationTest {
         stubAllIndividualProsecutorsQueries();
         stubAnyQueryOffences();
         stubAllReferenceData();
+
     }
 
     @Test
@@ -98,15 +102,19 @@ public class PressTransparencyReportIT extends BaseIntegrationTest {
                 .withMaxWaitTime(50000)
                 .subscribe(
                         SJP_EVENTS_PRESS_TRANSPARENCY_REPORT_REQUESTED,
-                        SJP_EVENTS_PRESS_TRANSPARENCY_REPORT_GENERATION_STARTED
+                        SJP_EVENTS_PRESS_TRANSPARENCY_REPORT_GENERATION_STARTED,
+                        SJP_PUBLIC_EVENT_PRESS_TRANSPARENCY_REPORT_GENERATED
                 )
                 .run(pressTransparencyReportHelper::requestToGeneratePressTransparencyReport);
 
         final Optional<JsonEnvelope> transparencyReportRequestedEvent = eventListener.popEvent(SJP_EVENTS_PRESS_TRANSPARENCY_REPORT_REQUESTED);
         final Optional<JsonEnvelope> transparencyReportStartedEvent = eventListener.popEvent(SJP_EVENTS_PRESS_TRANSPARENCY_REPORT_GENERATION_STARTED);
+        final Optional<JsonEnvelope> transparencyReportStartedPublicEvent = eventListener.popEvent(SJP_PUBLIC_EVENT_PRESS_TRANSPARENCY_REPORT_GENERATED);
 
         assertThat(transparencyReportRequestedEvent.isPresent(), is(true));
         assertThat(transparencyReportStartedEvent.isPresent(), is(true));
+        assertThat(transparencyReportStartedPublicEvent.isPresent(), is(true));
+
 
         final String pressTransparencyReportId = transparencyReportRequestedEvent
                 .map(requestedEvent -> requestedEvent.payloadAsJsonObject().getString("pressTransparencyReportId"))

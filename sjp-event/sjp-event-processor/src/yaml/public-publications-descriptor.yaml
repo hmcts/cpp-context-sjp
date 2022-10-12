@@ -137,7 +137,14 @@ subscriptions_descriptor:
         - name: public.sjp.events.conviction-court-resolved
           schema_uri: http://justice.gov.uk/json/schemas/domains/sjp/events/public.sjp.events.conviction-court-resolved.json
 
+        - name: public.sjp.pending-cases-public-list-generated
+          schema_uri: http://cpp.moj.gov.uk/sjp/json/schema/event/public.sjp.pending-cases-public-list-generated.json
+
         - name: public.sjp.case-legal-soc-checked
           schema_uri: http://cpp.moj.gov.uk/sjp/json/schema/event/public.sjp.marked-as-legal-soc-checked.json
+
+        - name: public.sjp.press-transparency-report-generated
+          schema_uri: http://cpp.moj.gov.uk/sjp/json/schema/event/public.sjp.press-transparency-report-generated.json
+
 
       event_source_name: public.event.source

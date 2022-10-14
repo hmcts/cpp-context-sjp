@@ -191,22 +191,29 @@ public class ProsecutionCaseService {
                 .collect(toList());
         final List<DefendantAlias> aliases = getDefendantAliases(prosecutionCaseFileDefendant);
 
-        return defendant()
+        final Defendant.Builder defendantBuilder = defendant();
+        defendantBuilder
                 .withId(defendantDetail.getId())
                 .withMasterDefendantId(defendantDetail.getId())
                 .withProsecutionCaseId(caseDetail.getId())
                 .withMitigation(pleaMitigation)
                 .withNumberOfPreviousConvictionsCited(defendantDetail.getNumPreviousConvictions())
-                .withPersonDefendant(personDefendantView)
-                .withLegalEntityDefendant(legalEntityDefendant()
-                        .withOrganisation(Organisation.organisation()
-                                .withName(defendantDetail.getLegalEntityDetails().getLegalEntityName())
-                                .build())
-                        .build())
                 .withOffences(offenceViews)
                 .withAliases(aliases)
-                .withCourtProceedingsInitiated(ZonedDateTime.now())
-                .build();
+                .withCourtProceedingsInitiated(ZonedDateTime.now());
+
+        if (nonNull(defendantDetail.getPersonalDetails())) {
+            defendantBuilder.withPersonDefendant(personDefendantView);
+        }
+
+        if (nonNull(defendantDetail.getLegalEntityDetails())) {
+            defendantBuilder.withLegalEntityDefendant(legalEntityDefendant()
+                    .withOrganisation(Organisation.organisation()
+                            .withName(defendantDetail.getLegalEntityDetails().getLegalEntityName())
+                            .build()).build());
+        }
+
+        return defendantBuilder.build();
     }
 
     private List<DefendantAlias> getDefendantAliases(final JsonObject prosecutionCaseFileDefendant) {

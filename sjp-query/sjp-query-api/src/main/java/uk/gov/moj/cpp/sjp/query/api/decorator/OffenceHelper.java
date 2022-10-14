@@ -68,16 +68,16 @@ public class OffenceHelper {
     }
 
     public boolean isOffenceImprisonable(final JsonObject offenceDefinition) {
-        return !nonImprisonableModeOfTrials.contains( ofNullable(offenceDefinition.getString("modeOfTrial")).orElse(EMPTY).toUpperCase());
+        return !nonImprisonableModeOfTrials.contains(ofNullable(offenceDefinition.getString("modeOfTrial",null)).orElse(EMPTY).toUpperCase());
     }
 
     public String getMaxFineLevel(JsonObject offenceDefinition) {
-        return JsonObjects.getString(offenceDefinition,"details","document","libra","maxfinetypemagct","code").orElse(EMPTY);
+        return JsonObjects.getString(offenceDefinition, "details", "document", "libra", "maxfinetypemagct", "code").orElse(EMPTY);
     }
 
     public Optional<BigDecimal> getMaxFineValue(final JsonObject offenceDefinition, final OffenceFineLevels fineLevels) {
         final String maxFineLevel = getMaxFineLevel(offenceDefinition);
-        if(StringUtils.isNotEmpty(maxFineLevel) && !unLimitedFineLevels.contains(maxFineLevel)) {
+        if (StringUtils.isNotEmpty(maxFineLevel) && !unLimitedFineLevels.contains(maxFineLevel)) {
             return fineLevels.getOffenceMaxFineValue(Integer.valueOf(maxFineLevel));
         }
 
@@ -98,7 +98,7 @@ public class OffenceHelper {
     }
 
     public boolean hasFinalDecision(final JsonObject offenceInstance, final JsonArray caseDecisions) {
-        if(!offenceInstance.getBoolean("completed", false)) {
+        if (!offenceInstance.getBoolean("completed", false)) {
             return false;
         }
         final Optional<JsonObject> offenceDecision = caseDecisions.getValuesAs(JsonObject.class)

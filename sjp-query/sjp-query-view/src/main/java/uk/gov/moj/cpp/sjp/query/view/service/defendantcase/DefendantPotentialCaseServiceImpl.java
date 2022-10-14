@@ -36,6 +36,7 @@ import java.util.stream.Collectors;
 
 import javax.inject.Inject;
 import javax.json.JsonObject;
+import javax.persistence.PersistenceException;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -170,7 +171,13 @@ public class DefendantPotentialCaseServiceImpl implements DefendantPotentialCase
     }
 
     public CaseDecision findCaseDecisionById(final UUID caseId) {
-        return caseDecisionRepository.findCaseDecisionById(caseId);
+        CaseDecision caseDecision = null;
+        try {
+            caseDecision = caseDecisionRepository.findCaseDecisionById(caseId);
+        }catch (PersistenceException exception){
+            LOGGER.error("No casedecision found for given caseId {} with message {} ", caseId , exception);
+        }
+        return caseDecision;
     }
 
     public Optional<JsonObject> findProgressionCaseById(final UUID caseId) {

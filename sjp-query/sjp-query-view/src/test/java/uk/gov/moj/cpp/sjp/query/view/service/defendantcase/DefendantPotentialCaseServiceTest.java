@@ -25,8 +25,7 @@ import static uk.gov.moj.cpp.sjp.query.view.service.defendantcase.search.Defenda
 import static uk.gov.moj.cpp.sjp.query.view.service.defendantcase.search.DefendantCaseQuery.CASES_QUERY_NAME;
 import static uk.gov.moj.cpp.sjp.query.view.service.defendantcase.search.DefendantCaseQuery.CASES_START_FROM;
 import static uk.gov.moj.cpp.sjp.query.view.service.defendantcase.search.DefendantCaseQuery.DOB_QUERY_PARAM;
-import static uk.gov.moj.cpp.sjp.query.view.service.defendantcase.search.DefendantCaseQuery.FIRSTNAME_QUERY_PARAM;
-import static uk.gov.moj.cpp.sjp.query.view.service.defendantcase.search.DefendantCaseQuery.LASTNAME_QUERY_PARAM;
+import static uk.gov.moj.cpp.sjp.query.view.service.defendantcase.search.DefendantCaseQuery.PARTY_NAME_QUERY_PARAM;
 import static uk.gov.moj.cpp.sjp.query.view.service.defendantcase.search.DefendantCaseQuery.POSTCODE_QUERY_PARAM;
 
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
@@ -180,8 +179,7 @@ public class DefendantPotentialCaseServiceTest {
         assertEquals(CASES_DEFAULT_PAGE_SIZE, queryParamPayload.getInt(CASES_PAGE_SIZE));
         assertEquals(0, queryParamPayload.getInt(CASES_START_FROM));
         final PersonalDetails personalDetails = defendant.getPersonalDetails();
-        assertEquals(queryParamPayload.getString(FIRSTNAME_QUERY_PARAM), personalDetails.getFirstName());
-        assertEquals(queryParamPayload.getString(LASTNAME_QUERY_PARAM), personalDetails.getLastName());
+        assertEquals(queryParamPayload.getString(PARTY_NAME_QUERY_PARAM), String.join(" ", personalDetails.getFirstName(),personalDetails.getLastName()));
         assertEquals(queryParamPayload.getString(DOB_QUERY_PARAM), personalDetails.getDateOfBirth().toString());
         assertEquals(queryParamPayload.getString(ADDRESS_LINE1_QUERY_PARAM), defendant.getAddress().getAddress1());
         assertEquals(queryParamPayload.getString(POSTCODE_QUERY_PARAM), defendant.getAddress().getPostcode());

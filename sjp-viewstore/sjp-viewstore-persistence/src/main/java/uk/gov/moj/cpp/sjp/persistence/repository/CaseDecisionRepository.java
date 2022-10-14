@@ -17,6 +17,8 @@ public interface CaseDecisionRepository extends EntityRepository<CaseDecision, U
     "WHERE offencedecision.offenceId = :offenceId and offencedecision.caseDecisionId = casedecision.id and offencedecision.verdictType IN ('FOUND_GUILTY', 'PROVED_SJP')")
     List<CaseDecision> findCaseDecisionsForConvictingCourtSessions(@QueryParam("offenceId") final UUID offenceId);
 
-    @Query(value = "SELECT casedecision FROM CaseDecision as casedecision WHERE casedecision.caseId = :caseId")
+    @Query(value = "SELECT casedecision_a FROM CaseDecision as casedecision_a  " +
+            "WHERE casedecision_a.caseId = :caseId  and casedecision_a.savedAt=(SELECT MAX(casedecision_b.savedAt) FROM CaseDecision as casedecision_b  " +
+            "WHERE casedecision_b.caseId = casedecision_a.caseId )")
     CaseDecision findCaseDecisionById(@QueryParam("caseId") final UUID caseId);
 }

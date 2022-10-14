@@ -6,12 +6,8 @@ import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.instanceOf;
 import static org.junit.Assert.assertThat;
 import static uk.gov.justice.services.test.utils.core.reflection.ReflectionUtil.setField;
-import static uk.gov.moj.cpp.sjp.domain.decision.Discharge.createDischarge;
-import static uk.gov.moj.cpp.sjp.domain.decision.FinancialPenalty.createFinancialPenalty;
-import static uk.gov.moj.cpp.sjp.domain.decision.OffenceDecisionInformation.createOffenceDecisionInformation;
-import static uk.gov.moj.cpp.sjp.domain.decision.discharge.DischargeType.ABSOLUTE;
 import static uk.gov.moj.cpp.sjp.domain.disability.DisabilityNeeds.NO_DISABILITY_NEEDS;
-import static uk.gov.moj.cpp.sjp.domain.verdict.VerdictType.FOUND_GUILTY;
+
 
 import uk.gov.justice.core.courts.Address;
 import uk.gov.justice.core.courts.CourtCentre;
@@ -31,9 +27,7 @@ import uk.gov.moj.cpp.sjp.domain.verdict.VerdictType;
 import uk.gov.moj.cpp.sjp.event.CaseListedInCriminalCourtsV2;
 import uk.gov.moj.cpp.sjp.event.CaseOffenceListedInCriminalCourts;
 import uk.gov.moj.cpp.sjp.event.CaseReceived;
-import uk.gov.moj.cpp.sjp.event.decision.DecisionSaved;
 
-import java.math.BigDecimal;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -66,7 +60,7 @@ public class CaseListedInCriminalCourtsTest extends CaseAggregateBaseTest {
 
     @Test
     public void shouldCreateCaseListingInCriminalCourtsEvent() {
-        caseReceivedEvent = collectFirstEvent(caseAggregate.receiveCase(buildCaseReceived(), clock.now()), CaseReceived.class);;
+        caseReceivedEvent = collectFirstEvent(caseAggregate.receiveCase(buildCaseReceived(), clock.now()), CaseReceived.class);
         final UUID offenceId = caseAggregate.getState().getOffences().stream().findFirst().get();
 
 

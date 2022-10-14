@@ -21,6 +21,7 @@ public class DefendantCaseQuery {
     public static final int CASES_DEFAULT_PAGE_SIZE = 25;
     public static final String FIRSTNAME_QUERY_PARAM = "partyFirstAndOrMiddleName";
     public static final String LASTNAME_QUERY_PARAM = "partyLastNameOrOrganisationName";
+    public static final String PARTY_NAME_QUERY_PARAM = "partyName";
     public static final String DOB_QUERY_PARAM = "partyDateOfBirth";
     public static final String ADDRESS_LINE1_QUERY_PARAM = "addressLine1";
     public static final String POSTCODE_QUERY_PARAM = "partyPostcode";
@@ -39,8 +40,7 @@ public class DefendantCaseQuery {
         criteriaBuilder.add(CASES_PAGE_SIZE, CASES_DEFAULT_PAGE_SIZE);
 
         final PersonalDetails personalDetails = defendant.getPersonalDetails();
-        addQueryParam(criteriaBuilder, FIRSTNAME_QUERY_PARAM, personalDetails.getFirstName());
-        addQueryParam(criteriaBuilder, LASTNAME_QUERY_PARAM, personalDetails.getLastName());
+        addQueryParam(criteriaBuilder, PARTY_NAME_QUERY_PARAM, String.join(" ", personalDetails.getFirstName(), personalDetails.getLastName()));
         addQueryParam(criteriaBuilder, DOB_QUERY_PARAM, personalDetails.getDateOfBirth());
 
         final Address address = defendant.getAddress();

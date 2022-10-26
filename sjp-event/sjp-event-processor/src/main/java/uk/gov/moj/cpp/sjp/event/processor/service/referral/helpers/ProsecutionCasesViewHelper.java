@@ -178,8 +178,12 @@ public class ProsecutionCasesViewHelper {
                         ethnicityId,
                         defendantCourtOptions))
                 .orElse(null);
-        final LegalEntityDefendant legalEntityDefendant = createLegalEntityDefendant(
-                defendantDetails);
+
+        final LegalEntityDefendant legalEntityDefendant = ofNullable(defendantDetails.getLegalEntityDetails())
+                .map(legalEntityDetails -> createLegalEntityDefendant(
+                        defendantDetails))
+                .orElse(null);
+
         final String rrLabel = getPressRestriction(caseDecision)
                 .filter(PressRestriction::getRequested)
                 .flatMap(pressRestriction -> referenceDataService.getResultDefinition(D45_RESULT_CODE, now())

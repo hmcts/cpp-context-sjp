@@ -6,10 +6,8 @@ import static java.util.stream.Collectors.toList;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
-import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasSize;
-import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -27,6 +25,7 @@ import uk.gov.moj.cpp.sjp.persistence.builder.CaseDetailBuilder;
 import uk.gov.moj.cpp.sjp.persistence.builder.DefendantDetailBuilder;
 import uk.gov.moj.cpp.sjp.persistence.entity.CaseDetail;
 import uk.gov.moj.cpp.sjp.persistence.entity.CaseDocument;
+import uk.gov.moj.cpp.sjp.persistence.entity.CaseWithoutDefendantPostcode;
 import uk.gov.moj.cpp.sjp.persistence.entity.DefendantDetail;
 import uk.gov.moj.cpp.sjp.persistence.entity.OffenceDetail;
 import uk.gov.moj.cpp.sjp.persistence.entity.ReadyCase;
@@ -75,7 +74,8 @@ public class CaseRepositoryTest extends BaseTransactionalTest {
     private static final int NUM_PREVIOUS_CONVICTIONS = 3;
     private static final BigDecimal COSTS = BigDecimal.valueOf(10.33);
     private static final String ENTERPRISE_ID = "2K2SLYFC743H";
-    private static final String POSTCODE = "CR0 1AB";
+    private static final String POSTCODE_1 = "CR0 1AB";
+    private static final String POSTCODE_2 = "BH7 1AB";
     private static final String OFFENCE_CODE = "PS0001";
     private static final List<ReadyCase> READY_CASES = new ArrayList<>();
     private static LocalDate postingDate = LocalDate.of(2015, 12, 31);
@@ -106,7 +106,7 @@ public class CaseRepositoryTest extends BaseTransactionalTest {
         case1 = getCase(VALID_CASE_ID_1, VALID_URN_1, VALID_DEFENDANT_ID_1);
         case1.setEnterpriseId(ENTERPRISE_ID);
         // case 2 is withdrawn
-        case2 = getCase(VALID_CASE_ID_2, VALID_URN_2, VALID_DEFENDANT_ID_2, true, POSTCODE, VALID_MATERIAL_ID_1, VALID_MATERIAL_ID_2);
+        case2 = getCase(VALID_CASE_ID_2, VALID_URN_2, VALID_DEFENDANT_ID_2, true, POSTCODE_1, VALID_MATERIAL_ID_1, VALID_MATERIAL_ID_2);
         case3 = getCase(VALID_CASE_ID_3, VALID_URN_3);
         case4 = getCase(VALID_CASE_ID_4, VALID_URN_4, VALID_DEFENDANT_ID_4);
 
@@ -259,7 +259,7 @@ public class CaseRepositoryTest extends BaseTransactionalTest {
 
     @Test
     public void shouldFindCaseMatchingUrnWithPrefixAndPostcode() {
-        final CaseDetail actualCase = caseRepository.findByUrnPostcode(VALID_URN_1, POSTCODE);
+        final CaseDetail actualCase = caseRepository.findByUrnPostcode(VALID_URN_1, POSTCODE_1);
 
         assertNotNull(actualCase);
         assertEquals("ID should match ID of case 1", VALID_CASE_ID_1, actualCase.getId());
@@ -269,7 +269,7 @@ public class CaseRepositoryTest extends BaseTransactionalTest {
 
     @Test
     public void shouldFindCaseMatchingUrnWithPrefixAndPostcodeWithExtraSpaces() {
-        final CaseDetail actualCase = caseRepository.findByUrnPostcode(VALID_URN_1, String.format("  %s   ", POSTCODE));
+        final CaseDetail actualCase = caseRepository.findByUrnPostcode(VALID_URN_1, String.format("  %s   ", POSTCODE_1));
 
         assertNotNull(actualCase);
         assertEquals("ID should match ID of case 1", VALID_CASE_ID_1, actualCase.getId());
@@ -279,7 +279,7 @@ public class CaseRepositoryTest extends BaseTransactionalTest {
 
     @Test
     public void shouldFindCaseMatchingUrnWithoutPrefixAndPostcode() {
-        final CaseDetail actualCase = caseRepository.findByUrnPostcode(VALID_URN_1.replace(PROSECUTING_AUTHORITY, ""), POSTCODE);
+        final CaseDetail actualCase = caseRepository.findByUrnPostcode(VALID_URN_1.replace(PROSECUTING_AUTHORITY, ""), POSTCODE_1);
 
         assertNotNull(actualCase);
         assertEquals("ID should match ID of case 1", VALID_CASE_ID_1, actualCase.getId());
@@ -349,11 +349,45 @@ public class CaseRepositoryTest extends BaseTransactionalTest {
         assertNotNull(cases);
     }
 
-    private void checkAllOffencesForACase(final CaseDetail caseDetail, final boolean withdrawn) {
-        final List<OffenceDetail> offences = caseDetail.getDefendant().getOffences();
+    @Test
+    public void shouldFindCasesWithoutDefendantPostCode() {
+        //given
+        final CaseDetail caseDetail1 = getCase(randomUUID(), VALID_URN_1, POSTCODE_1);
+        final CaseDetail caseDetail2 = getCase(randomUUID(), VALID_URN_2, POSTCODE_2);
 
-        assertThat(offences, not(empty()));
-        offences.forEach(offence -> assertTrue(offence.getWithdrawalRequestReasonId() != null));
+        caseRepository.save(caseDetail1);
+        caseRepository.save(caseDetail2);
+        caseDetail1.setCompleted(false);
+        caseDetail1.getDefendant().getAddress().setPostcode(null);
+
+        //when
+        final List<CaseWithoutDefendantPostcode> casesWithoutDefendantPostcode = caseRepository.findCasesWithoutDefendantPostcode();
+
+        //then
+        assertEquals(VALID_URN_1, casesWithoutDefendantPostcode.get(0).getUrn());
+        assertEquals(1, casesWithoutDefendantPostcode.size());
+    }
+
+    @Test
+    public void shouldFindCasesWithoutDefendantPostCodeWhenDefendantIsCompany() {
+        //given
+        final CaseDetail caseDetail1 = getCase(randomUUID(), VALID_URN_1, POSTCODE_1);
+        final CaseDetail caseDetail2 = getCase(randomUUID(), VALID_URN_2, POSTCODE_2);
+
+        caseRepository.save(caseDetail1);
+        caseRepository.save(caseDetail2);
+        caseDetail1.setCompleted(false);
+        caseDetail1.getDefendant().getAddress().setPostcode(null);
+        caseDetail1.getDefendant().setPersonalDetails(null);
+        caseDetail1.getDefendant().getLegalEntityDetails().setLegalEntityName("LegalEntityName");
+
+        //when
+        final List<CaseWithoutDefendantPostcode> casesWithoutDefendantPostcode = caseRepository.findCasesWithoutDefendantPostcode();
+
+        //then
+        assertEquals(VALID_URN_1, casesWithoutDefendantPostcode.get(0).getUrn());
+        assertEquals("LegalEntityName", casesWithoutDefendantPostcode.get(0).getLegalEntityName());
+        assertEquals(1, casesWithoutDefendantPostcode.size());
     }
 
     private CaseDetail getCase(final UUID caseId, final String urn) {
@@ -365,7 +399,7 @@ public class CaseRepositoryTest extends BaseTransactionalTest {
     }
 
     private CaseDetail getCase(final UUID caseId, final String urn, final UUID defendantId) {
-        return getCase(caseId, urn, defendantId, false, POSTCODE, randomUUID());
+        return getCase(caseId, urn, defendantId, false, POSTCODE_1, randomUUID());
     }
 
     private CaseDetail getCase(final UUID caseId, final String urn, final UUID defendantId, final boolean withdrawn, final String postcode, final UUID... materialIds) {

@@ -11,6 +11,7 @@ import uk.gov.justice.services.messaging.Metadata;
 import uk.gov.moj.cpp.sjp.event.DefendantAddressUpdated;
 import uk.gov.moj.cpp.sjp.event.DefendantDateOfBirthUpdated;
 import uk.gov.moj.cpp.sjp.event.DefendantNameUpdated;
+import uk.gov.moj.cpp.sjp.event.DefendantPersonalNameUpdated;
 import uk.gov.moj.cpp.sjp.persistence.entity.CaseDetail;
 import uk.gov.moj.cpp.sjp.persistence.repository.CaseRepository;
 
@@ -22,6 +23,7 @@ import java.util.function.BiConsumer;
 import javax.inject.Inject;
 import javax.transaction.Transactional;
 
+@SuppressWarnings("squid:S1133")
 @ServiceComponent(EVENT_LISTENER)
 public class DefendantPersonalDetailsChangesListener {
 
@@ -43,6 +45,23 @@ public class DefendantPersonalDetailsChangesListener {
                 envelope.metadata(),
                 CaseDetail::markDefendantNameUpdated);
     }
+
+    /**
+     * @deprecated defendant name updated is the new one
+     */
+    @Deprecated
+    @Handles("sjp.events.defendant-personal-name-updated")
+    @Transactional
+    public void defendantPersonalNameUpdated(final JsonEnvelope envelope) {
+        final DefendantPersonalNameUpdated defendantPersonalNameUpdated = jsonObjectToObjectConverter
+                .convert(envelope.payloadAsJsonObject(), DefendantPersonalNameUpdated.class);
+        recordDefendantDetailsUpdate(
+                defendantPersonalNameUpdated.getCaseId(),
+                defendantPersonalNameUpdated.getUpdatedAt(),
+                envelope.metadata(),
+                CaseDetail::markDefendantNameUpdated);
+    }
+
 
     @Handles("sjp.events.defendant-address-updated")
     @Transactional

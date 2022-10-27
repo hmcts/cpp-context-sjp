@@ -57,6 +57,7 @@ import com.google.common.collect.Table;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+@SuppressWarnings({"squid:S1067"})
 @ServiceComponent(EVENT_PROCESSOR)
 public class PressTransparencyReportRequestedProcessor {
 
@@ -247,9 +248,9 @@ public class PressTransparencyReportRequestedProcessor {
 
     private JsonObjectBuilder createReadyCaseForPublishEvent(final JsonEnvelope envelope, final JsonObject pendingCase) {
         final JsonObjectBuilder readyCase =  createObjectBuilder()
-                .add(CASE_URN, pendingCase.getString(CASE_URN))
-                .add(FIRST_NAME, pendingCase.getString(FIRST_NAME))
-                .add(LAST_NAME, pendingCase.getString(LAST_NAME))
+                .add(CASE_URN, pendingCase.containsKey(CASE_URN) ? pendingCase.getString(CASE_URN):EMPTY)
+                .add(FIRST_NAME, pendingCase.containsKey(FIRST_NAME) ?pendingCase.getString(FIRST_NAME):EMPTY)
+                .add(LAST_NAME, pendingCase.containsKey(LAST_NAME) ?pendingCase.getString(LAST_NAME):EMPTY)
                 .add(ADDRESS_LINE_1, pendingCase.containsKey(ADDRESS_LINE_1) ? format("%s,", pendingCase.getString(ADDRESS_LINE_1)) : EMPTY)
                 .add(ADDRESS_LINE_2, pendingCase.containsKey(ADDRESS_LINE_2) ? format("%s,", pendingCase.getString(ADDRESS_LINE_2)) : EMPTY)
                 .add(COUNTY, pendingCase.containsKey(COUNTY) ? format("%s,", pendingCase.getString(COUNTY)) : EMPTY)

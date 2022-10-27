@@ -53,7 +53,7 @@ import com.google.common.collect.Table;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-@SuppressWarnings({"squid:S1067"})
+@SuppressWarnings({"squid:S1067","squid:S3776"})
 @ServiceComponent(EVENT_PROCESSOR)
 public class TransparencyReportRequestedProcessor {
 
@@ -257,7 +257,7 @@ public class TransparencyReportRequestedProcessor {
         pendingCases
                 .forEach(pendingCase -> {
                     final JsonObjectBuilder pendingCaseBuilder = createObjectBuilder()
-                            .add(DEFENDANT_NAME, pendingCase.getString(DEFENDANT_NAME))
+                            .add(DEFENDANT_NAME, pendingCase.containsKey(DEFENDANT_NAME) ? pendingCase.getString(DEFENDANT_NAME):EMPTY)
                             .add(FIRST_NAME, pendingCase.containsKey(FIRST_NAME) ? format(STRING_FORMAT, pendingCase.getString(FIRST_NAME)) : EMPTY)
                             .add(LAST_NAME, pendingCase.containsKey(LAST_NAME) ? format(STRING_FORMAT, pendingCase.getString(LAST_NAME)) : EMPTY)
                             .add(ADDRESS_LINE_1, pendingCase.containsKey(ADDRESS_LINE_1) ? format(STRING_FORMAT, pendingCase.getString(ADDRESS_LINE_1)) : EMPTY)

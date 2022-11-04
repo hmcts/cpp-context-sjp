@@ -1,6 +1,7 @@
 package uk.gov.moj.cpp.sjp.event.processor;
 
 
+import static java.util.Objects.nonNull;
 import static java.util.UUID.fromString;
 import static javax.json.Json.createObjectBuilder;
 import static uk.gov.justice.services.core.annotation.Component.EVENT_PROCESSOR;
@@ -81,7 +82,13 @@ public class EnforcementPendingApplicationNotificationProcessor {
             throw new IllegalStateException("Could not find case for application id: " + applicationId.toString());
         }
         final CaseApplication caseApplication = caseDetails.getCaseApplication();
-        final String postcode = caseDetails.getDefendant().getPersonalDetails().getAddress().getPostcode();
+        final String postcode;
+        if (nonNull(caseDetails.getDefendant().getPersonalDetails())) {
+            postcode = caseDetails.getDefendant().getPersonalDetails().getAddress().getPostcode();
+        } else {
+            postcode = caseDetails.getDefendant().getLegalEntityDetails().getAddress().getPostcode();
+        }
+
         final String sendToAddress = enforcementAreaEmailHelper.enforcementEmail(envelope, caseDetails, postcode);
         final ApplicationType applicationType = caseApplication.getApplicationType();
         final String emailSubject = enforcementPendingApplicationEmailAttachmentService.getEmailSubject(applicationType);

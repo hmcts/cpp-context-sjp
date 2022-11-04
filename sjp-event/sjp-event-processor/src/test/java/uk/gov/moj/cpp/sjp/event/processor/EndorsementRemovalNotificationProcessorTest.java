@@ -12,7 +12,9 @@ import static org.mockito.Mockito.when;
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMetadataMatcher.metadata;
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopePayloadMatcher.payloadIsJson;
 
+import uk.gov.justice.json.schemas.domains.sjp.Address;
 import uk.gov.justice.json.schemas.domains.sjp.ApplicationType;
+import uk.gov.justice.json.schemas.domains.sjp.LegalEntityDetails;
 import uk.gov.justice.json.schemas.domains.sjp.PersonalDetails;
 import uk.gov.justice.json.schemas.domains.sjp.queries.CaseDecision;
 import uk.gov.justice.json.schemas.domains.sjp.queries.CaseDetails;
@@ -113,6 +115,30 @@ public class EndorsementRemovalNotificationProcessorTest {
     }
 
     @Test
+    public void shouldSendEmailToNotificationNotifyWhenDefendantIsCompany() {
+        final UUID applicationDecisionId = randomUUID();
+        final UUID fileId = randomUUID();
+        final NotificationToRemoveEndorsementsGenerated event = new NotificationToRemoveEndorsementsGenerated(applicationDecisionId, fileId);
+        final JsonEnvelope envelope = envelope(event);
+        givenDvlaEmailAddressIsPresentInReferenceData(envelope);
+        givenSjpCaseWithApplicationDecisionWhenDefendantIsCompany(applicationDecisionId, envelope);
+        givenAnEmailSubject(envelope);
+
+        processor.sendEmailToNotificationNotify(envelope);
+
+        final List<EmailNotification> requests = notificationNotify.getSendEmailRequests();
+        assertThat(requests, hasSize(1));
+        final EmailNotification emailNotification = requests.get(0);
+        assertThat(emailNotification.getNotificationId(), equalTo(event.getApplicationDecisionId()));
+        assertThat(emailNotification.getTemplateId(), equalTo(templateId));
+        assertThat(emailNotification.getSendToAddress(), equalTo("notification@dvla.gov.uk"));
+        assertThat(emailNotification.getReplyToAddress(), equalTo(replyToAddress));
+        assertThat(emailNotification.getFileId(), equalTo(event.getFileId()));
+        assertThat(emailNotification.getSubject().isPresent(), is(true));
+        assertThat(emailNotification.getSubject().get(), is("Email Subject"));
+    }
+
+    @Test
     public void shouldSendNotificationQueuedCommand() {
         final UUID applicationDecisionId = randomUUID();
         final UUID fileId = randomUUID();
@@ -183,6 +209,31 @@ public class EndorsementRemovalNotificationProcessorTest {
                         .withLastName("Lastname")
                         .withDateOfBirth(defendantDateOfBirth)
                         .build()).build())
+                .withCaseDecisions(singletonList(CaseDecision.caseDecision()
+                        .withId(applicationDecisionId)
+                        .withApplicationDecision(QueryApplicationDecision.queryApplicationDecision()
+                                .withApplicationType(ApplicationType.STAT_DEC)
+                                .withGranted(true)
+                                .build())
+                        .withSession(Session.session().withLocalJusticeAreaNationalCourtCode(LJA_CODE).build())
+                        .build()))
+                .build());
+
+        when(sjpService.getCaseDetailsByApplicationDecisionId(applicationDecisionId, envelope)).thenReturn(Optional.of(caseDetails));
+    }
+
+    private void givenSjpCaseWithApplicationDecisionWhenDefendantIsCompany(final UUID applicationDecisionId, final JsonEnvelope envelope) {
+        caseDetails = new CaseDetailsDecorator(CaseDetails
+                .caseDetails()
+                .withId(randomUUID())
+                .withUrn("CASE_URN_001")
+                .withDefendant(Defendant.defendant()
+                        .withLegalEntityDetails(LegalEntityDetails.legalEntityDetails()
+                                .withLegalEntityName("Samba LTD")
+                                .withAddress(Address.address()
+                                        .withPostcode("BH7 7EA")
+                                        .build())
+                                .build()).build())
                 .withCaseDecisions(singletonList(CaseDecision.caseDecision()
                         .withId(applicationDecisionId)
                         .withApplicationDecision(QueryApplicationDecision.queryApplicationDecision()

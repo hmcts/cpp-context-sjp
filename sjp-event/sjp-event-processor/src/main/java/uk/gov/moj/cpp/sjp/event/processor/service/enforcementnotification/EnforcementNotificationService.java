@@ -1,5 +1,6 @@
 package uk.gov.moj.cpp.sjp.event.processor.service.enforcementnotification;
 
+import static java.util.Objects.nonNull;
 import static uk.gov.justice.services.core.annotation.Component.EVENT_PROCESSOR;
 import static uk.gov.justice.services.core.enveloper.Enveloper.envelop;
 
@@ -45,7 +46,12 @@ public class EnforcementNotificationService {
         final CaseDetails caseDetails = sjpService.getCaseDetails(caseId, jsonEnvelope);
         if (caseDetails != null) {
             final Defendant defendant = caseDetails.getDefendant();
-            final String postcode = defendant.getPersonalDetails().getAddress().getPostcode();
+            final String postcode;
+            if (nonNull(defendant.getPersonalDetails())) {
+                postcode = defendant.getPersonalDetails().getAddress().getPostcode();
+            } else {
+                postcode = defendant.getLegalEntityDetails().getAddress().getPostcode();
+            }
             final int divisionCode = divisionCodeHelper.divisionCode(jsonEnvelope, caseDetails, postcode);
 
             final EnforcementPendingApplicationRequiredNotification initiateNotificationPayload

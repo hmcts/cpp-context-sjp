@@ -1,6 +1,5 @@
 package uk.gov.moj.cpp.sjp.event.processor.results.converter;
 
-import static uk.gov.justice.core.courts.PersonDefendant.*;
 import static uk.gov.justice.core.courts.PersonDefendant.personDefendant;
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
 

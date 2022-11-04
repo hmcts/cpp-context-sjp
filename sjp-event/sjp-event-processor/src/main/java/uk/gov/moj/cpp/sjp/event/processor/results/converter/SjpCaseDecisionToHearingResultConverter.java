@@ -1,5 +1,6 @@
 package uk.gov.moj.cpp.sjp.event.processor.results.converter;
 
+import static java.util.Objects.nonNull;
 import static java.util.Optional.ofNullable;
 import static java.util.UUID.fromString;
 import static java.util.stream.Collectors.toList;
@@ -62,7 +63,8 @@ public class SjpCaseDecisionToHearingResultConverter {
         final JsonEnvelope sjpSessionEnvelope = sjpService.getSessionInformation(fromString(decisionSaved.getSessionId().toString()), envelopeFrom(metadataFrom(sourceMetadata), NULL));
         final CaseDetails caseDetails = sjpService.getCaseDetails(caseId, envelopeFrom(metadataFrom(decisionSavedEventEnvelope.metadata()), NULL));
         final UUID defendantId = caseDetails.getDefendant().getId();
-        final String driverNumber = caseDetails.getDefendant().getPersonalDetails().getDriverNumber();
+        final String driverNumber = nonNull(caseDetails.getDefendant().getPersonalDetails()) ? caseDetails.getDefendant().getPersonalDetails().getDriverNumber() : null;
+
         final String prosecutingAuthority = caseDetails.getProsecutingAuthority();
 
         final DecisionAggregate resultsAggregate =
@@ -72,7 +74,7 @@ public class SjpCaseDecisionToHearingResultConverter {
                         defendantId,
                         decisionSaved.getSavedAt(),
                         driverNumber,
-                        prosecutingAuthority,null);
+                        prosecutingAuthority, null);
 
         final List<DefendantJudicialResult> defendantJudicialResults = ofNullable(resultsAggregate
                 .getResults(defendantId)).orElse(new ArrayList<>())
@@ -110,7 +112,7 @@ public class SjpCaseDecisionToHearingResultConverter {
 
     // return the hearing object structure
     @SuppressWarnings("squid:S2629")
-    public PublicHearingResulted convertCaseDecisionInCcForReferToCourt(final Envelope<CaseListedInCriminalCourtsV2>  caseListedInCcForReferToCourtEnvelope) {
+    public PublicHearingResulted convertCaseDecisionInCcForReferToCourt(final Envelope<CaseListedInCriminalCourtsV2> caseListedInCcForReferToCourtEnvelope) {
 
         // convert the results
         final DecisionSaved decisionSaved = caseListedInCcForReferToCourtEnvelope.payload().getDecisionSaved();

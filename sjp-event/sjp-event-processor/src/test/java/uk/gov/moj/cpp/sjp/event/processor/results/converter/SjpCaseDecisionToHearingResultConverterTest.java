@@ -1,5 +1,6 @@
 package uk.gov.moj.cpp.sjp.event.processor.results.converter;
 
+import static java.util.Collections.singletonList;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.CoreMatchers.nullValue;
@@ -107,10 +108,35 @@ public class SjpCaseDecisionToHearingResultConverterTest {
         assertThat(publicHearingResulted.getHearing().getId(), is(ID_2));
         assertThat(publicHearingResulted.getHearing().getCourtCentre(), is(courtCentre));
         assertThat(publicHearingResulted.getHearing().getJurisdictionType(), is(MAGISTRATES));
-
-
-
     }
+
+    @Test
+    public void shouldConvertSjpCaseDecisionToHearingResultWithMandatoryFieldWhenPersonalDetailsIsNull() {
+        Metadata sourceMetadata = metadataWithRandomUUID(RANDOM_TEXT).build();
+
+        when(decisionSavedEventEnvelop.payload()).thenReturn(decisionSaved);
+        when(sjpService.getSessionInformation(anyObject(), anyObject())).thenReturn(sjpSessionEnvelope);
+        when(decisionSaved.getSessionId()).thenReturn(ID_2);
+        when(decisionSaved.getDecisionId()).thenReturn(ID_2);
+        when(decisionSavedEventEnvelop.metadata()).thenReturn(sourceMetadata);
+        when(sjpService.getCaseDetails(anyObject(), anyObject())).thenReturn(caseDetails);
+        when(caseDetails.getDefendant()).thenReturn(defendant);
+        when(defendant.getId()).thenReturn(ID_1);
+        when(defendant.getPersonalDetails()).thenReturn(null);
+        when(personalDetails.getDriverNumber()).thenReturn(RANDOM_TEXT);
+        when(referencedDecisionSavedOffenceConverter.convertOffenceDecisions(anyObject(), anyObject(), anyObject(), anyObject(), anyObject(), anyString(), anyObject())).thenReturn(resultsAggregate);
+        when(hearingDaysConverter.convert(anyObject())).thenReturn(singletonList(hearingDay));
+        when(courtCenterConverter.convert(anyObject(), anyObject())).thenReturn(courtCentre);
+
+        final PublicHearingResulted publicHearingResulted = sjpCaseDecisionToHearingResultConverter.convertCaseDecision(decisionSavedEventEnvelop);
+
+        assertThat(publicHearingResulted, is(notNullValue()));
+        assertThat(publicHearingResulted.getHearing(), is(notNullValue()));
+        assertThat(publicHearingResulted.getHearing().getId(), is(ID_2));
+        assertThat(publicHearingResulted.getHearing().getCourtCentre(), is(courtCentre));
+        assertThat(publicHearingResulted.getHearing().getJurisdictionType(), is(MAGISTRATES));
+    }
+
     @Test
     public void shouldConvertSjpCaseDecisionToHearingResultWithOptionalField() {
         Metadata sourceMetadata = metadataWithRandomUUID(RANDOM_TEXT).build();
@@ -142,8 +168,6 @@ public class SjpCaseDecisionToHearingResultConverterTest {
         assertThat(publicHearingResulted.getHearing().getHasSharedResults(), is(false));
         assertThat(publicHearingResulted.getHearing().getHearingCaseNotes(), is(nullValue()));
         assertThat(publicHearingResulted.getHearing().getIsBoxHearing(), is(false));
-
-
     }
 
 }

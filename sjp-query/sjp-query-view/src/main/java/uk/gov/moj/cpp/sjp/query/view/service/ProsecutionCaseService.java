@@ -2,6 +2,7 @@ package uk.gov.moj.cpp.sjp.query.view.service;
 
 import static java.time.LocalDate.now;
 import static java.util.Collections.emptyList;
+import static java.util.Collections.singletonList;
 import static java.util.Objects.nonNull;
 import static java.util.Optional.empty;
 import static java.util.Optional.ofNullable;
@@ -50,7 +51,6 @@ import uk.gov.moj.cpp.sjp.persistence.repository.CaseRepository;
 import uk.gov.moj.cpp.sjp.persistence.repository.OnlinePleaDetailRepository;
 
 import java.time.ZonedDateTime;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -160,7 +160,7 @@ public class ProsecutionCaseService {
                 .withStatementOfFacts(prosecutionFacts.orElse(null))
                 .withStatementOfFactsWelsh(prosecutionFactsWelsh)
                 .withProsecutionCaseIdentifier(prosecutionCaseIdentifier)
-                .withDefendants(Arrays.asList(defendantView))
+                .withDefendants(singletonList(defendantView))
                 .withOriginatingOrganisation(originatingOrganisation)
                 .withCaseStatus(INACTIVE)
                 .build();
@@ -184,7 +184,7 @@ public class ProsecutionCaseService {
                                           final Map<String, JsonObject> offenceDefinitionsByOffenceCode) {
 
         final DefendantDetail defendantDetail = caseDetail.getDefendant();
-        final PersonDefendant personDefendantView = createPersonDefendantView(defendantDetail, prosecutionCaseFileDefendant, employer, nationalityId);
+
         final List<Offence> offenceViews = defendantDetail.getOffences()
                 .stream()
                 .map(offence -> createOffenceView(offence, prosecutionCaseFileDefendant, offenceDefinitionsByOffenceCode))
@@ -203,6 +203,7 @@ public class ProsecutionCaseService {
                 .withCourtProceedingsInitiated(ZonedDateTime.now());
 
         if (nonNull(defendantDetail.getPersonalDetails())) {
+            final PersonDefendant personDefendantView = createPersonDefendantView(defendantDetail, prosecutionCaseFileDefendant, employer, nationalityId);
             defendantBuilder.withPersonDefendant(personDefendantView);
         }
 
@@ -508,6 +509,5 @@ public class ProsecutionCaseService {
     private JsonObject getCaseFileDefendant(final JsonObject caseFile) {
         return caseFile.getJsonArray("defendants").getJsonObject(0);
     }
-
 
 }

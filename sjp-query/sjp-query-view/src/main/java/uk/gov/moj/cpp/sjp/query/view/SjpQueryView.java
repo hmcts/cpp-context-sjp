@@ -260,8 +260,7 @@ public class SjpQueryView {
     public Envelope<ProsecutionCase> findProsecutionCase(final JsonEnvelope envelope) {
         return Envelope.envelopeFrom(
                 metadataFrom(envelope.metadata()),
-                prosecutionCaseService.findProsecutionCase(fromString(extract(envelope, FIELD_CASE_ID)))
-        );
+                prosecutionCaseService.findProsecutionCase(fromString(extract(envelope, FIELD_CASE_ID))));
     }
 
     @Handles("sjp.query.case-by-urn")

@@ -13,6 +13,7 @@ public class TimerService {
     public static final String DEFENDANT_RESPONSE_TIMER_COMMAND = "sjp.command.expire-defendant-response-timer";
     public static final String DATES_TO_AVOID_RESPONSE_TIMER_COMMAND = "sjp.command.expire-dates-to-avoid-timer";
     public static final String ADJOURNMENT_TIMER_COMMAND = "sjp.command.record-case-adjournment-to-later-sjp-hearing-elapsed";
+    public static final String DEFENDANT_AOCP_RESPONSE_TIMER_COMMAND = "sjp.expire-defendant-aocp-response-timer";
 
     @Inject
     private TimerExpirationProcess process;
@@ -27,5 +28,9 @@ public class TimerService {
 
     public void startTimerForAdjournmentToDay(final UUID caseId, final LocalDate expirationDate, final Metadata metadata) {
         process.startTimerForDelayAndCommand(caseId, expirationDate, ADJOURNMENT_TIMER_COMMAND, metadata);
+    }
+
+    public void startTimerForDefendantAOCPAcceptance(final UUID caseId, final LocalDate expirationDate, final Metadata metadata) {
+        process.startTimerForDelayAndCommand(caseId, expirationDate, DEFENDANT_AOCP_RESPONSE_TIMER_COMMAND, metadata);
     }
 }

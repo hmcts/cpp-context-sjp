@@ -3,6 +3,11 @@
   "urn": "urn",
   "completed": false,
   "assigned": false,
+  "aocpEligible": true,
+  "readyForDecision": true,
+  "aocpTotalCost": 137.57,
+  "aocpVictimSurcharge": 34.0,
+  "costs": 1.23,
   "defendant": {
     "id": "3a586aed-aee0-4cc8-a1eb-fcf80196a4aa",
     "personalDetails": {

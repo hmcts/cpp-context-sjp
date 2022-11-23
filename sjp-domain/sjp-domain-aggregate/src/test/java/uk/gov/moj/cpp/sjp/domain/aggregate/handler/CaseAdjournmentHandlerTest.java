@@ -30,6 +30,7 @@ public class CaseAdjournmentHandlerTest {
         existingCaseId = randomUUID();
         caseAggregateState = new CaseAggregateState();
         caseAggregateState.setCaseId(existingCaseId);
+
     }
 
     @Test

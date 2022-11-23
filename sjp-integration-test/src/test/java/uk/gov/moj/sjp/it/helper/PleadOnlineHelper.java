@@ -1,11 +1,13 @@
 package uk.gov.moj.sjp.it.helper;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jayway.restassured.path.json.JsonPath;
 import org.hamcrest.Matcher;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import uk.gov.moj.cpp.sjp.domain.plea.PleaMethod;
 import uk.gov.moj.cpp.sjp.domain.plea.PleaType;
+import uk.gov.moj.sjp.it.model.PleasView;
 import uk.gov.moj.sjp.it.pollingquery.CasePoller;
 import uk.gov.moj.sjp.it.util.HttpClientUtil;
 import uk.gov.moj.sjp.it.util.TopicUtil;
@@ -13,6 +15,9 @@ import uk.gov.moj.sjp.it.util.TopicUtil;
 import javax.jms.JMSException;
 import javax.jms.MessageConsumer;
 import javax.ws.rs.core.Response;
+
+import java.lang.reflect.Array;
+import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
@@ -91,6 +96,7 @@ public class PleadOnlineHelper implements AutoCloseable {
         return HttpClientUtil.makeGetCall(resource, contentType, userId);
     }
 
+
     public static String getOnlinePlea(final String caseId, final String defendantId, final Matcher<Object> jsonMatcher, final UUID userId) {
         return await().atMost(20, TimeUnit.SECONDS).until(() -> {
             final Response onlinePlea = getOnlinePlea(caseId, defendantId, userId);
@@ -98,7 +104,25 @@ public class PleadOnlineHelper implements AutoCloseable {
                 fail("Polling interrupted, please fix the error before continue. Status code: " + onlinePlea.getStatus());
             }
 
-            return onlinePlea.readEntity(String.class);
+
+            String response = onlinePlea.readEntity(String.class);
+            ObjectMapper objectMapper = new ObjectMapper();
+            PleasView pleasView = objectMapper.readValue(response, PleasView.class);
+            return objectMapper.writeValueAsString(pleasView.getPleas().get(0));
+        }, jsonMatcher);
+    }
+
+    public static String getOnlinePleaAocpAccepted(final String caseId, final String defendantId, final Matcher<Object> jsonMatcher, final UUID userId) {
+        return await().atMost(20, TimeUnit.SECONDS).until(() -> {
+            final Response onlinePlea = getOnlinePlea(caseId, defendantId, userId);
+            if (onlinePlea.getStatus() != OK.getStatusCode()) {
+                fail("Polling interrupted, please fix the error before continue. Status code: " + onlinePlea.getStatus());
+            }
+
+            String response = onlinePlea.readEntity(String.class);
+            ObjectMapper objectMapper = new ObjectMapper();
+            PleasView pleasView = objectMapper.readValue(response, PleasView.class);
+            return objectMapper.writeValueAsString(pleasView.getPleas().get(0));
         }, jsonMatcher);
     }
 
@@ -121,6 +145,10 @@ public class PleadOnlineHelper implements AutoCloseable {
 
     public String pleadOnline(final String payload, final Response.Status httpStatus) {
         return HttpClientUtil.getPostCallResponse(writeUrl, "application/vnd.sjp.plead-online+json", payload, httpStatus);
+    }
+
+    public String pleadOnlineAocp(final String payload, final Response.Status httpStatus) {
+        return HttpClientUtil.getPostCallResponse(writeUrl, "application/vnd.sjp.plead-aocp-online+json", payload, httpStatus);
     }
 
     public void pleadOnline(final String payload) {

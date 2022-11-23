@@ -27,6 +27,8 @@ public class EventProcessorConstants {
     public static final String DEFENDANT_ID = "defendantId";
     public static final String APPLICATION_ID = "applicationId";
     public static final String APPLICATION_REFERENCE = "applicationReference";
+    public static final String PROSECUTING_AUTHORITY = "prosecutingAuthority";
+    public static final String PROSECUTOR_AOCP_APPROVED = "isProsecutorAOCPApproved";
 
     private EventProcessorConstants() {
     }

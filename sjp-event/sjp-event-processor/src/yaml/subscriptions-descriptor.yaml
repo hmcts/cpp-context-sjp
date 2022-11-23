@@ -176,6 +176,9 @@ subscriptions_descriptor:
         - name: sjp.events.notification-remove-endorsements-generated
           schema_uri: http://justice.gov.uk/json/schemas/domains/sjp/events/notification-remove-endorsements-generated.json
 
+        - name: sjp.events.aocp-criteria-matched-partially
+          schema_uri: http://justice.gov.uk/json/schemas/domains/sjp/event/aocp-criteria-matched-partially.json
+
         - name: sjp.events.case-application-recorded
           schema_uri: http://cpp.moj.gov.uk/sjp/event/case-application-recorded.json
 
@@ -193,6 +196,12 @@ subscriptions_descriptor:
 
         - name: sjp.events.marked-as-legal-soc-checked
           schema_uri: http://justice.gov.uk/json/schemas/domains/sjp/event/sjp.events.marked-as-legal-soc-checked.json
+
+        - name: sjp.events.defendant-accepted-aocp
+          schema_uri: http://justice.gov.uk/json/schemas/domains/sjp/event/defendant-accepted-aocp.json
+
+        - name: sjp.events.reset-aocp-session-requested
+          schema_uri: http://justice.gov.uk/json/schemas/domains/sjp/event/reset-aocp-session-requested.json
 
       event_source_name: sjp
 

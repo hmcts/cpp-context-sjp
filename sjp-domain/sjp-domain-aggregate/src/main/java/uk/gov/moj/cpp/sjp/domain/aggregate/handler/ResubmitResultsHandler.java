@@ -63,7 +63,7 @@ public class ResubmitResultsHandler {
                     decisionSaved.getCaseId(),
                     decisionSaved.getSavedAt(),
                     decisionSaved.getOffenceDecisions(),
-                    new FinancialImposition(financialImposition.getCostsAndSurcharge(), newPayment)
+                    new FinancialImposition(financialImposition.getCostsAndSurcharge(), newPayment), null
             ), ZonedDateTime.now(), paymentTermsInfo, accountNote, state.getUrn()));
 
             if (newPayment != financialImposition.getPayment()) {

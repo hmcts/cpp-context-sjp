@@ -33,7 +33,10 @@
         "offenceWordingWelsh": "Welsh wording: Committed some offence",
         "prosecutionFacts": "No ticket at the gates, forgery",
         "witnessStatement": "Jumped over the barriers",
-        "compensation": 2.34
+        "compensation": 2.34,
+        "prosecutorOfferAOCP":true,
+        "isEligibleAOCP":true,
+        "aocpStandardPenaltyAmount":100
       }
     ]
   },

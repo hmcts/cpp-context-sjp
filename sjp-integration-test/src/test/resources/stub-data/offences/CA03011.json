@@ -160,5 +160,7 @@
   "drugsOrAlcoholRelated": "N",
   "locationRequired": "Y",
   "prosecutionTimeLimit": "6",
-  "offenceEndDate": "2016-01-01"
+  "offenceEndDate": "2016-01-01",
+  "aocpEligible": true,
+  "aocpStandardPenalty": 100
 }

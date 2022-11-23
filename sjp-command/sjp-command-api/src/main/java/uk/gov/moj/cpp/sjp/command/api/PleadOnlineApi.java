@@ -6,6 +6,7 @@ import static uk.gov.justice.services.messaging.Envelope.metadataFrom;
 import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilderWithFilter;
 import static uk.gov.moj.cpp.sjp.command.api.service.AddressService.normalizePostcodeInAddress;
 
+import uk.gov.justice.json.schemas.domains.sjp.command.PleadAocpOnline;
 import uk.gov.justice.json.schemas.domains.sjp.command.PleadOnline;
 import uk.gov.justice.services.adapter.rest.exception.BadRequestException;
 import uk.gov.justice.services.common.converter.ObjectToJsonObjectConverter;
@@ -117,6 +118,22 @@ public class PleadOnlineApi {
                         .withName("sjp.command.plead-online-pcq-visited").build(),
                 updatedPayload));
     }
+
+
+    @Handles("sjp.plead-aocp-online")
+    public void pleadAocpOnline(final Envelope<PleadAocpOnline> envelope) {
+        final JsonObject payload = objectToJsonObjectConverter.convert(envelope.payload());
+
+        final JsonObjectBuilder pleaOnlineObjectBuilder = createObjectBuilderWithFilter(payload, field -> !asList(PERSONAL_DETAILS).contains(field));
+
+        pleaOnlineObjectBuilder.add(PERSONAL_DETAILS, replacePostcodeInPayload(payload, PERSONAL_DETAILS));
+
+        sender.send(Envelope.envelopeFrom(
+                metadataFrom(envelope.metadata())
+                        .withName("sjp.command.plead-aocp-online").build(),
+                pleaOnlineObjectBuilder.build()));
+    }
+
 
     private void checkValidationErrors(Map<String, List<String>> validationErrors) {
         if (!validationErrors.isEmpty()) {

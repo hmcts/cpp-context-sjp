@@ -27,7 +27,7 @@ public class OffenceToOffenceDetailTest {
                 "Witness statement Welsh", BigDecimal.valueOf(123),
                 LocalDate.of(2016, 1, 4),
                 LocalDate.of(2016, 1, 5),
-                "Ford", "FG59 4FD", null, null, null, null);
+                "Ford", "FG59 4FD", null, null, null, null, null,null,null);
 
         OffenceDetail outputOffence = offenceToOffenceDetail.convert(inputOffence);
 

@@ -84,6 +84,7 @@
     "pncIdentifier": "pncId",
     "pcqId": "${pcqId}"
   },
+  "readyForDecision": false,
   "caseDocuments": [
   ],
   "caseDecisions": [
@@ -98,6 +99,7 @@
   "postingDate": "2015-12-02",
   "enterpriseId": "${enterpriseId}",
   "onlinePleaReceived": true,
+  "aocpEligible": false,
   "status": "${caseStatus}",
   "managedByATCM": true
 }

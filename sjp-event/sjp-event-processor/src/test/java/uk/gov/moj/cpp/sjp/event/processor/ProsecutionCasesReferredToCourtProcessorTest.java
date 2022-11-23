@@ -13,7 +13,7 @@ import static uk.gov.justice.services.test.utils.core.matchers.HandlerClassMatch
 import static uk.gov.justice.services.test.utils.core.matchers.HandlerMethodMatcher.method;
 import static uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderFactory.metadataWithRandomUUID;
 import static uk.gov.justice.services.test.utils.core.reflection.ReflectionUtil.setField;
-import static uk.gov.moj.cpp.sjp.event.processor.EventProcessorConstants.CASE_ID;
+import static uk.gov.moj.cpp.sjp.event.processor .EventProcessorConstants.CASE_ID;
 import static uk.gov.moj.cpp.sjp.event.processor.EventProcessorConstants.DEFENDANT_ID;
 import static uk.gov.moj.cpp.sjp.event.processor.utils.FileUtil.getFileContentAsJson;
 

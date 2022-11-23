@@ -16,7 +16,7 @@ import static org.hamcrest.Matchers.iterableWithSize;
 import static org.hamcrest.Matchers.not;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertTrue;
 import static uk.gov.justice.json.schemas.domains.sjp.ApplicationStatus.STATUTORY_DECLARATION_GRANTED;
 import static uk.gov.justice.json.schemas.domains.sjp.ApplicationStatus.STATUTORY_DECLARATION_PENDING;
@@ -28,6 +28,8 @@ import static uk.gov.moj.cpp.sjp.domain.testutils.builders.DischargeBuilder.with
 import static uk.gov.moj.cpp.sjp.domain.verdict.VerdictType.FOUND_GUILTY;
 import static uk.gov.moj.cpp.sjp.event.CaseReferralForCourtHearingRejectionRecorded.caseReferralForCourtHearingRejectionRecorded;
 import static uk.gov.moj.cpp.sjp.event.CaseReferredForCourtHearing.caseReferredForCourtHearing;
+import static java.util.Collections.EMPTY_LIST;
+import static java.math.BigDecimal.valueOf;
 
 import uk.gov.moj.cpp.sjp.domain.Address;
 import uk.gov.moj.cpp.sjp.domain.Benefits;
@@ -58,6 +60,7 @@ import uk.gov.moj.cpp.sjp.event.AllOffencesWithdrawalRequestCancelled;
 import uk.gov.moj.cpp.sjp.event.AllOffencesWithdrawalRequested;
 import uk.gov.moj.cpp.sjp.event.ApplicationStatusChanged;
 import uk.gov.moj.cpp.sjp.event.CaseCompleted;
+import uk.gov.moj.cpp.sjp.event.CaseEligibleForAOCP;
 import uk.gov.moj.cpp.sjp.event.CaseExpectedDateReadyChanged;
 import uk.gov.moj.cpp.sjp.event.CaseMarkedReadyForDecision;
 import uk.gov.moj.cpp.sjp.event.CaseReferralForCourtHearingRejectionRecorded;
@@ -67,6 +70,8 @@ import uk.gov.moj.cpp.sjp.event.CaseStarted;
 import uk.gov.moj.cpp.sjp.event.CaseUnmarkedReadyForDecision;
 import uk.gov.moj.cpp.sjp.event.DatesToAvoidAdded;
 import uk.gov.moj.cpp.sjp.event.DatesToAvoidUpdated;
+import uk.gov.moj.cpp.sjp.event.DefendantAcceptedAocp;
+import uk.gov.moj.cpp.sjp.event.DefendantAocpResponseTimerExpired;
 import uk.gov.moj.cpp.sjp.event.EmployerDeleted;
 import uk.gov.moj.cpp.sjp.event.EmployerUpdated;
 import uk.gov.moj.cpp.sjp.event.EmploymentStatusUpdated;
@@ -83,6 +88,7 @@ import uk.gov.moj.cpp.sjp.event.OffenceWithdrawalRequestReasonChanged;
 import uk.gov.moj.cpp.sjp.event.OffenceWithdrawalRequested;
 import uk.gov.moj.cpp.sjp.event.PleaCancelled;
 import uk.gov.moj.cpp.sjp.event.PleaUpdated;
+import uk.gov.moj.cpp.sjp.event.PleasSet;
 import uk.gov.moj.cpp.sjp.event.TrialRequestCancelled;
 import uk.gov.moj.cpp.sjp.event.VerdictCancelled;
 import uk.gov.moj.cpp.sjp.event.decision.ApplicationDecisionSetAside;
@@ -97,6 +103,8 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 
@@ -620,4 +628,36 @@ public class CompositeCaseAggregateStateMutatorTest {
                 hasProperty("accountNumber", is(accountNumber))
         )));
     }
+
+    @Test
+    public void shouldMutateOnDefendantAcceptedAocp() {
+        final DefendantAcceptedAocp defendantAcceptedAocp = new DefendantAcceptedAocp(caseId, defendantId, EMPTY_LIST, PleaMethod.ONLINE, null, true, now(), null);
+        compositeCaseAggregateStateMutator.apply(defendantAcceptedAocp, caseAggregateState);
+        assertThat(caseAggregateState.isDefendantAcceptedAocp(), is(true));
+    }
+
+    @Test
+    public void shouldMutateOnDefendantAocpResponseTimerExpired() {
+        final DefendantAocpResponseTimerExpired defendantAocpResponseTimerExpired = new DefendantAocpResponseTimerExpired(caseId);
+        compositeCaseAggregateStateMutator.apply(defendantAocpResponseTimerExpired, caseAggregateState);
+        assertThat(caseAggregateState.isAocpAcceptanceResponseTimerExpired(), is(true));
+    }
+
+    @Test
+    public void shouldMutateOnCaseEligibleForAOCP() {
+        final CaseEligibleForAOCP caseEligibleForAOCP = new CaseEligibleForAOCP(caseId, valueOf(5), valueOf(34), valueOf(137), null);
+        compositeCaseAggregateStateMutator.apply(caseEligibleForAOCP, caseAggregateState);
+        assertThat(caseAggregateState.isAocpEligible(), is(true));
+        assertThat(caseAggregateState.getAocpVictimSurcharge(), is(valueOf(34)));
+        assertThat(caseAggregateState.getAocpTotalCost(), is(valueOf(137)));
+        assertThat(caseAggregateState.isAocpEligible(), is(true));
+    }
+
+    @Test
+    public void shouldMutateOnPleasSet() {
+        final PleasSet pleasSet = new PleasSet(caseId, null, EMPTY_LIST);
+        compositeCaseAggregateStateMutator.apply(pleasSet, caseAggregateState);
+        assertThat(caseAggregateState.isDefendantAcceptedAocp(), is(false));
+    }
+
 }

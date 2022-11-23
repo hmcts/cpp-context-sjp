@@ -15,7 +15,7 @@ import static org.hamcrest.Matchers.hasProperty;
 import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static uk.gov.justice.json.schemas.domains.sjp.NoteType.ADJOURNMENT;
 import static uk.gov.justice.json.schemas.domains.sjp.NoteType.DECISION;
 import static uk.gov.justice.json.schemas.domains.sjp.NoteType.LISTING;
@@ -32,15 +32,20 @@ import static uk.gov.moj.cpp.sjp.domain.verdict.VerdictType.FOUND_GUILTY;
 import static uk.gov.moj.cpp.sjp.domain.verdict.VerdictType.FOUND_NOT_GUILTY;
 import static uk.gov.moj.cpp.sjp.domain.verdict.VerdictType.NO_VERDICT;
 import static uk.gov.moj.cpp.sjp.domain.verdict.VerdictType.PROVED_SJP;
+import static java.math.BigDecimal.valueOf;
 
 import uk.gov.justice.core.courts.DelegatedPowers;
 import uk.gov.justice.json.schemas.domains.sjp.User;
 import uk.gov.justice.json.schemas.domains.sjp.events.CaseNoteAdded;
+import uk.gov.moj.cpp.sjp.domain.AOCPCost;
+import uk.gov.moj.cpp.sjp.domain.AOCPCostDefendant;
+import uk.gov.moj.cpp.sjp.domain.AOCPCostOffence;
 import uk.gov.moj.cpp.sjp.domain.DefendantCourtInterpreter;
 import uk.gov.moj.cpp.sjp.domain.DefendantCourtOptions;
 import uk.gov.moj.cpp.sjp.domain.aggregate.Session;
 import uk.gov.moj.cpp.sjp.domain.aggregate.state.CaseAggregateState;
 import uk.gov.moj.cpp.sjp.domain.decision.Adjourn;
+import uk.gov.moj.cpp.sjp.domain.decision.AocpDecision;
 import uk.gov.moj.cpp.sjp.domain.decision.CourtDetails;
 import uk.gov.moj.cpp.sjp.domain.decision.Decision;
 import uk.gov.moj.cpp.sjp.domain.decision.Defendant;
@@ -67,8 +72,10 @@ import uk.gov.moj.cpp.sjp.domain.testutils.builders.FinancialPenaltyBuilder;
 import uk.gov.moj.cpp.sjp.domain.testutils.builders.ReferForCourtHearingBuilder;
 import uk.gov.moj.cpp.sjp.domain.testutils.builders.WithdrawBuilder;
 import uk.gov.moj.cpp.sjp.domain.verdict.VerdictType;
+import uk.gov.moj.cpp.sjp.event.AocpPleasSet;
 import uk.gov.moj.cpp.sjp.event.CaseAdjournedToLaterSjpHearingRecorded;
 import uk.gov.moj.cpp.sjp.event.CaseCompleted;
+import uk.gov.moj.cpp.sjp.event.DefendantAocpResponseTimerExpired;
 import uk.gov.moj.cpp.sjp.event.decision.DecisionRejected;
 import uk.gov.moj.cpp.sjp.event.decision.DecisionSaved;
 import uk.gov.moj.cpp.sjp.event.decision.DecisionSetAside;
@@ -1189,6 +1196,50 @@ public class CaseDecisionHandlerTest {
                         .contains(String.format("Decisions of type %s's verdict type can only be %s", "SetAside", null))), is(true));
     }
 
+    @Test
+    public void shouldSaveAocpDecision() {
+        caseAggregateState.setCaseId(caseId);
+        caseAggregateState.setDefendantId(defendantId);
+        caseAggregateState.setAocpTotalCost(valueOf(200.00));
+
+        CourtDetails courtDetails = new CourtDetails("12345", "LavenderHill");
+        Defendant defendant = new Defendant(courtDetails);
+
+        AocpDecision aocpDecision = new AocpDecision(decisionId, sessionId, caseId, legalAdviser, defendant);
+
+        final AOCPCostOffence offence = new AOCPCostOffence(offenceId1, valueOf(2.5), valueOf(100), true, true);
+        final AOCPCostDefendant aocpDefendant = new AOCPCostDefendant(defendantId, asList(offence));
+        AOCPCost aocpCost = new AOCPCost(caseId, new BigDecimal(5.5), aocpDefendant);
+        caseAggregateState.addAOCPCost(caseId, aocpCost);
+
+        session = new Session();
+        session.startAocpSession(sessionId, legalAdviserId, "B52CM00", "Bristol Magistrates' Court", "1450", now());
+        caseAggregateState.addOffenceIdsForDefendant(defendantId, new HashSet<>(asList(offenceId1)));
+
+        final Stream<Object> eventStream = CaseDecisionHandler.INSTANCE.expireAocpResponseTimerAndSaveDecision(aocpDecision, caseAggregateState, session);
+        final List<Object> eventList = eventStream.collect(toList());
+
+
+        assertThat(eventList, hasItem(allOf(Matchers.instanceOf(DefendantAocpResponseTimerExpired.class),
+                Matchers.<CaseNoteAdded>hasProperty("caseId", is(caseId))
+        )));
+
+        assertThat(eventList, hasItem(allOf(Matchers.instanceOf(DecisionSaved.class),
+                Matchers.<CaseNoteAdded>hasProperty("caseId", is(caseId)),
+                Matchers.<CaseNoteAdded>hasProperty("decisionId", is(decisionId)),
+                Matchers.<CaseNoteAdded>hasProperty("sessionId", is(sessionId))
+        )));
+
+        assertThat(eventList, hasItem(allOf(Matchers.instanceOf(AocpPleasSet.class),
+                Matchers.<CaseNoteAdded>hasProperty("caseId", is(caseId)),
+                Matchers.<CaseNoteAdded>hasProperty("pleas")
+        )));
+
+        assertThat(eventList, hasItem(allOf(Matchers.instanceOf(CaseCompleted.class),
+                Matchers.<CaseNoteAdded>hasProperty("caseId", is(caseId))
+        )));
+    }
+
 
     private void givenCaseExistsWithMultipleOffences(final HashSet<UUID> uuids, final UUID savedByUser) {
         caseAggregateState.addOffenceIdsForDefendant(defendantId, uuids);
@@ -1209,7 +1260,7 @@ public class CaseDecisionHandlerTest {
 
     private void thenTheDecisionIsAccepted(final Decision decision, final List<Object> eventList) {
         assertThat(eventList, hasItem(new DecisionSaved(decisionId, sessionId, caseId, savedAt, decision.getOffenceDecisions(),
-                decision.getFinancialImposition())));
+                decision.getFinancialImposition(), null)));
         assertThat(eventList, hasItem(allOf(
                 Matchers.instanceOf(CaseNoteAdded.class),
                 Matchers.<CaseNoteAdded>hasProperty("caseId", is(caseId)),

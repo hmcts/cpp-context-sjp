@@ -6,7 +6,8 @@
       "fullName": "Transport for London",
       "majorCreditorCode": "TFL2",
       "sequenceNumber": 2,
-      "oucode": "GAFTL00"
+      "oucode": "GAFTL00",
+      "contactEmailAddress": "tfl@tfl.com"
     },
     {
       "id": "6b7b9adc-ccee-4b13-b2c7-499c28e98962",
@@ -14,7 +15,8 @@
       "fullName": "TV Licensing",
       "majorCreditorCode": "TVL3",
       "sequenceNumber": 3,
-      "oucode": "GAEAA01"
+      "oucode": "GAEAA01",
+      "contactEmailAddress": "tfl@tfl.com"
     },
     {
       "id": "6ae4b163-658b-3ae2-a66d-43401cac2f96",
@@ -22,7 +24,8 @@
       "fullName": "Driver and Vehicle Licensing Agency",
       "majorCreditorCode": "DVL2",
       "sequenceNumber": 2,
-      "oucode": "G94DV00"
+      "oucode": "G94DV00",
+      "contactEmailAddress": "tfl@tfl.com"
     }
   ]
 }

@@ -4,10 +4,14 @@ import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
 import static javax.json.Json.createObjectBuilder;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.Matchers.allOf;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.notNullValue;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.argThat;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
@@ -20,14 +24,19 @@ import static uk.gov.moj.cpp.sjp.domain.SessionType.MAGISTRATE;
 
 import uk.gov.justice.services.core.enveloper.Enveloper;
 import uk.gov.justice.services.core.sender.Sender;
+import uk.gov.justice.services.messaging.Envelope;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.test.utils.core.enveloper.EnveloperFactory;
 import uk.gov.moj.cpp.sjp.event.processor.service.SchedulingService;
+import uk.gov.moj.cpp.sjp.event.processor.service.SjpService;
 import uk.gov.moj.cpp.sjp.event.session.DelegatedPowersSessionEnded;
 import uk.gov.moj.cpp.sjp.event.session.DelegatedPowersSessionStarted;
 import uk.gov.moj.cpp.sjp.event.session.MagistrateSessionEnded;
 import uk.gov.moj.cpp.sjp.event.session.MagistrateSessionStarted;
+import uk.gov.moj.cpp.sjp.event.session.ResetAocpSession;
 
+import java.time.ZonedDateTime;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -38,6 +47,8 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.AdditionalMatchers;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
@@ -52,6 +63,12 @@ public class SessionProcessorTest {
     @Mock
     private SchedulingService schedulingService;
 
+    @Mock
+    SjpService sjpService;
+
+    @Captor
+    private ArgumentCaptor<Envelope> envelopeCaptor;
+
     @Spy
     private Enveloper enveloper = EnveloperFactory.createEnveloper();
 
@@ -64,6 +81,9 @@ public class SessionProcessorTest {
     private final String courtHouseName = "Wimbledon Magistrates' Court";
     private final String localJusticeAreaNationalCourtCode = "2577";
     private final String magistrate = "John Smith";
+    private static final String AOCP_COURT_HOUSE_CODE = "B52CM00";
+    private static final String AOCP_COURT_HOUSE_NAME = "Bristol Magistrates' Court";
+    private static final String AOCP_COURT_LJA = "1450";
 
     @Before
     public void setUp() {
@@ -173,6 +193,62 @@ public class SessionProcessorTest {
         sessionProcessor.delegatedPowersSessionEnded(sessionEndedEvent);
 
         verify(schedulingService).endSession(existingSessionId, sessionEndedEvent);
+    }
+
+    @Test
+    public void shouldHandleAocpSessionResetRequestedForActiveSession() {
+
+        final String sessionId = UUID.randomUUID().toString();
+
+        final JsonEnvelope resetAocpSessionEnvelope = envelopeFrom(metadataWithRandomUUID(ResetAocpSession.EVENT_NAME),
+                createObjectBuilder().add("resetAt", ZonedDateTime.now().toString()).build());
+
+        JsonObject sessionResponse = createObjectBuilder().add("sessionId", sessionId).build();
+
+        when(sjpService.getLatestAocpSessionDetails(any())).thenReturn(sessionResponse);
+
+        sessionProcessor.aocpSessionResetRequested(resetAocpSessionEnvelope);
+
+        verify(sender, times(2)).send(envelopeCaptor.capture());
+
+        final List<Envelope> envelope= envelopeCaptor.getAllValues();
+
+        assertThat(envelope.size(), is(2));
+
+        assertThat(envelope.get(0).metadata().name(), is("sjp.command.end-session"));
+        final JsonObject sessionEndpayload = (JsonObject) envelope.get(0).payload();
+        assertThat(sessionEndpayload.getString("sessionId"), is(sessionId));
+
+        assertThat(envelope.get(1).metadata().name(), is("sjp.command.start-session"));
+        final JsonObject sessionStartpayload = (JsonObject) envelope.get(1).payload();
+        assertThat(sessionStartpayload.getString("sessionId"), notNullValue());
+        assertThat(sessionStartpayload.getString("courtHouseName"), is(AOCP_COURT_HOUSE_NAME));
+        assertThat(sessionStartpayload.getString("courtHouseCode"), is(AOCP_COURT_HOUSE_CODE));
+        assertThat(sessionStartpayload.getString("localJusticeAreaNationalCourtCode"), is(AOCP_COURT_LJA));
+        assertThat(sessionStartpayload.getBoolean("isAocpSession"), is(true));
+    }
+
+    @Test
+    public void shouldHandleAocpSessionResetRequestedForNonActiveSession() {
+        final JsonEnvelope resetAocpSessionEnvelope = envelopeFrom(metadataWithRandomUUID(ResetAocpSession.EVENT_NAME),
+                createObjectBuilder().add("resetAt", ZonedDateTime.now().toString()).build());
+
+        when(sjpService.getLatestAocpSessionDetails(any())).thenReturn(null);
+
+        sessionProcessor.aocpSessionResetRequested(resetAocpSessionEnvelope);
+
+        verify(sender).send(envelopeCaptor.capture());
+
+        final Envelope envelope= envelopeCaptor.getValue();
+
+        assertThat(envelope.metadata().name(), is("sjp.command.start-session"));
+        final JsonObject sessionStartpayload = (JsonObject) envelope.payload();
+        assertThat(sessionStartpayload.getString("sessionId"), notNullValue());
+        assertThat(sessionStartpayload.getString("courtHouseName"), is(AOCP_COURT_HOUSE_NAME));
+        assertThat(sessionStartpayload.getString("courtHouseCode"), is(AOCP_COURT_HOUSE_CODE));
+        assertThat(sessionStartpayload.getString("localJusticeAreaNationalCourtCode"), is(AOCP_COURT_LJA));
+        assertThat(sessionStartpayload.getBoolean("isAocpSession"), is(true));
+
     }
 
     private JsonObject magistrateSessionStartedEventPayload(final UUID sessionId) {

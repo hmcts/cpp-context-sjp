@@ -16,6 +16,7 @@ import static uk.gov.moj.cpp.sjp.domain.aggregate.casestatus.OffenceInformation.
 import static uk.gov.moj.cpp.sjp.domain.common.CaseState.INVALID_CASE_STATE;
 import static uk.gov.moj.cpp.sjp.domain.common.CaseStatus.APPEALED;
 import static uk.gov.moj.cpp.sjp.domain.common.CaseStatus.COMPLETED;
+import static uk.gov.moj.cpp.sjp.domain.common.CaseStatus.AOCP_PENDING;
 import static uk.gov.moj.cpp.sjp.domain.common.CaseStatus.COMPLETED_APPLICATION_PENDING;
 import static uk.gov.moj.cpp.sjp.domain.common.CaseStatus.NO_PLEA_RECEIVED;
 import static uk.gov.moj.cpp.sjp.domain.common.CaseStatus.NO_PLEA_RECEIVED_READY_FOR_DECISION;
@@ -47,6 +48,7 @@ import org.apache.commons.lang3.tuple.Triple;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+@SuppressWarnings("PMD.BeanMembersShouldSerialize")
 public class CaseStatusResolver {
     private static final Logger LOGGER = LoggerFactory.getLogger(CaseStatusResolver.class);
 
@@ -59,7 +61,6 @@ public class CaseStatusResolver {
         if (!isValid) {
             return INVALID_CASE_STATE;
         }
-
         final CaseState resultState = isCaseInCompletedStatus(caseAggregateState) ?
                 handleCompletedCaseRules(caseAggregateState):
                 handleNotCompletedCases(caseAggregateState);
@@ -117,7 +118,7 @@ public class CaseStatusResolver {
         return caseAggregateState.isCaseReferredForCourtHearing()
                 || nonNull(caseAggregateState.getCaseReopenedDate())
                 || caseAggregateState.isCaseCompleted()
-                || caseAggregateState.hasPendingApplication();
+                || caseAggregateState.hasPendingApplication()  ;
     }
 
     private static CaseState handleCompletedCaseRules(final CaseAggregateState caseState) {
@@ -130,8 +131,6 @@ public class CaseStatusResolver {
         rules.add(returnStatusIf(caseState.isCaseRelisted(), new CaseState(RELISTED)));
         rules.add(returnStatusIf(caseState.isCaseAppealed(), new CaseState(APPEALED)));
         rules.add(returnStatusIf(caseState.isCaseCompleted(), new CaseState (COMPLETED)));
-
-
         return rules.stream().filter(Optional::isPresent).map(Optional::get).findFirst().orElse(new CaseState(CaseStatus.DEFAULT_STATUS));
     }
 
@@ -175,6 +174,9 @@ public class CaseStatusResolver {
         private final boolean postConviction;
         private final boolean setAside;
         private final boolean applicationGranted;
+        private final boolean aocpAcceptanceTimerExpired;
+        private final boolean aocpEligible;
+        private final boolean defendantAcceptedAocp;
 
         public CaseStateCheckerBuilderFactory(final List<OffenceInformation> offenceInformation,
                                               final boolean defendantsResponseTimerElapsed,
@@ -183,7 +185,10 @@ public class CaseStatusResolver {
                                               final boolean adjourned,
                                               final boolean postConviction,
                                               final boolean setAside,
-                                              final boolean applicationGranted) {
+                                              final boolean applicationGranted,
+                                              final boolean aocpAcceptanceTimerExpired,
+                                              final boolean aocpEligible,
+                                              final boolean defendantAcceptedAocp) {
             this.offenceInformation = offenceInformation;
             this.defendantsResponseTimerElapsed = defendantsResponseTimerElapsed;
             this.datesToAvoid = datesToAvoid;
@@ -192,10 +197,13 @@ public class CaseStatusResolver {
             this.postConviction = postConviction;
             this.setAside = setAside;
             this.applicationGranted = applicationGranted;
+            this.aocpAcceptanceTimerExpired = aocpAcceptanceTimerExpired;
+            this.aocpEligible = aocpEligible;
+            this.defendantAcceptedAocp = defendantAcceptedAocp;
         }
 
         public CaseStateChecker.CaseStateCheckerBuilder getCaseStatusChecker() {
-            return CaseStateChecker.CaseStateCheckerBuilder.caseStateCheckerFor(offenceInformation, defendantsResponseTimerElapsed, datesToAvoid, datesToAvoidTimerElapsed, adjourned, postConviction, setAside, applicationGranted);
+            return CaseStateChecker.CaseStateCheckerBuilder.caseStateCheckerFor(offenceInformation, defendantsResponseTimerElapsed, datesToAvoid, datesToAvoidTimerElapsed, adjourned, postConviction, setAside, applicationGranted, aocpAcceptanceTimerExpired, aocpEligible, defendantAcceptedAocp);
         }
     }
 
@@ -213,7 +221,10 @@ public class CaseStatusResolver {
                         caseAggregateState.isAdjourned(),
                         caseAggregateState.isPostConviction(),
                         caseAggregateState.isSetAside(),
-                        caseAggregateState.hasGrantedApplication()
+                        caseAggregateState.hasGrantedApplication(),
+                        caseAggregateState.isAocpAcceptanceResponseTimerExpired(),
+                        caseAggregateState.isAocpEligible(),
+                        caseAggregateState.isDefendantAcceptedAocp()
                 );
 
         cases.add(new Scenario("Case is set aside currently",
@@ -222,7 +233,12 @@ public class CaseStatusResolver {
                         .setAside()
                 , SET_ASIDE_READY_FOR_DECISION)
         );
-
+        cases.add(new Scenario("Defendant accepted AOCP - within 5 days cooling period",
+                null,
+                factory.getCaseStatusChecker()
+                        .defendantAcceptedAocpAndCoolOffPeriodNotExpired()
+                , AOCP_PENDING)
+        );
         cases.add(new Scenario("All withdrawn all no pleas adjourned post conviction",
                 null,
                 factory.getCaseStatusChecker()

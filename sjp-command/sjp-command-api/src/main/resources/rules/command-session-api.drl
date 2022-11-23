@@ -11,7 +11,7 @@ rule "Command - Rule for start session"
   when
     $outcome: Outcome();
     $action: Action(name == "sjp.start-session");
-    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, RuleConstants.getStartSessionGroups()));
+    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, RuleConstants.getStartAocpSessionGroups()));
   then
     $outcome.setSuccess(true);
 end
@@ -20,7 +20,7 @@ rule "Command - Rule for end session"
   when
     $outcome: Outcome();
     $action: Action(name == "sjp.end-session");
-    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, RuleConstants.getEndSessionGroups()));
+    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, RuleConstants.getEndAocpSessionGroups()));
   then
     $outcome.setSuccess(true);
 end
@@ -48,6 +48,15 @@ rule "Command - Rule for unassigning case"
     $outcome: Outcome();
     $action: Action(name == "sjp.unassign-case");
     eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, RuleConstants.getAssignCaseGroups()));
+  then
+    $outcome.setSuccess(true);
+end
+
+rule "Command - Rule for reset aocp session"
+  when
+    $outcome: Outcome();
+    $action: Action(name == "sjp.reset-aocp-session");
+    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, RuleConstants.getStartAocpSessionGroups()));
   then
     $outcome.setSuccess(true);
 end

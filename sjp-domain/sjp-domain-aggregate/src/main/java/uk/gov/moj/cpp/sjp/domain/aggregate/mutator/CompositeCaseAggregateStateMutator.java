@@ -15,6 +15,7 @@ import uk.gov.moj.cpp.sjp.domain.disability.DisabilityNeeds;
 import uk.gov.moj.cpp.sjp.domain.plea.Plea;
 import uk.gov.moj.cpp.sjp.event.AllOffencesWithdrawalRequestCancelled;
 import uk.gov.moj.cpp.sjp.event.AllOffencesWithdrawalRequested;
+import uk.gov.moj.cpp.sjp.event.DefendantAocpResponseTimerExpired;
 import uk.gov.moj.cpp.sjp.event.ApplicationStatusChanged;
 import uk.gov.moj.cpp.sjp.event.CCApplicationStatusUpdated;
 import uk.gov.moj.cpp.sjp.event.CaseAdjournedToLaterSjpHearingRecorded;
@@ -23,6 +24,7 @@ import uk.gov.moj.cpp.sjp.event.CaseApplicationForReopeningRecorded;
 import uk.gov.moj.cpp.sjp.event.CaseApplicationRecorded;
 import uk.gov.moj.cpp.sjp.event.CaseCompleted;
 import uk.gov.moj.cpp.sjp.event.CaseDocumentAdded;
+import uk.gov.moj.cpp.sjp.event.CaseEligibleForAOCP;
 import uk.gov.moj.cpp.sjp.event.CaseExpectedDateReadyChanged;
 import uk.gov.moj.cpp.sjp.event.CaseListedInCriminalCourtsV2;
 import uk.gov.moj.cpp.sjp.event.CaseMarkedReadyForDecision;
@@ -40,6 +42,7 @@ import uk.gov.moj.cpp.sjp.event.DatesToAvoidAdded;
 import uk.gov.moj.cpp.sjp.event.DatesToAvoidRequired;
 import uk.gov.moj.cpp.sjp.event.DatesToAvoidTimerExpired;
 import uk.gov.moj.cpp.sjp.event.DatesToAvoidUpdated;
+import uk.gov.moj.cpp.sjp.event.DefendantAcceptedAocp;
 import uk.gov.moj.cpp.sjp.event.DefendantResponseTimerExpired;
 import uk.gov.moj.cpp.sjp.event.EmployerDeleted;
 import uk.gov.moj.cpp.sjp.event.EmployerUpdated;
@@ -217,6 +220,7 @@ final class CompositeCaseAggregateStateMutator implements AggregateStateMutator<
                         .map(DefendantCourtOptions::getDisabilityNeeds)
                         .orElse(NO_DISABILITY_NEEDS);
                 state.updateDefendantDisabilityNeeds(state.getDefendantId(), disabilityNeeds);
+                state.setDefendantAcceptedAocp(false);
             });
 
     private static final AggregateStateMutator<CaseAdjournedToLaterSjpHearingRecorded, CaseAggregateState> CASE_ADJOURNED_TO_LATER_HEARING_RECORDED_MUTATOR =
@@ -230,6 +234,19 @@ final class CompositeCaseAggregateStateMutator implements AggregateStateMutator<
 
     private static final AggregateStateMutator<DefendantResponseTimerExpired, CaseAggregateState> DEFENDANT_RESPONSE_TIMER_EXPIRED =
             ((event, state) -> state.setDefendantsResponseTimerExpired());
+
+    private static final AggregateStateMutator<DefendantAocpResponseTimerExpired, CaseAggregateState> AOCP_ACCEPTANCE_RESPONSE_TIMER_EXPIRED =
+            ((event, state) -> state.setAocpAcceptanceResponseTimerExpired());
+
+    private static final AggregateStateMutator<CaseEligibleForAOCP, CaseAggregateState> CASE_ELIGIBLE_FOR_AOCP =
+            ((event, state) -> {
+                state.setAocpEligible();
+                state.setAocpVictimSurcharge(event.getVictimSurcharge());
+                state.setAocpTotalCost(event.getAocpTotalCost());
+            });
+
+    private static final AggregateStateMutator<DefendantAcceptedAocp, CaseAggregateState> DEFENDANT_ACCEPTED_AOCP =
+            ((event, state) -> state.setDefendantAcceptedAocp(true));
 
     private static final AggregateStateMutator<DatesToAvoidRequired, CaseAggregateState> DATES_TO_AVOID_REQUIRED =
             ((event, state) -> {
@@ -369,6 +386,9 @@ final class CompositeCaseAggregateStateMutator implements AggregateStateMutator<
                 .put(PleasSet.class, PLEAS_SET_MUTATOR)
                 .put(DatesToAvoidTimerExpired.class, DATES_TO_AVOID_TIMER_EXPIRED_MUTATOR)
                 .put(DefendantResponseTimerExpired.class, DEFENDANT_RESPONSE_TIMER_EXPIRED)
+                .put(CaseEligibleForAOCP.class, CASE_ELIGIBLE_FOR_AOCP)
+                .put(DefendantAcceptedAocp.class, DEFENDANT_ACCEPTED_AOCP)
+                .put(DefendantAocpResponseTimerExpired.class, AOCP_ACCEPTANCE_RESPONSE_TIMER_EXPIRED)
                 .put(DatesToAvoidRequired.class, DATES_TO_AVOID_REQUIRED)
                 .put(DecisionSetAside.class, DECISION_SET_ASIDE)
                 .put(DecisionSetAsideReset.class, DECISION_SET_ASIDE_RESET)

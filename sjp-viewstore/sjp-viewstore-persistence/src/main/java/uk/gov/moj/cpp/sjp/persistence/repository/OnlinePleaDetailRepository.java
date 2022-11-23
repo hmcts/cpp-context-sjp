@@ -12,4 +12,8 @@ import org.apache.deltaspike.data.api.Repository;
 public abstract class OnlinePleaDetailRepository implements EntityRepository<OnlinePleaDetail, UUID> {
 
     public abstract List<OnlinePleaDetail> findByCaseIdAndDefendantId(final UUID caseId, final UUID defendantId);
+
+    public abstract List<OnlinePleaDetail> findByCaseIdAndDefendantIdAndAocpPleaIsNull(final UUID caseId, final UUID defendantId);
+
+    public abstract List<OnlinePleaDetail> findByCaseIdAndDefendantIdAndAocpPlea(final UUID caseId, final UUID defendantId, final Boolean aocpPlea);
 }

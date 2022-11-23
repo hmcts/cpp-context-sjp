@@ -1,6 +1,8 @@
 package uk.gov.moj.cpp.sjp.command.api;
 
 import static uk.gov.justice.services.core.annotation.Component.COMMAND_API;
+import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
+import static uk.gov.justice.services.messaging.JsonEnvelope.metadataFrom;
 
 import uk.gov.justice.services.adapter.rest.exception.BadRequestException;
 import uk.gov.justice.services.core.annotation.Handles;
@@ -53,6 +55,8 @@ public class SessionApi {
                     JsonObjects.getJsonObject(commandPayload, "legalAdviser")
                             .ifPresent(legalAdviser -> startSessionBuilder.add("legalAdviser", legalAdviser));
                 });
+        JsonObjects.getBoolean(commandPayload, "isAocpSession")
+                .ifPresent(isAocpSession -> startSessionBuilder.add("isAocpSession", isAocpSession));
 
         sender.send(enveloper.withMetadataFrom(startSessionCommand, "sjp.command.start-session").apply(startSessionBuilder.build()));
     }
@@ -76,6 +80,16 @@ public class SessionApi {
     @Handles("sjp.unassign-case")
     public void unassignCase(final JsonEnvelope unassignCaseCommand) {
         sender.send(enveloper.withMetadataFrom(unassignCaseCommand, "sjp.command.unassign-case").apply(unassignCaseCommand.payloadAsJsonObject()));
+    }
+
+    @Handles("sjp.reset-aocp-session")
+    public void handleResetAocpSessionRequest(final JsonEnvelope envelope) {
+        sender.send(envelopeFrom(
+                metadataFrom(
+                        envelope.metadata()).withName("sjp.command.reset-aocp-session"),
+                envelope.payloadAsJsonObject())
+        );
+
     }
 
     private void validateSessionId(final JsonEnvelope envelope) {

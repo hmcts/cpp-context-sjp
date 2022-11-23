@@ -49,7 +49,7 @@ public class SystemIdMapperService {
         }
     }
 
-    private UUID getSystemUserId() {
+    public UUID getSystemUserId() {
         return systemUserProvider.getContextSystemUserId().orElseThrow(
                 () -> new ContextSystemUserIdException("System user id not available for resulting context"));
     }

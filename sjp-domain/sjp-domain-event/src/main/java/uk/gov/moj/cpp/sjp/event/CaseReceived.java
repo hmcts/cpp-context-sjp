@@ -4,6 +4,7 @@ import uk.gov.justice.domain.annotation.Event;
 import uk.gov.moj.cpp.sjp.domain.Defendant;
 
 
+import java.io.Serializable;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
@@ -17,8 +18,9 @@ import org.apache.commons.lang3.builder.ToStringStyle;
 
 @Event(CaseReceived.EVENT_NAME)
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class CaseReceived {
+public class CaseReceived implements Serializable {
 
+    private static final long serialVersionUID = 2392689645724539703L;
     public static final String EVENT_NAME = "sjp.events.case-received";
 
     private final UUID caseId;

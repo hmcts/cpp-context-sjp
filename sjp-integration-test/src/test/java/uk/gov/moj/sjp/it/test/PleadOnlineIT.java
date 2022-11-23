@@ -95,6 +95,7 @@ import static uk.gov.moj.cpp.sjp.domain.common.CaseStatus.REFERRED_FOR_COURT_HEA
 import static uk.gov.moj.cpp.sjp.domain.disability.DisabilityNeeds.NO_DISABILITY_NEEDS;
 import static uk.gov.moj.cpp.sjp.domain.plea.PleaType.GUILTY;
 import static uk.gov.moj.cpp.sjp.domain.plea.PleaType.NOT_GUILTY;
+import static uk.gov.moj.cpp.sjp.event.processor.service.NotificationNotifyDocumentType.PARTIAL_AOCP_CRITERIA_NOTIFICATION;
 import static uk.gov.moj.sjp.it.Constants.NOTICE_PERIOD_IN_DAYS;
 import static uk.gov.moj.sjp.it.helper.AssignmentHelper.requestCaseAssignment;
 import static uk.gov.moj.sjp.it.helper.PleadOnlineHelper.getOnlinePlea;
@@ -105,6 +106,9 @@ import static uk.gov.moj.sjp.it.model.ProsecutingAuthority.DVLA;
 import static uk.gov.moj.sjp.it.model.ProsecutingAuthority.TFL;
 import static uk.gov.moj.sjp.it.model.ProsecutingAuthority.TVL;
 import static uk.gov.moj.sjp.it.pollingquery.CasePoller.pollUntilCaseByIdIsOk;
+import static uk.gov.moj.sjp.it.stub.AssignmentStub.stubAssignmentReplicationCommands;
+import static uk.gov.moj.sjp.it.stub.IdMapperStub.stubAddMapping;
+import static uk.gov.moj.sjp.it.stub.IdMapperStub.stubGetFromIdMapper;
 import static uk.gov.moj.sjp.it.stub.NotificationNotifyStub.stubNotifications;
 import static uk.gov.moj.sjp.it.stub.NotificationNotifyStub.verifyNotification;
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubAllReferenceData;
@@ -124,6 +128,13 @@ import static uk.gov.moj.sjp.it.stub.UsersGroupsStub.stubForUserDetails;
 import static uk.gov.moj.sjp.it.util.Defaults.DEFAULT_LONDON_COURT_HOUSE_OU_CODE;
 import static uk.gov.moj.sjp.it.util.FileUtil.getPayload;
 
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.jayway.awaitility.Awaitility;
+
+import java.io.IOException;
+import java.util.concurrent.Callable;
+import java.util.concurrent.TimeUnit;
 import uk.gov.justice.json.schemas.domains.sjp.Gender;
 import uk.gov.justice.json.schemas.domains.sjp.User;
 import uk.gov.justice.services.messaging.JsonEnvelope;
@@ -144,6 +155,7 @@ import uk.gov.moj.sjp.it.helper.EventListener;
 import uk.gov.moj.sjp.it.helper.FinancialMeansHelper;
 import uk.gov.moj.sjp.it.helper.PleadOnlineHelper;
 import uk.gov.moj.sjp.it.model.DecisionCommand;
+import uk.gov.moj.sjp.it.model.PleasView;
 import uk.gov.moj.sjp.it.model.ProsecutingAuthority;
 import uk.gov.moj.sjp.it.pollingquery.CasePoller;
 import uk.gov.moj.sjp.it.stub.UsersGroupsStub;
@@ -224,6 +236,7 @@ public class PleadOnlineIT extends BaseIntegrationTest {
     @Before
     @SuppressWarnings("squid:S2925")
     public void setUp() throws Exception {
+        stubNotifications();
         offenceId = randomUUID();
         databaseCleaner.cleanViewStore();
         CaseAssignmentRestrictionHelper.provisionCaseAssignmentRestrictions(Sets.newHashSet(TFL, TVL, DVLA));
@@ -231,6 +244,10 @@ public class PleadOnlineIT extends BaseIntegrationTest {
                 CreateCase.CreateCasePayloadBuilder
                         .withDefaults()
                         .withOffenceId(offenceId);
+        stubGetFromIdMapper(PARTIAL_AOCP_CRITERIA_NOTIFICATION.name(), this.createCasePayloadBuilder.getId().toString(),
+                "CASE_ID", this.createCasePayloadBuilder.getId().toString());
+        stubAddMapping();
+        stubAssignmentReplicationCommands();
         stubEnforcementAreaByPostcode(createCasePayloadBuilder.getDefendantBuilder().getAddressBuilder().getPostcode(), NATIONAL_COURT_CODE, "Bedfordshire Magistrates' Court");
         stubRegionByPostcode(NATIONAL_COURT_CODE, DEFENDANT_REGION);
         CreateCase.createCaseForPayloadBuilder(this.createCasePayloadBuilder);
@@ -242,7 +259,6 @@ public class PleadOnlineIT extends BaseIntegrationTest {
         financialMeansHelper = new FinancialMeansHelper();
         personInfoVerifier = PersonInfoVerifier.personInfoVerifierForCasePayload(createCasePayloadBuilder);
         stubCountryByPostcodeQuery("W1T 1JY", "England");
-        stubNotifications();
         stubAllReferenceData();
     }
 
@@ -346,7 +362,7 @@ public class PleadOnlineIT extends BaseIntegrationTest {
     }
 
     @Test
-    public void shouldPleadOnlineMultiOffences() {
+    public void shouldPleadOnlineMultiOffences() throws IOException {
         final UUID offenceId1 = randomUUID();
         final UUID offenceId2 = randomUUID();
         final UUID offenceId3 = randomUUID();
@@ -387,7 +403,12 @@ public class PleadOnlineIT extends BaseIntegrationTest {
                 fail("Polling interrupted, please fix the error before continue. Status code: " + response.getStatus());
             }
             verifyOnlinePleaReceivedAndUpdatedCaseDetailsFlag(createCasePayloadBuilder.getId(), true);
-            final JSONObject defendantsPlea = new JSONObject(response.readEntity(String.class));
+
+            String pleaResponse = response.readEntity(String.class);
+            ObjectMapper objectMapper = new ObjectMapper();
+            PleasView pleasView = objectMapper.readValue(pleaResponse, PleasView.class);
+            final JSONObject defendantsPlea = new JSONObject(objectMapper.writeValueAsString(pleasView.getPleas().get(0)));
+
             assertThat(defendantsPlea.getJSONArray("onlinePleaDetails").getJSONObject(0).get("offenceId"), equalTo(offenceId1.toString()));
             assertThat(defendantsPlea.getJSONArray("onlinePleaDetails").getJSONObject(0).get("plea"), equalTo(pleaType1.name()));
             assertThat(defendantsPlea.getJSONArray("onlinePleaDetails").getJSONObject(0).get("mitigation"), equalTo("I was drunk at the time"));
@@ -418,7 +439,7 @@ public class PleadOnlineIT extends BaseIntegrationTest {
     }
 
     @Test
-    public void shouldPleadOnlineWithUnchangedPersonalDetails() {
+    public void shouldPleadOnlineWithUnchangedPersonalDetails() throws IOException {
         final UUID offenceId1 = randomUUID();
         final UUID offenceId2 = randomUUID();
         final UUID offenceId3 = randomUUID();
@@ -459,7 +480,12 @@ public class PleadOnlineIT extends BaseIntegrationTest {
                 fail("Polling interrupted, please fix the error before continue. Status code: " + response.getStatus());
             }
             verifyOnlinePleaReceivedAndUpdatedCaseDetailsFlag(createCasePayloadBuilder.getId(), true);
-            final JSONObject defendantsPlea = new JSONObject(response.readEntity(String.class));
+
+            String pleaResponse = response.readEntity(String.class);
+            ObjectMapper objectMapper = new ObjectMapper();
+            PleasView pleasView = objectMapper.readValue(pleaResponse, PleasView.class);
+            final JSONObject defendantsPlea = new JSONObject(objectMapper.writeValueAsString(pleasView.getPleas().get(0)));
+
             assertThat(defendantsPlea.getJSONArray("onlinePleaDetails").getJSONObject(0).get("offenceId"), equalTo(offenceId1.toString()));
             assertThat(defendantsPlea.getJSONArray("onlinePleaDetails").getJSONObject(0).get("plea"), equalTo(pleaType1.name()));
             assertThat(defendantsPlea.getJSONArray("onlinePleaDetails").getJSONObject(0).get("mitigation"), equalTo("I was drunk at the time"));
@@ -623,7 +649,7 @@ public class PleadOnlineIT extends BaseIntegrationTest {
     }
 
     @Test
-    public void shouldPleadOnlineWithChangedDriverDetails() {
+    public void shouldPleadOnlineWithChangedDriverDetails() throws IOException {
         final UUID offenceId1 = randomUUID();
         final UUID offenceId2 = randomUUID();
         final UUID offenceId3 = randomUUID();
@@ -676,7 +702,11 @@ public class PleadOnlineIT extends BaseIntegrationTest {
 
             verifyOnlinePleaReceivedAndUpdatedCaseDetailsFlag(createCasePayloadBuilder.getId(), true);
 
-            final JSONObject defendantsPlea = new JSONObject(response.readEntity(String.class));
+            String pleaResponse = response.readEntity(String.class);
+            ObjectMapper objectMapper = new ObjectMapper();
+            PleasView pleasView = objectMapper.readValue(pleaResponse, PleasView.class);
+            final JSONObject defendantsPlea = new JSONObject(objectMapper.writeValueAsString(pleasView.getPleas().get(0)));
+
             assertThat(defendantsPlea.getJSONObject("personalDetails").get("firstName"), equalTo("David"));
             assertThat(defendantsPlea.getJSONObject("personalDetails").get("lastName"), equalTo("LLOYD"));
             assertThat(defendantsPlea.getJSONObject("personalDetails").getJSONObject("address").get("address1"), equalTo("14 Tottenham Court Road"));
@@ -1170,5 +1200,13 @@ public class PleadOnlineIT extends BaseIntegrationTest {
                 Defaults.DEFAULT_USER_ID);
         assertThat(response.getStatus(), Matchers.equalTo(Response.Status.OK.getStatusCode()));
         return createReader(new StringReader(response.readEntity(String.class))).readObject();
+    }
+
+
+    private void pollUntil(final Callable<Integer> function, final Matcher<Integer> matcher) {
+        Awaitility.await()
+                .pollInterval(200, TimeUnit.MILLISECONDS)
+                .timeout(3, TimeUnit.SECONDS)
+                .until(function, matcher);
     }
 }

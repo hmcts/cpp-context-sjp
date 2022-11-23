@@ -57,7 +57,8 @@ public class CaseReceivedToCaseTest {
                 event.getCreatedOn(),
                 defendantDetail,
                 event.getCosts(),
-                event.getPostingDate());
+                event.getPostingDate(),
+                null);
     }
 
     private static CaseReceived buildCaseReceived() {

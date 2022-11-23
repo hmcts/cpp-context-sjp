@@ -19,6 +19,14 @@ rule "Command - Rule for end session"
     $outcome.setSuccess(true);
 end
 
+rule "Command - Rule for reset aocp session request"
+  when
+    $outcome: Outcome();
+    $action: Action(name == "sjp.command.reset-aocp-session");
+  then
+    $outcome.setSuccess(true);
+end
+
 rule "Command - Rule for assigning case"
   when
     $outcome: Outcome();

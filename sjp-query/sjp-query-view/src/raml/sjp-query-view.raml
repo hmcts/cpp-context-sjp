@@ -370,8 +370,8 @@ baseUri: http://localhost:8080/sjp-query-view/query/view/rest/sjp
           description: OK
           body:
                 application/vnd.sjp.query.defendants-online-plea+json:
-                  schema: !include json/schema/sjp.query.defendants-online-plea.json
-                  example: !include json/sjp.query.defendants-online-plea.json
+                  schema: !include json/schema/sjp.query.defendants-online-pleas.json
+                  example: !include json/sjp.query.defendants-online-pleas.json
 
 /cases/{caseId}/assignment:
   get:
@@ -504,6 +504,21 @@ baseUri: http://localhost:8080/sjp-query-view/query/view/rest/sjp
                 application/vnd.sjp.query.session+json:
                   schema: !include json/schema/sjp.query.session.json
                   example: !include json/sjp.query.session.json
+
+/aocpSession:
+  get:
+    description: |
+      Get aocp session.
+      ...
+      (mapping):
+          responseType: application/vnd.sjp.query.latest-aocp-session+json
+          name: sjp.query.latest-aocp-session
+      ...
+    responses:
+        200:
+          description: OK
+          body:
+                application/vnd.sjp.query.latest-aocp-session+json:
 
 /convicting-court-session/{offenceId}:
   description: return convicting court session
@@ -776,6 +791,26 @@ baseUri: http://localhost:8080/sjp-query-view/query/view/rest/sjp
           application/vnd.sjp.query.notification-of-endorsement-status+json:
             schema: !include json/schema/sjp.query.notification-of-endorsement-status.json
 
+
+/notification-of-partial-aocp/{caseId}:
+  description: returns a notification of partial aocp status
+  uriParameters:
+    caseId:
+      description: The case id
+      type: string
+  get:
+    description: |
+      ...
+      (mapping):
+          responseType: application/vnd.sjp.query.notification-of-partial-aocp-status+json
+          name: sjp.query.notification-of-partial-aocp-status
+      ...
+    responses:
+      200:
+        body:
+          application/vnd.sjp.query.notification-of-partial-aocp-status+json:
+            schema: !include json/schema/sjp.query.notification-of-partial-aocp-status.json
+
 /enforcement-pending-application-notification-status/{applicationId}:
   description: returns a notification of enforcement of pending application status
   uriParameters:
@@ -794,6 +829,25 @@ baseUri: http://localhost:8080/sjp-query-view/query/view/rest/sjp
         body:
           application/vnd.sjp.query.enforcement-pending-application-notification-status+json:
             schema: !include json/schema/sjp.query.enforcement-pending-application-notification-status.json
+
+/aocp-accepted-email-status/{caseId}:
+  description: returns a notification of aocp accepted email  status
+  uriParameters:
+    caseId:
+      description: The case Id
+      type: string
+  get:
+    description: |
+      ...
+      (mapping):
+          responseType: application/vnd.sjp.query.aocp-accepted-email-notification-status+json
+          name: sjp.query.aocp-accepted-email-notification-status
+      ...
+    responses:
+      200:
+        body:
+          application/vnd.sjp.query.aocp-accepted-email-notification-status+json:
+            schema: !include json/schema/sjp.query.aocp-accepted-email-notification-status.json
 
 
 /cases/{caseId}/common-case-application:

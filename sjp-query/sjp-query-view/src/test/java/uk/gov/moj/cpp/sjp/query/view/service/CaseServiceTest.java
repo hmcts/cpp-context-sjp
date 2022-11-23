@@ -640,7 +640,7 @@ public class CaseServiceTest {
         final DefendantDetail defendantDetail = new DefendantDetail();
         defendantDetail.setAddress(address);
 
-        final CaseDetail caseDetail = new CaseDetail(UUID.randomUUID(), "TFL1234", "2K2SLYFC743H", null, null, null, null, defendantDetail, null, null);
+        final CaseDetail caseDetail = new CaseDetail(UUID.randomUUID(), "TFL1234", "2K2SLYFC743H", null, null, null, null, defendantDetail, null, null, null);
 
         final CaseDocument caseDocument = new CaseDocument(UUID.randomUUID(),
                 UUID.randomUUID(), CaseDocument.RESULT_ORDER_DOCUMENT_TYPE,
@@ -670,7 +670,8 @@ public class CaseServiceTest {
         final LocalDate FROM_DATE = LocalDates.from("2017-01-01");
         final LocalDate TO_DATE = LocalDates.from("2017-01-10");
 
-        final CaseDetail caseDetail = new CaseDetail(UUID.randomUUID(), "TFL1234", "2K2SLYFC743H", null, null, null, null, new DefendantDetail(), null, null);
+        final CaseDetail caseDetail = new CaseDetail(UUID.randomUUID(), "TFL1234", "2K2SLYFC743H", null, null, null,
+                null, new DefendantDetail(), null, null , null);
         final CaseDocument caseDocument = new CaseDocument(UUID.randomUUID(),
                 UUID.randomUUID(), CaseDocument.RESULT_ORDER_DOCUMENT_TYPE,
                 clock.now(), caseDetail.getId(), null);
@@ -955,7 +956,7 @@ public class CaseServiceTest {
 
     private CaseDetail createCaseDetail(final boolean onlinePleaReceived) {
         final CaseDetail caseDetail = new CaseDetail(CASE_ID, URN, ENTERPRISE_ID, "CPS", COMPLETED,
-                null, clock.now(), DefendantDetailBuilder.aDefendantDetail().build(), null, now().minusDays(5));
+                null, clock.now(), DefendantDetailBuilder.aDefendantDetail().build(), null, now().minusDays(5), null);
         caseDetail.setOnlinePleaReceived(onlinePleaReceived);
         caseDetail.setCaseStatus(CASE_STATUS_REFERRED_FOR_COURT_HEARING);
         caseDetail.setCcApplicationStatus(ApplicationStatus.APPEAL_ALLOWED);

@@ -24,8 +24,6 @@ public class ReadyCaseCalculator {
         READINESS_REASON_BY_PLEA_TYPE.put(GUILTY, PLEADED_GUILTY);
         READINESS_REASON_BY_PLEA_TYPE.put(NOT_GUILTY, PLEADED_NOT_GUILTY);
         READINESS_REASON_BY_PLEA_TYPE.put(GUILTY_REQUEST_HEARING, PLEADED_GUILTY_REQUEST_HEARING);
-
-        assert READINESS_REASON_BY_PLEA_TYPE.size() == PleaType.values().length : "not all PleaTypes have been mapped";
     }
 
     /**

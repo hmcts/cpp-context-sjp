@@ -135,4 +135,8 @@ public class Session implements Serializable {
     public void setLegalAdviserUserId(final UUID legalAdviserUserId) {
         this.legalAdviserUserId = legalAdviserUserId;
     }
+
+    public void setType(final SessionType type) {
+        this.type = type;
+    }
 }

@@ -2,7 +2,9 @@ package uk.gov.moj.cpp.sjp.domain.aggregate.handler;
 
 import static com.google.common.collect.Sets.newHashSet;
 import static java.lang.String.format;
+import static java.math.BigDecimal.ROUND_DOWN;
 import static java.math.BigDecimal.ZERO;
+import static java.time.ZonedDateTime.now;
 import static java.util.Arrays.asList;
 import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
@@ -31,22 +33,29 @@ import static uk.gov.moj.cpp.sjp.domain.decision.DecisionType.REFERRED_TO_OPEN_C
 import static uk.gov.moj.cpp.sjp.domain.decision.DecisionType.REFER_FOR_COURT_HEARING;
 import static uk.gov.moj.cpp.sjp.domain.decision.DecisionType.SET_ASIDE;
 import static uk.gov.moj.cpp.sjp.domain.decision.DecisionType.WITHDRAW;
+import static uk.gov.moj.cpp.sjp.domain.decision.FinancialPenalty.createFinancialPenalty;
 import static uk.gov.moj.cpp.sjp.domain.verdict.VerdictType.FOUND_GUILTY;
 import static uk.gov.moj.cpp.sjp.domain.verdict.VerdictType.FOUND_NOT_GUILTY;
 import static uk.gov.moj.cpp.sjp.domain.verdict.VerdictType.NO_VERDICT;
 import static uk.gov.moj.cpp.sjp.domain.verdict.VerdictType.PROVED_SJP;
 import static uk.gov.moj.cpp.sjp.event.CaseReferredForCourtHearing.caseReferredForCourtHearing;
+import static uk.gov.moj.cpp.sjp.domain.plea.PleaType.GUILTY;
 
 import uk.gov.justice.json.schemas.domains.sjp.Note;
 import uk.gov.justice.json.schemas.domains.sjp.NoteType;
 import uk.gov.justice.json.schemas.domains.sjp.User;
 import uk.gov.justice.json.schemas.domains.sjp.events.CaseNoteAdded;
+import uk.gov.moj.cpp.sjp.domain.AOCPCost;
+import uk.gov.moj.cpp.sjp.domain.AOCPCostDefendant;
+import uk.gov.moj.cpp.sjp.domain.AOCPCostOffence;
 import uk.gov.moj.cpp.sjp.domain.DefendantCourtInterpreter;
 import uk.gov.moj.cpp.sjp.domain.DefendantCourtOptions;
 import uk.gov.moj.cpp.sjp.domain.SessionType;
 import uk.gov.moj.cpp.sjp.domain.aggregate.Session;
 import uk.gov.moj.cpp.sjp.domain.aggregate.state.CaseAggregateState;
 import uk.gov.moj.cpp.sjp.domain.decision.Adjourn;
+import uk.gov.moj.cpp.sjp.domain.decision.AocpDecision;
+import uk.gov.moj.cpp.sjp.domain.decision.CourtDetails;
 import uk.gov.moj.cpp.sjp.domain.decision.SessionCourt;
 import uk.gov.moj.cpp.sjp.domain.decision.ConvictingInformation;
 import uk.gov.moj.cpp.sjp.domain.decision.Decision;
@@ -64,11 +73,18 @@ import uk.gov.moj.cpp.sjp.domain.decision.ReferredForFutureSJPSession;
 import uk.gov.moj.cpp.sjp.domain.decision.ReferredToOpenCourt;
 import uk.gov.moj.cpp.sjp.domain.decision.SetAside;
 import uk.gov.moj.cpp.sjp.domain.decision.Withdraw;
+import uk.gov.moj.cpp.sjp.domain.decision.imposition.CostsAndSurcharge;
 import uk.gov.moj.cpp.sjp.domain.decision.imposition.FinancialImposition;
+import uk.gov.moj.cpp.sjp.domain.decision.imposition.LumpSum;
+import uk.gov.moj.cpp.sjp.domain.decision.imposition.Payment;
+import uk.gov.moj.cpp.sjp.domain.decision.imposition.PaymentTerms;
 import uk.gov.moj.cpp.sjp.domain.decision.imposition.PaymentType;
+import uk.gov.moj.cpp.sjp.domain.plea.Plea;
 import uk.gov.moj.cpp.sjp.domain.plea.PleaMethod;
 import uk.gov.moj.cpp.sjp.domain.plea.PleaType;
 import uk.gov.moj.cpp.sjp.domain.verdict.VerdictType;
+import uk.gov.moj.cpp.sjp.event.DefendantAocpResponseTimerExpired;
+import uk.gov.moj.cpp.sjp.event.AocpPleasSet;
 import uk.gov.moj.cpp.sjp.event.CaseAdjournedToLaterSjpHearingRecorded;
 import uk.gov.moj.cpp.sjp.event.CaseCompleted;
 import uk.gov.moj.cpp.sjp.event.decision.DecisionRejected;
@@ -106,7 +122,7 @@ public class CaseDecisionHandler {
     private CaseDecisionHandler() {
     }
 
-    private static void addDecisionSavedEvent(final Session session, Decision decision, final CaseAggregateState state, final Stream.Builder<Object> streamBuilder) {
+    private static void addDecisionSavedEvent(final Session session, Decision decision, final CaseAggregateState state, final Stream.Builder<Object> streamBuilder, final Boolean resultedThroughAocp ) {
 
         final Optional<SessionCourt> convictingCourt =
                 ofNullable(session.getCourtHouseCode()).map(chc ->
@@ -128,9 +144,9 @@ public class CaseDecisionHandler {
                 decision.getCaseId(),
                 decision.getSavedAt(),
                 decision.getOffenceDecisions(),
-                decision.getFinancialImposition()));
+                decision.getFinancialImposition(),
+                resultedThroughAocp));
     }
-
     private static void addOffencesPressRestrictable(final Decision decision, final CaseAggregateState state) {
         final PressRestrictableOffenceDecisionVistor pressRestrictableOffenceDecisionVistor = new PressRestrictableOffenceDecisionVistor(state);
         decision.getOffenceDecisions().forEach(offenceDecision -> offenceDecision.accept(pressRestrictableOffenceDecisionVistor));
@@ -395,7 +411,7 @@ public class CaseDecisionHandler {
         }
 
         final Stream.Builder<Object> streamBuilder = Stream.builder();
-        addDecisionSavedEvent(session, decision, state, streamBuilder);
+        addDecisionSavedEvent(session, decision, state, streamBuilder, null);
         addCaseNoteAddedEventIfNoteIsPresent(decision, streamBuilder);
         addCaseUnassignedEvent(decision, streamBuilder);
 
@@ -835,6 +851,55 @@ public class CaseDecisionHandler {
                 offDecInfo.setPressRestrictable(state.isPressRestrictable(offenceId));
             });
         }
+    }
+
+    public Stream<Object> expireAocpResponseTimerAndSaveDecision( final AocpDecision aocpDecision, final CaseAggregateState state, final Session session) {
+
+        final Stream.Builder<Object> streamBuilder = Stream.builder();
+        final ZonedDateTime savedAt = now();
+
+        addAocpAcceptanceResponseTimerExpiredEvent(state.getCaseId(), streamBuilder);
+
+        final List<OffenceDecision> offenceDecisions = new ArrayList<>();
+        final List<Plea> pleas = new ArrayList<>();
+        final AOCPCost aocpCost = state.getAOCPCost().get(state.getCaseId());
+        final AOCPCostDefendant defendant= aocpCost.getDefendant();
+        final List<AOCPCostOffence> aocpCostOffences = defendant.getOffences();
+
+        final BigDecimal aocpTotalCost =  state.getAocpTotalCost().setScale(2, ROUND_DOWN);
+
+        final LumpSum lumpSum = new LumpSum(aocpTotalCost, 28, null );
+        final PaymentTerms paymentTerms = new PaymentTerms(false, lumpSum, null);
+        final CourtDetails courtDetails = new CourtDetails(aocpDecision.getDefendant().getCourt().getNationalCourtCode(), aocpDecision.getDefendant().getCourt().getNationalCourtName());
+        final Payment payment = new Payment(aocpTotalCost, PaymentType.PAY_TO_COURT, "No information from defendant", null, paymentTerms, courtDetails);
+        final CostsAndSurcharge costsAndSurcharge = new CostsAndSurcharge(aocpCost.getCosts(), null, state.getAocpVictimSurcharge(), null, null, true);
+
+        final FinancialImposition financialImposition = new FinancialImposition(costsAndSurcharge, payment);
+        final SessionCourt sessionCourt = new SessionCourt(session.getCourtHouseCode(), session.getLocalJusticeAreaNationalCourtCode());
+
+        aocpCostOffences.forEach(offence->{
+            final FinancialPenalty financialPenalty = createFinancialPenalty(randomUUID(), new OffenceDecisionInformation(offence.getId(), FOUND_GUILTY, false), offence.getAocpStandardPenaltyAmount(),offence.getCompensation(), null, true, null, null, null);
+            financialPenalty.setConvictingCourt(sessionCourt);
+            financialPenalty.setConvictionDate(savedAt.toLocalDate());
+            offenceDecisions.add(financialPenalty);
+            pleas.add(new Plea(defendant.getId(), offence.getId(), GUILTY));
+        });
+
+        final Decision decision = new Decision(aocpDecision.getDecisionId(), aocpDecision.getSessionId(),  state.getCaseId(), null, savedAt, aocpDecision.getSavedBy(), offenceDecisions, financialImposition, aocpDecision.getDefendant());
+
+        addSetAocpPleaEvent(state.getCaseId(), pleas, streamBuilder);
+        addDecisionSavedEvent(session, decision, state, streamBuilder, true);
+        addCaseCompletedEventIfAllOffencesHasFinalDecision(decision, streamBuilder, state);
+
+        return streamBuilder.build();
+    }
+
+    private void addSetAocpPleaEvent(final UUID caseId, List<Plea> pleas, final Stream.Builder<Object> streamBuilder){
+        streamBuilder.add(new AocpPleasSet(caseId, pleas));
+    }
+
+    private void addAocpAcceptanceResponseTimerExpiredEvent(final UUID caseId, final Stream.Builder<Object> streamBuilder){
+        streamBuilder.add(new DefendantAocpResponseTimerExpired(caseId));
     }
 
 }

@@ -12,6 +12,7 @@ import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
 import uk.gov.justice.services.core.annotation.Handles;
 import uk.gov.justice.services.core.annotation.ServiceComponent;
 import uk.gov.justice.services.messaging.Envelope;
+import uk.gov.moj.cpp.sjp.domain.plea.PleaType;
 import uk.gov.moj.cpp.sjp.domain.verdict.VerdictType;
 import uk.gov.moj.cpp.sjp.event.decision.DecisionResubmitted;
 import uk.gov.moj.cpp.sjp.event.decision.DecisionSaved;
@@ -24,9 +25,11 @@ import uk.gov.moj.cpp.sjp.persistence.entity.CaseDecision;
 import uk.gov.moj.cpp.sjp.persistence.entity.CaseDetail;
 import uk.gov.moj.cpp.sjp.persistence.entity.OffenceDecision;
 import uk.gov.moj.cpp.sjp.persistence.entity.OffenceDetail;
+import uk.gov.moj.cpp.sjp.persistence.entity.OnlinePleaDetail;
 import uk.gov.moj.cpp.sjp.persistence.repository.CaseAccountNoteRepository;
 import uk.gov.moj.cpp.sjp.persistence.repository.CaseDecisionRepository;
 import uk.gov.moj.cpp.sjp.persistence.repository.CaseRepository;
+import uk.gov.moj.cpp.sjp.persistence.repository.OnlinePleaDetailRepository;
 
 import java.util.List;
 import java.util.Optional;
@@ -56,6 +59,9 @@ public class CaseDecisionListener {
     private CaseAccountNoteRepository accountNoteRepository;
 
     @Inject
+    OnlinePleaDetailRepository onlinePleaDetailRepository;
+
+    @Inject
     private JsonObjectToObjectConverter jsonObjectToObjectConverter;
 
     private static final List<VerdictType> CONVICTION_VERDICTS = asList(FOUND_GUILTY, PROVED_SJP);
@@ -64,13 +70,20 @@ public class CaseDecisionListener {
 
     @Handles(DecisionSaved.EVENT_NAME)
     public void handleCaseDecisionSaved(final Envelope<DecisionSaved> envelope) {
-        final CaseDecision caseDecision = eventConverter.convert(envelope.payload());
+        final DecisionSaved decisionSaved = envelope.payload();
+        final CaseDecision caseDecision = eventConverter.convert(decisionSaved);
         final CaseDecision enrichedCaseDecision = enrichOffenceDecision(caseDecision);
         caseDecisionRepository.save(enrichedCaseDecision);
         final CaseDetail caseDetails = caseRepository.findBy(caseDecision.getCaseId());
         updateOffenceConvictionInformation(caseDetails, caseDecision);
         updateOffencePressRestriction(caseDetails, caseDecision);
         updateOffenceCompleted(caseDetails, caseDecision);
+
+        if(nonNull(decisionSaved.getResultedThroughAOCP()) && Boolean.TRUE.equals(decisionSaved.getResultedThroughAOCP())){
+            caseDetails.setResultedThroughAOCP(true);
+            saveAccountNotes(decisionSaved.getCaseId(), caseDetails.getUrn(), "Case resulted with AOCP");
+            updateOnlinePleaDetails(caseDecision.getCaseId(), caseDetails.getDefendant().getId());
+        }
         caseRepository.save(caseDetails);
     }
 
@@ -84,7 +97,8 @@ public class CaseDecisionListener {
                 decisionSavedWithPaymentTermsChanged.getDecisionSaved().getCaseId(),
                 decisionSavedWithPaymentTermsChanged.getDecisionSaved().getSavedAt(),
                 decisionSavedWithPaymentTermsChanged.getDecisionSaved().getOffenceDecisions(),
-                decisionSavedWithPaymentTermsChanged.getDecisionSaved().getFinancialImposition());
+                decisionSavedWithPaymentTermsChanged.getDecisionSaved().getFinancialImposition(),
+               null);
 
         final CaseDecision caseDecision = eventConverter.convert(decisionSaved);
         final CaseDecision enrichedCaseDecision = enrichOffenceDecision(caseDecision);
@@ -175,6 +189,14 @@ public class CaseDecisionListener {
     private static void enrichOffenceDecision(final OffenceDecision offenceDecision, final OffenceDetail offence) {
         offenceDecision.setPleaAtDecisionTime(offence.getPlea());
         offenceDecision.setPleaDate(offence.getPleaDate());
+    }
+
+    private void updateOnlinePleaDetails(final UUID caseId, final UUID defendantId){
+        final List<OnlinePleaDetail> onlinePleaDetails  = onlinePleaDetailRepository.findByCaseIdAndDefendantId(caseId, defendantId);
+        onlinePleaDetails.forEach(onlinePleaDetail -> {
+            onlinePleaDetail.setPlea(PleaType.GUILTY);
+            onlinePleaDetailRepository.save(onlinePleaDetail);
+        });
     }
 
 }

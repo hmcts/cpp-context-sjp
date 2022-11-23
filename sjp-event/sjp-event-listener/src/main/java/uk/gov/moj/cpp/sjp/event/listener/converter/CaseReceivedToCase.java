@@ -23,7 +23,8 @@ public class CaseReceivedToCase implements Converter<CaseReceived, CaseDetail> {
                 event.getCreatedOn(),
                 defendantToDefendantDetailsConverter.convert(event.getDefendant()),
                 event.getCosts(),
-                event.getPostingDate());
+                event.getPostingDate(),
+                null);
     }
 
 }

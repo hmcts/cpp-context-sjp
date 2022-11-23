@@ -103,6 +103,7 @@ public class CaseReceivedListenerTest {
     private static final String urn = prosecutingAuthority + "1234";
     private static final String enterpriseId = RandomStringUtils.randomAlphanumeric(12).toUpperCase();
     private static final BigDecimal costs = BigDecimal.valueOf(12.23);
+    private static final BigDecimal victimSurcharge = BigDecimal.valueOf(10.13);
     private static final LocalDate postingDate = LocalDate.of(2017, 1, 1);
     private static final UUID defendantId = UUID.randomUUID();
 
@@ -182,7 +183,8 @@ public class CaseReceivedListenerTest {
                         null,
                         buildAddress(), null, null),
                 costs,
-                postingDate);
+                postingDate,
+                victimSurcharge);
 
         final DefendantDetail actualDefendant = actualCaseDetail.getDefendant();
         final DefendantDetail expectedDefendant = expectedCaseDetail.getDefendant();

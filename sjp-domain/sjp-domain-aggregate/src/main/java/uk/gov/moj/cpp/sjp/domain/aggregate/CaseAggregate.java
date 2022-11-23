@@ -53,7 +53,9 @@ import uk.gov.moj.cpp.sjp.domain.aggregate.state.CaseAggregateState;
 import uk.gov.moj.cpp.sjp.domain.aggregate.state.WithdrawalRequestsStatus;
 import uk.gov.moj.cpp.sjp.domain.common.CaseManagementStatus;
 import uk.gov.moj.cpp.sjp.domain.common.CaseState;
+import uk.gov.moj.cpp.sjp.domain.decision.AocpDecision;
 import uk.gov.moj.cpp.sjp.domain.decision.Decision;
+import uk.gov.moj.cpp.sjp.domain.onlineplea.PleadAocpOnline;
 import uk.gov.moj.cpp.sjp.domain.onlineplea.PleadOnline;
 import uk.gov.moj.cpp.sjp.domain.onlineplea.PleadOnlinePcqVisited;
 import uk.gov.moj.cpp.sjp.domain.plea.PleaMethod;
@@ -74,7 +76,7 @@ import javax.json.JsonObject;
 @SuppressWarnings("WeakerAccess")
 public class CaseAggregate implements Aggregate {
 
-    private static final long serialVersionUID = 17L;
+    private static final long serialVersionUID = 18L;
     private static final AggregateStateMutator<Object, CaseAggregateState> AGGREGATE_STATE_MUTATOR = AggregateStateMutator.compositeCaseAggregateStateMutator();
     private static final CaseReadinessHandler caseReadinessHandler = CaseReadinessHandler.INSTANCE;
 
@@ -179,6 +181,10 @@ public class CaseAggregate implements Aggregate {
         return apply(CaseDocumentHandler.INSTANCE.addCaseDocument(caseId, caseDocument, state));
     }
 
+    public Stream<Object> resolveCaseAOCPEligibility(final UUID caseId, final boolean isProsecutorAOCPApproved) {
+        return apply(CaseCoreHandler.INSTANCE.resolveCaseAOCPEligibility(caseId, isProsecutorAOCPApproved, state));
+    }
+
     public Stream<Object> uploadCaseDocument(final UUID caseId, final UUID documentReference, final String documentType) {
         return apply(CaseDocumentHandler.INSTANCE.uploadCaseDocument(caseId, documentReference, documentType, state));
     }
@@ -223,6 +229,10 @@ public class CaseAggregate implements Aggregate {
 
     public Stream<Object> pleadOnlinePcqVisited(final UUID caseId, final PleadOnlinePcqVisited pleadOnlinePcqVisited, final ZonedDateTime createdOn) {
         return applyAndResolveCaseReadiness(() -> OnlinePleaHandler.INSTANCE.pleadOnlinePcqVisited(caseId, pleadOnlinePcqVisited, createdOn, state));
+    }
+
+    public Stream<Object> pleadAocpAcceptedOnline(final PleadAocpOnline pleadAocpOnline, final ZonedDateTime createdOn) {
+        return applyAndResolveCaseReadiness(() -> OnlinePleaHandler.INSTANCE.pleadAocpAcceptedOnline(pleadAocpOnline, createdOn, state));
     }
 
     public Stream<Object> markAsLegalSocChecked(final UUID caseId, final UUID checkedBy, final ZonedDateTime checkedAt) {
@@ -309,6 +319,10 @@ public class CaseAggregate implements Aggregate {
 
     public Stream<Object> saveDecision(final Decision decision, final Session session) {
         return applyAndResolveCaseReadiness(() -> CaseDecisionHandler.INSTANCE.saveDecision(decision, state, session));
+    }
+
+    public Stream<Object> expireAocpResponseTimerAndSaveDecision(final AocpDecision aocpDecision, final Session session) {
+        return applyAndResolveCaseReadiness(() -> CaseDecisionHandler.INSTANCE.expireAocpResponseTimerAndSaveDecision(aocpDecision, state , session));
     }
 
     public Stream<Object> resolveConvictionCourt(final UUID caseId, final Map<UUID, Session> sessions) {

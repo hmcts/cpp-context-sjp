@@ -23,6 +23,9 @@ subscriptions_descriptor:
               - name: sjp.events.pleas-set
                 schema_uri: http://justice.gov.uk/json/schemas/domains/sjp/event/pleas-set.json
 
+              - name: sjp.events.aocp-pleas-set
+                schema_uri: http://justice.gov.uk/json/schemas/domains/sjp/event/aocp-pleas-set.json
+
               - name: sjp.events.pleaded-guilty
                 schema_uri: http://justice.gov.uk/json/schemas/domains/sjp/events/pleaded-guilty.json
 
@@ -128,11 +131,17 @@ subscriptions_descriptor:
               - name: sjp.events.delegated-powers-session-started
                 schema_uri: http://justice.gov.uk/json/schemas/domains/sjp/event/delegated-powers-session-started.json
 
+              - name: sjp.events.aocp-session-started
+                schema_uri: http://justice.gov.uk/json/schemas/domains/sjp/event/aocp-session-started.json
+
               - name: sjp.events.magistrate-session-ended
                 schema_uri: http://justice.gov.uk/json/schemas/domains/sjp/event/magistrate-session-ended.json
 
               - name: sjp.events.delegated-powers-session-ended
                 schema_uri: http://justice.gov.uk/json/schemas/domains/sjp/event/delegated-powers-session-ended.json
+
+              - name: sjp.events.aocp-session-ended
+                schema_uri: http://justice.gov.uk/json/schemas/domains/sjp/event/aocp-session-ended.json
 
               - name: sjp.events.case-marked-ready-for-decision
                 schema_uri: http://justice.gov.uk/json/schemas/domains/sjp/event/case-marked-ready-for-decision.json
@@ -239,6 +248,9 @@ subscriptions_descriptor:
               - name: sjp.events.notification-remove-endorsements-generated
                 schema_uri: http://justice.gov.uk/json/schemas/domains/sjp/events/notification-remove-endorsements-generated.json
 
+              - name: sjp.events.partial-aocp-criteria-notification-to-prosecutor-queued
+                schema_uri: http://justice.gov.uk/json/schemas/domains/sjp/event/partial-aocp-criteria-notification-to-prosecutor-queued.json
+
               - name: sjp.events.notification-remove-endorsements-generation-failed
                 schema_uri: http://justice.gov.uk/json/schemas/domains/sjp/events/notification-remove-endorsements-generation-failed.json
 
@@ -269,6 +281,21 @@ subscriptions_descriptor:
               - name: sjp.events.enforcement-pending-application-notification-sent
                 schema_uri: http://justice.gov.uk/json/schemas/domains/sjp/events/sjp.events.enforcement-pending-application-notification-sent.json
 
+              - name: sjp.events.partial-aocp-criteria-notification-to-prosecutor-failed
+                schema_uri: http://justice.gov.uk/json/schemas/domains/sjp/event/partial-aocp-criteria-notification-to-prosecutor-failed.json
+
+              - name: sjp.events.partial-aocp-criteria-notification-to-prosecutor-sent
+                schema_uri: http://justice.gov.uk/json/schemas/domains/sjp/event/partial-aocp-criteria-notification-to-prosecutor-sent.json
+
+              - name: sjp.events.aocp-accepted-email-notification-queued
+                schema_uri: http://justice.gov.uk/json/schemas/domains/sjp/events/sjp.events.aocp-accepted-email-notification-queued.json
+
+              - name: sjp.events.aocp-accepted-email-notification-failed
+                schema_uri: http://justice.gov.uk/json/schemas/domains/sjp/events/sjp.events.aocp-accepted-email-notification-failed.json
+
+              - name: sjp.events.aocp-accepted-email-notification-sent
+                schema_uri: http://justice.gov.uk/json/schemas/domains/sjp/events/sjp.events.aocp-accepted-email-notification-sent.json
+
               - name: sjp.events.cc-application-status-created
                 schema_uri: http://justice.gov.uk/json/schemas/domains/sjp/events/cc-application-status-created.json
 
@@ -277,5 +304,11 @@ subscriptions_descriptor:
 
               - name: sjp.events.marked-as-legal-soc-checked
                 schema_uri: http://justice.gov.uk/json/schemas/domains/sjp/event/sjp.events.marked-as-legal-soc-checked.json
+
+              - name: sjp.events.case-eligible-for-aocp
+                schema_uri: http://justice.gov.uk/json/schemas/domains/sjp/event/case-eligible-for-aocp.json
+
+              - name: sjp.events.defendant-accepted-aocp
+                schema_uri: http://justice.gov.uk/json/schemas/domains/sjp/event/defendant-accepted-aocp.json
 
           event_source_name: sjp

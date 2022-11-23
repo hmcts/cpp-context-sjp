@@ -17,7 +17,7 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-@SuppressWarnings("squid:S00107")
+@SuppressWarnings({"squid:S00107", "pmd:BeanMembersShouldSerialize"})
 public class Decision implements Serializable {
 
     private UUID decisionId;
@@ -105,7 +105,6 @@ public class Decision implements Serializable {
     public Defendant getDefendant() {
         return defendant;
     }
-
 
     @JsonIgnore
     public Set<UUID> getOffenceIds() {

@@ -70,7 +70,7 @@ public class OffenceUpdatedListener {
             onlinePleaRepository.saveOnlinePlea(onlinePlea);
             onlinePleaDetailRepository.save(new OnlinePleaDetail(event.getOffenceId(), event.getCaseId(),
                     offenceDetail.getDefendantDetail().getId(), event.getPlea(),
-                    event.getMitigation(), event.getNotGuiltyBecause()));
+                    event.getMitigation(), event.getNotGuiltyBecause(), null));
         }
     }
 
@@ -89,7 +89,7 @@ public class OffenceUpdatedListener {
             onlinePleaRepository.saveOnlinePlea(onlinePlea);
             onlinePleaDetailRepository.save(new OnlinePleaDetail(event.getOffenceId(), event.getCaseId(),
                     offenceDetail.getDefendantDetail().getId(), GUILTY,
-                    event.getMitigation(), null));
+                    event.getMitigation(), null, null));
         }
     }
 
@@ -109,7 +109,7 @@ public class OffenceUpdatedListener {
             onlinePleaRepository.saveOnlinePlea(onlinePlea);
             onlinePleaDetailRepository.save(new OnlinePleaDetail(event.getOffenceId(), event.getCaseId(),
                     offenceDetail.getDefendantDetail().getId(), GUILTY_REQUEST_HEARING,
-                    event.getMitigation(), null));
+                    event.getMitigation(), null, null));
         }
     }
 
@@ -128,7 +128,7 @@ public class OffenceUpdatedListener {
             onlinePleaRepository.saveOnlinePlea(onlinePlea);
             onlinePleaDetailRepository.save(new OnlinePleaDetail(event.getOffenceId(), event.getCaseId(),
                     offenceDetail.getDefendantDetail().getId(), NOT_GUILTY,
-                    null, event.getNotGuiltyBecause()));
+                    null, event.getNotGuiltyBecause(), null));
         }
     }
 

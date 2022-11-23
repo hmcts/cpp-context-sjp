@@ -71,4 +71,16 @@ public class TimerServiceTest {
                 TimerService.ADJOURNMENT_TIMER_COMMAND,
                 metadata);
     }
+
+    @Test
+    public void shouldStartDefendantAocpAcceptanceTimer() {
+        final LocalDate expectedDateReady = LocalDate.now();//.plusDays(5);
+        service.startTimerForDefendantAOCPAcceptance(caseId, expectedDateReady, metadata);
+
+        verify(process).startTimerForDelayAndCommand(
+                this.caseId,
+                expectedDateReady,
+                TimerService.DEFENDANT_AOCP_RESPONSE_TIMER_COMMAND,
+                metadata);
+    }
 }

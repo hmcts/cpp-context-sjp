@@ -7,6 +7,7 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class ContactDetails implements Serializable {
+    private static final long serialVersionUID = 4038532309637408162L;
 
     private final String home;
 

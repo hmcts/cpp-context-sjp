@@ -29,7 +29,7 @@ public class SjpCaseCreatedToCase implements Converter<SjpCaseCreated, CaseDetai
                 event.getProsecutingAuthority(),
                 false,
                 null,
-                event.getCreatedOn(), createDefendantDetail(event), event.getCosts(), event.getPostingDate());
+                event.getCreatedOn(), createDefendantDetail(event), event.getCosts(), event.getPostingDate(), null);
     }
 
     private DefendantDetail createDefendantDetail(final SjpCaseCreated sjpCaseCreated) {

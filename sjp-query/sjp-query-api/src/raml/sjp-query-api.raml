@@ -344,8 +344,8 @@ baseUri: http://localhost:8080/sjp-query-api/query/api/rest/sjp
           description: OK
           body:
                 application/vnd.sjp.query.defendants-online-plea+json:
-                  schema: !include json/schema/sjp.query.defendants-online-plea.json
-                  example: !include json/sjp.query.defendants-online-plea.json
+                  schema: !include json/schema/sjp.query.defendants-online-pleas.json
+                  example: !include json/sjp.query.defendants-online-pleas.json
 
 /cases/{caseId}/assignment:
   get:
@@ -447,6 +447,23 @@ baseUri: http://localhost:8080/sjp-query-api/query/api/rest/sjp
                 application/vnd.sjp.query.session+json:
                   schema: !include json/schema/sjp.query.session.json
                   example: !include json/sjp.query.session.json
+
+
+/aocpSession:
+  get:
+    description: |
+      Get aocp session.
+      ...
+      (mapping):
+          responseType: application/vnd.sjp.query.latest-aocp-session+json
+          name: sjp.query.latest-aocp-session
+      ...
+    responses:
+        200:
+          description: OK
+          body:
+                application/vnd.sjp.query.latest-aocp-session+json:
+
 
 /convicting-court-session/{offenceId}:
   description: return convicting court session

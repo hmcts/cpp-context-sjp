@@ -6,6 +6,7 @@ import static java.time.ZoneOffset.UTC;
 import static java.util.Collections.emptyList;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static java.util.UUID.randomUUID;
 
 import uk.gov.justice.services.common.util.Clock;
 import uk.gov.justice.services.eventsourcing.source.core.exception.EventStreamException;
@@ -41,7 +42,7 @@ public class PleadOnlineHandlerTest extends CaseCommandHandlerTest {
 
     @Test
     public void shouldPleadOnline() throws EventStreamException {
-        final UUID defendantId = UUID.randomUUID();
+        final UUID defendantId = randomUUID();
         final Address address = new Address("l1", "l2", "l3", "l4", "l5", "postcode");
         final Boolean outstandingFines = false;
 
@@ -72,4 +73,5 @@ public class PleadOnlineHandlerTest extends CaseCommandHandlerTest {
         verify(converter).convert(jsonObject, PleadOnline.class);
         verify(caseAggregate).pleadOnline(CASE_ID, pleadOnline, clock.now(), userId);
     }
+
 }

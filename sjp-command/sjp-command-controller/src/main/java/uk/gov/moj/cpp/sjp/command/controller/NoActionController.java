@@ -73,6 +73,11 @@ public class NoActionController {
         send(envelope);
     }
 
+    @Handles("sjp.command.reset-aocp-session")
+    public void resetAocpSession(final JsonEnvelope envelope) {
+        send(envelope);
+    }
+
     @Handles("sjp.command.assign-next-case")
     public void assignNextCase(final JsonEnvelope envelope) {
         send(envelope);

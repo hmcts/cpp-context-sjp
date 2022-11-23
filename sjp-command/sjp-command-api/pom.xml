@@ -117,6 +117,18 @@
                         <version>${referencedata.version}</version>
                         <classifier>raml</classifier>
                     </dependency>
+                    <dependency>
+                        <groupId>uk.gov.moj.cpp.referencedata.offences</groupId>
+                        <artifactId>referencedataoffences-query-api</artifactId>
+                        <version>${referencedata.offences.version}</version>
+                        <classifier>raml</classifier>
+                        <exclusions>
+                            <exclusion>
+                                <groupId>*</groupId>
+                                <artifactId>*</artifactId>
+                            </exclusion>
+                        </exclusions>
+                    </dependency>
                 </dependencies>
             </plugin>
 
@@ -132,6 +144,7 @@
                             <sourceDirectory>CLASSPATH</sourceDirectory>
                             <includes>
                                 <include>raml/json/schema/sjp.command.plead-online.json</include>
+                                <include>raml/json/schema/sjp.command.plead-aocp-online.json</include>
                                 <include>raml/json/schema/sjp.command.controller.add-case-assignment-restriction.json</include>
                             </includes>
                             <generatorProperties implementation="uk.gov.justice.generation.pojo.core.PojoGeneratorProperties">

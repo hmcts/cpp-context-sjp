@@ -11,7 +11,7 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.collection.IsCollectionWithSize.hasSize;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -30,6 +30,7 @@ import uk.gov.justice.services.test.utils.core.enveloper.EnveloperFactory;
 import uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopePayloadMatcher;
 import uk.gov.moj.cpp.sjp.command.service.CaseService;
 import uk.gov.moj.cpp.sjp.command.service.ReferenceDataService;
+import uk.gov.moj.cpp.sjp.command.service.SessionService;
 import uk.gov.moj.cpp.sjp.command.service.UserService;
 
 import java.time.ZonedDateTime;
@@ -81,6 +82,9 @@ public class DecisionControllerTest {
 
     @Mock
     private ReferenceDataService referenceDataService;
+
+    @Mock
+    private SessionService sessionService;
 
     @Captor
     private ArgumentCaptor<Envelope<JsonValue>> envelopeCaptor;
@@ -187,6 +191,33 @@ public class DecisionControllerTest {
         verifyReferralSaveDecisionCommand(saveDecisionCommand, "Critical");
     }
 
+    @Test
+    public void shouldHandleAocpAcceptanceResponseTimeExpiredRequested() {
+        assertThat(DecisionController.class, isHandlerClass(COMMAND_CONTROLLER)
+                .with(method("handleAocpAcceptanceResponseTimeExpiredRequested").thatHandles("sjp.command.controller.expire-defendant-aocp-response-timer")));
+    }
+
+    @Test
+    public void shouldHandleAocpAcceptanceResponseTimeExpiredRequestedWithoutDefendantPostCode() {
+        final JsonEnvelope command = createAocpResponseTimeExpireRequestedCommand();
+        when(userService.getCallingUserDetails(command)).thenReturn(userDetails);
+        when(caseService.getCaseDetails(caseId.toString())).thenReturn(caseDetailsWithoutPostcode);
+
+        decisionController.handleAocpAcceptanceResponseTimeExpiredRequested(command);
+        verifyHandleAocpAcceptanceResponseTimeExpiredRequestedWithoutDefendant(command);
+    }
+
+    @Test
+    public void shouldHandleAocpAcceptanceResponseTimeExpiredRequestedWithDefendantPostCode() {
+        final JsonEnvelope command = createAocpResponseTimeExpireRequestedCommand();
+        when(userService.getCallingUserDetails(command)).thenReturn(userDetails);
+        when(caseService.getCaseDetails(caseId.toString())).thenReturn(caseDetails);
+        when(referenceDataService.getEnforcementArea(anyString())).thenReturn(of(enforcementArea));
+
+        decisionController.handleAocpAcceptanceResponseTimeExpiredRequested(command);
+        verifyHandleAocpAcceptanceResponseTimeExpiredRequestedWithDefendant(command);
+    }
+
 
     private void verifyReferralSaveDecisionCommand(final JsonEnvelope envelope, final String reasonForReferral) {
         verify(sender).send(envelopeCaptor.capture());
@@ -243,6 +274,43 @@ public class DecisionControllerTest {
         )));
     }
 
+    private void verifyHandleAocpAcceptanceResponseTimeExpiredRequestedWithoutDefendant(final JsonEnvelope envelope) {
+        verify(sender).send(envelopeCaptor.capture());
+        final Envelope<JsonValue> commandSent = envelopeCaptor.getValue();
+
+        assertThat(commandSent.metadata(), withMetadataEnvelopedFrom(envelope).withName("sjp.command.expire-defendant-aocp-response-timer"));
+        assertThat(commandSent.payload(), JsonEnvelopePayloadMatcher.payloadIsJson(allOf(
+                withJsonPath("$.caseId", equalTo(envelope.payloadAsJsonObject().getString("caseId"))),
+                withJsonPath("$.decisionId", notNullValue()),
+                withJsonPath("$.savedBy", isJson(allOf(
+                        withJsonPath("userId", equalTo(userId.toString())),
+                        withJsonPath("firstName", is("John")),
+                        withJsonPath("lastName", is("Smith"))
+                )))
+        )));
+    }
+
+    private void verifyHandleAocpAcceptanceResponseTimeExpiredRequestedWithDefendant(final JsonEnvelope envelope) {
+        verify(sender).send(envelopeCaptor.capture());
+        final Envelope<JsonValue> commandSent = envelopeCaptor.getValue();
+
+        assertThat(commandSent.metadata(), withMetadataEnvelopedFrom(envelope).withName("sjp.command.expire-defendant-aocp-response-timer"));
+        assertThat(commandSent.payload(), JsonEnvelopePayloadMatcher.payloadIsJson(allOf(
+                withJsonPath("$.caseId", equalTo(envelope.payloadAsJsonObject().getString("caseId"))),
+                withJsonPath("$.decisionId", notNullValue()),
+                withJsonPath("$.savedBy", isJson(allOf(
+                        withJsonPath("userId", equalTo(userId.toString())),
+                        withJsonPath("firstName", is("John")),
+                        withJsonPath("lastName", is("Smith"))
+                ))),
+                withJsonPath("$.defendant.court", isJson(allOf(
+                        withJsonPath("nationalCourtCode", equalTo("1080")),
+                        withJsonPath("nationalCourtName", is("Bedfordshire Magistrates' Court"))
+                )))
+        )));
+    }
+
+
     private JsonEnvelope createSaveDecisionCommand() {
         final JsonObjectBuilder caseDecisionCommandBuilder = createObjectBuilder()
                 .add("caseId", caseId.toString())
@@ -255,6 +323,17 @@ public class DecisionControllerTest {
                 metadataWithRandomUUID("sjp.command.controller.save-decision")
                         .withUserId(userId.toString())
                 , caseDecisionCommandBuilder.build()
+        );
+    }
+
+    private JsonEnvelope createAocpResponseTimeExpireRequestedCommand() {
+        final JsonObjectBuilder builder = createObjectBuilder()
+                .add("caseId", caseId.toString());
+
+        return envelopeFrom(
+                metadataWithRandomUUID("sjp.command.controller.expire-defendant-aocp-response-timer")
+                        .withUserId(userId.toString())
+                , builder.build()
         );
     }
 

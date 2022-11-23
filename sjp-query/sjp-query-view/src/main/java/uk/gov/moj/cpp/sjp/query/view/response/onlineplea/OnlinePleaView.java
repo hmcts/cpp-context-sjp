@@ -44,6 +44,8 @@ public class OnlinePleaView {
 
     private OnlinePleaLegalEntityDetails onlinePleaLegalEntityDetails;
 
+    public OnlinePleaView(){
+    }
 
     public OnlinePleaView(final OnlinePlea onlinePlea) {
         this.caseId = onlinePlea.getCaseId();

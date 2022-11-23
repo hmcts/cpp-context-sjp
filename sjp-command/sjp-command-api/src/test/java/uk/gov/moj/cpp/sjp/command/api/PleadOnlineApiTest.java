@@ -2,7 +2,7 @@ package uk.gov.moj.cpp.sjp.command.api;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.Mockito.when;
@@ -16,6 +16,7 @@ import static uk.gov.moj.cpp.sjp.command.utils.CommonObjectBuilderUtil.buildAddr
 import static uk.gov.moj.cpp.sjp.command.utils.CommonObjectBuilderUtil.buildEmployerWithAddress;
 import static uk.gov.moj.cpp.sjp.command.utils.CommonObjectBuilderUtil.buildPersonalDetailsWithAddress;
 import static uk.gov.moj.cpp.sjp.command.utils.CommonObjectBuilderUtil.buildPleadOnline;
+import static uk.gov.moj.cpp.sjp.command.utils.CommonObjectBuilderUtil.buildPleadAocpOnline;
 import static uk.gov.moj.cpp.sjp.domain.common.CaseStatus.NO_PLEA_RECEIVED_READY_FOR_DECISION;
 
 import uk.gov.justice.json.schemas.domains.sjp.command.Benefits;
@@ -23,6 +24,7 @@ import uk.gov.justice.json.schemas.domains.sjp.command.FinancialMeans;
 import uk.gov.justice.json.schemas.domains.sjp.command.Frequency;
 import uk.gov.justice.json.schemas.domains.sjp.command.Income;
 import uk.gov.justice.json.schemas.domains.sjp.command.Plea;
+import uk.gov.justice.json.schemas.domains.sjp.command.PleadAocpOnline;
 import uk.gov.justice.json.schemas.domains.sjp.command.PleadOnline;
 import uk.gov.justice.services.adapter.rest.exception.BadRequestException;
 import uk.gov.justice.services.common.converter.ObjectToJsonObjectConverter;
@@ -61,6 +63,7 @@ public class PleadOnlineApiTest {
 
     private static final String PLEAD_ONLINE_COMMAND_NAME = "sjp.plead-online";
     private static final String CONTROLLER_PLEAD_ONLINE_COMMAND_NAME = "sjp.command.plead-online";
+    private static final String CONTROLLER_PLEAD_ONLINE_COMMAND_AOCP_NAME = "sjp.command.plead-aocp-online";
     private static final String CASE_HAS_BEEN_REVIEWED_EXCEPTION_MESSAGE = "{\"CaseAlreadyReviewed\":[\"Your case has already been reviewed - Contact the Contact Centre if you need to discuss it\"]}";
     private static final String PLEA_ALREADY_SUBMITTED_EXCEPTION_MESSAGE = "{\"PleaAlreadySubmitted\":[\"Plea already submitted - Contact the Contact Centre if you need to change or discuss it\"]}";
     private static final String PLEA_IS_ADJOURNED_POST_CONVENTION_EXCEPTION_MESSAGE = "{\"CaseAdjournedPostConviction\":[\"Your case has already been reviewed - Contact the Contact Centre if you need to discuss it\"]}";
@@ -73,6 +76,10 @@ public class PleadOnlineApiTest {
 
     @Captor
     private ArgumentCaptor<Envelope<PleadOnline>> envelopeCaptor;
+
+    @Captor
+    private ArgumentCaptor<Envelope<PleadAocpOnline>> aocpEnvelopeCaptor;
+
 
     @Captor
     private ArgumentCaptor<JsonEnvelope> queryEnvelopeCaptor;
@@ -103,6 +110,7 @@ public class PleadOnlineApiTest {
     public final ExpectedException exception = ExpectedException.none();
 
     private final UUID caseId = UUID.randomUUID();
+    private final UUID defendantId = UUID.randomUUID();
 
     @Test
     public void shouldPleaNotGuiltyWithLowerCasePostcodeInPersonalDetailsAndInEmployer() {
@@ -228,6 +236,36 @@ public class PleadOnlineApiTest {
         assertThat(newCommand.payload(), is(objectToJsonObjectConverter.convert(pleadOnline)));
 
         verifyZeroInteractions(objectToJsonValueConverter);
+    }
+
+
+    @Test
+    public void shouldHandlePleadAocpOnline() {
+        final PleadAocpOnline pleadAocpOnline = buildPleadAocpOnline(
+                NOT_GUILTY,
+                caseId,
+                defendantId,
+                buildPersonalDetailsWithAddress(buildAddressObjectWithPostcode("se11pj")));
+
+        final Envelope<PleadAocpOnline> envelope = envelopeFrom(
+                metadataWithRandomUUID(PLEAD_ONLINE_COMMAND_NAME),
+                pleadAocpOnline);
+
+        final JsonEnvelope caseDetailResponseEnvelope = getCaseDetailResponseEnvelope(getValidCaseDetail());
+
+        pleadOnline.pleadAocpOnline(envelope);
+
+        verify(sender).send(aocpEnvelopeCaptor.capture());
+
+        final Envelope<PleadAocpOnline> newCommand = aocpEnvelopeCaptor.getValue();
+
+        assertThat(newCommand.metadata().name(), equalTo(CONTROLLER_PLEAD_ONLINE_COMMAND_AOCP_NAME));
+
+        assertThat(newCommand.payload(), is(objectToJsonObjectConverter.convert(buildPleadAocpOnline(
+                NOT_GUILTY,
+                caseId,
+                defendantId,
+                buildPersonalDetailsWithAddress(buildAddressObjectWithPostcode("SE1 1PJ"))))));
     }
 
     private PleadOnline getPleadOnlineGuiltyAndWithFinances() {

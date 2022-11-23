@@ -4,8 +4,14 @@ import static java.util.stream.Collectors.toSet;
 import static org.apache.commons.lang3.BooleanUtils.isTrue;
 
 import uk.gov.justice.json.schemas.domains.sjp.Language;
+import uk.gov.moj.cpp.sjp.domain.AOCPCost;
+import uk.gov.moj.cpp.sjp.domain.AOCPCostDefendant;
+import uk.gov.moj.cpp.sjp.domain.AOCPCostOffence;
 import uk.gov.moj.cpp.sjp.domain.aggregate.state.CaseAggregateState;
 import uk.gov.moj.cpp.sjp.event.CaseReceived;
+
+import java.util.ArrayList;
+import java.util.List;
 
 final class CaseReceivedMutator implements AggregateStateMutator<CaseReceived, CaseAggregateState> {
 
@@ -53,5 +59,15 @@ final class CaseReceivedMutator implements AggregateStateMutator<CaseReceived, C
         event.getDefendant().getOffences().stream()
                 .filter(offence -> isTrue(offence.getPressRestrictable()))
                 .forEach(offence -> state.markOffenceAsPressRestrictable(offence.getId()));
+
+        final List<AOCPCostOffence> aocpCostOffenceList = new ArrayList<>();
+
+        event.getDefendant().getOffences().forEach(offence ->
+            aocpCostOffenceList.add(new AOCPCostOffence(offence.getId(), offence.getCompensation(), offence.getAocpStandardPenaltyAmount(), offence.getIsEligibleAOCP(), offence.getProsecutorOfferAOCP())));
+
+        final AOCPCostDefendant aocpCostDefendant = new AOCPCostDefendant(event.getDefendant().getId(), aocpCostOffenceList);
+
+        final AOCPCost aocpCost = new AOCPCost(event.getCaseId(), event.getCosts(), aocpCostDefendant);
+        state.addAOCPCost(event.getCaseId(), aocpCost);
     }
 }

@@ -18,6 +18,9 @@ import java.util.UUID;
 
 import javax.inject.Inject;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 @ServiceComponent(Component.QUERY_VIEW)
 public class SessionQueryView {
 
@@ -30,11 +33,26 @@ public class SessionQueryView {
     @Inject
     private CaseDecisionRepository caseDecisionRepository;
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(SessionQueryView.class);
+
     @Handles("sjp.query.session")
     public JsonEnvelope findSession(final JsonEnvelope query) {
         final UUID sessionId = UUID.fromString(query.payloadAsJsonObject().getString("sessionId"));
         final Session session = sessionRepository.findBy(sessionId);
         return enveloper.withMetadataFrom(query, "sjp.query.session").apply(session);
+    }
+
+    @SuppressWarnings("squid:CallToDeprecatedMethod")
+    @Handles("sjp.query.latest-aocp-session")
+    public JsonEnvelope getLatestAocpSession(final JsonEnvelope query) {
+        Session session = null;
+        final List<Session> sessionList = sessionRepository.findLatestAocpSession();
+        if (sessionList.isEmpty()) {
+            LOGGER.info("AOCP session record not found");
+        } else {
+            session = sessionList.get(0);
+        }
+            return enveloper.withMetadataFrom(query, "sjp.query.latest-aocp-session").apply(session);
     }
 
     @Handles("sjp.query.convicting-court-session")

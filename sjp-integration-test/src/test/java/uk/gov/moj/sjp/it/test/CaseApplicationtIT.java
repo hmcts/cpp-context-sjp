@@ -24,6 +24,7 @@ import static uk.gov.moj.cpp.sjp.domain.decision.discharge.DischargeType.CONDITI
 import static uk.gov.moj.cpp.sjp.domain.decision.discharge.PeriodUnit.MONTH;
 import static uk.gov.moj.cpp.sjp.domain.decision.imposition.PaymentType.PAY_TO_COURT;
 import static uk.gov.moj.cpp.sjp.domain.verdict.VerdictType.FOUND_GUILTY;
+import static uk.gov.moj.cpp.sjp.event.processor.service.NotificationNotifyDocumentType.PARTIAL_AOCP_CRITERIA_NOTIFICATION;
 import static uk.gov.moj.sjp.it.Constants.NOTICE_PERIOD_IN_DAYS;
 import static uk.gov.moj.sjp.it.command.CreateCase.CreateCasePayloadBuilder.defaultCaseBuilder;
 import static uk.gov.moj.sjp.it.helper.AssignmentHelper.assignCaseToUser;
@@ -37,6 +38,9 @@ import static uk.gov.moj.sjp.it.helper.SessionHelper.startSession;
 import static uk.gov.moj.sjp.it.model.ProsecutingAuthority.DVLA;
 import static uk.gov.moj.sjp.it.model.ProsecutingAuthority.TFL;
 import static uk.gov.moj.sjp.it.model.ProsecutingAuthority.TVL;
+import static uk.gov.moj.sjp.it.stub.IdMapperStub.stubAddMapping;
+import static uk.gov.moj.sjp.it.stub.IdMapperStub.stubGetFromIdMapper;
+import static uk.gov.moj.sjp.it.stub.NotificationNotifyStub.stubNotifications;
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubAllResultDefinitions;
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubDefaultCourtByCourtHouseOUCodeQuery;
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubEnforcementAreaByPostcode;
@@ -66,6 +70,7 @@ import uk.gov.moj.cpp.sjp.domain.decision.imposition.Payment;
 import uk.gov.moj.cpp.sjp.domain.decision.imposition.PaymentTerms;
 import uk.gov.moj.cpp.sjp.event.CaseCompleted;
 import uk.gov.moj.cpp.sjp.event.CaseMarkedReadyForDecision;
+import uk.gov.moj.cpp.sjp.event.PartialAocpCriteriaNotificationProsecutorSent;
 import uk.gov.moj.cpp.sjp.event.decision.DecisionSaved;
 import uk.gov.moj.sjp.it.command.CreateCase;
 import uk.gov.moj.sjp.it.helper.DecisionHelper;
@@ -74,6 +79,7 @@ import uk.gov.moj.sjp.it.helper.ReadyCaseHelper;
 import uk.gov.moj.sjp.it.model.DecisionCommand;
 import uk.gov.moj.sjp.it.model.ProsecutingAuthority;
 import uk.gov.moj.sjp.it.stub.AssignmentStub;
+import uk.gov.moj.sjp.it.stub.NotificationNotifyStub;
 import uk.gov.moj.sjp.it.stub.SchedulingStub;
 import uk.gov.moj.sjp.it.util.SjpDatabaseCleaner;
 
@@ -137,7 +143,10 @@ public class CaseApplicationtIT extends BaseIntegrationTest {
         stubAllResultDefinitions();
         stubQueryForVerdictTypes();
         stubQueryForAllProsecutors();
-
+        stubNotifications();
+        stubGetFromIdMapper(PARTIAL_AOCP_CRITERIA_NOTIFICATION.name(), caseId.toString(),
+                "CASE_ID", caseId.toString());
+        stubAddMapping();
         stubResultIds();
 
         createCasePayloadBuilder = CreateCase.CreateCasePayloadBuilder
@@ -250,6 +259,13 @@ public class CaseApplicationtIT extends BaseIntegrationTest {
 
         final Optional<JsonEnvelope> event = eventListener.popEvent(MARK_CASE_READY_FOR_DECISION_EVENT_NAME);
         assertThat(event.isPresent(), is(true));
+
+        eventListener.subscribe(PartialAocpCriteriaNotificationProsecutorSent.EVENT_NAME)
+                .run(() -> NotificationNotifyStub.publishNotificationSentPublicEvent(caseId));
+
+        final Optional<JsonEnvelope> emailEvent = eventListener.popEvent(PartialAocpCriteriaNotificationProsecutorSent.EVENT_NAME);
+
+        assertThat(emailEvent.isPresent(), is(true));
     }
 
     @Test
@@ -266,7 +282,7 @@ public class CaseApplicationtIT extends BaseIntegrationTest {
     }
 
     @Test
-    public void shouldAssignCaseWithApplicationPendingToUser() {
+    public void  shouldAssignCaseWithApplicationPendingToUser() {
         final ReadyCaseHelper readyCaseHelper = new ReadyCaseHelper();
 
         createCaseAndWaitUntilReady(defaultCaseBuilder().withId(caseId));

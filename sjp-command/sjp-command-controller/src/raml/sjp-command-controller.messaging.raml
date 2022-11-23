@@ -42,6 +42,10 @@ version: v1
         schema: !include json/schema/sjp.command.plead-online.json
         example: !include json/sjp.command.plead-online.json
 
+      application/vnd.sjp.command.plead-aocp-online+json:
+        schema: !include json/schema/sjp.command.plead-aocp-online.json
+        example: !include json/sjp.command.plead-aocp-online.json
+
       application/vnd.sjp.command.mark-case-reopened-in-libra+json:
         schema: !include json/schema/sjp.command.mark-case-reopened-in-libra.json
         example: !include json/sjp.command.case-reopened-in-libra.json
@@ -73,6 +77,8 @@ version: v1
       application/vnd.sjp.command.end-session+json:
         example: !include json/sjp.command.end-session.json
         schema:  !include json/schema/sjp.command.end-session.json
+
+      application/vnd.sjp.command.reset-aocp-session+json: !!null
 
       application/vnd.sjp.command.assign-next-case+json:
         schema: !include json/schema/sjp.command.assign-next-case.json
@@ -111,6 +117,10 @@ version: v1
       application/vnd.sjp.command.controller.save-decision+json:
         example: !include json/sjp.command.controller.save-decision.json
         schema:  !include json/schema/sjp.command.controller.save-decision.json
+
+      application/vnd.sjp.command.controller.expire-defendant-aocp-response-timer+json:
+        example: !include json/sjp.command.controller.expire-defendant-aocp-response-timer.json
+        schema:  !include json/schema/sjp.command.controller.expire-defendant-aocp-response-timer.json
 
       application/vnd.sjp.command.controller.assign-case+json:
         schema: !include json/schema/sjp.command.controller.assign-case.json

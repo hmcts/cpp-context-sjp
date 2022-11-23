@@ -32,6 +32,7 @@ public class GetCaseByUrnAndPostcodeIT extends BaseIntegrationTest {
         CreateCase.CreateCasePayloadBuilder createCasePayloadBuilder = CreateCase.CreateCasePayloadBuilder.withDefaults().withOffenceCode(OFFENCE_CODE);
         stubEnforcementAreaByPostcode(createCasePayloadBuilder.getDefendantBuilder().getAddressBuilder().getPostcode(), NATIONAL_COURT_CODE, "Bedfordshire Magistrates' Court");
         stubRegionByPostcode(NATIONAL_COURT_CODE, "TestRegion");
+        stubQueryOffencesByCode(OFFENCE_CODE);
         CreateCase.createCaseForPayloadBuilder(createCasePayloadBuilder);
         final ProsecutingAuthority prosecutingAuthority = createCasePayloadBuilder.getProsecutingAuthority();
         stubProsecutorQuery(prosecutingAuthority.name(), prosecutingAuthority.getFullName(), randomUUID());

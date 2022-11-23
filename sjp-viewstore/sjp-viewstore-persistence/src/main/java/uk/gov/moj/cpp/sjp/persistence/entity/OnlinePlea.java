@@ -96,6 +96,8 @@ public class OnlinePlea {
         this(pleadedGuilty.getCaseId(), new PleaDetails(false), pleadedGuilty.getPleadDate());
     }
 
+
+
     public OnlinePlea(final PleadedGuiltyCourtHearingRequested pleadedGuiltyCourtHearingRequested) {
         this(pleadedGuiltyCourtHearingRequested.getCaseId(), new PleaDetails(true), pleadedGuiltyCourtHearingRequested.getPleadDate());
     }

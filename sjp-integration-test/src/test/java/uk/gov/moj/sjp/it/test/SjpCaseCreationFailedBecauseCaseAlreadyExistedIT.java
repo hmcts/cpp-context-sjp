@@ -2,12 +2,16 @@ package uk.gov.moj.sjp.it.test;
 
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.isJson;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
+import static java.util.UUID.randomUUID;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
+import static uk.gov.moj.sjp.it.model.ProsecutingAuthority.TFL;
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubEnforcementAreaByPostcode;
+import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubProsecutorQuery;
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubRegionByPostcode;
 
 import uk.gov.moj.sjp.it.command.CreateCase;
+import uk.gov.moj.sjp.it.model.ProsecutingAuthority;
 import uk.gov.moj.sjp.it.util.TopicUtil;
 
 import java.util.Optional;
@@ -42,6 +46,8 @@ public class SjpCaseCreationFailedBecauseCaseAlreadyExistedIT extends BaseIntegr
 
     @Test
     public void publishesCaseCreationFailedBecauseCaseAlreadyExisted() {
+        final ProsecutingAuthority prosecutingAuthority = TFL;
+        stubProsecutorQuery(prosecutingAuthority.name(), prosecutingAuthority.getFullName(), randomUUID());
         Optional<JsonObject> message1 = TopicUtil.retrieveMessageAsJsonObject(sjpCaseCreated);
         assertTrue(message1.isPresent());
         assertThat(message1.get(), isJson(withJsonPath("$.id", Matchers.hasToString(

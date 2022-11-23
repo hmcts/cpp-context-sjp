@@ -60,6 +60,7 @@ import uk.gov.moj.cpp.sjp.domain.IncomeFrequency;
 import uk.gov.moj.cpp.sjp.domain.plea.PleaMethod;
 import uk.gov.moj.cpp.sjp.event.PleaUpdated;
 import uk.gov.moj.cpp.sjp.persistence.builder.CaseDetailBuilder;
+import uk.gov.moj.cpp.sjp.persistence.entity.AocpOnlinePlea;
 import uk.gov.moj.cpp.sjp.persistence.entity.CaseDetail;
 import uk.gov.moj.cpp.sjp.persistence.entity.DefendantDetail;
 import uk.gov.moj.cpp.sjp.persistence.entity.LegalEntityDetails;
@@ -68,6 +69,7 @@ import uk.gov.moj.cpp.sjp.persistence.entity.OnlinePlea;
 import uk.gov.moj.cpp.sjp.persistence.entity.OnlinePleaDetail;
 import uk.gov.moj.cpp.sjp.persistence.entity.PendingDatesToAvoid;
 import uk.gov.moj.cpp.sjp.persistence.entity.PersonalDetails;
+import uk.gov.moj.cpp.sjp.persistence.repository.AocpOnlinePleaRepository;
 import uk.gov.moj.cpp.sjp.persistence.repository.OffenceRepository;
 import uk.gov.moj.cpp.sjp.persistence.repository.OnlinePleaDetailRepository;
 import uk.gov.moj.cpp.sjp.persistence.repository.OnlinePleaRepository;
@@ -173,6 +175,9 @@ public class SjpQueryViewTest {
 
     @Mock
     private OnlinePleaRepository.LegalEntityDetailsOnlinePleaRepository legalEntityDetailsOnlinePleaRepository;
+
+    @Mock
+    private AocpOnlinePleaRepository.PersonDetailsOnlinePleaRepository aocpOnlinePleaRepository;
 
     @Mock
     private OnlinePleaDetailRepository onlinePleaDetailRepository;
@@ -304,10 +309,21 @@ public class SjpQueryViewTest {
                 .withPayloadOf(postcode, "postcode")
                 .build();
 
-        final CaseDetail caseDetail = CaseDetailBuilder.aCase().withDefendantDetail(
-                        aDefendantDetail().withPostcode(postcode).withId(randomUUID()).build())
+        OffenceDetail offenceDetail = OffenceDetail.builder().withCompensation(BigDecimal.ONE).withAocpStandardPenalty(new BigDecimal("1.1")).build();
+        offenceDetail.setSequenceNumber(1);
+
+        CaseDetail caseDetail = CaseDetailBuilder.aCase().withDefendantDetail(
+                aDefendantDetail().withPostcode(postcode).withId(randomUUID()).withOffences(Arrays.asList(offenceDetail)).build())
+                .withCosts(BigDecimal.ONE)
+                .withVictimSurcharge(BigDecimal.TEN)
                 .withCompleted(false).withProsecutingAuthority("TFL")
                 .withCaseId(randomUUID()).withUrn(urn).build();
+
+        caseDetail.setAocpEligible(true);
+        caseDetail.setAocpTotalCost(caseDetail.getCosts()
+                .add(caseDetail.getAocpVictimSurcharge()
+                        .add(offenceDetail.getCompensation()
+                                .add(offenceDetail.getAocpStandardPenalty()))));
 
         JsonObject prosecutorPayload = createObjectBuilder()
                 .add("fullName", "Transport for London")
@@ -324,7 +340,55 @@ public class SjpQueryViewTest {
                 payload().isJson(allOf(
                         withJsonPath("$.urn", is(urn)),
                         withJsonPath("$.defendant.personalDetails.address.postcode", is(postcode)),
-                        withJsonPath("$.completed", is(false))
+                        withJsonPath("$.completed", is(false)),
+                        withJsonPath("$.aocpEligible", is(true)),
+                        withJsonPath("$.aocpTotalCost", is(caseDetail.getAocpTotalCost().doubleValue()))
+                ))
+        ));
+    }
+
+    @Test
+    public void shouldFindCaseByUrnPostcodeForNotAocpEligible() {
+
+        final String urn = "TFL1234567";
+        final String postcode = "AB1 2CD";
+        final Double totalCost = new Double("13.1");
+
+        final JsonEnvelope queryEnvelope = envelope()
+                .with(metadataWithRandomUUID("sjp.query.case-by-urn-postcode"))
+                .withPayloadOf(urn, "urn")
+                .withPayloadOf(postcode, "postcode")
+                .build();
+
+        OffenceDetail offenceDetail = OffenceDetail.builder().withCompensation(BigDecimal.ONE).withAocpStandardPenalty(new BigDecimal("1.1")).build();
+        offenceDetail.setSequenceNumber(1);
+
+        CaseDetail caseDetail = CaseDetailBuilder.aCase().withDefendantDetail(
+                aDefendantDetail().withPostcode(postcode).withId(randomUUID()).withOffences(Arrays.asList(offenceDetail)).build())
+                .withCosts(BigDecimal.ONE)
+                .withVictimSurcharge(BigDecimal.TEN)
+                .withCompleted(false).withProsecutingAuthority("TFL")
+                .withCaseId(randomUUID()).withUrn(urn).build();
+
+        caseDetail.setAocpEligible(null);
+
+        JsonObject prosecutorPayload = createObjectBuilder()
+                .add("fullName", "Transport for London")
+                .add("policeFlag", false)
+                .build();
+
+        final CaseView caseView = new CaseView(caseDetail, prosecutorPayload);
+
+        when(caseService.findCaseByUrnPostcode(urn, postcode)).thenReturn(caseView);
+
+        final JsonEnvelope result = sjpQueryView.findCaseByUrnPostcode(queryEnvelope);
+
+        assertThat(result, jsonEnvelope(metadata().withName("sjp.query.case-response"),
+                payload().isJson(allOf(
+                        withJsonPath("$.urn", is(urn)),
+                        withJsonPath("$.defendant.personalDetails.address.postcode", is(postcode)),
+                        withJsonPath("$.completed", is(false)),
+                        withJsonPath("$.aocpEligible", is(false))
                 ))
         ));
     }
@@ -561,19 +625,21 @@ public class SjpQueryViewTest {
 
         final UUID offenceId = UUID.fromString("8a962d66-b95f-69b-b77d-9ed308c3be02");
         final OnlinePlea onlinePlea = stubOnlinePlea(caseId, defendantId, offenceId);
+        final AocpOnlinePlea aocpOnlinePlea = stubAocpOnlinePlea(caseId, defendantId, offenceId);
 
         when(userAndGroupsService.canSeeOnlinePleaFinances(queryEnvelope)).thenReturn(true);
         when(onlinePleaRepository.findBy(caseId)).thenReturn(onlinePlea);
         when(legalEntityDetailsOnlinePleaRepository.findBy(caseId)).thenReturn(onlinePlea);
+        when(aocpOnlinePleaRepository.findAocpPleaByCaseId(caseId)).thenReturn(aocpOnlinePlea);
 
         final List<OnlinePleaDetail> onlinePleaDetails = getOnlinePleaDetails(offenceId);
-        when(onlinePleaDetailRepository.findByCaseIdAndDefendantId(caseId, defendantId)).thenReturn(onlinePleaDetails);
+        when(onlinePleaDetailRepository.findByCaseIdAndDefendantIdAndAocpPleaIsNull(caseId, defendantId)).thenReturn(onlinePleaDetails);
 
         final OffenceDetail offenceDetail = new OffenceDetail();
         offenceDetail.setCode(offenceCode);
         when(offenceRepository.findBy(offenceId)).thenReturn(offenceDetail);
 
-        final JsonObject offenceData = Json.createObjectBuilder()
+        final JsonObject offenceData = createObjectBuilder()
                 .add("title", "Offence title").build();
         when(referenceDataService.getOffenceData(offenceCode)).thenReturn(of(offenceData));
 
@@ -583,12 +649,13 @@ public class SjpQueryViewTest {
         verify(onlinePleaRepository, never()).findOnlinePleaWithoutFinances(any());
 
         assertThat(response, jsonEnvelope(metadata().withName("sjp.query.defendants-online-plea"), payload().isJson(allOf(
-                withJsonPath("$.defendantId", equalTo(defendantId.toString())),
-                withJsonPath("$.pleaDetails.comeToCourt", equalTo(true)),
-                withJsonPath("$.onlinePleaDetails[0].plea", equalTo(GUILTY.name())),
-                withJsonPath("$.onlinePleaDetails[0].mitigation", equalTo("mitigation")),
-                withJsonPath("$.onlinePleaDetails[1].plea", equalTo(NOT_GUILTY.name())),
-                withJsonPath("$.onlinePleaDetails[1].notGuiltyBecause", equalTo("Not Guilty Because"))
+                withJsonPath("$.pleas[1].defendantId", equalTo(defendantId.toString())),
+                withJsonPath("$.pleas[1].pleaDetails.comeToCourt", equalTo(true)),
+                withJsonPath("$.pleas[0].aocpAccepted", equalTo(true)),
+                withJsonPath("$.pleas[1].onlinePleaDetails[0].plea", equalTo(GUILTY.name())),
+                withJsonPath("$.pleas[1].onlinePleaDetails[0].mitigation", equalTo("mitigation")),
+                withJsonPath("$.pleas[1].onlinePleaDetails[1].plea", equalTo(NOT_GUILTY.name())),
+                withJsonPath("$.pleas[1].onlinePleaDetails[1].notGuiltyBecause", equalTo("Not Guilty Because"))
         ))));
     }
 
@@ -605,12 +672,14 @@ public class SjpQueryViewTest {
 
         final UUID offenceId = UUID.fromString("8a962d66-b95f-69b-b77d-9ed308c3be02");
         final OnlinePlea onlinePlea = stubOnlinePlea(caseId, defendantId, offenceId);
+        final AocpOnlinePlea aocpOnlinePlea = stubAocpOnlinePlea(caseId, defendantId, offenceId);
 
         when(userAndGroupsService.canSeeOnlinePleaFinances(queryEnvelope)).thenReturn(false);
         when(onlinePleaRepository.findOnlinePleaWithoutFinances(caseId)).thenReturn(onlinePlea);
 
         final List<OnlinePleaDetail> onlinePleaDetails = getOnlinePleaDetails(offenceId);
-        when(onlinePleaDetailRepository.findByCaseIdAndDefendantId(caseId, defendantId)).thenReturn(onlinePleaDetails);
+        when(onlinePleaDetailRepository.findByCaseIdAndDefendantIdAndAocpPleaIsNull(caseId, defendantId)).thenReturn(onlinePleaDetails);
+        when(aocpOnlinePleaRepository.findAocpPleaByCaseId(caseId)).thenReturn(aocpOnlinePlea);
 
         final OffenceDetail offenceDetail = new OffenceDetail();
         offenceDetail.setCode(offenceCode);
@@ -626,12 +695,13 @@ public class SjpQueryViewTest {
         verify(onlinePleaRepository).findOnlinePleaWithoutFinances(caseId);
 
         assertThat(response, jsonEnvelope(metadata().withName("sjp.query.defendants-online-plea"), payload().isJson(allOf(
-                withJsonPath("$.defendantId", equalTo(defendantId.toString())),
-                withJsonPath("$.pleaDetails.comeToCourt", equalTo(true)),
-                withJsonPath("$.onlinePleaDetails[0].plea", equalTo(GUILTY.name())),
-                withJsonPath("$.onlinePleaDetails[0].mitigation", equalTo("mitigation")),
-                withJsonPath("$.onlinePleaDetails[1].plea", equalTo(NOT_GUILTY.name())),
-                withJsonPath("$.onlinePleaDetails[1].notGuiltyBecause", equalTo("Not Guilty Because"))
+                withJsonPath("$.pleas[1].defendantId", equalTo(defendantId.toString())),
+                withJsonPath("$.pleas[0].aocpAccepted", equalTo(true)),
+                withJsonPath("$.pleas[1].pleaDetails.comeToCourt", equalTo(true)),
+                withJsonPath("$.pleas[1].onlinePleaDetails[0].plea", equalTo(GUILTY.name())),
+                withJsonPath("$.pleas[1].onlinePleaDetails[0].mitigation", equalTo("mitigation")),
+                withJsonPath("$.pleas[1].onlinePleaDetails[1].plea", equalTo(NOT_GUILTY.name())),
+                withJsonPath("$.pleas[1].onlinePleaDetails[1].notGuiltyBecause", equalTo("Not Guilty Because"))
         ))));
     }
 
@@ -1056,6 +1126,17 @@ public class SjpQueryViewTest {
         onlinePlea.setDefendantId(defendantId);
 
         return onlinePlea;
+    }
+
+    private AocpOnlinePlea stubAocpOnlinePlea(final UUID caseId, final UUID defendantId, final UUID offenceId) {
+        final AocpOnlinePlea aocpOnlinePlea = new AocpOnlinePlea(
+                new PleaUpdated(caseId, offenceId, NOT_GUILTY,
+                        null, "I was not there, they are lying", PleaMethod.ONLINE, clock.now())
+        );
+        aocpOnlinePlea.setDefendantId(defendantId);
+        aocpOnlinePlea.setAocpAccepted(true);
+
+        return aocpOnlinePlea;
     }
 
     private void setupCaseExpectations() {

@@ -2,14 +2,16 @@ package uk.gov.moj.cpp.sjp.domain;
 
 import uk.gov.justice.json.schemas.domains.sjp.Gender;
 
+import java.io.Serializable;
 import java.time.LocalDate;
 import java.util.Objects;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-public class Person {
+public class Person implements Serializable {
 
+    private static final long serialVersionUID = 5819334307624046385L;
     private final String title;
     private final String firstName;
     private final String lastName;

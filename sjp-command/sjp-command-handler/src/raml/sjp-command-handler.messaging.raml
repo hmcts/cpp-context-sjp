@@ -38,6 +38,10 @@ version: v1
           schema: !include json/schema/sjp.command.plead-online.json
           example: !include json/sjp.command.plead-online.json
 
+      application/vnd.sjp.command.plead-aocp-online+json:
+          schema: !include json/schema/sjp.command.plead-aocp-online.json
+          example: !include json/sjp.command.plead-aocp-online.json
+
       application/vnd.sjp.command.mark-case-reopened-in-libra+json:
         schema: !include json/schema/sjp.command.mark-case-reopened-in-libra.json
         example: !include json/sjp.command.case-reopened-in-libra.json
@@ -65,6 +69,8 @@ version: v1
       application/vnd.sjp.command.start-session+json:
         schema: !include json/schema/sjp.command.start-session.json
         example: !include json/sjp.command.start-session.json
+
+      application/vnd.sjp.command.reset-aocp-session+json: !!null
 
       application/vnd.sjp.command.end-session+json:
         schema: !include json/schema/sjp.command.end-session.json
@@ -177,6 +183,10 @@ version: v1
         example: !include json/sjp.command.expire-dates-to-avoid-timer.json
         schema:  !include json/schema/sjp.command.expire-dates-to-avoid-timer.json
 
+      application/vnd.sjp.command.expire-defendant-aocp-response-timer+json:
+        example: !include json/sjp.command.expire-defendant-aocp-response-timer.json
+        schema:  !include json/schema/sjp.command.expire-defendant-aocp-response-timer.json
+
       application/vnd.sjp.command.add-case-assignment-restriction+json:
         example: !include json/sjp.command.add-case-assignment-restriction.json
         schema:  !include json/schema/sjp.command.add-case-assignment-restriction.json
@@ -241,6 +251,10 @@ version: v1
           schema: !include json/schema/sjp.command.endorsement-removal-notification-sent.json
           example: !include json/sjp.command.endorsement-removal-notification-sent.json
 
+      application/vnd.sjp.command.update-partial-aocp-criteria-notification-to-prosecutor-status+json:
+          schema: !include json/schema/sjp.command.update-partial-aocp-criteria-notification-to-prosecutor-status.json
+          example: !include json/sjp.command.update-partial-aocp-criteria-notification-to-prosecutor-status.json
+
       application/vnd.sjp.command.enforcement-pending-application-check-requires-notification+json:
           schema: !include json/schema/sjp.command.enforcement-pending-application-check-requires-notification.json
           example: !include json/sjp.command.enforcement-pending-application-check-requires-notification.json
@@ -265,6 +279,10 @@ version: v1
           schema: !include json/schema/sjp.command.enforcement-pending-application-send-notification.json
           example: !include json/sjp.command.enforcement-pending-application-send-notification.json
 
+      application/vnd.sjp.command.update-aocp-acceptance-email-notification+json:
+          schema: !include json/schema/sjp.command.update-aocp-acceptance-email-notification.json
+          example: !include json/sjp.command.update-aocp-acceptance-email-notification.json
+
       application/vnd.sjp.command.update-cc-case-application-status+json:
           schema: !include json/schema/sjp.command.update-cc-case-application-status.json
           example: !include json/sjp.command.update-cc-case-application-status.json
@@ -278,3 +296,6 @@ version: v1
       application/vnd.sjp.command.plead-online-pcq-visited+json:
         schema: !include json/schema/sjp.command.plead-online-pcq-visited.json
         example: !include json/sjp.command.plead-online-pcq-visited.json
+
+      application/vnd.sjp.command.resolve-case-aocp-eligibility+json:
+        schema: !include json/schema/sjp.command.resolve-case-aocp-eligibility.json

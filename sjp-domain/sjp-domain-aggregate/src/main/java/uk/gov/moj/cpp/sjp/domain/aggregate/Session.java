@@ -3,12 +3,15 @@ package uk.gov.moj.cpp.sjp.domain.aggregate;
 import static uk.gov.justice.domain.aggregate.matcher.EventSwitcher.match;
 import static uk.gov.justice.domain.aggregate.matcher.EventSwitcher.otherwiseDoNothing;
 import static uk.gov.justice.domain.aggregate.matcher.EventSwitcher.when;
+import static uk.gov.moj.cpp.sjp.domain.SessionType.AOCP;
 import static uk.gov.moj.cpp.sjp.domain.SessionType.DELEGATED_POWERS;
 import static uk.gov.moj.cpp.sjp.domain.SessionType.MAGISTRATE;
 
 import uk.gov.justice.core.courts.DelegatedPowers;
 import uk.gov.justice.domain.aggregate.Aggregate;
 import uk.gov.moj.cpp.sjp.domain.SessionType;
+import uk.gov.moj.cpp.sjp.event.session.AocpSessionEnded;
+import uk.gov.moj.cpp.sjp.event.session.AocpSessionStarted;
 import uk.gov.moj.cpp.sjp.event.session.CaseAssignmentRejected;
 import uk.gov.moj.cpp.sjp.event.session.CaseAssignmentRequested;
 import uk.gov.moj.cpp.sjp.event.session.DelegatedPowersSessionEnded;
@@ -79,6 +82,25 @@ public class Session implements Aggregate {
         return apply(streamBuilder.build());
     }
 
+    public Stream<Object> startAocpSession(
+            final UUID sessionId,
+            final UUID userId,
+            final String courtHouseCode,
+            final String courtHouseName,
+            final String localJusticeAreaNationalCourtCode,
+            final ZonedDateTime startedAt) {
+
+        final Stream.Builder<Object> streamBuilder = Stream.builder();
+
+        if (sessionState == SessionState.NOT_EXISTING) {
+            streamBuilder.add(new AocpSessionStarted(sessionId, userId, courtHouseCode, courtHouseName, localJusticeAreaNationalCourtCode, startedAt));
+        } else {
+            LOGGER.warn("aocp session can not be started - session {} already exists", sessionId);
+        }
+
+        return apply(streamBuilder.build());
+    }
+
     public Stream<Object> endSession(final UUID sessionId, final ZonedDateTime endedAt) {
 
         final Stream.Builder<Object> streamBuilder = Stream.builder();
@@ -88,6 +110,8 @@ public class Session implements Aggregate {
                 streamBuilder.add(new MagistrateSessionEnded(sessionId, endedAt));
             } else if (DELEGATED_POWERS.equals(sessionType)) {
                 streamBuilder.add(new DelegatedPowersSessionEnded(sessionId, endedAt));
+            } else if (AOCP.equals(sessionType)){
+                streamBuilder.add(new AocpSessionEnded(sessionId, endedAt));
             }
         } else {
             LOGGER.warn("Session can not be ended - session {} is not started", sessionId);
@@ -123,6 +147,7 @@ public class Session implements Aggregate {
         return apply(streamBuilder.build());
     }
 
+    @SuppressWarnings("pmd:NullAssignment")
     @Override
     public Object apply(final Object event) {
         return match(event).with(
@@ -136,8 +161,14 @@ public class Session implements Aggregate {
                     magistrate = null;
                     sessionType = DELEGATED_POWERS;
                 }),
+                when(AocpSessionStarted.class).apply(sessionStarted -> {
+                    applySessionStartedEvent(sessionStarted);
+                    magistrate = null;
+                    sessionType = AOCP;
+                }),
                 when(MagistrateSessionEnded.class).apply(sessionEnded -> sessionState = SessionState.ENDED),
                 when(DelegatedPowersSessionEnded.class).apply(sessionEnded -> sessionState = SessionState.ENDED),
+                when(AocpSessionEnded.class).apply(sessionEnded -> sessionState = SessionState.ENDED),
                 otherwiseDoNothing()
         );
     }

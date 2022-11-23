@@ -87,12 +87,20 @@ public final class RuleConstants {
         return asList(GROUP_LEGAL_ADVISERS, GROUP_MAGISTRATES);
     }
 
+    public static List<String> getStartAocpSessionGroups() {
+        return asList(GROUP_LEGAL_ADVISERS, GROUP_MAGISTRATES, GROUP_SYSTEM_USERS);
+    }
+
     public static List<String> getAddDatesToAvoidActionGroups() {
         return singletonList(GROUP_SJP_PROSECUTORS);
     }
 
     public static List<String> getEndSessionGroups() {
         return asList(GROUP_LEGAL_ADVISERS, GROUP_MAGISTRATES);
+    }
+
+    public static List<String> getEndAocpSessionGroups() {
+        return asList(GROUP_LEGAL_ADVISERS, GROUP_MAGISTRATES, GROUP_SYSTEM_USERS);
     }
 
     public static List<String> getAssignCaseGroups() {
@@ -133,6 +141,10 @@ public final class RuleConstants {
 
     public static List<String> getSaveDecisionActionGroups() {
         return asList(GROUP_LEGAL_ADVISERS, GROUP_MAGISTRATES);
+    }
+
+    public static List<String> getAocpSaveDecisionActionGroups() {
+        return asList(GROUP_SYSTEM_USERS);
     }
 
     public static List<String> resolveCaseStatusGroups() {

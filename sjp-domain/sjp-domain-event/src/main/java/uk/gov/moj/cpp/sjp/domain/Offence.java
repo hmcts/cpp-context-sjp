@@ -2,6 +2,7 @@ package uk.gov.moj.cpp.sjp.domain;
 
 import static org.apache.commons.lang3.ObjectUtils.firstNonNull;
 
+import java.io.Serializable;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.UUID;
@@ -14,7 +15,9 @@ import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class Offence {
+public class Offence implements Serializable {
+
+    private static final long serialVersionUID = 3981004150201876343L;
 
     private final UUID id;
     private final int offenceSequenceNo;
@@ -39,14 +42,18 @@ public class Offence {
     private final Boolean pressRestrictable;
     private final String offenceTitle;
     private final String offenceTitleWelsh;
+    private final Boolean prosecutorOfferAOCP;
+    private final Boolean isEligibleAOCP;
+    private final BigDecimal aocpStandardPenaltyAmount;
 
     @SuppressWarnings("squid:S00107")
     public Offence(UUID id, int offenceSequenceNo, String libraOffenceCode, LocalDate chargeDate,
                    int libraOffenceDateCode, LocalDate offenceCommittedDate, String offenceWording,
-                   String prosecutionFacts, String witnessStatement, BigDecimal compensation, final Boolean pressRestrictable) {
+                   String prosecutionFacts, String witnessStatement, BigDecimal compensation, final Boolean pressRestrictable,
+                   final Boolean prosecutorOfferAOCP, final Boolean isEligibleAOCP, final BigDecimal aocpStandardPenaltyAmount) {
         this(id, offenceSequenceNo, libraOffenceCode, chargeDate, libraOffenceDateCode, null, offenceCommittedDate,
                 offenceWording, prosecutionFacts, witnessStatement, compensation,
-                null, null, null, null, null, null, null, pressRestrictable, null, null);
+                null, null, null, null, null, null, null, pressRestrictable, null, null, prosecutorOfferAOCP, isEligibleAOCP, aocpStandardPenaltyAmount);
     }
 
     @JsonCreator
@@ -70,7 +77,10 @@ public class Offence {
                    @JsonProperty("endorsable") Boolean endorsable,
                    @JsonProperty("pressRestrictable") Boolean pressRestrictable,
                    @JsonProperty("offenceTitle") String offenceTitle,
-                   @JsonProperty("offenceTitleWelsh") String offenceTitleWelsh) {
+                   @JsonProperty("offenceTitleWelsh") String offenceTitleWelsh,
+                   @JsonProperty("prosecutorOfferAOCP") Boolean prosecutorOfferAOCP,
+                   @JsonProperty("isEligibleAOCP") Boolean isEligibleAOCP,
+                   @JsonProperty("aocpStandardPenaltyAmount") BigDecimal aocpStandardPenaltyAmount) {
         this.id = id;
         this.offenceSequenceNo = offenceSequenceNo;
         this.libraOffenceCode = libraOffenceCode;
@@ -91,6 +101,9 @@ public class Offence {
         this.pressRestrictable = pressRestrictable;
         this.offenceTitle = offenceTitle;
         this.offenceTitleWelsh = offenceTitleWelsh;
+        this.prosecutorOfferAOCP = prosecutorOfferAOCP;
+        this.isEligibleAOCP = isEligibleAOCP;
+        this.aocpStandardPenaltyAmount = aocpStandardPenaltyAmount;
     }
 
     public UUID getId() {
@@ -166,6 +179,18 @@ public class Offence {
     public String getOffenceTitle() { return offenceTitle; }
 
     public String getOffenceTitleWelsh() { return offenceTitleWelsh; }
+
+    public Boolean getProsecutorOfferAOCP() {
+        return prosecutorOfferAOCP;
+    }
+
+    public Boolean getIsEligibleAOCP() {
+        return isEligibleAOCP;
+    }
+
+    public BigDecimal getAocpStandardPenaltyAmount() {
+        return aocpStandardPenaltyAmount;
+    }
 
     @Override
     public boolean equals(Object o) {

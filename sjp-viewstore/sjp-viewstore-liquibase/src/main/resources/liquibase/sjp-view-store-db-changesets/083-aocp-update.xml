@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+         http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.3.xsd">
+
+    <changeSet id="83" author="team/Latin/erol.kureli"
+               logicalFilePath="liquibase/sjp-view-store-db-changelog.xml">
+
+        <addColumn tableName="case_details">
+            <column name="aocp_eligible" type="boolean"/>
+            <column name="aocp_victim_surcharge" type="currency"/>
+            <column name="aocp_total_cost" type="currency"/>
+            <column name="resulted_through_aocp" type="boolean"/>
+        </addColumn>
+
+        <addColumn tableName="offence">
+            <column name="aocp_standard_penalty_amount" type="currency"/>
+        </addColumn>
+
+        <addColumn tableName="case_decision">
+            <column name="resulted_through_aocp" type="boolean"/>
+        </addColumn>
+
+        <addColumn tableName="online_plea_detail">
+            <column name="aocp_plea" type="boolean"/>
+        </addColumn>
+
+        <rollback>
+
+            <dropColumn tableName="case_details">
+                <column name="aocp_eligible"/>
+                <column name="aocp_victim_surcharge"/>
+                <column name="aocp_total_cost"/>
+                <column name="resulted_through_aocp"/>
+            </dropColumn>
+
+            <dropColumn tableName="offence">
+                <column name="aocp_standard_penalty_amount"/>
+            </dropColumn>
+
+            <dropColumn tableName="case_decision">
+                <column name="resulted_through_aocp"/>
+            </dropColumn>
+
+            <dropColumn tableName="online_plea_detail">
+                <column name="aocp_plea"/>
+            </dropColumn>
+
+        </rollback>
+
+    </changeSet>
+
+</databaseChangeLog>

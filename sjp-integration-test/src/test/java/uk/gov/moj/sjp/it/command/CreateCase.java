@@ -189,6 +189,9 @@ public class CreateCase {
             ofNullable(offenceBuilder.pressRestrictable)
                     .ifPresent(pressRestrictable -> offence.add("pressRestrictable", pressRestrictable));
 
+            ofNullable(offenceBuilder.prosecutorOfferAOCP)
+                    .ifPresent(prosecutorOfferAOCP -> offence.add("prosecutorOfferAOCP", prosecutorOfferAOCP));
+
             return offence;
         }).forEach(offenceArrayBuilder::add);
 
@@ -594,6 +597,7 @@ public class CreateCase {
         private BigDecimal maxFineValue;
         private Boolean endorsable;
         private Boolean pressRestrictable;
+        private Boolean prosecutorOfferAOCP;
 
         private OffenceBuilder() {
 
@@ -623,6 +627,7 @@ public class CreateCase {
             builder.maxFineValue = BigDecimal.valueOf(1000);
             builder.endorsable = false;
             builder.pressRestrictable = false;
+            builder.prosecutorOfferAOCP = true;
 
             return builder;
         }
@@ -695,6 +700,11 @@ public class CreateCase {
 
         public OffenceBuilder withPressRestrictable(final Boolean pressRestrictable) {
             this.pressRestrictable = pressRestrictable;
+            return this;
+        }
+
+        public OffenceBuilder withProsecutorOfferAOCP(final Boolean prosecutorOfferAOCP) {
+            this.prosecutorOfferAOCP = prosecutorOfferAOCP;
             return this;
         }
 

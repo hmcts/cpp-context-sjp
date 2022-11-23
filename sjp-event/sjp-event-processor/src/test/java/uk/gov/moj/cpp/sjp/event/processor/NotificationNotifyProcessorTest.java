@@ -10,13 +10,17 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
 import static uk.gov.justice.services.messaging.JsonEnvelope.metadataBuilder;
+import static uk.gov.moj.cpp.sjp.event.processor.service.NotificationNotifyDocumentType.AOCP_ACCEPTED_EMAIL_NOTIFICATION;
 import static uk.gov.moj.cpp.sjp.event.processor.service.NotificationNotifyDocumentType.ENDORSEMENT_REMOVAL_NOTIFICATION;
 import static uk.gov.moj.cpp.sjp.event.processor.service.NotificationNotifyDocumentType.ENFORCEMENT_PENDING_APPLICATION_NOTIFICATION;
+import static uk.gov.moj.cpp.sjp.event.processor.service.NotificationNotifyDocumentType.PARTIAL_AOCP_CRITERIA_NOTIFICATION;
 
 import uk.gov.justice.services.core.sender.Sender;
 import uk.gov.justice.services.messaging.JsonEnvelope;
+import uk.gov.moj.cpp.sjp.event.processor.service.AocpAcceptedEmailNotificationStatus;
 import uk.gov.moj.cpp.sjp.event.processor.service.EnforcementPendingApplicationNotificationStatus;
 import uk.gov.moj.cpp.sjp.event.processor.service.NotificationOfEndorsementStatus;
+import uk.gov.moj.cpp.sjp.event.processor.service.NotificationOfPartialAocpStatus;
 import uk.gov.moj.cpp.sjp.event.processor.service.SjpService;
 import uk.gov.moj.cpp.sjp.event.processor.service.SystemIdMapperService;
 import uk.gov.moj.cpp.systemidmapper.client.SystemIdMapping;
@@ -40,6 +44,8 @@ public class NotificationNotifyProcessorTest {
     private static final String SEND_ENFORCEMENT_PENDING_EMAIL_NOTIFICATION_COMMAND_NAME = "sjp.command.enforcement-pending-application-send-notification";
     private static final String FAIL_ENDORCEMENT_REMOVAL_EMAIL_NOTIFICATION_COMMAND_NAME = "sjp.command.endorsement-removal-notification-failed";
     private static final String SEND_ENDORCEMENT_REMOVAL_EMAIL_NOTIFICATION_COMMAND_NAME = "sjp.command.endorsement-removal-notification-sent";
+    private static final String AOCP_ACCEPTED_EMAIL_NOTIFICATION_COMMAND_NAME = "sjp.command.update-aocp-acceptance-email-notification";
+    private static final String PARTIAL_AOCP_EMAIL_NOTIFICATION_COMMAND_NAME = "sjp.command.update-partial-aocp-criteria-notification-to-prosecutor-status";
 
     private static final String NOTIFICATION_TIME = "2016-07-11T12:55:28.180Z";
 
@@ -149,6 +155,70 @@ public class NotificationNotifyProcessorTest {
     }
 
     @Test
+    public void shouldSendFailedCommandWhenNotificationFailedIsReceivedFromNotificationNotifyForPartialAocp() {
+        final JsonEnvelope envelope = notificationFailedEnvelope(notificationId.toString());
+        givenNotificationIdIsPresentInViewstoreForPartialAocp(envelope);
+        when(systemIdMapperService.getSystemIdMappingForNotificationId(notificationId)).thenReturn(of(systemIdMapping));
+        when(systemIdMapping.getSourceType()).thenReturn(PARTIAL_AOCP_CRITERIA_NOTIFICATION.name());
+
+        processor.notificationFailed(envelope);
+
+        verify(sender).send(envelopeCaptor.capture());
+        final JsonEnvelope sentCommand = envelopeCaptor.getValue();
+        assertThat(sentCommand.metadata().name(), equalTo(PARTIAL_AOCP_EMAIL_NOTIFICATION_COMMAND_NAME));
+        assertThat(sentCommand.payloadAsJsonObject().getString("caseId"), equalTo(notificationId.toString()));
+        assertThat(sentCommand.payloadAsJsonObject().getString("failedTime"), equalTo(NOTIFICATION_TIME));
+    }
+
+    @Test
+    public void shouldSendFailedCommandWhenNotificationFailedIsReceivedFromNotificationNotifyForAocpAccepted() {
+        final JsonEnvelope envelope = notificationFailedEnvelope(notificationId.toString());
+        givenNotificationIdIsPresentInViewstoreForAocpAccepted(envelope);
+        when(systemIdMapperService.getSystemIdMappingForNotificationId(notificationId)).thenReturn(of(systemIdMapping));
+        when(systemIdMapping.getSourceType()).thenReturn(AOCP_ACCEPTED_EMAIL_NOTIFICATION.name());
+
+        processor.notificationFailed(envelope);
+
+        verify(sender).send(envelopeCaptor.capture());
+        final JsonEnvelope sentCommand = envelopeCaptor.getValue();
+        assertThat(sentCommand.metadata().name(), equalTo(AOCP_ACCEPTED_EMAIL_NOTIFICATION_COMMAND_NAME));
+        assertThat(sentCommand.payloadAsJsonObject().getString("caseId"), equalTo(notificationId.toString()));
+        assertThat(sentCommand.payloadAsJsonObject().getString("failedTime"), equalTo(NOTIFICATION_TIME));
+    }
+
+    @Test
+    public void shouldSendSentCommandWhenNotificationSentIsReceivedFromNotificationNotifyForPartialAocp() {
+        final JsonEnvelope envelope = notificationSentEnvelope(notificationId.toString());
+        givenNotificationIdIsPresentInViewstoreForPartialAocp(envelope);
+        when(systemIdMapperService.getSystemIdMappingForNotificationId(notificationId)).thenReturn(of(systemIdMapping));
+        when(systemIdMapping.getSourceType()).thenReturn(PARTIAL_AOCP_CRITERIA_NOTIFICATION.name());
+
+        processor.notificationSent(envelope);
+
+        verify(sender).send(envelopeCaptor.capture());
+        final JsonEnvelope sentCommand = envelopeCaptor.getValue();
+        assertThat(sentCommand.metadata().name(), equalTo(PARTIAL_AOCP_EMAIL_NOTIFICATION_COMMAND_NAME));
+        assertThat(sentCommand.payloadAsJsonObject().getString("caseId"), equalTo(notificationId.toString()));
+        assertThat(sentCommand.payloadAsJsonObject().getString("sentTime"), equalTo(NOTIFICATION_TIME));
+    }
+
+    @Test
+    public void shouldSendSentCommandWhenNotificationSentIsReceivedFromNotificationNotifyForAocpAccepted() {
+        final JsonEnvelope envelope = notificationSentEnvelope(notificationId.toString());
+        givenNotificationIdIsPresentInViewstoreForAocpAccepted(envelope);
+        when(systemIdMapperService.getSystemIdMappingForNotificationId(notificationId)).thenReturn(of(systemIdMapping));
+        when(systemIdMapping.getSourceType()).thenReturn(AOCP_ACCEPTED_EMAIL_NOTIFICATION.name());
+
+        processor.notificationSent(envelope);
+
+        verify(sender).send(envelopeCaptor.capture());
+        final JsonEnvelope sentCommand = envelopeCaptor.getValue();
+        assertThat(sentCommand.metadata().name(), equalTo(AOCP_ACCEPTED_EMAIL_NOTIFICATION_COMMAND_NAME));
+        assertThat(sentCommand.payloadAsJsonObject().getString("caseId"), equalTo(notificationId.toString()));
+        assertThat(sentCommand.payloadAsJsonObject().getString("sentTime"), equalTo(NOTIFICATION_TIME));
+    }
+
+    @Test
     public void shouldIgnoreMessagesNotificationFailedEventWhenNotificationIdIsNotPresentInTheViewstoreForEnforcementPendingApplications() {
         final JsonEnvelope envelope = notificationFailedEnvelope(notificationId.toString());
         givenNotificationIdIsNotPresentInViewstoreForEnforcementPendingApplications(envelope);
@@ -211,6 +281,16 @@ public class NotificationNotifyProcessorTest {
     private void givenNotificationIdIsPresentInViewstoreForEnforcementPendingApplications(final JsonEnvelope envelope) {
         final EnforcementPendingApplicationNotificationStatus currentStatus = EnforcementPendingApplicationNotificationStatus.queued(notificationId);
         when(sjpService.getEnforcementPendingApplicationNotificationStatus(notificationId, envelope)).thenReturn(of(currentStatus));
+    }
+
+    private void givenNotificationIdIsPresentInViewstoreForAocpAccepted(final JsonEnvelope envelope) {
+        final AocpAcceptedEmailNotificationStatus currentStatus = AocpAcceptedEmailNotificationStatus.queued(notificationId);
+        when(sjpService.getAocpAcceptedEmailNotificationStatus(notificationId, envelope)).thenReturn(of(currentStatus));
+    }
+
+    private void givenNotificationIdIsPresentInViewstoreForPartialAocp(final JsonEnvelope envelope) {
+        final NotificationOfPartialAocpStatus currentStatus = NotificationOfPartialAocpStatus.queued(notificationId);
+        when(sjpService.getNotificationOfPartialAocpStatus(notificationId, envelope)).thenReturn(of(currentStatus));
     }
 
     private void givenNotificationIdIsNotPresentInViewstoreForEnforcementPendingApplications(final JsonEnvelope envelope) {

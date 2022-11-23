@@ -13,6 +13,7 @@ import javax.inject.Inject;
 import javax.json.Json;
 import javax.json.JsonArray;
 import javax.json.JsonArrayBuilder;
+import javax.json.JsonNumber;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
 
@@ -64,6 +65,10 @@ public class CaseConverter {
         final JsonObject offenceReferenceData = referenceOffencesDataService
                 .getOffenceReferenceData(query, offenceCode, offence.getString("startDate"));
 
+        final JsonNumber compensation = offence.getJsonNumber("compensation");
+
+        final JsonNumber aocpStandardPenalty = offence.getJsonNumber("aocpStandardPenalty");
+
         final JsonObjectBuilder builder = Json.createObjectBuilder()
                 .add("id", offence.getString("id"))
                 .add("wording", offence.getString("wording"))
@@ -71,6 +76,14 @@ public class CaseConverter {
                 .add("title", offenceReferenceData.getString("title"))
                 .add("legislation", offenceReferenceData.getString("legislation"))
                 .add("endorsable", offence.getBoolean("endorsable", false));
+
+
+        Optional.ofNullable(compensation)
+                .ifPresent(compensationValue -> builder.add("compensation", compensationValue.bigDecimalValue()));
+
+        Optional.ofNullable(aocpStandardPenalty)
+                .ifPresent(aocpStandardPenaltyValue -> builder.add("aocpStandardPenalty", aocpStandardPenaltyValue.bigDecimalValue()));
+
 
         Optional.ofNullable(offence.getString("wordingWelsh", null))
                 .ifPresent(wordingWelsh -> builder.add("wordingWelsh", wordingWelsh));
@@ -94,6 +107,17 @@ public class CaseConverter {
     }
 
     private static JsonObject buildCaseObject(final JsonObject caseDetails, final JsonObject defendant) {
+
+        final JsonNumber costs = caseDetails.getJsonNumber("costs");
+
+        final JsonNumber victimSurcharge = caseDetails.getJsonNumber("aocpVictimSurcharge");
+
+        final JsonNumber aocpTotalCost = caseDetails.getJsonNumber("aocpTotalCost");
+
+        final Optional<Boolean> resultedThroughAocp= JsonObjects.getBoolean(caseDetails, "resultedThroughAocp");
+
+        final Optional<Boolean> defendantAcceptedAocp= JsonObjects.getBoolean(caseDetails, "defendantAcceptedAocp");
+
         final JsonObjectBuilder builder = createObjectBuilder()
                 .add("id", caseDetails.getString("id"))
                 .add("urn", caseDetails.getString("urn"))
@@ -101,7 +125,21 @@ public class CaseConverter {
                 .add("completed", caseDetails.getBoolean("completed", false))
                 .add("assigned", caseDetails.getBoolean("assigned", false))
                 .add("postConviction", caseDetails.getBoolean("postConviction", false))
-                .add("defendant", defendant);
+                .add("defendant", defendant)
+                .add("aocpEligible", caseDetails.getBoolean("aocpEligible", false))
+                .add("readyForDecision", caseDetails.getBoolean("readyForDecision", false));
+
+        Optional.ofNullable(costs)
+                .ifPresent(costsValue -> builder.add("costs", costsValue.bigDecimalValue()));
+
+        Optional.ofNullable(victimSurcharge)
+                .ifPresent(victimSurchargeValue -> builder.add("aocpVictimSurcharge", victimSurchargeValue.bigDecimalValue()));
+
+        Optional.ofNullable(aocpTotalCost)
+                .ifPresent(totalCostValue -> builder.add("aocpTotalCost", totalCostValue.bigDecimalValue()));
+
+        resultedThroughAocp.ifPresent(resultedWithAOCP -> builder.add("resultedThroughAocp", resultedWithAOCP));
+        defendantAcceptedAocp.ifPresent(aocpAccepted -> builder.add("defendantAcceptedAocp", aocpAccepted));
 
         Optional.ofNullable(caseDetails.getString(STATUS, null)).
                 ifPresent(status -> builder.add(STATUS, status));

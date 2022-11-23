@@ -14,6 +14,7 @@
     "COMPLETED_APPLICATION_PENDING",
     "UNKNOWN",
     "RELISTED",
-    "APPEALED"
+    "APPEALED",
+    "AOCP_PENDING"
   ]
 }

@@ -1,13 +1,15 @@
 package uk.gov.moj.cpp.sjp.event.processor;
 
-
 import static uk.gov.justice.services.core.annotation.Component.EVENT_PROCESSOR;
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
 import static uk.gov.justice.services.messaging.JsonEnvelope.metadataFrom;
+import static uk.gov.justice.services.messaging.JsonObjects.getBoolean;
 import static uk.gov.moj.cpp.sjp.event.processor.EventProcessorConstants.CASE_ID;
 import static uk.gov.moj.cpp.sjp.event.processor.EventProcessorConstants.EXPECTED_DATE_READY;
 import static uk.gov.moj.cpp.sjp.event.processor.EventProcessorConstants.POSTING_DATE;
 import static uk.gov.moj.cpp.sjp.event.processor.EventProcessorConstants.URN;
+import static uk.gov.moj.cpp.sjp.event.processor.EventProcessorConstants.PROSECUTING_AUTHORITY;
+import static uk.gov.moj.cpp.sjp.event.processor.EventProcessorConstants.PROSECUTOR_AOCP_APPROVED;
 
 import uk.gov.justice.services.core.annotation.FrameworkComponent;
 import uk.gov.justice.services.core.annotation.Handles;
@@ -17,10 +19,12 @@ import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.messaging.Metadata;
 import uk.gov.moj.cpp.sjp.event.CaseReceived;
 import uk.gov.moj.cpp.sjp.event.processor.service.AzureFunctionService;
+import uk.gov.moj.cpp.sjp.event.processor.service.ReferenceDataService;
 import uk.gov.moj.cpp.sjp.event.processor.service.timers.TimerService;
 
 import java.io.IOException;
 import java.time.LocalDate;
+import java.util.Optional;
 import java.util.UUID;
 
 import javax.inject.Inject;
@@ -36,6 +40,7 @@ public class CaseReceivedProcessor {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(CaseReceivedProcessor.class);
     public static final String CASE_STARTED_PUBLIC_EVENT_NAME = "public.sjp.sjp-case-created";
+    public static final String RESOLVE_CASE_AOCP_ELIGIBILITY = "sjp.command.resolve-case-aocp-eligibility";
 
     @Inject
     @FrameworkComponent(EVENT_PROCESSOR)
@@ -47,6 +52,9 @@ public class CaseReceivedProcessor {
     @Inject
     private AzureFunctionService azureFunctionService;
 
+    @Inject
+    private ReferenceDataService referenceDataService;
+
 
     @Handles(CaseReceived.EVENT_NAME)
     public void handleCaseReceivedEvent(final JsonEnvelope event) {
@@ -54,10 +62,30 @@ public class CaseReceivedProcessor {
         final String caseUrn = event.payloadAsJsonObject().getString(URN);
         final LocalDate postingDate = LocalDate.parse(event.payloadAsJsonObject().getString(POSTING_DATE));
         final LocalDate expectedDateReady = LocalDate.parse(event.payloadAsJsonObject().getString(EXPECTED_DATE_READY));
+        final String prosecutingAuthority = event.payloadAsJsonObject().getString(PROSECUTING_AUTHORITY);
+
+        resolveCaseAOCPEligibility(event, caseId, prosecutingAuthority);
+
         raisePublicEvent(event.metadata(), caseId, postingDate);
         relayCaseToCourtStore(caseUrn);
-        //Does activiti and JMS share the same transaction?
+
+        //Does activity and JMS share the same transaction?
         timerService.startTimerForDefendantResponse(caseId, expectedDateReady, event.metadata());
+    }
+
+    private void resolveCaseAOCPEligibility(final JsonEnvelope event, final UUID caseId, final String prosecutingAuthority) {
+
+        final JsonObjectBuilder payloadBuilder = Json.createObjectBuilder()
+                .add(CASE_ID, caseId.toString());
+
+        final Optional<JsonObject> prosecutorDetails = referenceDataService.getProsecutor(prosecutingAuthority, event);
+        if (prosecutorDetails.isPresent()) {
+            final Optional<Boolean> isProsecutorAOCApproved = getBoolean(prosecutorDetails.get(), "aocpApproved");
+            payloadBuilder.add(PROSECUTOR_AOCP_APPROVED, isProsecutorAOCApproved.orElse(false));
+
+            sender.send(envelopeFrom(JsonEnvelope.metadataFrom(event.metadata()).withName(RESOLVE_CASE_AOCP_ELIGIBILITY).build(),
+                    payloadBuilder.build()));
+        }
     }
 
     private void raisePublicEvent(final Metadata metadata, final UUID caseId, final LocalDate postingDate) {

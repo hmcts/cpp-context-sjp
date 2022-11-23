@@ -21,6 +21,8 @@ import uk.gov.justice.services.core.annotation.Component;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.test.utils.common.helper.StoppedClock;
 import uk.gov.moj.cpp.sjp.domain.SessionType;
+import uk.gov.moj.cpp.sjp.event.session.AocpSessionEnded;
+import uk.gov.moj.cpp.sjp.event.session.AocpSessionStarted;
 import uk.gov.moj.cpp.sjp.event.session.DelegatedPowersSessionEnded;
 import uk.gov.moj.cpp.sjp.event.session.DelegatedPowersSessionStarted;
 import uk.gov.moj.cpp.sjp.event.session.MagistrateSessionEnded;
@@ -195,6 +197,53 @@ public class SessionListenerTest {
                         method("handleDelegatedPowersSessionEnded").thatHandles(DelegatedPowersSessionEnded.EVENT_NAME),
                         method("handleMagistrateSessionEnded").thatHandles(MagistrateSessionEnded.EVENT_NAME)
                 )));
+    }
+
+
+    @Test
+    public void shouldHandleAocpStartedEvent() {
+
+        final JsonEnvelope aocpSessionStarted = envelopeFrom(metadataWithRandomUUID(AocpSessionStarted.EVENT_NAME),
+                createObjectBuilder()
+                        .add("sessionId", sessionId.toString())
+                        .add("userId", userId.toString())
+                        .add("courtHouseCode", courtHouseCode)
+                        .add("courtHouseName", courtHouseName)
+                        .add("localJusticeAreaNationalCourtCode", localJusticeAreaNationalCourtCode)
+                        .add("startedAt", startedAt.format(ISO_DATE_TIME))
+                        .build());
+
+        sessionListener.handleAocpSessionStarted(aocpSessionStarted);
+
+        verify(sessionRepository).save(sessionCaptor.capture());
+
+        final Session session = sessionCaptor.getValue();
+
+        assertThat(session.getSessionId(), equalTo(sessionId));
+        assertThat(session.getUserId(), equalTo(userId));
+        assertThat(session.getCourtHouseCode(), equalTo(courtHouseCode));
+        assertThat(session.getCourtHouseName(), equalTo(courtHouseName));
+        assertThat(session.getLocalJusticeAreaNationalCourtCode(), equalTo(localJusticeAreaNationalCourtCode));
+        assertThat(session.getStartedAt(), equalTo(startedAt));
+        assertThat(session.getType(), equalTo(SessionType.AOCP));
+        assertThat(session.getEndedAt().isPresent(), equalTo(false));
+    }
+
+
+    @Test
+    public void shouldHandleAocpEndedEvent() {
+
+        final JsonEnvelope magistrateSessionEnded = envelopeFrom(metadataWithRandomUUID(AocpSessionEnded.EVENT_NAME),
+                createObjectBuilder()
+                        .add("sessionId", sessionId.toString())
+                        .add("endedAt", endedAt.format(ISO_DATE_TIME))
+                        .build());
+
+        when(sessionRepository.findBy(sessionId)).thenReturn(existingSession);
+
+        sessionListener.handleAocpSessionEnded(magistrateSessionEnded);
+
+        verify(existingSession).setEndedAt(endedAt);
     }
 
 }

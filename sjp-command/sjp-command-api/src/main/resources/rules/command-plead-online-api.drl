@@ -25,3 +25,12 @@ rule "Command API - Rule for Plead Online when PCQ visited"
   then
     $outcome.setSuccess(true);
 end
+rule "Command API - Rule for Plead AOCP Online"
+  when
+    $outcome: Outcome();
+    $action: Action(name == "sjp.plead-aocp-online");
+    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, RuleConstants.getPleadOnlineActionGroups()));
+
+  then
+    $outcome.setSuccess(true);
+end

@@ -1,5 +1,6 @@
 package uk.gov.moj.cpp.sjp.domain.aggregate.handler;
 
+import static java.math.BigDecimal.ROUND_DOWN;
 import static uk.gov.moj.cpp.sjp.domain.CaseAssignmentType.DELEGATED_POWERS_DECISION;
 import static uk.gov.moj.cpp.sjp.domain.CaseAssignmentType.MAGISTRATE_DECISION;
 import static uk.gov.moj.cpp.sjp.domain.DomainConstants.NUMBER_DAYS_WAITING_FOR_PLEA;
@@ -9,11 +10,16 @@ import static uk.gov.moj.cpp.sjp.domain.aggregate.handler.HandlerUtils.createRej
 import static uk.gov.moj.cpp.sjp.event.session.CaseAssignmentRejected.RejectReason.CASE_ASSIGNED_TO_OTHER_USER;
 import static uk.gov.moj.cpp.sjp.event.session.CaseAssignmentRejected.RejectReason.CASE_COMPLETED;
 import static uk.gov.moj.cpp.sjp.event.session.CaseAssignmentRejected.RejectReason.CASE_NOT_READY;
+import static java.util.Objects.nonNull;
+import static java.math.BigDecimal.valueOf;
 
 import uk.gov.justice.core.courts.CourtCentre;
 import uk.gov.justice.core.courts.HearingDay;
 import uk.gov.justice.core.courts.HearingType;
 import uk.gov.justice.json.schemas.domains.sjp.ApplicationStatus;
+import uk.gov.moj.cpp.sjp.domain.AOCPCost;
+import uk.gov.moj.cpp.sjp.domain.AOCPCostDefendant;
+import uk.gov.moj.cpp.sjp.domain.AOCPCostOffence;
 import uk.gov.moj.cpp.sjp.domain.Case;
 import uk.gov.moj.cpp.sjp.domain.CaseAssignmentType;
 import uk.gov.moj.cpp.sjp.domain.CaseReadinessReason;
@@ -25,6 +31,7 @@ import uk.gov.moj.cpp.sjp.domain.aggregate.state.CaseAggregateState;
 import uk.gov.moj.cpp.sjp.event.CCApplicationStatusUpdated;
 import uk.gov.moj.cpp.sjp.event.CaseAlreadyReopened;
 import uk.gov.moj.cpp.sjp.event.CaseCreationFailedBecauseCaseAlreadyExisted;
+import uk.gov.moj.cpp.sjp.event.CaseEligibleForAOCP;
 import uk.gov.moj.cpp.sjp.event.CaseExpectedDateReadyChanged;
 import uk.gov.moj.cpp.sjp.event.CaseListedInCriminalCourts;
 import uk.gov.moj.cpp.sjp.event.CaseListedInCriminalCourtsV2;
@@ -41,6 +48,7 @@ import uk.gov.moj.cpp.sjp.event.DatesToAvoidAdded;
 import uk.gov.moj.cpp.sjp.event.DatesToAvoidTimerExpired;
 import uk.gov.moj.cpp.sjp.event.DatesToAvoidUpdated;
 import uk.gov.moj.cpp.sjp.event.DefendantResponseTimerExpired;
+import uk.gov.moj.cpp.sjp.event.PartialAocpCriteriaNotification;
 import uk.gov.moj.cpp.sjp.event.decision.DecisionSaved;
 import uk.gov.moj.cpp.sjp.event.session.CaseAlreadyAssigned;
 import uk.gov.moj.cpp.sjp.event.session.CaseAssigned;
@@ -48,13 +56,17 @@ import uk.gov.moj.cpp.sjp.event.session.CaseAssignmentRejected;
 import uk.gov.moj.cpp.sjp.event.session.CaseUnassigned;
 import uk.gov.moj.cpp.sjp.event.session.CaseUnassignmentRejected;
 
+import java.math.BigDecimal;
+
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Stream;
 
+import com.google.common.util.concurrent.AtomicDouble;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -63,6 +75,11 @@ public class CaseCoreHandler {
     public static final CaseCoreHandler INSTANCE = new CaseCoreHandler();
 
     private static final Logger LOGGER = LoggerFactory.getLogger(CaseCoreHandler.class);
+
+    private static final double FINE_PERCENTAGE = 0.1;
+
+    private static final double MINIMUM_FINE = 34.0;
+
 
     private CaseCoreHandler() {
     }
@@ -280,6 +297,60 @@ public class CaseCoreHandler {
         }
 
         return streamBuilder.build();
+    }
+
+    public Stream<Object> resolveCaseAOCPEligibility(final UUID caseId, final boolean isProsecutorAOCPApproved, final CaseAggregateState state) {
+        if (!isProsecutorAOCPApproved) {
+            return Stream.empty();
+        } else {
+            return resolveCaseAOCPEligibilityAndCalculateFine(caseId, state);
+        }
+    }
+
+    private Stream<Object> resolveCaseAOCPEligibilityAndCalculateFine(final UUID caseId, final CaseAggregateState state) {
+        final AOCPCost aocpCost = state.getAOCPCost().get(caseId);
+        final List<AOCPCostOffence> offences = aocpCost.getDefendant().getOffences();
+        final List<AOCPCostOffence> aocpEligibleOffenceList = new ArrayList<>();
+        if (nonNull(offences) && !offences.isEmpty()) {
+            final AtomicDouble fineAmount = new AtomicDouble(0);
+            final AtomicDouble offenceCost = new AtomicDouble(0);
+            offences.forEach(offence -> {
+                if (isOffenceAOCPEligible(offence)) {
+                    fineAmount.addAndGet(offence.getAocpStandardPenaltyAmount().doubleValue());
+                    aocpEligibleOffenceList.add(new AOCPCostOffence(offence.getId(), offence.getCompensation(), offence.getAocpStandardPenaltyAmount(), offence.getIsEligibleAOCP(), offence.getProsecutorOfferAOCP()));
+                    offenceCost.addAndGet(offence.getAocpStandardPenaltyAmount().doubleValue() + offence.getCompensation().doubleValue());
+                }
+            });
+            if (offences.size() == aocpEligibleOffenceList.size()) {
+                final BigDecimal victimSurcharge = calculateVictimSurcharge(fineAmount.get()).setScale(2,ROUND_DOWN);
+                final BigDecimal aocpTotalCost = victimSurcharge.add(aocpCost.getCosts().add(valueOf(offenceCost.get()))).setScale(2,ROUND_DOWN);
+                final AOCPCostDefendant aocpCostDefendant = new AOCPCostDefendant(aocpCost.getDefendant().getId(), aocpEligibleOffenceList);
+                return Stream.of(new CaseEligibleForAOCP(caseId, aocpCost.getCosts(), victimSurcharge, aocpTotalCost, aocpCostDefendant));
+            }else if(hasAtLeastOneProsecutorAOCPOffered(offences)) {
+                return Stream.of(new PartialAocpCriteriaNotification(caseId, state.getUrn(), state.getProsecutingAuthority()));
+            }
+        }
+        return Stream.empty();
+    }
+
+    private BigDecimal calculateVictimSurcharge(final double fineAmount) {
+        final double victimSurcharge = fineAmount * FINE_PERCENTAGE;
+        return victimSurcharge > MINIMUM_FINE ? valueOf(victimSurcharge) : valueOf(MINIMUM_FINE);
+    }
+
+    private boolean isOffenceAOCPEligible(AOCPCostOffence offence) {
+        return nonNull(offence.getIsEligibleAOCP()) && nonNull(offence.getProsecutorOfferAOCP()) &&
+                Boolean.TRUE.equals(offence.getIsEligibleAOCP()) && Boolean.TRUE.equals(offence.getProsecutorOfferAOCP());
+    }
+
+    private boolean hasAtLeastOneProsecutorAOCPOffered(final List<AOCPCostOffence> offences ) {
+        for(final AOCPCostOffence offence : offences){
+            if(nonNull(offence.getProsecutorOfferAOCP()) && Boolean.TRUE.equals(offence.getProsecutorOfferAOCP())){
+                return true;
+            }
+        }
+
+        return false;
     }
 
     private Optional<Object> createCaseNotFoundEventForWrongCaseId(final UUID caseId,

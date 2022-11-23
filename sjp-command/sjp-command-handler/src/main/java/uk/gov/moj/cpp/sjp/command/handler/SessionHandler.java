@@ -3,6 +3,8 @@ package uk.gov.moj.cpp.sjp.command.handler;
 import static java.lang.String.format;
 import static java.util.Optional.empty;
 import static java.util.Optional.ofNullable;
+import static uk.gov.justice.services.core.enveloper.Enveloper.toEnvelopeWithMetadataFrom;
+import static uk.gov.justice.services.messaging.JsonObjects.getBoolean;
 
 import uk.gov.justice.core.courts.DelegatedPowers;
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
@@ -18,6 +20,7 @@ import uk.gov.justice.services.eventsourcing.source.core.exception.EventStreamEx
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.messaging.JsonObjects;
 import uk.gov.moj.cpp.sjp.domain.aggregate.Session;
+import uk.gov.moj.cpp.sjp.event.session.ResetAocpSession;
 
 import java.util.Optional;
 import java.util.UUID;
@@ -63,19 +66,36 @@ public class SessionHandler {
         final String courtHouseName = startSession.getString(COURT_HOUSE_NAME);
         final String localJusticeAreaNationalCourtCode = startSession.getString(LOCAL_JUSTICE_AREA_NATIONAL_COURT_CODE);
         final Optional<String> magistrate = ofNullable(startSession.getString(MAGISTRATE, null));
+        final Optional<Boolean> isAocpSession = getBoolean(startSession, "isAocpSession");
 
-        applyToSessionAggregate(startSessionCommand, session -> magistrate
-                .map(providedMagistrate -> {
-                    final Optional<DelegatedPowers> legalAdviser = getLegalAdviserFromSession(startSession);
-                    return session.startMagistrateSession(sessionId, userId, courtHouseCode, courtHouseName, localJusticeAreaNationalCourtCode, clock.now(), providedMagistrate, legalAdviser);
-                })
-                .orElseGet(() -> session.startDelegatedPowersSession(sessionId, userId, courtHouseCode, courtHouseName, localJusticeAreaNationalCourtCode, clock.now())));
+        if (isAocpSession.isPresent() && Boolean.TRUE.equals(isAocpSession.get())) {
+            applyToSessionAggregate(startSessionCommand, session -> session.startAocpSession(sessionId, userId, courtHouseCode, courtHouseName, localJusticeAreaNationalCourtCode, clock.now()));
+        }else {
+            applyToSessionAggregate(startSessionCommand, session -> magistrate
+                    .map(providedMagistrate -> {
+                        final Optional<DelegatedPowers> legalAdviser = getLegalAdviserFromSession(startSession);
+                        return session.startMagistrateSession(sessionId, userId, courtHouseCode, courtHouseName, localJusticeAreaNationalCourtCode, clock.now(), providedMagistrate, legalAdviser);
+                    })
+                    .orElseGet(() -> session.startDelegatedPowersSession(sessionId, userId, courtHouseCode, courtHouseName, localJusticeAreaNationalCourtCode, clock.now())));
+        }
     }
 
     @Handles("sjp.command.end-session")
     public void endSession(final JsonEnvelope endSessionCommand) throws EventStreamException {
         final UUID sessionId = UUID.fromString(endSessionCommand.payloadAsJsonObject().getString(SESSION_ID));
         applyToSessionAggregate(endSessionCommand, session -> session.endSession(sessionId, clock.now()));
+    }
+
+    @Handles("sjp.command.reset-aocp-session")
+    public void resetAocpSessionRequest(final JsonEnvelope command) throws EventStreamException {
+
+        final EventStream eventStream = eventSource.getStreamById(UUID.randomUUID());
+
+        final Stream<JsonEnvelope> newEvents =
+                Stream.of(new ResetAocpSession(clock.now()))
+                        .map(toEnvelopeWithMetadataFrom(command));
+
+        eventStream.append(newEvents);
     }
 
     private void applyToSessionAggregate(JsonEnvelope sessionCommand, final Function<Session, Stream<Object>> function) throws EventStreamException {

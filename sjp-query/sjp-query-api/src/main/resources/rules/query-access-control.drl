@@ -183,6 +183,15 @@ rule "sjp - Query - API - Get session"
     $outcome.setSuccess(true);
 end
 
+rule "sjp - Query - API - Get latest aocp session"
+  when
+    $outcome: Outcome();
+    $action: Action(name == "sjp.query.aocp.session");
+    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, RuleConstants.getQuerySessionGroups()))
+  then
+    $outcome.setSuccess(true);
+end
+
 rule "sjp - Query - API - Get case assignment"
   when
     $outcome: Outcome();

@@ -12,7 +12,7 @@ import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.Matchers.blankOrNullString;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.core.Is.is;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertTrue;
 import static uk.gov.moj.cpp.sjp.domain.DomainConstants.NUMBER_DAYS_WAITING_FOR_PLEA;
 import static uk.gov.moj.sjp.it.command.CreateCase.CreateCasePayloadBuilder.defaultCaseBuilder;
@@ -30,6 +30,7 @@ import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubRegionByPostco
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.messaging.JsonObjects;
 import uk.gov.moj.cpp.sjp.domain.common.CaseStatus;
+import uk.gov.moj.cpp.sjp.event.CaseEligibleForAOCP;
 import uk.gov.moj.cpp.sjp.event.CaseReceived;
 import uk.gov.moj.sjp.it.command.CreateCase;
 import uk.gov.moj.sjp.it.command.builder.AddressBuilder;
@@ -45,11 +46,13 @@ import java.util.Optional;
 import java.util.UUID;
 
 import javax.json.Json;
+import javax.json.JsonArray;
 import javax.json.JsonObject;
 import javax.json.JsonValue;
 
 import com.jayway.jsonpath.matchers.JsonPathMatchers;
 import com.jayway.restassured.path.json.JsonPath;
+import org.junit.Before;
 import org.junit.Test;
 
 /**
@@ -57,10 +60,21 @@ import org.junit.Test;
  */
 public class CreateCaseIT extends BaseIntegrationTest {
 
-    private static final String DRIVER_NUMBER = "MORGA753116SM9IJ";
-
     private static final String DEFENDANT_REGION = "croydon";
     private static final String NATIONAL_COURT_CODE = "1080";
+
+    private final static int fineLevel = 3;
+    private final static BigDecimal maxValue = BigDecimal.valueOf(1000);
+
+    private final static String offenceCode1 = "CA03010";
+    private final static String offenceCode2 = "CA03011";
+
+    @Before
+    public void setUp(){
+        stubOffenceFineLevelsQuery(fineLevel, maxValue);
+        stubQueryOffencesByCode(offenceCode1);
+        stubQueryOffencesByCode(offenceCode2);
+    }
 
 
     @Test
@@ -143,7 +157,6 @@ public class CreateCaseIT extends BaseIntegrationTest {
 
     }
 
-
     @Test
     public void shouldMultiOffenceCaseBeCreatedWithEnterpriseId() {
         final UUID caseId = randomUUID();
@@ -171,6 +184,13 @@ public class CreateCaseIT extends BaseIntegrationTest {
 
         assertTrue(caseReceivedEvent.isPresent());
         assertThat(caseReceivedEvent.get().payloadAsJsonObject().getString("expectedDateReady"), is(createCase.getPostingDate().plusDays(NUMBER_DAYS_WAITING_FOR_PLEA).toString()));
+
+        final JsonObject defendantObject = caseReceivedEvent.get().payloadAsJsonObject().getJsonObject("defendant");
+        final JsonArray offenceArray = defendantObject.getJsonArray("offences");
+        final JsonObject offence1 = offenceArray.getJsonObject(0);
+        assertThat(offence1.getBoolean("isEligibleAOCP"), is(true));
+        assertThat(offence1.getBoolean("prosecutorOfferAOCP"), is(true));
+        assertThat(offence1.getInt("aocpStandardPenaltyAmount"), is(100));
 
         final JsonPath jsonResponse = CasePoller.pollUntilCaseByIdIsOk(caseId, JsonPathMatchers.withJsonPath("$.status", equalTo(CaseStatus.NO_PLEA_RECEIVED_READY_FOR_DECISION.name())));
         assertThat(jsonResponse.get("id"), equalTo(caseId.toString()));
@@ -208,13 +228,6 @@ public class CreateCaseIT extends BaseIntegrationTest {
         final UUID caseId = randomUUID();
         final ProsecutingAuthority prosecutingAuthority = TFL;
         stubProsecutorQuery(prosecutingAuthority.name(), prosecutingAuthority.getFullName(), randomUUID());
-        final int fineLevel = 3;
-        final BigDecimal maxValue = BigDecimal.valueOf(1000);
-
-        stubOffenceFineLevelsQuery(fineLevel, maxValue);
-
-        final String offenceCode1 = "CA03010";
-        final String offenceCode2 = "CA03011";
 
         final JsonObject offence1Definition = stubQueryOffencesByCode(offenceCode1);
         final JsonObject offence2Definition = stubQueryOffencesByCode(offenceCode2);
@@ -227,8 +240,6 @@ public class CreateCaseIT extends BaseIntegrationTest {
         final CreateCase.OffenceBuilder offence = createCase.getOffenceBuilder();
         stubEnforcementAreaByPostcode(defendant.getAddressBuilder().getPostcode(), NATIONAL_COURT_CODE, "Bedfordshire Magistrates' Court");
         stubRegionByPostcode(NATIONAL_COURT_CODE, DEFENDANT_REGION);
-
-
 
         final Optional<JsonEnvelope> caseReceivedEvent = new EventListener()
                 .subscribe(CaseReceived.EVENT_NAME)
@@ -310,9 +321,6 @@ public class CreateCaseIT extends BaseIntegrationTest {
         final ProsecutingAuthority prosecutingAuthority = DVLA;
         stubProsecutorQuery(prosecutingAuthority.name(), prosecutingAuthority.getFullName(), randomUUID());
 
-        final String offenceCode1 = "CA03010";
-        final String offenceCode2 = "CA03011";
-
         final LocalDate backDutyFromDate = now().minusMonths(6);
         final LocalDate backDutyToDate = now().minusMonths(3);
 
@@ -342,17 +350,6 @@ public class CreateCaseIT extends BaseIntegrationTest {
         final ProsecutingAuthority prosecutingAuthority = TFL;
         stubProsecutorQuery(prosecutingAuthority.name(), prosecutingAuthority.getFullName(), randomUUID());
 
-        final String offenceCode1 = "CA03010";
-        final String offenceCode2 = "CA03011";
-
-        stubQueryOffencesByCode(offenceCode1);
-        stubQueryOffencesByCode(offenceCode2);
-
-        final int fineLevel = 3;
-        final BigDecimal maxValue = BigDecimal.valueOf(1000);
-
-        stubOffenceFineLevelsQuery(fineLevel, maxValue);
-
         final CreateCase.CreateCasePayloadBuilder createCase = createMultiOffenceCase(caseId, prosecutingAuthority,
                 newArrayList(offenceCode1, offenceCode2));
 
@@ -381,17 +378,6 @@ public class CreateCaseIT extends BaseIntegrationTest {
         final ProsecutingAuthority prosecutingAuthority = TFL;
         stubProsecutorQuery(prosecutingAuthority.name(), prosecutingAuthority.getFullName(), randomUUID());
 
-        final String offenceCode1 = "CA03010";
-        final String offenceCode2 = "CA03011";
-
-        stubQueryOffencesByCode(offenceCode1);
-        stubQueryOffencesByCode(offenceCode2);
-
-        final int fineLevel = 3;
-        final BigDecimal maxValue = BigDecimal.valueOf(1000);
-
-        stubOffenceFineLevelsQuery(fineLevel, maxValue);
-
         final CreateCase.CreateCasePayloadBuilder createCase = createMultiOffenceCase(caseId, prosecutingAuthority,
                 newArrayList(offenceCode1, offenceCode2));
 
@@ -419,17 +405,6 @@ public class CreateCaseIT extends BaseIntegrationTest {
         final UUID caseId = randomUUID();
         final ProsecutingAuthority prosecutingAuthority = TFL;
         stubProsecutorQuery(prosecutingAuthority.name(), prosecutingAuthority.getFullName(), randomUUID());
-
-        final String offenceCode1 = "CA03010";
-        final String offenceCode2 = "CA03011";
-
-        stubQueryOffencesByCode(offenceCode1);
-        stubQueryOffencesByCode(offenceCode2);
-
-        final int fineLevel = 3;
-        final BigDecimal maxValue = BigDecimal.valueOf(1000);
-
-        stubOffenceFineLevelsQuery(fineLevel, maxValue);
 
         final CreateCase.CreateCasePayloadBuilder createCase = createMultiOffenceCase(caseId, prosecutingAuthority,
                 newArrayList(offenceCode1, offenceCode2));
@@ -460,17 +435,6 @@ public class CreateCaseIT extends BaseIntegrationTest {
         final ProsecutingAuthority prosecutingAuthority = TVL;
         stubProsecutorQuery(prosecutingAuthority.name(), prosecutingAuthority.getFullName(), randomUUID());
 
-        final String offenceCode1 = "CA03010";
-        final String offenceCode2 = "CA03011";
-
-        stubQueryOffencesByCode(offenceCode1);
-        stubQueryOffencesByCode(offenceCode2);
-
-        final int fineLevel = 3;
-        final BigDecimal maxValue = BigDecimal.valueOf(1000);
-
-        stubOffenceFineLevelsQuery(fineLevel, maxValue);
-
         final CreateCase.CreateCasePayloadBuilder createCase = createMultiOffenceCase(caseId, prosecutingAuthority,
                 newArrayList(offenceCode1, offenceCode2));
 
@@ -494,6 +458,35 @@ public class CreateCaseIT extends BaseIntegrationTest {
         assertThat(jsonResponse.get("defendant.pcqId"), is(notNullValue()));
         assertThat(jsonResponse.get("defendant.offences[0].endorsable"), equalTo(true));
         assertThat(jsonResponse.get("defendant.offences[1].endorsable"), equalTo(true));
+    }
+
+    @Test
+    public void shouldListenToCaseEligibleForAOCPPrivateEvent() {
+        final UUID caseId = randomUUID();
+        final ProsecutingAuthority prosecutingAuthority = TFL;
+        stubProsecutorQuery(prosecutingAuthority.name(), prosecutingAuthority.getFullName(), randomUUID());
+
+        final CreateCase.CreateCasePayloadBuilder createCase = createMultiOffenceCase(caseId, prosecutingAuthority,
+                newArrayList(offenceCode1, offenceCode2));
+
+        final CreateCase.DefendantBuilder defendant = createCase.getDefendantBuilder();
+        stubEnforcementAreaByPostcode(defendant.getAddressBuilder().getPostcode(), NATIONAL_COURT_CODE, "Bedfordshire Magistrates' Court");
+        stubRegionByPostcode(NATIONAL_COURT_CODE, DEFENDANT_REGION);
+
+        final Optional<JsonEnvelope> event = new EventListener()
+                .subscribe(CaseEligibleForAOCP.EVENT_NAME)
+                .run(() -> CreateCase.createCaseForPayloadBuilder(createCase))
+                .popEvent(CaseEligibleForAOCP.EVENT_NAME);
+
+        assertTrue(event.isPresent());
+        final JsonObject payload = event.get().payloadAsJsonObject();
+        assertThat(payload.getString("caseId"), is(caseId.toString()));
+        assertThat(payload.getInt("victimSurcharge"), is(34));
+        assertThat(payload.getJsonNumber("aocpTotalCost").doubleValue(), is(239.91));
+        assertThat(payload.getJsonObject("defendant").getString("id"), is(defendant.getId().toString()));
+        final JsonArray offences = payload.getJsonObject("defendant").getJsonArray("offences");
+        assertThat(offences.getJsonObject(0).getInt("aocpStandardPenaltyAmount"), is(100));
+
     }
 
     private void assertOffenceData(final JsonPath jsonResponse, final CreateCase.OffenceBuilder offence, final String offenceCode, final JsonObject offenceDefinition, boolean outOfTime, boolean notInEffect, final int index) {
@@ -531,6 +524,7 @@ public class CreateCaseIT extends BaseIntegrationTest {
                                 .withLibraOffenceCode(offenceCode)
                                 .withOffenceCommittedDate(now().minusMonths(4))
                                 .withOffenceChargeDate(now())
+                                .withProsecutorOfferAOCP(true)
                         ).collect(toList()))
                 .withDefendantId(randomUUID());
     }

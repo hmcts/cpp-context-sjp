@@ -10,6 +10,7 @@ import java.util.List;
 
 import org.apache.commons.lang3.BooleanUtils;
 
+@SuppressWarnings("PMD.BeanMembersShouldSerialize")
 class CaseStateChecker {
     private final List<SingleRuleChecker> checkers;
 
@@ -36,7 +37,9 @@ class CaseStateChecker {
         private final boolean postConviction;
         private final boolean setAside;
         private final boolean applicationGranted;
-
+        private final boolean aocpAcceptanceTimerExpired;
+        private final boolean aocpEligible;
+        private final boolean defendantAcceptedAocp;
         private final List<SingleRuleChecker> checkers;
 
         private CaseStateCheckerBuilder(final List<OffenceInformation> offenceInformations,
@@ -46,7 +49,10 @@ class CaseStateChecker {
                                         final boolean adjourned,
                                         final boolean postConviction,
                                         final boolean setAside,
-                                        final boolean applicationGranted) {
+                                        final boolean applicationGranted,
+                                        final boolean aocpAcceptanceTimerExpired,
+                                        final boolean aocpEligible,
+                                        final boolean defendantAcceptedAocp) {
             this.offenceInformations = offenceInformations;
             this.defendantsResponseTimerExpired = defendantsResponseTimerExpired;
             this.datesToAvoid = datesToAvoid;
@@ -55,6 +61,9 @@ class CaseStateChecker {
             this.postConviction = postConviction;
             this.setAside = setAside;
             this.applicationGranted = applicationGranted;
+            this.aocpAcceptanceTimerExpired = aocpAcceptanceTimerExpired;
+            this.aocpEligible = aocpEligible;
+            this.defendantAcceptedAocp = defendantAcceptedAocp;
             this.checkers = new ArrayList<>();
         }
 
@@ -65,8 +74,12 @@ class CaseStateChecker {
                                                            final boolean adjourned,
                                                            final boolean postConviction,
                                                            final boolean setAside,
-                                                           final boolean applicationGranted) {
-            return new CaseStateCheckerBuilder(offenceInformation, defendantsResponseTimerElapsed, datesToAvoid, datesToAvoidTimerElapsed, adjourned, postConviction, setAside, applicationGranted);
+                                                           final boolean applicationGranted,
+                                                           final boolean aocpAcceptanceTimerExpired,
+                                                           final boolean aocpEligible,
+                                                           final boolean defendantAcceptedAocp
+                                                           ) {
+            return new CaseStateCheckerBuilder(offenceInformation, defendantsResponseTimerElapsed, datesToAvoid, datesToAvoidTimerElapsed, adjourned, postConviction, setAside, applicationGranted, aocpAcceptanceTimerExpired, aocpEligible, defendantAcceptedAocp);
         }
 
         private static boolean notGuiltyPlea(final OffenceInformation offenceInformation) {
@@ -138,6 +151,17 @@ class CaseStateChecker {
 
         CaseStateCheckerBuilder defendantResponseTimerNotExpired() {
             checkers.add(() -> !defendantsResponseTimerExpired);
+            return this;
+        }
+
+
+        CaseStateCheckerBuilder defendantAcceptedAocpAndCoolOffPeriodNotExpired() {
+            checkers.add(() -> aocpEligible && defendantAcceptedAocp && !aocpAcceptanceTimerExpired);
+            return this;
+        }
+
+        CaseStateCheckerBuilder isDefendantAcceptedAOCP() {
+            checkers.add(() -> defendantAcceptedAocp);
             return this;
         }
 

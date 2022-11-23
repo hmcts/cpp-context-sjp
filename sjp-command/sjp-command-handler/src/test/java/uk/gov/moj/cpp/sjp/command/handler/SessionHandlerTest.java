@@ -9,6 +9,8 @@ import static org.apache.commons.lang3.RandomStringUtils.randomAlphanumeric;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.allOf;
+import static org.hamcrest.Matchers.is;
+import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.when;
 import static uk.gov.justice.services.core.annotation.Component.COMMAND_HANDLER;
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
@@ -17,6 +19,7 @@ import static uk.gov.justice.services.test.utils.core.matchers.EventStreamMatche
 import static uk.gov.justice.services.test.utils.core.matchers.HandlerClassMatcher.isHandlerClass;
 import static uk.gov.justice.services.test.utils.core.matchers.HandlerMethodMatcher.method;
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMatcher.jsonEnvelope;
+import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMetadataMatcher.metadata;
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMetadataMatcher.withMetadataEnvelopedFrom;
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopePayloadMatcher.payloadIsJson;
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeStreamMatcher.streamContaining;
@@ -34,12 +37,15 @@ import uk.gov.justice.services.eventsourcing.source.core.EventSource;
 import uk.gov.justice.services.eventsourcing.source.core.EventStream;
 import uk.gov.justice.services.eventsourcing.source.core.exception.EventStreamException;
 import uk.gov.justice.services.messaging.JsonEnvelope;
+import uk.gov.justice.services.messaging.MetadataBuilder;
 import uk.gov.justice.services.test.utils.common.helper.StoppedClock;
 import uk.gov.moj.cpp.sjp.domain.aggregate.Session;
+import uk.gov.moj.cpp.sjp.event.OutstandingFinesRequested;
 import uk.gov.moj.cpp.sjp.event.session.DelegatedPowersSessionEnded;
 import uk.gov.moj.cpp.sjp.event.session.DelegatedPowersSessionStarted;
 import uk.gov.moj.cpp.sjp.event.session.MagistrateSessionEnded;
 import uk.gov.moj.cpp.sjp.event.session.MagistrateSessionStarted;
+import uk.gov.moj.cpp.sjp.event.session.ResetAocpSession;
 import uk.gov.moj.cpp.sjp.event.session.SessionEnded;
 
 import java.time.ZonedDateTime;
@@ -47,6 +53,7 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Stream;
 
+import javax.inject.Inject;
 import javax.json.JsonObject;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -64,7 +71,7 @@ public class SessionHandlerTest {
 
     private static final String START_SESSION_COMMAND = "sjp.command.start-session";
     private static final String END_SESSION_COMMAND = "sjp.command.end-session";
-
+    private static final String RESET_SESSION_COMMAND = "sjp.command.reset-aocp-session";
     @Mock
     private EventSource eventSource;
 
@@ -89,7 +96,8 @@ public class SessionHandlerTest {
             MagistrateSessionStarted.class,
             MagistrateSessionEnded.class,
             DelegatedPowersSessionStarted.class,
-            DelegatedPowersSessionEnded.class);
+            DelegatedPowersSessionEnded.class,
+            ResetAocpSession.class);
 
     @Spy
     private Clock clock = new StoppedClock(ZonedDateTime.now(UTC));
@@ -121,7 +129,8 @@ public class SessionHandlerTest {
         assertThat(SessionHandler.class, isHandlerClass(COMMAND_HANDLER)
                 .with(allOf(
                         method("startSession").thatHandles(START_SESSION_COMMAND),
-                        method("endSession").thatHandles(END_SESSION_COMMAND)
+                        method("endSession").thatHandles(END_SESSION_COMMAND),
+                        method("resetAocpSessionRequest").thatHandles(RESET_SESSION_COMMAND)
                 )));
     }
 
@@ -212,6 +221,26 @@ public class SessionHandlerTest {
     public void shouldEndMagistrateSession() throws EventStreamException {
         shouldEndSession(new MagistrateSessionEnded(sessionId, endedAt));
     }
+
+    @Test
+    public void shouldResetSession() throws EventStreamException {
+        final JsonObject payload = null;
+        final MetadataBuilder metadataBuilder = metadataWithRandomUUID("sjp.command.reset-aocp-session");
+        final JsonEnvelope envelope = JsonEnvelope.envelopeFrom(metadataBuilder, payload);
+
+        when(eventSource.getStreamById(any())).thenReturn(sessionEventStream);
+
+        sessionHandler.resetAocpSessionRequest(envelope);
+
+        assertThat(sessionEventStream, eventStreamAppendedWith(
+                streamContaining(
+                        jsonEnvelope(
+                                metadata().envelopedWith(envelope.metadata()).withName(ResetAocpSession.class.getAnnotation(Event.class).value()),
+                                payloadIsJson(
+                                        withJsonPath("$.resetAt", is(clock.now().toString())))))));
+
+    }
+
 
     private void shouldEndSession(final SessionEnded sessionEnded) throws EventStreamException {
         final JsonEnvelope endSessionCommand = envelopeFrom(metadataWithRandomUUID(END_SESSION_COMMAND),

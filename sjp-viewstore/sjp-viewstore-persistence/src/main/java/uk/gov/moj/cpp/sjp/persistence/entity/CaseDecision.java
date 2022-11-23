@@ -39,6 +39,9 @@ public class CaseDecision implements Serializable {
     @Column(name = "saved_at")
     private ZonedDateTime savedAt;
 
+    @Column(name = "resulted_through_aocp")
+    private Boolean resultedThroughAOCP;
+
     @SuppressWarnings("squid:S1948")
     @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY, mappedBy = "caseDecisionId")
     private List<OffenceDecision> offenceDecisions = new ArrayList<>();
@@ -92,5 +95,13 @@ public class CaseDecision implements Serializable {
 
     public void setFinancialImposition(FinancialImposition financialImposition) {
         this.financialImposition = financialImposition;
+    }
+
+    public Boolean getResultedThroughAOCP() {
+        return resultedThroughAOCP;
+    }
+
+    public void setResultedThroughAOCP(final Boolean resultedThroughAOCP) {
+        this.resultedThroughAOCP = resultedThroughAOCP;
     }
 }

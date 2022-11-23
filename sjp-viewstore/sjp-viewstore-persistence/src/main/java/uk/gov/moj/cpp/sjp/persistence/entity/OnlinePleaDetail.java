@@ -40,11 +40,13 @@ public class OnlinePleaDetail {
     @Column(name = "not_guilty_because")
     private String notGuiltyBecause;
 
+    @Column(name = "aocp_plea")
+    private Boolean aocpPlea;
     // for JPA
     public OnlinePleaDetail() {
     }
 
-    public OnlinePleaDetail(final UUID offenceId, final UUID caseId, final UUID defendantId, final PleaType plea, final String mitigation, final String notGuiltyBecause) {
+    public OnlinePleaDetail(final UUID offenceId, final UUID caseId, final UUID defendantId, final PleaType plea, final String mitigation, final String notGuiltyBecause, final Boolean aocpPlea) {
         this.id = randomUUID();
         this.offenceId = offenceId;
         this.caseId = caseId;
@@ -52,6 +54,7 @@ public class OnlinePleaDetail {
         this.plea = plea;
         this.mitigation = mitigation;
         this.notGuiltyBecause = notGuiltyBecause;
+        this.aocpPlea = aocpPlea;
     }
 
     public UUID getId() {
@@ -108,5 +111,13 @@ public class OnlinePleaDetail {
 
     public void setNotGuiltyBecause(final String notGuiltyBecause) {
         this.notGuiltyBecause = notGuiltyBecause;
+    }
+
+    public Boolean getAocpPlea() {
+        return aocpPlea;
+    }
+
+    public void setAocpPlea(final Boolean aocpPlea) {
+        this.aocpPlea = aocpPlea;
     }
 }

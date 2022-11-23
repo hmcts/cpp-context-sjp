@@ -15,6 +15,9 @@ import static uk.gov.moj.sjp.it.util.RestPollerWithDefaults.pollWithDefaults;
 
 import java.util.UUID;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
+
 import javax.json.JsonObject;
 
 public class CitizenHelper {
@@ -28,6 +31,11 @@ public class CitizenHelper {
                         status().is(OK),
                         payload().isJson(allOf(withJsonPath("$.id"),
                                 withJsonPath("$.urn", equalTo(urn)),
+                                withJsonPath("$.aocpEligible", equalTo(expected.getBoolean("aocpEligible"))),
+                                withJsonPath("$.readyForDecision", equalTo(expected.getBoolean("readyForDecision"))),
+                                withJsonPath("$.aocpTotalCost", equalTo(expected.getJsonNumber("aocpTotalCost").doubleValue())),
+                                withJsonPath("$.costs", equalTo(expected.getJsonNumber("costs").doubleValue())),
+                                withJsonPath("$.aocpVictimSurcharge", equalTo(expected.getJsonNumber("aocpVictimSurcharge").doubleValue())),
                                 withJsonPath("$.completed", equalTo(expected.getBoolean("completed"))),
                                 withJsonPath("$.assigned", equalTo(expected.getBoolean("assigned"))),
                                 withJsonPath("$.defendant.personalDetails.firstName", equalTo(person(expected).getString("firstName"))),

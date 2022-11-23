@@ -225,6 +225,9 @@ baseUri: http://localhost:8080/sjp-command-api/command/api/rest/sjp
       (mapping):
           requestType: application/vnd.sjp.plead-online+json
           name: sjp.plead-online
+      (mapping):
+          requestType: application/vnd.sjp.plead-aocp-online+json
+          name: sjp.plead-aocp-online
       ...
     body:
       application/vnd.sjp.plead-online+json:
@@ -232,6 +235,12 @@ baseUri: http://localhost:8080/sjp-command-api/command/api/rest/sjp
           !include json/sjp.plead-online.json
         schema:
           !include json/schema/sjp.plead-online.json
+
+      application/vnd.sjp.plead-aocp-online+json:
+        example:
+          !include json/sjp.plead-aocp-online.json
+        schema:
+          !include json/schema/sjp.plead-aocp-online.json
     responses:
       500:
         description: Internal Server Error
@@ -480,6 +489,20 @@ baseUri: http://localhost:8080/sjp-command-api/command/api/rest/sjp
       202:
         description: Accepted
 
+/reset-aocp-session:
+  post:
+    description: |
+      Reset aocp session
+      ...
+      (mapping):
+          requestType: application/vnd.sjp.reset-aocp-session+json
+          name: sjp.reset-aocp-session
+      ...
+    body:
+      application/vnd.sjp.reset-aocp-session+json: !!null
+    responses:
+      202:
+        description: Accepted
 
 /cases/{caseId}/dates-to-avoid:
   uriParameters:
@@ -635,6 +658,27 @@ baseUri: http://localhost:8080/sjp-command-api/command/api/rest/sjp
         description: Internal Server Error
       202:
         description: Accepted
+
+/saveAocpDecison:
+  post:
+    description: |
+      saving aocp decision
+      ...
+      (mapping):
+         requestType: application/vnd.sjp.expire-defendant-aocp-response-timer+json
+         name: sjp.expire-defendant-aocp-response-timer
+      ...
+    body:
+      application/vnd.sjp.expire-defendant-aocp-response-timer+json:
+       example:
+         !include json/sjp.expire-defendant-aocp-response-timer.json
+       schema:
+         !include json/schema/sjp.expire-defendant-aocp-response-timer.json
+    responses:
+       202:
+         description: Accepted
+       500:
+         description: Internal Server Error
 
 
 /cases/{caseId}/set-dates-to-avoid-required:

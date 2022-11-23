@@ -125,6 +125,9 @@ public class OffenceDetail implements Serializable, Comparable<OffenceDetail> {
     @Column(name = "completed")
     private Boolean completed;
 
+    @Column(name = "aocp_standard_penalty_amount")
+    private BigDecimal aocpStandardPenalty;
+
     public OffenceDetail() {
         super();
     }
@@ -156,6 +159,7 @@ public class OffenceDetail implements Serializable, Comparable<OffenceDetail> {
         this.pressRestriction = builder.pressRestriction;
         this.completed = builder.completed;
         this.conviction = builder.conviction;
+        this.aocpStandardPenalty = builder.aocpStandardPenalty;
 
     }
 
@@ -389,6 +393,14 @@ public class OffenceDetail implements Serializable, Comparable<OffenceDetail> {
         this.completed = completed;
     }
 
+    public BigDecimal getAocpStandardPenalty() {
+        return aocpStandardPenalty;
+    }
+
+    public void setAocpStandardPenalty(final BigDecimal aocpStandardPenalty) {
+        this.aocpStandardPenalty = aocpStandardPenalty;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) {
@@ -441,6 +453,7 @@ public class OffenceDetail implements Serializable, Comparable<OffenceDetail> {
         private PressRestriction pressRestriction;
         private Boolean completed;
         private VerdictType conviction;
+        private BigDecimal aocpStandardPenalty;
 
 
 
@@ -572,6 +585,11 @@ public class OffenceDetail implements Serializable, Comparable<OffenceDetail> {
 
         public OffenceDetailBuilder withCompleted(final Boolean completed) {
             this.completed = completed;
+            return this;
+        }
+
+        public OffenceDetailBuilder withAocpStandardPenalty(final BigDecimal aocpStandardPenalty) {
+            this.aocpStandardPenalty = aocpStandardPenalty;
             return this;
         }
     }

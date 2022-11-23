@@ -6,7 +6,9 @@ import java.util.stream.Stream;
 
 public enum NotificationNotifyDocumentType {
     ENDORSEMENT_REMOVAL_NOTIFICATION,
-    ENFORCEMENT_PENDING_APPLICATION_NOTIFICATION;
+    ENFORCEMENT_PENDING_APPLICATION_NOTIFICATION,
+    PARTIAL_AOCP_CRITERIA_NOTIFICATION,
+    AOCP_ACCEPTED_EMAIL_NOTIFICATION;
 
     public static NotificationNotifyDocumentType fromString(final String documentType) {
         return Stream.of(values()).filter(e -> e.name().equalsIgnoreCase(documentType)).findAny()

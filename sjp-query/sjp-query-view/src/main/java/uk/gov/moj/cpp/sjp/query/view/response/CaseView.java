@@ -1,6 +1,7 @@
 package uk.gov.moj.cpp.sjp.query.view.response;
 
 
+import static java.math.BigDecimal.ROUND_DOWN;
 import static java.util.Collections.sort;
 import static java.util.Objects.nonNull;
 import static java.util.Optional.ofNullable;
@@ -54,9 +55,15 @@ public class CaseView {
     private final Boolean managedByATCM;
     private ApplicationView caseApplication;// latest case application
     private final ApplicationStatus ccApplicationStatus;
+    private BigDecimal aocpVictimSurcharge;
+    private BigDecimal aocpTotalCost;
+    private final Boolean aocpEligible;
+    private final Boolean resultedThroughAocp;
+    private final Boolean readyForDecision;
+    private final Boolean defendantAcceptedAocp;
     private Boolean hasPotentialCase;
 
-    @SuppressWarnings("squid:S2384")
+    @SuppressWarnings({"squid:S2384","squid:MethodCyclomaticComplexity"})
     public CaseView(final CaseDetail caseDetail, final JsonObject prosecutor) {
 
         this.postConviction = caseDetail.getDefendant().getOffences().stream().anyMatch(
@@ -83,7 +90,7 @@ public class CaseView {
         completed = caseDetail.isCompleted();
         assigned = caseDetail.getAssigneeId() != null;
 
-        this.costs = caseDetail.getCosts();
+        this.costs = caseDetail.getCosts() != null ? caseDetail.getCosts().setScale(2, ROUND_DOWN) : null;
         this.postingDate = caseDetail.getPostingDate();
         this.reopenedDate = caseDetail.getReopenedDate();
         this.libraCaseNumber = caseDetail.getLibraCaseNumber();
@@ -100,6 +107,26 @@ public class CaseView {
         this.setAside = caseDetail.getSetAside();
         this.managedByATCM = caseDetail.getManagedByAtcm();
         this.ccApplicationStatus = caseDetail.getCcApplicationStatus();
+        this.aocpVictimSurcharge = caseDetail.getAocpVictimSurcharge() != null ? caseDetail.getAocpVictimSurcharge().setScale(2, ROUND_DOWN) : null;
+        this.aocpTotalCost = caseDetail.getAocpTotalCost() != null ? caseDetail.getAocpTotalCost().setScale(2, ROUND_DOWN) : null;
+        this.resultedThroughAocp = caseDetail.getResultedThroughAOCP();
+        this.defendantAcceptedAocp = caseDetail.getDefendantAcceptedAocp();
+
+        if(caseDetail.getAocpEligible() != null && caseDetail.getAocpEligible()) {
+            this.aocpEligible = Boolean.TRUE;
+        }else {
+            this.aocpEligible = Boolean.FALSE;
+        }
+
+        if (CaseStatus.NO_PLEA_RECEIVED_READY_FOR_DECISION.equals(status) ||
+                CaseStatus.SET_ASIDE_READY_FOR_DECISION.equals(status) ||
+                CaseStatus.PLEA_RECEIVED_READY_FOR_DECISION.equals(status) ||
+                CaseStatus.WITHDRAWAL_REQUEST_READY_FOR_DECISION.equals(status) ||
+                CaseStatus.COMPLETED_APPLICATION_PENDING.equals(status)) {
+            this.readyForDecision = true;
+        } else {
+            this.readyForDecision = false;
+        }
     }
 
     private void buildCaseDecisionsView(final CaseDetail caseDetail) {
@@ -251,6 +278,24 @@ public class CaseView {
 
     public ApplicationStatus getCcApplicationStatus() {
         return ccApplicationStatus;
+    }
+
+    public BigDecimal getAocpVictimSurcharge() { return aocpVictimSurcharge; }
+
+    public BigDecimal getAocpTotalCost() { return aocpTotalCost; }
+
+    public Boolean getAocpEligible() { return aocpEligible; }
+
+    public Boolean getResultedThroughAocp() {
+        return resultedThroughAocp;
+    }
+
+    public Boolean getReadyForDecision() {
+        return readyForDecision;
+    }
+
+    public Boolean getDefendantAcceptedAocp() {
+        return defendantAcceptedAocp;
     }
 
     public Boolean getHasPotentialCase() {

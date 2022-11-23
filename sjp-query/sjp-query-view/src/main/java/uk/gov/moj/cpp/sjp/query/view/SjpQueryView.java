@@ -7,6 +7,7 @@ import static java.util.UUID.fromString;
 import static javax.json.Json.createObjectBuilder;
 import static uk.gov.justice.services.messaging.Envelope.metadataFrom;
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
+import static uk.gov.moj.cpp.sjp.persistence.entity.EmailNotification.NotificationNotifyDocumentType.PARTIAL_AOCP_CRITERIA_NOTIFICATION;
 import static uk.gov.moj.cpp.sjp.query.view.util.JsonUtility.getString;
 
 import uk.gov.justice.core.courts.ProsecutionCase;
@@ -23,12 +24,18 @@ import uk.gov.moj.cpp.accesscontrol.sjp.providers.ProsecutingAuthorityProvider;
 import uk.gov.moj.cpp.sjp.domain.DefendantOutstandingFineRequestsQueryResult;
 import uk.gov.moj.cpp.sjp.domain.Employer;
 import uk.gov.moj.cpp.sjp.domain.FinancialMeans;
+import uk.gov.moj.cpp.sjp.persistence.entity.AocpAcceptedEmailStatus;
+import uk.gov.moj.cpp.sjp.persistence.entity.AocpOnlinePlea;
+import uk.gov.moj.cpp.sjp.persistence.entity.EmailNotification;
 import uk.gov.moj.cpp.sjp.persistence.entity.EnforcementNotification;
 import uk.gov.moj.cpp.sjp.persistence.entity.NotificationOfEndorsementStatus;
 import uk.gov.moj.cpp.sjp.persistence.entity.OffenceDetail;
 import uk.gov.moj.cpp.sjp.persistence.entity.OnlinePlea;
 import uk.gov.moj.cpp.sjp.persistence.entity.OnlinePleaDetail;
+import uk.gov.moj.cpp.sjp.persistence.repository.AocpAcceptedEmailNotificationStatusRepository;
+import uk.gov.moj.cpp.sjp.persistence.repository.AocpOnlinePleaRepository;
 import uk.gov.moj.cpp.sjp.persistence.repository.CaseRepository;
+import uk.gov.moj.cpp.sjp.persistence.repository.EmailNotificationRepository;
 import uk.gov.moj.cpp.sjp.persistence.repository.EndorsementRemovalNotificationRepository;
 import uk.gov.moj.cpp.sjp.persistence.repository.EnforcementPendingApplicationNotificationStatusRepository;
 import uk.gov.moj.cpp.sjp.persistence.repository.OffenceRepository;
@@ -37,7 +44,9 @@ import uk.gov.moj.cpp.sjp.persistence.repository.OnlinePleaRepository;
 import uk.gov.moj.cpp.sjp.query.view.response.CaseNotGuiltyPleaView;
 import uk.gov.moj.cpp.sjp.query.view.response.CaseView;
 import uk.gov.moj.cpp.sjp.query.view.response.DefendantProfilingView;
+import uk.gov.moj.cpp.sjp.query.view.response.onlineplea.AocpOnlinePleaView;
 import uk.gov.moj.cpp.sjp.query.view.response.onlineplea.OnlinePleaView;
+import uk.gov.moj.cpp.sjp.query.view.response.onlineplea.PleasView;
 import uk.gov.moj.cpp.sjp.query.view.service.CaseApplicationService;
 import uk.gov.moj.cpp.sjp.query.view.service.CaseService;
 import uk.gov.moj.cpp.sjp.query.view.service.DatesToAvoidService;
@@ -53,6 +62,7 @@ import uk.gov.moj.cpp.sjp.query.view.service.defendantcase.DefendantPotentialCas
 import uk.gov.moj.cpp.sjp.query.view.service.defendantcase.PotentialCases;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -103,6 +113,8 @@ public class SjpQueryView {
     private static final String SORT_FIELD = "sortField";
     public static final String ERROR_INVALID_PAGE_NUMBER = "invalid page number (%d) or page size (%d)";
     public static final String ERROR_INVALID_DATE_RANGE = "invalid date range : (%s) cannot be before (%s)";
+    private static final String TITLE = "title";
+    private static final String TITLE_WELSH = "titleWelsh";
 
 
     @Inject
@@ -148,6 +160,9 @@ public class SjpQueryView {
     private OnlinePleaRepository.LegalEntityDetailsOnlinePleaRepository legalEntityDetailsOnlinePleaRepository;
 
     @Inject
+    private AocpOnlinePleaRepository.PersonDetailsOnlinePleaRepository aocpOnlinePleaRepository;
+
+    @Inject
     private OnlinePleaDetailRepository onlinePleaDetailRepository;
 
     @Inject
@@ -161,6 +176,12 @@ public class SjpQueryView {
 
     @Inject
     private EnforcementPendingApplicationNotificationStatusRepository enforcementPendingApplicationNotificationStatusRepository;
+
+    @Inject
+    private EmailNotificationRepository emailNotificationRepository;
+
+    @Inject
+    private AocpAcceptedEmailNotificationStatusRepository aocpAcceptedEmailNotificationStatusRepository;
 
     @Inject
     private Enveloper enveloper;
@@ -344,6 +365,7 @@ public class SjpQueryView {
                 .apply(caseService.findResultOrders(fromDate, toDate));
     }
 
+    @SuppressWarnings("squid:S3776")
     @Handles("sjp.query.defendants-online-plea")
     public JsonEnvelope findDefendantsOnlinePlea(final JsonEnvelope envelope) {
         final UUID caseId = fromString(extract(envelope, FIELD_CASE_ID));
@@ -352,7 +374,7 @@ public class SjpQueryView {
         if (userAndGroupsService.canSeeOnlinePleaFinances(envelope)) {
             LOGGER.info("User is a legal advisor calling method findBy({})  with caseId {}", caseId, caseId);
             onlinePlea = onlinePleaRepository.findBy(caseId);
-            if (onlinePlea.getEmployment() == null && onlinePlea.getLegalEntityDetails() == null) {
+            if (onlinePlea != null && onlinePlea.getEmployment() == null && onlinePlea.getLegalEntityDetails() == null) {
                 OnlinePlea legalEntityFinanceDetails = legalEntityDetailsOnlinePleaRepository.findBy(caseId);
                 onlinePlea.setLegalEntityDetails(legalEntityFinanceDetails.getLegalEntityDetails());
             }
@@ -362,24 +384,58 @@ public class SjpQueryView {
             // Prosecutors cannot see finances.
             onlinePlea = onlinePleaRepository.findOnlinePleaWithoutFinances(caseId);
             LOGGER.info("Received online plea via finder method  findOnlinePleaWithoutFinances({}) {}", caseId, onlinePlea);
+            LOGGER.info("Received online plea via finder method  findOnlinePleaWithoutFinances({}) {}", caseId, onlinePlea);
         }
 
-        final OnlinePleaView onlinePleaView = new OnlinePleaView(onlinePlea);
-        final List<OnlinePleaDetail> onlinePleaDetails = onlinePleaDetailRepository.findByCaseIdAndDefendantId(caseId, defendantId);
-        onlinePleaView.setOnlinePleaDetails(onlinePleaDetails);
+        final AocpOnlinePlea aocpOnlinePlea = aocpOnlinePleaRepository.findAocpPleaByCaseId(caseId);
 
+       AocpOnlinePleaView aocpOnlinePleaView = null;
 
-        onlinePleaView.getOnlinePleaDetails()
-                .stream()
-                .forEach(onlinePleaDetail -> {
-                    final OffenceDetail offenceDetail = offenceRepository.findBy(onlinePleaDetail.getOffenceId());
-                    referenceDataService.getOffenceData(offenceDetail.getCode()).ifPresent(offenceRefData -> {
-                        final String title = nonNull(offenceRefData.getString("title", null)) ? offenceRefData.getString("title") : offenceRefData.getString("titleWelsh", null);
-                        onlinePleaDetail.setOffenceTitle(title);
+        if(aocpOnlinePlea != null) {
+            aocpOnlinePleaView = new AocpOnlinePleaView(aocpOnlinePlea);
+            final List<OnlinePleaDetail> aocpOnlinePleaDetails = onlinePleaDetailRepository.findByCaseIdAndDefendantIdAndAocpPlea(caseId, defendantId, true);
+            aocpOnlinePleaView.setOnlinePleaDetails(aocpOnlinePleaDetails);
+
+            aocpOnlinePleaView.getOnlinePleaDetails()
+                    .stream()
+                    .forEach(onlinePleaDetail -> {
+                        final OffenceDetail offenceDetail = offenceRepository.findBy(onlinePleaDetail.getOffenceId());
+                        referenceDataService.getOffenceData(offenceDetail.getCode()).ifPresent(offenceRefData -> {
+                            final String title = nonNull(offenceRefData.getString(TITLE, null)) ? offenceRefData.getString(TITLE) : offenceRefData.getString(TITLE_WELSH, null);
+                            onlinePleaDetail.setOffenceTitle(title);
+                        });
                     });
-                });
+        }
 
-        return enveloper.withMetadataFrom(envelope, "sjp.query.defendants-online-plea").apply(onlinePleaView);
+        OnlinePleaView onlinePleaView = null;
+
+        if(onlinePlea != null) {
+            onlinePleaView = new OnlinePleaView(onlinePlea);
+            final List<OnlinePleaDetail> onlinePleaDetails = onlinePleaDetailRepository.findByCaseIdAndDefendantIdAndAocpPleaIsNull(caseId, defendantId);
+            onlinePleaView.setOnlinePleaDetails(onlinePleaDetails);
+
+            onlinePleaView.getOnlinePleaDetails()
+                    .stream()
+                    .forEach(onlinePleaDetail -> {
+                        final OffenceDetail offenceDetail = offenceRepository.findBy(onlinePleaDetail.getOffenceId());
+                        referenceDataService.getOffenceData(offenceDetail.getCode()).ifPresent(offenceRefData -> {
+                            final String title = nonNull(offenceRefData.getString(TITLE, null)) ? offenceRefData.getString(TITLE) : offenceRefData.getString(TITLE_WELSH, null);
+                            onlinePleaDetail.setOffenceTitle(title);
+                        });
+                    });
+        }
+
+        final List<Object> pleas = new ArrayList<>();
+        if(aocpOnlinePleaView != null){
+            pleas.add(aocpOnlinePleaView);
+        }
+
+        if(onlinePleaView != null){
+            pleas.add(onlinePleaView);
+        }
+
+        final PleasView pleasView = new PleasView(pleas);
+        return enveloper.withMetadataFrom(envelope, "sjp.query.defendants-online-plea").apply(pleasView);
     }
 
     @Handles("sjp.query.pending-dates-to-avoid")
@@ -488,10 +544,25 @@ public class SjpQueryView {
                 .apply(notificationStatus);
     }
 
+    @SuppressWarnings("deprecation")
+    @Handles("sjp.query.notification-of-partial-aocp-status")
+    public JsonEnvelope getNotificationOfPartialaocpStatus(final JsonEnvelope envelope) {
+        final EmailNotification emailNotification = emailNotificationRepository.findByReferenceIdAndNotificationType(getCaseId(envelope), PARTIAL_AOCP_CRITERIA_NOTIFICATION);
+        return enveloper.withMetadataFrom(envelope, "sjp.query.notification-of-partial-aocp-response")
+                .apply(emailNotification);
+    }
+
     @Handles("sjp.query.enforcement-pending-application-notification-status")
     public JsonEnvelope getEnforcementPendingApplicationNotificationStatus(final JsonEnvelope envelope) {
         final EnforcementNotification notificationStatus = enforcementPendingApplicationNotificationStatusRepository.findBy(getApplicationId(envelope));
         return enveloper.withMetadataFrom(envelope, "sjp.query.enforcement-pending-application-notification-status")
+                .apply(notificationStatus);
+    }
+
+    @Handles("sjp.query.aocp-accepted-email-notification-status")
+    public JsonEnvelope getAocpAcceptedEmailNotificationStatus(final JsonEnvelope envelope) {
+        final AocpAcceptedEmailStatus notificationStatus = aocpAcceptedEmailNotificationStatusRepository.findBy(getCaseId(envelope));
+        return enveloper.withMetadataFrom(envelope, "sjp.query.aocp-accepted-email-notification-status")
                 .apply(notificationStatus);
     }
 
@@ -548,6 +619,10 @@ public class SjpQueryView {
 
     private UUID getApplicationId(JsonEnvelope envelope) {
         return fromString(envelope.payloadAsJsonObject().getString(FIELD_APPLICATION_ID));
+    }
+
+    private UUID getCaseId(JsonEnvelope envelope) {
+        return fromString(envelope.payloadAsJsonObject().getString(FIELD_CASE_ID));
     }
 
     private String getColumnSortedOn(final String sortField) {

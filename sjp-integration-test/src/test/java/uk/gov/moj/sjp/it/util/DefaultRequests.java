@@ -54,8 +54,9 @@ public class DefaultRequests {
     }
 
     public static RequestParamsBuilder getCaseByUrnAndPostcode(final String caseUrn, final String postcode) {
-        return requestParams(getReadUrl("/cases-for-citizen?urn=" + caseUrn + "&postcode=" + URLEncoder.encode(postcode)), GET_CASE_BY_URN_AND_POSTCODE_MEDIA_TYPE)
+        RequestParamsBuilder requestParamsBuilder =  requestParams(getReadUrl("/cases-for-citizen?urn=" + caseUrn + "&postcode=" + URLEncoder.encode(postcode)), GET_CASE_BY_URN_AND_POSTCODE_MEDIA_TYPE)
                 .withHeader(HeaderConstants.USER_ID, USER_ID);
+        return requestParamsBuilder;
     }
 
     public static RequestParamsBuilder getPotentialCasesByDefendantId(final UUID defendantId) {

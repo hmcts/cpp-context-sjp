@@ -66,7 +66,8 @@ public class CaseDocumentRepositoryTest extends BaseTransactionalTest {
     private void addCaseDocument(final ZonedDateTime addedAt) {
 
         final DefendantDetail defendantDetail = new DefendantDetail(UUID.randomUUID(), new PersonalDetails(), null,1,null,null,null);
-        final CaseDetail caseDetail = new CaseDetail(UUID.randomUUID(), "TFL1234567", RandomStringUtils.randomAlphanumeric(12).toUpperCase(), "TFL", null, null, null, defendantDetail, null, LocalDate.now());
+        final CaseDetail caseDetail = new CaseDetail(UUID.randomUUID(), "TFL1234567", RandomStringUtils.randomAlphanumeric(12).toUpperCase(), "TFL", null, null, null,
+                defendantDetail, null, LocalDate.now(), null);
         caseDetail.setDefendant(defendantDetail);
         final CaseDocument caseDocument = new CaseDocument(UUID.randomUUID(),
                 UUID.randomUUID(), CaseDocument.RESULT_ORDER_DOCUMENT_TYPE,

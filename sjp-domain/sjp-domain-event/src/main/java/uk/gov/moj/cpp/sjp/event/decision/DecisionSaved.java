@@ -25,7 +25,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 @Event(DecisionSaved.EVENT_NAME)
 public class DecisionSaved implements Serializable {
 
-    private static final long serialVersionUID = 6642617575162421150L;
+    private static final long serialVersionUID = 7438255714694047836L;
 
     public static final String EVENT_NAME = "sjp.events.decision-saved";
 
@@ -35,6 +35,7 @@ public class DecisionSaved implements Serializable {
     private ZonedDateTime savedAt;
     private List<OffenceDecision> offenceDecisions;
     private FinancialImposition financialImposition;
+    private Boolean resultedThroughAOCP;
 
     @JsonCreator
     public DecisionSaved(@JsonProperty("decisionId") final UUID decisionId,
@@ -42,13 +43,15 @@ public class DecisionSaved implements Serializable {
                          @JsonProperty("caseId") final UUID caseId,
                          @JsonProperty("savedAt") final ZonedDateTime savedAt,
                          @JsonProperty("offenceDecisions") final List<OffenceDecision> offenceDecisions,
-                         @JsonProperty("financialImposition") final FinancialImposition financialImposition) {
+                         @JsonProperty("financialImposition") final FinancialImposition financialImposition,
+                         @JsonProperty("resultedThroughAOCP") final Boolean resultedThroughAOCP) {
         this.decisionId = decisionId;
         this.sessionId = sessionId;
         this.caseId = caseId;
         this.savedAt = savedAt;
         this.offenceDecisions = offenceDecisions;
         this.financialImposition = financialImposition;
+        this.resultedThroughAOCP = resultedThroughAOCP;
     }
 
     public DecisionSaved(final UUID decisionId,
@@ -85,6 +88,10 @@ public class DecisionSaved implements Serializable {
 
     public FinancialImposition getFinancialImposition() {
         return financialImposition;
+    }
+
+    public Boolean getResultedThroughAOCP() {
+        return resultedThroughAOCP;
     }
 
     @JsonIgnore

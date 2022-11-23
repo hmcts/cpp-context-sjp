@@ -5,17 +5,20 @@ import static java.util.Arrays.asList;
 import static java.util.UUID.randomUUID;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
+import static org.mockito.Matchers.any;
 import static org.hamcrest.CoreMatchers.nullValue;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static uk.gov.justice.json.schemas.domains.sjp.events.ApplicationDecisionSaved.applicationDecisionSaved;
+import static uk.gov.justice.services.messaging.Envelope.envelopeFrom;
+import static uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderFactory.metadataWithRandomUUID;
 import static uk.gov.moj.cpp.sjp.domain.decision.discharge.DischargeType.ABSOLUTE;
 import static uk.gov.moj.cpp.sjp.domain.decision.discharge.PeriodUnit.MONTH;
 import static uk.gov.moj.cpp.sjp.domain.plea.PleaType.GUILTY;
 import static uk.gov.moj.cpp.sjp.domain.plea.PleaType.NOT_GUILTY;
 import static uk.gov.moj.cpp.sjp.domain.verdict.VerdictType.FOUND_GUILTY;
 import static uk.gov.moj.cpp.sjp.domain.verdict.VerdictType.NO_VERDICT;
+import static java.util.UUID.randomUUID;
 
 import uk.gov.justice.json.schemas.domains.sjp.events.ApplicationDecisionSaved;
 import uk.gov.justice.services.messaging.Envelope;
@@ -30,12 +33,16 @@ import uk.gov.moj.cpp.sjp.persistence.entity.DefendantDetail;
 import uk.gov.moj.cpp.sjp.persistence.entity.DischargeOffenceDecision;
 import uk.gov.moj.cpp.sjp.persistence.entity.DischargePeriod;
 import uk.gov.moj.cpp.sjp.persistence.entity.DismissOffenceDecision;
+import uk.gov.moj.cpp.sjp.persistence.entity.FinancialPenaltyOffenceDecision;
 import uk.gov.moj.cpp.sjp.persistence.entity.OffenceDecision;
 import uk.gov.moj.cpp.sjp.persistence.entity.OffenceDetail;
+import uk.gov.moj.cpp.sjp.persistence.entity.OnlinePleaDetail;
 import uk.gov.moj.cpp.sjp.persistence.entity.PressRestriction;
 import uk.gov.moj.cpp.sjp.persistence.entity.SetAsideOffenceDecision;
+import uk.gov.moj.cpp.sjp.persistence.repository.CaseAccountNoteRepository;
 import uk.gov.moj.cpp.sjp.persistence.repository.CaseDecisionRepository;
 import uk.gov.moj.cpp.sjp.persistence.repository.CaseRepository;
+import uk.gov.moj.cpp.sjp.persistence.repository.OnlinePleaDetailRepository;
 
 import java.math.BigDecimal;
 import java.time.ZonedDateTime;
@@ -84,10 +91,16 @@ public class CaseDecisionListenerTest {
     private CaseDecisionRepository caseDecisionRepository;
 
     @Mock
+    CaseAccountNoteRepository caseAccountNoteRepository;
+
+    @Mock
     private CaseApplicationService caseApplicationService;
 
     @Mock
     private CaseRepository caseRepository;
+
+    @Mock
+    private OnlinePleaDetailRepository onlinePleaDetailRepository;
 
     @Test
     public void shouldEnrichOffenceDecisionsWithPleaInformation() {
@@ -260,5 +273,41 @@ public class CaseDecisionListenerTest {
         verify(caseApplicationService).saveCaseApplicationDecision(applicationDecision);
     }
 
+    @Test
+    public void shouldSaveDecisionThroughAocpAndAddAccountNote() {
+        final OffenceDetail offence1Details = new OffenceDetail();
+        offence1Details.setId(offence1Id);
+        offence1Details.setSequenceNumber(1);
+        offence1Details.setPleaDate(now.minusDays(2));
+        offence1Details.setAocpStandardPenalty(BigDecimal.valueOf(100));
+        offence1Details.setCompensation(BigDecimal.valueOf(5));
 
+        final DefendantDetail defendantDetails = new DefendantDetail();
+        defendantDetails.setOffences(asList(offence1Details));
+
+        final CaseDetail caseDetails = new CaseDetail();
+        caseDetails.setId(caseId);
+        caseDetails.setDefendant(defendantDetails);
+
+        final OffenceDecision offenceDecision1 = new FinancialPenaltyOffenceDecision();
+
+        final CaseDecision caseDecision = new CaseDecision();
+        caseDecision.setId(decisionId);
+        caseDecision.setCaseId(caseId);
+        caseDecision.setOffenceDecisions(asList(offenceDecision1));
+        caseDecision.setResultedThroughAOCP(true);
+
+        final DecisionSaved decisionSaved = new DecisionSaved(decisionId, randomUUID(), caseId, null, null, null, true);
+        final Envelope<DecisionSaved> decisionSavedEnvelope = envelopeFrom(metadataWithRandomUUID("sjp.events.case-note-added"), decisionSaved);
+
+        when(eventConverter.convert(any())).thenReturn(caseDecision);
+        when(caseRepository.findBy(caseId)).thenReturn(caseDetails);
+        when(onlinePleaDetailRepository.findByCaseIdAndDefendantId(any(), any())).thenReturn(asList(new OnlinePleaDetail()));
+
+        listener.handleCaseDecisionSaved(decisionSavedEnvelope);
+
+        verify(caseDecisionRepository).save(caseDecision);
+        verify(caseAccountNoteRepository).save(any());
+        verify(onlinePleaDetailRepository).save(any());
+    }
 }

@@ -45,6 +45,7 @@ public class OffenceView {
     private PressRestriction pressRestriction;
     private Boolean completed;
     private Integer offenceDateCode;
+    private BigDecimal aocpStandardPenalty;
 
     public OffenceView(final OffenceDetail offence) {
 
@@ -78,6 +79,7 @@ public class OffenceView {
         this.pressRestriction = mapPressRestriction(offence.getPressRestriction());
         this.completed = offence.getCompleted();
         this.offenceDateCode = offence.getLibraOffenceDateCode();
+        this.aocpStandardPenalty = offence.getAocpStandardPenalty();
     }
 
     public UUID getId() {
@@ -193,4 +195,6 @@ public class OffenceView {
     public Integer getOffenceDateCode() {
         return offenceDateCode;
     }
+
+    public BigDecimal getAocpStandardPenalty() {  return aocpStandardPenalty; }
 }

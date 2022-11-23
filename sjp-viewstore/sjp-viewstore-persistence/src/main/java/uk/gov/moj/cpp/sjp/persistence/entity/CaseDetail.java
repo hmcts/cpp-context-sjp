@@ -57,6 +57,7 @@ import static uk.gov.moj.cpp.sjp.domain.common.CaseStatus.NO_PLEA_RECEIVED;
                                 @ColumnResult(name = "case_stream_version", type = Integer.class)
                         }))
 })
+@SuppressWarnings({"squid:S2384",  "pmd:NullAssignment"})
 @Entity
 @Table(name = "case_details")
 public class CaseDetail implements Serializable {
@@ -156,6 +157,21 @@ public class CaseDetail implements Serializable {
     @Enumerated(EnumType.STRING)
     private ApplicationStatus ccApplicationStatus;
 
+    @Column(name = "aocp_eligible")
+    private Boolean aocpEligible;
+
+    @Column(name = "aocp_victim_surcharge")
+    private BigDecimal aocpVictimSurcharge;
+
+    @Column(name = "aocp_total_cost")
+    private BigDecimal aocpTotalCost;
+
+    @Column(name = "resulted_through_aocp")
+    private Boolean resultedThroughAOCP;
+
+    @Column(name = "defendant_accepted_aocp")
+    private Boolean defendantAcceptedAocp;
+
     public CaseDetail() {
         defendant.setCaseDetail(this);
     }
@@ -174,7 +190,8 @@ public class CaseDetail implements Serializable {
                       final ZonedDateTime createdOn,
                       final DefendantDetail defendantDetail,
                       final BigDecimal costs,
-                      final LocalDate postingDate) {
+                      final LocalDate postingDate,
+                      final BigDecimal aocpVictimSurcharge) {
         this(id);
         this.urn = urn;
         this.enterpriseId = enterpriseId;
@@ -186,6 +203,7 @@ public class CaseDetail implements Serializable {
         this.costs = costs;
         this.postingDate = postingDate;
         this.caseStatus = NO_PLEA_RECEIVED;
+        this.aocpVictimSurcharge = aocpVictimSurcharge;
     }
 
     public void acknowledgeDefendantDetailsUpdates(final ZonedDateTime acknowledgedAt) {
@@ -451,6 +469,46 @@ public class CaseDetail implements Serializable {
     @SuppressWarnings("squid:S2384")
     public void setApplications(final List<CaseApplication> applications) {
         this.applications = applications;
+    }
+
+    public Boolean getAocpEligible() {
+        return aocpEligible;
+    }
+
+    public void setAocpEligible(final Boolean aocpEligible) {
+        this.aocpEligible = aocpEligible;
+    }
+
+    public Boolean getDefendantAcceptedAocp() {
+        return defendantAcceptedAocp;
+    }
+
+    public void setDefendantAcceptedAocp(final Boolean defendantAcceptedAocp) {
+        this.defendantAcceptedAocp = defendantAcceptedAocp;
+    }
+
+    public BigDecimal getAocpVictimSurcharge() {
+        return aocpVictimSurcharge;
+    }
+
+    public void setAocpVictimSurcharge(final BigDecimal aocpVictimSurcharge) {
+        this.aocpVictimSurcharge = aocpVictimSurcharge;
+    }
+
+    public BigDecimal getAocpTotalCost() {
+        return aocpTotalCost;
+    }
+
+    public void setAocpTotalCost(final BigDecimal aocpTotalCost) {
+        this.aocpTotalCost = aocpTotalCost;
+    }
+
+    public Boolean getResultedThroughAOCP() {
+        return resultedThroughAOCP;
+    }
+
+    public void setResultedThroughAOCP(final Boolean resultedThroughAOCP) {
+        this.resultedThroughAOCP = resultedThroughAOCP;
     }
 
     @Override

@@ -2,6 +2,7 @@ package uk.gov.moj.cpp.sjp.query.view;
 
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
 import static java.time.ZoneOffset.UTC;
+import static java.util.Arrays.asList;
 import static java.util.UUID.randomUUID;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -145,4 +146,35 @@ public class SessionQueryViewTest {
         ));
     }
 
+    @Test
+    public void shouldFindLatestAocpSession() {
+
+        final UUID sessionId = randomUUID();
+        final UUID userId = randomUUID();
+        final String courtHouseCode = "B52CM00";
+        final String courtHouseName = "Bristol Magistrates' Court";
+        final String localJusticeAreaNationalCourtCode = "1450";
+        final ZonedDateTime startedAt = ZonedDateTime.now(UTC);
+
+        final JsonEnvelope queryEnvelope = envelope()
+                .with(metadataWithRandomUUID("sjp.query.latest-aocp-session"))
+                .build();
+
+        final Session session = new Session(sessionId, userId, courtHouseCode, courtHouseName, localJusticeAreaNationalCourtCode, null, startedAt);
+
+        when(sessionRepository.findLatestAocpSession()).thenReturn(asList(session));
+
+        final JsonEnvelope result = sessionQueryView.getLatestAocpSession(queryEnvelope);
+
+        assertThat(result, jsonEnvelope(metadata().withName("sjp.query.latest-aocp-session"),
+                payload().isJson(allOf(
+                        withJsonPath("$.sessionId", is(sessionId.toString())),
+                        withJsonPath("$.userId", is(userId.toString())),
+                        withJsonPath("$.courtHouseCode", equalTo(courtHouseCode)),
+                        withJsonPath("$.courtHouseName", equalTo(courtHouseName)),
+                        withJsonPath("$.localJusticeAreaNationalCourtCode", is(localJusticeAreaNationalCourtCode)),
+                        withJsonPath("$.startedAt", isSameMoment(startedAt))
+                ))
+        ));
+    }
 }

@@ -1,11 +1,13 @@
 package uk.gov.moj.cpp.sjp.command.utils;
 
 import static java.util.Collections.singletonList;
+import static javax.json.Json.createArrayBuilder;
 import static javax.json.Json.createObjectBuilder;
 import static uk.gov.justice.json.schemas.domains.sjp.Address.address;
 import static uk.gov.justice.json.schemas.domains.sjp.command.Employer.employer;
 import static uk.gov.justice.json.schemas.domains.sjp.command.PersonalDetails.personalDetails;
 import static uk.gov.justice.json.schemas.domains.sjp.command.PleadOnline.pleadOnline;
+import static uk.gov.justice.json.schemas.domains.sjp.command.PleadAocpOnline.pleadAocpOnline;
 
 import uk.gov.justice.json.schemas.domains.sjp.Address;
 import uk.gov.justice.json.schemas.domains.sjp.command.Employer;
@@ -13,10 +15,13 @@ import uk.gov.justice.json.schemas.domains.sjp.command.FinancialMeans;
 import uk.gov.justice.json.schemas.domains.sjp.command.Offence;
 import uk.gov.justice.json.schemas.domains.sjp.command.PersonalDetails;
 import uk.gov.justice.json.schemas.domains.sjp.command.Plea;
+import uk.gov.justice.json.schemas.domains.sjp.command.PleadAocpOnline;
 import uk.gov.justice.json.schemas.domains.sjp.command.PleadOnline;
 
+import java.time.LocalDate;
 import java.util.UUID;
 
+import javax.json.JsonArrayBuilder;
 import javax.json.JsonObject;
 
 public class CommonObjectBuilderUtil {
@@ -62,6 +67,19 @@ public class CommonObjectBuilderUtil {
                 .withEmployer(employer)
                 .build();
     }
+    public static PleadAocpOnline buildPleadAocpOnline(final Plea plea, final UUID caseId, final UUID defendantId,
+                                                   final PersonalDetails personalDetails) {
+        return pleadAocpOnline()
+                .withCaseId(caseId)
+                .withOffences(singletonList(Offence.offence()
+                        .withPlea(plea)
+                        .build()))
+                .withPersonalDetails(personalDetails)
+                .withAocpAccepted(true)
+                .withDefendantId(defendantId)
+                .build();
+    }
+
 
     public static PleadOnline buildPleadOnline(final Plea plea, final UUID caseId, final FinancialMeans financialMeans) {
         return pleadOnline()
@@ -98,5 +116,78 @@ public class CommonObjectBuilderUtil {
                 .withAddress3("London")
                 .withPostcode(postcode)
                 .build();
+    }
+
+    public static JsonObject buildDefendantWithAddressAndOffences(final JsonObject address, final String offenceId1, final String offenceId2,
+                                                                  final String cjsOffenceCode1, final String cjsOffenceCode2) {
+        return createObjectBuilder()
+                .add("firstName", "David")
+                .add("gender", "Male")
+                .add("address", address)
+                .add("offences", createArrayBuilder()
+                        .add(createObjectBuilder()
+                                .add("id", offenceId1)
+                                .add("offenceSequenceNo", 1)
+                                .add("offenceDate", LocalDate.now().toString())
+                                .add("libraOffenceCode", cjsOffenceCode1)
+                                .build())
+                        .add(createObjectBuilder()
+                                .add("id", offenceId2)
+                                .add("offenceSequenceNo", 2)
+                                .add("offenceDate", LocalDate.now().toString())
+                                .add("libraOffenceCode", cjsOffenceCode2)
+                                .build())
+                ).build();
+    }
+
+    public static JsonObject buildDefendantWithAddressAndOffencesWithAOCPEligibilityAndStandardPenalty(final JsonObject address, final String offenceId1, final String offenceId2,
+                                                                                                       final String cjsOffenceCode1, final String cjsOffenceCode2,final boolean flag) {
+
+        final JsonArrayBuilder offenceArray1Builder = createArrayBuilder()
+                .add(createObjectBuilder()
+                        .add("id", offenceId1)
+                        .add("offenceSequenceNo", 1)
+                        .add("offenceDate", LocalDate.now().toString())
+                        .add("isEligibleAOCP", true)
+                        .add("aocpStandardPenaltyAmount", 100)
+                        .add("libraOffenceCode", cjsOffenceCode1)
+                        .build())
+                .add(createObjectBuilder()
+                        .add("id", offenceId2)
+                        .add("offenceSequenceNo", 2)
+                        .add("offenceDate", LocalDate.now().toString())
+                        .add("isEligibleAOCP", true)
+                        .add("libraOffenceCode", cjsOffenceCode2)
+                        .add("aocpStandardPenaltyAmount", 100)
+                        .build());
+        final JsonArrayBuilder offenceArray2Builder = createArrayBuilder()
+                .add(createObjectBuilder()
+                        .add("id", offenceId1)
+                        .add("offenceSequenceNo", 1)
+                        .add("libraOffenceCode", cjsOffenceCode1)
+                        .add("offenceDate", LocalDate.now().toString())
+                        .build())
+                .add(createObjectBuilder()
+                        .add("id", offenceId2)
+                        .add("offenceSequenceNo", 2)
+                        .add("libraOffenceCode", cjsOffenceCode2)
+                        .add("offenceDate", LocalDate.now().toString())
+                        .build());
+
+        if (flag) {
+            return createObjectBuilder()
+                    .add("firstName", "David")
+                    .add("gender", "Male")
+                    .add("address", address)
+                    .add("offences", offenceArray1Builder)
+                    .build();
+        } else {
+            return createObjectBuilder()
+                    .add("firstName", "David")
+                    .add("gender", "Male")
+                    .add("address", address)
+                    .add("offences", offenceArray2Builder)
+                    .build();
+        }
     }
 }

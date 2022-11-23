@@ -22,10 +22,15 @@ import org.junit.Test;
 public class CaseReopenedInLibraIT extends BaseIntegrationTest {
 
     private SjpDatabaseCleaner databaseCleaner = new SjpDatabaseCleaner();
-    private CreateCase.CreateCasePayloadBuilder createCasePayloadBuilder = CreateCase.CreateCasePayloadBuilder.withDefaults();
+    private CreateCase.CreateCasePayloadBuilder createCasePayloadBuilder ;
 
     @Before
     public void setUp() throws Exception {
+        final ProsecutingAuthority prosecutingAuthority = ProsecutingAuthority.TFL;
+        stubProsecutorQuery(prosecutingAuthority.name(), prosecutingAuthority.getFullName(), randomUUID());
+
+        createCasePayloadBuilder = CreateCase.CreateCasePayloadBuilder.withDefaults();
+
         databaseCleaner.cleanViewStore();
 
         stubEnforcementAreaByPostcode(createCasePayloadBuilder.getDefendantBuilder().getAddressBuilder().getPostcode(), "1080", "Bedfordshire Magistrates' Court");
@@ -34,9 +39,6 @@ public class CaseReopenedInLibraIT extends BaseIntegrationTest {
         new EventListener()
                 .subscribe(CaseMarkedReadyForDecision.EVENT_NAME)
                 .run(() -> CreateCase.createCaseForPayloadBuilder(createCasePayloadBuilder));
-
-        final ProsecutingAuthority prosecutingAuthority = createCasePayloadBuilder.getProsecutingAuthority();
-        stubProsecutorQuery(prosecutingAuthority.name(), prosecutingAuthority.getFullName(), randomUUID());
 
         DecisionHelper.saveDefaultDecision(createCasePayloadBuilder.getId(), createCasePayloadBuilder.getOffenceIds());
     }

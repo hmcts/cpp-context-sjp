@@ -59,6 +59,9 @@ public class OnlinePleaReceivedListener {
 
         CaseDetail caseDetail = caseRepository.findBy(caseId);
         caseDetail.setOnlinePleaReceived(true);
+        if(Boolean.TRUE.equals(caseDetail.getDefendantAcceptedAocp())){
+            caseDetail.setDefendantAcceptedAocp(false);
+        }
         caseRepository.save(caseDetail);
 
         final ZonedDateTime pleaDateTime = event.metadata().createdAt().orElse(now());

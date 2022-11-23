@@ -62,6 +62,15 @@
     },
     "offenceTitleWelsh" : {
       "type": "string"
+    },
+    "prosecutorOfferAOCP" : {
+      "type": "boolean"
+    },
+    "isEligibleAOCP": {
+      "type": "boolean"
+    },
+    "aocpStandardPenaltyAmount": {
+      "type": "number"
     }
   },
   "additionalProperties": false,

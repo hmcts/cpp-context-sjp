@@ -17,7 +17,6 @@ import org.apache.commons.lang3.builder.EqualsBuilder;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class Defendant extends Person {
-
     private final UUID id;
 
     private final int numPreviousConvictions;
@@ -161,7 +160,5 @@ public class Defendant extends Person {
                     defendant.getLegalEntityName(),
                     defendant.getPcqId());
         }
-
     }
-
 }

@@ -28,10 +28,13 @@ public class NotificationNotify {
                 .add("notificationId", emailNotification.getNotificationId().toString())
                 .add("templateId", emailNotification.getTemplateId().toString())
                 .add("sendToAddress", emailNotification.getSendToAddress())
-                .add("replyToAddress", emailNotification.getReplyToAddress())
-                .add("fileId", emailNotification.getFileId().toString());
-        addSubject(emailNotification, payload);
+                .add("replyToAddress", emailNotification.getReplyToAddress());
 
+        if(emailNotification.getFileId() != null){
+            payload.add("fileId", emailNotification.getFileId().toString());
+        }
+
+        addSubject(emailNotification, payload);
 
         final JsonEnvelope envelopeToSend = envelopeFrom(
                 JsonEnvelope.metadataFrom(envelope.metadata()).withName(COMMAND_NAME), payload);

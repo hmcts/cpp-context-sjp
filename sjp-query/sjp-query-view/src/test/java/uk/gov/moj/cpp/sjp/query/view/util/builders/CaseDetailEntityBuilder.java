@@ -79,7 +79,8 @@ public class CaseDetailEntityBuilder {
                 createdOn,
                 defendantDetail,
                 costs,
-                postingDate
+                postingDate,
+                null
         );
     }
 

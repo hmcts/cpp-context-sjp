@@ -4,6 +4,8 @@
   "enum": [
     "GUILTY",
     "GUILTY_REQUEST_HEARING",
-    "NOT_GUILTY"
+    "NOT_GUILTY",
+    "AOCP_PENDING",
+    "AOCP_COMPLETED"
   ]
 }

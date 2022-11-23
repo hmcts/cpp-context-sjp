@@ -3,6 +3,7 @@ package uk.gov.moj.sjp.it.util;
 import static java.util.Objects.nonNull;
 
 import uk.gov.justice.services.test.utils.persistence.TestJdbcConnectionProvider;
+import uk.gov.moj.cpp.sjp.persistence.entity.AocpAcceptedEmailStatus;
 import uk.gov.moj.cpp.sjp.persistence.entity.EnforcementNotification;
 import uk.gov.moj.cpp.sjp.persistence.entity.NotificationOfEndorsementStatus;
 
@@ -57,6 +58,11 @@ public class SjpViewstore {
     public int countNotificationOfEnforcementPendingApplicationEmails(final UUID applicationDecisionId,
                                                     final EnforcementNotification.Status status) {
         return selectCountOfEnforcementPendingApplicationEmails(applicationDecisionId, status, null);
+    }
+
+    public int countNotificationOfAocpAcceptedEmails(final UUID applicationDecisionId,
+                                                                      final AocpAcceptedEmailStatus.Status status) {
+        return selectCountOfAocpAcceptedEmails(applicationDecisionId, status, null);
     }
 
     private int selectCount(final UUID applicationDecisionId, final NotificationOfEndorsementStatus.Status status, final UUID fileId) {
@@ -139,6 +145,35 @@ public class SjpViewstore {
             }
         } catch (final SQLException e) {
             throw new RuntimeException("Failed to query notification_of_endorsement_status", e);
+        }
+        return count;
+    }
+
+    private int selectCountOfAocpAcceptedEmails(final UUID caseId, final AocpAcceptedEmailStatus.Status status, final UUID fileId) {
+        String sql = "SELECT count(*) FROM accepted_email_notification WHERE case_id = ? AND status = ? ";
+
+        if (nonNull(fileId)) {
+            sql += "AND file_id = ? ";
+        }
+
+        int count = 0;
+
+        try (final Connection connection = connectionProvider.getViewStoreConnection("sjp");
+             final PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+
+            preparedStatement.setObject(1, caseId);
+            preparedStatement.setObject(2, status.name());
+            if (nonNull(fileId)) {
+                preparedStatement.setObject(3, fileId);
+            }
+
+            final ResultSet rs = preparedStatement.executeQuery();
+
+            if (rs.next()) {
+                count = rs.getInt(1);
+            }
+        } catch (final SQLException e) {
+            throw new RuntimeException("Failed to query notification_of_accepted_email_notification", e);
         }
         return count;
     }

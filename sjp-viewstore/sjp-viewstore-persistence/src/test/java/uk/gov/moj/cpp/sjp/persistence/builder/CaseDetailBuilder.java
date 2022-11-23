@@ -36,6 +36,7 @@ public class CaseDetailBuilder {
     private LocalDate postingDate;
     private String datesToAvoid;
     private ZonedDateTime createdOn = ZonedDateTime.now(UTC);
+    private BigDecimal victimSurcharge;
 
     private CaseDetailBuilder() {
         this.defendant = new DefendantDetail();
@@ -74,6 +75,11 @@ public class CaseDetailBuilder {
 
     public CaseDetailBuilder withCosts(BigDecimal costs) {
         this.costs = costs;
+        return this;
+    }
+
+    public CaseDetailBuilder withVictimSurcharge(BigDecimal victimSurcharge) {
+        this.victimSurcharge = victimSurcharge;
         return this;
     }
 
@@ -127,7 +133,7 @@ public class CaseDetailBuilder {
                 prosecutingAuthority,
                 completed,
                 assigneeId,
-                createdOn, defendant, costs, postingDate);
+                createdOn, defendant, costs, postingDate, victimSurcharge);
         caseDetail.setDatesToAvoid(datesToAvoid);
         caseDetail.setCaseDecisions(caseDecisions);
         caseDetail.setApplications(caseApplications);

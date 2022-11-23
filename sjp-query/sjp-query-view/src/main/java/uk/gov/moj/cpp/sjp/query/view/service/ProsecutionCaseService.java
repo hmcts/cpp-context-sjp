@@ -101,7 +101,7 @@ public class ProsecutionCaseService {
     private ProsecutionCase getProsecutionCaseView(final CaseDetail caseDetail) {
         if (caseDetail != null) {
             final List<OnlinePleaDetail> onlinePleaDetails = caseDetail.getOnlinePleaReceived() ?
-                    onlinePleaDetailRepository.findByCaseIdAndDefendantId(caseDetail.getId(), caseDetail.getDefendant().getId()) : null;
+                    onlinePleaDetailRepository.findByCaseIdAndDefendantIdAndAocpPleaIsNull(caseDetail.getId(), caseDetail.getDefendant().getId()) : null;
             final Optional<JsonObject> prosecutionCaseFileOptional = prosecutionCaseFileService.getCaseFileDetails(caseDetail.getId());
             final JsonObject caseFileDefendantDetails = prosecutionCaseFileOptional.map(this::getCaseFileDefendant).orElse(null);
             return toProsecutionCaseView(caseDetail, onlinePleaDetails, prosecutionCaseFileOptional.orElse(null), caseFileDefendantDetails);

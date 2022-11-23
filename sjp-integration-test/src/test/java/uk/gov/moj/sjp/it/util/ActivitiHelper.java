@@ -17,9 +17,11 @@ import uk.gov.justice.services.test.utils.core.rest.RestClient;
 import uk.gov.justice.services.test.utils.core.rest.ResteasyClientBuilderFactory;
 
 import java.io.StringReader;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.stream.IntStream;
 
 import javax.json.Json;
 import javax.json.JsonArray;
@@ -92,8 +94,28 @@ public class ActivitiHelper {
                 .findFirst();
     }
 
+    public static Optional<String> getAocpProcessesInstanceIds(final String processName, final String businessKey) {
+        final Response processes = ResteasyClientBuilderFactory.clientBuilder().build()
+                .target(ACTIVITI_BASE_PATH + "runtime/process-instances?processDefinitionKey=" + processName + "&businessKey=" + businessKey)
+                .request()
+                .headers(headers())
+                .get();
+
+        final List<String> processList = new JsonPath(processes.readEntity(String.class))
+                .getList("data.id", String.class);
+
+       return IntStream.range(0, processList.size())
+                .filter(n -> n % 2 == 1)
+                .mapToObj(processList::get)
+                .findFirst();
+    }
+
     public static String pollUntilProcessExists(final String processName, final String businessKey) {
         return await().until(() -> getProcessesInstanceIds(processName, businessKey), not(equalTo(empty()))).get();
+    }
+
+    public static String pollUntilAocpProcessExists(final String processName, final String businessKey) {
+        return await().until(() -> getAocpProcessesInstanceIds(processName, businessKey), not(equalTo(empty()))).get();
     }
 
     public static void pollUntilProcessDoesNotExist(final String processName, final String businessKey) {

@@ -1,0 +1,11 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://justice.gov.uk/json/schemas/domains/sjp/event/reset-aocp-session-requested.json",
+  "type": "object",
+  "properties": {
+    "resetAt": {
+      "$ref": "http://justice.gov.uk/json/schemas/domains/sjp/temporal.json#/definitions/date-time"
+    }
+  },
+  "additionalProperties": false
+}

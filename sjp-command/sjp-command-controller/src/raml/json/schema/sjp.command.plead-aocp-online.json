@@ -1,0 +1,97 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://justice.gov.uk/json/schemas/domains/sjp/command/sjp.plead-aocp-online.json",
+  "type": "object",
+  "properties": {
+    "caseId": {
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+    },
+    "defendantId": {
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+    },
+    "personalDetails": {
+      "type": "object",
+      "properties": {
+        "firstName": {
+          "type": "string"
+        },
+        "lastName": {
+          "type": "string"
+        },
+        "address": {
+          "$ref": "http://justice.gov.uk/json/schemas/domains/sjp/address.json"
+        },
+        "contactDetails": {
+          "$ref": "http://justice.gov.uk/json/schemas/domains/sjp/contact-details.json",
+          "required": [
+            "email"
+          ]
+        },
+        "dateOfBirth": {
+          "type": "string"
+        },
+        "nationalInsuranceNumber": {
+          "type": "string"
+        },
+        "region": {
+          "type": "string"
+        },
+        "driverNumber": {
+          "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/dvlaDriverLicence"
+        },
+        "driverLicenceDetails" : {
+          "type" : "string"
+        }
+      },
+      "required": [
+        "firstName",
+        "lastName",
+        "address",
+        "contactDetails",
+        "dateOfBirth"
+      ],
+      "additionalProperties": false
+    },
+    "offences": {
+      "type": "array",
+      "items": {
+        "id": "http://justice.gov.uk/json/schemas/domains/sjp/command/offence.json",
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "plea": {
+            "type": "string",
+            "enum": [
+              "NOT_GUILTY",
+              "GUILTY"
+            ]
+          },
+          "mitigation": {
+            "type": "string"
+          },
+          "notGuiltyBecause": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "plea"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "aocpAccepted" : {
+      "type": "boolean"
+    }
+  },
+  "required": [
+    "caseId",
+    "defendantId",
+    "personalDetails",
+    "offences",
+    "aocpAccepted"
+  ],
+  "additionalProperties": false
+}

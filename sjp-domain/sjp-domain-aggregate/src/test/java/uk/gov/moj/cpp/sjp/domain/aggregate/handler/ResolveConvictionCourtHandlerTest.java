@@ -19,6 +19,7 @@ import uk.gov.moj.cpp.sjp.domain.aggregate.Session;
 import uk.gov.moj.cpp.sjp.domain.aggregate.state.CaseAggregateState;
 import uk.gov.moj.cpp.sjp.domain.decision.Adjourn;
 import uk.gov.moj.cpp.sjp.domain.decision.OffenceDecision;
+import uk.gov.moj.cpp.sjp.event.CaseReceived;
 import uk.gov.moj.cpp.sjp.event.decision.ConvictionCourtResolved;
 
 import java.time.LocalDate;
@@ -39,6 +40,7 @@ public class ResolveConvictionCourtHandlerTest {
 
     private CaseAggregateState caseAggregateState;
     private Map<UUID, Session> sessionMap;
+    private Map<UUID, CaseReceived> caseMap;
     private final String adjournmentReason = "Not enough documents for decision";
     private final UUID decisionId = randomUUID();
     private final UUID sessionId = randomUUID();
@@ -50,6 +52,7 @@ public class ResolveConvictionCourtHandlerTest {
         caseAggregateState = new CaseAggregateState();
         caseAggregateState.setCaseId(caseId);
         sessionMap = new HashedMap();
+        caseMap = new HashedMap();
     }
 
     @Test

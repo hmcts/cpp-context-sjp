@@ -19,6 +19,11 @@ public class SessionQueryApi {
         return requester.request(query);
     }
 
+    @Handles("sjp.query.latest-aocp-session")
+    public JsonEnvelope findLatestAocpSession(final JsonEnvelope query) {
+        return requester.request(query);
+    }
+
     @Handles("sjp.query.convicting-court-session")
     public JsonEnvelope findConvictingCourtSession(final JsonEnvelope query) {
         return requester.request(query);

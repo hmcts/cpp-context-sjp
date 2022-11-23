@@ -15,3 +15,12 @@ rule "Command - Rule for case decision"
   then
     $outcome.setSuccess(true);
 end
+
+rule "Command - Rule for aocp response timer expired requested"
+  when
+    $outcome: Outcome();
+    $action: Action(name == "sjp.expire-defendant-aocp-response-timer");
+    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, RuleConstants.getAocpSaveDecisionActionGroups()));
+  then
+    $outcome.setSuccess(true);
+end

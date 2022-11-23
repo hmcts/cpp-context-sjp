@@ -4,7 +4,8 @@ import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
 import static java.time.ZoneOffset.UTC;
 import static org.hamcrest.CoreMatchers.allOf;
 import static org.hamcrest.CoreMatchers.equalTo;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.is;
 import static org.mockito.Matchers.argThat;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -21,6 +22,7 @@ import uk.gov.justice.services.adapter.rest.exception.BadRequestException;
 import uk.gov.justice.services.common.util.Clock;
 import uk.gov.justice.services.core.enveloper.Enveloper;
 import uk.gov.justice.services.core.sender.Sender;
+import uk.gov.justice.services.messaging.Envelope;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.test.utils.common.helper.StoppedClock;
 import uk.gov.justice.services.test.utils.core.enveloper.EnveloperFactory;
@@ -38,6 +40,8 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
@@ -60,6 +64,9 @@ public class SessionApiTest {
 
     @Mock
     private Sender sender;
+
+    @Captor
+    private ArgumentCaptor<Envelope> envelopeArgumentCaptor;
 
     @InjectMocks
     private SessionApi sessionApi;
@@ -203,4 +210,20 @@ public class SessionApiTest {
                 )));
     }
 
+    @Test
+    public void shouldHandleResetAocpSessionRequest() {
+        assertThat(SessionApi.class, isHandlerClass(COMMAND_API)
+                .with(method("handleResetAocpSessionRequest").thatHandles("sjp.reset-aocp-session")));
+    }
+
+    @Test
+    public void shouldResetSessionCommand() {
+        final JsonEnvelope command = envelope().with(metadataWithRandomUUID("sjp.reset-aocp-session")).build();
+
+        sessionApi.handleResetAocpSessionRequest(command);
+        verify(sender).send(envelopeArgumentCaptor.capture());
+
+        final Envelope newCommand = envelopeArgumentCaptor.getValue();
+        assertThat(newCommand.metadata().name(), is("sjp.command.reset-aocp-session"));
+    }
 }

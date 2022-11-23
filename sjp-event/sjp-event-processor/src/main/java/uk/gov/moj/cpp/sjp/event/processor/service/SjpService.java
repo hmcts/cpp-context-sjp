@@ -86,6 +86,13 @@ public class SjpService {
         return response.payloadAsJsonObject();
     }
 
+    public JsonObject getLatestAocpSessionDetails(final JsonEnvelope envelope) {
+        final JsonObject payload = createObjectBuilder().build();
+        final JsonEnvelope request = envelopeFrom(metadataFrom(envelope.metadata()).withName("sjp.query.latest-aocp-session"), payload);
+        final Envelope<JsonObject> response = requester.requestAsAdmin(request, JsonObject.class);
+        return response.payload();
+    }
+
     public JsonEnvelope getSessionInformation(final UUID sessionId, final JsonEnvelope envelope) {
         final JsonObject payload = createObjectBuilder().add(SESSION_ID, sessionId.toString()).build();
         final JsonEnvelope request = envelopeFrom(metadataFrom(envelope.metadata()).withName("sjp.query.session"), payload);
@@ -129,7 +136,7 @@ public class SjpService {
                                             final String accountNumber, final JsonEnvelope sourceEnvelope) {
 
         final JsonObject commandPayload = createObjectBuilder()
-                .add("caseId", caseId.toString())
+                .add(CASE_ID, caseId.toString())
                 .add("correlationId", correlationId.toString())
                 .add("accountNumber", accountNumber)
                 .build();
@@ -152,6 +159,18 @@ public class SjpService {
         return Optional.ofNullable(responseEnvelope.payload());
     }
 
+    public Optional<NotificationOfPartialAocpStatus> getNotificationOfPartialAocpStatus(final UUID caseId, final JsonEnvelope envelope){
+        final JsonEnvelope request = envelopeFrom(metadataFrom(envelope.metadata())
+                        .withName("sjp.query.notification-of-partial-aocp-status"),
+                createObjectBuilder()
+                        .add(CASE_ID, caseId.toString())
+                        .build());
+
+        final Envelope<NotificationOfPartialAocpStatus> responseEnvelope = requester.request(request, NotificationOfPartialAocpStatus.class);
+
+        return Optional.ofNullable(responseEnvelope.payload());
+    }
+
     public Optional<EnforcementPendingApplicationNotificationStatus> getEnforcementPendingApplicationNotificationStatus(final UUID applicationId, final JsonEnvelope envelope) {
         final JsonEnvelope request = envelopeFrom(metadataFrom(envelope.metadata())
                         .withName("sjp.query.enforcement-pending-application-notification-status"),
@@ -160,6 +179,18 @@ public class SjpService {
                         .build());
 
         final Envelope<EnforcementPendingApplicationNotificationStatus> responseEnvelope = requester.request(request, EnforcementPendingApplicationNotificationStatus.class);
+
+        return Optional.ofNullable(responseEnvelope.payload());
+    }
+
+    public Optional<AocpAcceptedEmailNotificationStatus> getAocpAcceptedEmailNotificationStatus(final UUID caseId, final JsonEnvelope envelope) {
+        final JsonEnvelope request = envelopeFrom(metadataFrom(envelope.metadata())
+                        .withName("sjp.query.aocp-accepted-email-notification-status"),
+                createObjectBuilder()
+                        .add(CASE_ID, caseId.toString())
+                        .build());
+
+        final Envelope<AocpAcceptedEmailNotificationStatus> responseEnvelope = requester.request(request, AocpAcceptedEmailNotificationStatus.class);
 
         return Optional.ofNullable(responseEnvelope.payload());
     }

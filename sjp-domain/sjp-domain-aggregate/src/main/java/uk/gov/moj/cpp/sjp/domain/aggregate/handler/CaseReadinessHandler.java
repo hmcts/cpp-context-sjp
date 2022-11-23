@@ -79,6 +79,7 @@ public class CaseReadinessHandler {
                 && (previousCaseStatus != REFERRED_FOR_COURT_HEARING) // terminal status, cannot be changed
                 && wasReadyOrIsAllowedFromNonReady(previousCaseStatus, currentCaseStatus)
                 && !(isPreviousStatusReadyAndIsCurrentStatusTerminal(previousCaseStatus, currentCaseStatus) && previousCaseStatus != COMPLETED_APPLICATION_PENDING);
+
     }
 
     private boolean wasReadyOrIsAllowedFromNonReady(final CaseStatus previousCaseStatus, final CaseStatus currentCaseStatus) {

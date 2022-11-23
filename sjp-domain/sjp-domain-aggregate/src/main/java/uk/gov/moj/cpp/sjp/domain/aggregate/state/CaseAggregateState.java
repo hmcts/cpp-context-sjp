@@ -19,6 +19,7 @@ import static uk.gov.moj.cpp.sjp.event.DefendantDetailsUpdated.DefendantDetailsU
 
 import uk.gov.justice.json.schemas.domains.sjp.ApplicationStatus;
 import uk.gov.justice.json.schemas.domains.sjp.Gender;
+import uk.gov.moj.cpp.sjp.domain.AOCPCost;
 import uk.gov.moj.cpp.sjp.domain.Address;
 import uk.gov.moj.cpp.sjp.domain.CaseDocument;
 import uk.gov.moj.cpp.sjp.domain.CaseReadinessReason;
@@ -58,7 +59,7 @@ import org.apache.commons.lang.StringUtils;
 /**
  * Defines the case aggregate state.
  */
-@SuppressWarnings("PMD.BeanMembersShouldSerialize")
+@SuppressWarnings({"PMD.BeanMembersShouldSerialize",  "pmd:NullAssignment", "squid:S2384"})
 public class CaseAggregateState implements AggregateState {
 
 
@@ -109,6 +110,7 @@ public class CaseAggregateState implements AggregateState {
 
     private final Map<UUID, String> defendantsInterpreterLanguages = new HashMap<>();
     private final Map<UUID, Boolean> defendantsSpeakWelsh = new HashMap<>();
+    private static final Map<UUID, AOCPCost> aocpCostMap = new HashMap<>();
 
     private boolean trialRequested;
     private boolean trialRequestedPreviously;
@@ -131,6 +133,8 @@ public class CaseAggregateState implements AggregateState {
     private Set<UUID> sessionIds = new HashSet<>();
 
     private boolean defendantsResponseTimerExpired;
+    private boolean aocpAcceptanceResponseTimerExpired;
+    private boolean defendantAcceptedAocp;
     private boolean datesToAvoidPreviouslyRequested;
     private LocalDate datesToAvoidExpirationDate;
     private LocalDate adjournedTo;
@@ -140,7 +144,9 @@ public class CaseAggregateState implements AggregateState {
     private boolean setAside;
     private boolean deleteDocsStarted;
     private Application currentApplication;
-
+    private boolean aocpEligible;
+    private BigDecimal aocpTotalCost;
+    private BigDecimal aocpVictimSurcharge;
 
     private boolean managedByAtcm;
     private boolean paymentTermsUpdated;
@@ -510,6 +516,15 @@ public class CaseAggregateState implements AggregateState {
         caseDocuments.put(id, caseDocument);
     }
 
+    public void addAOCPCost(final UUID caseId, final AOCPCost aocpCost) {
+        aocpCostMap.put(caseId, aocpCost);
+    }
+
+    public Map<UUID, AOCPCost> getAOCPCost() {
+        return aocpCostMap;
+    }
+
+
     public void updateOffenceWithPlea(final UUID offenceId) {
         offenceIdsWithPleas.add(offenceId);
     }
@@ -723,6 +738,31 @@ public class CaseAggregateState implements AggregateState {
 
     public void setDefendantsResponseTimerExpired() {
         this.defendantsResponseTimerExpired = true;
+    }
+
+    public void setAocpAcceptanceResponseTimerExpired() {
+        this.aocpAcceptanceResponseTimerExpired = true;
+    }
+
+    public boolean isAocpAcceptanceResponseTimerExpired() {
+        return aocpAcceptanceResponseTimerExpired;
+    }
+
+    public void setDefendantAcceptedAocp(final boolean defendantAcceptedAocp) {
+        this.defendantAcceptedAocp = defendantAcceptedAocp;
+    }
+
+    public boolean isDefendantAcceptedAocp() {
+        return defendantAcceptedAocp;
+    }
+
+
+    public void setAocpEligible() {
+        this.aocpEligible = true;
+    }
+
+    public boolean isAocpEligible() {
+        return this.aocpEligible;
     }
 
     public void makeNonAdjourned() {
@@ -1115,5 +1155,19 @@ public class CaseAggregateState implements AggregateState {
         return unmodifiableList(offenceHearings);
     }
 
+    public void setAocpTotalCost(final BigDecimal aocpTotalCost){
+        this.aocpTotalCost = aocpTotalCost;
+    }
 
+    public BigDecimal getAocpTotalCost(){
+        return this.aocpTotalCost;
+    }
+
+    public void setAocpVictimSurcharge(final BigDecimal aocpVictimSurcharge){
+        this.aocpVictimSurcharge = aocpVictimSurcharge;
+    }
+
+    public BigDecimal getAocpVictimSurcharge(){
+        return this.aocpVictimSurcharge;
+    }
 }

@@ -11,6 +11,7 @@ import static uk.gov.moj.cpp.sjp.domain.aggregate.handler.HandlerUtils.createRej
 import static uk.gov.moj.cpp.sjp.domain.aggregate.handler.plea.PleaHandlerUtils.createSetPleasEvents;
 import static uk.gov.moj.cpp.sjp.domain.disability.DisabilityNeeds.NO_DISABILITY_NEEDS;
 import static uk.gov.moj.cpp.sjp.domain.plea.PleaMethod.ONLINE;
+import static uk.gov.moj.cpp.sjp.domain.plea.PleaType.AOCP_PENDING;
 import static uk.gov.moj.cpp.sjp.domain.plea.PleaType.GUILTY;
 import static uk.gov.moj.cpp.sjp.domain.plea.PleaType.GUILTY_REQUEST_HEARING;
 import static uk.gov.moj.cpp.sjp.domain.plea.PleaType.NOT_GUILTY;
@@ -29,20 +30,24 @@ import uk.gov.moj.cpp.sjp.domain.aggregate.state.CaseAggregateState;
 import uk.gov.moj.cpp.sjp.domain.legalentity.LegalEntityDefendant;
 import uk.gov.moj.cpp.sjp.domain.onlineplea.Offence;
 import uk.gov.moj.cpp.sjp.domain.onlineplea.PersonalDetails;
+import uk.gov.moj.cpp.sjp.domain.onlineplea.PleadAocpOnline;
 import uk.gov.moj.cpp.sjp.domain.onlineplea.PleadOnline;
 import uk.gov.moj.cpp.sjp.domain.onlineplea.PleadOnlinePcqVisited;
 import uk.gov.moj.cpp.sjp.domain.plea.Plea;
 import uk.gov.moj.cpp.sjp.domain.plea.PleaType;
 import uk.gov.moj.cpp.sjp.domain.plea.SetPleas;
 import uk.gov.moj.cpp.sjp.event.CaseUpdateRejected;
+import uk.gov.moj.cpp.sjp.event.DefendantAcceptedAocp;
 import uk.gov.moj.cpp.sjp.event.FinancialMeansUpdated;
 import uk.gov.moj.cpp.sjp.event.OffenceNotFound;
 import uk.gov.moj.cpp.sjp.event.OnlinePleaPcqVisitedReceived;
 import uk.gov.moj.cpp.sjp.event.OnlinePleaReceived;
 import uk.gov.moj.cpp.sjp.event.OutstandingFinesUpdated;
+import uk.gov.moj.cpp.sjp.event.DefendantAocpPleaRejected;
 import uk.gov.moj.cpp.sjp.event.TrialRequested;
 
 import java.time.ZonedDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -58,6 +63,7 @@ public class OnlinePleaHandler {
     public static final OnlinePleaHandler INSTANCE = new OnlinePleaHandler();
 
     private static final Logger LOGGER = LoggerFactory.getLogger(OnlinePleaHandler.class);
+    private static final String AOCP_REJECTED_REASON = "Case is already in Ready for Decision stage";
 
     private final CaseDefendantHandler caseDefendantHandler;
     private final CaseEmployerHandler caseEmployerHandler;
@@ -91,6 +97,23 @@ public class OnlinePleaHandler {
 
     public Stream<Object> pleadOnlinePcqVisited(final UUID caseId, final PleadOnlinePcqVisited pleadOnlinePcqVisited, final ZonedDateTime createdOn, CaseAggregateState state) {
         return this.createPleadOnlinePcqVisitedEvent(caseId, pleadOnlinePcqVisited, createdOn, state);
+    }
+
+    public Stream<Object> pleadAocpAcceptedOnline(final PleadAocpOnline pleadAocpOnline, final ZonedDateTime createdOn, CaseAggregateState state) {
+        final Stream.Builder<Object> builder = Stream.builder();
+        final List<Offence> offences = new ArrayList<>();
+        if (!state.isCaseReadyForDecision()) {
+            pleadAocpOnline.getOffences().forEach(offence -> {
+                final Offence pleaOffence = Offence.builder().withValuesFrom(offence).withPleaType(AOCP_PENDING).build();
+                offences.add(pleaOffence);
+            });
+
+            builder.add(new DefendantAcceptedAocp(pleadAocpOnline.getCaseId(), pleadAocpOnline.getDefendantId(), offences, ONLINE, pleadAocpOnline.getPersonalDetails(), pleadAocpOnline.getAocpAccepted(), createdOn, state.getUrn()));
+            return builder.build();
+        } else {
+            builder.add(new DefendantAocpPleaRejected(pleadAocpOnline.getCaseId(), pleadAocpOnline.getDefendantId(), offences, ONLINE, pleadAocpOnline.getPersonalDetails(), pleadAocpOnline.getAocpAccepted(), createdOn, state.getUrn(), AOCP_REJECTED_REASON));
+            return builder.build();
+        }
     }
 
     private Stream<Object> createPleadOnlineEvents(final UUID caseId, final PleadOnline pleadOnline, final ZonedDateTime createdOn, CaseAggregateState state, final UUID userId) {

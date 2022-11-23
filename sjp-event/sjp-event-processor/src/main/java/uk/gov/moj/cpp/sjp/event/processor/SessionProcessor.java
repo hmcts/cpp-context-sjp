@@ -1,14 +1,21 @@
 package uk.gov.moj.cpp.sjp.event.processor;
 
 import static uk.gov.justice.services.core.annotation.Component.EVENT_PROCESSOR;
+import static java.util.Objects.nonNull;
+import static java.util.UUID.randomUUID;
+import static uk.gov.justice.services.messaging.Envelope.envelopeFrom;
+import static uk.gov.justice.services.messaging.JsonEnvelope.metadataFrom;
 
 import uk.gov.justice.services.core.annotation.Handles;
 import uk.gov.justice.services.core.annotation.ServiceComponent;
 import uk.gov.justice.services.core.enveloper.Enveloper;
 import uk.gov.justice.services.core.sender.Sender;
 import uk.gov.justice.services.messaging.JsonEnvelope;
+import uk.gov.justice.services.messaging.Metadata;
 import uk.gov.moj.cpp.sjp.domain.SessionType;
 import uk.gov.moj.cpp.sjp.event.processor.service.SchedulingService;
+import uk.gov.moj.cpp.sjp.event.processor.service.SjpService;
+import uk.gov.moj.cpp.sjp.event.session.ResetAocpSession;
 import uk.gov.moj.cpp.sjp.event.session.DelegatedPowersSessionEnded;
 import uk.gov.moj.cpp.sjp.event.session.DelegatedPowersSessionStarted;
 import uk.gov.moj.cpp.sjp.event.session.MagistrateSessionEnded;
@@ -26,6 +33,11 @@ public class SessionProcessor {
 
     public static final String PUBLIC_SJP_SESSION_STARTED = "public.sjp.session-started";
     public static final String COURT_HOUSE_CODE = "courtHouseCode";
+    private static final String SESSION_ID = "sessionId";
+
+    private static final String AOCP_COURT_HOUSE_CODE = "B52CM00";
+    private static final String AOCP_COURT_HOUSE_NAME = "Bristol Magistrates' Court";
+    private static final String AOCP_COURT_LJA = "1450";
 
     @Inject
     private Sender sender;
@@ -36,10 +48,13 @@ public class SessionProcessor {
     @Inject
     private SchedulingService schedulingService;
 
+    @Inject
+    private SjpService sjpService;
+
     @Handles(MagistrateSessionStarted.EVENT_NAME)
     public void magistrateSessionStarted(final JsonEnvelope magistrateSessionStartedEvent) {
         final JsonObject magistrateSessionStarted = magistrateSessionStartedEvent.payloadAsJsonObject();
-        final UUID sessionId = UUID.fromString(magistrateSessionStarted.getString("sessionId"));
+        final UUID sessionId = UUID.fromString(magistrateSessionStarted.getString(SESSION_ID));
         final Optional<JsonObject> schedulingSession = schedulingService.getSession(sessionId, magistrateSessionStartedEvent);
         if (schedulingSession.isPresent()) {
             return;
@@ -57,7 +72,7 @@ public class SessionProcessor {
     @Handles(DelegatedPowersSessionStarted.EVENT_NAME)
     public void delegatedPowersSessionStarted(final JsonEnvelope delegatedPowersSessionStartedEvent) {
         final JsonObject delegatedPowersSessionStarted = delegatedPowersSessionStartedEvent.payloadAsJsonObject();
-        final UUID sessionId = UUID.fromString(delegatedPowersSessionStarted.getString("sessionId"));
+        final UUID sessionId = UUID.fromString(delegatedPowersSessionStarted.getString(SESSION_ID));
         final Optional<JsonObject> schedulingSession = schedulingService.getSession(sessionId, delegatedPowersSessionStartedEvent);
         if (schedulingSession.isPresent()) {
             return;
@@ -73,19 +88,56 @@ public class SessionProcessor {
 
     @Handles(DelegatedPowersSessionEnded.EVENT_NAME)
     public void delegatedPowersSessionEnded(final JsonEnvelope delegatedPowersSessionEnded) {
-        final UUID sessionId = UUID.fromString(delegatedPowersSessionEnded.payloadAsJsonObject().getString("sessionId"));
+        final UUID sessionId = UUID.fromString(delegatedPowersSessionEnded.payloadAsJsonObject().getString(SESSION_ID));
         schedulingService.endSession(sessionId, delegatedPowersSessionEnded);
     }
 
     @Handles(MagistrateSessionEnded.EVENT_NAME)
     public void magistrateSessionEnded(final JsonEnvelope magistrateSessionEnded) {
-        final UUID sessionId = UUID.fromString(magistrateSessionEnded.payloadAsJsonObject().getString("sessionId"));
+        final UUID sessionId = UUID.fromString(magistrateSessionEnded.payloadAsJsonObject().getString(SESSION_ID));
         schedulingService.endSession(sessionId, magistrateSessionEnded);
+    }
+
+    @Handles(ResetAocpSession.EVENT_NAME)
+    public void aocpSessionResetRequested(final JsonEnvelope envelope) {
+        final JsonObject response= sjpService.getLatestAocpSessionDetails(envelope);
+        if(nonNull(response)) {
+            endSession(envelope, response.getString(SESSION_ID));
+        }
+        startNewSession(envelope);
+    }
+
+    private void endSession(final JsonEnvelope envelope, String sessionId){
+        final JsonObject payload = Json.createObjectBuilder()
+                .add(SESSION_ID, sessionId).build();
+
+        final Metadata metadata = metadataFrom(envelope.metadata())
+                .withName("sjp.command.end-session")
+                .build();
+
+        sender.send(envelopeFrom(metadata, payload));
+    }
+
+    private void startNewSession(final JsonEnvelope envelope){
+
+        final JsonObject payload = Json.createObjectBuilder()
+                .add(SESSION_ID, randomUUID().toString())
+                .add(COURT_HOUSE_CODE , AOCP_COURT_HOUSE_CODE)
+                .add("courtHouseName", AOCP_COURT_HOUSE_NAME)
+                .add("localJusticeAreaNationalCourtCode", AOCP_COURT_LJA)
+                .add("isAocpSession", true)
+                .build();
+
+        final Metadata metadata = metadataFrom(envelope.metadata())
+                .withName("sjp.command.start-session")
+                .build();
+
+        sender.send(envelopeFrom(metadata, payload));
     }
 
     private void emitPublicSessionStartedEvent(final UUID sessionId, final String courtHouseCode, final String courtHouseName, final String localJusticeAreaNationalCourtCode, final SessionType sessionType, final JsonEnvelope event) {
         final JsonObject payload = Json.createObjectBuilder()
-                .add("sessionId", sessionId.toString())
+                .add(SESSION_ID, sessionId.toString())
                 .add(COURT_HOUSE_CODE, courtHouseCode)
                 .add("courtHouseName", courtHouseName)
                 .add("localJusticeAreaNationalCourtCode", localJusticeAreaNationalCourtCode)

@@ -132,4 +132,10 @@ public class SessionHelper {
                 .add("userId", legalAdviser.getUserId().toString())
                 .build();
     }
+
+    public static void resetAndStartAocpSession() {
+        final String contentType = "application/vnd.sjp.reset-aocp-session+json";
+        final String resource = "/reset-aocp-session";
+        HttpClientUtil.makePostCall(resource, contentType, "{}");
+    }
 }

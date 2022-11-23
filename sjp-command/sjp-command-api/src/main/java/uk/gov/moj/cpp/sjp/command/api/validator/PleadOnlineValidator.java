@@ -8,7 +8,6 @@ import static java.util.Collections.singletonMap;
 import static java.util.Objects.nonNull;
 import static org.apache.commons.collections.CollectionUtils.isEmpty;
 import static org.apache.commons.lang3.StringUtils.isEmpty;
-import static org.apache.commons.lang3.StringUtils.ordinalIndexOf;
 import static uk.gov.moj.cpp.sjp.domain.common.CaseStatus.COMPLETED;
 import static uk.gov.moj.cpp.sjp.domain.common.CaseStatus.REFERRED_FOR_COURT_HEARING;
 

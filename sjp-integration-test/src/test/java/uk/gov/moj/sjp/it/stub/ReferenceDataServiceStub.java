@@ -25,6 +25,8 @@ import static uk.gov.moj.sjp.it.util.Defaults.DEFAULT_LONDON_COURT_HOUSE_OU_CODE
 import static uk.gov.moj.sjp.it.util.Defaults.DEFAULT_LONDON_LJA_NATIONAL_COURT_CODE;
 import static uk.gov.moj.sjp.it.util.Defaults.DEFAULT_NON_LONDON_COURT_HOUSE_OU_CODE;
 import static uk.gov.moj.sjp.it.util.Defaults.DEFAULT_NON_LONDON_LJA_NATIONAL_COURT_CODE;
+import static uk.gov.moj.sjp.it.util.Defaults.DEFAULT_AOCP_LJA_NATIONAL_COURT_CODE;
+import static uk.gov.moj.sjp.it.util.Defaults.DEFAULT_AOCP_COURT_HOUSE_OU_CODE;
 import static uk.gov.moj.sjp.it.util.FileUtil.getFileContentAsJson;
 import static uk.gov.moj.sjp.it.util.FileUtil.getPayload;
 
@@ -186,6 +188,8 @@ public class ReferenceDataServiceStub {
                                                 .add("fullName", prosecutingAuthorityFullName)
                                                 .add("policeFlag", policeFlag)
                                                 .add("majorCreditorCode", "Transport for London")
+                                                .add("aocpApproved", true)
+                                                .add("contactEmailAddress", "tfl@tfl.com")
                                                 .add("address", createObjectBuilder()
                                                         .add("address1", "6th Floor Windsor House")
                                                         .add("address2", "42-50 Victoria Street")
@@ -240,6 +244,7 @@ public class ReferenceDataServiceStub {
     public static void stubDefaultCourtByCourtHouseOUCodeQuery() {
         stubCourtByCourtHouseOUCodeQuery(DEFAULT_LONDON_COURT_HOUSE_OU_CODE, DEFAULT_LONDON_LJA_NATIONAL_COURT_CODE, "court house name");
         stubCourtByCourtHouseOUCodeQuery(DEFAULT_NON_LONDON_COURT_HOUSE_OU_CODE, DEFAULT_NON_LONDON_LJA_NATIONAL_COURT_CODE, "court house name");
+        stubCourtByCourtHouseOUCodeQuery(DEFAULT_AOCP_COURT_HOUSE_OU_CODE, DEFAULT_AOCP_LJA_NATIONAL_COURT_CODE, "court house name");
     }
 
     public static void stubReferralReasonsQuery(final UUID referralReasonId, final String hearingCode, final String referralReason) {

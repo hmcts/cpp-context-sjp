@@ -49,6 +49,10 @@ public class DecisionSavedToCaseDecision implements Converter<DecisionSaved, Cas
 
         final Session sessionEntity = em.getReference(Session.class, event.getSessionId());
 
+        if(nonNull(event.getResultedThroughAOCP()) && Boolean.TRUE.equals(event.getResultedThroughAOCP())){
+            caseDecisionEntity.setResultedThroughAOCP(true);
+        }
+
         caseDecisionEntity.setSession(sessionEntity);
         caseDecisionEntity.setOffenceDecisions(convertToOffenceDecisionEntities(event.getDecisionId(), event.getOffenceDecisions()));
         if(nonNull(event.getFinancialImposition())) {

@@ -6,8 +6,10 @@ import static java.util.stream.Collectors.toList;
 import static java.util.stream.IntStream.range;
 import static javax.json.Json.createArrayBuilder;
 import static javax.json.Json.createObjectBuilder;
+import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.everyItem;
+import static org.hamcrest.Matchers.isEmptyOrNullString;
 import static org.hamcrest.Matchers.isIn;
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsNull.notNullValue;
@@ -169,6 +171,8 @@ public class TransparencyReportRequestedProcessorTest {
         readyCases.getValuesAs(JsonObject.class).forEach(jsonObject -> {
             assertThat(jsonObject.getString("prosecutorName"), is(prosecutorName));
             assertThat(jsonObject.getJsonArray("sjpOffences"), notNullValue());
+            assertThat(jsonObject.getString("firstName"), not(isEmptyOrNullString()));
+            assertThat(jsonObject.getString("lastName"), not(isEmptyOrNullString()));
         });
     }
 
@@ -297,7 +301,9 @@ public class TransparencyReportRequestedProcessorTest {
                 .add("defendantName", "J. Doe" + caseNumber)
                 .add("postcode", "S" + caseNumber)
                 .add("offences", offenceArrayBuilder.build())
-                .add("prosecutorName", "TFL");
+                .add("prosecutorName", "TFL")
+                .add("firstName", "ALEX")
+                .add("lastName","SCHULTZ");
 
         if (generateFullAddress) {
             pendingCase

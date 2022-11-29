@@ -8,7 +8,9 @@ import static java.util.UUID.fromString;
 import static javax.json.Json.createArrayBuilder;
 import static javax.json.Json.createObjectBuilder;
 import static org.apache.commons.lang3.StringUtils.LF;
+import static org.apache.commons.lang3.StringUtils.capitalize;
 import static org.apache.commons.lang3.StringUtils.length;
+import static org.apache.commons.lang3.StringUtils.lowerCase;
 import static uk.gov.justice.services.core.annotation.Component.EVENT_PROCESSOR;
 import static uk.gov.justice.services.messaging.Envelope.metadataFrom;
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
@@ -77,6 +79,7 @@ public class TransparencyReportRequestedProcessor {
     public static final String ADDRESS_LINE_2 = "addressLine2";
     public static final String EMPTY = "";
     public static final String STRING_FORMAT = "%s,";
+    public static final String OFFENCE_TITLE = "offenceTitle";
 
     private Table<String, String, JsonObject> offenceDataTable;
     private Table<String, Boolean, String> prosecutorDataTable;
@@ -240,8 +243,8 @@ public class TransparencyReportRequestedProcessor {
         pendingCases
                 .forEach(pendingCase -> {
                     final JsonObjectBuilder pendingCaseBuilder = createObjectBuilder()
-                            .add("defendantName",buildDefendantName(pendingCase))
-                            .add("offenceTitle", buildOffenceTitleFromOffenceArray(pendingCase.getJsonArray(OFFENCES), isWelsh, envelope))
+                            .add(DEFENDANT_NAME,buildDefendantName(pendingCase))
+                            .add(OFFENCE_TITLE, buildOffenceTitleFromOffenceArray(pendingCase.getJsonArray(OFFENCES), isWelsh, envelope))
                             .add(PROSECUTOR_NAME, buildProsecutorName(pendingCase.getString(PROSECUTOR_NAME), isWelsh, envelope));
 
                     ofNullable(pendingCase.getString(POSTCODE, null))
@@ -370,7 +373,7 @@ public class TransparencyReportRequestedProcessor {
         if (pendingCase.containsKey("legalEntityName")) {
             return pendingCase.getString("legalEntityName").toUpperCase();
         } else {
-            return format("%s %s", pendingCase.getString("firstName", ""), pendingCase.getString("lastName", "").toUpperCase());
+            return format("%s %s", pendingCase.getString(FIRST_NAME).length() > 0 ? pendingCase.getString(FIRST_NAME).toUpperCase().charAt(0): "", capitalize(lowerCase(pendingCase.getString(LAST_NAME, ""))));
         }
     }
 

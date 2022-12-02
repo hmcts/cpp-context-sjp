@@ -1,5 +1,7 @@
 package uk.gov.moj.cpp.sjp.event.processor.results.converter;
 
+import static java.util.Objects.isNull;
+
 import uk.gov.justice.core.courts.Gender;
 import uk.gov.justice.core.courts.Person;
 import uk.gov.justice.json.schemas.domains.sjp.PersonalDetails;
@@ -18,6 +20,9 @@ public class PersonDetailsConverter {
     private AddressConverter addressConverter;
 
     public Person getPersonDetails(final PersonalDetails personalDetails, final String countryCJSCode) {
+        if (isNull(personalDetails)) {
+            return null;
+        }
         final LocalDate birthDate = personalDetails.getDateOfBirth();
         return Person.person()
                 .withNationalityCode(countryCJSCode)

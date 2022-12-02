@@ -12,7 +12,6 @@ import uk.gov.justice.services.common.converter.ZonedDateTimes;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.messaging.Metadata;
 import uk.gov.moj.cpp.sjp.event.processor.results.converter.judicialresult.DecisionAggregate;
-import uk.gov.moj.cpp.sjp.event.processor.results.converter.judicialresult.DecisionSavedToJudicialResultsConverter;
 import uk.gov.moj.cpp.sjp.event.processor.service.ProsecutionCaseFileService;
 import uk.gov.moj.cpp.sjp.event.processor.service.ReferenceDataService;
 
@@ -35,7 +34,7 @@ public class DefendantsConverter {
     private OffencesConverter offencesConverter;
 
     @Inject
-    private DecisionSavedToJudicialResultsConverter referencedDecisionSavedOffenceConverter;
+    private LegalEntityDefendantConverter legalEntityDefendantConverter;
 
     @Inject
     private ReferenceDataService referenceDataService;
@@ -65,9 +64,9 @@ public class DefendantsConverter {
                 .orElse(null);
 
         // prosecutor reference
-        String prosecutorReference  = DEFAULT_NON_POLICE_PROSECUTOR_REFERENCE;
-        if(caseFileDefendantDetails != null) {
-            prosecutorReference = caseFileDefendantDetails.getString("asn",null) != null ? caseFileDefendantDetails.getString("asn",null) : DEFAULT_NON_POLICE_PROSECUTOR_REFERENCE;
+        String prosecutorReference = DEFAULT_NON_POLICE_PROSECUTOR_REFERENCE;
+        if (caseFileDefendantDetails != null) {
+            prosecutorReference = caseFileDefendantDetails.getString("asn", null) != null ? caseFileDefendantDetails.getString("asn", null) : DEFAULT_NON_POLICE_PROSECUTOR_REFERENCE;
         }
 
         final Defendant defendant1 = Defendant.defendant()
@@ -76,12 +75,12 @@ public class DefendantsConverter {
                 .withMasterDefendantId(defendant.getId())
                 .withProsecutionCaseId(caseDetails.getId())
                 .withPersonDefendant(personDefendantConverter.getPersonDefendant(defendant, countryCJSCode, metadata))
+                .withLegalEntityDefendant(legalEntityDefendantConverter.getLegalEntityDefendant(defendant.getLegalEntityDetails()))
                 .withOffences(offences)
                 .withCourtProceedingsInitiated(ZonedDateTimes.fromString(sjpSessionPayload.getString("startedAt", null)))
                 .withProsecutionAuthorityReference(prosecutorReference)
                 .withDefendantCaseJudicialResults(resultsAggregate.getResults(caseDetails.getId()).isEmpty() ? null : resultsAggregate.getResults(caseDetails.getId()))
                 .build();
-        defendant1.getOffences().get(0);
 
         defendants.add(defendant1);
 

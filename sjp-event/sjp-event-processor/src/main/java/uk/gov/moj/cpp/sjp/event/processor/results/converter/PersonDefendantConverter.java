@@ -1,5 +1,6 @@
 package uk.gov.moj.cpp.sjp.event.processor.results.converter;
 
+import static java.util.Objects.isNull;
 import static uk.gov.justice.core.courts.PersonDefendant.personDefendant;
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
 
@@ -29,6 +30,9 @@ public class PersonDefendantConverter {
     public PersonDefendant getPersonDefendant(final Defendant defendant,
                                               final String countryCJSCode,
                                               final Metadata metadata) {
+        if (isNull(defendant.getPersonalDetails())) {
+            return null;
+        }
         final BailStatus bailStatus = jCachedReferenceData.getBailStatus(DEFAULT_BAIL_STATUS, envelopeFrom(metadata, null));
 
         return personDefendant()

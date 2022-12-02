@@ -1,10 +1,11 @@
 package uk.gov.moj.cpp.sjp.event.processor.results.converter;
 
-import static uk.gov.justice.core.courts.LegalEntityDefendant.*;
+import static java.util.Objects.isNull;
+import static uk.gov.justice.core.courts.LegalEntityDefendant.legalEntityDefendant;
 
 import uk.gov.justice.core.courts.LegalEntityDefendant;
 import uk.gov.justice.core.courts.Organisation;
-import uk.gov.justice.json.schemas.domains.sjp.results.CorporateDefendant;
+import uk.gov.justice.json.schemas.domains.sjp.LegalEntityDetails;
 
 import javax.inject.Inject;
 
@@ -14,18 +15,20 @@ public class LegalEntityDefendantConverter {
     private AddressConverter addressConverter;
 
     @Inject
-    private CorporateContactNumberConverter corporateContactNumberConverter;
+    private LegalEntityContactConverter legalEntityContactConverter;
 
-    public LegalEntityDefendant getLegalEntityDefendant(final CorporateDefendant corporateDefendant) {
-        if (corporateDefendant != null) {
-            return legalEntityDefendant()
-                    .withOrganisation(Organisation.organisation()//Mandatory
-                            .withName(corporateDefendant.getOrganisationName())
-                            .withAddress(addressConverter.getAddress(corporateDefendant.getAddress()))
-                            .withContact(corporateContactNumberConverter.getContact(corporateDefendant))
-                            .build())
-                    .build();
+    public LegalEntityDefendant getLegalEntityDefendant(final LegalEntityDetails legalEntityDetails) {
+        if (isNull(legalEntityDetails)) {
+            return null;
         }
-        return null;
+        return legalEntityDefendant()
+                .withOrganisation(Organisation.organisation()//Mandatory
+                        .withName(legalEntityDetails.getLegalEntityName())
+                        .withAddress(addressConverter.getAddress(legalEntityDetails.getAddress()))
+                        .withContact(legalEntityContactConverter.getContact(legalEntityDetails.getContactDetails()))
+                        .build())
+                .build();
+
+
     }
 }

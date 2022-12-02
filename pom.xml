@@ -40,7 +40,7 @@
         <document-generator-client.version>1.0.4</document-generator-client.version>
         <systemdocgenerator.version>8.0.1</systemdocgenerator.version>
         <apache.pdfbox.version>2.0.11</apache.pdfbox.version>
-        <jvm.options>-Djava.locale.providers=CLDR</jvm.options>
+        <argLine>-Djava.locale.providers=CLDR</argLine>
         <elasticsearch-maven-plugin.version>6.13</elasticsearch-maven-plugin.version>
         <elasticsearch.embedded.version>7.16.2</elasticsearch.embedded.version>
         <stagingenforcement.version>7.0.26</stagingenforcement.version>
@@ -67,13 +67,6 @@
                 <configuration>
                     <archiveClasses>true</archiveClasses>
                     <attachClasses>true</attachClasses>
-                </configuration>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-surefire-plugin</artifactId>
-                <configuration>
-                    <argLine>${jvm.options}</argLine>
                 </configuration>
             </plugin>
         </plugins>

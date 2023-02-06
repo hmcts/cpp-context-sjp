@@ -49,6 +49,9 @@
     "contactDetails": {
       "$ref": "http://justice.gov.uk/json/schemas/domains/sjp/contact-details.json"
     },
+    "initiationCode": {
+      "$ref": "http://justice.gov.uk/core/courts/initiationCode.json"
+    },
     "offences": {
       "type": "array",
       "items": {

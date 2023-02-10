@@ -40,6 +40,8 @@ public class AocpPleasSetListener {
                     .filter(offence -> offence.getId().equals(plea.getOffenceId())).findFirst();
             if (offenceDetail.isPresent()) {
                 offenceDetail.get().setPlea(plea.getPleaType());
+                offenceDetail.get().setPleaDate(aocpPleasSet.getPleaDate());
+                offenceDetail.get().setPleaMethod(aocpPleasSet.getPleaMethod());
             }
         });
         caseService.saveCaseDetail(caseDetail);

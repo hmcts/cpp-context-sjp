@@ -135,6 +135,7 @@ public class CaseAggregateState implements AggregateState {
     private boolean defendantsResponseTimerExpired;
     private boolean aocpAcceptanceResponseTimerExpired;
     private boolean defendantAcceptedAocp;
+    private ZonedDateTime aocpAcceptedPleaDate;
     private boolean datesToAvoidPreviouslyRequested;
     private LocalDate datesToAvoidExpirationDate;
     private LocalDate adjournedTo;
@@ -1170,4 +1171,13 @@ public class CaseAggregateState implements AggregateState {
     public BigDecimal getAocpVictimSurcharge(){
         return this.aocpVictimSurcharge;
     }
+
+    public ZonedDateTime getAocpAcceptedPleaDate() {
+        return aocpAcceptedPleaDate;
+    }
+
+    public void setAocpAcceptedPleaDate(final ZonedDateTime aocpAcceptedPleaDate) {
+        this.aocpAcceptedPleaDate = aocpAcceptedPleaDate;
+    }
+
 }

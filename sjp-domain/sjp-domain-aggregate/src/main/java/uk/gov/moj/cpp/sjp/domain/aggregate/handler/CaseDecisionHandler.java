@@ -34,12 +34,12 @@ import static uk.gov.moj.cpp.sjp.domain.decision.DecisionType.REFER_FOR_COURT_HE
 import static uk.gov.moj.cpp.sjp.domain.decision.DecisionType.SET_ASIDE;
 import static uk.gov.moj.cpp.sjp.domain.decision.DecisionType.WITHDRAW;
 import static uk.gov.moj.cpp.sjp.domain.decision.FinancialPenalty.createFinancialPenalty;
+import static uk.gov.moj.cpp.sjp.domain.plea.PleaType.GUILTY;
 import static uk.gov.moj.cpp.sjp.domain.verdict.VerdictType.FOUND_GUILTY;
 import static uk.gov.moj.cpp.sjp.domain.verdict.VerdictType.FOUND_NOT_GUILTY;
 import static uk.gov.moj.cpp.sjp.domain.verdict.VerdictType.NO_VERDICT;
 import static uk.gov.moj.cpp.sjp.domain.verdict.VerdictType.PROVED_SJP;
 import static uk.gov.moj.cpp.sjp.event.CaseReferredForCourtHearing.caseReferredForCourtHearing;
-import static uk.gov.moj.cpp.sjp.domain.plea.PleaType.GUILTY;
 
 import uk.gov.justice.json.schemas.domains.sjp.Note;
 import uk.gov.justice.json.schemas.domains.sjp.NoteType;
@@ -55,9 +55,8 @@ import uk.gov.moj.cpp.sjp.domain.aggregate.Session;
 import uk.gov.moj.cpp.sjp.domain.aggregate.state.CaseAggregateState;
 import uk.gov.moj.cpp.sjp.domain.decision.Adjourn;
 import uk.gov.moj.cpp.sjp.domain.decision.AocpDecision;
-import uk.gov.moj.cpp.sjp.domain.decision.CourtDetails;
-import uk.gov.moj.cpp.sjp.domain.decision.SessionCourt;
 import uk.gov.moj.cpp.sjp.domain.decision.ConvictingInformation;
+import uk.gov.moj.cpp.sjp.domain.decision.CourtDetails;
 import uk.gov.moj.cpp.sjp.domain.decision.Decision;
 import uk.gov.moj.cpp.sjp.domain.decision.DecisionType;
 import uk.gov.moj.cpp.sjp.domain.decision.Defendant;
@@ -71,6 +70,7 @@ import uk.gov.moj.cpp.sjp.domain.decision.OffenceDecisionVisitor;
 import uk.gov.moj.cpp.sjp.domain.decision.ReferForCourtHearing;
 import uk.gov.moj.cpp.sjp.domain.decision.ReferredForFutureSJPSession;
 import uk.gov.moj.cpp.sjp.domain.decision.ReferredToOpenCourt;
+import uk.gov.moj.cpp.sjp.domain.decision.SessionCourt;
 import uk.gov.moj.cpp.sjp.domain.decision.SetAside;
 import uk.gov.moj.cpp.sjp.domain.decision.Withdraw;
 import uk.gov.moj.cpp.sjp.domain.decision.imposition.CostsAndSurcharge;
@@ -83,10 +83,10 @@ import uk.gov.moj.cpp.sjp.domain.plea.Plea;
 import uk.gov.moj.cpp.sjp.domain.plea.PleaMethod;
 import uk.gov.moj.cpp.sjp.domain.plea.PleaType;
 import uk.gov.moj.cpp.sjp.domain.verdict.VerdictType;
-import uk.gov.moj.cpp.sjp.event.DefendantAocpResponseTimerExpired;
 import uk.gov.moj.cpp.sjp.event.AocpPleasSet;
 import uk.gov.moj.cpp.sjp.event.CaseAdjournedToLaterSjpHearingRecorded;
 import uk.gov.moj.cpp.sjp.event.CaseCompleted;
+import uk.gov.moj.cpp.sjp.event.DefendantAocpResponseTimerExpired;
 import uk.gov.moj.cpp.sjp.event.decision.DecisionRejected;
 import uk.gov.moj.cpp.sjp.event.decision.DecisionSaved;
 import uk.gov.moj.cpp.sjp.event.decision.DecisionSetAside;
@@ -860,6 +860,8 @@ public class CaseDecisionHandler {
 
         addAocpAcceptanceResponseTimerExpiredEvent(state.getCaseId(), streamBuilder);
 
+        // add the defence login here just in case
+
         final List<OffenceDecision> offenceDecisions = new ArrayList<>();
         final List<Plea> pleas = new ArrayList<>();
         final AOCPCost aocpCost = state.getAOCPCost().get(state.getCaseId());
@@ -887,15 +889,18 @@ public class CaseDecisionHandler {
 
         final Decision decision = new Decision(aocpDecision.getDecisionId(), aocpDecision.getSessionId(),  state.getCaseId(), null, savedAt, aocpDecision.getSavedBy(), offenceDecisions, financialImposition, aocpDecision.getDefendant());
 
-        addSetAocpPleaEvent(state.getCaseId(), pleas, streamBuilder);
+        addSetAocpPleaEvent(state.getCaseId(), pleas, state.getAocpAcceptedPleaDate(), streamBuilder);
         addDecisionSavedEvent(session, decision, state, streamBuilder, true);
         addCaseCompletedEventIfAllOffencesHasFinalDecision(decision, streamBuilder, state);
 
         return streamBuilder.build();
     }
 
-    private void addSetAocpPleaEvent(final UUID caseId, List<Plea> pleas, final Stream.Builder<Object> streamBuilder){
-        streamBuilder.add(new AocpPleasSet(caseId, pleas));
+    private void addSetAocpPleaEvent(final UUID caseId,
+                                     final List<Plea> pleas,
+                                     final ZonedDateTime pleaDate,
+                                     final Stream.Builder<Object> streamBuilder){
+        streamBuilder.add(new AocpPleasSet(caseId, pleas, pleaDate, PleaMethod.ONLINE));
     }
 
     private void addAocpAcceptanceResponseTimerExpiredEvent(final UUID caseId, final Stream.Builder<Object> streamBuilder){

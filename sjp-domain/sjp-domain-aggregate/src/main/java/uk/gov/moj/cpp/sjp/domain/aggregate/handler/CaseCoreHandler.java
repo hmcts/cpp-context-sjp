@@ -1,6 +1,8 @@
 package uk.gov.moj.cpp.sjp.domain.aggregate.handler;
 
 import static java.math.BigDecimal.ROUND_DOWN;
+import static java.math.BigDecimal.valueOf;
+import static java.util.Objects.nonNull;
 import static uk.gov.moj.cpp.sjp.domain.CaseAssignmentType.DELEGATED_POWERS_DECISION;
 import static uk.gov.moj.cpp.sjp.domain.CaseAssignmentType.MAGISTRATE_DECISION;
 import static uk.gov.moj.cpp.sjp.domain.DomainConstants.NUMBER_DAYS_WAITING_FOR_PLEA;
@@ -10,8 +12,6 @@ import static uk.gov.moj.cpp.sjp.domain.aggregate.handler.HandlerUtils.createRej
 import static uk.gov.moj.cpp.sjp.event.session.CaseAssignmentRejected.RejectReason.CASE_ASSIGNED_TO_OTHER_USER;
 import static uk.gov.moj.cpp.sjp.event.session.CaseAssignmentRejected.RejectReason.CASE_COMPLETED;
 import static uk.gov.moj.cpp.sjp.event.session.CaseAssignmentRejected.RejectReason.CASE_NOT_READY;
-import static java.util.Objects.nonNull;
-import static java.math.BigDecimal.valueOf;
 
 import uk.gov.justice.core.courts.CourtCentre;
 import uk.gov.justice.core.courts.HearingDay;
@@ -57,7 +57,6 @@ import uk.gov.moj.cpp.sjp.event.session.CaseUnassigned;
 import uk.gov.moj.cpp.sjp.event.session.CaseUnassignmentRejected;
 
 import java.math.BigDecimal;
-
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
@@ -318,7 +317,7 @@ public class CaseCoreHandler {
                 if (isOffenceAOCPEligible(offence)) {
                     fineAmount.addAndGet(offence.getAocpStandardPenaltyAmount().doubleValue());
                     aocpEligibleOffenceList.add(new AOCPCostOffence(offence.getId(), offence.getCompensation(), offence.getAocpStandardPenaltyAmount(), offence.getIsEligibleAOCP(), offence.getProsecutorOfferAOCP()));
-                    offenceCost.addAndGet(offence.getAocpStandardPenaltyAmount().doubleValue() + offence.getCompensation().doubleValue());
+                    offenceCost.addAndGet(offence.getAocpStandardPenaltyAmount().doubleValue() + Optional.ofNullable(offence.getCompensation()).orElseGet(() -> BigDecimal.valueOf(0)).doubleValue());
                 }
             });
             if (offences.size() == aocpEligibleOffenceList.size()) {

@@ -55,7 +55,7 @@ public class CaseCoreHandlerTest {
                 Matchers.<CaseNoteAdded>hasProperty("caseId", is(caseId)),
                 Matchers.<CaseNoteAdded>hasProperty("costs", is(valueOf(5.5))),
                 Matchers.<CaseNoteAdded>hasProperty("victimSurcharge", is(valueOf(34.00).setScale(2, ROUND_DOWN))),
-                Matchers.<CaseNoteAdded>hasProperty("aocpTotalCost", is(valueOf(244.50).setScale(2, ROUND_DOWN)))
+                Matchers.<CaseNoteAdded>hasProperty("aocpTotalCost", is(valueOf(242.00).setScale(2, ROUND_DOWN)))
         )));
     }
 
@@ -76,7 +76,7 @@ public class CaseCoreHandlerTest {
                 Matchers.<CaseNoteAdded>hasProperty("caseId", is(caseId)),
                 Matchers.<CaseNoteAdded>hasProperty("costs", is(valueOf(5.5))),
                 Matchers.<CaseNoteAdded>hasProperty("victimSurcharge", is(valueOf(80.0).setScale(2, ROUND_DOWN))),
-                Matchers.<CaseNoteAdded>hasProperty("aocpTotalCost", is(valueOf(890.5).setScale(2, ROUND_DOWN)))
+                Matchers.<CaseNoteAdded>hasProperty("aocpTotalCost", is(valueOf(888.00).setScale(2, ROUND_DOWN)))
         )));
     }
 
@@ -161,7 +161,7 @@ public class CaseCoreHandlerTest {
     private void setUp(final Boolean prosecutorOfferAOCP, final Boolean isEligibleAOCPForOffence1,
                        final Boolean isEligibleAOCPForOffence2, long standardPenalty1, long standardPenalty2) {
 
-        final AOCPCostOffence offence1 = new AOCPCostOffence(offenceId1, BigDecimal.valueOf(2.5), new BigDecimal(standardPenalty1), isEligibleAOCPForOffence1, prosecutorOfferAOCP);
+        final AOCPCostOffence offence1 = new AOCPCostOffence(offenceId1, null, new BigDecimal(standardPenalty1), isEligibleAOCPForOffence1, prosecutorOfferAOCP);
         final AOCPCostOffence offence2 = new AOCPCostOffence(offenceId1, BigDecimal.valueOf(2.5), new BigDecimal(standardPenalty2), isEligibleAOCPForOffence2, prosecutorOfferAOCP);
 
         final AOCPCostDefendant defendant = new AOCPCostDefendant(randomUUID(), asList(offence1, offence2));

@@ -246,7 +246,10 @@ final class CompositeCaseAggregateStateMutator implements AggregateStateMutator<
             });
 
     private static final AggregateStateMutator<DefendantAcceptedAocp, CaseAggregateState> DEFENDANT_ACCEPTED_AOCP =
-            ((event, state) -> state.setDefendantAcceptedAocp(true));
+            ((event, state) -> {
+                state.setDefendantAcceptedAocp(true);
+                state.setAocpAcceptedPleaDate(event.getPleadDate());
+            });
 
     private static final AggregateStateMutator<DatesToAvoidRequired, CaseAggregateState> DATES_TO_AVOID_REQUIRED =
             ((event, state) -> {

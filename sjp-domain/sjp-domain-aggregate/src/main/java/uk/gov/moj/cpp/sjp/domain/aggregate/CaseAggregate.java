@@ -76,7 +76,7 @@ import javax.json.JsonObject;
 @SuppressWarnings("WeakerAccess")
 public class CaseAggregate implements Aggregate {
 
-    private static final long serialVersionUID = 18L;
+    private static final long serialVersionUID = 19L;
     private static final AggregateStateMutator<Object, CaseAggregateState> AGGREGATE_STATE_MUTATOR = AggregateStateMutator.compositeCaseAggregateStateMutator();
     private static final CaseReadinessHandler caseReadinessHandler = CaseReadinessHandler.INSTANCE;
 

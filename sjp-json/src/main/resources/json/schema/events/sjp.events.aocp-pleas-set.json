@@ -9,7 +9,7 @@
     "pleas" : {
       "type": "array",
       "items": {
-        "id": "http://justice.gov.uk/json/schemas/domains/sjp/command/plea.json",
+        "id": "http://justice.gov.uk/json/schemas/domains/sjp/event/plea.json",
         "type": "object",
         "properties": {
           "defendantId": {
@@ -42,11 +42,19 @@
         ],
         "additionalProperties": false
       }
+    },
+    "pleaMethod": {
+      "$ref": "http://justice.gov.uk/json/schemas/domains/sjp/plea-method.json"
+    },
+    "pleaDate": {
+      "$ref": "http://justice.gov.uk/json/schemas/domains/sjp/temporal.json#/definitions/date-time"
     }
   },
   "required": [
     "caseId",
-    "pleas"
+    "pleas",
+    "pleaDate",
+    "pleaMethod"
   ],
   "additionalProperties": false
 }

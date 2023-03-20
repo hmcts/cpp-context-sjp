@@ -158,9 +158,6 @@ subscriptions_descriptor:
         - name: sjp.events.update-cases-management-status
           schema_uri: http://justice.gov.uk/json/schemas/domains/sjp/events/update-cases-management-status.json
 
-        - name: sjp.events.outstanding-fines-requested
-          schema_uri: http://justice.gov.uk/json/schemas/domains/sjp/events/sjp.events.outstanding-fines-requested.json
-
         - name: sjp.events.financial-means-delete-docs-started
           schema_uri: http://justice.gov.uk/json/schemas/domains/sjp/events/sjp.events.financial-means-delete-docs-started.json
 

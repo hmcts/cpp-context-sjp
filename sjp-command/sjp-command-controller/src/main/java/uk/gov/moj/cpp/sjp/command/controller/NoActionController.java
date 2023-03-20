@@ -163,11 +163,6 @@ public class NoActionController {
         send(envelope);
     }
 
-    @Handles("sjp.command.add-request-for-outstanding-fines")
-    public void addRequestForOutstandingFines(final JsonEnvelope envelope) {
-        send(envelope);
-    }
-
     @Handles("sjp.command.request-delete-docs")
     public void requestDeleteDocs(final JsonEnvelope envelope) {
         send(envelope);

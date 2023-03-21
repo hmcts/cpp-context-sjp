@@ -20,8 +20,8 @@
         <assignment.version>6.0.0</assignment.version>
         <material.version>8.0.9</material.version>
         <notification.notify.version>7.0.14</notification.notify.version>
-        <referencedata.version>8.0.21</referencedata.version>
-        <referencedata.offences.version>8.0.4</referencedata.offences.version>
+        <referencedata.version>8.0.26</referencedata.version>
+        <referencedata.offences.version>8.0.8</referencedata.offences.version>
         <scheduling.version>6.0.0</scheduling.version>
         <authorisation.service.version>0.1.49</authorisation.service.version>
         <usersgroups.version>8.0.7</usersgroups.version>

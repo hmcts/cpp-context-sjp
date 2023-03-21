@@ -1,5 +1,6 @@
 package uk.gov.moj.cpp.sjp.query.view.service.defendantcase.search;
 
+import static org.apache.commons.lang3.StringUtils.isNotBlank;
 import static uk.gov.justice.services.core.annotation.Component.QUERY_VIEW;
 import static uk.gov.justice.services.core.enveloper.Enveloper.envelop;
 import static uk.gov.moj.cpp.sjp.query.view.service.defendantcase.search.DefendantCaseQuery.CASES_DEFAULT_PAGE_SIZE;
@@ -12,6 +13,7 @@ import uk.gov.justice.services.core.requester.Requester;
 import uk.gov.justice.services.messaging.Envelope;
 import uk.gov.moj.cpp.sjp.persistence.entity.DefendantDetail;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -22,6 +24,7 @@ import javax.json.JsonObjectBuilder;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import uk.gov.moj.cpp.sjp.persistence.entity.PersonalDetails;
 
 public class UnifiedDefendantCaseSearcher implements DefendantCaseSearcher {
 
@@ -37,11 +40,15 @@ public class UnifiedDefendantCaseSearcher implements DefendantCaseSearcher {
     @Override
     public List<DefendantCase> searchDefendantCases(Envelope<?> envelope,
                                                     DefendantDetail defendant) {
+        final List<DefendantCase> defendantCases = new ArrayList<>();
+        if(!hasMandatoryDetails(defendant)){
+            return defendantCases;
+        }
         int page = 0;
         int totalResult = 0;
-        final List<DefendantCase> defendantCases = new ArrayList<>();
         final DefendantCaseQuery defendantQuery = new DefendantCaseQuery(defendant);
         LOGGER.info("Querying unified search defendant cases - defendantQuery={}", defendantQuery);
+
 
         while (true) {
             final JsonObjectBuilder criteriaBuilder = Json.createObjectBuilder();
@@ -69,5 +76,19 @@ public class UnifiedDefendantCaseSearcher implements DefendantCaseSearcher {
         LOGGER.info("All defendant cases matching query - defendantCases={}", defendantCases);
 
         return defendantCases;
+    }
+
+    private boolean hasMandatoryDetails(final DefendantDetail defendant) {
+        final PersonalDetails personalDetails = defendant.getPersonalDetails();
+        if(personalDetails != null) {
+            final String firstName = personalDetails.getFirstName();
+            final String lastName = personalDetails.getLastName();
+            final LocalDate dateOfBirth = personalDetails.getDateOfBirth();
+            final String addressLine1 = defendant.getAddress() != null ? defendant.getAddress().getAddress1() : null;
+            final String postCode = defendant.getAddress() != null ? defendant.getAddress().getPostcode() : null;
+            return isNotBlank(firstName) && isNotBlank(lastName) && isNotBlank(addressLine1) && isNotBlank(postCode) && null != dateOfBirth;
+        }
+        return false;
+
     }
 }

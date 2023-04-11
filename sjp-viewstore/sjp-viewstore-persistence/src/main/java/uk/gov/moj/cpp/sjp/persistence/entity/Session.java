@@ -3,6 +3,12 @@ package uk.gov.moj.cpp.sjp.persistence.entity;
 import static uk.gov.moj.cpp.sjp.domain.SessionType.DELEGATED_POWERS;
 import static uk.gov.moj.cpp.sjp.domain.SessionType.MAGISTRATE;
 
+
+import java.util.ArrayList;
+import java.util.List;
+import javax.persistence.CollectionTable;
+import javax.persistence.ElementCollection;
+import javax.persistence.JoinColumn;
 import uk.gov.moj.cpp.sjp.domain.SessionType;
 
 import java.io.Serializable;
@@ -56,11 +62,19 @@ public class Session implements Serializable {
     @Enumerated(EnumType.STRING)
     private SessionType type;
 
+    @ElementCollection
+    @CollectionTable(
+            name = "session_prosecutors",
+            joinColumns = @JoinColumn(name = "session_id")
+    )
+    @Column(name = "prosecutor", nullable = true)
+    private List<String> prosecutors = new ArrayList<>();
+
     public Session() {
         //for JPA
     }
 
-    public Session(final UUID sessionId, final UUID userId, final String courtHouseCode, final String courtHouseName, final String localJusticeAreaNationalCourtCode, final String magistrate, final ZonedDateTime startedAt) {
+    public Session(final UUID sessionId, final UUID userId, final String courtHouseCode, final String courtHouseName, final String localJusticeAreaNationalCourtCode, final String magistrate, final ZonedDateTime startedAt, final List<String> prosecutors) {
         this.sessionId = sessionId;
         this.userId = userId;
         this.courtHouseCode = courtHouseCode;
@@ -69,9 +83,10 @@ public class Session implements Serializable {
         this.startedAt = startedAt;
         this.magistrate = magistrate;
         this.type = Objects.isNull(magistrate) ? DELEGATED_POWERS : MAGISTRATE;
+        this.prosecutors = prosecutors;
     }
 
-    public Session(final UUID sessionId, final UUID userId, final UUID legalAdviserUserId, final String courtHouseCode, final String courtHouseName, final String localJusticeAreaNationalCourtCode, final String magistrate, final ZonedDateTime startedAt, final ZonedDateTime endedAt) {
+    public Session(final UUID sessionId, final UUID userId, final UUID legalAdviserUserId, final String courtHouseCode, final String courtHouseName, final String localJusticeAreaNationalCourtCode, final String magistrate, final ZonedDateTime startedAt, final ZonedDateTime endedAt, final List<String> prosecutors) {
         this.sessionId = sessionId;
         this.userId = userId;
         this.legalAdviserUserId = legalAdviserUserId;
@@ -82,10 +97,11 @@ public class Session implements Serializable {
         this.startedAt = startedAt;
         this.endedAt = endedAt;
         this.type = Objects.isNull(magistrate) ? DELEGATED_POWERS : MAGISTRATE;
+        this.prosecutors = prosecutors;
     }
 
-    public Session(final UUID sessionId, final UUID userId, final String courtHouseCode, final String courtHouseName, final String localJusticeAreaNationalCourtCode, final ZonedDateTime startedAt) {
-        this(sessionId, userId, courtHouseCode, courtHouseName, localJusticeAreaNationalCourtCode, null, startedAt);
+    public Session(final UUID sessionId, final UUID userId, final String courtHouseCode, final String courtHouseName, final String localJusticeAreaNationalCourtCode, final ZonedDateTime startedAt, List<String> prosecutors) {
+        this(sessionId, userId, courtHouseCode, courtHouseName, localJusticeAreaNationalCourtCode, null, startedAt, prosecutors);
     }
 
     public UUID getSessionId() {
@@ -138,5 +154,13 @@ public class Session implements Serializable {
 
     public void setType(final SessionType type) {
         this.type = type;
+    }
+
+    public List<String> getProsecutors() {
+        return prosecutors;
+    }
+
+    public void setProsecutors(final List<String> prosecutors) {
+        this.prosecutors = prosecutors;
     }
 }

@@ -4,6 +4,8 @@ import static java.time.ZonedDateTime.now;
 import static java.util.UUID.randomUUID;
 import static org.junit.Assert.assertEquals;
 
+
+import java.util.Arrays;
 import uk.gov.moj.cpp.sjp.persistence.entity.CaseDecision;
 import uk.gov.moj.cpp.sjp.persistence.entity.Session;
 
@@ -58,7 +60,8 @@ public class CaseDecisionViewTest {
                 "courtHouseName",
                 "localJusticeAreaNationalCourtCode",
                 "magistrate",
-                now()
+                now(),
+                Arrays.asList("TFL", "DVL")
         );
     }
 }

@@ -1,6 +1,8 @@
 package uk.gov.moj.cpp.sjp.event.processor.service.assignment;
 
+import static java.util.Optional.*;
 import static java.util.UUID.randomUUID;
+import static java.util.stream.Collectors.joining;
 import static java.util.stream.Collectors.toList;
 import static javax.json.Json.createObjectBuilder;
 import static uk.gov.justice.services.core.annotation.Component.EVENT_PROCESSOR;
@@ -8,6 +10,10 @@ import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
 import static uk.gov.justice.services.messaging.JsonEnvelope.metadataBuilder;
 import static uk.gov.moj.cpp.sjp.event.processor.EventProcessorConstants.CASE_ID;
 
+
+import javax.json.JsonArray;
+import javax.json.JsonObjectBuilder;
+import javax.json.JsonString;
 import uk.gov.justice.services.core.annotation.Component;
 import uk.gov.justice.services.core.annotation.FrameworkComponent;
 import uk.gov.justice.services.core.annotation.ServiceComponent;
@@ -41,19 +47,23 @@ public class AssignmentService {
     @ServiceComponent(Component.EVENT_PROCESSOR)
     private Sender sender;
 
-    public List<AssignmentCandidate> getAssignmentCandidates(final JsonEnvelope envelope, final UUID legalAdviserId, final SessionType sessionType, final String localJusticeAreaNationalCourtCode) {
+    public List<AssignmentCandidate> getAssignmentCandidates(final JsonEnvelope envelope, final UUID legalAdviserId, final SessionType sessionType, final String localJusticeAreaNationalCourtCode, final JsonArray prosecutors) {
 
         final int assignmentCandidatesLimit = assignmentConfiguration.getAssignmentCandidatesLimit();
 
-        final JsonObject queryOptions = createObjectBuilder()
+        final JsonObjectBuilder queryOptions = createObjectBuilder()
                 .add("sessionType", sessionType.name())
                 .add("assigneeId", legalAdviserId.toString())
                 .add("localJusticeAreaNationalCourtCode", localJusticeAreaNationalCourtCode)
-                .add("limit", assignmentCandidatesLimit)
-                .build();
+                .add("limit", assignmentCandidatesLimit);
+
+        ofNullable(prosecutors).ifPresent(p -> queryOptions.add("prosecutors", p.stream()
+                .map(JsonString.class::cast)
+                .map(JsonString::getString)
+                .collect(joining(","))));
 
         return requester.request(enveloper.withMetadataFrom(envelope, "sjp.query.assignment-candidates")
-                .apply(queryOptions))
+                .apply(queryOptions.build()))
                 .payloadAsJsonObject()
                 .getJsonArray("assignmentCandidates")
                 .getValuesAs(JsonObject.class)

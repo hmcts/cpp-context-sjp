@@ -4,6 +4,7 @@ import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withoutJsonPath;
 import static java.time.ZoneOffset.UTC;
 import static java.util.UUID.randomUUID;
+import static javax.json.Json.createArrayBuilder;
 import static javax.json.Json.createObjectBuilder;
 import static org.apache.commons.lang3.RandomStringUtils.randomAlphanumeric;
 import static org.hamcrest.CoreMatchers.equalTo;
@@ -25,6 +26,8 @@ import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopePaylo
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeStreamMatcher.streamContaining;
 import static uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderFactory.metadataWithRandomUUID;
 
+
+import java.util.Arrays;
 import uk.gov.justice.core.courts.DelegatedPowers;
 import uk.gov.justice.domain.annotation.Event;
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
@@ -40,7 +43,6 @@ import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.messaging.MetadataBuilder;
 import uk.gov.justice.services.test.utils.common.helper.StoppedClock;
 import uk.gov.moj.cpp.sjp.domain.aggregate.Session;
-import uk.gov.moj.cpp.sjp.event.OutstandingFinesRequested;
 import uk.gov.moj.cpp.sjp.event.session.DelegatedPowersSessionEnded;
 import uk.gov.moj.cpp.sjp.event.session.DelegatedPowersSessionStarted;
 import uk.gov.moj.cpp.sjp.event.session.MagistrateSessionEnded;
@@ -53,7 +55,6 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Stream;
 
-import javax.inject.Inject;
 import javax.json.JsonObject;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -148,13 +149,14 @@ public class SessionHandlerTest {
                         .add("courtHouseName", courtHouseName)
                         .add("localJusticeAreaNationalCourtCode", localJusticeAreaNationalCourtCode)
                         .add("legalAdviser", legalAdviserJsonObject)
+                        .add("prosecutors", createArrayBuilder().add("TFL").add("DVL").build())
                         .build());
 
-        final MagistrateSessionStarted sessionStartedEvent = new MagistrateSessionStarted(sessionId, userId, courtHouseCode, courtHouseName, localJusticeAreaNationalCourtCode, startedAt, magistrate, legalAdviser);
+        final MagistrateSessionStarted sessionStartedEvent = new MagistrateSessionStarted(sessionId, userId, courtHouseCode, courtHouseName, localJusticeAreaNationalCourtCode, startedAt, magistrate, legalAdviser, Arrays.asList("TFL", "DVL"));
 
         when(eventSource.getStreamById(sessionId)).thenReturn(sessionEventStream);
         when(aggregateService.get(sessionEventStream, Session.class)).thenReturn(session);
-        when(session.startMagistrateSession(sessionId, userId, courtHouseCode, courtHouseName, localJusticeAreaNationalCourtCode, startedAt, magistrate, legalAdviser)).thenReturn(Stream.of(sessionStartedEvent));
+        when(session.startMagistrateSession(sessionId, userId, courtHouseCode, courtHouseName, localJusticeAreaNationalCourtCode, startedAt, magistrate, legalAdviser, Arrays.asList("TFL", "DVL"))).thenReturn(Stream.of(sessionStartedEvent));
 
         sessionHandler.startSession(startSessionCommand);
 
@@ -173,7 +175,9 @@ public class SessionHandlerTest {
                                         withJsonPath("$.startedAt", equalTo(ZonedDateTimes.toString(startedAt))),
                                         withJsonPath("$.legalAdviser.firstName", equalTo(legalAdviser.get().getFirstName())),
                                         withJsonPath("$.legalAdviser.lastName", equalTo(legalAdviser.get().getLastName())),
-                                        withJsonPath("$.legalAdviser.userId", equalTo(legalAdviser.get().getUserId().toString()))
+                                        withJsonPath("$.legalAdviser.userId", equalTo(legalAdviser.get().getUserId().toString())),
+                                        withJsonPath("$.prosecutors[0]", equalTo("TFL")),
+                                        withJsonPath("$.prosecutors[1]", equalTo("DVL"))
                                 ))))));
     }
 
@@ -186,13 +190,14 @@ public class SessionHandlerTest {
                         .add("courtHouseCode", courtHouseCode)
                         .add("courtHouseName", courtHouseName)
                         .add("localJusticeAreaNationalCourtCode", localJusticeAreaNationalCourtCode)
+                        .add("prosecutors", createArrayBuilder().add("TFL").add("DVL").build())
                         .build());
 
-        final DelegatedPowersSessionStarted sessionStartedEvent = new DelegatedPowersSessionStarted(sessionId, userId, courtHouseCode, courtHouseName, localJusticeAreaNationalCourtCode, startedAt);
+        final DelegatedPowersSessionStarted sessionStartedEvent = new DelegatedPowersSessionStarted(sessionId, userId, courtHouseCode, courtHouseName, localJusticeAreaNationalCourtCode, startedAt, Arrays.asList("TFL", "DVL"));
 
         when(eventSource.getStreamById(sessionId)).thenReturn(sessionEventStream);
         when(aggregateService.get(sessionEventStream, Session.class)).thenReturn(session);
-        when(session.startDelegatedPowersSession(sessionId, userId, courtHouseCode, courtHouseName, localJusticeAreaNationalCourtCode, startedAt)).thenReturn(Stream.of(sessionStartedEvent));
+        when(session.startDelegatedPowersSession(sessionId, userId, courtHouseCode, courtHouseName, localJusticeAreaNationalCourtCode, startedAt, Arrays.asList("TFL", "DVL"))).thenReturn(Stream.of(sessionStartedEvent));
 
         sessionHandler.startSession(startSessionCommand);
 
@@ -208,6 +213,8 @@ public class SessionHandlerTest {
                                         withJsonPath("$.courtHouseName", equalTo(courtHouseName)),
                                         withJsonPath("$.localJusticeAreaNationalCourtCode", equalTo(localJusticeAreaNationalCourtCode)),
                                         withJsonPath("$.startedAt", equalTo(ZonedDateTimes.toString(startedAt))),
+                                        withJsonPath("$.prosecutors[0]", equalTo("TFL")),
+                                        withJsonPath("$.prosecutors[1]", equalTo("DVL")),
                                         withoutJsonPath("$.magistrate")
                                 ))))));
     }

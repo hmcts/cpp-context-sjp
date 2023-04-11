@@ -2,6 +2,7 @@ package uk.gov.moj.cpp.sjp.event.listener;
 
 import static java.time.format.DateTimeFormatter.ISO_DATE_TIME;
 import static java.util.UUID.randomUUID;
+import static javax.json.Json.createArrayBuilder;
 import static javax.json.Json.createObjectBuilder;
 import static org.hamcrest.CoreMatchers.allOf;
 import static org.hamcrest.CoreMatchers.equalTo;
@@ -49,6 +50,8 @@ import org.mockito.runners.MockitoJUnitRunner;
 @RunWith(MockitoJUnitRunner.class)
 public class SessionListenerTest {
 
+    private static final String TFL = "TFL";
+    private static final String DVL = "DVL";
     @Mock
     private Session existingSession;
 
@@ -91,7 +94,7 @@ public class SessionListenerTest {
     }
 
     @Test
-    public void shouldHandleDelegatedPowersSessionStarted() {
+    public void shouldHandleDelegatedPowersSessionStartedForBackwardCompatibility() {
 
         final JsonEnvelope delegatedPowersSessionStarted = envelopeFrom(metadataWithRandomUUID(DelegatedPowersSessionStarted.EVENT_NAME),
                 createObjectBuilder()
@@ -121,7 +124,40 @@ public class SessionListenerTest {
     }
 
     @Test
-    public void shouldHandleMagistrateSessionStarted() {
+    public void shouldHandleDelegatedPowersSessionStarted() {
+
+        final JsonEnvelope delegatedPowersSessionStarted = envelopeFrom(metadataWithRandomUUID(DelegatedPowersSessionStarted.EVENT_NAME),
+                createObjectBuilder()
+                        .add("sessionId", sessionId.toString())
+                        .add("userId", userId.toString())
+                        .add("courtHouseCode", courtHouseCode)
+                        .add("courtHouseName", courtHouseName)
+                        .add("localJusticeAreaNationalCourtCode", localJusticeAreaNationalCourtCode)
+                        .add("startedAt", startedAt.format(ISO_DATE_TIME))
+                        .add("prosecutors", createArrayBuilder().add(TFL).add(DVL).build())
+                        .build());
+
+        sessionListener.handleDelegatedPowersSessionStarted(delegatedPowersSessionStarted);
+
+        verify(sessionRepository).save(sessionCaptor.capture());
+
+        final Session session = sessionCaptor.getValue();
+
+        assertThat(session.getSessionId(), equalTo(sessionId));
+        assertThat(session.getUserId(), equalTo(userId));
+        assertThat(session.getCourtHouseCode(), equalTo(courtHouseCode));
+        assertThat(session.getCourtHouseName(), equalTo(courtHouseName));
+        assertThat(session.getLocalJusticeAreaNationalCourtCode(), equalTo(localJusticeAreaNationalCourtCode));
+        assertThat(session.getStartedAt(), equalTo(startedAt));
+        assertThat(session.getType(), equalTo(SessionType.DELEGATED_POWERS));
+        assertThat(session.getMagistrate().isPresent(), equalTo(false));
+        assertThat(session.getEndedAt().isPresent(), equalTo(false));
+        assertThat(session.getProsecutors().get(0), equalTo(TFL));
+        assertThat(session.getProsecutors().get(1), equalTo(DVL));
+    }
+
+    @Test
+    public void shouldHandleMagistrateSessionStartedForBackwardCompatibility() {
 
         final JsonEnvelope magistrateSessionStarted = envelopeFrom(metadataWithRandomUUID(MagistrateSessionStarted.EVENT_NAME),
                 createObjectBuilder()
@@ -154,6 +190,45 @@ public class SessionListenerTest {
         assertThat(session.getMagistrate().get(), equalTo(magistrate));
         assertThat(session.getEndedAt().isPresent(), equalTo(false));
         assertThat(session.getLegalAdviserUserId(), equalTo(legalAdviserUserId));
+    }
+
+    @Test
+    public void shouldHandleMagistrateSessionStarted() {
+
+        final JsonEnvelope magistrateSessionStarted = envelopeFrom(metadataWithRandomUUID(MagistrateSessionStarted.EVENT_NAME),
+                createObjectBuilder()
+                        .add("sessionId", sessionId.toString())
+                        .add("userId", userId.toString())
+                        .add("courtHouseCode", courtHouseCode)
+                        .add("courtHouseName", courtHouseName)
+                        .add("localJusticeAreaNationalCourtCode", localJusticeAreaNationalCourtCode)
+                        .add("startedAt", startedAt.format(ISO_DATE_TIME))
+                        .add("magistrate", magistrate)
+                        .add("legalAdviser", createObjectBuilder()
+                                .add("userId", legalAdviserUserId.toString())
+                                .add("firstName", legalAdviserFirstName)
+                                .add("lastName", legalAdviserLastName))
+                        .add("prosecutors", createArrayBuilder().add(TFL).add(DVL).build())
+                        .build());
+
+        sessionListener.handleMagistrateSessionStarted(magistrateSessionStarted);
+
+        verify(sessionRepository).save(sessionCaptor.capture());
+
+        final Session session = sessionCaptor.getValue();
+
+        assertThat(session.getSessionId(), equalTo(sessionId));
+        assertThat(session.getUserId(), equalTo(userId));
+        assertThat(session.getCourtHouseCode(), equalTo(courtHouseCode));
+        assertThat(session.getCourtHouseName(), equalTo(courtHouseName));
+        assertThat(session.getLocalJusticeAreaNationalCourtCode(), equalTo(localJusticeAreaNationalCourtCode));
+        assertThat(session.getStartedAt(), equalTo(startedAt));
+        assertThat(session.getType(), equalTo(SessionType.MAGISTRATE));
+        assertThat(session.getMagistrate().get(), equalTo(magistrate));
+        assertThat(session.getEndedAt().isPresent(), equalTo(false));
+        assertThat(session.getLegalAdviserUserId(), equalTo(legalAdviserUserId));
+        assertThat(session.getProsecutors().get(0), equalTo(TFL));
+        assertThat(session.getProsecutors().get(1), equalTo(DVL));
     }
 
     @Test
@@ -201,7 +276,7 @@ public class SessionListenerTest {
 
 
     @Test
-    public void shouldHandleAocpStartedEvent() {
+    public void shouldHandleAocpStartedEventForBackwardCompatibility() {
 
         final JsonEnvelope aocpSessionStarted = envelopeFrom(metadataWithRandomUUID(AocpSessionStarted.EVENT_NAME),
                 createObjectBuilder()
@@ -229,6 +304,37 @@ public class SessionListenerTest {
         assertThat(session.getEndedAt().isPresent(), equalTo(false));
     }
 
+    @Test
+    public void shouldHandleAocpStartedEvent() {
+
+        final JsonEnvelope aocpSessionStarted = envelopeFrom(metadataWithRandomUUID(AocpSessionStarted.EVENT_NAME),
+                createObjectBuilder()
+                        .add("sessionId", sessionId.toString())
+                        .add("userId", userId.toString())
+                        .add("courtHouseCode", courtHouseCode)
+                        .add("courtHouseName", courtHouseName)
+                        .add("localJusticeAreaNationalCourtCode", localJusticeAreaNationalCourtCode)
+                        .add("startedAt", startedAt.format(ISO_DATE_TIME))
+                        .add("prosecutors", createArrayBuilder().add(TFL).add(DVL).build())
+                        .build());
+
+        sessionListener.handleAocpSessionStarted(aocpSessionStarted);
+
+        verify(sessionRepository).save(sessionCaptor.capture());
+
+        final Session session = sessionCaptor.getValue();
+
+        assertThat(session.getSessionId(), equalTo(sessionId));
+        assertThat(session.getUserId(), equalTo(userId));
+        assertThat(session.getCourtHouseCode(), equalTo(courtHouseCode));
+        assertThat(session.getCourtHouseName(), equalTo(courtHouseName));
+        assertThat(session.getLocalJusticeAreaNationalCourtCode(), equalTo(localJusticeAreaNationalCourtCode));
+        assertThat(session.getStartedAt(), equalTo(startedAt));
+        assertThat(session.getType(), equalTo(SessionType.AOCP));
+        assertThat(session.getEndedAt().isPresent(), equalTo(false));
+        assertThat(session.getProsecutors().get(0), equalTo(TFL));
+        assertThat(session.getProsecutors().get(1), equalTo(DVL));
+    }
 
     @Test
     public void shouldHandleAocpEndedEvent() {

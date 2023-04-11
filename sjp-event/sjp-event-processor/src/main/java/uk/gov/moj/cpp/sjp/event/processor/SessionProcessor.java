@@ -38,6 +38,8 @@ public class SessionProcessor {
     private static final String AOCP_COURT_HOUSE_CODE = "B52CM00";
     private static final String AOCP_COURT_HOUSE_NAME = "Bristol Magistrates' Court";
     private static final String AOCP_COURT_LJA = "1450";
+    public static final String COURT_HOUSE_NAME = "courtHouseName";
+    public static final String LOCAL_JUSTICE_AREA_NATIONAL_COURT_CODE = "localJusticeAreaNationalCourtCode";
 
     @Inject
     private Sender sender;
@@ -62,8 +64,8 @@ public class SessionProcessor {
 
         final String magistrate = magistrateSessionStarted.getString("magistrate");
         final String courtHouseCode = magistrateSessionStarted.getString(COURT_HOUSE_CODE);
-        final String courtHouseName = magistrateSessionStarted.getString("courtHouseName");
-        final String localJusticeAreaNationalCourtCode = magistrateSessionStarted.getString("localJusticeAreaNationalCourtCode");
+        final String courtHouseName = magistrateSessionStarted.getString(COURT_HOUSE_NAME);
+        final String localJusticeAreaNationalCourtCode = magistrateSessionStarted.getString(LOCAL_JUSTICE_AREA_NATIONAL_COURT_CODE);
 
         schedulingService.startMagistrateSession(magistrate, sessionId, courtHouseCode, courtHouseName, localJusticeAreaNationalCourtCode, magistrateSessionStartedEvent);
         emitPublicSessionStartedEvent(sessionId, courtHouseCode, courtHouseName, localJusticeAreaNationalCourtCode, SessionType.MAGISTRATE, magistrateSessionStartedEvent);
@@ -79,8 +81,8 @@ public class SessionProcessor {
         }
 
         final String courtHouseCode = delegatedPowersSessionStarted.getString(COURT_HOUSE_CODE);
-        final String courtHouseName = delegatedPowersSessionStarted.getString("courtHouseName");
-        final String localJusticeAreaNationalCourtCode = delegatedPowersSessionStarted.getString("localJusticeAreaNationalCourtCode");
+        final String courtHouseName = delegatedPowersSessionStarted.getString(COURT_HOUSE_NAME);
+        final String localJusticeAreaNationalCourtCode = delegatedPowersSessionStarted.getString(LOCAL_JUSTICE_AREA_NATIONAL_COURT_CODE);
 
         schedulingService.startDelegatedPowersSession(sessionId, courtHouseCode, courtHouseName, localJusticeAreaNationalCourtCode, delegatedPowersSessionStartedEvent);
         emitPublicSessionStartedEvent(sessionId, courtHouseCode, courtHouseName, localJusticeAreaNationalCourtCode, SessionType.DELEGATED_POWERS, delegatedPowersSessionStartedEvent);
@@ -123,9 +125,10 @@ public class SessionProcessor {
         final JsonObject payload = Json.createObjectBuilder()
                 .add(SESSION_ID, randomUUID().toString())
                 .add(COURT_HOUSE_CODE , AOCP_COURT_HOUSE_CODE)
-                .add("courtHouseName", AOCP_COURT_HOUSE_NAME)
-                .add("localJusticeAreaNationalCourtCode", AOCP_COURT_LJA)
+                .add(COURT_HOUSE_NAME, AOCP_COURT_HOUSE_NAME)
+                .add(LOCAL_JUSTICE_AREA_NATIONAL_COURT_CODE, AOCP_COURT_LJA)
                 .add("isAocpSession", true)
+                .add("prosecutors", Json.createArrayBuilder().add("TFL").add("TVL").add("DVLA").build())
                 .build();
 
         final Metadata metadata = metadataFrom(envelope.metadata())
@@ -139,8 +142,8 @@ public class SessionProcessor {
         final JsonObject payload = Json.createObjectBuilder()
                 .add(SESSION_ID, sessionId.toString())
                 .add(COURT_HOUSE_CODE, courtHouseCode)
-                .add("courtHouseName", courtHouseName)
-                .add("localJusticeAreaNationalCourtCode", localJusticeAreaNationalCourtCode)
+                .add(COURT_HOUSE_NAME, courtHouseName)
+                .add(LOCAL_JUSTICE_AREA_NATIONAL_COURT_CODE, localJusticeAreaNationalCourtCode)
                 .add("type", sessionType.name())
                 .build();
 

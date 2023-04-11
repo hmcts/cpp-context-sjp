@@ -47,7 +47,7 @@ public class CaseAssignmentRequestedEventBackwardCompatibilityTest {
                 .build();
 
         final CaseAssignmentRequested actualCaseAssignmentRequestedEvent = objectMapper.readValue(oldEventPayload.toString(), CaseAssignmentRequested.class);
-        final CaseAssignmentRequested expectedCaseAssignmentRequestedEvent = new CaseAssignmentRequested(new Session(sessionId, userId, sessionType, null, ljaNationalCourtCode));
+        final CaseAssignmentRequested expectedCaseAssignmentRequestedEvent = new CaseAssignmentRequested(new Session(sessionId, userId, sessionType, null, ljaNationalCourtCode, null));
 
         if (!new ReflectionEquals(actualCaseAssignmentRequestedEvent).matches(expectedCaseAssignmentRequestedEvent)) {
             fail("Old event version can be serialized into event class");

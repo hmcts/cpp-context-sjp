@@ -845,3 +845,24 @@ baseUri: http://localhost:8080/sjp-query-api/query/api/rest/sjp
                 application/vnd.sjp.query.cases-for-soc-check+json:
                   schema: !include json/schema/sjp.query.cases-for-soc-check.json
                   example: !include json/sjp.query.cases-for-soc-check.json
+
+/prosecuting-authority:
+  get:
+    description: |
+      get prosecuting authority list by lja code
+      ...
+      (mapping):
+          responseType: application/vnd.sjp.query.prosecuting-authority-for-lja+json
+          name: sjp.query.prosecuting-authority-for-lja
+      ...
+    queryParameters:
+      ljaCode:
+        description: lja code
+        type: string
+        required: true
+    responses:
+      200:
+        body:
+          application/vnd.sjp.query.prosecuting-authority-for-lja+json:
+            schema: !include json/schema/sjp.query.prosecuting-authority-for-lja.json
+            example: !include json/sjp.query.prosecuting-authority-for-lja.json

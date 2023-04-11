@@ -153,11 +153,11 @@ public class CaseDecisionHandlerInValidVerdictPleaCasesTest {
         switch (sessionType) {
             case MAGISTRATE:
                 session.startMagistrateSession(sessionId, legalAdviserId, courtHouseCode, courtHouseName,
-                        localJusticeAreaNationalCode, now(), "magistrate", legalAdviserMagistrate);
+                        localJusticeAreaNationalCode, now(), "magistrate", legalAdviserMagistrate, Arrays.asList("TFL", "DVL"));
                 break;
             case DELEGATED_POWERS:
                 session.startDelegatedPowersSession(sessionId, legalAdviserId, courtHouseCode, courtHouseName,
-                        localJusticeAreaNationalCode, now());
+                        localJusticeAreaNationalCode, now(), Arrays.asList("TFL", "DVL"));
                 break;
         }
         givenCaseExistsWithMultipleOffences(newHashSet(offenceId1), legalAdviserId);

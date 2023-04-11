@@ -47,7 +47,8 @@ public class SessionApi {
                 .add(SESSION_ID, commandPayload.getString(SESSION_ID))
                 .add("courtHouseCode", courtHouseOUCode)
                 .add("courtHouseName", sessionCourt.getCourtHouseName())
-                .add("localJusticeAreaNationalCourtCode", sessionCourt.getLocalJusticeAreaNationalCourtCode());
+                .add("localJusticeAreaNationalCourtCode", sessionCourt.getLocalJusticeAreaNationalCourtCode())
+                .add("prosecutors", commandPayload.getJsonArray("prosecutors"));
 
         JsonObjects.getString(commandPayload, "magistrate")
                 .ifPresent(magistrate -> {

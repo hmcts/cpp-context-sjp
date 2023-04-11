@@ -232,6 +232,11 @@ public class SjpQueryController {
         return requester.request(query);
     }
 
+    @Handles("sjp.query.prosecuting-authority-for-lja")
+    public JsonEnvelope getProsecutingAuthorityForLja(final JsonEnvelope query) {
+        return requester.request(query);
+    }
+
     private void logSummary(final DefendantProfilingView defendantProfilingView, final JsonObject outstandingFines) {
         int numberOfFines = 0;
         try {

@@ -27,6 +27,7 @@ import static uk.gov.moj.cpp.sjp.domain.plea.PleaType.GUILTY;
 import static uk.gov.moj.cpp.sjp.domain.testutils.builders.DischargeBuilder.withDefaults;
 import static uk.gov.moj.cpp.sjp.domain.verdict.VerdictType.FOUND_GUILTY;
 
+import java.util.Arrays;
 import uk.gov.justice.core.courts.CourtApplication;
 import uk.gov.justice.core.courts.DelegatedPowers;
 import uk.gov.justice.json.schemas.domains.sjp.ApplicationStatus;
@@ -94,7 +95,7 @@ public class ApplicationDecisionHandlerTest {
         session = new Session();
         legalAdviser = Optional.of(DelegatedPowers.delegatedPowers().withFirstName("Erica").withLastName("Wilson").withUserId(randomUUID()).build());
         session.startMagistrateSession(sessionId, legalAdviserId, courtHouseCode, courtHouseName,
-                localJusticeAreaNationalCode, now(), "magistrate name", legalAdviser);
+                localJusticeAreaNationalCode, now(), "magistrate name", legalAdviser, Arrays.asList("TFL", "DVL"));
     }
 
     private void givenPendingReopening() {

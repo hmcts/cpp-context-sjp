@@ -19,6 +19,8 @@ import static uk.gov.moj.cpp.sjp.domain.verdict.VerdictType.FOUND_GUILTY;
 import static uk.gov.moj.cpp.sjp.persistence.builder.CaseDetailBuilder.aCase;
 import static uk.gov.moj.cpp.sjp.persistence.builder.DefendantDetailBuilder.aDefendantDetail;
 
+
+import java.util.Arrays;
 import uk.gov.moj.cpp.sjp.domain.decision.imposition.PaymentType;
 import uk.gov.moj.cpp.sjp.domain.plea.PleaType;
 import uk.gov.moj.cpp.sjp.persistence.entity.CaseDecision;
@@ -44,7 +46,6 @@ import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.UUID;
 
-import org.junit.Ignore;
 import org.junit.Test;
 
 
@@ -476,7 +477,7 @@ public class PaymentViewTest {
         caseDecision.setSavedAt(savedAt);
 
         caseDecision.setSession(new Session(randomUUID(), randomUUID(), "ASDF", "Lavender Hill",
-                "YUIO", magistrate ? MAGISTRATE_NAME : null, now()));
+                "YUIO", magistrate ? MAGISTRATE_NAME : null, now(), Arrays.asList("TFL", "DVL")));
         return caseDecision;
     }
 

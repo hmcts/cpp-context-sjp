@@ -23,12 +23,20 @@
     },
     "isAocpSession":{
       "type": "boolean"
+    },
+    "prosecutors": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "string"
+      }
     }
   },
   "required": [
     "sessionId",
     "courtHouseName",
-    "localJusticeAreaNationalCourtCode"
+    "localJusticeAreaNationalCourtCode",
+    "prosecutors"
   ],
   "additionalProperties": false
 }

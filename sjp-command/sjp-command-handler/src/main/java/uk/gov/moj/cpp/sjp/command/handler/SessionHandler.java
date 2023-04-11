@@ -6,6 +6,10 @@ import static java.util.Optional.ofNullable;
 import static uk.gov.justice.services.core.enveloper.Enveloper.toEnvelopeWithMetadataFrom;
 import static uk.gov.justice.services.messaging.JsonObjects.getBoolean;
 
+
+import java.util.List;
+import java.util.stream.Collectors;
+import javax.json.JsonString;
 import uk.gov.justice.core.courts.DelegatedPowers;
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
 import uk.gov.justice.services.common.util.Clock;
@@ -67,16 +71,20 @@ public class SessionHandler {
         final String localJusticeAreaNationalCourtCode = startSession.getString(LOCAL_JUSTICE_AREA_NATIONAL_COURT_CODE);
         final Optional<String> magistrate = ofNullable(startSession.getString(MAGISTRATE, null));
         final Optional<Boolean> isAocpSession = getBoolean(startSession, "isAocpSession");
+        final List<String> prosecutors = startSession.getJsonArray("prosecutors").stream()
+                .map(JsonString.class::cast)
+                .map(JsonString::getString)
+                .collect(Collectors.toList());
 
         if (isAocpSession.isPresent() && Boolean.TRUE.equals(isAocpSession.get())) {
-            applyToSessionAggregate(startSessionCommand, session -> session.startAocpSession(sessionId, userId, courtHouseCode, courtHouseName, localJusticeAreaNationalCourtCode, clock.now()));
+            applyToSessionAggregate(startSessionCommand, session -> session.startAocpSession(sessionId, userId, courtHouseCode, courtHouseName, localJusticeAreaNationalCourtCode, clock.now(), prosecutors));
         }else {
             applyToSessionAggregate(startSessionCommand, session -> magistrate
                     .map(providedMagistrate -> {
                         final Optional<DelegatedPowers> legalAdviser = getLegalAdviserFromSession(startSession);
-                        return session.startMagistrateSession(sessionId, userId, courtHouseCode, courtHouseName, localJusticeAreaNationalCourtCode, clock.now(), providedMagistrate, legalAdviser);
+                        return session.startMagistrateSession(sessionId, userId, courtHouseCode, courtHouseName, localJusticeAreaNationalCourtCode, clock.now(), providedMagistrate, legalAdviser, prosecutors);
                     })
-                    .orElseGet(() -> session.startDelegatedPowersSession(sessionId, userId, courtHouseCode, courtHouseName, localJusticeAreaNationalCourtCode, clock.now())));
+                    .orElseGet(() -> session.startDelegatedPowersSession(sessionId, userId, courtHouseCode, courtHouseName, localJusticeAreaNationalCourtCode, clock.now(), prosecutors)));
         }
     }
 

@@ -23,6 +23,7 @@ import static uk.gov.moj.cpp.sjp.domain.verdict.VerdictType.FOUND_GUILTY;
 import static uk.gov.moj.cpp.sjp.domain.verdict.VerdictType.NO_VERDICT;
 import static uk.gov.moj.cpp.sjp.domain.verdict.VerdictType.PROVED_SJP;
 
+import java.util.Arrays;
 import uk.gov.justice.core.courts.DelegatedPowers;
 import uk.gov.justice.json.schemas.domains.sjp.Note;
 import uk.gov.justice.json.schemas.domains.sjp.User;
@@ -120,11 +121,11 @@ public class CaseDecisionHandlerValidVerdictPleaCasesTest {
         switch (sessionType){
             case MAGISTRATE:
                 session.startMagistrateSession(sessionId, legalAdviserId, courtHouseCode, courtHouseName,
-                        localJusticeAreaNationalCode, now(), "magistrate", legalAdviserMagistrate);
+                        localJusticeAreaNationalCode, now(), "magistrate", legalAdviserMagistrate, Arrays.asList("TFL", "DVL"));
                 break;
             case DELEGATED_POWERS:
                 session.startDelegatedPowersSession(sessionId, legalAdviserId, courtHouseCode, courtHouseName,
-                        localJusticeAreaNationalCode, now());
+                        localJusticeAreaNationalCode, now(), Arrays.asList("TFL", "DVL"));
                 break;
         }
         givenCaseExistsWithMultipleOffences(newHashSet(offenceId1), legalAdviserId);

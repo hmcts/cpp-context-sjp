@@ -26,6 +26,13 @@
     },
     "legalAdviser": {
       "$ref": "http://justice.gov.uk/core/courts/delegatedPowers.json"
+    },
+    "prosecutors": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "string"
+      }
     }
   },
   "required": [

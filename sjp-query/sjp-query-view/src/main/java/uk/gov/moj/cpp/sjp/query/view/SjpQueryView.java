@@ -47,6 +47,7 @@ import uk.gov.moj.cpp.sjp.query.view.response.DefendantProfilingView;
 import uk.gov.moj.cpp.sjp.query.view.response.onlineplea.AocpOnlinePleaView;
 import uk.gov.moj.cpp.sjp.query.view.response.onlineplea.OnlinePleaView;
 import uk.gov.moj.cpp.sjp.query.view.response.onlineplea.PleasView;
+import uk.gov.moj.cpp.sjp.query.view.service.AssignmentService;
 import uk.gov.moj.cpp.sjp.query.view.service.CaseApplicationService;
 import uk.gov.moj.cpp.sjp.query.view.service.CaseService;
 import uk.gov.moj.cpp.sjp.query.view.service.DatesToAvoidService;
@@ -63,12 +64,15 @@ import uk.gov.moj.cpp.sjp.query.view.service.defendantcase.PotentialCases;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 
 import javax.inject.Inject;
 import javax.json.Json;
+import javax.json.JsonArrayBuilder;
 import javax.json.JsonObject;
 import javax.persistence.NoResultException;
 
@@ -99,6 +103,7 @@ public class SjpQueryView {
     private static final String PRESS_TRANSPARENCY_REPORT_METADATA_RESPONSE_NAME = "sjp.query.press-transparency-report-metadata";
     private static final String NOT_GUILTY_PLEA_CASES_RESPONSE_NAME = "sjp.query.not-guilty-plea-cases";
     private static final String CASES_FOR_SOC_CHECK_RESPONSE_NAME = "sjp.query.cases-for-soc-check";
+    private static final String PROSECUTING_AUTHORITY_FOR_LJA_RESPONSE_NAME = "sjp.query.prosecuting-authority-for-lja";
     private static final String CASES_WITHOUT_DEFENDANT_POSTCODE_RESPONSE_NAME = "sjp.query.cases-without-defendant-postcode";
     private static final String NAME_APPLICATION_RESPONSE_CASE = "sjp.query.application-response";
     private static final int DEFAULT_CASES_PAGE_SIZE = 20;
@@ -115,7 +120,7 @@ public class SjpQueryView {
     public static final String ERROR_INVALID_DATE_RANGE = "invalid date range : (%s) cannot be before (%s)";
     private static final String TITLE = "title";
     private static final String TITLE_WELSH = "titleWelsh";
-
+    private static final String PROSECUTORS = "prosecutors";
 
     @Inject
     private CaseService caseService;
@@ -191,6 +196,9 @@ public class SjpQueryView {
 
     @Inject
     private ProsecutingAuthorityProvider prosecutingAuthorityProvider;
+
+    @Inject
+    private AssignmentService assignmentService;
 
     @SuppressWarnings("squid:CallToDeprecatedMethod")
     @Handles("sjp.query.case")
@@ -600,6 +608,27 @@ public class SjpQueryView {
                 metadataFrom(envelope.metadata()).withName(CASES_FOR_SOC_CHECK_RESPONSE_NAME),
                 result);
     }
+
+    @Handles("sjp.query.prosecuting-authority-for-lja")
+    public JsonEnvelope getProsecutingAuthorityForLja(final JsonEnvelope envelope) {
+
+        final JsonObject queryFilters = envelope.payloadAsJsonObject();
+        final String ljaCode = getString(queryFilters, LJA_CODE);
+
+        final Set<String> prosecutingAuthorities = new HashSet<>(assignmentService.getProsecutingAuthorityByLja(ljaCode));
+
+        final JsonArrayBuilder prosecutorsBuilder = Json.createArrayBuilder();
+        prosecutingAuthorities.forEach(prosecutorsBuilder::add);
+
+        final JsonObject prosecutingAuthoritiesForLja = createObjectBuilder()
+                .add(PROSECUTORS, prosecutorsBuilder.build())
+                .build();
+
+        return envelopeFrom(
+                metadataFrom(envelope.metadata()).withName(PROSECUTING_AUTHORITY_FOR_LJA_RESPONSE_NAME),
+                prosecutingAuthoritiesForLja);
+    }
+
 
     private String extract(final JsonEnvelope envelope, final String fieldName) {
         return envelope.payloadAsJsonObject().getString(fieldName);

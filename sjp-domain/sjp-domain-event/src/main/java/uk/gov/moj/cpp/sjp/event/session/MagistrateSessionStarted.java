@@ -1,5 +1,6 @@
 package uk.gov.moj.cpp.sjp.event.session;
 
+import java.util.List;
 import uk.gov.justice.core.courts.DelegatedPowers;
 import uk.gov.justice.domain.annotation.Event;
 
@@ -28,9 +29,10 @@ public class MagistrateSessionStarted extends SessionStarted {
             @JsonProperty("localJusticeAreaNationalCourtCode") String localJusticeAreaNationalCourtCode,
             @JsonProperty("startedAt") ZonedDateTime startedAt,
             @JsonProperty("magistrate") String magistrate,
-            @JsonProperty("legalAdviser") Optional<DelegatedPowers> legalAdviser
+            @JsonProperty("legalAdviser") Optional<DelegatedPowers> legalAdviser,
+            @JsonProperty("prosecutors")  List<String> prosecutors
     ) {
-        super(sessionId, userId, courtHouseCode, courtHouseName, localJusticeAreaNationalCourtCode, startedAt);
+        super(sessionId, userId, courtHouseCode, courtHouseName, localJusticeAreaNationalCourtCode, startedAt, prosecutors);
         this.magistrate = magistrate;
         this.legalAdviser = legalAdviser;
     }

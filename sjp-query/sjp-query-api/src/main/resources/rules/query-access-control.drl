@@ -381,3 +381,12 @@ rule "sjp - Query -API -Get cases for soc check"
   then
     $outcome.setSuccess(true);
 end
+
+rule "sjp - Query - API - Get prosecuting authority for lja"
+  when
+    $outcome: Outcome();
+    $action: Action(name == "sjp.query.prosecuting-authority-for-lja");
+    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, RuleConstants.getQuerySessionGroups()))
+  then
+    $outcome.setSuccess(true);
+end

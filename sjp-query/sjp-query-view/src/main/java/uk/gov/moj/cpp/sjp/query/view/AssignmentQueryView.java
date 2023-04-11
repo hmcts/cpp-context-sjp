@@ -1,8 +1,11 @@
 package uk.gov.moj.cpp.sjp.query.view;
 
 
+import static java.util.Arrays.stream;
 import static javax.json.Json.createObjectBuilder;
 
+
+import java.util.stream.Collectors;
 import uk.gov.justice.services.core.annotation.Component;
 import uk.gov.justice.services.core.annotation.Handles;
 import uk.gov.justice.services.core.annotation.ServiceComponent;
@@ -59,10 +62,17 @@ public class AssignmentQueryView {
         final SessionType sessionType = SessionType.valueOf(queryOptions.getString("sessionType"));
         final String localJusticeAreaNationalCourtCode = queryOptions.getString("localJusticeAreaNationalCourtCode");
         final int limit = queryOptions.getInt("limit");
+        final String prosecutors = queryOptions.getString("prosecutors", null);
+        final Set<String> prosecutingAuthorities;
 
-        final Set<String> prosecutingAuthorities = new HashSet<>(assignmentService.getProsecutingAuthorityByLja(localJusticeAreaNationalCourtCode));
+        if(Objects.isNull(prosecutors)){
+            prosecutingAuthorities = new HashSet<>(assignmentService.getProsecutingAuthorityByLja(localJusticeAreaNationalCourtCode));
+        } else {
+            prosecutingAuthorities = stream(prosecutors.split(",")).collect(Collectors.toSet());
+        }
 
         final List<AssignmentCandidate> assignmentCandidatesList = assignmentService.getAssignmentCandidates(assigneeId, sessionType, prosecutingAuthorities, limit);
+
 
         final JsonArrayBuilder casesReadyForDecisionBuilder = Json.createArrayBuilder();
 

@@ -85,6 +85,7 @@ public class SessionApiTest {
         final JsonEnvelope startSessionCommand = envelope().with(metadataWithRandomUUID("sjp.start-session"))
                 .withPayloadOf(sessionId.toString(), "sessionId")
                 .withPayloadOf(courtHouseOUCode, "courtHouseOUCode")
+                .withPayloadOf(Json.createArrayBuilder().add("P1").add("P2").build(), "prosecutors")
                 .build();
 
         final SessionCourt sessionCourt = new SessionCourt("Wimbledon Magistrates' Court", "2577");
@@ -98,7 +99,9 @@ public class SessionApiTest {
                         withJsonPath("$.sessionId", equalTo(sessionId.toString())),
                         withJsonPath("$.courtHouseCode", equalTo(courtHouseOUCode)),
                         withJsonPath("$.courtHouseName", equalTo(sessionCourt.getCourtHouseName())),
-                        withJsonPath("$.localJusticeAreaNationalCourtCode", equalTo(sessionCourt.getLocalJusticeAreaNationalCourtCode()))
+                        withJsonPath("$.localJusticeAreaNationalCourtCode", equalTo(sessionCourt.getLocalJusticeAreaNationalCourtCode())),
+                        withJsonPath("$.prosecutors[0]", equalTo("P1")),
+                        withJsonPath("$.prosecutors[1]", equalTo("P2"))
                 )))));
     }
 

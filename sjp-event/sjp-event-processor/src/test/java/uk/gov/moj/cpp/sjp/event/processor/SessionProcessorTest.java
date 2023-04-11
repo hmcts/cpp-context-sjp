@@ -226,6 +226,9 @@ public class SessionProcessorTest {
         assertThat(sessionStartpayload.getString("courtHouseCode"), is(AOCP_COURT_HOUSE_CODE));
         assertThat(sessionStartpayload.getString("localJusticeAreaNationalCourtCode"), is(AOCP_COURT_LJA));
         assertThat(sessionStartpayload.getBoolean("isAocpSession"), is(true));
+        assertThat(sessionStartpayload.getJsonArray("prosecutors").getString(0), is("TFL"));
+        assertThat(sessionStartpayload.getJsonArray("prosecutors").getString(1), is("TVL"));
+        assertThat(sessionStartpayload.getJsonArray("prosecutors").getString(2), is("DVLA"));
     }
 
     @Test
@@ -248,6 +251,9 @@ public class SessionProcessorTest {
         assertThat(sessionStartpayload.getString("courtHouseCode"), is(AOCP_COURT_HOUSE_CODE));
         assertThat(sessionStartpayload.getString("localJusticeAreaNationalCourtCode"), is(AOCP_COURT_LJA));
         assertThat(sessionStartpayload.getBoolean("isAocpSession"), is(true));
+        assertThat(sessionStartpayload.getJsonArray("prosecutors").getString(0), is("TFL"));
+        assertThat(sessionStartpayload.getJsonArray("prosecutors").getString(1), is("TVL"));
+        assertThat(sessionStartpayload.getJsonArray("prosecutors").getString(2), is("DVLA"));
 
     }
 

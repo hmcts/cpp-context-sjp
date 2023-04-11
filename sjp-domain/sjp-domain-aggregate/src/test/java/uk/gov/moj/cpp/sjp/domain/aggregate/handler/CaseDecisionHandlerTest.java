@@ -34,6 +34,7 @@ import static uk.gov.moj.cpp.sjp.domain.verdict.VerdictType.NO_VERDICT;
 import static uk.gov.moj.cpp.sjp.domain.verdict.VerdictType.PROVED_SJP;
 import static java.math.BigDecimal.valueOf;
 
+import java.util.Arrays;
 import uk.gov.justice.core.courts.DelegatedPowers;
 import uk.gov.justice.json.schemas.domains.sjp.User;
 import uk.gov.justice.json.schemas.domains.sjp.events.CaseNoteAdded;
@@ -132,7 +133,7 @@ public class CaseDecisionHandlerTest {
         caseAggregateState = new CaseAggregateState();
         session = new Session();
         session.startMagistrateSession(sessionId, legalAdviserId, courtHouseCode, courtHouseName,
-                localJusticeAreaNationalCode, now(), "magistrate name", legalAdviserMagistrate);
+                localJusticeAreaNationalCode, now(), "magistrate name", legalAdviserMagistrate, Arrays.asList("TFL", "DVL"));
 
     }
 
@@ -1213,7 +1214,7 @@ public class CaseDecisionHandlerTest {
         caseAggregateState.addAOCPCost(caseId, aocpCost);
 
         session = new Session();
-        session.startAocpSession(sessionId, legalAdviserId, "B52CM00", "Bristol Magistrates' Court", "1450", now());
+        session.startAocpSession(sessionId, legalAdviserId, "B52CM00", "Bristol Magistrates' Court", "1450", now(), Arrays.asList("TFL", "DVL"));
         caseAggregateState.addOffenceIdsForDefendant(defendantId, new HashSet<>(asList(offenceId1)));
 
         final Stream<Object> eventStream = CaseDecisionHandler.INSTANCE.expireAocpResponseTimerAndSaveDecision(aocpDecision, caseAggregateState, session);

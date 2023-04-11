@@ -1,5 +1,6 @@
 package uk.gov.moj.cpp.sjp.event.session;
 
+import java.util.List;
 import uk.gov.justice.domain.annotation.Event;
 
 import java.time.ZonedDateTime;
@@ -20,10 +21,11 @@ public class AocpSessionStarted extends SessionStarted {
             @JsonProperty("courtHouseCode") String courtHouseCode,
             @JsonProperty("courtHouseName") String courtHouseName,
             @JsonProperty("localJusticeAreaNationalCourtCode") String localJusticeAreaNationalCourtCode,
-            @JsonProperty("startedAt") ZonedDateTime startedAt
+            @JsonProperty("startedAt") ZonedDateTime startedAt,
+            @JsonProperty("prosecutors") List<String> prosecutors
 
     ) {
-        super(sessionId, userId, courtHouseCode, courtHouseName, localJusticeAreaNationalCourtCode, startedAt);
+        super(sessionId, userId, courtHouseCode, courtHouseName, localJusticeAreaNationalCourtCode, startedAt, prosecutors);
     }
 
 }

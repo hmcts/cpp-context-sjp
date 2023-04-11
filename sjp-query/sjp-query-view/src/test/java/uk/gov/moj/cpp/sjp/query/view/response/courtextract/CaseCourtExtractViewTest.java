@@ -1,5 +1,6 @@
 package uk.gov.moj.cpp.sjp.query.view.response.courtextract;
 
+import java.util.Arrays;
 import org.junit.Test;
 import uk.gov.moj.cpp.sjp.domain.common.CaseStatus;
 import uk.gov.moj.cpp.sjp.domain.decision.DecisionType;
@@ -79,6 +80,8 @@ public class CaseCourtExtractViewTest {
     private final UUID offence1Id = randomUUID();
     private final UUID offence2Id = randomUUID();
     private final UUID applicationId = randomUUID();
+    private static final String TFL = "TFL";
+    private static final String DVL = "DVL";
 
     private final ZonedDateTime savedAt = now();
 
@@ -897,7 +900,7 @@ public class CaseCourtExtractViewTest {
 
     private static CaseDecision buildCaseDecisionEntity(final UUID caseId, final boolean magistrate, final ZonedDateTime savedAt) {
         final Session session = new Session(randomUUID(), randomUUID(), "ASDF", "Lavender Hill",
-                "YUIO", magistrate ? "Magistrate name" : null, now());
+                "YUIO", magistrate ? "Magistrate name" : null, now(), Arrays.asList(TFL, DVL));
 
         final CaseDecision caseDecision = new CaseDecision();
         caseDecision.setCaseId(caseId);
@@ -910,7 +913,7 @@ public class CaseCourtExtractViewTest {
 
     private static CaseApplicationDecision buildCaseApplicationDecisionEntity(final UUID decisionId, final boolean granted, final boolean outOfTime, final String outOfTimeReason, final ZonedDateTime savedAt) {
         final Session session = new Session(randomUUID(), randomUUID(), "ASDF", "Lavender Hill",
-                "YUIO", "Magistrate name", now());
+                "YUIO", "Magistrate name", now(), Arrays.asList(TFL, DVL));
 
         final CaseApplicationDecision caseApplicationDecision = new CaseApplicationDecision();
         caseApplicationDecision.setDecisionId(decisionId);
@@ -925,7 +928,7 @@ public class CaseCourtExtractViewTest {
 
     private static CaseApplicationDecision buildCaseApplicationRefusedDecisionEntity(final UUID decisionId, final boolean granted, final boolean outOfTime, final String rejectionReason, final ZonedDateTime savedAt) {
         final Session session = new Session(randomUUID(), randomUUID(), "ASDF", "Lavender Hill",
-                "YUIO", "Magistrate name", now());
+                "YUIO", "Magistrate name", now(), Arrays.asList(TFL, DVL));
 
         final CaseApplicationDecision caseApplicationDecision = new CaseApplicationDecision();
         caseApplicationDecision.setDecisionId(decisionId);

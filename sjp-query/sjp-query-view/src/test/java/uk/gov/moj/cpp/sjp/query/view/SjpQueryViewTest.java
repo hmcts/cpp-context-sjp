@@ -12,6 +12,7 @@ import static java.util.stream.Collectors.toList;
 import static javax.json.Json.createArrayBuilder;
 import static javax.json.Json.createObjectBuilder;
 import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.is;
@@ -81,6 +82,7 @@ import uk.gov.moj.cpp.sjp.query.view.response.CasesPendingDatesToAvoidView;
 import uk.gov.moj.cpp.sjp.query.view.response.DefendantDetailsUpdatesView;
 import uk.gov.moj.cpp.sjp.query.view.response.DefendantProfilingView;
 import uk.gov.moj.cpp.sjp.query.view.response.SearchCaseByMaterialIdView;
+import uk.gov.moj.cpp.sjp.query.view.service.AssignmentService;
 import uk.gov.moj.cpp.sjp.query.view.service.CaseApplicationService;
 import uk.gov.moj.cpp.sjp.query.view.service.CaseService;
 import uk.gov.moj.cpp.sjp.query.view.service.DatesToAvoidService;
@@ -139,6 +141,8 @@ public class SjpQueryViewTest {
     private static final String REGION = "region";
     private static final String DEFENDANT_ID = randomUUID().toString();
     private static final String COMPANY_DEFENDANT_ID = randomUUID().toString();
+    private static final String PROSECUTOR_DVLA = "DVLA";
+    private static final String PROSECUTOR_TVL = "TVL";
 
     @Rule
     public ExpectedException exceptionRule = ExpectedException.none();
@@ -208,6 +212,9 @@ public class SjpQueryViewTest {
 
     @Mock
     private ProsecutionCaseService prosecutionCaseService;
+
+    @Mock
+    private AssignmentService assignmentService;
 
     @InjectMocks
     private SjpQueryView sjpQueryView;
@@ -1070,6 +1077,26 @@ public class SjpQueryViewTest {
         exceptionRule.expectMessage(String.format(ERROR_INVALID_DATE_RANGE, fromDate, toDate));
         sjpQueryView.getCasesForSOCCheck(queryEnvelope);
 
+    }
+
+    @Test
+    public void shouldGetProsecutingAuthoritiesForLja() {
+        final String ljaCode = "2577";
+        final MetadataBuilder metadataBuilder = JsonEnvelope.metadataBuilder().withUserId(randomUUID().toString()).withId(randomUUID()).withName("sjp.query.prosecuting-authority-for-lja");
+        final JsonEnvelope queryEnvelope = envelope()
+                .with(metadataBuilder)
+                .withPayloadOf(ljaCode, "ljaCode")
+                .build();
+        when(assignmentService.getProsecutingAuthorityByLja(ljaCode)).thenReturn(Arrays.asList(PROSECUTOR_DVLA, PROSECUTOR_TVL));
+        JsonEnvelope responseEnvelope = sjpQueryView.getProsecutingAuthorityForLja(queryEnvelope);
+        assertThat(responseEnvelope.metadata().name(), is("sjp.query.prosecuting-authority-for-lja"));
+        assertThat(responseEnvelope.payloadAsJsonObject().toString(),
+                isJson(Matchers.allOf(
+                        withJsonPath("prosecutors", is(notNullValue())),
+                        withJsonPath("prosecutors[0]", is(PROSECUTOR_DVLA)),
+                        withJsonPath("prosecutors[1]", is(PROSECUTOR_TVL))
+                ))
+        );
     }
 
     private JsonObject buildCasesForSOCCheck() {

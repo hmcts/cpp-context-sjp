@@ -286,4 +286,9 @@ public class SjpQueryApi {
         return requester.request(query);
     }
 
+    @Handles("sjp.query.prosecuting-authority-for-lja")
+    public JsonEnvelope getProsecutingAuthorityForLja(final JsonEnvelope query) {
+        return requester.request(query);
+    }
+
 }

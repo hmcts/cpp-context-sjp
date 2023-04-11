@@ -4,6 +4,8 @@ import static com.jayway.jsonpath.matchers.JsonPathMatchers.isJson;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withoutJsonPath;
 import static org.hamcrest.CoreMatchers.allOf;
+import static org.hamcrest.CoreMatchers.anyOf;
+import static org.hamcrest.CoreMatchers.either;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
@@ -14,6 +16,7 @@ import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopePaylo
 import static uk.gov.moj.cpp.sjp.domain.SessionType.DELEGATED_POWERS;
 import static uk.gov.moj.cpp.sjp.domain.SessionType.MAGISTRATE;
 import static uk.gov.moj.sjp.it.helper.SessionHelper.startMagistrateSessionAndWaitForEvent;
+
 
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.sjp.event.processor.SessionProcessor;
@@ -68,7 +71,14 @@ public class SessionIT extends BaseIntegrationTest {
                 withJsonPath("$.localJusticeAreaNationalCourtCode", equalTo(localJusticeAreaNationalCourtCode)),
                 withJsonPath("$.type", equalTo(DELEGATED_POWERS.name())),
                 withoutJsonPath("$.endedAt"),
-                withoutJsonPath("$.magistrate")
+                withoutJsonPath("$.magistrate"),
+                anyOf(allOf(
+                        withJsonPath("$.prosecutors[0]", equalTo("TFL")),
+                        withJsonPath("$.prosecutors[1]", equalTo("DVL"))),
+                        allOf(
+                                withJsonPath("$.prosecutors[1]", equalTo("TFL")),
+                                withJsonPath("$.prosecutors[0]", equalTo("DVL"))))
+
         )));
 
         SchedulingStub.verifyDelegatedPowersSessionStarted(sessionId, courtHouseOUCode, courtHouseName, localJusticeAreaNationalCourtCode);
@@ -101,7 +111,13 @@ public class SessionIT extends BaseIntegrationTest {
                 withJsonPath("$.courtHouseName", equalTo(courtHouseName)),
                 withJsonPath("$.localJusticeAreaNationalCourtCode", equalTo(localJusticeAreaNationalCourtCode)),
                 withJsonPath("$.type", equalTo(MAGISTRATE.name())),
-                withJsonPath("$.magistrate", equalTo(magistrate))
+                withJsonPath("$.magistrate", equalTo(magistrate)),
+                anyOf(allOf(
+                        withJsonPath("$.prosecutors[0]", equalTo("TFL")),
+                        withJsonPath("$.prosecutors[1]", equalTo("DVL"))),
+                        allOf(
+                                withJsonPath("$.prosecutors[1]", equalTo("TFL")),
+                                withJsonPath("$.prosecutors[0]", equalTo("DVL"))))
         )));
 
         SchedulingStub.verifyMagistrateSessionStarted(sessionId, courtHouseOUCode, courtHouseName, localJusticeAreaNationalCourtCode, magistrate);

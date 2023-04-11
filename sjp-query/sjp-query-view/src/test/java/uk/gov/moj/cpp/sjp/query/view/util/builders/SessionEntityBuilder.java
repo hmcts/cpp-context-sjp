@@ -3,6 +3,7 @@ package uk.gov.moj.cpp.sjp.query.view.util.builders;
 import static java.time.ZonedDateTime.now;
 import static java.util.UUID.randomUUID;
 
+import java.util.List;
 import uk.gov.moj.cpp.sjp.persistence.entity.Session;
 
 import java.time.ZonedDateTime;
@@ -17,6 +18,7 @@ public class SessionEntityBuilder {
     private String localJusticeAreaNationalCourtCode;
     private String magistrate;
     private ZonedDateTime startedAt;
+    private List<String> prosecutors;
 
     private SessionEntityBuilder(final UUID sessionId,
                                  final UUID userId,
@@ -24,7 +26,8 @@ public class SessionEntityBuilder {
                                  final String courtHouseName,
                                  final String localJusticeAreaNationalCourtCode,
                                  final String magistrate,
-                                 final ZonedDateTime startedAt) {
+                                 final ZonedDateTime startedAt,
+                                 final List<String> prosecutors) {
         this.sessionId = sessionId;
         this.userId = userId;
         this.courtHouseCode = courtHouseCode;
@@ -32,6 +35,7 @@ public class SessionEntityBuilder {
         this.localJusticeAreaNationalCourtCode = localJusticeAreaNationalCourtCode;
         this.magistrate = magistrate;
         this.startedAt = startedAt;
+        this.prosecutors = prosecutors;
     }
 
     public static SessionEntityBuilder withDefaults() {
@@ -42,7 +46,8 @@ public class SessionEntityBuilder {
                 "Lavender Hill",
                 "YUIO",
                 "Legal adviser name",
-                now()
+                now(),
+                null
         );
     }
 
@@ -54,7 +59,8 @@ public class SessionEntityBuilder {
                 courtHouseName,
                 localJusticeAreaNationalCourtCode,
                 magistrate,
-                startedAt
+                startedAt,
+                prosecutors
         );
     }
 

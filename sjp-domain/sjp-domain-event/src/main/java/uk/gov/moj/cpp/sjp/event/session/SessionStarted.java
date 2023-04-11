@@ -1,6 +1,7 @@
 package uk.gov.moj.cpp.sjp.event.session;
 
 import java.time.ZonedDateTime;
+import java.util.List;
 import java.util.UUID;
 
 public abstract class SessionStarted {
@@ -11,6 +12,7 @@ public abstract class SessionStarted {
     private final String courtHouseName;
     private final String localJusticeAreaNationalCourtCode;
     private final ZonedDateTime startedAt;
+    private final List<String> prosecutors;
 
     public SessionStarted(
             final UUID sessionId,
@@ -18,7 +20,8 @@ public abstract class SessionStarted {
             final String courtHouseCode,
             final String courtHouseName,
             final String localJusticeAreaNationalCourtCode,
-            final ZonedDateTime startedAt
+            final ZonedDateTime startedAt,
+            final List<String> prosecutors
     ) {
         this.sessionId = sessionId;
         this.userId = userId;
@@ -26,6 +29,7 @@ public abstract class SessionStarted {
         this.courtHouseName = courtHouseName;
         this.localJusticeAreaNationalCourtCode = localJusticeAreaNationalCourtCode;
         this.startedAt = startedAt;
+        this.prosecutors = prosecutors;
     }
 
     public UUID getSessionId() {
@@ -52,4 +56,7 @@ public abstract class SessionStarted {
         return startedAt;
     }
 
+    public List<String> getProsecutors() {
+        return prosecutors;
+    }
 }

@@ -7,6 +7,7 @@ import static uk.gov.moj.cpp.sjp.domain.SessionType.AOCP;
 import static uk.gov.moj.cpp.sjp.domain.SessionType.DELEGATED_POWERS;
 import static uk.gov.moj.cpp.sjp.domain.SessionType.MAGISTRATE;
 
+import java.util.List;
 import uk.gov.justice.core.courts.DelegatedPowers;
 import uk.gov.justice.domain.aggregate.Aggregate;
 import uk.gov.moj.cpp.sjp.domain.SessionType;
@@ -41,6 +42,7 @@ public class Session implements Aggregate {
     private SessionType sessionType;
     private String magistrate;
     private SessionState sessionState = SessionState.NOT_EXISTING;
+    private List<String> prosecutors;
 
     public Stream<Object> startDelegatedPowersSession(
             final UUID sessionId,
@@ -48,12 +50,13 @@ public class Session implements Aggregate {
             final String courtHouseCode,
             final String courtHouseName,
             final String localJusticeAreaNationalCourtCode,
-            final ZonedDateTime startedAt) {
+            final ZonedDateTime startedAt,
+            final List<String> prosecutors) {
 
         final Stream.Builder<Object> streamBuilder = Stream.builder();
 
         if (sessionState == SessionState.NOT_EXISTING) {
-            streamBuilder.add(new DelegatedPowersSessionStarted(sessionId, userId, courtHouseCode, courtHouseName, localJusticeAreaNationalCourtCode, startedAt));
+            streamBuilder.add(new DelegatedPowersSessionStarted(sessionId, userId, courtHouseCode, courtHouseName, localJusticeAreaNationalCourtCode, startedAt, prosecutors));
         } else {
             LOGGER.warn("Delegated powers session can not be started - session {} already exists", sessionId);
         }
@@ -69,12 +72,13 @@ public class Session implements Aggregate {
             final String localJusticeAreaNationalCourtCode,
             final ZonedDateTime startedAt,
             final String magistrate,
-            final Optional<DelegatedPowers> legalAdviserOpt) {
+            final Optional<DelegatedPowers> legalAdviserOpt,
+            final List<String> prosecutors) {
 
         final Stream.Builder<Object> streamBuilder = Stream.builder();
 
         if (sessionState == SessionState.NOT_EXISTING) {
-            streamBuilder.add(new MagistrateSessionStarted(sessionId, userId, courtHouseCode, courtHouseName, localJusticeAreaNationalCourtCode, startedAt, magistrate, legalAdviserOpt));
+            streamBuilder.add(new MagistrateSessionStarted(sessionId, userId, courtHouseCode, courtHouseName, localJusticeAreaNationalCourtCode, startedAt, magistrate, legalAdviserOpt, prosecutors));
         } else {
             LOGGER.warn("Magistrate session can not be started - session {} already exists", sessionId);
         }
@@ -88,12 +92,13 @@ public class Session implements Aggregate {
             final String courtHouseCode,
             final String courtHouseName,
             final String localJusticeAreaNationalCourtCode,
-            final ZonedDateTime startedAt) {
+            final ZonedDateTime startedAt,
+            final List<String> prosecutors) {
 
         final Stream.Builder<Object> streamBuilder = Stream.builder();
 
         if (sessionState == SessionState.NOT_EXISTING) {
-            streamBuilder.add(new AocpSessionStarted(sessionId, userId, courtHouseCode, courtHouseName, localJusticeAreaNationalCourtCode, startedAt));
+            streamBuilder.add(new AocpSessionStarted(sessionId, userId, courtHouseCode, courtHouseName, localJusticeAreaNationalCourtCode, startedAt, prosecutors));
         } else {
             LOGGER.warn("aocp session can not be started - session {} already exists", sessionId);
         }
@@ -129,7 +134,7 @@ public class Session implements Aggregate {
         } else if (!userId.equals(this.userId)) {
             streamBuilder.add(new CaseAssignmentRejected(CaseAssignmentRejected.RejectReason.SESSION_NOT_OWNED_BY_USER));
         } else {
-            streamBuilder.add(new CaseAssignmentRequested(new uk.gov.moj.cpp.sjp.domain.Session(id, userId, sessionType, courtHouseCode, localJusticeAreaNationalCourtCode)));
+            streamBuilder.add(new CaseAssignmentRequested(new uk.gov.moj.cpp.sjp.domain.Session(id, userId, sessionType, courtHouseCode, localJusticeAreaNationalCourtCode, prosecutors)));
         }
 
         return apply(streamBuilder.build());
@@ -155,16 +160,19 @@ public class Session implements Aggregate {
                     applySessionStartedEvent(sessionStarted);
                     magistrate = sessionStarted.getMagistrate();
                     sessionType = MAGISTRATE;
+                    prosecutors = sessionStarted.getProsecutors();
                 }),
                 when(DelegatedPowersSessionStarted.class).apply(sessionStarted -> {
                     applySessionStartedEvent(sessionStarted);
                     magistrate = null;
                     sessionType = DELEGATED_POWERS;
+                    prosecutors = sessionStarted.getProsecutors();
                 }),
                 when(AocpSessionStarted.class).apply(sessionStarted -> {
                     applySessionStartedEvent(sessionStarted);
                     magistrate = null;
                     sessionType = AOCP;
+                    prosecutors = sessionStarted.getProsecutors();
                 }),
                 when(MagistrateSessionEnded.class).apply(sessionEnded -> sessionState = SessionState.ENDED),
                 when(DelegatedPowersSessionEnded.class).apply(sessionEnded -> sessionState = SessionState.ENDED),

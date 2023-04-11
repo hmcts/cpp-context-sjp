@@ -42,16 +42,17 @@ public class SessionListener {
     @Transactional
     @Handles(DelegatedPowersSessionStarted.EVENT_NAME)
     public void handleDelegatedPowersSessionStarted(final JsonEnvelope delegatedPowersSessionStartedEvent) {
-        final JsonObject delegatedPowersSessionStarted = delegatedPowersSessionStartedEvent.payloadAsJsonObject();
+        final JsonObject delegatedPowersSessionStartedJson = delegatedPowersSessionStartedEvent.payloadAsJsonObject();
+        final DelegatedPowersSessionStarted delegatedPowersSessionStarted = jsonObjectConverter.convert(delegatedPowersSessionStartedJson, DelegatedPowersSessionStarted.class);
 
         final Session session = new Session(
-                UUID.fromString(delegatedPowersSessionStarted.getString(SESSION_ID))
-                , UUID.fromString(delegatedPowersSessionStarted.getString(USER_ID))
-                , delegatedPowersSessionStarted.getString(COURT_HOUSE_CODE)
-                , delegatedPowersSessionStarted.getString(COURT_HOUSE_NAME)
-                , delegatedPowersSessionStarted.getString(LEGAL_JUSTICE_AREA_NATIONAL_COURT_CODE)
-                , ZonedDateTime.parse(delegatedPowersSessionStarted.getString(STARTED_AT))
-
+                UUID.fromString(delegatedPowersSessionStartedJson.getString(SESSION_ID))
+                , UUID.fromString(delegatedPowersSessionStartedJson.getString(USER_ID))
+                , delegatedPowersSessionStartedJson.getString(COURT_HOUSE_CODE)
+                , delegatedPowersSessionStartedJson.getString(COURT_HOUSE_NAME)
+                , delegatedPowersSessionStartedJson.getString(LEGAL_JUSTICE_AREA_NATIONAL_COURT_CODE)
+                , ZonedDateTime.parse(delegatedPowersSessionStartedJson.getString(STARTED_AT))
+                , delegatedPowersSessionStarted.getProsecutors()
         );
         sessionRepository.save(session);
     }
@@ -70,6 +71,7 @@ public class SessionListener {
                 , magistrateSessionStartedJson.getString(LEGAL_JUSTICE_AREA_NATIONAL_COURT_CODE)
                 , magistrateSessionStartedJson.getString("magistrate")
                 , ZonedDateTime.parse(magistrateSessionStartedJson.getString(STARTED_AT))
+                , magistrateSessionStarted.getProsecutors()
         );
 
         magistrateSessionStarted.getLegalAdviser().ifPresent(legalAdviser -> session.setLegalAdviserUserId(legalAdviser.getUserId()));
@@ -81,6 +83,7 @@ public class SessionListener {
     @Handles(AocpSessionStarted.EVENT_NAME)
     public void handleAocpSessionStarted(final JsonEnvelope event) {
         final JsonObject aocpSession = event.payloadAsJsonObject();
+        final AocpSessionStarted aocpSessionStarted = jsonObjectConverter.convert(aocpSession, AocpSessionStarted.class);
 
         final Session session = new Session(
                 UUID.fromString(aocpSession.getString(SESSION_ID))
@@ -89,7 +92,7 @@ public class SessionListener {
                 , aocpSession.getString(COURT_HOUSE_NAME)
                 , aocpSession.getString(LEGAL_JUSTICE_AREA_NATIONAL_COURT_CODE)
                 , ZonedDateTime.parse(aocpSession.getString(STARTED_AT))
-
+                , aocpSessionStarted.getProsecutors()
         );
         session.setType(SessionType.AOCP);
         sessionRepository.save(session);

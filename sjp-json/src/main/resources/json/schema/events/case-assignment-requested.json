@@ -21,6 +21,13 @@
         "localJusticeAreaNationalCourtCode": {
           "description": "backward compatibility",
           "type": "string"
+        },
+        "prosecutors": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "string"
+          }
         }
       },
       "required": [

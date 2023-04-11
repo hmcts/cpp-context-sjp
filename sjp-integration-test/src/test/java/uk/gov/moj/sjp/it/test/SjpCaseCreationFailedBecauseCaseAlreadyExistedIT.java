@@ -3,21 +3,21 @@ package uk.gov.moj.sjp.it.test;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.isJson;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
 import static java.util.UUID.randomUUID;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.assertNotNull;
 import static uk.gov.moj.sjp.it.model.ProsecutingAuthority.TFL;
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubEnforcementAreaByPostcode;
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubProsecutorQuery;
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubRegionByPostcode;
 
+
+import com.jayway.restassured.path.json.JsonPath;
+import javax.jms.JMSException;
+import org.junit.After;
 import uk.gov.moj.sjp.it.command.CreateCase;
 import uk.gov.moj.sjp.it.model.ProsecutingAuthority;
 import uk.gov.moj.sjp.it.util.TopicUtil;
 
-import java.util.Optional;
-
 import javax.jms.MessageConsumer;
-import javax.json.JsonObject;
 
 import org.hamcrest.Matchers;
 import org.junit.Before;
@@ -26,12 +26,9 @@ import org.junit.Test;
 //TODO public events
 public class SjpCaseCreationFailedBecauseCaseAlreadyExistedIT extends BaseIntegrationTest{
 
-    private MessageConsumer sjpCaseCreated =
-            TopicUtil.publicEvents.createConsumer("public.sjp.sjp-case-created");
+    private MessageConsumer sjpCaseCreated ;
 
-    private MessageConsumer caseCreationFailedBecauseCaseAlreadyExisted =
-            TopicUtil.publicEvents.createConsumer(
-                    "public.sjp.case-creation-failed-because-case-already-existed");
+    private MessageConsumer caseCreationFailedBecauseCaseAlreadyExisted;
 
     private CreateCase.CreateCasePayloadBuilder createCasePayloadBuilder;
 
@@ -40,24 +37,32 @@ public class SjpCaseCreationFailedBecauseCaseAlreadyExistedIT extends BaseIntegr
         this.createCasePayloadBuilder = CreateCase.CreateCasePayloadBuilder.withDefaults();
         stubEnforcementAreaByPostcode(createCasePayloadBuilder.getDefendantBuilder().getAddressBuilder().getPostcode(), "1080", "Bedfordshire Magistrates' Court");
         stubRegionByPostcode("1080", "TestRegion");
+        sjpCaseCreated =
+                TopicUtil.publicEvents.createConsumer("public.sjp.sjp-case-created");
+        caseCreationFailedBecauseCaseAlreadyExisted =
+                TopicUtil.publicEvents.createConsumer(
+                        "public.sjp.case-creation-failed-because-case-already-existed");
         CreateCase.createCaseForPayloadBuilder(this.createCasePayloadBuilder);
         CreateCase.createCaseForPayloadBuilder(this.createCasePayloadBuilder);
+    }
+
+    @After
+    public void after() throws JMSException {
+        sjpCaseCreated.close();
+        caseCreationFailedBecauseCaseAlreadyExisted.close();
     }
 
     @Test
     public void publishesCaseCreationFailedBecauseCaseAlreadyExisted() {
         final ProsecutingAuthority prosecutingAuthority = TFL;
         stubProsecutorQuery(prosecutingAuthority.name(), prosecutingAuthority.getFullName(), randomUUID());
-        Optional<JsonObject> message1 = TopicUtil.retrieveMessageAsJsonObject(sjpCaseCreated);
-        assertTrue(message1.isPresent());
-        assertThat(message1.get(), isJson(withJsonPath("$.id", Matchers.hasToString(
+        JsonPath message1 = TopicUtil.retrieveMessage(sjpCaseCreated, isJson(withJsonPath("$.id", Matchers.hasToString(
                 Matchers.containsString(createCasePayloadBuilder.getId().toString())))
         ));
-
-        Optional<JsonObject> message2 = TopicUtil.retrieveMessageAsJsonObject(caseCreationFailedBecauseCaseAlreadyExisted);
-        assertTrue(message2.isPresent());
-        assertThat(message2.get(), isJson(withJsonPath("$.caseId", Matchers.hasToString(
+        assertNotNull(message1);
+        JsonPath message2 = TopicUtil.retrieveMessage(caseCreationFailedBecauseCaseAlreadyExisted, isJson(withJsonPath("$.caseId", Matchers.hasToString(
                 Matchers.containsString(createCasePayloadBuilder.getId().toString())))
         ));
+        assertNotNull(message2);
     }
 }

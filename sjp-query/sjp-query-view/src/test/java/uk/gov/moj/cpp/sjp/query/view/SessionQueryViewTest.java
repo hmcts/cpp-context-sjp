@@ -44,6 +44,9 @@ import org.mockito.runners.MockitoJUnitRunner;
 @RunWith(MockitoJUnitRunner.class)
 public class SessionQueryViewTest {
 
+    private static final String TFL = "TFL";
+    private static final String DVL = "DVL";
+    public static final List<String> PROSECUTORS = Arrays.asList(TFL, DVL);
     @Spy
     private Enveloper enveloper = EnveloperFactory.createEnveloper();
 
@@ -57,7 +60,7 @@ public class SessionQueryViewTest {
     private SessionQueryView sessionQueryView;
 
     @Test
-    public void shouldFindSession() {
+    public void shouldFindSessionForBackwardCompatibility() {
 
         final UUID sessionId = randomUUID();
         final UUID userId = randomUUID();
@@ -72,7 +75,7 @@ public class SessionQueryViewTest {
                 .withPayloadOf(sessionId.toString(), "sessionId")
                 .build();
 
-        final Session session = new Session(sessionId, userId, courtHouseCode, courtHouseName, localJusticeAreaNationalCourtCode, magistrate, startedAt);
+        final Session session = new Session(sessionId, userId, courtHouseCode, courtHouseName, localJusticeAreaNationalCourtCode, magistrate, startedAt, null);
 
         when(sessionRepository.findBy(sessionId)).thenReturn(session);
 
@@ -93,13 +96,51 @@ public class SessionQueryViewTest {
     }
 
     @Test
+    public void shouldFindSession() {
+
+        final UUID sessionId = randomUUID();
+        final UUID userId = randomUUID();
+        final String courtHouseCode = "B01LY";
+        final String courtHouseName = "Wimbledon Magistrates' Court";
+        final String localJusticeAreaNationalCourtCode = "2577";
+        final String magistrate = "John Smith";
+        final ZonedDateTime startedAt = ZonedDateTime.now(UTC);
+
+        final JsonEnvelope queryEnvelope = envelope()
+                .with(metadataWithRandomUUID("sjp.query.session"))
+                .withPayloadOf(sessionId.toString(), "sessionId")
+                .build();
+
+        final Session session = new Session(sessionId, userId, courtHouseCode, courtHouseName, localJusticeAreaNationalCourtCode, magistrate, startedAt, PROSECUTORS);
+
+        when(sessionRepository.findBy(sessionId)).thenReturn(session);
+
+        final JsonEnvelope result = sessionQueryView.findSession(queryEnvelope);
+
+        assertThat(result, jsonEnvelope(metadata().withName("sjp.query.session"),
+                payload().isJson(allOf(
+                        withJsonPath("$.sessionId", is(sessionId.toString())),
+                        withJsonPath("$.userId", is(userId.toString())),
+                        withJsonPath("$.courtHouseCode", equalTo(courtHouseCode)),
+                        withJsonPath("$.courtHouseName", equalTo(courtHouseName)),
+                        withJsonPath("$.localJusticeAreaNationalCourtCode", is(localJusticeAreaNationalCourtCode)),
+                        withJsonPath("$.type", is(MAGISTRATE.name())),
+                        withJsonPath("$.magistrate", is(magistrate)),
+                        withJsonPath("$.startedAt", isSameMoment(startedAt)),
+                        withJsonPath("$.prosecutors[0]", is(TFL)),
+                        withJsonPath("$.prosecutors[1]", is(DVL))
+                ))
+        ));
+    }
+
+    @Test
     public void shouldHandlesQuery() {
         Assert.assertThat(SessionQueryView.class, isHandlerClass(Component.QUERY_VIEW)
                 .with(method("findSession").thatHandles("sjp.query.session")));
     }
 
     @Test
-    public void shouldFindConvictingCourtSession() {
+    public void shouldFindConvictingCourtSessionForBackwardCompatibility() {
         final UUID offenceId = randomUUID();
         final UUID sessionIdToday = randomUUID();
         final UUID sessionId2DaysAgo = randomUUID();
@@ -116,13 +157,13 @@ public class SessionQueryViewTest {
                 .build();
 
         final CaseDecision caseDecisionToday = new CaseDecision();
-        final Session sessionToday = new Session(sessionIdToday, userId, courtHouseCode, courtHouseName, localJusticeAreaNationalCourtCode, magistrate, startedAt);
+        final Session sessionToday = new Session(sessionIdToday, userId, courtHouseCode, courtHouseName, localJusticeAreaNationalCourtCode, magistrate, startedAt, null);
         caseDecisionToday.setId(randomUUID());
         caseDecisionToday.setSession(sessionToday);
         caseDecisionToday.setSavedAt(ZonedDateTime.now());
 
         final CaseDecision caseDecision2DaysAgo = new CaseDecision();
-        final Session session2DaysAgo = new Session(sessionId2DaysAgo, userId, courtHouseCode, courtHouseName, localJusticeAreaNationalCourtCode, magistrate, startedAt);
+        final Session session2DaysAgo = new Session(sessionId2DaysAgo, userId, courtHouseCode, courtHouseName, localJusticeAreaNationalCourtCode, magistrate, startedAt, null);
         caseDecision2DaysAgo.setId(randomUUID());
         caseDecision2DaysAgo.setSession(session2DaysAgo);
         caseDecision2DaysAgo.setSavedAt(ZonedDateTime.now().minusDays(2));
@@ -147,7 +188,57 @@ public class SessionQueryViewTest {
     }
 
     @Test
-    public void shouldFindLatestAocpSession() {
+    public void shouldFindConvictingCourtSession() {
+        final UUID offenceId = randomUUID();
+        final UUID sessionIdToday = randomUUID();
+        final UUID sessionId2DaysAgo = randomUUID();
+        final UUID userId = randomUUID();
+        final String courtHouseCode = "B01LY";
+        final String courtHouseName = "Wimbledon Magistrates' Court";
+        final String localJusticeAreaNationalCourtCode = "2577";
+        final String magistrate = "John Smith";
+        final ZonedDateTime startedAt = ZonedDateTime.now(UTC);
+
+        final JsonEnvelope queryEnvelope = envelope()
+                .with(metadataWithRandomUUID("sjp.query.convicting-court-session"))
+                .withPayloadOf(offenceId.toString(), "offenceId")
+                .build();
+
+        final CaseDecision caseDecisionToday = new CaseDecision();
+        final Session sessionToday = new Session(sessionIdToday, userId, courtHouseCode, courtHouseName, localJusticeAreaNationalCourtCode, magistrate, startedAt, PROSECUTORS);
+        caseDecisionToday.setId(randomUUID());
+        caseDecisionToday.setSession(sessionToday);
+        caseDecisionToday.setSavedAt(ZonedDateTime.now());
+
+        final CaseDecision caseDecision2DaysAgo = new CaseDecision();
+        final Session session2DaysAgo = new Session(sessionId2DaysAgo, userId, courtHouseCode, courtHouseName, localJusticeAreaNationalCourtCode, magistrate, startedAt, PROSECUTORS);
+        caseDecision2DaysAgo.setId(randomUUID());
+        caseDecision2DaysAgo.setSession(session2DaysAgo);
+        caseDecision2DaysAgo.setSavedAt(ZonedDateTime.now().minusDays(2));
+        final List<CaseDecision> caseDecisions = Arrays.asList(caseDecisionToday, caseDecision2DaysAgo);
+
+        when(caseDecisionRepository.findCaseDecisionsForConvictingCourtSessions(offenceId)).thenReturn(caseDecisions);
+
+        final JsonEnvelope queryResponseEnvelope = sessionQueryView.findConvictingCourtSession(queryEnvelope);
+
+        assertThat(queryResponseEnvelope, jsonEnvelope(metadata().withName("sjp.query.convicting-court-session"),
+                payload().isJson(allOf(
+                        withJsonPath("$.sessionId", is(sessionIdToday.toString())),
+                        withJsonPath("$.userId", is(userId.toString())),
+                        withJsonPath("$.courtHouseCode", equalTo(sessionToday.getCourtHouseCode())),
+                        withJsonPath("$.courtHouseName", equalTo(sessionToday.getCourtHouseName())),
+                        withJsonPath("$.localJusticeAreaNationalCourtCode", is(sessionToday.getLocalJusticeAreaNationalCourtCode())),
+                        withJsonPath("$.type", is(MAGISTRATE.name())),
+                        withJsonPath("$.magistrate", is(sessionToday.getMagistrate().get())),
+                        withJsonPath("$.startedAt", isSameMoment(sessionToday.getStartedAt())),
+                        withJsonPath("$.prosecutors[0]", is(TFL)),
+                        withJsonPath("$.prosecutors[1]", is(DVL))
+                ))
+        ));
+    }
+
+    @Test
+    public void shouldFindLatestAocpSessionForBackwardCompatibility() {
 
         final UUID sessionId = randomUUID();
         final UUID userId = randomUUID();
@@ -160,7 +251,7 @@ public class SessionQueryViewTest {
                 .with(metadataWithRandomUUID("sjp.query.latest-aocp-session"))
                 .build();
 
-        final Session session = new Session(sessionId, userId, courtHouseCode, courtHouseName, localJusticeAreaNationalCourtCode, null, startedAt);
+        final Session session = new Session(sessionId, userId, courtHouseCode, courtHouseName, localJusticeAreaNationalCourtCode, null, startedAt, null);
 
         when(sessionRepository.findLatestAocpSession()).thenReturn(asList(session));
 
@@ -174,6 +265,40 @@ public class SessionQueryViewTest {
                         withJsonPath("$.courtHouseName", equalTo(courtHouseName)),
                         withJsonPath("$.localJusticeAreaNationalCourtCode", is(localJusticeAreaNationalCourtCode)),
                         withJsonPath("$.startedAt", isSameMoment(startedAt))
+                ))
+        ));
+    }
+
+    @Test
+    public void shouldFindLatestAocpSession() {
+
+        final UUID sessionId = randomUUID();
+        final UUID userId = randomUUID();
+        final String courtHouseCode = "B52CM00";
+        final String courtHouseName = "Bristol Magistrates' Court";
+        final String localJusticeAreaNationalCourtCode = "1450";
+        final ZonedDateTime startedAt = ZonedDateTime.now(UTC);
+
+        final JsonEnvelope queryEnvelope = envelope()
+                .with(metadataWithRandomUUID("sjp.query.latest-aocp-session"))
+                .build();
+
+        final Session session = new Session(sessionId, userId, courtHouseCode, courtHouseName, localJusticeAreaNationalCourtCode, null, startedAt, PROSECUTORS);
+
+        when(sessionRepository.findLatestAocpSession()).thenReturn(asList(session));
+
+        final JsonEnvelope result = sessionQueryView.getLatestAocpSession(queryEnvelope);
+
+        assertThat(result, jsonEnvelope(metadata().withName("sjp.query.latest-aocp-session"),
+                payload().isJson(allOf(
+                        withJsonPath("$.sessionId", is(sessionId.toString())),
+                        withJsonPath("$.userId", is(userId.toString())),
+                        withJsonPath("$.courtHouseCode", equalTo(courtHouseCode)),
+                        withJsonPath("$.courtHouseName", equalTo(courtHouseName)),
+                        withJsonPath("$.localJusticeAreaNationalCourtCode", is(localJusticeAreaNationalCourtCode)),
+                        withJsonPath("$.startedAt", isSameMoment(startedAt)),
+                        withJsonPath("$.prosecutors[0]", is(TFL)),
+                        withJsonPath("$.prosecutors[1]", is(DVL))
                 ))
         ));
     }

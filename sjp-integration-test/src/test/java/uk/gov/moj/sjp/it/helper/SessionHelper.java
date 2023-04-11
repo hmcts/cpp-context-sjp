@@ -1,6 +1,7 @@
 package uk.gov.moj.sjp.it.helper;
 
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
+import static javax.json.Json.createArrayBuilder;
 import static javax.json.Json.createObjectBuilder;
 import static javax.ws.rs.core.Response.Status.ACCEPTED;
 import static javax.ws.rs.core.Response.Status.OK;
@@ -44,6 +45,7 @@ public class SessionHelper {
     public static UUID startDelegatedPowersSessionAsync(final UUID sessionId, final UUID userId, final String courtHouseOUCode) {
         final JsonObject payload = createObjectBuilder()
                 .add("courtHouseOUCode", courtHouseOUCode)
+                .add("prosecutors", createArrayBuilder().add("TFL").add("DVL").build())
                 .build();
         return startSession(sessionId, userId, payload);
     }
@@ -63,6 +65,7 @@ public class SessionHelper {
                 .add("courtHouseOUCode", courtHouseOUCode)
                 .add("magistrate", magistrate)
                 .add("legalAdviser", buildLegalAdviserJsonObject(legalAdviser))
+                .add("prosecutors", createArrayBuilder().add("TFL").add("DVL").build())
                 .build();
 
         return startSession(sessionId, userId, payload);

@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+         http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.3.xsd">
+
+    <changeSet id="085-create-sjp-prosecutors-table" author="team/pet1/ali.yuksel">
+        <createTable tableName="session_prosecutors">
+            <column name="session_id" type="UUID"/>
+            <column name="prosecutor" type="TEXT"/>
+        </createTable>
+
+        <addForeignKeyConstraint baseColumnNames="session_id"
+                                 baseTableName="session_prosecutors"
+                                 constraintName="fk_session_prosecutors_id2" deferrable="false"
+                                 initiallyDeferred="false"
+                                 onDelete="CASCADE" onUpdate="NO ACTION"
+                                 referencedColumnNames="id"
+                                 referencedTableName="session"/>
+
+        <createIndex tableName="session_prosecutors"
+                     indexName="session_prosecutors_session_id_idx">
+            <column name="session_id"/>
+        </createIndex>
+
+        <rollback>
+            <dropTable tableName="session_prosecutors"/>
+        </rollback>
+    </changeSet>
+
+</databaseChangeLog>

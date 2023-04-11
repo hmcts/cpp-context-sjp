@@ -82,12 +82,17 @@ public class CaseDecisionProcessor {
     private static final String PUBLIC_EVENTS_CASE_DECISION__RESUBMITTED = "public.sjp.events.case-decision-resubmitted";
     private static final String PUBLIC_HEARING_RESULTED_EVENT = "public.hearing.resulted";
     private static final String PUBLIC_EVENTS_HEARING_RESULTED = "public.events.hearing.hearing-resulted";
+    public static final String UNDO_RESERVE_CASE_TIMER_COMMAND = "sjp.command.undo-reserve-case";
 
     @Handles(DecisionSaved.EVENT_NAME)
     public void handleCaseDecisionSaved(final JsonEnvelope caseDecisionSavedEnvelope) {
         final JsonObject savedDecision = caseDecisionSavedEnvelope.payloadAsJsonObject();
         final String caseId = savedDecision.getString(EventProcessorConstants.CASE_ID);
         setAside(caseDecisionSavedEnvelope, savedDecision, caseId);
+
+        sender.sendAsAdmin(envelop(createObjectBuilder().add("caseId", caseId).build())
+                .withName(UNDO_RESERVE_CASE_TIMER_COMMAND)
+                .withMetadataFrom(caseDecisionSavedEnvelope));
 
         // DD-14110 When the decision type is refer to court then do not emit hearing resulted event
         final boolean isDecisionReferredToCourt = savedDecision

@@ -7,6 +7,9 @@ import static java.util.Objects.nonNull;
 import static java.util.Optional.ofNullable;
 import static java.util.stream.Collectors.toList;
 
+
+import java.util.UUID;
+import org.apache.commons.collections.CollectionUtils;
 import uk.gov.moj.cpp.sjp.domain.common.CaseStatus;
 import uk.gov.moj.cpp.sjp.persistence.entity.ApplicationStatus;
 import uk.gov.moj.cpp.sjp.persistence.entity.CaseApplication;
@@ -62,6 +65,9 @@ public class CaseView {
     private final Boolean readyForDecision;
     private final Boolean defendantAcceptedAocp;
     private Boolean hasPotentialCase;
+    private ZonedDateTime reservedAt;
+    private UUID reservedBy;
+    private String reservedByName;
 
     @SuppressWarnings({"squid:S2384","squid:MethodCyclomaticComplexity"})
     public CaseView(final CaseDetail caseDetail, final JsonObject prosecutor) {
@@ -126,6 +132,11 @@ public class CaseView {
             this.readyForDecision = true;
         } else {
             this.readyForDecision = false;
+        }
+
+        if(CollectionUtils.isNotEmpty(caseDetail.getReserveCase())){
+            this.reservedAt = caseDetail.getReserveCase().get(0).getReservedAt();
+            this.reservedBy = caseDetail.getReserveCase().get(0).getReservedBy();
         }
     }
 
@@ -304,5 +315,21 @@ public class CaseView {
 
     public void setHasPotentialCase(final Boolean hasPotentialCase) {
         this.hasPotentialCase = hasPotentialCase;
+    }
+
+    public ZonedDateTime getReservedAt() {
+        return reservedAt;
+    }
+
+    public UUID getReservedBy() {
+        return reservedBy;
+    }
+
+    public String getReservedByName() {
+        return reservedByName;
+    }
+
+    public void setReservedByName(final String reservedByName) {
+        this.reservedByName = reservedByName;
     }
 }

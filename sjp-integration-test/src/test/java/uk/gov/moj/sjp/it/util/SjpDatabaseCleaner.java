@@ -32,7 +32,8 @@ public class SjpDatabaseCleaner {
                 "application_decision",
                 "ready_cases",
                 "case_assignment_restriction",
-                "case_publish_status"
+                "case_publish_status",
+                "reserve_case"
         );
     }
 

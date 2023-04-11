@@ -172,6 +172,9 @@ public class CaseDetail implements Serializable {
     @Column(name = "defendant_accepted_aocp")
     private Boolean defendantAcceptedAocp;
 
+    @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY, mappedBy = "caseId")
+    private List<ReserveCase> reserveCase;
+
     public CaseDetail() {
         defendant.setCaseDetail(this);
     }
@@ -509,6 +512,14 @@ public class CaseDetail implements Serializable {
 
     public void setResultedThroughAOCP(final Boolean resultedThroughAOCP) {
         this.resultedThroughAOCP = resultedThroughAOCP;
+    }
+
+    public List<ReserveCase> getReserveCase() {
+        return reserveCase;
+    }
+
+    public void setReserveCase(final List<ReserveCase> reserveCase) {
+        this.reserveCase = reserveCase;
     }
 
     @Override

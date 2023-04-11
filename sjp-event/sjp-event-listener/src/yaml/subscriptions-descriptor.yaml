@@ -311,4 +311,10 @@ subscriptions_descriptor:
               - name: sjp.events.defendant-accepted-aocp
                 schema_uri: http://justice.gov.uk/json/schemas/domains/sjp/event/defendant-accepted-aocp.json
 
+              - name: sjp.events.case-reserved
+                schema_uri: http://justice.gov.uk/json/schemas/domains/sjp/event/case-reserved.json
+
+              - name: sjp.events.case-unreserved
+                schema_uri: http://justice.gov.uk/json/schemas/domains/sjp/event/case-unreserved.json
+
           event_source_name: sjp

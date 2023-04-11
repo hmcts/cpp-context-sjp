@@ -6,7 +6,7 @@ import static javax.json.Json.createArrayBuilder;
 import static javax.json.Json.createObjectBuilder;
 import static org.hamcrest.core.AllOf.allOf;
 import static org.hamcrest.core.Is.is;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
@@ -75,9 +75,13 @@ public class CaseDecisionProcessorTest {
     @Captor
     private ArgumentCaptor<JsonEnvelope> jsonEnvelopeCaptor;
 
+    @Captor
+    private ArgumentCaptor<Envelope> envelopeCaptor;
+
     private static final String PUBLIC_CASE_DECISION_SAVED_EVENT = "public.sjp.case-decision-saved";
     private static final String PUBLIC_HEARING_RESULTED_EVENT = "public.hearing.resulted";
     private static final String PRIVATE_CASE_DECISION_SAVED_EVENT = "sjp.events.decision-saved";
+    public static final String UNDO_RESERVE_CASE_TIMER_COMMAND = "sjp.command.undo-reserve-case";
 
     @Before
     public void setUp() {
@@ -154,6 +158,15 @@ public class CaseDecisionProcessorTest {
                         .withName(PUBLIC_HEARING_RESULTED_EVENT));
 
         assertThat(hearingResultedPublicEvent.payload(), is(publicHearingResultedPayload));
+
+        verify(sender, times(1)).sendAsAdmin(envelopeCaptor.capture());
+
+        final Envelope<JsonValue> reserveCaseCommand = envelopeCaptor.getValue();
+        assertThat(reserveCaseCommand.metadata().name(), is(UNDO_RESERVE_CASE_TIMER_COMMAND));
+        assertThat(reserveCaseCommand.payload(),
+                payloadIsJson(allOf(
+                        withJsonPath("caseId", is(caseId.toString()))
+                )));
     }
 
     @Test

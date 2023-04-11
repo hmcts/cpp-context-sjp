@@ -4,6 +4,7 @@ import static java.util.UUID.randomUUID;
 import static org.mockito.Mockito.verify;
 import static uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderFactory.metadataWithRandomUUIDAndName;
 
+import java.time.ZonedDateTime;
 import uk.gov.justice.services.messaging.Metadata;
 import uk.gov.moj.cpp.sjp.event.processor.activiti.TimerExpirationProcess;
 
@@ -81,6 +82,18 @@ public class TimerServiceTest {
                 this.caseId,
                 expectedDateReady,
                 TimerService.DEFENDANT_AOCP_RESPONSE_TIMER_COMMAND,
+                metadata);
+    }
+
+    @Test
+    public void shouldStartUndoReserveCaseTimer() {
+        final ZonedDateTime expectedDateReady = ZonedDateTime.now().plusDays(1);
+        service.startTimerForUndoReserveCase(caseId, expectedDateReady, metadata);
+
+        verify(process).startTimerForDelayAndCommand(
+                this.caseId,
+                expectedDateReady,
+                TimerService.UNDO_RESERVE_CASE_TIMER_COMMAND,
                 metadata);
     }
 }

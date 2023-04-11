@@ -1,6 +1,7 @@
 package uk.gov.moj.cpp.sjp.query.view;
 
 import static java.lang.String.format;
+import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
 import static java.util.Optional.empty;
 import static java.util.UUID.fromString;
@@ -206,6 +207,9 @@ public class SjpQueryView {
 
         final CaseView caseView = caseService.findCase(fromString(extract(envelope, FIELD_CASE_ID)));
         if (caseView != null) {
+            if(! isNull(caseView.getReservedBy())){
+                caseView.setReservedByName(caseService.getUserName(caseView.getReservedBy().toString(), envelope));
+            }
             final String prosecutingAuthority = caseView.getProsecutingAuthority();
             final Optional<String> userId = envelope.metadata().userId();
             boolean hasPotentialCase = false;

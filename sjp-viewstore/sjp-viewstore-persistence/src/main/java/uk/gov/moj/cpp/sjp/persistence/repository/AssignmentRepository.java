@@ -24,11 +24,14 @@ public class AssignmentRepository {
                     "   s.position AS case_stream_version" +
                     " FROM ready_cases rc" +
                     "   JOIN stream_status s ON s.stream_id = rc.case_id AND s.source = 'sjp' AND s.component = 'EVENT_LISTENER'" +
+                    "   LEFT JOIN reserve_case re ON re.case_id = rc.case_id " +
                     " WHERE (rc.assignee_id IS NULL OR rc.assignee_id = :assigneeId)" +
                     "   AND rc.session_type = :sessionType" +
+                    "   AND (re.reserved_by is null OR re.reserved_by = :assigneeId)"  +
                     "   AND" +
                     "     rc.prosecuting_authority IN :prosecutingAuthorities" +
                     " ORDER BY" +
+                    "   re.reserved_at NULLS LAST," +
                     "   rc.assignee_id NULLS LAST," +
                     "   rc.priority ASC, " +
                     "   rc.posting_date ASC" +

@@ -723,6 +723,31 @@ baseUri: http://localhost:8080/sjp-command-api/command/api/rest/sjp
       500:
         description: Internal Server Error
 
+/cases/{caseId}/reserve-case:
+  uriParameters:
+    caseId:
+      description: The ID of the case to reserve
+      type: string
+  post:
+    description: |
+      creates sjp.reserved-case-status event
+      ...
+      (mapping):
+          requestType: application/vnd.sjp.reserve-case+json
+          name: sjp.reserve-case
+      (mapping):
+          requestType: application/vnd.sjp.undo-reserve-case+json
+          name: sjp.undo-reserve-case
+      ...
+    body:
+      application/vnd.sjp.reserve-case+json: !!null
+      application/vnd.sjp.undo-reserve-case+json: !!null
+    responses:
+      202:
+        description: Accepted
+      500:
+        description: Internal Server Error
+
 /cases-management-status:
   post:
     description: |

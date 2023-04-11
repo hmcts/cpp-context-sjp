@@ -4,6 +4,7 @@ import static org.slf4j.LoggerFactory.getLogger;
 import static uk.gov.moj.cpp.sjp.event.processor.activiti.CaseStateService.METADATA_VARIABLE;
 import static uk.gov.moj.cpp.sjp.event.processor.utils.MetadataHelper.metadataToString;
 
+import java.time.ZonedDateTime;
 import uk.gov.justice.services.common.converter.ZonedDateTimes;
 import uk.gov.justice.services.messaging.Metadata;
 
@@ -35,6 +36,16 @@ public class TimerExpirationProcess {
     public void startTimerForDelayAndCommand(final UUID caseId, final LocalDate expirationDay, final String commandToSend, final Metadata metadata) {
         final Map<String, Object> params = getCommonParams(metadata);
         params.put("expiration", ZonedDateTimes.toString(expirationDay.atStartOfDay(ZoneId.of("UTC"))));
+        params.put("commandToSend", commandToSend);
+
+        runtimeService.startProcessInstanceByKey(TIMER_TIMEOUT, caseId.toString(), params);
+
+        LOGGER.info("{} command timeout started for case {}, expiration Time {}", commandToSend, caseId, expirationDay);
+    }
+
+    public void startTimerForDelayAndCommand(final UUID caseId, final ZonedDateTime expirationDay, final String commandToSend, final Metadata metadata) {
+        final Map<String, Object> params = getCommonParams(metadata);
+        params.put("expiration", ZonedDateTimes.toString(expirationDay));
         params.put("commandToSend", commandToSend);
 
         runtimeService.startProcessInstanceByKey(TIMER_TIMEOUT, caseId.toString(), params);

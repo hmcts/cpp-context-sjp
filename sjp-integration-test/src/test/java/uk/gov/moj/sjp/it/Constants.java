@@ -30,6 +30,14 @@ public class Constants {
     public static final String SJP_EVENTS_ALL_OFFENCES_WITHDRAWAL_REQUESTED = AllOffencesWithdrawalRequested.EVENT_NAME;
     public static final String EVENT_OFFENCES_WITHDRAWAL_STATUS_SET = "sjp.events.offences-withdrawal-status-set";
     public static final String PUBLIC_EVENT_OFFENCES_WITHDRAWAL_STATUS_SET = "public.sjp.offences-withdrawal-status-set";
+    public static final String EVENT_CASE_RESERVED = "sjp.events.case-reserved";
+    public static final String EVENT_CASE_ALREADY_RESERVED = "sjp.events.case-already-reserved";
+    public static final String PUBLIC_CASE_RESERVED = "public.sjp.case-reserved";
+    public static final String PUBLIC_CASE_ALREADY_RESERVED = "public.sjp.case-already-reserved";
+    public static final String EVENT_CASE_UNRESERVED = "sjp.events.case-unreserved";
+    public static final String EVENT_CASE_ALREADY_UNRESERVED = "sjp.events.case-already-unreserved";
+    public static final String PUBLIC_CASE_UNRESERVED = "public.sjp.case-unreserved";
+    public static final String PUBLIC_CASE_ALREADY_UNRESERVED = "public.sjp.case-already-unreserved";
     public static final String PUBLIC_EVENT_SJP_PENDING_CASES_PUBLIC_LIST_GENERATED = "public-sjp-pending-cases-public-list-generated";
     public static final String PUBLIC_SJP_ALL_OFFENCES_WITHDRAWAL_REQUEST_CANCELLED = "public.sjp.all-offences-withdrawal-request-cancelled";
     public static final String SJP_EVENTS_ALL_OFFENCES_WITHDRAWAL_REQUEST_CANCELLED = AllOffencesWithdrawalRequestCancelled.EVENT_NAME;

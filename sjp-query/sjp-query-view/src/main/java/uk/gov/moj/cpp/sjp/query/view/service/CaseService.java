@@ -4,7 +4,6 @@ import static com.google.common.collect.Iterables.isEmpty;
 import static java.lang.Math.ceil;
 import static java.util.Arrays.asList;
 import static java.util.Comparator.comparingInt;
-import static java.util.Objects.nonNull;
 import static java.util.Optional.ofNullable;
 import static java.util.UUID.fromString;
 import static java.util.stream.Collectors.groupingBy;
@@ -439,7 +438,7 @@ public class CaseService {
         return timestamp == null ? null : ZonedDateTime.ofInstant(timestamp.toInstant(), ZoneOffset.UTC);
     }
 
-    private String getUserName(final String userId, final JsonEnvelope envelope) {
+    public String getUserName(final String userId, final JsonEnvelope envelope) {
         return userDetailsCacheService.getUserName(envelope, UUID.fromString(userId));
     }
 

@@ -19,6 +19,7 @@ import java.util.Set;
 import java.util.UUID;
 
 import org.apache.commons.lang3.RandomStringUtils;
+import uk.gov.moj.cpp.sjp.persistence.entity.ReserveCase;
 
 public class CaseDetailBuilder {
 
@@ -37,6 +38,7 @@ public class CaseDetailBuilder {
     private String datesToAvoid;
     private ZonedDateTime createdOn = ZonedDateTime.now(UTC);
     private BigDecimal victimSurcharge;
+    private List<ReserveCase> reserveCase = new ArrayList<>();
 
     private CaseDetailBuilder() {
         this.defendant = new DefendantDetail();
@@ -125,6 +127,11 @@ public class CaseDetailBuilder {
         return this;
     }
 
+    public CaseDetailBuilder withReserveCase(final ReserveCase reserveCase){
+        this.reserveCase.add(reserveCase);
+        return this;
+    }
+
     public CaseDetail build() {
         final CaseDetail caseDetail = new CaseDetail(
                 id,
@@ -138,6 +145,7 @@ public class CaseDetailBuilder {
         caseDetail.setCaseDecisions(caseDecisions);
         caseDetail.setApplications(caseApplications);
         caseDocuments.forEach(caseDetail::addCaseDocuments);
+        caseDetail.setReserveCase(reserveCase);
 
         return caseDetail;
     }

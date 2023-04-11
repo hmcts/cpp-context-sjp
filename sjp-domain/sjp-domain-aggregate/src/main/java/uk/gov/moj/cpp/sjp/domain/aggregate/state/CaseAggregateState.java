@@ -165,6 +165,7 @@ public class CaseAggregateState implements AggregateState {
     private final List<CaseOffenceListedInCriminalCourts> offenceHearings = new ArrayList<>();
     private DecisionSaved latestReferToCourtDecision;
     private boolean caseListed;
+    private boolean caseReserved;
 
     public UUID getCaseId() {
         return caseId;
@@ -392,6 +393,18 @@ public class CaseAggregateState implements AggregateState {
 
     public boolean getCaseListed() {
         return this.caseListed;
+    }
+
+    public void markCaseReserved() {
+        this.caseReserved = true;
+    }
+
+    public void markCaseUnReserved() {
+        this.caseReserved = false;
+    }
+
+    public boolean getCaseReserved() {
+        return this.caseReserved;
     }
 
     public boolean checkAllOffencesHavingHearings() {

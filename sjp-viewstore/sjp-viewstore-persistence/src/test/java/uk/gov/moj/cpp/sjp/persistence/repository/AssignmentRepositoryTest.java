@@ -21,6 +21,7 @@ import uk.gov.moj.cpp.sjp.persistence.entity.OffenceDetail;
 import uk.gov.moj.cpp.sjp.persistence.entity.PendingDatesToAvoid;
 import uk.gov.moj.cpp.sjp.persistence.entity.PersonalDetails;
 import uk.gov.moj.cpp.sjp.persistence.entity.ReadyCase;
+import uk.gov.moj.cpp.sjp.persistence.entity.ReserveCase;
 import uk.gov.moj.cpp.sjp.persistence.entity.StreamStatus;
 
 import javax.inject.Inject;
@@ -49,6 +50,7 @@ import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.nullValue;
 import static uk.gov.moj.cpp.sjp.domain.CaseReadinessReason.PIA;
@@ -344,6 +346,40 @@ public class AssignmentRepositoryTest extends BaseTransactionalTest {
         assertThat(delegatedPowersSessionCandidates, containsInAnyOrder(expectedAssignments));
     }
 
+    @Test
+    public void shouldGetFirstReservedCase(){
+        final CaseDetail pleadedNotGuiltyAssigned = CaseSaver.prosecutingAuthority("TFL").postedDaysAgo(10).notGuiltyWithDatesToAvoid().assigneeId(assigneeId).save(em, PLEADED_NOT_GUILTY);
+        final CaseDetail pleadedNotGuilty = CaseSaver.prosecutingAuthority("TFL").postedDaysAgo(10).notGuiltyWithDatesToAvoid().save(em, PLEADED_NOT_GUILTY);
+
+        List<AssignmentCandidate> delegatedPowersSessionCandidates = assignmentRepository.getAssignmentCandidatesForDelegatedPowersSession(assigneeId, prosecutingAuthorities("TFL"), NO_LIMIT);
+
+        assertThat(delegatedPowersSessionCandidates.get(0).getCaseId(), is(pleadedNotGuiltyAssigned.getId()));
+        assertThat(delegatedPowersSessionCandidates.get(1).getCaseId(), is(pleadedNotGuilty.getId()));
+
+        reserveCase(em, pleadedNotGuilty.getId(), assigneeId, ZonedDateTime.now());
+        delegatedPowersSessionCandidates = assignmentRepository.getAssignmentCandidatesForDelegatedPowersSession(assigneeId, prosecutingAuthorities("TFL"), NO_LIMIT);
+
+        assertThat(delegatedPowersSessionCandidates.get(0).getCaseId(), is(pleadedNotGuilty.getId()));
+        assertThat(delegatedPowersSessionCandidates.get(1).getCaseId(), is(pleadedNotGuiltyAssigned.getId()));
+    }
+
+    @Test
+    public void shouldNotReturnReservedCaseForOtherUsers(){
+        final CaseDetail pleadedNotGuiltyAssigned = CaseSaver.prosecutingAuthority("TFL").postedDaysAgo(10).notGuiltyWithDatesToAvoid().save(em, PLEADED_NOT_GUILTY);
+
+        final UUID reserveUserId = randomUUID();
+        reserveCase(em, pleadedNotGuiltyAssigned.getId(), reserveUserId, ZonedDateTime.now());
+
+        List<AssignmentCandidate> delegatedPowersSessionCandidates = assignmentRepository.getAssignmentCandidatesForDelegatedPowersSession(reserveUserId, prosecutingAuthorities("TFL"), NO_LIMIT);
+
+        assertThat(delegatedPowersSessionCandidates.size(), is(1));
+        assertThat(delegatedPowersSessionCandidates.get(0).getCaseId(), is(pleadedNotGuiltyAssigned.getId()));
+
+        delegatedPowersSessionCandidates = assignmentRepository.getAssignmentCandidatesForDelegatedPowersSession(assigneeId, prosecutingAuthorities("TFL"), NO_LIMIT);
+
+        assertThat(delegatedPowersSessionCandidates.size(), is(0));
+    }
+
     private static List<UUID> getIds(final List<AssignmentCandidate> assignmentCandidates) {
         return assignmentCandidates.stream().map(AssignmentCandidate::getCaseId).collect(toList());
     }
@@ -354,6 +390,11 @@ public class AssignmentRepositoryTest extends BaseTransactionalTest {
 
     private static Set<String> prosecutingAuthorities(final String... prosecutingAuthorities) {
         return stream(prosecutingAuthorities).collect(toSet());
+    }
+
+    private void reserveCase(EntityManager em, final UUID caseId, final UUID userId, final ZonedDateTime reservedAt){
+        final ReserveCase reserveCase = new ReserveCase(caseId, "CASEURN", userId, reservedAt);
+        em.persist(reserveCase);
     }
 
     private static class CaseSaver {

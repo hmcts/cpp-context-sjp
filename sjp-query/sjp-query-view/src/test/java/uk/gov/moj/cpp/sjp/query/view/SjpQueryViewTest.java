@@ -70,6 +70,7 @@ import uk.gov.moj.cpp.sjp.persistence.entity.OnlinePlea;
 import uk.gov.moj.cpp.sjp.persistence.entity.OnlinePleaDetail;
 import uk.gov.moj.cpp.sjp.persistence.entity.PendingDatesToAvoid;
 import uk.gov.moj.cpp.sjp.persistence.entity.PersonalDetails;
+import uk.gov.moj.cpp.sjp.persistence.entity.ReserveCase;
 import uk.gov.moj.cpp.sjp.persistence.repository.AocpOnlinePleaRepository;
 import uk.gov.moj.cpp.sjp.persistence.repository.OffenceRepository;
 import uk.gov.moj.cpp.sjp.persistence.repository.OnlinePleaDetailRepository;
@@ -120,6 +121,7 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.Spy;
 import org.mockito.runners.MockitoJUnitRunner;
+import uk.gov.moj.cpp.sjp.query.view.service.defendantcase.DefendantPotentialCaseService;
 
 @SuppressWarnings("squid:S1607")
 @RunWith(MockitoJUnitRunner.class)
@@ -212,6 +214,9 @@ public class SjpQueryViewTest {
 
     @Mock
     private ProsecutionCaseService prosecutionCaseService;
+
+    @Mock
+    private DefendantPotentialCaseService defendantPotentialCaseService;
 
     @Mock
     private AssignmentService assignmentService;
@@ -350,6 +355,52 @@ public class SjpQueryViewTest {
                         withJsonPath("$.completed", is(false)),
                         withJsonPath("$.aocpEligible", is(true)),
                         withJsonPath("$.aocpTotalCost", is(caseDetail.getAocpTotalCost().doubleValue()))
+                ))
+        ));
+    }
+
+    @Test
+    public void shouldFindReservedCase() {
+        final String postcode = "AB1 2CD";
+        final String urn = "TFL1234567";
+
+        final JsonEnvelope queryEnvelope = envelope()
+                .with(metadataWithRandomUUID("sjp.query.case"))
+                .withPayloadOf(urn, "urn")
+                .withPayloadOf(CASE_ID, "caseId")
+                .build();
+
+        OffenceDetail offenceDetail = OffenceDetail.builder().withCompensation(BigDecimal.ONE).withAocpStandardPenalty(new BigDecimal("1.1")).build();
+        offenceDetail.setSequenceNumber(1);
+
+        CaseDetail caseDetail = CaseDetailBuilder.aCase()
+                .withDefendantDetail(
+                        aDefendantDetail().withPostcode(postcode).withId(randomUUID()).withOffences(Arrays.asList(offenceDetail)).build())
+                .withCosts(BigDecimal.ONE)
+                .withVictimSurcharge(BigDecimal.TEN)
+                .withCompleted(false).withProsecutingAuthority("TFL")
+                .withCaseId(randomUUID())
+                .withReserveCase(new ReserveCase(CASE_ID, URN, randomUUID(), ZonedDateTime.parse("2007-12-03T10:15:30Z")))
+                .build();
+
+
+        JsonObject prosecutorPayload = createObjectBuilder()
+                .add("fullName", "Transport for London")
+                .add("policeFlag", false)
+                .build();
+
+        final CaseView caseView = new CaseView(caseDetail, prosecutorPayload);
+        when(caseService.findCase(CASE_ID)).thenReturn(caseView);
+        when(caseService.getUserName(any(), any())).thenReturn("user name and last name");
+
+        final JsonEnvelope result = sjpQueryView.findCase(queryEnvelope);
+
+        assertThat(result, jsonEnvelope(metadata().withName("sjp.query.case-response"),
+                payload().isJson(allOf(
+                        withJsonPath("$.urn", is(caseDetail.getUrn())),
+                        withJsonPath("$.reservedBy", is(caseDetail.getReserveCase().get(0).getReservedBy().toString())),
+                        withJsonPath("$.reservedAt", is("2007-12-03T10:15:30.000Z")),
+                        withJsonPath("$.reservedByName", is("user name and last name"))
                 ))
         ));
     }

@@ -200,6 +200,18 @@ subscriptions_descriptor:
         - name: sjp.events.reset-aocp-session-requested
           schema_uri: http://justice.gov.uk/json/schemas/domains/sjp/event/reset-aocp-session-requested.json
 
+        - name: sjp.events.case-reserved
+          schema_uri: http://justice.gov.uk/json/schemas/domains/sjp/event/case-reserved.json
+
+        - name: sjp.events.case-already-reserved
+          schema_uri: http://justice.gov.uk/json/schemas/domains/sjp/event/case-already-reserved.json
+
+        - name: sjp.events.case-unreserved
+          schema_uri: http://justice.gov.uk/json/schemas/domains/sjp/event/case-unreserved.json
+
+        - name: sjp.events.case-already-unreserved
+          schema_uri: http://justice.gov.uk/json/schemas/domains/sjp/event/case-already-unreserved.json
+
       event_source_name: sjp
 
     - name: public event subscription

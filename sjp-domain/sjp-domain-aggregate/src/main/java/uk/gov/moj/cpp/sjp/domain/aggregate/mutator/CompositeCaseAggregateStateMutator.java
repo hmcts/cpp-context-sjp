@@ -15,6 +15,8 @@ import uk.gov.moj.cpp.sjp.domain.disability.DisabilityNeeds;
 import uk.gov.moj.cpp.sjp.domain.plea.Plea;
 import uk.gov.moj.cpp.sjp.event.AllOffencesWithdrawalRequestCancelled;
 import uk.gov.moj.cpp.sjp.event.AllOffencesWithdrawalRequested;
+import uk.gov.moj.cpp.sjp.event.CaseReserved;
+import uk.gov.moj.cpp.sjp.event.CaseUnReserved;
 import uk.gov.moj.cpp.sjp.event.DefendantAocpResponseTimerExpired;
 import uk.gov.moj.cpp.sjp.event.ApplicationStatusChanged;
 import uk.gov.moj.cpp.sjp.event.CCApplicationStatusUpdated;
@@ -335,6 +337,12 @@ final class CompositeCaseAggregateStateMutator implements AggregateStateMutator<
     private static final AggregateStateMutator<CaseListedInCriminalCourtsV2, CaseAggregateState> CASE_LISTED_IN_CRIMINAL_COURTS_V_2 =
             ((event, state) -> state.markCaseListed());
 
+    private static final AggregateStateMutator<CaseReserved, CaseAggregateState> CASE_RESERVED =
+            ((event, state) -> state.markCaseReserved());
+
+    private static final AggregateStateMutator<CaseUnReserved, CaseAggregateState> CASE_UNRESERVED =
+            ((event, state) -> state.markCaseUnReserved());
+
     static final CompositeCaseAggregateStateMutator INSTANCE = new CompositeCaseAggregateStateMutator();
 
     private final Map<Class, AggregateStateMutator> eventToStateMutator;
@@ -410,6 +418,8 @@ final class CompositeCaseAggregateStateMutator implements AggregateStateMutator<
                 .put(PaymentTermsChanged.class, PAYMENT_TERMS_CHANGED_CASE_AGGREGATE_STATE_AGGREGATE_STATE_MUTATOR)
                 .put(ConvictionCourtResolved.class, RESOLVE_CONVICTION_COURT_DETAILS_MUTATOR)
                 .put(DecisionResubmitted.class, DECISION_RESUBMITTED_CASE_AGGREGATE_STATE_AGGREGATE_STATE_MUTATOR)
+                .put(CaseReserved.class, CASE_RESERVED)
+                .put(CaseUnReserved.class, CASE_UNRESERVED)
                 .build();
     }
 

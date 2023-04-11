@@ -41,6 +41,7 @@ import uk.gov.moj.cpp.sjp.domain.aggregate.handler.DeleteDocsHandler;
 import uk.gov.moj.cpp.sjp.domain.aggregate.handler.FinancialImpositionHandler;
 import uk.gov.moj.cpp.sjp.domain.aggregate.handler.MarkAsLegalSocCheckedHandler;
 import uk.gov.moj.cpp.sjp.domain.aggregate.handler.OffenceWithdrawalHandler;
+import uk.gov.moj.cpp.sjp.domain.aggregate.handler.ReserveCaseHandler;
 import uk.gov.moj.cpp.sjp.domain.aggregate.handler.ResolveCaseStatusHandler;
 import uk.gov.moj.cpp.sjp.domain.aggregate.handler.ResolveConvictionCourtHandler;
 import uk.gov.moj.cpp.sjp.domain.aggregate.handler.ResubmitResultsHandler;
@@ -341,6 +342,14 @@ public class CaseAggregate implements Aggregate {
 
     public Stream<Object> resolveCaseStatus() {
         return apply(ResolveCaseStatusHandler.INSTANCE.resolveCaseStatus(state, CaseStatusResolver.resolve(state)));
+    }
+
+    public Stream<Object> reserveCase(final UUID reservedBy) {
+        return apply(ReserveCaseHandler.INSTANCE.reserveCase(state, reservedBy));
+    }
+
+    public Stream<Object> undoReserveCase(final UUID reservedBy) {
+        return applyAndResolveCaseReadiness(() -> ReserveCaseHandler.INSTANCE.unReserveCase(state, reservedBy));
     }
 
     public Stream<Object> changeCaseManagementStatus(final CaseManagementStatus caseManagementStatus) {

@@ -1,7 +1,6 @@
 package uk.gov.moj.cpp.sjp.command.controller;
 
 import static uk.gov.justice.services.core.annotation.Component.COMMAND_CONTROLLER;
-import static uk.gov.justice.services.core.enveloper.Enveloper.envelop;
 
 import uk.gov.justice.services.core.annotation.Handles;
 import uk.gov.justice.services.core.annotation.ServiceComponent;
@@ -155,6 +154,16 @@ public class NoActionController {
 
     @Handles("sjp.command.resolve-case-status")
     public void resolveCaseStatus(final JsonEnvelope envelope) {
+        send(envelope);
+    }
+
+    @Handles("sjp.command.reserve-case")
+    public void reserveCase(final JsonEnvelope envelope) {
+        send(envelope);
+    }
+
+    @Handles("sjp.command.undo-reserve-case")
+    public void undoReserveCase(final JsonEnvelope envelope) {
         send(envelope);
     }
 

@@ -151,6 +151,14 @@ public final class RuleConstants {
         return singletonList(GROUP_SYSTEM_USERS);
     }
 
+    public static List<String> reserveCaseGroups() {
+        return singletonList(GROUP_LEGAL_ADVISERS);
+    }
+
+    public static List<String> undoReserveCaseGroups() {
+        return asList(GROUP_SYSTEM_USERS, GROUP_LEGAL_ADVISERS);
+    }
+
     public static List<String> getDeleteFinancialMeansGroups() {
         return asList(GROUP_SYSTEM_USERS);
     }

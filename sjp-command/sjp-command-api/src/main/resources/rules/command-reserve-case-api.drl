@@ -1,0 +1,26 @@
+package uk.gov.moj.cpp.accesscontrol;
+
+import uk.gov.moj.cpp.accesscontrol.drools.Outcome;
+import uk.gov.moj.cpp.accesscontrol.drools.Action;
+import java.util.Arrays;
+import uk.gov.moj.cpp.sjp.command.api.accesscontrol.RuleConstants;
+
+global uk.gov.moj.cpp.accesscontrol.common.providers.UserAndGroupProvider userAndGroupProvider;
+
+rule "Command API  - reserve case"
+  when
+    $outcome: Outcome();
+    $action: Action(name == "sjp.reserve-case");
+     eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, RuleConstants.reserveCaseGroups()));
+  then
+    $outcome.setSuccess(true);
+end
+
+rule "Command API  - undo reserve case"
+  when
+    $outcome: Outcome();
+    $action: Action(name == "sjp.undo-reserve-case");
+     eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, RuleConstants.undoReserveCaseGroups()));
+  then
+    $outcome.setSuccess(true);
+end

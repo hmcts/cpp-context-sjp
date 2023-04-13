@@ -70,7 +70,8 @@ public class FindProsecutionCaseIT extends BaseIntegrationTest {
                 withJsonPath("$.defendants[0].personDefendant.personDetails.firstName", is("David")),
                 withJsonPath("$.defendants[0].personDefendant.personDetails.lastName", is("LLOYD")),
                 withJsonPath("$.defendants[0].personDefendant.personDetails.nationalInsuranceNumber", is(NATIONAL_INSURANCE_NUMBER)),
-                withJsonPath("$.defendants[0].offences[0].id", is(offenceId1.toString()))
+                withJsonPath("$.defendants[0].offences[0].id", is(offenceId1.toString())),
+                withJsonPath("$.defendants[0].offences[0].dvlaOffenceCode", is("DC10"))
         ));
     }
 
@@ -86,7 +87,8 @@ public class FindProsecutionCaseIT extends BaseIntegrationTest {
                 withJsonPath("$.defendants[0].masterDefendantId", is(defendantId.toString())),
                 withJsonPath("$.defendants[0].prosecutionCaseId", is(caseId.toString())),
                 withJsonPath("$.defendants[0].legalEntityDefendant.organisation.name", is(LEGAL_ENTITY_NAME)),
-                withJsonPath("$.defendants[0].offences[0].id", is(offenceId1.toString()))
+                withJsonPath("$.defendants[0].offences[0].id", is(offenceId1.toString())),
+                withJsonPath("$.defendants[0].offences[0].dvlaOffenceCode", is("DC10"))
         ));
     }
 

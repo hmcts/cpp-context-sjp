@@ -26,7 +26,7 @@
         <authorisation.service.version>0.1.49</authorisation.service.version>
         <usersgroups.version>8.0.7</usersgroups.version>
         <progression.version>8.0.100</progression.version>
-        <prosecutioncasefile.version>8.0.20</prosecutioncasefile.version>
+        <prosecutioncasefile.version>8.0.41</prosecutioncasefile.version>
         <access-control-sjp-providers.version>4.1.4-ATCM</access-control-sjp-providers.version>
         <cpp.framework.action.mapping.enabled>true</cpp.framework.action.mapping.enabled>
         <mvn.site.url>file://${project.build.directory}/site</mvn.site.url>

@@ -13,8 +13,10 @@ import org.apache.deltaspike.data.api.Repository;
 @Repository
 public interface CaseSearchResultRepository extends EntityRepository<CaseSearchResult, UUID> {
 
-    @Query("from CaseSearchResult as r inner join fetch r.caseSummary as c where upper(r.lastName) = upper(:lastName) and r.dateAdded = " +
-            "(select max(z.dateAdded) from CaseSearchResult as z where z.caseId=r.caseId and upper(z.lastName) = upper(:lastName)) " +
+    @Query("from CaseSearchResult as r inner join fetch r.caseSummary as c where cast(r.id as string) IN " +
+            "(select cast(x.id as string) from CaseSearchResult as x where upper(x.lastName) = upper(:lastName) and x.caseId = r.caseId and x.dateAdded = " +
+            "(select max(z.dateAdded) from CaseSearchResult as z where z.caseId=x.caseId and upper(z.lastName) = upper(:lastName))" +
+            ") " +
             "and r.caseSummary.prosecutingAuthority like :prosecutingAuthority " +
             "order by r.firstName ASC, c.postingDate DESC")
     List<CaseSearchResult> findByLastName(@QueryParam("prosecutingAuthority") String prosecutingAuthority, @QueryParam("lastName") String lastName);
@@ -27,8 +29,10 @@ public interface CaseSearchResultRepository extends EntityRepository<CaseSearchR
 
     List<CaseSearchResult> findByCaseId(UUID caseId);
 
-    @Query("from CaseSearchResult as r inner join fetch r.caseSummary as c where upper(r.legalEntityName) = upper(:legalEntityName) and r.dateAdded = " +
-            "(select max(z.dateAdded) from CaseSearchResult as z where z.caseId=r.caseId and upper(z.legalEntityName) = upper(:legalEntityName)) " +
+    @Query("from CaseSearchResult as r inner join fetch r.caseSummary as c where cast(r.id as string) IN " +
+            "(select cast(x.id as string) from CaseSearchResult as x where upper(x.legalEntityName) = upper(:legalEntityName) and x.caseId = r.caseId and x.dateAdded = " +
+            "(select max(z.dateAdded) from CaseSearchResult as z where z.caseId=x.caseId and upper(z.legalEntityName) = upper(:legalEntityName))" +
+            ") " +
             "and r.caseSummary.prosecutingAuthority like :prosecutingAuthority " +
             "order by r.legalEntityName ASC, c.postingDate DESC")
     List<CaseSearchResult> findByLegalEntityName(@QueryParam("prosecutingAuthority") String prosecutingAuthority, @QueryParam("legalEntityName") String legalEntityName);

@@ -69,6 +69,7 @@ public class ProsecutionCaseService {
     private static final String OFFENCES_KEY = "offences";
     private static final String WELSH_LANGUAGE_CODE = "W";
     public static final String INACTIVE = "INACTIVE";
+    private static final String DVLA_CODE = "dvlaCode";
 
     @Inject
     private CaseRepository caseRepository;
@@ -250,7 +251,6 @@ public class ProsecutionCaseService {
 
         final Optional<JsonObject> offenceRefData = referenceDataService.getOffenceData(offence.getCode());
 
-
         return Offence.offence()
                 .withId(offence.getId())
                 .withOffenceDefinitionId(fromString(offenceDefinitionsByOffenceCode.get(offence.getCode()).getString("offenceId")))
@@ -265,6 +265,7 @@ public class ProsecutionCaseService {
                 .withOffenceFacts(createOffenceFactsView(offence, prosecutionCaseFileOffenceDetails))
                 .withOffenceDateCode(offence.getLibraOffenceDateCode())
                 .withOffenceCode(offence.getCode())
+                .withDvlaOffenceCode(offenceDefinitionsByOffenceCode.get(offence.getCode()).getString(DVLA_CODE, null))
                 .withCount(
                         ofNullable(offence.getSequenceNumber())
                                 .map(e -> e > 0 ? e - 1 : 0).orElse(0))

@@ -6,6 +6,7 @@ import static java.util.function.Function.identity;
 import static java.util.stream.Collectors.toMap;
 
 import uk.gov.justice.core.courts.BailStatus;
+import uk.gov.justice.core.courts.JurisdictionType;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.sjp.event.processor.service.ReferenceDataService;
 
@@ -154,12 +155,16 @@ public class JCachedReferenceData {
         return resultDefinitionMap.get(resultDefinitionId);
     }
 
-    public Optional<JsonObject> getVerdict(final String verdictType,
-                                 final JsonEnvelope envelopeFrom) {
+    public Optional<JsonObject> getVerdictForMagistrate(final String verdictType,
+                                                        final JsonEnvelope envelopeFrom) {
         if (verdictTypesMap.get(verdictType) == null) {
             referenceDataService
                     .getAllVerdictTypes(envelopeFrom)
-                    .forEach(e -> verdictTypesMap.put(verdictType, e));
+                    .forEach(e -> {
+                        if (e.getString("jurisdiction").equals(JurisdictionType.MAGISTRATES.name())) {
+                            verdictTypesMap.put(e.getString("verdictCode"), e);
+                        }
+                    });
         }
         return Optional.ofNullable(verdictTypesMap.get(verdictType));
     }

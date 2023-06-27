@@ -33,6 +33,7 @@ import static uk.gov.moj.cpp.sjp.persistence.repository.OnlinePleaRepository.FIE
 import static uk.gov.moj.cpp.sjp.persistence.repository.OnlinePleaRepository.FIELDS.LEGALENTITY_HOME;
 import static uk.gov.moj.cpp.sjp.persistence.repository.OnlinePleaRepository.FIELDS.LEGALENTITY_MOBILE;
 import static uk.gov.moj.cpp.sjp.persistence.repository.OnlinePleaRepository.FIELDS.LEGALENTITY_NAME;
+import static uk.gov.moj.cpp.sjp.persistence.repository.OnlinePleaRepository.FIELDS.LEGALENTITY_POSITION;
 import static uk.gov.moj.cpp.sjp.persistence.repository.OnlinePleaRepository.FIELDS.LEGALENTITY_POSTCODE;
 import static uk.gov.moj.cpp.sjp.persistence.repository.OnlinePleaRepository.FIELDS.NET_TURNOVER;
 import static uk.gov.moj.cpp.sjp.persistence.repository.OnlinePleaRepository.FIELDS.GROSS_TURNOVER;
@@ -384,7 +385,8 @@ public abstract class OnlinePleaRepository implements EntityRepository<OnlinePle
                     TRADING_MORE_THAN_TWELVE_MONTHS,
                     NUMBER_OF_EMPLOYEES,
                     GROSS_TURNOVER,
-                    NET_TURNOVER
+                    NET_TURNOVER,
+                    LEGALENTITY_POSITION
             );
         }
     }

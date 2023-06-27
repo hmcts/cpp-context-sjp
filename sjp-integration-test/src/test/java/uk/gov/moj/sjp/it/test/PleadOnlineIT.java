@@ -21,8 +21,6 @@ import uk.gov.moj.cpp.sjp.domain.plea.PleaMethod;
 import uk.gov.moj.cpp.sjp.domain.plea.PleaType;
 import uk.gov.moj.cpp.sjp.domain.verdict.VerdictType;
 import uk.gov.moj.cpp.sjp.event.CaseReferredForCourtHearing;
-import uk.gov.moj.cpp.sjp.persistence.entity.Address;
-import uk.gov.moj.cpp.sjp.persistence.entity.ContactDetails;
 import uk.gov.moj.cpp.sjp.persistence.entity.PersonalDetails;
 import uk.gov.moj.sjp.it.command.CreateCase;
 import uk.gov.moj.sjp.it.helper.CaseSearchResultHelper;
@@ -63,7 +61,6 @@ import static java.time.LocalDate.now;
 import static java.util.Arrays.asList;
 import static java.util.Collections.singleton;
 import static java.util.Collections.singletonList;
-import static java.util.Objects.nonNull;
 import static java.util.UUID.fromString;
 import static java.util.UUID.randomUUID;
 import static java.util.stream.Collectors.toList;
@@ -135,61 +132,9 @@ import com.jayway.awaitility.Awaitility;
 import java.io.IOException;
 import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
-import uk.gov.justice.json.schemas.domains.sjp.Gender;
-import uk.gov.justice.json.schemas.domains.sjp.User;
-import uk.gov.justice.services.messaging.JsonEnvelope;
-import uk.gov.moj.cpp.sjp.domain.DefendantCourtInterpreter;
-import uk.gov.moj.cpp.sjp.domain.DefendantCourtOptions;
-import uk.gov.moj.cpp.sjp.domain.decision.OffenceDecisionInformation;
-import uk.gov.moj.cpp.sjp.domain.decision.ReferForCourtHearing;
-import uk.gov.moj.cpp.sjp.domain.plea.PleaMethod;
-import uk.gov.moj.cpp.sjp.domain.plea.PleaType;
-import uk.gov.moj.cpp.sjp.domain.verdict.VerdictType;
-import uk.gov.moj.cpp.sjp.event.CaseReferredForCourtHearing;
-import uk.gov.moj.cpp.sjp.persistence.entity.PersonalDetails;
-import uk.gov.moj.sjp.it.command.CreateCase;
-import uk.gov.moj.sjp.it.helper.CaseSearchResultHelper;
-import uk.gov.moj.sjp.it.helper.DecisionHelper;
-import uk.gov.moj.sjp.it.helper.EmployerHelper;
-import uk.gov.moj.sjp.it.helper.EventListener;
-import uk.gov.moj.sjp.it.helper.FinancialMeansHelper;
-import uk.gov.moj.sjp.it.helper.PleadOnlineHelper;
-import uk.gov.moj.sjp.it.model.DecisionCommand;
+
 import uk.gov.moj.sjp.it.model.PleasView;
-import uk.gov.moj.sjp.it.model.ProsecutingAuthority;
-import uk.gov.moj.sjp.it.pollingquery.CasePoller;
-import uk.gov.moj.sjp.it.stub.UsersGroupsStub;
-import uk.gov.moj.sjp.it.util.CaseAssignmentRestrictionHelper;
-import uk.gov.moj.sjp.it.util.Defaults;
-import uk.gov.moj.sjp.it.util.HttpClientUtil;
-import uk.gov.moj.sjp.it.util.SjpDatabaseCleaner;
-import uk.gov.moj.sjp.it.verifier.PersonInfoVerifier;
 
-import java.io.StringReader;
-import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.UUID;
-
-import javax.json.JsonObject;
-import javax.json.JsonObjectBuilder;
-import javax.json.JsonValue;
-import javax.ws.rs.core.Response;
-
-import com.google.common.collect.Sets;
-import com.jayway.jsonpath.ReadContext;
-import com.jayway.restassured.path.json.JsonPath;
-import org.apache.commons.lang.text.StrSubstitutor;
-import org.hamcrest.Matcher;
-import org.hamcrest.Matchers;
-import org.json.JSONObject;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
 @SuppressWarnings({"squid:S1607"})
 public class PleadOnlineIT extends BaseIntegrationTest {
     private static final String TEMPLATE_PLEA_NOT_GUILTY_PAYLOAD = "raml/json/sjp.command.plead-online__not-guilty.json";
@@ -354,6 +299,11 @@ public class PleadOnlineIT extends BaseIntegrationTest {
         caseSearchResultHelper.verifyPleaReceivedDate();
         //verify employer
         final String defendantId = pleadOnlineHelper.getCaseDefendantId().toString();
+        //verify online-plea
+        final Matcher expectedResult = getCommonFieldLegalEntityMatchers(pleaPayload, createCasePayloadBuilder.getId().toString(), defendantId, expectToHaveFinances);
+        userIds.forEach(userId -> getOnlinePlea(createCasePayloadBuilder.getId().toString(),
+                createCasePayloadBuilder.getDefendantBuilder().getId().toString(),
+                expectedResult, userId));
         //verify financial-means
         financialMeansHelper.getFinancialMeans(defendantId, getFinancialMeansUpdatedPayloadContentMatcher(pleaPayload, defendantId));
         financialMeansHelper.getEventFromPublicTopic(getFinancialMeansUpdatedPayloadContentMatcher(pleaPayload, defendantId));
@@ -1058,23 +1008,17 @@ public class PleadOnlineIT extends BaseIntegrationTest {
         ));
     }
 
-    private List<Matcher> getCommonFieldLegalEntityMatchers(final JSONObject onlinePleaPayload, final String caseId, final String defendantId, final boolean expectToHaveFinances) {
+    private Matcher getCommonFieldLegalEntityMatchers(final JSONObject onlinePleaPayload, final String caseId, final String defendantId, final boolean expectToHaveFinances) {
         final JSONObject legalEntityDefendant = onlinePleaPayload.getJSONObject("legalEntityDefendant");
-        final JSONObject legalEntityFinancialMeans = onlinePleaPayload.getJSONObject("legalEntityFinancialMeans");
-        final JSONObject financialMeans = onlinePleaPayload.getJSONObject("financialMeans");
-        final JSONObject accommodationOutgoing = onlinePleaPayload.getJSONArray("outgoings").getJSONObject(0);
-        final JSONObject councilTaxOutgoing = onlinePleaPayload.getJSONArray("outgoings").getJSONObject(1);
-        final JSONObject householdBillsOutgoing = onlinePleaPayload.getJSONArray("outgoings").getJSONObject(2);
-        final JSONObject travelExpensesOutgoing = onlinePleaPayload.getJSONArray("outgoings").getJSONObject(3);
-        final JSONObject childMaintenanceOutgoing = onlinePleaPayload.getJSONArray("outgoings").getJSONObject(4);
-        final JSONObject otherOutgoing = onlinePleaPayload.getJSONArray("outgoings").getJSONObject(5);
         final List<Matcher> matchers = new ArrayList<>(asList(
                 withJsonPath("$.caseId", equalTo(caseId)),
-                withJsonPath("$.defendantId", equalTo(defendantId))
-
+                withJsonPath("$.defendantId", equalTo(defendantId)),
                 //personal details
+                withJsonPath("$.onlinePleaLegalEntityDetails.legalEntityName", equalTo(legalEntityDefendant.getString("name"))),
+                withJsonPath("$.onlinePleaLegalEntityDetails.positionOfRepresentative", equalTo(legalEntityDefendant.getString("position")))
         ));
-        return matchers;
+        return isJson(allOf(
+                matchers.<Matcher<ReadContext>>toArray(new Matcher[matchers.size()])));
     }
 
     private List<Matcher> getCommonFieldMatchers(final JSONObject onlinePleaPayload, final String caseId, final String defendantId, final boolean expectToHaveFinances) {

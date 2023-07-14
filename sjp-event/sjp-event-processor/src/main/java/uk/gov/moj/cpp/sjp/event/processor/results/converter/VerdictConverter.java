@@ -48,7 +48,7 @@ public class VerdictConverter {
 
         if (Objects.nonNull(verdictType)
                 && !verdictType.equals(VerdictType.NO_VERDICT)) {
-            final Optional<JsonObject> verdictOptional = jCachedReferenceData.getVerdictForMagistrate(verdictTypeMap.get(verdictType.name()), emptyEnvelope);
+            final Optional<JsonObject> verdictOptional = jCachedReferenceData.getVerdict(verdictTypeMap.get(verdictType), emptyEnvelope);
             if (verdictOptional.isPresent()) {
                 final JsonObject verdictObject = verdictOptional.get();
                 final String id = verdictObject.getString("id");

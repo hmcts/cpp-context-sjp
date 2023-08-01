@@ -304,9 +304,7 @@
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-failsafe-plugin</artifactId>
                         <configuration>
-                            <systemPropertyVariables>
-                                <ELASTICSEARCH_URI>http://127.0.0.1:9500</ELASTICSEARCH_URI>
-                            </systemPropertyVariables>
+
                         </configuration>
                         <executions>
                             <execution>

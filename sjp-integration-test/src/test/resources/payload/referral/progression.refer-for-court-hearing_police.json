@@ -9,9 +9,7 @@
           {
             "offences": [
               {
-                "endDate": "2019-01-10",
                 "count": 1,
-                "convictionDate": "${CONVICTION_DATE}",
                 "orderIndex": 1,
                 "id": "${OFFENCE_ID1}",
                 "wording": "Committed some offence",
@@ -25,15 +23,14 @@
                 },
                 "offenceFacts" : {
                   "vehicleRegistration" : "FG59 4FD",
-                  "vehicleMake" : "Ford",
-                  "alcoholReadingAmount": 100,
-                  "alcoholReadingMethod": "A"
+                  "vehicleMake" : "Ford"
                 },
-                "maxPenalty": "Max Penalty"
+                "offenceDateCode": 1
               }
             ],
             "numberOfPreviousConvictionsCited": 2,
             "id": "${DEFENDANT_ID}",
+            "masterDefendantId": "${DEFENDANT_ID}",
             "prosecutionCaseId": "${CASE_ID}",
             "personDefendant": {
               "selfDefinedEthnicityId": "1daefec3-2f76-8109-82d9-2e60544a6c01",
@@ -57,7 +54,6 @@
                 "documentationLanguageNeeds": "${HEARING_LANGUAGE}",
                 "firstName": "David",
                 "occupationCode": "1",
-                "ethnicityId": "1daefec3-2f76-8109-82d9-2e60544a6c01",
                 "nationalInsuranceNumber": "${NINO}",
                 "contact": {
                   "secondaryEmail": "secondary-email@abv.bg",
@@ -120,6 +116,10 @@
           {
             "judicialRoleTypeSJP": "LEGAL_ADVISER",
             "judicialName": "John Smith"
+          },
+          {
+            "judicialRoleTypeSJP": "MAGISTRATE",
+            "judicialName": "John Smith ${MAGISTRATE_ID}"
           }
         ]
       }
@@ -135,7 +135,7 @@
           {
             "hearingLanguageNeeds": "${HEARING_LANGUAGE}",
             "referralReason": {
-              "description": "referral reason",
+              "description": "Critical (Defendant has to attend)",
               "id": "${REFERRAL_REASON_ID}",
               "defendantId": "${DEFENDANT_ID}"
             },

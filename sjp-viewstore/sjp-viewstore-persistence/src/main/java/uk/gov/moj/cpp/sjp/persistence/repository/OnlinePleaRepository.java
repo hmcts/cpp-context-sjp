@@ -22,6 +22,7 @@ import static uk.gov.moj.cpp.sjp.persistence.repository.OnlinePleaRepository.FIE
 import static uk.gov.moj.cpp.sjp.persistence.repository.OnlinePleaRepository.FIELDS.EMPLOYMENT_INCOME_PAYMENT_AMOUNT;
 import static uk.gov.moj.cpp.sjp.persistence.repository.OnlinePleaRepository.FIELDS.EMPLOYMENT_STATUS;
 import static uk.gov.moj.cpp.sjp.persistence.repository.OnlinePleaRepository.FIELDS.EMPLOYMENT_STATUS_DETAILS;
+import static uk.gov.moj.cpp.sjp.persistence.repository.OnlinePleaRepository.FIELDS.GROSS_TURNOVER;
 import static uk.gov.moj.cpp.sjp.persistence.repository.OnlinePleaRepository.FIELDS.HEARING_LANGUAGE;
 import static uk.gov.moj.cpp.sjp.persistence.repository.OnlinePleaRepository.FIELDS.INTERPRETER_LANGUAGE;
 import static uk.gov.moj.cpp.sjp.persistence.repository.OnlinePleaRepository.FIELDS.LEGALENTITY_ADDRESS_1;
@@ -36,7 +37,6 @@ import static uk.gov.moj.cpp.sjp.persistence.repository.OnlinePleaRepository.FIE
 import static uk.gov.moj.cpp.sjp.persistence.repository.OnlinePleaRepository.FIELDS.LEGALENTITY_POSITION;
 import static uk.gov.moj.cpp.sjp.persistence.repository.OnlinePleaRepository.FIELDS.LEGALENTITY_POSTCODE;
 import static uk.gov.moj.cpp.sjp.persistence.repository.OnlinePleaRepository.FIELDS.NET_TURNOVER;
-import static uk.gov.moj.cpp.sjp.persistence.repository.OnlinePleaRepository.FIELDS.GROSS_TURNOVER;
 import static uk.gov.moj.cpp.sjp.persistence.repository.OnlinePleaRepository.FIELDS.NUMBER_OF_EMPLOYEES;
 import static uk.gov.moj.cpp.sjp.persistence.repository.OnlinePleaRepository.FIELDS.OUTGOINGS_ACCOMMODATION_AMOUNT;
 import static uk.gov.moj.cpp.sjp.persistence.repository.OnlinePleaRepository.FIELDS.OUTGOINGS_CHILD_MAINTENANCE_AMOUNT;

@@ -107,7 +107,7 @@ public class DischargeDecisionResultAggregatorTest extends  BaseDecisionResultAg
                         hasProperty("orderedDate", Matchers.is(resultedOn.format(DATE_FORMAT))),
                         hasProperty("durationElement", Matchers.is(notNullValue())),
                         hasProperty("resultText", Matchers.is("Conditional discharge\n" +
-                                "Period of conditional discharge 2 Months")),
+                                "Period of conditional discharge 2 Months")),
                         hasProperty("judicialResultPrompts", allOf(hasItem(allOf(
                                 hasProperty("judicialResultPromptTypeId", Matchers.is(fromString("d3205319-84cf-4c5b-9d7a-7e4bb1865054"))),
                                 hasProperty("value", Matchers.is("2 Months")))

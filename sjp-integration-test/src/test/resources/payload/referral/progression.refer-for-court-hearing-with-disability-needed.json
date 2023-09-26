@@ -9,9 +9,7 @@
           {
             "offences": [
               {
-                "endDate": "2019-01-10",
                 "count": 1,
-                "convictionDate": "${CONVICTION_DATE}",
                 "orderIndex": 1,
                 "id": "${OFFENCE_ID1}",
                 "wording": "Committed some offence",
@@ -23,15 +21,16 @@
                   "notifiedPleaValue": "NO_NOTIFICATION",
                   "notifiedPleaDate": "${PLEA_DATE}"
                 },
+                "offenceDateCode": 1,
                 "offenceFacts" : {
                   "vehicleRegistration" : "FG59 4FD",
                   "vehicleMake" : "Ford"
-                },
-                "maxPenalty": "Max Penalty"
+                }
               }
             ],
             "numberOfPreviousConvictionsCited": 2,
             "id": "${DEFENDANT_ID}",
+            "masterDefendantId": "${DEFENDANT_ID}",
             "prosecutionCaseId": "${CASE_ID}",
             "personDefendant": {
               "selfDefinedEthnicityId": "1daefec3-2f76-8109-82d9-2e60544a6c01",
@@ -55,7 +54,6 @@
                 "firstName": "David",
                 "interpreterLanguageNeeds": "French",
                 "occupationCode": "1",
-                "ethnicityId": "1daefec3-2f76-8109-82d9-2e60544a6c01",
                 "nationalInsuranceNumber": "${NINO}",
                 "contact": {
                   "secondaryEmail": "secondary-email@abv.bg",
@@ -83,8 +81,7 @@
               "driverNumber": "${DRIVER_NUMBER}",
               "arrestSummonsNumber": "asn",
               "pncId": "pncId"
-            },
-            "mitigation":"I was drunk at the time"
+            }
           }
         ],
         "initiationCode": "J",
@@ -126,7 +123,7 @@
           {
             "hearingLanguageNeeds": "${HEARING_LANGUAGE}",
             "referralReason": {
-              "description": "referral reason",
+              "description": "Critical (Defendant has to attend)",
               "id": "${REFERRAL_REASON_ID}",
               "defendantId": "${DEFENDANT_ID}"
             },

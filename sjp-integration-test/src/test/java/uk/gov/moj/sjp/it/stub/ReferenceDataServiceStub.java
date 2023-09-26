@@ -21,12 +21,12 @@ import static uk.gov.justice.service.wiremock.testutil.InternalEndpointMockUtils
 import static uk.gov.justice.services.common.http.HeaderConstants.ID;
 import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 import static uk.gov.moj.sjp.it.Constants.DEFAULT_OFFENCE_CODE;
+import static uk.gov.moj.sjp.it.util.Defaults.DEFAULT_AOCP_COURT_HOUSE_OU_CODE;
+import static uk.gov.moj.sjp.it.util.Defaults.DEFAULT_AOCP_LJA_NATIONAL_COURT_CODE;
 import static uk.gov.moj.sjp.it.util.Defaults.DEFAULT_LONDON_COURT_HOUSE_OU_CODE;
 import static uk.gov.moj.sjp.it.util.Defaults.DEFAULT_LONDON_LJA_NATIONAL_COURT_CODE;
 import static uk.gov.moj.sjp.it.util.Defaults.DEFAULT_NON_LONDON_COURT_HOUSE_OU_CODE;
 import static uk.gov.moj.sjp.it.util.Defaults.DEFAULT_NON_LONDON_LJA_NATIONAL_COURT_CODE;
-import static uk.gov.moj.sjp.it.util.Defaults.DEFAULT_AOCP_LJA_NATIONAL_COURT_CODE;
-import static uk.gov.moj.sjp.it.util.Defaults.DEFAULT_AOCP_COURT_HOUSE_OU_CODE;
 import static uk.gov.moj.sjp.it.util.FileUtil.getFileContentAsJson;
 import static uk.gov.moj.sjp.it.util.FileUtil.getPayload;
 
@@ -61,8 +61,10 @@ public class ReferenceDataServiceStub {
     private static final String QUERY_PROSECUTOR_PTIURN_PATH = "/referencedata-query-api/query/api/rest/referencedata/prosecutor?ptiurn=TFL";
     private static final String QUERY_PROSECUTOR_PTIURN_MEDIA_TYPE = "application/vnd.referencedata.query.prosecutor.by.ptiurn+json";
     private static final String QUERY_VERDICT_TYPES_MIME_TYPE = "application/vnd.reference-data.verdict-types+json";
+    private static final String QUERY_VERDICT_TYPES_BY_JURISDICTION__MIME_TYPE = "application/vnd.referencedata.query.verdict-types-jurisdiction+json";
     private static final String QUERY_BAIL_STATUSES_MIME_TYPE = "application/vnd.referencedata.bail-statuses+json";
     private static final String QUERY_ALL_RESULT_DEFINITIONS_MIME_TYPE = "application/vnd.referencedata.get-all-result-definitions+json";
+    private static final String QUERY_RESULT_DEFINITIONS_MIME_TYPE = "application/vnd.referencedata.query-result-definitions+json";
     private static final String QUERY_PROSECUTOR_BY_PTI_URN_MIME_TYPE = "application/vnd.referencedata.query.prosecutor.by.ptiurn+json";
     private static final String QUERY_ALL_FIXED_LIST_MIME_TYPE = "application/vnd.referencedata.get-all-fixed-list+json";
 
@@ -84,6 +86,19 @@ public class ReferenceDataServiceStub {
                         .withHeader(ID, randomUUID().toString())
                         .withHeader(CONTENT_TYPE, APPLICATION_JSON)
                         .withBody(getPayload("stub-data/referencedata.all-result-definitions.json"))));
+    }
+
+    public static void stubResultDefinitionByResultCode(final String resultCode) {
+        stubPingFor(REFERENCEDATA_SERVICE);
+        final String urlPath = QUERY_API_PATH + "/result-definitions";
+
+        stubFor(get(urlPathEqualTo(urlPath))
+                .withHeader(ACCEPT, equalTo(QUERY_RESULT_DEFINITIONS_MIME_TYPE))
+                .willReturn(aResponse().withStatus(SC_OK)
+                        .withHeader(ID, randomUUID().toString())
+                        .withHeader(CONTENT_TYPE, APPLICATION_JSON)
+                        .withBody(getPayload("stub-data/referencedata.result-definition-by-resultcode.json")
+                                .replaceAll("RESULT_CODE", resultCode))));
     }
 
     public static void stubFixedLists() {
@@ -121,6 +136,20 @@ public class ReferenceDataServiceStub {
                         .withHeader(CONTENT_TYPE, APPLICATION_JSON)
                         .withBody(
                                 getPayload("stub-data/referencedata.verdict-types.json")
+                        )));
+    }
+
+    public static void stubQueryForVerdictTypesByJurisdiction() {
+        stubPingFor(REFERENCEDATA_SERVICE);
+        final String urlPath = QUERY_API_PATH + "/verdict-types-jurisdiction";
+
+        stubFor(get(urlPathEqualTo(urlPath))
+                .withHeader(ACCEPT, equalTo(QUERY_VERDICT_TYPES_BY_JURISDICTION__MIME_TYPE))
+                .willReturn(aResponse().withStatus(SC_OK)
+                        .withHeader(ID, randomUUID().toString())
+                        .withHeader(CONTENT_TYPE, APPLICATION_JSON)
+                        .withBody(
+                                getPayload("stub-data/referencedata.verdict-types-by-MAGISTRATE-jurisdiction.json")
                         )));
     }
 

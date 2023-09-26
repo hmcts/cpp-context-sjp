@@ -20,9 +20,12 @@ import javax.inject.Inject;
 import javax.json.JsonObject;
 
 import com.google.common.collect.ImmutableMap;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class VerdictConverter {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(VerdictConverter.class);
     public static final Map<String, String> verdictTypeMap = ImmutableMap.of(
             "NO_VERDICT", "None",
             "FOUND_GUILTY", "G",
@@ -37,20 +40,21 @@ public class VerdictConverter {
     }
 
     public Verdict getVerdict(final ConvictionInfo convictionInfo) {
+        return getVerdict(convictionInfo.getVerdictType(), convictionInfo.getOffenceId(), convictionInfo.getConvictionDate());
+    }
+
+    public Verdict getVerdict(final VerdictType verdictType, final UUID offenceId, final LocalDate convictionDate) {
         final JsonEnvelope emptyEnvelope = envelopeFrom(metadataBuilder()
                 .withId(UUID.randomUUID())
-                .withName("referencedata.query.verdict-types")
+                .withName("referencedata.query.verdict-types-jurisdiction")
                 .build(), NULL);
-
-        final VerdictType verdictType = convictionInfo.getVerdictType();
-        final UUID offenceId = convictionInfo.getOffenceId();
-        final LocalDate convictionDate = convictionInfo.getConvictionDate();
 
         if (Objects.nonNull(verdictType)
                 && !verdictType.equals(VerdictType.NO_VERDICT)) {
-            final Optional<JsonObject> verdictOptional = jCachedReferenceData.getVerdictForMagistrate(verdictTypeMap.get(verdictType.name()), emptyEnvelope);
+            final Optional<JsonObject> verdictOptional = jCachedReferenceData.getVerdict(verdictTypeMap.get(verdictType.name()), emptyEnvelope);
             if (verdictOptional.isPresent()) {
                 final JsonObject verdictObject = verdictOptional.get();
+                LOGGER.info("verdict from reference data : {}",verdictObject);
                 final String id = verdictObject.getString("id");
                 return verdict()
                         .withVerdictDate(convictionDate != null ? convictionDate.toString() : null)

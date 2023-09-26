@@ -1,7 +1,5 @@
 package uk.gov.moj.sjp.it.util;
 
-import static java.util.UUID.randomUUID;
-
 import uk.gov.justice.core.courts.DelegatedPowers;
 import uk.gov.justice.json.schemas.domains.sjp.User;
 

@@ -4,6 +4,7 @@ import static java.util.Collections.unmodifiableList;
 import static java.util.Optional.ofNullable;
 
 import uk.gov.justice.core.courts.CourtCentre;
+import uk.gov.justice.core.courts.Verdict;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -32,6 +33,7 @@ public class OffenceView {
     private final String offenceTitle;
     private final String offenceCode;
     private final String maxPenalty;
+    private final Verdict verdict;
 
     @SuppressWarnings("squid:S00107")
     public OffenceView(final UUID id,
@@ -51,7 +53,8 @@ public class OffenceView {
                        final String offenceTitle,
                        final String offenceCode,
                        final String maxPenalty,
-                       final CourtCentre convictingCourt) {
+                       final CourtCentre convictingCourt,
+                       final Verdict verdict) {
 
         this.id = id;
         this.offenceDefinitionId = offenceDefinitionId;
@@ -74,6 +77,7 @@ public class OffenceView {
         this.offenceTitle = offenceTitle;
         this.offenceCode = offenceCode;
         this.convictingCourt = convictingCourt;
+        this.verdict = verdict;
     }
 
 
@@ -156,6 +160,10 @@ public class OffenceView {
         return offenceTitle;
     }
 
+    public Verdict getVerdict() {
+        return verdict;
+    }
+
     public static class Builder {
         private UUID id;
         private UUID offenceDefinitionId;
@@ -175,6 +183,7 @@ public class OffenceView {
         private String offenceCode;
         private String maxPenalty;
         private CourtCentre convictingCourt;
+        private Verdict verdict;
 
         public Builder withId(final UUID id) {
             this.id = id;
@@ -269,6 +278,11 @@ public class OffenceView {
             return this;
         }
 
+        public Builder withVerdict(final Verdict verdict) {
+            this.verdict = verdict;
+            return this;
+        }
+
         public OffenceView build() {
             return new OffenceView(
                     id,
@@ -288,7 +302,8 @@ public class OffenceView {
                     offenceTitle,
                     offenceCode,
                     maxPenalty,
-                    convictingCourt);
+                    convictingCourt,
+                    verdict);
         }
     }
 }

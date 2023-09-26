@@ -107,6 +107,23 @@ public class ReferenceDataService {
                 .collect(toList());
     }
 
+
+    public List<JsonObject> getAllVerdictTypesByJurisdiction(final JsonEnvelope envelope, final String jurisdiction) {
+
+        final JsonObject payload = Json.createObjectBuilder()
+                .add("jurisdiction", jurisdiction)
+                .build();
+
+        final Envelope<JsonObject> jsonObjectEnvelope = envelop(payload)
+                .withName("referencedata.query.verdict-types-jurisdiction")
+                .withMetadataFrom(envelope);
+
+        final JsonObject response = requester.requestAsAdmin(jsonObjectEnvelope, JsonObject.class).payload();
+        return response.getJsonArray(VERDICT_TYPES).stream()
+                .map(jsonValue -> (JsonObject) jsonValue)
+                .collect(toList());
+    }
+
     public Envelope<JsonObject> getOffenceByCjsCodeAndHearing(final String cjsOffenceCode, final String offenceDate, JsonEnvelope event) {
         final JsonObject payload = createObjectBuilder()
                 .add("q", cjsOffenceCode)

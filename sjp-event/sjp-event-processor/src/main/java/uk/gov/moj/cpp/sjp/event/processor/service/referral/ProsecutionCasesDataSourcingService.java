@@ -11,13 +11,15 @@ import uk.gov.justice.json.schemas.domains.sjp.query.DefendantsOnlinePlea;
 import uk.gov.justice.json.schemas.domains.sjp.query.EmployerDetails;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.sjp.domain.decision.OffenceDecisionInformation;
+import uk.gov.moj.cpp.sjp.domain.verdict.VerdictType;
 import uk.gov.moj.cpp.sjp.event.CaseReferredForCourtHearing;
-import uk.gov.moj.cpp.sjp.model.prosecution.ProsecutionCaseView;
 import uk.gov.moj.cpp.sjp.event.processor.service.ReferenceDataOffencesService;
 import uk.gov.moj.cpp.sjp.event.processor.service.ReferenceDataService;
 import uk.gov.moj.cpp.sjp.event.processor.service.SjpService;
 import uk.gov.moj.cpp.sjp.event.processor.service.referral.helpers.ProsecutionCasesViewHelper;
+import uk.gov.moj.cpp.sjp.model.prosecution.ProsecutionCaseView;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -112,17 +114,15 @@ public class ProsecutionCasesDataSourcingService {
             final List<OffenceDecisionInformation> referredOffencesWithVerdict,
             final CaseDetails caseDetails) {
 
-        final List<UUID> offenceIds =
-                referredOffencesWithVerdict
-                        .stream()
-                        .map(OffenceDecisionInformation::getOffenceId)
-                        .collect(Collectors.toList());
+        final Map<UUID, OffenceDecisionInformation> offenceMap = new HashMap<>();
+        referredOffencesWithVerdict.forEach(offenceDecisionInformation -> offenceMap.put(offenceDecisionInformation.getOffenceId(), offenceDecisionInformation));
 
         return caseDetails
                 .getDefendant()
                 .getOffences()
                 .stream()
-                .filter(offence -> offenceIds.contains(offence.getId()))
+                .filter(offence -> offenceMap.containsKey(offence.getId()))
+                .map(offence -> checkAndAddVerdictInOffence(offence, offenceMap))
                 .collect(Collectors.toList());
     }
 
@@ -131,5 +131,16 @@ public class ProsecutionCasesDataSourcingService {
                 .stream()
                 .map(Offence::getCjsCode)
                 .collect(Collectors.toSet());
+    }
+
+    private uk.gov.justice.json.schemas.domains.sjp.queries.Offence checkAndAddVerdictInOffence(uk.gov.justice.json.schemas.domains.sjp.queries.Offence sjpOffence, Map<UUID, OffenceDecisionInformation> offenceMap) {
+        if (VerdictType.PROVED_SJP.equals(offenceMap.get(sjpOffence.getId()).getVerdict())) {
+            return Offence.offence()
+                    .withValuesFrom(sjpOffence)
+                    .withConviction(uk.gov.moj.cpp.core.sjp.verdict.VerdictType.PROVED_SJP)
+                    .build();
+
+        }
+        return sjpOffence;
     }
 }

@@ -6,7 +6,7 @@
   "welshReason" : "Ple amhendant",
   "subReason": "Defendant has to attend",
   "welshSubReason" : "Diffynnydd i fynychu i gadarnhau ple",
-  "hearingCode": "CTL",
+  "hearingCode": "PLE",
   "validFrom": "2017-08-01",
   "validTo": "2017-08-01"
 }

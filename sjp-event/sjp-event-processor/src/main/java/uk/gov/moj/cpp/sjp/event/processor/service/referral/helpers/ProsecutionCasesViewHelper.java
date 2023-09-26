@@ -9,10 +9,12 @@ import static javax.json.Json.createObjectBuilder;
 import static org.apache.commons.lang3.StringUtils.isNotEmpty;
 import static uk.gov.moj.cpp.core.sjp.decision.DecisionType.REFER_FOR_COURT_HEARING;
 import static uk.gov.moj.cpp.sjp.event.processor.service.referral.helpers.NotifiedPleaViewHelper.createNotifiedPleaView;
+
 import uk.gov.justice.core.courts.ContactNumber;
 import uk.gov.justice.core.courts.CourtCentre;
 import uk.gov.justice.core.courts.LegalEntityDefendant;
 import uk.gov.justice.core.courts.Organisation;
+import uk.gov.justice.core.courts.Verdict;
 import uk.gov.justice.json.schemas.domains.sjp.Address;
 import uk.gov.justice.json.schemas.domains.sjp.ContactDetails;
 import uk.gov.justice.json.schemas.domains.sjp.Interpreter;
@@ -29,7 +31,9 @@ import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.sjp.domain.DefendantCourtOptions;
 import uk.gov.moj.cpp.sjp.domain.decision.SessionCourt;
 import uk.gov.moj.cpp.sjp.domain.disability.DisabilityNeeds;
+import uk.gov.moj.cpp.sjp.domain.verdict.VerdictType;
 import uk.gov.moj.cpp.sjp.event.CaseReferredForCourtHearing;
+import uk.gov.moj.cpp.sjp.event.processor.results.converter.VerdictConverter;
 import uk.gov.moj.cpp.sjp.event.processor.service.ReferenceDataOffencesService;
 import uk.gov.moj.cpp.sjp.event.processor.service.ReferenceDataService;
 import uk.gov.moj.cpp.sjp.model.prosecution.AddressView;
@@ -66,6 +70,7 @@ public class ProsecutionCasesViewHelper {
     private static final String WELSH_LANGUAGE_CODE = "W";
     private static final String OFFENCES_KEY = "offences";
     private static final String D45_RESULT_CODE = "D45";
+    private static final String PROVED_SJP_VERDICT_CODE = "PSJ";
 
     @Inject
     private ReferenceDataService referenceDataService;
@@ -75,6 +80,9 @@ public class ProsecutionCasesViewHelper {
 
     @Inject
     private ConvictingCourtHelper convictingCourtViewHelper;
+
+    @Inject
+    private VerdictConverter verdictConverter;
 
 
     @SuppressWarnings("squid:S00107")
@@ -192,15 +200,22 @@ public class ProsecutionCasesViewHelper {
 
         final List<OffenceView> offenceViews = referredOffences
                 .stream()
-                .map(offence -> createOffenceView(
-                        referredAt,
-                        offence,
-                        caseFileDefendantDetails,
-                        rrLabel,
-                        createNotifiedPleaView(referredAt, offence),
-                        offenceDefinition,
-                        convictionDate,
-                        convictingCourtViewHelper.createConvictingCourt(convictingCourt, emptyEnvelope)))
+                .map(offence -> {
+                    Verdict coreVerdict = null;
+                    if (Objects.nonNull(offence.getConviction())) {
+                        coreVerdict = verdictConverter.getVerdict(VerdictType.valueOf(offence.getConviction().name()), offence.getId(), convictionDate);
+                    }
+                    return createOffenceView(
+                            referredAt,
+                            offence,
+                            caseFileDefendantDetails,
+                            rrLabel,
+                            createNotifiedPleaView(referredAt, offence),
+                            offenceDefinition,
+                            convictionDate,
+                            convictingCourtViewHelper.createConvictingCourt(convictingCourt, emptyEnvelope),
+                            coreVerdict);
+                })
                 .collect(Collectors.toList());
 
         final List<DefendantAliasView> aliases = ofNullable(caseFileDefendantDetails)
@@ -326,7 +341,8 @@ public class ProsecutionCasesViewHelper {
             final NotifiedPleaView notifiedPleaView,
             final Map<String, JsonObject> offenceDefinition,
             final LocalDate convictionDate,
-            final CourtCentre convictingCourt) {
+            final CourtCentre convictingCourt,
+            final Verdict verdict) {
 
         final Optional<JsonObject> caseFileOffenceDetailsOptional = ofNullable(caseFileDefendantDetails)
                 .flatMap(defendantDetails -> defendantDetails.getJsonArray(OFFENCES_KEY)
@@ -352,6 +368,11 @@ public class ProsecutionCasesViewHelper {
                 .withOffenceFacts(createOffenceFactsView(offenceDetails, caseFileOffenceDetailsOptional))
                 .withOffenceDateCode(offenceDetails.getOffenceDateCode())
                 .withMaxPenalty(referenceDataOffencesService.getMaxPenalty(offenceDefinition.get(offenceDetails.getCjsCode())));
+
+        if (nonNull(verdict) && nonNull(verdict.getVerdictType())
+                && PROVED_SJP_VERDICT_CODE.equalsIgnoreCase(verdict.getVerdictType().getVerdictCode())) {
+            offenceViewBuilder.withVerdict(verdict);
+        }
 
         if (nonNull(rrLabel)) {
             offenceViewBuilder.withReportingRestrictions(singletonList(new ReportingRestrictionView(randomUUID(), rrLabel, referredAt)));
@@ -429,6 +450,7 @@ public class ProsecutionCasesViewHelper {
                 .filter(StringUtils::isNotEmpty)
                 .findFirst();
     }
+
     private static LegalEntityDefendant createLegalEntityDefendant(final Defendant defendant) {
         final LegalEntityDetails defendantLegalEntityDetail = defendant.getLegalEntityDetails();
         return new LegalEntityDefendant(createOrganisation(defendantLegalEntityDetail)

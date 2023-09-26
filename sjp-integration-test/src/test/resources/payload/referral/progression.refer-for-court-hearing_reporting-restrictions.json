@@ -9,11 +9,15 @@
           {
             "offences": [
               {
-                "endDate": "2019-01-10",
                 "count": 1,
-                "convictionDate": "${CONVICTION_DATE}",
                 "orderIndex": 1,
                 "id": "${OFFENCE_ID1}",
+                "notifiedPlea": {
+                  "notifiedPleaDate": "${REFERRAL_DATE}",
+                  "notifiedPleaValue": "NO_NOTIFICATION",
+                  "offenceId": "${OFFENCE_ID1}"
+                },
+                "offenceDateCode": 1,
                 "wording": "Committed some offence",
                 "chargeDate": "2016-01-01",
                 "offenceDefinitionId": "9efdbffa-08f0-4cb5-905d-139511ddcadc",
@@ -22,11 +26,10 @@
                   "vehicleRegistration" : "FG59 4FD",
                   "vehicleMake" : "Ford"
                 },
-                "maxPenalty": "Max Penalty",
                 "reportingRestrictions": [
                   {
-                    "id": "9efdbffa-08f0-4cb5-905d-139511ddcadc",
-                    "label": "Direction made under Section 45 of the Youth Justice and Criminal Evidence Act 1999",
+                    "id": "1efdbffa-08f0-4cb5-905d-139511ddc000",
+                    "label": "Vehicle Excise Back Duty",
                     "orderedDate": "${REFERRAL_DATE}"
                   }
                 ]
@@ -34,6 +37,7 @@
             ],
             "numberOfPreviousConvictionsCited": 2,
             "id": "${DEFENDANT_ID}",
+            "masterDefendantId": "${DEFENDANT_ID}",
             "prosecutionCaseId": "${CASE_ID}",
             "personDefendant": {
               "selfDefinedEthnicityId": "1daefec3-2f76-8109-82d9-2e60544a6c01",
@@ -56,7 +60,6 @@
                 "documentationLanguageNeeds": "${HEARING_LANGUAGE}",
                 "firstName": "David",
                 "occupationCode": "1",
-                "ethnicityId": "1daefec3-2f76-8109-82d9-2e60544a6c01",
                 "nationalInsuranceNumber": "${NINO}",
                 "contact": {
                   "secondaryEmail": "secondary-email@abv.bg",
@@ -66,20 +69,6 @@
                   "home": "02087654321"
                 },
                 "specificRequirements": "wobbling a bit, but I am fine"
-              },
-              "employerOrganisation": {
-                "address": {
-                  "address3": "Lant House",
-                  "address2": "Flat 8",
-                  "address1": "Foo",
-                  "postcode": "SE1 1PJ",
-                  "address5": "Greater London",
-                  "address4": "London"
-                },
-                "contact": {
-                  "work": "02020202020"
-                },
-                "name": "Test Org"
               },
               "driverNumber": "${DRIVER_NUMBER}",
               "arrestSummonsNumber": "asn",
@@ -92,7 +81,7 @@
         "prosecutionCaseIdentifier": {
           "prosecutionAuthorityReference": "${PROSECUTING_AUTHORITY_REFERENCE}",
           "prosecutionAuthorityId": "${PROSECUTING_AUTHORITY_ID}",
-          "prosecutionAuthorityCode": "TVL"
+          "prosecutionAuthorityCode": "TFL"
         },
         "statementOfFacts": "No ticket at the gates, forgery"
       }
@@ -102,7 +91,7 @@
       "referralDate": "${REFERRAL_DATE}",
       "referringJudicialDecision": {
         "location": "court house name",
-        "courtHouseCode": "B20EB00",
+        "courtHouseCode": "B01OK",
         "judiciary": [
           {
             "judicialRoleTypeSJP": "LEGAL_ADVISER",
@@ -126,43 +115,18 @@
           {
             "hearingLanguageNeeds": "${HEARING_LANGUAGE}",
             "referralReason": {
-              "description": "referral reason",
+              "description": "Critical (Defendant has to attend)",
               "id": "${REFERRAL_REASON_ID}",
               "defendantId": "${DEFENDANT_ID}"
             },
             "summonsRequired": "SJP_REFERRAL",
             "defendantOffences": [
-              "${OFFENCE_ID1}",
-              "${OFFENCE_ID2}"
+              "${OFFENCE_ID1}"
             ],
             "prosecutionCaseId": "${CASE_ID}"
           }
         ],
         "listingDirections": "${LISTING_NOTES}"
-      }
-    ],
-    "courtDocuments": [
-      {
-        "courtDocumentId": "${DOCUMENT_ID}",
-        "materials": [
-          {
-            "name": "Bank Statement",
-            "id": "${MATERIAL_ID}",
-            "uploadDateTime": "${UPLOAD_DATE_TIME}"
-          }
-        ],
-        "name": "Bank Statement",
-        "documentTypeId": "${DOCUMENT_TYPE_ID}",
-        "containsFinancialMeans":false,
-        "documentCategory": {
-          "defendantDocument": {
-            "defendants": [
-              "${DEFENDANT_ID}"
-            ],
-            "prosecutionCaseId": "${CASE_ID}"
-          }
-        },
-        "mimeType": "pdf"
       }
     ]
   }

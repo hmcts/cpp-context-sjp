@@ -23,6 +23,7 @@
                   "notifiedPleaValue": "NO_NOTIFICATION",
                   "notifiedPleaDate": "${PLEA_DATE}"
                 },
+                "offenceDateCode" : 1,
                 "offenceFacts" : {
                   "vehicleRegistration" : "FG59 4FD",
                   "vehicleMake" : "Ford"
@@ -44,6 +45,7 @@
                   "notifiedPleaValue": "NO_NOTIFICATION",
                   "notifiedPleaDate": "${PLEA_DATE}"
                 },
+                "offenceDateCode" : 1,
                 "offenceFacts" : {
                   "vehicleRegistration" : "FG59 4FD",
                   "vehicleMake" : "Ford"
@@ -53,6 +55,7 @@
             ],
             "numberOfPreviousConvictionsCited": 2,
             "id": "${DEFENDANT_ID}",
+            "masterDefendantId" : "${DEFENDANT_ID}",
             "prosecutionCaseId": "${CASE_ID}",
             "personDefendant": {
               "selfDefinedEthnicityId": "1daefec3-2f76-8109-82d9-2e60544a6c01",
@@ -111,7 +114,7 @@
         "prosecutionCaseIdentifier": {
           "prosecutionAuthorityReference": "${PROSECUTING_AUTHORITY_REFERENCE}",
           "prosecutionAuthorityId": "${PROSECUTING_AUTHORITY_ID}",
-          "prosecutionAuthorityCode": "TVL"
+          "prosecutionAuthorityCode": "TFL"
         },
         "statementOfFacts": "No ticket at the gates, forgery"
       }
@@ -145,7 +148,7 @@
           {
             "hearingLanguageNeeds": "${HEARING_LANGUAGE}",
             "referralReason": {
-              "description": "referral reason",
+              "description": "Critical (Defendant has to attend)",
               "id": "${REFERRAL_REASON_ID}",
               "defendantId": "${DEFENDANT_ID}"
             },

@@ -19,9 +19,12 @@ import static org.apache.http.HttpStatus.SC_ACCEPTED;
 import static org.apache.http.HttpStatus.SC_OK;
 import static uk.gov.justice.services.common.http.HeaderConstants.ID;
 import static uk.gov.moj.sjp.it.util.JsonHelper.lenientCompare;
+import static uk.gov.moj.sjp.it.util.JsonHelper.strictCompareIgnoringSelectedData;
 
 import uk.gov.justice.service.wiremock.testutil.InternalEndpointMockUtils;
 import uk.gov.moj.sjp.it.util.JsonHelper;
+
+import java.util.List;
 
 import javax.json.JsonObject;
 
@@ -64,5 +67,15 @@ public class ProgressionServiceStub {
                         .map(LoggedRequest::getBodyAsString)
                         .map(JsonHelper::getJsonObject)
                         .anyMatch(commandPayload -> lenientCompare(commandPayload, expectedCommandPayload)));
+    }
+
+    public static void verifyReferToCourtCommandSentStrictMode(final JsonObject expectedCommandPayload, final List<String> ignoreCompareList) {
+        await().until(() ->
+                findAll(postRequestedFor(urlPathMatching(REFER_TO_COURT_COMMAND_URL + ".*"))
+                        .withHeader(CONTENT_TYPE, WireMock.equalTo(REFER_TO_COURT_COMMAND_CONTENT)))
+                        .stream()
+                        .map(LoggedRequest::getBodyAsString)
+                        .map(JsonHelper::getJsonObject)
+                        .anyMatch(commandPayload -> strictCompareIgnoringSelectedData(commandPayload, expectedCommandPayload,ignoreCompareList)));
     }
 }

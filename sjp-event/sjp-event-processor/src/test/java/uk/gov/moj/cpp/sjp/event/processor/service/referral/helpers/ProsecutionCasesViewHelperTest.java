@@ -42,8 +42,8 @@ import uk.gov.justice.json.schemas.domains.sjp.query.EmployerDetails;
 import uk.gov.moj.cpp.core.sjp.decision.DecisionType;
 import uk.gov.moj.cpp.sjp.domain.DefendantCourtInterpreter;
 import uk.gov.moj.cpp.sjp.domain.DefendantCourtOptions;
-import uk.gov.moj.cpp.sjp.domain.decision.SessionCourt;
 import uk.gov.moj.cpp.sjp.domain.decision.OffenceDecisionInformation;
+import uk.gov.moj.cpp.sjp.domain.decision.SessionCourt;
 import uk.gov.moj.cpp.sjp.domain.verdict.VerdictType;
 import uk.gov.moj.cpp.sjp.event.CaseReferredForCourtHearing;
 import uk.gov.moj.cpp.sjp.event.processor.service.ReferenceDataOffencesService;
@@ -253,7 +253,8 @@ public class ProsecutionCasesViewHelperTest {
                 caseReferredForCourtHearing,
                 OFFENCE_MITIGATION,
                 mockCJSOffenceCodeToOffenceDefinition(),
-                singletonList(offences.get(0)), null);
+                singletonList(offences.get(0)),
+                null);
 
         assertThat(prosecutionCaseViews.size(), is(1));
 

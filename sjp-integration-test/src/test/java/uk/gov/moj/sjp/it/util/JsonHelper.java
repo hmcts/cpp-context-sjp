@@ -1,22 +1,30 @@
 package uk.gov.moj.sjp.it.util;
 
-import org.json.JSONObject;
-import org.skyscreamer.jsonassert.JSONCompareResult;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import static java.util.Objects.isNull;
+import static org.skyscreamer.jsonassert.JSONCompare.compareJSON;
+import static org.skyscreamer.jsonassert.JSONCompareMode.LENIENT;
+import static org.skyscreamer.jsonassert.JSONCompareMode.STRICT;
+
 import uk.gov.justice.services.common.converter.jackson.ObjectMapperProducer;
 
-import javax.json.Json;
-import javax.json.JsonObject;
-import javax.json.JsonReader;
 import java.io.IOException;
 import java.io.StringReader;
 import java.io.StringWriter;
 import java.io.UncheckedIOException;
+import java.util.List;
+import java.util.stream.Collectors;
 
-import static java.util.Objects.isNull;
-import static org.skyscreamer.jsonassert.JSONCompare.compareJSON;
-import static org.skyscreamer.jsonassert.JSONCompareMode.LENIENT;
+import javax.json.Json;
+import javax.json.JsonObject;
+import javax.json.JsonReader;
+
+import org.apache.commons.collections.CollectionUtils;
+import org.json.JSONObject;
+import org.skyscreamer.jsonassert.Customization;
+import org.skyscreamer.jsonassert.JSONCompareResult;
+import org.skyscreamer.jsonassert.comparator.CustomComparator;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class JsonHelper {
 
@@ -54,6 +62,28 @@ public class JsonHelper {
             return false;
         }
         final JSONCompareResult compareResult = compareJSON(json1.toString(), json2.toString(), LENIENT);
+        if (compareResult.passed()) {
+            return true;
+        } else {
+            LOGGER.error(compareResult.getMessage());
+            return false;
+        }
+    }
+
+    public static boolean strictCompareIgnoringSelectedData(final JsonObject json1, final JsonObject json2, List<String> ignoreComparisonList) {
+        if (isNull(json1) || isNull(json2)) {
+            return false;
+        }
+        JSONCompareResult compareResult = null;
+        if (CollectionUtils.isNotEmpty(ignoreComparisonList)) {
+            List<Customization> customizationsList = ignoreComparisonList.stream()
+                    .map(ignore -> new Customization(ignore, (o1, o2) -> true))
+                    .collect(Collectors.toList());
+            compareResult = compareJSON(json1.toString(), json2.toString(),
+                    new CustomComparator(STRICT, customizationsList.toArray(new Customization[customizationsList.size()])));
+        } else {
+            compareResult = compareJSON(json1.toString(), json2.toString(), STRICT);
+        }
         if (compareResult.passed()) {
             return true;
         } else {

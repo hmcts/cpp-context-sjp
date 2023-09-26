@@ -2,6 +2,7 @@ package uk.gov.moj.sjp.it.test;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.configureFor;
 import static uk.gov.moj.sjp.it.Constants.DEFAULT_OFFENCE_CODE;
+import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubQueryForVerdictTypesByJurisdiction;
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubQueryOffencesByCode;
 import static uk.gov.moj.sjp.it.stub.UsersGroupsStub.stubAllGroupsForUser;
 import static uk.gov.moj.sjp.it.stub.UsersGroupsStub.stubForUserDetails;
@@ -64,5 +65,6 @@ public abstract class BaseIntegrationTest {
         stubAllGroupsForUser();
         stubForUserDetails(USER_ID, "ALL");
         stubQueryOffencesByCode(DEFAULT_OFFENCE_CODE);
+        stubQueryForVerdictTypesByJurisdiction();
     }
 }

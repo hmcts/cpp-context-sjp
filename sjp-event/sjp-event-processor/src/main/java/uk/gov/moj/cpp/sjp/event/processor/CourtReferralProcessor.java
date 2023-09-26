@@ -20,7 +20,6 @@ import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.sjp.event.CaseReferredForCourtHearing;
 import uk.gov.moj.cpp.sjp.event.processor.model.referral.CourtDocumentView;
 import uk.gov.moj.cpp.sjp.event.processor.model.referral.HearingRequestView;
-import uk.gov.moj.cpp.sjp.model.prosecution.ProsecutionCaseView;
 import uk.gov.moj.cpp.sjp.event.processor.model.referral.ReferCaseForCourtHearingCommand;
 import uk.gov.moj.cpp.sjp.event.processor.model.referral.SjpReferralView;
 import uk.gov.moj.cpp.sjp.event.processor.service.ProsecutionCaseFileService;
@@ -31,6 +30,7 @@ import uk.gov.moj.cpp.sjp.event.processor.service.referral.CourtDocumentsDataSou
 import uk.gov.moj.cpp.sjp.event.processor.service.referral.HearingRequestsDataSourcingService;
 import uk.gov.moj.cpp.sjp.event.processor.service.referral.ProsecutionCasesDataSourcingService;
 import uk.gov.moj.cpp.sjp.event.processor.service.referral.SjpReferralDataSourcingService;
+import uk.gov.moj.cpp.sjp.model.prosecution.ProsecutionCaseView;
 
 import java.util.List;
 import java.util.Optional;
@@ -143,6 +143,7 @@ public class CourtReferralProcessor {
                 prosecutionCaseFileOptional.orElse(null),
                 caseFileDefendantDetails,
                 emptyEnvelope);
+
         final List<CourtDocumentView> courtDocumentViews = courtDocumentsDataSourcingService.createCourtDocumentViews(
                 caseReferredForCourtHearing,
                 caseDetails,

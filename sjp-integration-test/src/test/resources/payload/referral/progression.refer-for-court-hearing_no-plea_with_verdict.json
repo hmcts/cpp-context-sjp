@@ -2,8 +2,8 @@
   "courtReferral": {
     "prosecutionCases": [
       {
-        "originatingOrganisation" : "GAEAA01",
-        "statementOfFacts":"No ticket at the gates, forgery",
+        "originatingOrganisation": "GAEAA01",
+        "statementOfFacts": "No ticket at the gates, forgery",
         "statementOfFactsWelsh": "some facts in welsh",
         "defendants": [
           {
@@ -34,15 +34,26 @@
                 "chargeDate": "2016-01-01",
                 "offenceDefinitionId": "9efdbffa-08f0-4cb5-905d-139511ddcadc",
                 "startDate": "2016-01-01",
+                "verdict": {
+                  "offenceId": "${OFFENCE_ID1}",
+                  "verdictDate": "${CONVICTION_DATE}",
+                  "verdictType": {
+                    "category": "Guilty",
+                    "categoryType": "GUILTY",
+                    "cjsVerdictCode": "G",
+                    "id": "83a10a5f-5d26-32d3-9eb5-4463d0a2c89c",
+                    "verdictCode": "PSJ"
+                  }
+                },
                 "notifiedPlea": {
                   "offenceId": "${OFFENCE_ID1}",
                   "notifiedPleaValue": "NO_NOTIFICATION",
                   "notifiedPleaDate": "${PLEA_DATE}"
                 },
                 "offenceDateCode": 1,
-                "offenceFacts" : {
-                  "vehicleRegistration" : "FG59 4FD",
-                  "vehicleMake" : "Ford"
+                "offenceFacts": {
+                  "vehicleRegistration": "FG59 4FD",
+                  "vehicleMake": "Ford"
                 }
               }
             ],
@@ -67,11 +78,10 @@
                 "nationalityId": "22ef7a73-df50-4349-8c72-ca3b9ace6363",
                 "dateOfBirth": "1980-07-15",
                 "title": "MR",
-                "interpreterLanguageNeeds":"French",
+                "interpreterLanguageNeeds": "French",
                 "documentationLanguageNeeds": "${HEARING_LANGUAGE}",
                 "firstName": "David",
                 "occupationCode": "1",
-                "ethnicityId": "1daefec3-2f76-8109-82d9-2e60544a6c01",
                 "nationalInsuranceNumber": "${NINO}",
                 "contact": {
                   "secondaryEmail": "secondary-email@abv.bg",

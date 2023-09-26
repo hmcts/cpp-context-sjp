@@ -1058,7 +1058,7 @@
       "prompts": [
         {
           "id": "d3205319-84cf-4c5b-9d7a-7e4bb1865054",
-          "label": "Period of conditional discharge",
+          "label": "Period of conditional discharge",
           "welshLabel": "Cyfnod o ryddhad amodol",
           "resultPromptRule": "mandatory",
           "type": "INT",
@@ -1080,7 +1080,7 @@
         },
         {
           "id": "d3205319-84cf-4c5b-9d7a-7e4bb1865054",
-          "label": "Period of conditional discharge",
+          "label": "Period of conditional discharge",
           "welshLabel": "Cyfnod o ryddhad amodol",
           "resultPromptRule": "mandatory",
           "type": "INT",
@@ -1102,7 +1102,7 @@
         },
         {
           "id": "d3205319-84cf-4c5b-9d7a-7e4bb1865054",
-          "label": "Period of conditional discharge",
+          "label": "Period of conditional discharge",
           "welshLabel": "Cyfnod o ryddhad amodol",
           "resultPromptRule": "mandatory",
           "type": "INT",
@@ -1124,7 +1124,7 @@
         },
         {
           "id": "d3205319-84cf-4c5b-9d7a-7e4bb1865054",
-          "label": "Period of conditional discharge",
+          "label": "Period of conditional discharge",
           "welshLabel": "Cyfnod o ryddhad amodol",
           "resultPromptRule": "mandatory",
           "type": "INT",

@@ -57,7 +57,6 @@ import static uk.gov.moj.sjp.it.util.builders.DismissBuilder.withDefaults;
 
 import uk.gov.justice.json.schemas.domains.sjp.User;
 import uk.gov.justice.services.messaging.JsonEnvelope;
-import uk.gov.moj.cpp.platform.test.feature.toggle.FeatureStubber;
 import uk.gov.moj.cpp.sjp.domain.decision.CourtDetails;
 import uk.gov.moj.cpp.sjp.domain.decision.Discharge;
 import uk.gov.moj.cpp.sjp.domain.decision.Dismiss;
@@ -90,7 +89,6 @@ import java.time.LocalDate;
 import java.util.Optional;
 import java.util.UUID;
 
-import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Sets;
 import org.hamcrest.Matchers;
 import org.junit.Before;
@@ -147,9 +145,6 @@ public class CaseApplicationDecisionIT extends BaseIntegrationTest {
         stubForUserDetails(USER, "ALL");
         stubGroupForUser(USER.getUserId(), "Legal Advisers");
         stubResultIds();
-
-        final ImmutableMap<String, Boolean> features = ImmutableMap.of("amendReshare", true);
-        FeatureStubber.stubFeaturesFor("sjp", features);
 
         createCasePayloadBuilder = CreateCase.CreateCasePayloadBuilder
                 .withDefaults()

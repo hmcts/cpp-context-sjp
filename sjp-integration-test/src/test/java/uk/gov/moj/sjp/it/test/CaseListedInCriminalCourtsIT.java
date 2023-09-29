@@ -47,7 +47,6 @@ import uk.gov.justice.json.schemas.domains.sjp.events.CaseNoteAdded;
 import uk.gov.justice.services.common.converter.ZonedDateTimes;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.test.utils.core.messaging.MessageProducerClient;
-import uk.gov.moj.cpp.platform.test.feature.toggle.FeatureStubber;
 import uk.gov.moj.cpp.sjp.domain.DefendantCourtInterpreter;
 import uk.gov.moj.cpp.sjp.domain.DefendantCourtOptions;
 import uk.gov.moj.cpp.sjp.domain.SessionType;
@@ -112,9 +111,6 @@ public class CaseListedInCriminalCourtsIT extends BaseIntegrationTest {
         stubBailStatuses();
         stubResultIds();
         stubReferralDocumentMetadataQuery(randomUUID().toString(), "SJPN");
-
-        final ImmutableMap<String, Boolean> features = ImmutableMap.of("amendReshare", true);
-        FeatureStubber.stubFeaturesFor("sjp", features);
 
         CaseAssignmentRestrictionHelper.provisionCaseAssignmentRestrictions(Sets.newHashSet(TFL, TVL, DVLA));
 

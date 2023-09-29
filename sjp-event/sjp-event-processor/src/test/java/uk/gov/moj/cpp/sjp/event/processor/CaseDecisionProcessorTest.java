@@ -28,6 +28,7 @@ import uk.gov.moj.cpp.sjp.event.processor.results.converter.SjpToHearingConverte
 import uk.gov.moj.cpp.sjp.event.processor.service.SjpService;
 
 import java.time.LocalDate;
+import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.UUID;
 import java.util.function.Function;
@@ -80,6 +81,7 @@ public class CaseDecisionProcessorTest {
 
     private static final String PUBLIC_CASE_DECISION_SAVED_EVENT = "public.sjp.case-decision-saved";
     private static final String PUBLIC_HEARING_RESULTED_EVENT = "public.hearing.resulted";
+    private static final String PUBLIC_EVENTS_HEARING_RESULTED = "public.events.hearing.hearing-resulted";
     private static final String PRIVATE_CASE_DECISION_SAVED_EVENT = "sjp.events.decision-saved";
     public static final String UNDO_RESERVE_CASE_TIMER_COMMAND = "sjp.command.undo-reserve-case";
 
@@ -123,6 +125,7 @@ public class CaseDecisionProcessorTest {
                         ).build());
 
         when(sjpToHearingConverter.convertCaseDecision(privateEvent)).thenReturn(publicHearingResultedPayload);
+        when(publicHearingResultedPayload.getSharedTime()).thenReturn(ZonedDateTime.now());
 
         caseDecisionProcessor.handleCaseDecisionSaved(privateEvent);
 
@@ -155,9 +158,7 @@ public class CaseDecisionProcessorTest {
 
         assertThat(hearingResultedPublicEvent.metadata(),
                 withMetadataEnvelopedFrom(privateEvent)
-                        .withName(PUBLIC_HEARING_RESULTED_EVENT));
-
-        assertThat(hearingResultedPublicEvent.payload(), is(publicHearingResultedPayload));
+                        .withName(PUBLIC_EVENTS_HEARING_RESULTED));
 
         verify(sender, times(1)).sendAsAdmin(envelopeCaptor.capture());
 
@@ -177,9 +178,7 @@ public class CaseDecisionProcessorTest {
         final LocalDate savedAt = LocalDate.now();
         final UUID offence1Id = randomUUID();
         final UUID offence2Id = randomUUID();
-        final UUID withdrawalReasonId = randomUUID();
         final String type = "SET_ASIDE";
-        final String verdict = "NO_VERDICT";
 
         final JsonEnvelope privateEvent = createEnvelope(PRIVATE_CASE_DECISION_SAVED_EVENT,
                 createObjectBuilder()
@@ -198,6 +197,7 @@ public class CaseDecisionProcessorTest {
                         ).build());
 
         when(sjpToHearingConverter.convertCaseDecision(privateEvent)).thenReturn(publicHearingResultedPayload);
+        when(publicHearingResultedPayload.getSharedTime()).thenReturn(ZonedDateTime.now());
 
         caseDecisionProcessor.handleCaseDecisionSaved(privateEvent);
 

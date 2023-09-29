@@ -12,7 +12,6 @@ import uk.gov.justice.core.courts.Hearing;
 import uk.gov.justice.hearing.courts.HearingResulted;
 import uk.gov.justice.json.schemas.domains.sjp.ApplicationStatus;
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
-import uk.gov.justice.services.core.annotation.FeatureControl;
 import uk.gov.justice.services.core.annotation.Handles;
 import uk.gov.justice.services.core.annotation.ServiceComponent;
 import uk.gov.justice.services.core.sender.Sender;
@@ -44,7 +43,6 @@ public class HearingResultedProcessor {
     private JsonObjectToObjectConverter jsonObjectConverter;
 
     @Handles(PUBLIC_EVENTS_HEARING_RESULTED)
-    @FeatureControl("amendReshare")
     public void hearingResultReceived(final JsonEnvelope jsonEnvelope) {
 
         final HearingResulted publicHearingResulted = jsonObjectConverter.convert(jsonEnvelope.payloadAsJsonObject(), HearingResulted.class);

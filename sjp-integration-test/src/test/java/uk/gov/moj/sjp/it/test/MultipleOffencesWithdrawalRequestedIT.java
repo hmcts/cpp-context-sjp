@@ -50,7 +50,6 @@ import static uk.gov.moj.sjp.it.util.EventUtil.eventsByName;
 import uk.gov.justice.json.schemas.domains.sjp.User;
 import uk.gov.justice.json.schemas.fragments.sjp.WithdrawalRequestsStatus;
 import uk.gov.justice.services.messaging.JsonEnvelope;
-import uk.gov.moj.cpp.platform.test.feature.toggle.FeatureStubber;
 import uk.gov.moj.cpp.sjp.domain.SessionType;
 import uk.gov.moj.cpp.sjp.domain.decision.Adjourn;
 import uk.gov.moj.cpp.sjp.domain.decision.Withdraw;
@@ -105,9 +104,6 @@ public class MultipleOffencesWithdrawalRequestedIT extends BaseIntegrationTest {
     @Before
     public void setUp() throws Exception {
         new SjpDatabaseCleaner().cleanViewStore();
-
-        final ImmutableMap<String, Boolean> features = ImmutableMap.of("amendReshare", true);
-        FeatureStubber.stubFeaturesFor("sjp", features);
 
         CaseAssignmentRestrictionHelper.provisionCaseAssignmentRestrictions(Sets.newHashSet(TFL, TVL, DVLA));
 

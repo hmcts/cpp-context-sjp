@@ -23,4 +23,5 @@ public class UploadCaseDocumentApi {
     public void uploadCaseDocument(final JsonEnvelope envelope) {
         sender.send(enveloper.withMetadataFrom(envelope, "sjp.command.upload-case-document").apply(envelope.payloadAsJsonObject()));
     }
+
 }

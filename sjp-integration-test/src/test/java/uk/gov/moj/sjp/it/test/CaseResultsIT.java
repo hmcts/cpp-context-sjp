@@ -34,7 +34,6 @@ import static uk.gov.moj.sjp.it.util.UrnProvider.generate;
 
 import uk.gov.justice.json.schemas.domains.sjp.User;
 import uk.gov.justice.services.messaging.JsonEnvelope;
-import uk.gov.moj.cpp.platform.test.feature.toggle.FeatureStubber;
 import uk.gov.moj.cpp.sjp.domain.decision.FinancialPenalty;
 import uk.gov.moj.cpp.sjp.domain.decision.disqualification.DisqualificationType;
 import uk.gov.moj.cpp.sjp.domain.decision.endorsement.PenaltyPointsReason;
@@ -61,7 +60,6 @@ import java.util.UUID;
 import javax.json.JsonArray;
 import javax.json.JsonObject;
 
-import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Sets;
 import org.hamcrest.Matchers;
 import org.junit.Before;
@@ -103,9 +101,6 @@ public class CaseResultsIT extends BaseIntegrationTest {
         stubQueryForAllProsecutors();
         stubBailStatuses();
         stubResultIds();
-
-        final ImmutableMap<String, Boolean> features = ImmutableMap.of("amendReshare", true);
-        FeatureStubber.stubFeaturesFor("sjp", features);
 
         CaseAssignmentRestrictionHelper.provisionCaseAssignmentRestrictions(Sets.newHashSet(TFL, TVL, DVLA));
 

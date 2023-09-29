@@ -13,7 +13,6 @@ import uk.gov.justice.core.courts.Hearing;
 import uk.gov.justice.hearing.courts.HearingResulted;
 import uk.gov.justice.json.schemas.domains.sjp.events.ApplicationDecisionSaved;
 import uk.gov.justice.json.schemas.domains.sjp.results.PublicHearingResulted;
-import uk.gov.justice.services.core.featurecontrol.FeatureControlGuard;
 import uk.gov.justice.services.core.sender.Sender;
 import uk.gov.justice.services.messaging.Envelope;
 import uk.gov.justice.services.messaging.Metadata;
@@ -33,7 +32,6 @@ import org.mockito.runners.MockitoJUnitRunner;
 @RunWith(MockitoJUnitRunner.class)
 public class ApplicationDecisionProcessorTest {
 
-    private static final String PUBLIC_HEARING_RESULTED_EVENT = "public.hearing.resulted";
     private static final String PUBLIC_EVENTS_HEARING_RESULTED = "public.events.hearing.hearing-resulted";
 
     @Mock
@@ -41,9 +39,6 @@ public class ApplicationDecisionProcessorTest {
 
     @Mock
     private SjpToHearingConverter sjpToHearingConverter;
-
-    @Mock
-    private FeatureControlGuard featureControlGuard;
 
     @InjectMocks
     private ApplicationDecisionProcessor applicationDecisionProcessor;
@@ -55,9 +50,6 @@ public class ApplicationDecisionProcessorTest {
     private Envelope<ApplicationDecisionSaved> envelope;
 
     @Captor
-    private ArgumentCaptor<Envelope<PublicHearingResulted>> jsonEnvelopeCaptor;
-
-    @Captor
     private ArgumentCaptor<Envelope<HearingResulted>> hearingResultedJsonEnvelopeCaptor;
 
     @Test
@@ -67,34 +59,9 @@ public class ApplicationDecisionProcessorTest {
         final Metadata metadata = getMetadata();
         when(envelope.metadata()).thenReturn(metadata);
         when(envelope.payload()).thenReturn(applicationDecisionSaved);
-        when(sjpToHearingConverter.convertApplicationDecision(envelope)).thenReturn(publicHearingResultedPayload);
-
-        applicationDecisionProcessor.handleApplicationDecisionSaved(envelope);
-
-        verify(sjpToHearingConverter).convertApplicationDecision(envelope);
-        verify(sender).send(jsonEnvelopeCaptor.capture());
-
-        final Envelope<PublicHearingResulted> hearingResultedPublicEvent = jsonEnvelopeCaptor.getValue();
-
-        assertThat(hearingResultedPublicEvent.metadata(),
-                withMetadataEnvelopedFrom(envelope)
-                        .withName(PUBLIC_HEARING_RESULTED_EVENT));
-
-        assertThat(hearingResultedPublicEvent.payload(), is(publicHearingResultedPayload));
-
-    }
-
-    @Test
-    public void handleApplicationDecisionSavedWhenAmendReShareEnabled() {
-        final ApplicationDecisionSaved applicationDecisionSaved = applicationDecisionSaved().withApplicationId(randomUUID()).build();
-
-        final Metadata metadata = getMetadata();
-        when(envelope.metadata()).thenReturn(metadata);
-        when(envelope.payload()).thenReturn(applicationDecisionSaved);
         when(publicHearingResultedPayload.getSharedTime()).thenReturn(ZonedDateTime.now());
         when(publicHearingResultedPayload.getHearing()).thenReturn(Hearing.hearing().build());
         when(sjpToHearingConverter.convertApplicationDecision(envelope)).thenReturn(publicHearingResultedPayload);
-        when(featureControlGuard.isFeatureEnabled("amendReshare")).thenReturn(true);
 
         applicationDecisionProcessor.handleApplicationDecisionSaved(envelope);
 

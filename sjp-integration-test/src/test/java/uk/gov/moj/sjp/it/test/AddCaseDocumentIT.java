@@ -23,7 +23,6 @@ import static uk.gov.moj.sjp.it.util.Defaults.DEFAULT_LONDON_COURT_HOUSE_OU_CODE
 
 import uk.gov.justice.domain.annotation.Event;
 import uk.gov.justice.json.schemas.domains.sjp.User;
-import uk.gov.moj.cpp.platform.test.feature.toggle.FeatureStubber;
 import uk.gov.moj.cpp.sjp.domain.DefendantCourtInterpreter;
 import uk.gov.moj.cpp.sjp.domain.DefendantCourtOptions;
 import uk.gov.moj.cpp.sjp.domain.decision.OffenceDecisionInformation;
@@ -178,9 +177,6 @@ public class AddCaseDocumentIT extends BaseIntegrationTest {
 
     @Test
     public void addCaseDocumentRejectsWhenCaseIsInReferToCourtHearingStatus() throws Exception {
-        final ImmutableMap<String, Boolean> features = ImmutableMap.of("amendReshare", true);
-        FeatureStubber.stubFeaturesFor("sjp", features);
-
         final UUID referralReasonId = randomUUID();
         stubEnforcementAreaByPostcode(createCasePayloadBuilder.getDefendantBuilder().getAddressBuilder().getPostcode(), "1080", "Bedfordshire Magistrates' Court");
         databaseCleanup();

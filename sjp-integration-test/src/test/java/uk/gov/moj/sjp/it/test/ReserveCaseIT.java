@@ -57,7 +57,6 @@ import static uk.gov.moj.sjp.it.util.RestPollerWithDefaults.pollWithDefaults;
 import static uk.gov.moj.sjp.it.util.UrnProvider.generate;
 
 
-import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Sets;
 import java.sql.SQLException;
 import java.time.LocalDate;
@@ -74,7 +73,6 @@ import org.mortbay.log.Log;
 import uk.gov.justice.json.schemas.domains.sjp.User;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.test.utils.core.matchers.ResponsePayloadMatcher;
-import uk.gov.moj.cpp.platform.test.feature.toggle.FeatureStubber;
 import uk.gov.moj.cpp.sjp.domain.decision.FinancialPenalty;
 import uk.gov.moj.cpp.sjp.domain.decision.disqualification.DisqualificationType;
 import uk.gov.moj.cpp.sjp.domain.decision.imposition.FinancialImposition;
@@ -136,9 +134,6 @@ public class ReserveCaseIT extends BaseIntegrationTest {
         stubGroupForUser(legalAdviserId, "Legal Advisers");
         stubGroupForUser(courtAdminId, "Court Administrators");
         stubGroupForUser(systemAdminId, "System Users");
-
-        final ImmutableMap<String, Boolean> features = ImmutableMap.of("amendReshare", true);
-        FeatureStubber.stubFeaturesFor("sjp", features);
 
         CaseAssignmentRestrictionHelper.provisionCaseAssignmentRestrictions(Sets.newHashSet(TFL, TVL, DVLA));
 
@@ -555,4 +550,5 @@ public class ReserveCaseIT extends BaseIntegrationTest {
         assignCase.notAssignedHandler = (envelope) -> Log.info("Case Not Assigned");
         assignCase.getExecutor().setExecutingUserId(userId).executeSync();
     }
+
 }

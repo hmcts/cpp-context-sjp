@@ -59,7 +59,6 @@ import static uk.gov.moj.sjp.it.util.matchers.OffenceDecisionMatcher.pressRestri
 
 import uk.gov.justice.json.schemas.domains.sjp.User;
 import uk.gov.justice.services.messaging.JsonEnvelope;
-import uk.gov.moj.cpp.platform.test.feature.toggle.FeatureStubber;
 import uk.gov.moj.cpp.sjp.domain.SessionType;
 import uk.gov.moj.cpp.sjp.domain.decision.Adjourn;
 import uk.gov.moj.cpp.sjp.domain.decision.CourtDetails;
@@ -100,10 +99,8 @@ import java.util.UUID;
 
 import javax.json.JsonObject;
 
-import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Sets;
 import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
 
@@ -127,12 +124,6 @@ public class PressRestrictionsSaveDecisionIT extends BaseIntegrationTest {
         final JsonEnvelope session = startSession(sessionId, USER_ID, DEFAULT_LONDON_COURT_HOUSE_OU_CODE, sessionType).get();
         requestCaseAssignment(sessionId, USER_ID);
         return session.payloadAsJsonObject();
-    }
-
-    @BeforeClass
-    public static void setupBeforeClass() {
-        final ImmutableMap<String, Boolean> features = ImmutableMap.of("amendReshare", true);
-        FeatureStubber.stubFeaturesFor(SJP, features);
     }
 
     @Before

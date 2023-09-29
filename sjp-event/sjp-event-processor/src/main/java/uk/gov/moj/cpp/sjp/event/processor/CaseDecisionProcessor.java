@@ -1,5 +1,40 @@
 package uk.gov.moj.cpp.sjp.event.processor;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import uk.gov.justice.core.courts.DefendantJudicialResult;
+import uk.gov.justice.core.courts.JudicialResult;
+import uk.gov.justice.core.courts.JudicialResultPrompt;
+import uk.gov.justice.hearing.courts.HearingResulted;
+import uk.gov.justice.json.schemas.domains.sjp.queries.CaseDetails;
+import uk.gov.justice.json.schemas.domains.sjp.results.PublicHearingResulted;
+import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
+import uk.gov.justice.services.core.annotation.Component;
+import uk.gov.justice.services.core.annotation.Handles;
+import uk.gov.justice.services.core.annotation.ServiceComponent;
+import uk.gov.justice.services.core.enveloper.Enveloper;
+import uk.gov.justice.services.core.sender.Sender;
+import uk.gov.justice.services.messaging.Envelope;
+import uk.gov.justice.services.messaging.JsonEnvelope;
+import uk.gov.moj.cpp.sjp.domain.decision.DecisionType;
+import uk.gov.moj.cpp.sjp.event.decision.DecisionResubmitted;
+import uk.gov.moj.cpp.sjp.event.decision.DecisionSaved;
+import uk.gov.moj.cpp.sjp.event.processor.results.converter.SjpToHearingConverter;
+import uk.gov.moj.cpp.sjp.event.processor.service.SjpService;
+
+import javax.inject.Inject;
+import javax.json.JsonArrayBuilder;
+import javax.json.JsonObject;
+import javax.json.JsonValue;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
+import java.util.UUID;
+import java.util.stream.Collectors;
+
 import static java.time.temporal.ChronoUnit.DAYS;
 import static java.util.Objects.nonNull;
 import static java.util.Optional.ofNullable;
@@ -14,44 +49,6 @@ import static uk.gov.moj.cpp.sjp.event.processor.results.converter.judicialresul
 import static uk.gov.moj.cpp.sjp.event.processor.results.converter.judicialresult.JResultCode.LSUM;
 import static uk.gov.moj.cpp.sjp.event.processor.results.converter.judicialresult.JudicialResultHelper.getResultText;
 import static uk.gov.moj.cpp.sjp.event.processor.results.converter.judicialresult.aggregator.DecisionResultAggregator.OUTGOING_PROMPT_DATE_FORMAT;
-
-import uk.gov.justice.core.courts.DefendantJudicialResult;
-import uk.gov.justice.core.courts.JudicialResult;
-import uk.gov.justice.core.courts.JudicialResultPrompt;
-import uk.gov.justice.hearing.courts.HearingResulted;
-import uk.gov.justice.json.schemas.domains.sjp.queries.CaseDetails;
-import uk.gov.justice.json.schemas.domains.sjp.results.PublicHearingResulted;
-import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
-import uk.gov.justice.services.core.annotation.Component;
-import uk.gov.justice.services.core.annotation.Handles;
-import uk.gov.justice.services.core.annotation.ServiceComponent;
-import uk.gov.justice.services.core.enveloper.Enveloper;
-import uk.gov.justice.services.core.featurecontrol.FeatureControlGuard;
-import uk.gov.justice.services.core.sender.Sender;
-import uk.gov.justice.services.messaging.Envelope;
-import uk.gov.justice.services.messaging.JsonEnvelope;
-import uk.gov.moj.cpp.sjp.domain.decision.DecisionType;
-import uk.gov.moj.cpp.sjp.event.decision.DecisionResubmitted;
-import uk.gov.moj.cpp.sjp.event.decision.DecisionSaved;
-import uk.gov.moj.cpp.sjp.event.processor.results.converter.SjpToHearingConverter;
-import uk.gov.moj.cpp.sjp.event.processor.service.SjpService;
-
-import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
-import java.time.format.DateTimeParseException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-import java.util.UUID;
-import java.util.stream.Collectors;
-
-import javax.inject.Inject;
-import javax.json.JsonArrayBuilder;
-import javax.json.JsonObject;
-import javax.json.JsonValue;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 @ServiceComponent(Component.EVENT_PROCESSOR)
 public class CaseDecisionProcessor {
@@ -73,14 +70,10 @@ public class CaseDecisionProcessor {
     private SjpToHearingConverter sjpToHearingConverter;
 
     @Inject
-    private FeatureControlGuard featureControlGuard;
-
-    @Inject
     private JsonObjectToObjectConverter jsonObjectToObjectConverter;
 
     private static final String PUBLIC_CASE_DECISION_SAVED_EVENT = "public.sjp.case-decision-saved";
     private static final String PUBLIC_EVENTS_CASE_DECISION__RESUBMITTED = "public.sjp.events.case-decision-resubmitted";
-    private static final String PUBLIC_HEARING_RESULTED_EVENT = "public.hearing.resulted";
     private static final String PUBLIC_EVENTS_HEARING_RESULTED = "public.events.hearing.hearing-resulted";
     public static final String UNDO_RESERVE_CASE_TIMER_COMMAND = "sjp.command.undo-reserve-case";
 
@@ -100,7 +93,7 @@ public class CaseDecisionProcessor {
                 .stream()
                 .anyMatch(e -> ((JsonObject) e).getString("type").equals(DecisionType.REFER_FOR_COURT_HEARING.toString()));
 
-        if(isDecisionReferredToCourt) {
+        if (isDecisionReferredToCourt) {
             return;
         }
         sender.send(envelop(savedDecision)
@@ -133,8 +126,8 @@ public class CaseDecisionProcessor {
             // remove the judicial results and add then again
             final List<DefendantJudicialResult> defendantJudicialResultsWithLSUM =
                     ofNullable(publicHearingResulted
-                                    .getHearing()
-                                    .getDefendantJudicialResults())
+                            .getHearing()
+                            .getDefendantJudicialResults())
                             .orElse(new ArrayList<>())
                             .stream()
                             .filter(defendantJudicialResult -> defendantJudicialResult.getJudicialResult().getJudicialResultTypeId().equals(LSUM.getResultDefinitionId()))
@@ -252,22 +245,15 @@ public class CaseDecisionProcessor {
     }
 
     private void publishHearingEvent(final JsonEnvelope caseDecisionSavedEnvelope, final PublicHearingResulted publicHearingResulted) {
-        if (featureControlGuard.isFeatureEnabled("amendReshare")) {
-            final Envelope<HearingResulted> publicHearingResultedEnvelope = envelop(hearingResulted()
-                    .withHearing(publicHearingResulted.getHearing())
-                    .withHearingDay(publicHearingResulted.getSharedTime().format(DATE_FORMAT))
-                    .withSharedTime(publicHearingResulted.getSharedTime())
-                    .withIsReshare(false)
-                    .build())
-                    .withName(PUBLIC_EVENTS_HEARING_RESULTED)
-                    .withMetadataFrom(caseDecisionSavedEnvelope);
-            sender.send(publicHearingResultedEnvelope);
-        } else {
-            final Envelope<PublicHearingResulted> publicHearingResultedEnvelope = envelop(publicHearingResulted)
-                    .withName(PUBLIC_HEARING_RESULTED_EVENT)
-                    .withMetadataFrom(caseDecisionSavedEnvelope);
-            sender.send(publicHearingResultedEnvelope);
-        }
+        final Envelope<HearingResulted> publicHearingResultedEnvelope = envelop(hearingResulted()
+                .withHearing(publicHearingResulted.getHearing())
+                .withHearingDay(publicHearingResulted.getSharedTime().format(DATE_FORMAT))
+                .withSharedTime(publicHearingResulted.getSharedTime())
+                .withIsReshare(false)
+                .build())
+                .withName(PUBLIC_EVENTS_HEARING_RESULTED)
+                .withMetadataFrom(caseDecisionSavedEnvelope);
+        sender.send(publicHearingResultedEnvelope);
     }
 
 

@@ -3,8 +3,7 @@ package uk.gov.moj.cpp.sjp.event.processor;
 import static java.util.UUID.randomUUID;
 import static javax.json.Json.createArrayBuilder;
 import static javax.json.Json.createObjectBuilder;
-import static org.hamcrest.core.Is.is;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
@@ -16,8 +15,11 @@ import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMetad
 import static uk.gov.moj.cpp.sjp.event.processor.EventProcessorConstants.CASE_ID;
 import static uk.gov.moj.cpp.sjp.event.processor.results.converter.ResultingToResultsConverterHelper.buildCaseDetails;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.mockito.Spy;
 import uk.gov.justice.json.schemas.domains.sjp.results.PublicHearingResulted;
 import uk.gov.justice.services.common.converter.ObjectToJsonObjectConverter;
+import uk.gov.justice.services.common.converter.jackson.ObjectMapperProducer;
 import uk.gov.justice.services.core.enveloper.Enveloper;
 import uk.gov.justice.services.core.featurecontrol.FeatureControlGuard;
 import uk.gov.justice.services.core.sender.Sender;
@@ -27,6 +29,7 @@ import uk.gov.moj.cpp.sjp.event.processor.results.converter.SjpToHearingConverte
 import uk.gov.moj.cpp.sjp.event.processor.service.SjpService;
 
 
+import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.UUID;
 import java.util.function.Function;
@@ -77,9 +80,15 @@ public class CaseListedProcessorTest {
     @Captor
     private ArgumentCaptor<JsonEnvelope> jsonEnvelopeCaptor;
 
-    private ObjectToJsonObjectConverter objectToJsonObjectConverter;
+    @Spy
+    private ObjectMapper objectMapper = new ObjectMapperProducer().objectMapper();
 
-    private static final String PUBLIC_HEARING_RESULTED_EVENT = "public.hearing.resulted";
+    @Spy
+    @InjectMocks
+    @SuppressWarnings("unused")
+    private ObjectToJsonObjectConverter objectToJsonObjectConverter = new ObjectToJsonObjectConverter(objectMapper);
+
+    private static final String PUBLIC_EVENTS_HEARING_RESULTED = "public.events.hearing.hearing-resulted";
     private static final String PRIVATE_CASE_LISTED_IN_REFER_TO_COURT_EVENT = "sjp.events.case-listed-in-cc-for-refer-to-court";
 
     @Before
@@ -109,6 +118,7 @@ public class CaseListedProcessorTest {
                         .build());
 
         when(sjpToHearingConverter.convertCaseDecisionInCcForReferToCourt(privateEvent)).thenReturn(publicHearingResultedPayload);
+        when(publicHearingResultedPayload.getSharedTime()).thenReturn(ZonedDateTime.now());
 
         caseListedProcessor.handleCaseListedInCCReferToCourt(privateEvent);
 
@@ -119,11 +129,7 @@ public class CaseListedProcessorTest {
 
         assertThat(publicHearingResultedEvent.metadata(),
                 withMetadataEnvelopedFrom(privateEvent)
-                        .withName(PUBLIC_HEARING_RESULTED_EVENT));
-
-        final Envelope<JsonValue> hearingResultedPublicEvent = eventEnvelopes.get(0);
-
-        assertThat(hearingResultedPublicEvent.payload(), is(publicHearingResultedPayload));
+                        .withName(PUBLIC_EVENTS_HEARING_RESULTED));
     }
 
     @Test
@@ -147,6 +153,7 @@ public class CaseListedProcessorTest {
                         .build());
 
         when(sjpToHearingConverter.convertCaseDecisionInCcForReferToCourt(privateEvent)).thenReturn(publicHearingResultedPayload);
+        when(publicHearingResultedPayload.getSharedTime()).thenReturn(ZonedDateTime.now());
 
         caseListedProcessor.handleCaseListedInCCReferToCourt(privateEvent);
 
@@ -157,7 +164,7 @@ public class CaseListedProcessorTest {
 
         assertThat(decisionSavedPublicEvent.metadata(),
                 withMetadataEnvelopedFrom(privateEvent)
-                        .withName(PUBLIC_HEARING_RESULTED_EVENT));
+                        .withName(PUBLIC_EVENTS_HEARING_RESULTED));
     }
 
     private JsonArray populateCorrectedHearingDays() {

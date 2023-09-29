@@ -39,12 +39,10 @@ import static uk.gov.moj.sjp.it.stub.SchedulingStub.stubEndSjpSessionCommand;
 import static uk.gov.moj.sjp.it.stub.SchedulingStub.stubStartSjpSessionCommand;
 import static uk.gov.moj.sjp.it.stub.UsersGroupsStub.stubForUserDetails;
 import static uk.gov.moj.sjp.it.util.Defaults.DEFAULT_LONDON_COURT_HOUSE_OU_CODE;
-import static uk.gov.moj.sjp.it.util.Defaults.DEFAULT_USER_ID;
 import static uk.gov.moj.sjp.it.util.UrnProvider.generate;
 
 import uk.gov.justice.json.schemas.domains.sjp.User;
 import uk.gov.justice.services.messaging.JsonEnvelope;
-import uk.gov.moj.cpp.platform.test.feature.toggle.FeatureStubber;
 import uk.gov.moj.cpp.sjp.domain.decision.Discharge;
 import uk.gov.moj.cpp.sjp.domain.decision.OffenceDecision;
 import uk.gov.moj.cpp.sjp.domain.decision.discharge.DischargePeriod;
@@ -74,9 +72,6 @@ import java.time.LocalDate;
 import java.util.Optional;
 import java.util.UUID;
 
-import javax.json.JsonObject;
-
-import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Sets;
 import org.hamcrest.Matchers;
 import org.junit.Before;
@@ -116,9 +111,6 @@ public class CompleteCaseIT extends BaseIntegrationTest {
         stubQueryForVerdictTypes();
         stubBailStatuses();
         stubFixedLists();
-
-        final ImmutableMap<String, Boolean> features = ImmutableMap.of("amendReshare", true);
-        FeatureStubber.stubFeaturesFor("sjp", features);
 
         CaseAssignmentRestrictionHelper.provisionCaseAssignmentRestrictions(Sets.newHashSet(TFL, TVL, DVLA));
 

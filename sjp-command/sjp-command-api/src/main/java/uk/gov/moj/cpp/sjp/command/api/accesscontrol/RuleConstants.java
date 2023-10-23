@@ -39,10 +39,6 @@ public final class RuleConstants {
         return asList(GROUP_LEGAL_ADVISERS, GROUP_COURT_ADMINISTRATORS, GROUP_SYSTEM_USERS);
     }
 
-    public static List<String> getUpdatePleaActionGroups() {
-        return asList(GROUP_COURT_ADMINISTRATORS, GROUP_LEGAL_ADVISERS);
-    }
-
     public static List<String> getUpdateFinancialMeansGroups() {
         return asList(GROUP_COURT_ADMINISTRATORS, GROUP_LEGAL_ADVISERS, GROUP_SYSTEM_USERS);
     }
@@ -55,24 +51,8 @@ public final class RuleConstants {
         return asList(GROUP_COURT_ADMINISTRATORS, GROUP_LEGAL_ADVISERS);
     }
 
-    public static List<String> getCancelPleaActionGroups() {
-        return asList(GROUP_COURT_ADMINISTRATORS, GROUP_LEGAL_ADVISERS);
-    }
-
     public static String[] getCaseReopenedActionGroups() {
         return new String[]{GROUP_COURT_ADMINISTRATORS, GROUP_LEGAL_ADVISERS};
-    }
-
-    public static List<String> getRequestWithdrawalOfAllOffencesGroups() {
-        return singletonList(GROUP_SJP_PROSECUTORS);
-    }
-
-    public static List<String> getCancelRequestWithdrawalOfAllOffencesGroups() {
-        return singletonList(GROUP_SJP_PROSECUTORS);
-    }
-
-    public static List<String> getActionCourtReferralGroups() {
-        return asList(GROUP_COURT_ADMINISTRATORS, GROUP_LEGAL_ADVISERS);
     }
 
     public static List<String> getUpdateDefendantDetails() {
@@ -83,20 +63,12 @@ public final class RuleConstants {
         return asList(GROUP_COURT_ADMINISTRATORS, GROUP_LEGAL_ADVISERS);
     }
 
-    public static List<String> getStartSessionGroups() {
-        return asList(GROUP_LEGAL_ADVISERS, GROUP_MAGISTRATES);
-    }
-
     public static List<String> getStartAocpSessionGroups() {
         return asList(GROUP_LEGAL_ADVISERS, GROUP_MAGISTRATES, GROUP_SYSTEM_USERS);
     }
 
     public static List<String> getAddDatesToAvoidActionGroups() {
         return singletonList(GROUP_SJP_PROSECUTORS);
-    }
-
-    public static List<String> getEndSessionGroups() {
-        return asList(GROUP_LEGAL_ADVISERS, GROUP_MAGISTRATES);
     }
 
     public static List<String> getEndAocpSessionGroups() {
@@ -168,10 +140,6 @@ public final class RuleConstants {
     }
 
     public static List<String> getAddCaseAssignmentRestrictionActionGroups() {
-        return asList(GROUP_SYSTEM_USERS);
-    }
-
-    public static List<String> getAddRequestForOutstandingFinesGroups() {
         return asList(GROUP_SYSTEM_USERS);
     }
 

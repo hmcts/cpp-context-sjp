@@ -3,6 +3,7 @@ package uk.gov.moj.cpp.sjp.command.api.service;
 
 import static java.lang.Boolean.FALSE;
 import static java.util.Arrays.asList;
+import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
 import static javax.json.Json.createObjectBuilder;
 import static liquibase.util.StringUtils.isNotEmpty;
@@ -66,5 +67,11 @@ public class AddressServiceTest {
                 assertThat(addressObjectWithNormalizedPostcode.containsKey("postcode"), is(FALSE));
             }
         });
+    }
+
+    @Test
+    public void testNullAddress(){
+        final JsonObject addressObjectWithNormalized = normalizePostcodeInAddress(null);
+        isNull(addressObjectWithNormalized);
     }
 }

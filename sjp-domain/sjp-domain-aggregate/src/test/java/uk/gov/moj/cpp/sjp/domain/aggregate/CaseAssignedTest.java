@@ -63,6 +63,17 @@ public class CaseAssignedTest extends CaseAggregateBaseTest {
     }
 
     @Test
+    public void shouldAssignCaseToUser() {
+        Mockito.when(session.getSessionType()).thenReturn(SessionType.DELEGATED_POWERS);
+        AggregateHelper.saveDecision(caseAggregate, aCase, session, VerdictType.FOUND_NOT_GUILTY);
+
+        caseAggregate.assignCaseToUser(assigneeId, now());
+
+        when(callAggregateAssignCase(assigneeId))
+                .thenExpect(new CaseAssignmentRejected(CASE_COMPLETED));
+    }
+
+    @Test
     public void shouldNotAssignCompletedCase() {
         Mockito.when(session.getSessionType()).thenReturn(SessionType.DELEGATED_POWERS);
         AggregateHelper.saveDecision(caseAggregate, aCase, session, VerdictType.FOUND_NOT_GUILTY);

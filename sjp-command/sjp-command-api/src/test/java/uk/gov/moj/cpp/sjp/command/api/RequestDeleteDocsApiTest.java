@@ -5,20 +5,27 @@ import static javax.json.Json.createObjectBuilder;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
+import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.verify;
 import static uk.gov.justice.services.core.annotation.Component.COMMAND_API;
 import static uk.gov.justice.services.test.utils.core.matchers.HandlerClassMatcher.isHandlerClass;
 import static uk.gov.justice.services.test.utils.core.matchers.HandlerMethodMatcher.method;
 import static uk.gov.justice.services.test.utils.core.messaging.JsonEnvelopeBuilder.envelope;
 import static uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderFactory.metadataWithRandomUUID;
+import static uk.gov.moj.cpp.sjp.command.api.accesscontrol.RuleConstants.getRequestDeleteDocsGroups;
 
 import uk.gov.justice.services.core.sender.Sender;
 import uk.gov.justice.services.messaging.JsonEnvelope;
+import uk.gov.moj.cpp.accesscontrol.common.providers.UserAndGroupProvider;
+import uk.gov.moj.cpp.accesscontrol.drools.Action;
+import uk.gov.moj.cpp.accesscontrol.test.utils.BaseDroolsAccessControlTest;
 
-import java.util.UUID;
+import java.util.Map;
 
+import com.google.common.collect.ImmutableMap;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.kie.api.runtime.ExecutionResults;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.InjectMocks;
@@ -26,8 +33,9 @@ import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
 @RunWith(MockitoJUnitRunner.class)
-public class RequestDeleteDocsApiTest {
+public class RequestDeleteDocsApiTest extends BaseDroolsAccessControlTest {
 
+    public static final String SJP_REQUEST_DELETE_DOCS = "sjp.request-delete-docs";
     @Mock
     private Sender sender;
 
@@ -37,17 +45,34 @@ public class RequestDeleteDocsApiTest {
     @Captor
     private ArgumentCaptor<JsonEnvelope> envelopeCaptor;
 
+    @Mock
+    private UserAndGroupProvider userAndGroupProvider;
+
+    @Override
+    protected Map<Class, Object> getProviderMocks() {
+        return ImmutableMap.<Class, Object>builder().put(UserAndGroupProvider.class, userAndGroupProvider).build();
+    }
+
+    @Test
+    public void shouldAllowAuthorisedUserToUploadCaseDocument() {
+        final Action action = createActionFor(SJP_REQUEST_DELETE_DOCS);
+        given(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups(action, getRequestDeleteDocsGroups()))
+                .willReturn(true);
+        final ExecutionResults results = executeRulesWith(action);
+        assertSuccessfulOutcome(results);
+    }
+
     @Test
     public void shouldHandleRequestDeleteDocsCommands() {
         assertThat(RequestDeleteDocsApi.class, isHandlerClass(COMMAND_API)
                 .with(method("requestDeleteDocs")
-                .thatHandles("sjp.request-delete-docs")));
+                .thatHandles(SJP_REQUEST_DELETE_DOCS)));
     }
 
     @Test
     public void shouldRequestDeleteDocs() {
         final JsonEnvelope commandEnvelope = envelope().
-                with(metadataWithRandomUUID("sjp.request-delete-docs"))
+                with(metadataWithRandomUUID(SJP_REQUEST_DELETE_DOCS))
                 .withPayloadFrom(createObjectBuilder()
                         .add("caseId", randomUUID().toString())
                         .build()

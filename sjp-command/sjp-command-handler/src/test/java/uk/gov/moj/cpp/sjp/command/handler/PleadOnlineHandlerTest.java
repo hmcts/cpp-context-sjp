@@ -20,6 +20,7 @@ import uk.gov.moj.cpp.sjp.domain.Income;
 import uk.gov.moj.cpp.sjp.domain.IncomeFrequency;
 import uk.gov.moj.cpp.sjp.domain.onlineplea.PersonalDetails;
 import uk.gov.moj.cpp.sjp.domain.onlineplea.PleadOnline;
+import uk.gov.moj.cpp.sjp.domain.onlineplea.PleadOnlinePcqVisited;
 
 import java.math.BigDecimal;
 import java.time.ZonedDateTime;
@@ -72,6 +73,22 @@ public class PleadOnlineHandlerTest extends CaseCommandHandlerTest {
 
         verify(converter).convert(jsonObject, PleadOnline.class);
         verify(caseAggregate).pleadOnline(CASE_ID, pleadOnline, clock.now(), userId);
+    }
+
+    @Test
+    public void shouldPleadOnlinePcqVisited() throws EventStreamException {
+        final UUID defendantId = randomUUID();
+
+        final PleadOnlinePcqVisited pleadOnlinePcqVisited = new PleadOnlinePcqVisited(
+                defendantId,CASE_ID , "case_run" ,"type", randomUUID());
+
+        when(converter.convert(jsonObject, PleadOnlinePcqVisited.class)).thenReturn(pleadOnlinePcqVisited);
+        when(caseAggregate.pleadOnlinePcqVisited(CASE_ID, pleadOnlinePcqVisited, clock.now())).thenReturn(events);
+
+        pleadOnlineHandler.pleadOnlinePcqVisited(jsonEnvelope);
+
+        verify(converter).convert(jsonObject, PleadOnlinePcqVisited.class);
+        verify(caseAggregate).pleadOnlinePcqVisited(CASE_ID, pleadOnlinePcqVisited, clock.now());
     }
 
 }

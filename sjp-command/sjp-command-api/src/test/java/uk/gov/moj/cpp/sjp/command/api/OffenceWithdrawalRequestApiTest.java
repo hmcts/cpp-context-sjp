@@ -5,24 +5,33 @@ import static javax.json.Json.createArrayBuilder;
 import static javax.json.Json.createObjectBuilder;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.assertThat;
+import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.verify;
 import static uk.gov.justice.services.core.annotation.Component.COMMAND_API;
 import static uk.gov.justice.services.test.utils.core.matchers.HandlerClassMatcher.isHandlerClass;
 import static uk.gov.justice.services.test.utils.core.matchers.HandlerMethodMatcher.method;
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMetadataMatcher.withMetadataEnvelopedFrom;
 import static uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderFactory.metadataWithRandomUUID;
+import static uk.gov.moj.cpp.sjp.command.api.accesscontrol.RuleConstants.getOffenceWithdrawalRequestActionGroups;
 
 import uk.gov.justice.services.core.enveloper.Enveloper;
 import uk.gov.justice.services.core.sender.Sender;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.messaging.MetadataBuilder;
 import uk.gov.justice.services.test.utils.core.enveloper.EnveloperFactory;
+import uk.gov.moj.cpp.accesscontrol.common.providers.UserAndGroupProvider;
+import uk.gov.moj.cpp.accesscontrol.drools.Action;
+import uk.gov.moj.cpp.accesscontrol.test.utils.BaseDroolsAccessControlTest;
+
+import java.util.Map;
 
 import javax.json.JsonArray;
 import javax.json.JsonObject;
 
+import com.google.common.collect.ImmutableMap;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.kie.api.runtime.ExecutionResults;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.InjectMocks;
@@ -31,7 +40,7 @@ import org.mockito.Spy;
 import org.mockito.runners.MockitoJUnitRunner;
 
 @RunWith(MockitoJUnitRunner.class)
-public class OffenceWithdrawalRequestApiTest {
+public class OffenceWithdrawalRequestApiTest extends BaseDroolsAccessControlTest {
 
     private static final String COMMAND_NAME = "sjp.set-offences-withdrawal-requests-status";
     private static final String NEW_COMMAND_NAME = "sjp.command.set-offences-withdrawal-requests-status";
@@ -47,6 +56,23 @@ public class OffenceWithdrawalRequestApiTest {
 
     @Captor
     private ArgumentCaptor<JsonEnvelope> envelopeCaptor;
+
+    @Mock
+    private UserAndGroupProvider userAndGroupProvider;
+
+    @Override
+    protected Map<Class, Object> getProviderMocks() {
+        return ImmutableMap.<Class, Object>builder().put(UserAndGroupProvider.class, userAndGroupProvider).build();
+    }
+
+    @Test
+    public void shouldAllowAuthorisedUserToOffenceWithdrawalRequest() {
+        final Action action = createActionFor(COMMAND_NAME);
+        given(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups(action, getOffenceWithdrawalRequestActionGroups()))
+                .willReturn(true);
+        final ExecutionResults results = executeRulesWith(action);
+        assertSuccessfulOutcome(results);
+    }
 
     @Test
     public void shouldHandleCommand() {

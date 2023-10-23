@@ -1,7 +1,9 @@
 package uk.gov.moj.cpp.sjp.command.api;
 
+import com.google.common.collect.ImmutableMap;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.kie.api.runtime.ExecutionResults;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.InjectMocks;
@@ -9,6 +11,9 @@ import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 import uk.gov.justice.services.core.sender.Sender;
 import uk.gov.justice.services.messaging.JsonEnvelope;
+import uk.gov.moj.cpp.accesscontrol.common.providers.UserAndGroupProvider;
+import uk.gov.moj.cpp.accesscontrol.drools.Action;
+import uk.gov.moj.cpp.accesscontrol.test.utils.BaseDroolsAccessControlTest;
 
 import javax.json.JsonObject;
 
@@ -18,16 +23,21 @@ import static javax.json.Json.createObjectBuilder;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
+import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.verify;
 import static uk.gov.justice.services.core.annotation.Component.COMMAND_API;
 import static uk.gov.justice.services.test.utils.core.matchers.HandlerClassMatcher.isHandlerClass;
 import static uk.gov.justice.services.test.utils.core.matchers.HandlerMethodMatcher.method;
 import static uk.gov.justice.services.test.utils.core.messaging.JsonEnvelopeBuilder.envelope;
 import static uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderFactory.metadataWithRandomUUID;
+import static uk.gov.moj.cpp.sjp.command.api.accesscontrol.RuleConstants.getCreateCaseApplicationGroups;
+
+import java.util.Map;
 
 @RunWith(MockitoJUnitRunner.class)
-public class CreateCaseApplicationApiTest {
+public class CreateCaseApplicationApiTest extends BaseDroolsAccessControlTest {
 
+    public static final String SJP_CREATE_CASE_APPLICATION = "sjp.create-case-application";
     @Mock
     private Sender sender;
 
@@ -37,18 +47,34 @@ public class CreateCaseApplicationApiTest {
     @Captor
     private ArgumentCaptor<JsonEnvelope> envelopeCaptor;
 
+    @Mock
+    private UserAndGroupProvider userAndGroupProvider;
+
+    @Override
+    protected Map<Class, Object> getProviderMocks() {
+        return ImmutableMap.<Class, Object>builder().put(UserAndGroupProvider.class, userAndGroupProvider).build();
+    }
+
+    @Test
+    public void shouldAllowAuthorisedUserToCreateCaseApplication() {
+        final Action action = createActionFor(SJP_CREATE_CASE_APPLICATION);
+        given(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups(action, getCreateCaseApplicationGroups()))
+                .willReturn(true);
+        final ExecutionResults results = executeRulesWith(action);
+        assertSuccessfulOutcome(results);
+    }
 
     @Test
     public void shouldHandleCreateCaseApplicationCommands() {
         assertThat(CreateCaseApplicationApi.class, isHandlerClass(COMMAND_API)
                 .with(method("createCaseApplication")
-                        .thatHandles("sjp.create-case-application")));
+                        .thatHandles(SJP_CREATE_CASE_APPLICATION)));
     }
 
     @Test
     public void shouldDispatchApplicationCreationCommand() {
         final JsonEnvelope commandEnvelope = envelope().
-                with(metadataWithRandomUUID("sjp.create-case-application"))
+                with(metadataWithRandomUUID(SJP_CREATE_CASE_APPLICATION))
                 .withPayloadFrom(createApplicationPayload())
                         .build();
 

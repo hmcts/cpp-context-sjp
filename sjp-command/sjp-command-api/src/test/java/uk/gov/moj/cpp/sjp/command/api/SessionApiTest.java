@@ -6,6 +6,7 @@ import static org.hamcrest.CoreMatchers.allOf;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
+import static org.mockito.BDDMockito.given;
 import static org.mockito.Matchers.argThat;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -17,6 +18,9 @@ import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMetad
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopePayloadMatcher.payloadIsJson;
 import static uk.gov.justice.services.test.utils.core.messaging.JsonEnvelopeBuilder.envelope;
 import static uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderFactory.metadataWithRandomUUID;
+import static uk.gov.moj.cpp.sjp.command.api.accesscontrol.RuleConstants.getAssignCaseGroups;
+import static uk.gov.moj.cpp.sjp.command.api.accesscontrol.RuleConstants.getEndAocpSessionGroups;
+import static uk.gov.moj.cpp.sjp.command.api.accesscontrol.RuleConstants.getStartAocpSessionGroups;
 
 import uk.gov.justice.services.adapter.rest.exception.BadRequestException;
 import uk.gov.justice.services.common.util.Clock;
@@ -26,20 +30,26 @@ import uk.gov.justice.services.messaging.Envelope;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.test.utils.common.helper.StoppedClock;
 import uk.gov.justice.services.test.utils.core.enveloper.EnveloperFactory;
+import uk.gov.moj.cpp.accesscontrol.common.providers.UserAndGroupProvider;
+import uk.gov.moj.cpp.accesscontrol.drools.Action;
+import uk.gov.moj.cpp.accesscontrol.test.utils.BaseDroolsAccessControlTest;
 import uk.gov.moj.cpp.sjp.command.api.service.ReferenceDataService;
 import uk.gov.moj.cpp.sjp.domain.SessionCourt;
 
 import java.time.ZonedDateTime;
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
 import javax.json.Json;
 import javax.json.JsonObject;
 
+import com.google.common.collect.ImmutableMap;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
+import org.kie.api.runtime.ExecutionResults;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.InjectMocks;
@@ -48,7 +58,11 @@ import org.mockito.Spy;
 import org.mockito.runners.MockitoJUnitRunner;
 
 @RunWith(MockitoJUnitRunner.class)
-public class SessionApiTest {
+public class SessionApiTest extends BaseDroolsAccessControlTest {
+
+    private static final String SJP_ASSIGN_NEXT_CASE = "sjp.assign-next-case";
+    private static final String START_SESSION_COMMAND_NAME = "sjp.start-session";
+    private static final String END_SESSION_COMMAND_NAME = "sjp.end-session";
 
     @Rule
     public ExpectedException thrown = ExpectedException.none();
@@ -77,14 +91,51 @@ public class SessionApiTest {
 
     private UUID userId = UUID.randomUUID();
 
+    @Mock
+    private UserAndGroupProvider userAndGroupProvider;
+
+    @Override
+    protected Map<Class, Object> getProviderMocks() {
+        return ImmutableMap.<Class, Object>builder().put(UserAndGroupProvider.class, userAndGroupProvider).build();
+    }
+
+    @Test
+    public void shouldAllowAuthorisedStartSession() {
+        final Action action = createActionFor(START_SESSION_COMMAND_NAME);
+        given(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups(action, getStartAocpSessionGroups()))
+                .willReturn(true);
+        final ExecutionResults results = executeRulesWith(action);
+        assertSuccessfulOutcome(results);
+    }
+
+    @Test
+    public void shouldAllowAuthorisedEndSession() {
+        final Action action = createActionFor(END_SESSION_COMMAND_NAME);
+        given(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups(action, getEndAocpSessionGroups()))
+                .willReturn(true);
+        final ExecutionResults results = executeRulesWith(action);
+        assertSuccessfulOutcome(results);
+    }
+
+    @Test
+    public void shouldAllowAuthoriseAssignNextCase() {
+        final Action action = createActionFor(SJP_ASSIGN_NEXT_CASE);
+        given(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups(action, getAssignCaseGroups()))
+                .willReturn(true);
+        final ExecutionResults results = executeRulesWith(action);
+        assertSuccessfulOutcome(results);
+    }
+
     @Test
     public void shouldEnhanceAndRenameStartSessionCommand() {
 
         final String courtHouseOUCode = "B01OK";
 
-        final JsonEnvelope startSessionCommand = envelope().with(metadataWithRandomUUID("sjp.start-session"))
+        final JsonEnvelope startSessionCommand = envelope().with(metadataWithRandomUUID(START_SESSION_COMMAND_NAME))
                 .withPayloadOf(sessionId.toString(), "sessionId")
                 .withPayloadOf(courtHouseOUCode, "courtHouseOUCode")
+                .withPayloadOf("Jay","magistrate" )
+                .withPayloadOf( Json.createObjectBuilder().add("userId" ,userId.toString()).build(),"legalAdviser")
                 .withPayloadOf(Json.createArrayBuilder().add("P1").add("P2").build(), "prosecutors")
                 .build();
 
@@ -99,6 +150,8 @@ public class SessionApiTest {
                         withJsonPath("$.sessionId", equalTo(sessionId.toString())),
                         withJsonPath("$.courtHouseCode", equalTo(courtHouseOUCode)),
                         withJsonPath("$.courtHouseName", equalTo(sessionCourt.getCourtHouseName())),
+                        withJsonPath("$.magistrate", equalTo("Jay")),
+                        withJsonPath("$.legalAdviser.userId", equalTo(userId.toString())),
                         withJsonPath("$.localJusticeAreaNationalCourtCode", equalTo(sessionCourt.getLocalJusticeAreaNationalCourtCode())),
                         withJsonPath("$.prosecutors[0]", equalTo("P1")),
                         withJsonPath("$.prosecutors[1]", equalTo("P2"))
@@ -110,7 +163,7 @@ public class SessionApiTest {
 
         final String courtHouseOUCode = "B01OK";
 
-        final JsonEnvelope startSessionCommand = envelope().with(metadataWithRandomUUID("sjp.start-session"))
+        final JsonEnvelope startSessionCommand = envelope().with(metadataWithRandomUUID(START_SESSION_COMMAND_NAME))
                 .withPayloadOf(sessionId.toString(), "sessionId")
                 .withPayloadOf(courtHouseOUCode, "courtHouseOUCode")
                 .build();
@@ -126,7 +179,7 @@ public class SessionApiTest {
     @Test
     public void shouldRenameEndSessionCommand() {
 
-        final JsonEnvelope endSessionCommand = envelope().with(metadataWithRandomUUID("sjp.end-session"))
+        final JsonEnvelope endSessionCommand = envelope().with(metadataWithRandomUUID(END_SESSION_COMMAND_NAME))
                 .withPayloadOf(sessionId.toString(), "sessionId")
                 .build();
 
@@ -139,7 +192,7 @@ public class SessionApiTest {
     @Test
     public void endSessionShouldValidateSessionIdIsNotNull() {
         final JsonObject payload = Json.createObjectBuilder().addNull("sessionId").build();
-        final JsonEnvelope envelope = envelope().with(metadataWithRandomUUID("sjp.end-session"))
+        final JsonEnvelope envelope = envelope().with(metadataWithRandomUUID(END_SESSION_COMMAND_NAME))
                 .withPayloadFrom(payload)
                 .build();
 
@@ -151,7 +204,7 @@ public class SessionApiTest {
 
     @Test
     public void endSessionShouldValidateSessionIdIsNotInTheWrongFormat() {
-        final JsonEnvelope envelope = envelope().with(metadataWithRandomUUID("sjp.end-session"))
+        final JsonEnvelope envelope = envelope().with(metadataWithRandomUUID(END_SESSION_COMMAND_NAME))
                 .withPayloadOf("invalid UUID", "sessionId")
                 .build();
 
@@ -163,7 +216,7 @@ public class SessionApiTest {
 
     @Test
     public void shouldRenameAssignNextCaseCommand() {
-        final JsonEnvelope assignCaseCommand = envelope().with(metadataWithRandomUUID("sjp.assign-next-case"))
+        final JsonEnvelope assignCaseCommand = envelope().with(metadataWithRandomUUID(SJP_ASSIGN_NEXT_CASE))
                 .withPayloadOf(sessionId.toString(), "sessionId")
                 .build();
 
@@ -205,9 +258,9 @@ public class SessionApiTest {
     public void shouldHandleSessionCommands() {
         assertThat(SessionApi.class, isHandlerClass(COMMAND_API)
                 .with(allOf(
-                        method("startSession").thatHandles("sjp.start-session"),
-                        method("endSession").thatHandles("sjp.end-session"),
-                        method("assignNextCase").thatHandles("sjp.assign-next-case"),
+                        method("startSession").thatHandles(START_SESSION_COMMAND_NAME),
+                        method("endSession").thatHandles(END_SESSION_COMMAND_NAME),
+                        method("assignNextCase").thatHandles(SJP_ASSIGN_NEXT_CASE),
                         method("assignCase").thatHandles("sjp.assign-case"),
                         method("unassignCase").thatHandles("sjp.unassign-case")
                 )));

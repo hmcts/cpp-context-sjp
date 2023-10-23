@@ -7,6 +7,7 @@ import static org.hamcrest.CoreMatchers.allOf;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
+import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.verify;
 import static uk.gov.justice.services.core.annotation.Component.COMMAND_API;
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
@@ -14,14 +15,22 @@ import static uk.gov.justice.services.test.utils.core.matchers.HandlerClassMatch
 import static uk.gov.justice.services.test.utils.core.matchers.HandlerMethodMatcher.method;
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopePayloadMatcher.payloadIsJson;
 import static uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderFactory.metadataWithRandomUUID;
+import static uk.gov.moj.cpp.sjp.command.api.accesscontrol.RuleConstants.getAddFinancialImpositionCorrelationIdGroups;
 
 import uk.gov.justice.services.core.sender.Sender;
 import uk.gov.justice.services.messaging.JsonEnvelope;
+import uk.gov.moj.cpp.accesscontrol.common.providers.UserAndGroupProvider;
+import uk.gov.moj.cpp.accesscontrol.drools.Action;
+import uk.gov.moj.cpp.accesscontrol.test.utils.BaseDroolsAccessControlTest;
+
+import java.util.Map;
 
 import javax.json.JsonObject;
 
+import com.google.common.collect.ImmutableMap;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.kie.api.runtime.ExecutionResults;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.InjectMocks;
@@ -29,8 +38,9 @@ import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
 @RunWith(MockitoJUnitRunner.class)
-public class AddFinancialImpositionCorrelationIdApiTest {
+public class AddFinancialImpositionCorrelationIdApiTest extends BaseDroolsAccessControlTest {
 
+    public static final String SJP_ADD_FINANCIAL_IMPOSITION_CORRELATION_ID = "sjp.add-financial-imposition-correlation-id";
     @Mock
     private Sender sender;
 
@@ -44,6 +54,23 @@ public class AddFinancialImpositionCorrelationIdApiTest {
     public void shouldHandleAddFinancialImpositionCorrelationId() {
         assertThat(AddFinancialImpositionCorrelationIdApi.class, isHandlerClass(COMMAND_API)
                 .with(method("addFinancialImpositionCorrelationId").thatHandles("sjp.add-financial-imposition-correlation-id")));
+    }
+
+    @Mock
+    private UserAndGroupProvider userAndGroupProvider;
+
+    @Override
+    protected Map<Class, Object> getProviderMocks() {
+        return ImmutableMap.<Class, Object>builder().put(UserAndGroupProvider.class, userAndGroupProvider).build();
+    }
+
+    @Test
+    public void shouldAllowAuthorisedUserToAddFinancialImpositionCorrelationId() {
+        final Action action = createActionFor(SJP_ADD_FINANCIAL_IMPOSITION_CORRELATION_ID);
+        given(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups(action, getAddFinancialImpositionCorrelationIdGroups()))
+                .willReturn(true);
+        final ExecutionResults results = executeRulesWith(action);
+        assertSuccessfulOutcome(results);
     }
 
     @Test
@@ -76,7 +103,7 @@ public class AddFinancialImpositionCorrelationIdApiTest {
                 .build();
 
         return envelopeFrom(
-                metadataWithRandomUUID("sjp.add-financial-imposition-correlation-id"),
+                metadataWithRandomUUID(SJP_ADD_FINANCIAL_IMPOSITION_CORRELATION_ID),
                 payload);
     }
 

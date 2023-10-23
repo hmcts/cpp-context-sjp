@@ -1,12 +1,13 @@
 package uk.gov.moj.cpp.sjp.command.api;
 
+import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.assertThat;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.verify;
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMetadataMatcher.withMetadataEnvelopedFrom;
 import static uk.gov.justice.services.test.utils.core.messaging.JsonEnvelopeBuilder.envelope;
 import static uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderFactory.metadataWithRandomUUID;
-import static uk.gov.moj.cpp.sjp.command.api.accesscontrol.RuleConstants.getRequestTransparencyReportGroups;
+import static uk.gov.moj.cpp.sjp.command.api.accesscontrol.RuleConstants.getSystemUsers;
 
 import uk.gov.justice.services.core.enveloper.Enveloper;
 import uk.gov.justice.services.core.sender.Sender;
@@ -30,9 +31,11 @@ import org.mockito.Spy;
 import org.mockito.runners.MockitoJUnitRunner;
 
 @RunWith(MockitoJUnitRunner.class)
-public class TransparencyApiTest extends BaseDroolsAccessControlTest {
+public class ResubmitResultsApiTest extends BaseDroolsAccessControlTest {
 
-    public static final String SJP_REQUEST_TRANSPARENCY_REPORT = "sjp.request-transparency-report";
+
+    private static final String RESUBMIT_RESULTS_COMMAND_NAME = "sjp.resubmit-results";
+
     @Spy
     private Enveloper enveloper = EnveloperFactory.createEnveloper();
 
@@ -40,7 +43,7 @@ public class TransparencyApiTest extends BaseDroolsAccessControlTest {
     private Sender sender;
 
     @InjectMocks
-    private TransparencyApi transparencyApi;
+    private ResubmitResultsApi resubmitResultsApi;
 
     @Captor
     private ArgumentCaptor<JsonEnvelope> envelopeCaptor;
@@ -54,23 +57,24 @@ public class TransparencyApiTest extends BaseDroolsAccessControlTest {
     }
 
     @Test
-    public void shouldAllowAuthorisedStartSession() {
-        final Action action = createActionFor(SJP_REQUEST_TRANSPARENCY_REPORT);
-        given(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups(action, getRequestTransparencyReportGroups()))
+    public void shouldAllowAuthorisedUserToResubmitResults() {
+        final Action action = createActionFor(RESUBMIT_RESULTS_COMMAND_NAME);
+        given(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups(action, getSystemUsers()))
                 .willReturn(true);
         final ExecutionResults results = executeRulesWith(action);
         assertSuccessfulOutcome(results);
     }
 
     @Test
-    public void shouldRequestTransparencyReport() {
-        final JsonEnvelope command = envelope().with(metadataWithRandomUUID(SJP_REQUEST_TRANSPARENCY_REPORT)).build();
+    public void shouldResubmitResultsCommand() {
+        final JsonEnvelope command = envelope().with(metadataWithRandomUUID(RESUBMIT_RESULTS_COMMAND_NAME)).build();
 
-        transparencyApi.requestTransparencyReport(command);
-        verify(enveloper).withMetadataFrom(command, "sjp.command.request-transparency-report");
+        resubmitResultsApi.resubmitResults(command);
+
         verify(sender).send(envelopeCaptor.capture());
 
         final JsonEnvelope newCommand = envelopeCaptor.getValue();
-        assertThat(newCommand.metadata(), withMetadataEnvelopedFrom(command).withName("sjp.command.request-transparency-report"));
+        assertThat(newCommand.metadata(), withMetadataEnvelopedFrom(command).withName("sjp.command.resubmit-results"));
+        assertThat(newCommand.payloadAsJsonObject(), equalTo(command.payloadAsJsonObject()));
     }
 }

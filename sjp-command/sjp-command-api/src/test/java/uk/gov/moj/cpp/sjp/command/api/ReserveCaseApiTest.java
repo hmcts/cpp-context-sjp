@@ -1,13 +1,14 @@
 package uk.gov.moj.cpp.sjp.command.api;
 
 import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.verify;
-import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMetadataMatcher.withMetadataEnvelopedFrom;
 import static uk.gov.justice.services.test.utils.core.messaging.JsonEnvelopeBuilder.envelope;
 import static uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderFactory.metadataWithRandomUUID;
-import static uk.gov.moj.cpp.sjp.command.api.accesscontrol.RuleConstants.getAddDatesToAvoidActionGroups;
+import static uk.gov.moj.cpp.sjp.command.api.accesscontrol.RuleConstants.reserveCaseGroups;
+import static uk.gov.moj.cpp.sjp.command.api.accesscontrol.RuleConstants.undoReserveCaseGroups;
 
 import uk.gov.justice.services.core.enveloper.Enveloper;
 import uk.gov.justice.services.core.sender.Sender;
@@ -20,6 +21,7 @@ import uk.gov.moj.cpp.accesscontrol.test.utils.BaseDroolsAccessControlTest;
 import java.util.Map;
 
 import com.google.common.collect.ImmutableMap;
+import org.hamcrest.Matchers;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.kie.api.runtime.ExecutionResults;
@@ -31,10 +33,11 @@ import org.mockito.Spy;
 import org.mockito.runners.MockitoJUnitRunner;
 
 @RunWith(MockitoJUnitRunner.class)
-public class DatesToAvoidApiTest extends BaseDroolsAccessControlTest {
+public class ReserveCaseApiTest extends BaseDroolsAccessControlTest {
 
 
-    private static final String ADD_DATES_TO_AVOID_COMMAND_NAME = "sjp.add-dates-to-avoid";
+    public static final String RESERVE_CASE = "sjp.reserve-case";
+    public static final String SJP_UNDO_RESERVE_CASE = "sjp.undo-reserve-case";
 
     @Spy
     private Enveloper enveloper = EnveloperFactory.createEnveloper();
@@ -43,7 +46,7 @@ public class DatesToAvoidApiTest extends BaseDroolsAccessControlTest {
     private Sender sender;
 
     @InjectMocks
-    private DatesToAvoidApi datesToAvoidApi;
+    private ReserveCaseApi reserveCaseApi;
 
     @Captor
     private ArgumentCaptor<JsonEnvelope> envelopeCaptor;
@@ -57,24 +60,47 @@ public class DatesToAvoidApiTest extends BaseDroolsAccessControlTest {
     }
 
     @Test
-    public void shouldAllowAuthorisedUserToUploadCaseDocument() {
-        final Action action = createActionFor(ADD_DATES_TO_AVOID_COMMAND_NAME);
-        given(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups(action, getAddDatesToAvoidActionGroups()))
+    public void shouldAllowAuthorisedUserToReserveCaseStatus() {
+        final Action action = createActionFor(RESERVE_CASE);
+        given(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups(action, reserveCaseGroups()))
                 .willReturn(true);
         final ExecutionResults results = executeRulesWith(action);
         assertSuccessfulOutcome(results);
     }
 
     @Test
-    public void shouldRenameAddCommand() {
-        final JsonEnvelope command = envelope().with(metadataWithRandomUUID("sjp.add-dates-to-avoid")).build();
+    public void shouldAllowAuthorisedUserToUndoReserveCaseStatus() {
+        final Action action = createActionFor(SJP_UNDO_RESERVE_CASE);
+        given(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups(action, undoReserveCaseGroups()))
+                .willReturn(true);
+        final ExecutionResults results = executeRulesWith(action);
+        assertSuccessfulOutcome(results);
+    }
 
-        datesToAvoidApi.addDatesToAvoid(command);
+    @Test
+    public void shouldReserveCaseStatusCommand() {
+        final JsonEnvelope commandEnvelope = envelope().
+                with(metadataWithRandomUUID(RESERVE_CASE))
+                .build();
+
+        reserveCaseApi.reserveCaseStatus(commandEnvelope);
+
+        verify(sender).send(envelopeCaptor.capture());
+        final JsonEnvelope sentCommandEnvelope = envelopeCaptor.getValue();
+        assertThat(sentCommandEnvelope.metadata().name(), is("sjp.command.reserve-case"));
+        assertThat(commandEnvelope.payloadAsJsonObject(), Matchers.equalTo(sentCommandEnvelope.payloadAsJsonObject()));
+    }
+
+    @Test
+    public void shouldUndoReserveCaseStatusCommand() {
+        final JsonEnvelope command = envelope().with(metadataWithRandomUUID(SJP_UNDO_RESERVE_CASE)).build();
+
+        reserveCaseApi.undoReserveCaseStatus(command);
 
         verify(sender).send(envelopeCaptor.capture());
 
         final JsonEnvelope newCommand = envelopeCaptor.getValue();
-        assertThat(newCommand.metadata(), withMetadataEnvelopedFrom(command).withName("sjp.command.add-dates-to-avoid"));
+        assertThat(newCommand.metadata().name(), is("sjp.command.undo-reserve-case"));
         assertThat(newCommand.payloadAsJsonObject(), equalTo(command.payloadAsJsonObject()));
     }
 }

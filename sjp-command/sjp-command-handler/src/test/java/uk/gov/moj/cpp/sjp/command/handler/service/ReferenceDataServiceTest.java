@@ -1,8 +1,10 @@
 package uk.gov.moj.cpp.sjp.command.handler.service;
 
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
+import static java.util.UUID.randomUUID;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.argThat;
 import static org.mockito.Mockito.when;
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
@@ -19,6 +21,7 @@ import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.test.utils.core.enveloper.EnveloperFactory;
 
 import java.util.Optional;
+import java.util.UUID;
 
 import javax.json.Json;
 import javax.json.JsonObject;
@@ -105,6 +108,23 @@ public class ReferenceDataServiceTest {
         final Optional<JsonObject> actualEnforcementArea = referenceDataService.getEnforcementAreaByLocalJusticeAreaNationalCourtCode(localJusticeAreaNationalCourtCode, envelope);
 
         assertThat(actualEnforcementArea.isPresent(), equalTo(false));
+    }
+
+    @Test
+    public void shouldReturnProsecutor() {
+        final UUID id = randomUUID();
+        final JsonObject prosecutorJson =  Json.createObjectBuilder()
+                .add("prosecutorCode", "100")
+                .add("prosecutorName", "test").build();
+
+        final JsonEnvelope queryResponse = envelopeFrom(metadataWithRandomUUIDAndName(), prosecutorJson);
+
+        when(requester.request(any(JsonEnvelope.class))).thenReturn(queryResponse);
+
+        final Optional<JsonObject> prosecutor = referenceDataService.getProsecutor(envelope, id);
+
+        assertThat(prosecutor.isPresent(), equalTo(true));
+        assertThat(prosecutor.get(), equalTo(prosecutorJson));
     }
 
     private JsonEnvelope enforcementAreaQueryByPostcode(final String postcode) {

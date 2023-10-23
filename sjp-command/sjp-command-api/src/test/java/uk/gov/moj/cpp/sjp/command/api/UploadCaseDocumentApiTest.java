@@ -2,6 +2,7 @@ package uk.gov.moj.cpp.sjp.command.api;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.assertThat;
+import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.verify;
 import static uk.gov.justice.services.core.annotation.Component.COMMAND_API;
 import static uk.gov.justice.services.test.utils.core.matchers.HandlerClassMatcher.isHandlerClass;
@@ -9,14 +10,22 @@ import static uk.gov.justice.services.test.utils.core.matchers.HandlerMethodMatc
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMetadataMatcher.withMetadataEnvelopedFrom;
 import static uk.gov.justice.services.test.utils.core.messaging.JsonEnvelopeBuilder.envelope;
 import static uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderFactory.metadataWithRandomUUID;
+import static uk.gov.moj.cpp.sjp.command.api.accesscontrol.RuleConstants.getUploadCaseDocumentActionGroups;
 
 import uk.gov.justice.services.core.enveloper.Enveloper;
 import uk.gov.justice.services.core.sender.Sender;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.test.utils.core.enveloper.EnveloperFactory;
+import uk.gov.moj.cpp.accesscontrol.common.providers.UserAndGroupProvider;
+import uk.gov.moj.cpp.accesscontrol.drools.Action;
+import uk.gov.moj.cpp.accesscontrol.test.utils.BaseDroolsAccessControlTest;
 
+import java.util.Map;
+
+import com.google.common.collect.ImmutableMap;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.kie.api.runtime.ExecutionResults;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.InjectMocks;
@@ -25,7 +34,7 @@ import org.mockito.Spy;
 import org.mockito.runners.MockitoJUnitRunner;
 
 @RunWith(MockitoJUnitRunner.class)
-public class UploadCaseDocumentApiTest {
+public class UploadCaseDocumentApiTest extends BaseDroolsAccessControlTest {
 
     private static final String COMMAND_NAME = "sjp.upload-case-document";
     private static final String NEW_COMMAND_NAME = "sjp.command.upload-case-document";
@@ -35,6 +44,18 @@ public class UploadCaseDocumentApiTest {
 
     @Mock
     private Sender sender;
+
+    @Mock
+    private UserAndGroupProvider userAndGroupProvider;
+
+    @Test
+    public void shouldAllowAuthorisedUserToUploadCaseDocument() {
+        final Action action = createActionFor(COMMAND_NAME);
+        given(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups(action, getUploadCaseDocumentActionGroups()))
+                .willReturn(true);
+        final ExecutionResults results = executeRulesWith(action);
+        assertSuccessfulOutcome(results);
+    }
 
     @InjectMocks
     private UploadCaseDocumentApi uploadCaseDocumentApi;
@@ -59,6 +80,11 @@ public class UploadCaseDocumentApiTest {
         final JsonEnvelope newCommand = envelopeCaptor.getValue();
         assertThat(newCommand.metadata(), withMetadataEnvelopedFrom(command).withName(NEW_COMMAND_NAME));
         assertThat(newCommand.payloadAsJsonObject(), equalTo(command.payloadAsJsonObject()));
+    }
+
+    @Override
+    protected Map<Class, Object> getProviderMocks() {
+        return ImmutableMap.<Class, Object>builder().put(UserAndGroupProvider.class, userAndGroupProvider).build();
     }
 
 }

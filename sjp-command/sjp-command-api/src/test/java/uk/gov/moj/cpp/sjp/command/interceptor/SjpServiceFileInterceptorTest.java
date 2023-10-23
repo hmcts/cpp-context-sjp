@@ -1,5 +1,6 @@
 package uk.gov.moj.cpp.sjp.command.interceptor;
 
+import static java.util.Optional.empty;
 import static java.util.Optional.of;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -82,6 +83,16 @@ public class SjpServiceFileInterceptorTest extends TestCase {
 
         sjpServiceFileInterceptor.process(interceptorContext, interceptorChain);
         verify(interceptorChain).processNext(outputInterceptorContext);
+    }
+
+    @Test
+    public void shouldNotPassSjpServiceFileInterceptorValidationAndUpload() throws IOException {
+        when(interceptorContext.getInputParameter("fileInputDetailsList")).thenReturn(empty());
+        final InterceptorContext outputInterceptorContext = this.interceptorContext.copyWithInput(inputEnvelope);
+        when(interceptorChain.processNext(outputInterceptorContext)).thenReturn(null);
+
+        sjpServiceFileInterceptor.process(interceptorContext, interceptorChain);
+        verify(interceptorChain).processNext(interceptorContext);
     }
 
     @Test(expected = ForbiddenRequestException.class)

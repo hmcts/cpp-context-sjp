@@ -40,7 +40,7 @@ public final class RuleConstants {
     }
 
     public static List<String> getUpdateFinancialMeansGroups() {
-        return asList(GROUP_COURT_ADMINISTRATORS, GROUP_LEGAL_ADVISERS, GROUP_SYSTEM_USERS);
+        return asList(GROUP_COURT_ADMINISTRATORS, GROUP_LEGAL_ADVISERS, GROUP_SYSTEM_USERS, GROUP_MAGISTRATES);
     }
 
     public static List<String> getUpdateEmployerGroups() {

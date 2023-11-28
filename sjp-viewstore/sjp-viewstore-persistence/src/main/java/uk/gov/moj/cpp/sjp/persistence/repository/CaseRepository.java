@@ -36,7 +36,11 @@ public abstract class CaseRepository extends AbstractEntityRepository<CaseDetail
 
     private static final String SELECT_CASES_FOR_SOC_CHECK =
             " with adjourn_temp as (select distinct cd.id from case_decision cd inner join offence_decision od on cd.id = od.case_decision_id where od.decision_type = 'ADJOURN')" +
-                    " select distinct cast(cd.id as varchar) as id , cd.urn as urn, cdn.saved_at as lastUpdatedDate, cd.prosecuting_authority as prosecutingAuthority, sess.magistrate as magistrate, cast(sess.user_id as varchar) as legalAdvisorUserId" +
+                    " select distinct cast(cd.id as varchar) as id , cd.urn as urn, cdn.saved_at as lastUpdatedDate, cd.prosecuting_authority as prosecutingAuthority, sess.magistrate as magistrate, " +
+                    " cast(case " +
+                    " when sess.legal_adviser_user_id is null then sess.user_id " +
+                    " when sess.legal_adviser_user_id is not null then sess.legal_adviser_user_id " +
+                    " end as varchar) as legalAdvisorUserId " +
                     " from case_details cd inner join case_decision cdn on cd.id = cdn.case_id " +
                     " inner join offence_decision od on cdn.id = od.case_decision_id " +
                     " inner join session sess on sess.id = cdn.session_id " +

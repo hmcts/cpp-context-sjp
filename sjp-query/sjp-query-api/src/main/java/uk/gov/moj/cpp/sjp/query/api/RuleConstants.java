@@ -111,7 +111,7 @@ public final class RuleConstants {
     }
 
     public static List<String> getAllowedGroupsForOutstandingFines() {
-        return asList(GROUP_COURT_ADMINISTRATORS, GROUP_LEGAL_ADVISERS);
+        return asList(GROUP_COURT_ADMINISTRATORS, GROUP_LEGAL_ADVISERS, GROUP_MAGISTRATES);
     }
 
     public static List<String> getAllowedGroupsForVerdictCalculation() {

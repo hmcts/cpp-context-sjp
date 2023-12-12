@@ -1,17 +1,17 @@
 package uk.gov.moj.cpp.sjp.domain.legalentity;
 
-import uk.gov.justice.core.courts.Position;
 import uk.gov.moj.cpp.sjp.domain.Address;
 import uk.gov.moj.cpp.sjp.domain.ContactDetails;
 
+@SuppressWarnings("PMD.BeanMembersShouldSerialize")
 public class LegalEntityDefendant {
     private final String name;
     private final Address address;
     private final ContactDetails contactDetails;
     private final String incorporationNumber;
-    private final Position position;
+    private final String position;
 
-    public LegalEntityDefendant(String name, Address address, ContactDetails contactDetails, String incorporationNumber, Position position) {
+    public LegalEntityDefendant(String name, Address address, ContactDetails contactDetails, String incorporationNumber, String position) {
         this.name =  name;
         this.address = address;
         this.contactDetails =  contactDetails;
@@ -35,7 +35,7 @@ public class LegalEntityDefendant {
         return incorporationNumber;
     }
 
-    public Position getPosition() {
+    public String getPosition() {
         return position;
     }
 
@@ -48,7 +48,7 @@ public class LegalEntityDefendant {
         private Address address;
         private ContactDetails contactDetails;
         private String incorporationNumber;
-        private Position position;
+        private String position;
 
         public LegalEntityDefendant.Builder withName(final String name) {
             this.name = name;
@@ -70,7 +70,7 @@ public class LegalEntityDefendant {
             return this;
         }
 
-        public LegalEntityDefendant.Builder withPosition(final Position position) {
+        public LegalEntityDefendant.Builder withPosition(final String position) {
             this.position = position;
             return this;
         }

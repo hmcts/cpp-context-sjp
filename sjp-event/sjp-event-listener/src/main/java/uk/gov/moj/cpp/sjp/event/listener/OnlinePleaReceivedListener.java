@@ -87,7 +87,7 @@ public class OnlinePleaReceivedListener {
                     legalEntityAddress.getPostcode());
             final LegalEntityFinancialMeans legalEntityFinancialMeans = new LegalEntityFinancialMeans(newData.getLegalEntityFinancialMeans().getTradingMoreThan12Months(), newData.getLegalEntityFinancialMeans().getNumberOfEmployees(), newData.getLegalEntityFinancialMeans().getGrossTurnover(), newData.getLegalEntityFinancialMeans().getNetTurnover());
 
-            final OnlinePleaLegalEntityDetails legalEntity = new OnlinePleaLegalEntityDetails(newLegalEntityDefendant.getName(), newLegalEntityDefendant.getPosition().name(), legalEntityFinancialMeans, address, newLegalEntityDefendant.getContactDetails().getHome(), newLegalEntityDefendant.getContactDetails().getMobile(), newLegalEntityDefendant.getContactDetails().getEmail());
+            final OnlinePleaLegalEntityDetails legalEntity = new OnlinePleaLegalEntityDetails(newLegalEntityDefendant.getName(), newLegalEntityDefendant.getPosition(), legalEntityFinancialMeans, address, newLegalEntityDefendant.getContactDetails().getHome(), newLegalEntityDefendant.getContactDetails().getMobile(), newLegalEntityDefendant.getContactDetails().getEmail());
             newOnlinePlea.setLegalEntityDetails(legalEntity);
         }
 

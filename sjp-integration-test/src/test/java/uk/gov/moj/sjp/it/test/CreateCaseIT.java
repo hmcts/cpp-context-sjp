@@ -481,8 +481,8 @@ public class CreateCaseIT extends BaseIntegrationTest {
         assertTrue(event.isPresent());
         final JsonObject payload = event.get().payloadAsJsonObject();
         assertThat(payload.getString("caseId"), is(caseId.toString()));
-        assertThat(payload.getInt("victimSurcharge"), is(34));
-        assertThat(payload.getJsonNumber("aocpTotalCost").doubleValue(), is(239.91));
+        assertThat(payload.getInt("victimSurcharge"), is(80));
+        assertThat(payload.getJsonNumber("aocpTotalCost").doubleValue(), is(285.91));
         assertThat(payload.getJsonObject("defendant").getString("id"), is(defendant.getId().toString()));
         final JsonArray offences = payload.getJsonObject("defendant").getJsonArray("offences");
         assertThat(offences.getJsonObject(0).getInt("aocpStandardPenaltyAmount"), is(100));

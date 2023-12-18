@@ -34,7 +34,7 @@ public class OnlinePleaHandlerTest {
     private UUID offenceId = randomUUID();
     private CaseAggregateState caseAggregateState;
     private String caseURN = "TFL18ABC";
-    private static final String AOCP_REJECTED_REASON = "Case is already in Ready for Decision stage";
+    private static final String AOCP_REJECTED_REASON = "Case is already completed";
     private static final ZonedDateTime pleadDate = now();;
 
     @Before
@@ -63,7 +63,7 @@ public class OnlinePleaHandlerTest {
 
     @Test
     public void shouldEmitRejected() {
-        caseAggregateState.markReady(ZonedDateTime.now(), CaseReadinessReason.PIA);
+        caseAggregateState.markCaseCompleted();
         final Offence offence = new Offence(offenceId, PleaType.GUILTY, null, null);
         final PleadAocpOnline pleadAocpOnline = new PleadAocpOnline(caseId, defendantId, asList(offence), true, null);
         final Stream<Object> eventStream = OnlinePleaHandler.INSTANCE.pleadAocpAcceptedOnline(

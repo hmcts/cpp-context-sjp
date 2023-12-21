@@ -26,7 +26,7 @@ import javax.json.JsonObject;
 
 public class UserAndGroupsService {
 
-    private static final List<String> SHOW_ONLINE_PLEA_FINANCES = asList("Legal Advisers", "Court Administrators");
+    private static final List<String> SHOW_ONLINE_PLEA_FINANCES = asList("Legal Advisers", "Court Administrators", "Magistrates");
 
     private static final String GROUP_SJP_PROSECUTORS = "SJP Prosecutors";
 

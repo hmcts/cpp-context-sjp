@@ -93,6 +93,7 @@ public class UserAndGroupsServiceTest {
                 // Real Groups:
                 {true,  singletonList("Court Administrators")},
                 {true,  singletonList("Legal Advisers")},
+                {true,  singletonList("Magistrates")},
                 {false, singletonList("SJP Prosecutors")},
                 {false, singletonList("TFL Prosecutors")},
                 {false, singletonList("TVL Prosecutors")},

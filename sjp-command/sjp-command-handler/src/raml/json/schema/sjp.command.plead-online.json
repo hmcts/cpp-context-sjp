@@ -73,7 +73,12 @@
         },
         "position": {
           "id": "http://justice.gov.uk/json/schemas/domains/sjp/command/plea/position.json",
-          "type": "string"
+          "type": "string",
+          "enum": [
+            "DIRECTOR",
+            "SECRETARY",
+            "SOLICITOR"
+          ]
         }
       },
       "required": [

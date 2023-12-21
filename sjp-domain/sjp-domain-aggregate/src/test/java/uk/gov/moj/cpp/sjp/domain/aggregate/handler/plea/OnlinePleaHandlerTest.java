@@ -1,11 +1,11 @@
 package uk.gov.moj.cpp.sjp.domain.aggregate.handler.plea;
 
+import static java.time.ZonedDateTime.now;
 import static java.util.UUID.randomUUID;
 import static java.util.stream.Collectors.toList;
 import static org.codehaus.groovy.runtime.InvokerHelper.asList;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.allOf;
-import static java.time.ZonedDateTime.now;
 import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.is;
 
@@ -15,8 +15,8 @@ import uk.gov.moj.cpp.sjp.domain.aggregate.state.CaseAggregateState;
 import uk.gov.moj.cpp.sjp.domain.onlineplea.Offence;
 import uk.gov.moj.cpp.sjp.domain.onlineplea.PleadAocpOnline;
 import uk.gov.moj.cpp.sjp.domain.plea.PleaType;
-import uk.gov.moj.cpp.sjp.event.DefendantAocpPleaRejected;
 import uk.gov.moj.cpp.sjp.event.DefendantAcceptedAocp;
+import uk.gov.moj.cpp.sjp.event.DefendantAocpPleaRejected;
 
 import java.time.ZonedDateTime;
 import java.util.List;
@@ -34,7 +34,7 @@ public class OnlinePleaHandlerTest {
     private UUID offenceId = randomUUID();
     private CaseAggregateState caseAggregateState;
     private String caseURN = "TFL18ABC";
-    private static final String AOCP_REJECTED_REASON = "Case is already completed";
+    private static final String AOCP_REJECTED_REASON = "Case is already in Ready for Decision stage";
     private static final ZonedDateTime pleadDate = now();;
 
     @Before
@@ -63,7 +63,7 @@ public class OnlinePleaHandlerTest {
 
     @Test
     public void shouldEmitRejected() {
-        caseAggregateState.markCaseCompleted();
+        caseAggregateState.markReady(ZonedDateTime.now(), CaseReadinessReason.PIA);
         final Offence offence = new Offence(offenceId, PleaType.GUILTY, null, null);
         final PleadAocpOnline pleadAocpOnline = new PleadAocpOnline(caseId, defendantId, asList(offence), true, null);
         final Stream<Object> eventStream = OnlinePleaHandler.INSTANCE.pleadAocpAcceptedOnline(

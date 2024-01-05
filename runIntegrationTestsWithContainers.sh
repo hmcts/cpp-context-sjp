@@ -39,7 +39,7 @@ buildDeployAndTest() {
   loginToDockerContainerRegistry
   buildWars
   undeployWarsFromDocker
-  buildAndStartContainers
+  buildAndStartContainersWithElasticSearch
   runLiquibase
   deployWiremock
   deployWars

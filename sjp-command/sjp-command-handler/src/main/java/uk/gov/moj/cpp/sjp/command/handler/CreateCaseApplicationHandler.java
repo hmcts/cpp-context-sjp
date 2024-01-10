@@ -113,6 +113,7 @@ public class CreateCaseApplicationHandler extends CaseCommandHandler {
 
         ofNullable(courtApplication.getRespondents())
                 .ifPresent(courtApplicationParties -> courtApplicationBuilder.withRespondents(courtApplicationParties.stream()
+                        .filter(respondent -> nonNull(respondent.getProsecutingAuthority()))
                         .map(respondent -> enrichCourtApplicationParty(respondent, jsonEnvelope))
                         .collect(toList())));
 
@@ -127,6 +128,7 @@ public class CreateCaseApplicationHandler extends CaseCommandHandler {
 
         if (isNotEmpty(thirdParties)) {
             courtApplicationBuilder.withThirdParties(thirdParties.stream()
+                    .filter(thirdParty -> nonNull(thirdParty.getProsecutingAuthority()))
                     .map(thirdParty -> enrichCourtApplicationParty(thirdParty, jsonEnvelope))
                     .collect(toList()));
         }
@@ -210,7 +212,6 @@ public class CreateCaseApplicationHandler extends CaseCommandHandler {
         builder.withProsecutingAuthority(fetchProsecutingAuthorityInformation(courtApplicationParty.getProsecutingAuthority(), jsonEnvelope));
         return builder.build();
     }
-
     @SuppressWarnings("pmd:NullAssignment")
     private ProsecutingAuthority fetchProsecutingAuthorityInformation(final ProsecutingAuthority prosecutingAuthority, final JsonEnvelope jsonEnvelope) {
 

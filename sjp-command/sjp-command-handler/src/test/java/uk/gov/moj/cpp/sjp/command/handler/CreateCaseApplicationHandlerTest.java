@@ -11,12 +11,12 @@ import static java.util.Optional.of;
 import static javax.json.Json.createObjectBuilder;
 import static org.apache.commons.lang3.RandomStringUtils.randomAlphanumeric;
 import static org.hamcrest.CoreMatchers.notNullValue;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.core.AllOf.allOf;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.nullValue;
-import static org.junit.Assert.assertThat;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.verify;
@@ -1499,6 +1499,100 @@ public class CreateCaseApplicationHandlerTest {
                                 withJsonPath("$.caseStatus", equalTo(COMPLETED_APPLICATION_PENDING.toString()))
                         )))
         ));
+    }
+
+    @Test
+    public void shouldAddProsecutorFromCaseWhenCourtApplicationProceedingsInitiated_Existing3rdPartyWithoutProsecutingAuthority() throws EventStreamException {
+
+        final UUID prosecutor1 = randomUUID();
+        final UUID prosecutor2 = randomUUID();
+        final UUID subject = randomUUID();
+        final UUID respondent = randomUUID();
+        final String prosecutor2AuthCode = STRING.next();
+
+        final CreateCaseApplication createCaseApplication = CreateCaseApplication.createCaseApplication()
+                .withCourtApplication(courtApplication()
+                        .withApplicationReference(STRING.next())
+                        .withId(APP_ID)
+                        .withType(courtApplicationType()
+                                .withProsecutorThirdPartyFlag(true)
+                                .withId(TYPE_ID)
+                                .withType("STANDALONE")
+                                .withCode("MC80528")
+                                .build())
+                        .withApplicant(buildCourtApplicationParty(prosecutor1))
+                        .withRespondents(singletonList(buildCourtApplicationParty(respondent)))
+                        .withSubject(buildCourtApplicationParty(subject))
+                        .withThirdParties(singletonList(buildCourtApplicationPartyWithoutProsecutingAuthority()))
+                        .withCourtApplicationCases(singletonList(courtApplicationCase()
+                                .withProsecutionCaseIdentifier(prosecutionCaseIdentifier()
+                                        .withProsecutionAuthorityId(prosecutor2)
+                                        .withProsecutionAuthorityCode(prosecutor2AuthCode)
+                                        .build())
+                                .withCaseStatus("ACTIVE")
+                                .build()))
+                        .build())
+                .withCaseId(CASE_ID)
+                .withApplicationIdExists(false)
+                .build();
+
+        when(referenceDataService.getProsecutor(any(JsonEnvelope.class), eq(prosecutor1))).thenReturn(of(buildProsecutorQueryResult(prosecutor1, "prosecutor1")));
+        when(referenceDataService.getProsecutor(any(JsonEnvelope.class), eq(prosecutor2))).thenReturn(of(buildProsecutorQueryResult(prosecutor2, "prosecutor2")));
+        when(referenceDataService.getProsecutor(any(JsonEnvelope.class), eq(subject))).thenReturn(of(buildProsecutorQueryResult(subject, "subject")));
+        when(referenceDataService.getProsecutor(any(JsonEnvelope.class), eq(respondent))).thenReturn(of(buildProsecutorQueryResult(respondent, "respondent")));
+
+        createCaseApplicationHandler.createCaseApplication(envelopeFrom(metadata, createCaseApplication));
+
+        verify(eventStream).append(argumentCaptor.capture());
+
+        assertThat(argumentCaptor.getValue(), streamContaining(
+                jsonEnvelope(metadata().withName(CASE_APPLICATION_CREATED),
+                        payloadIsJson(CoreMatchers.allOf(
+                                withJsonPath("$.courtApplication.id", CoreMatchers.equalTo(APP_ID.toString())),
+                                withJsonPath("$.courtApplication.type.id", CoreMatchers.equalTo(TYPE_ID.toString())),
+                                withJsonPath("$.caseId", notNullValue()),
+                                withJsonPath("$.courtApplication", Matchers.notNullValue()),
+                                withJsonPath("$.courtApplication.thirdParties.length()", is(1)),
+                                withJsonPath("$.courtApplication.thirdParties[0].id", Matchers.notNullValue()),
+                                withJsonPath("$.courtApplication.thirdParties[0].prosecutingAuthority.prosecutionAuthorityId", is(prosecutor2.toString())),
+                                withJsonPath("$.courtApplication.thirdParties[0].prosecutingAuthority.prosecutionAuthorityCode", is(prosecutor2AuthCode)),
+                                withJsonPath("$.courtApplication.thirdParties[0].prosecutingAuthority.prosecutionAuthorityOUCode", is(PROSECUTOR_OU_CODE)),
+                                withJsonPath("$.courtApplication.thirdParties[0].prosecutingAuthority.majorCreditorCode", is(PROSECUTOR_MAJOR_CREDITOR_CODE)),
+                                withJsonPath("$.courtApplication.thirdParties[0].prosecutingAuthority.name", is("prosecutor2 Name")),
+                                withJsonPath("$.courtApplication.thirdParties[0].prosecutingAuthority.welshName", is("prosecutor2 WelshName")),
+                                withJsonPath("$.courtApplication.thirdParties[0].prosecutingAuthority.address.address1", is("prosecutor2 Address line 1")),
+                                withJsonPath("$.courtApplication.thirdParties[0].prosecutingAuthority.contact.primaryEmail", is(CONTACT_EMAIL_ADDRESS_PREFIX + EMAIL_ADDRESS_SUFFIX))
+
+                        ))),
+                jsonEnvelope(metadata().withName(CASE_STAT_DECS),
+                        payloadIsJson(CoreMatchers.allOf(
+                                withJsonPath("$.applicationId", CoreMatchers.equalTo(APP_ID.toString())),
+                                withJsonPath("$.applicant.id", CoreMatchers.equalTo(APPLICANT_ID.toString()))
+                        ))),
+                jsonEnvelope(metadata().withName(ApplicationStatusChanged.EVENT_NAME),
+                        payloadIsJson(CoreMatchers.allOf(
+                                withJsonPath("$.applicationId", CoreMatchers.equalTo(APP_ID.toString())),
+                                withJsonPath("$.status", CoreMatchers.equalTo(STATUTORY_DECLARATION_PENDING.name()))
+                        ))),
+                jsonEnvelope(metadata().withName(CASE_MARKED_READY_FOR_DECISION),
+                        payloadIsJson(CoreMatchers.allOf(
+                                withJsonPath("$.caseId", notNullValue()),
+                                withJsonPath("$.reason", equalTo(APPLICATION_PENDING.toString())),
+                                withJsonPath("$.priority", equalTo(PRIORITY))
+                        ))),
+                jsonEnvelope(metadata().withName(EventNamesHolder.CASE_STATUS_CHANGED),
+                        payloadIsJson(allOf(
+                                withJsonPath("$.caseId", notNullValue()),
+                                withJsonPath("$.caseStatus", equalTo(COMPLETED_APPLICATION_PENDING.toString()))
+                        )))
+        ));
+    }
+
+    private CourtApplicationParty buildCourtApplicationPartyWithoutProsecutingAuthority() {
+        return CourtApplicationParty.courtApplicationParty()
+                .withId(APPLICANT_ID)
+                .withProsecutingAuthority(null)
+                .build();
     }
 
     private CourtApplicationParty buildCourtApplicationParty(final UUID prosecutionAuthorityId) {

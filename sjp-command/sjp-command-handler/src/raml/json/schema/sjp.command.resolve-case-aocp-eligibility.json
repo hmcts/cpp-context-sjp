@@ -8,11 +8,35 @@
     },
     "isProsecutorAOCPApproved": {
       "type": "boolean"
+    },
+    "surchargeAmountMin": {
+      "type": "number"
+    },
+    "surchargeAmountMax": {
+      "type": "number"
+    },
+    "surchargeFinePercentage": {
+      "type": "number"
+    },
+    "surchargeAmount": {
+      "type": "number"
     }
   },
-  "required":[
-    "caseId",
-    "isProsecutorAOCPApproved"
+  "anyOf": [
+    {
+      "required": [
+        "caseId",
+        "isProsecutorAOCPApproved",
+        "surchargeFinePercentage"
+      ]
+    },
+    {
+      "required": [
+        "caseId",
+        "isProsecutorAOCPApproved",
+        "surchargeAmount"
+      ]
+    }
   ],
   "additionalProperties": false
 }

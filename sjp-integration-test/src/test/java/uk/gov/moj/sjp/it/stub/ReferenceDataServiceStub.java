@@ -56,6 +56,7 @@ public class ReferenceDataServiceStub {
     private static final String REFERENCEDATA_SERVICE = "referencedata-service";
     private static final String QUERY_API_PATH = "/referencedata-service/query/api/rest/referencedata";
     private static final String QUERY_PROSECUTORS_MIME_TYPE = "application/vnd.referencedata.query.prosecutors+json";
+    private static final String QUERY_VICTIM_SURCHARGE_TYPE = "application/vnd.referencedata.query.victim-surcharges+json";
     private static final String REFERENCEDATAOFFENCES_SERVICE = "referencedataoffences-service";
     private static final String QUERY_PROSECUTOR_MIME_TYPE = "application/vnd.referencedata.query.get.prosecutor.by.oucode+json";
     private static final String QUERY_PROSECUTOR_PTIURN_PATH = "/referencedata-query-api/query/api/rest/referencedata/prosecutor?ptiurn=TFL";
@@ -74,6 +75,7 @@ public class ReferenceDataServiceStub {
         stubAllResultDefinitions();
         stubQueryForVerdictTypes();
         stubQueryForAllProsecutors();
+        stubQueryVictimSurcharge();
     }
 
     public static void stubAllResultDefinitions() {
@@ -533,6 +535,18 @@ public class ReferenceDataServiceStub {
                         .withHeader(ID, randomUUID().toString())
                         .withHeader(CONTENT_TYPE, "application/vnd.reference-data.query.get-referral-reason+json")
                         .withBody(getPayload(payload)))
+        );
+    }
+
+    public static void stubQueryVictimSurcharge() {
+        stubPingFor(REFERENCEDATA_SERVICE);
+
+        stubFor(get(urlPathEqualTo(QUERY_API_PATH + "/victim-surcharges"))
+                .withHeader(ACCEPT, equalTo(QUERY_VICTIM_SURCHARGE_TYPE))
+                .willReturn(aResponse().withStatus(SC_OK)
+                        .withHeader(ID, randomUUID().toString())
+                        .withHeader(CONTENT_TYPE, QUERY_VICTIM_SURCHARGE_TYPE)
+                        .withBody(getPayload("stub-data/referencedata.victim-surcharges.json")))
         );
     }
 

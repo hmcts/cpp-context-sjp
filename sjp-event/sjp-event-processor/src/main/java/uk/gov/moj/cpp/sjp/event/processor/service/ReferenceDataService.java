@@ -51,6 +51,7 @@ import org.slf4j.LoggerFactory;
 public class ReferenceDataService {
 
     private static final String REFERENCEDATA_GET_DOCUMENT_ACCESS = "referencedata.query.document-type-access";
+    private static final String REFERENCEDATA_QUERY_VICTIM_SURCHARGE = "referencedata.query.victim-surcharges";
 
     private static final String ON_QUERY_PARAMETER = "on";
     public static final String VERDICT_TYPES = "verdictTypes";
@@ -60,6 +61,9 @@ public class ReferenceDataService {
 
     public static final String REFERENCEDATA_GET_REFERRAL_REASON_BY_ID = "reference-data.query.get-referral-reason";
     public static final String ID = "id";
+    private static final String VICTIM_SURCHARGES = "victimSurcharges";
+    private static final String SURCHARGE_TYPE = "surchargeType";
+    private static final String SURCHARGE_LEVEL = "surchargeLevel";
     private static final Logger LOGGER = LoggerFactory.getLogger(ReferenceDataService.class);
 
 
@@ -490,6 +494,27 @@ public class ReferenceDataService {
 
         return Optional.ofNullable(requester.requestAsAdmin(referralReasonsEnvelope)
                 .payloadAsJsonObject());
+    }
+
+    public List<JsonObject> getVictimSurcharges(final JsonEnvelope jsonEnvelope, final Requester requester, final String surchargeType, final String  surchargeLevel) {
+
+        final JsonObject payload = Json.createObjectBuilder()
+                .add(SURCHARGE_TYPE, surchargeType)
+                .add(SURCHARGE_LEVEL, surchargeLevel)
+                .build();
+        final JsonEnvelope response = requester.request(envelop(payload)
+                .withName(REFERENCEDATA_QUERY_VICTIM_SURCHARGE)
+                .withMetadataFrom(jsonEnvelope));
+
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.info(" '{}' by surchargeType {} surchargeLevel {} received with payload {} ", REFERENCEDATA_QUERY_VICTIM_SURCHARGE, surchargeType, surchargeLevel, response);
+        }
+
+        if (response.payloadAsJsonObject().containsKey(VICTIM_SURCHARGES) && !response.payloadAsJsonObject().isNull(VICTIM_SURCHARGES)) {
+            return response.payloadAsJsonObject().getJsonArray(VICTIM_SURCHARGES).getValuesAs(JsonObject.class);
+        } else {
+            return emptyList();
+        }
     }
 
 

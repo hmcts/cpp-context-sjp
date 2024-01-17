@@ -1,6 +1,8 @@
 package uk.gov.moj.cpp.sjp.command.handler;
 
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
+import static java.util.Optional.empty;
+import static java.util.Optional.of;
 import static javax.json.Json.createObjectBuilder;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -29,8 +31,11 @@ import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.sjp.domain.aggregate.CaseAggregate;
 import uk.gov.moj.cpp.sjp.event.CaseEligibleForAOCP;
 
+import java.math.BigDecimal;
 import java.util.UUID;
 import java.util.stream.Stream;
+
+import javax.json.JsonValue;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -74,17 +79,84 @@ public class ResolveCaseAOCPEligibilityHandlerTest {
     @Test
     public void shouldHandleResolveCaseAOCPEligibility() throws EventStreamException {
         final UUID caseId = randomUUID();
+        final BigDecimal surchargeAmountMin = BigDecimal.ONE;
+        final BigDecimal surchargeAmountMax = BigDecimal.valueOf(2000);
+        final BigDecimal surchargeFinePercentage = BigDecimal.valueOf(40);
 
         final JsonEnvelope envelope = envelopeFrom(
                 metadataWithRandomUUID(COMMAND_RESOLVE_CASE_AOCP_ELIGIBILITY),
                 createObjectBuilder()
                         .add("caseId", caseId.toString())
                         .add("isProsecutorAOCPApproved", true)
-                        .build());
+                        .add("surchargeAmountMin", surchargeAmountMin)
+                        .add("surchargeAmountMax",surchargeAmountMax)
+                        .add("surchargeFinePercentage",surchargeFinePercentage)
 
+                        .build());
         when(eventSource.getStreamById(caseId)).thenReturn(eventStream);
         when(aggregateService.get(eventStream, CaseAggregate.class)).thenReturn(caseAggregate);
-        when(caseAggregate.resolveCaseAOCPEligibility(caseId, true)).thenReturn(Stream.of(new CaseEligibleForAOCP(caseId, valueOf(30), valueOf(100), valueOf(200), null)));
+        when(caseAggregate.resolveCaseAOCPEligibility(caseId, true, of(surchargeAmountMin), of(surchargeAmountMax), of(surchargeFinePercentage), empty()))
+                .thenReturn(Stream.of(new CaseEligibleForAOCP(caseId, valueOf(30), valueOf(100), valueOf(200), null)));
+
+        resolveCaseAOCPEligibilityHandler.handleResolveCaseAOCPEligibility(envelope);
+
+        assertThat(eventStream, eventStreamAppendedWith(
+                streamContaining(jsonEnvelope(withMetadataEnvelopedFrom(envelope)
+                                .withName(CaseEligibleForAOCP.EVENT_NAME),
+                        payloadIsJson(allOf(
+                                withJsonPath("$.caseId", equalTo(caseId.toString())),
+                                withJsonPath("$.costs", equalTo(30)),
+                                withJsonPath("$.victimSurcharge", equalTo(100))
+                        ))))));
+    }
+
+    @Test
+    public void shouldHandleResolveCaseAOCPEligibilityWhenSurchargeAmountIsPopulated() throws EventStreamException {
+        final UUID caseId = randomUUID();
+        final BigDecimal surchargeAmount = BigDecimal.valueOf(40);
+
+        final JsonEnvelope envelope = envelopeFrom(
+                metadataWithRandomUUID(COMMAND_RESOLVE_CASE_AOCP_ELIGIBILITY),
+                createObjectBuilder()
+                        .add("caseId", caseId.toString())
+                        .add("isProsecutorAOCPApproved", true)
+                        .add("surchargeAmount", surchargeAmount)
+                        .build());
+        when(eventSource.getStreamById(caseId)).thenReturn(eventStream);
+        when(aggregateService.get(eventStream, CaseAggregate.class)).thenReturn(caseAggregate);
+        when(caseAggregate.resolveCaseAOCPEligibility(caseId, true, empty(), empty(), empty(), of(surchargeAmount)))
+                .thenReturn(Stream.of(new CaseEligibleForAOCP(caseId, valueOf(30), valueOf(100), valueOf(200), null)));
+
+        resolveCaseAOCPEligibilityHandler.handleResolveCaseAOCPEligibility(envelope);
+
+        assertThat(eventStream, eventStreamAppendedWith(
+                streamContaining(jsonEnvelope(withMetadataEnvelopedFrom(envelope)
+                                .withName(CaseEligibleForAOCP.EVENT_NAME),
+                        payloadIsJson(allOf(
+                                withJsonPath("$.caseId", equalTo(caseId.toString())),
+                                withJsonPath("$.costs", equalTo(30)),
+                                withJsonPath("$.victimSurcharge", equalTo(100))
+                        ))))));
+    }
+
+    @Test
+    public void shouldHandleResolveCaseAOCPEligibilityWhenSurchargeSurchargeFinePercentageIsPopulated() throws EventStreamException {
+        final UUID caseId = randomUUID();
+        final BigDecimal surchargeFinePercentage = BigDecimal.valueOf(40);
+
+        final JsonEnvelope envelope = envelopeFrom(
+                metadataWithRandomUUID(COMMAND_RESOLVE_CASE_AOCP_ELIGIBILITY),
+                createObjectBuilder()
+                        .add("caseId", caseId.toString())
+                        .add("isProsecutorAOCPApproved", true)
+                        .add("surchargeFinePercentage", surchargeFinePercentage)
+                        .add("surchargeAmountMin", JsonValue.NULL)
+                        .add("surchargeAmountMax", JsonValue.NULL)
+                        .build());
+        when(eventSource.getStreamById(caseId)).thenReturn(eventStream);
+        when(aggregateService.get(eventStream, CaseAggregate.class)).thenReturn(caseAggregate);
+        when(caseAggregate.resolveCaseAOCPEligibility(caseId, true, empty(), empty(), of(surchargeFinePercentage), empty()))
+                .thenReturn(Stream.of(new CaseEligibleForAOCP(caseId, valueOf(30), valueOf(100), valueOf(200), null)));
 
         resolveCaseAOCPEligibilityHandler.handleResolveCaseAOCPEligibility(envelope);
 

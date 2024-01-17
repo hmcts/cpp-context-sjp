@@ -78,7 +78,6 @@ public class CaseCoreHandler {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(CaseCoreHandler.class);
 
-    private static final double FINE_PERCENTAGE = 0.4;
     private static final BigDecimal MAXIMUM_COMPENSATION = TEN;
 
 
@@ -300,15 +299,19 @@ public class CaseCoreHandler {
         return streamBuilder.build();
     }
 
-    public Stream<Object> resolveCaseAOCPEligibility(final UUID caseId, final boolean isProsecutorAOCPApproved, final CaseAggregateState state) {
+    public Stream<Object> resolveCaseAOCPEligibility(final UUID caseId, final boolean isProsecutorAOCPApproved, final CaseAggregateState state,
+                                                     final Optional<BigDecimal> surchargeAmountMin, final Optional<BigDecimal> surchargeAmountMax,
+                                                     final Optional<BigDecimal> surchargeFinePercentage, Optional<BigDecimal> surchargeAmount) {
         if (!isProsecutorAOCPApproved) {
             return Stream.empty();
         } else {
-            return resolveCaseAOCPEligibilityAndCalculateFine(caseId, state);
+            return resolveCaseAOCPEligibilityAndCalculateFine(caseId, state, surchargeAmountMin, surchargeAmountMax, surchargeFinePercentage, surchargeAmount);
         }
     }
 
-    private Stream<Object> resolveCaseAOCPEligibilityAndCalculateFine(final UUID caseId, final CaseAggregateState state) {
+    private Stream<Object> resolveCaseAOCPEligibilityAndCalculateFine(final UUID caseId, final CaseAggregateState state,
+                                                                      final Optional<BigDecimal> surchargeAmountMin, final Optional<BigDecimal> surchargeAmountMax,
+                                                                      final Optional<BigDecimal> surchargeFinePercentage, final Optional<BigDecimal> surchargeAmount) {
         final AOCPCost aocpCost = state.getAOCPCost().get(caseId);
         final List<AOCPCostOffence> offences = aocpCost.getDefendant().getOffences();
         final List<AOCPCostOffence> aocpEligibleOffenceList = new ArrayList<>();
@@ -324,7 +327,7 @@ public class CaseCoreHandler {
             });
 
             if (offences.size() == aocpEligibleOffenceList.size()) {
-                final BigDecimal victimSurcharge = calculateVictimSurcharge(fineAmount.get()).setScale(2,ROUND_DOWN);
+                final BigDecimal victimSurcharge = calculateVictimSurcharge(fineAmount.get(), surchargeAmountMin, surchargeAmountMax, surchargeFinePercentage, surchargeAmount).setScale(2,ROUND_DOWN);
                 final BigDecimal aocpTotalCost = victimSurcharge.add(aocpCost.getCosts().add(valueOf(offenceCost.get()))).setScale(2,ROUND_DOWN);
                 final AOCPCostDefendant aocpCostDefendant = new AOCPCostDefendant(aocpCost.getDefendant().getId(), aocpEligibleOffenceList);
                 return Stream.of(new CaseEligibleForAOCP(caseId, aocpCost.getCosts(), victimSurcharge, aocpTotalCost, aocpCostDefendant));
@@ -335,8 +338,26 @@ public class CaseCoreHandler {
         return Stream.empty();
     }
 
-    private BigDecimal calculateVictimSurcharge(final double fineAmount) {
-        return valueOf(fineAmount * FINE_PERCENTAGE);
+    private BigDecimal calculateVictimSurcharge(final double fineAmount, final Optional<BigDecimal> surchargeAmountMin,
+                                                final Optional<BigDecimal> surchargeAmountMax, final Optional<BigDecimal> surchargeFinePercentage,
+                                                final Optional<BigDecimal> surchargeAmount) {
+        if (surchargeAmount.isPresent()) {
+            return surchargeAmount.get();
+        } else {
+            final BigDecimal victimSurcharge = BigDecimal.valueOf(fineAmount)
+                    .multiply(surchargeFinePercentage.orElseThrow(IllegalArgumentException::new))
+                    .divide(BigDecimal.valueOf(100));
+
+            if (surchargeAmountMin.isPresent() && victimSurcharge.compareTo(surchargeAmountMin.get()) < 0) {
+                return surchargeAmountMin.get();
+            } else if (surchargeAmountMax.isPresent() && victimSurcharge.compareTo(surchargeAmountMax.get()) > 0) {
+                return surchargeAmountMax.get();
+            } else {
+                return victimSurcharge;
+            }
+
+        }
+
     }
 
     private boolean isOffenceAOCPEligible(AOCPCostOffence offence) {

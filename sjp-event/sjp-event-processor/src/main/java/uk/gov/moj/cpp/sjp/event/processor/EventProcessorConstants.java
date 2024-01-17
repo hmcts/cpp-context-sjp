@@ -24,6 +24,7 @@ public class EventProcessorConstants {
     public static final String CASE_ASSIGNMENT_TYPE = "caseAssignmentType";
     public static final String DATES_TO_AVOID = "datesToAvoid";
     public static final String EXPECTED_DATE_READY = "expectedDateReady";
+    public static final String DEFENDANT = "defendant";
     public static final String DEFENDANT_ID = "defendantId";
     public static final String APPLICATION_ID = "applicationId";
     public static final String APPLICATION_REFERENCE = "applicationReference";

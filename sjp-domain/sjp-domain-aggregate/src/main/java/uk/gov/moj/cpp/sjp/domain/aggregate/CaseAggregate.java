@@ -68,6 +68,7 @@ import java.time.LocalDate;
 import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
@@ -182,8 +183,11 @@ public class CaseAggregate implements Aggregate {
         return apply(CaseDocumentHandler.INSTANCE.addCaseDocument(caseId, caseDocument, state));
     }
 
-    public Stream<Object> resolveCaseAOCPEligibility(final UUID caseId, final boolean isProsecutorAOCPApproved) {
-        return apply(CaseCoreHandler.INSTANCE.resolveCaseAOCPEligibility(caseId, isProsecutorAOCPApproved, state));
+    public Stream<Object> resolveCaseAOCPEligibility(final UUID caseId, final boolean isProsecutorAOCPApproved,
+                                                     final Optional<BigDecimal> surchargeAmountMin, final Optional<BigDecimal> surchargeAmountMax,
+                                                     final Optional<BigDecimal> surchargeFinePercentage, final Optional<BigDecimal> surchargeAmount) {
+        return apply(CaseCoreHandler.INSTANCE.resolveCaseAOCPEligibility(caseId, isProsecutorAOCPApproved, state,
+                surchargeAmountMin, surchargeAmountMax, surchargeFinePercentage, surchargeAmount));
     }
 
     public Stream<Object> uploadCaseDocument(final UUID caseId, final UUID documentReference, final String documentType) {

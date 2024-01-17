@@ -13,6 +13,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.argThat;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMatcher.jsonEnvelope;
@@ -24,10 +25,12 @@ import static uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderF
 import uk.gov.justice.services.core.enveloper.Enveloper;
 import uk.gov.justice.services.core.requester.Requester;
 import uk.gov.justice.services.messaging.JsonEnvelope;
+import uk.gov.justice.services.messaging.spi.DefaultEnvelope;
 import uk.gov.justice.services.test.utils.core.enveloper.EnveloperFactory;
 import uk.gov.moj.cpp.sjp.event.processor.service.enforcementnotification.EnforcementAreaNotFoundException;
 import uk.gov.moj.cpp.sjp.event.processor.service.referral.DocumentTypeAccess;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
@@ -44,6 +47,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
@@ -331,6 +335,37 @@ public class ReferenceDataServiceTest {
         final Optional<JsonObject> actualEnforcementArea = referenceDataService.getEnforcementAreaByLocalJusticeAreaNationalCourtCode(localJusticeAreaNationalCourtCode, envelope);
 
         assertThat(actualEnforcementArea.isPresent(), equalTo(false));
+    }
+
+    @Test
+    public void shouldReturnVictimSurcharges() {
+        ArgumentCaptor<DefaultEnvelope> envelopeCaptor = ArgumentCaptor.forClass(DefaultEnvelope.class);
+        final String surchargeType = "Fine";
+        final String surchargeLevel = "Adult";
+        final JsonObject victimSurchargePayload = createObjectBuilder()
+                .add("surchargeAmountMin", BigDecimal.valueOf(0))
+                .add("surchargeAmountMax", BigDecimal.valueOf(2000))
+                .add("surchargeFinePercentage", BigDecimal.valueOf(40))
+                .build();
+        final JsonObject responsePayload = createObjectBuilder()
+                .add("victimSurcharges", createArrayBuilder().add(victimSurchargePayload))
+                .build();
+        when(requester.request(any())).thenReturn(envelopeFrom(metadataWithRandomUUIDAndName(), responsePayload));
+
+        final List<JsonObject> victimSurcharge = referenceDataService.getVictimSurcharges(envelope, requester, surchargeType, surchargeLevel);
+
+        verify(requester).request(envelopeCaptor.capture());
+        final DefaultEnvelope envelope = envelopeCaptor.getValue();
+        final JsonObject expectedRequestPayload = createObjectBuilder()
+                .add("surchargeType", surchargeType)
+                .add("surchargeLevel", surchargeLevel)
+                .build();
+        assertThat(envelope.payload(), equalTo(expectedRequestPayload));
+        assertThat(envelope.metadata().name(), is("referencedata.query.victim-surcharges"));
+
+        assertThat(victimSurcharge.get(0), is(victimSurchargePayload));
+        assertThat(victimSurcharge.size(), is(1));
+
     }
 
     private JsonEnvelope enforcementAreaQueryByPostcode(final String postcode) {

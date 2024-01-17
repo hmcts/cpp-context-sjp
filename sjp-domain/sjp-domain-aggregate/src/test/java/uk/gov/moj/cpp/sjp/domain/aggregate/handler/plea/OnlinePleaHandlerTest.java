@@ -10,9 +10,12 @@ import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.is;
 
 import uk.gov.justice.json.schemas.domains.sjp.events.CaseNoteAdded;
+import uk.gov.moj.cpp.sjp.domain.Address;
 import uk.gov.moj.cpp.sjp.domain.CaseReadinessReason;
+import uk.gov.moj.cpp.sjp.domain.ContactDetails;
 import uk.gov.moj.cpp.sjp.domain.aggregate.state.CaseAggregateState;
 import uk.gov.moj.cpp.sjp.domain.onlineplea.Offence;
+import uk.gov.moj.cpp.sjp.domain.onlineplea.PersonalDetails;
 import uk.gov.moj.cpp.sjp.domain.onlineplea.PleadAocpOnline;
 import uk.gov.moj.cpp.sjp.domain.plea.PleaType;
 import uk.gov.moj.cpp.sjp.event.DefendantAocpPleaRejected;
@@ -26,6 +29,7 @@ import java.util.stream.Stream;
 import org.hamcrest.Matchers;
 import org.junit.Before;
 import org.junit.Test;
+import uk.gov.moj.cpp.sjp.event.DefendantDetailsUpdated;
 
 public class OnlinePleaHandlerTest {
 
@@ -48,7 +52,12 @@ public class OnlinePleaHandlerTest {
     @Test
     public void shouldEmitDefendantAcceptedAocpEvent() {
         final Offence offence = new Offence(offenceId, PleaType.GUILTY, null, null);
-        final PleadAocpOnline pleadAocpOnline = new PleadAocpOnline(caseId, defendantId, asList(offence), true, null);
+        final Address address = new Address("l1", "l2", "l3", "l4", "l5", "postcode");
+        final PersonalDetails personalDetails = new PersonalDetails("firstName", "lastName", address,
+                new ContactDetails("homeTelephone", "mobile", "business", "email1@aaa.bbb", "email2@aaa.bbb"),
+                null, "nationalInsuranceNumber", "region", "TESTY708166G99KZ", null, null);
+
+        final PleadAocpOnline pleadAocpOnline = new PleadAocpOnline(caseId, defendantId, asList(offence), true, personalDetails);
         final Stream<Object> eventStream = OnlinePleaHandler.INSTANCE.pleadAocpAcceptedOnline(pleadAocpOnline, pleadDate, caseAggregateState);
 
         final List<Object> eventList = eventStream.collect(toList());
@@ -57,6 +66,8 @@ public class OnlinePleaHandlerTest {
                 Matchers.<CaseNoteAdded>hasProperty("defendantId", is(defendantId)),
                 Matchers.<CaseNoteAdded>hasProperty("pleadDate", is(pleadDate))
         )));
+        assertThat(eventList, hasItem(Matchers.instanceOf(DefendantDetailsUpdated.class)));
+        assertThat(eventList, hasItem(Matchers.instanceOf(DefendantDetailsUpdated.class)));
 
     }
 

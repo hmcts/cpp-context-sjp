@@ -1,6 +1,6 @@
 {
   "$schema": "http://json-schema.org/draft-04/schema#",
-  "id": "http://justice.gov.uk/json/schemas/domains/sjp/command/sjp.command.transparency-report-failed.json",
+  "id": "http://justice.gov.uk/json/schemas/domains/sjp/command/sjp.command.press-transparency-report-failed.json",
   "type": "object",
   "properties": {
     "pressTransparencyReportId": {

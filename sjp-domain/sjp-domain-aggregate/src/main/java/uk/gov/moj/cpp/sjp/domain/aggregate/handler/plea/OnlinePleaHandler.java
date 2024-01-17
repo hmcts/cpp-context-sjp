@@ -109,6 +109,12 @@ public class OnlinePleaHandler {
             });
 
             builder.add(new DefendantAcceptedAocp(pleadAocpOnline.getCaseId(), pleadAocpOnline.getDefendantId(), offences, ONLINE, pleadAocpOnline.getPersonalDetails(), pleadAocpOnline.getAocpAccepted(), createdOn, state.getUrn()));
+            if(nonNull(pleadAocpOnline.getPersonalDetails())) {
+                ofNullable(state.getDefendantDetailsUpdateSummary(pleadAocpOnline.getPersonalDetails(), true, createdOn))
+                        .ifPresent(builder::add);
+                caseDefendantHandler.getDefendantWarningEvents(pleadAocpOnline.getPersonalDetails(), createdOn, true, state)
+                        .forEach(builder::add);
+            }
             return builder.build();
         } else {
             builder.add(new DefendantAocpPleaRejected(pleadAocpOnline.getCaseId(), pleadAocpOnline.getDefendantId(), offences, ONLINE, pleadAocpOnline.getPersonalDetails(), pleadAocpOnline.getAocpAccepted(), createdOn, state.getUrn(), AOCP_REJECTED_REASON));

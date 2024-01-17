@@ -34,6 +34,7 @@ import static uk.gov.moj.sjp.it.model.ProsecutingAuthority.DVLA;
 import static uk.gov.moj.sjp.it.model.ProsecutingAuthority.TFL;
 import static uk.gov.moj.sjp.it.model.ProsecutingAuthority.TVL;
 import static uk.gov.moj.sjp.it.stub.IdMapperStub.stubAddMapping;
+import static uk.gov.moj.sjp.it.stub.IdMapperStub.stubForIdMapperSuccess;
 import static uk.gov.moj.sjp.it.stub.IdMapperStub.stubGetFromIdMapper;
 import static uk.gov.moj.sjp.it.stub.NotificationNotifyStub.stubNotifications;
 import static uk.gov.moj.sjp.it.stub.NotificationNotifyStub.verifyNotification;
@@ -42,6 +43,7 @@ import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubDefaultCourtBy
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubEnforcementAreaByLjaCode;
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubEnforcementAreaByLocalLJACode;
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubEnforcementAreaByPostcode;
+import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubFixedLists;
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubProsecutorQuery;
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubRegionByPostcode;
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubResultIds;
@@ -123,17 +125,18 @@ public class EnforcementPendingApplicationNotificationIT extends BaseIntegration
 
     @Before
     public void setUp() {
+        stubForIdMapperSuccess(Response.Status.OK);
+        stubNotifications();
         stubAllResultDefinitions();
+        stubFixedLists();
     }
 
     @Test
-    @Ignore("need to fix this but nothing related to ATCM-7161")
     public void  shouldRequestPdfEmailAttachmentGenerationViaSystemDocGeneratorAndSendToNotificationNotify() throws SQLException, InterruptedException {
         createCase();
         completeCaseWithEndorsementsApplied();
         createCaseApplicationStatDecs();
 
-        stubNotifications();
         stubGetFromIdMapper(ENFORCEMENT_PENDING_APPLICATION_NOTIFICATION.name(), applicationId.toString(),
                 "CASE_ID", "1ac91935-4f82-4a4f-bd17-fb50397e42dd");
         stubAddMapping();

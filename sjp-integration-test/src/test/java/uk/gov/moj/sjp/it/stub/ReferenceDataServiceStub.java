@@ -21,6 +21,7 @@ import static uk.gov.justice.service.wiremock.testutil.InternalEndpointMockUtils
 import static uk.gov.justice.services.common.http.HeaderConstants.ID;
 import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 import static uk.gov.moj.sjp.it.Constants.DEFAULT_OFFENCE_CODE;
+import static uk.gov.moj.sjp.it.stub.StubHelper.waitForStubToBeReady;
 import static uk.gov.moj.sjp.it.util.Defaults.DEFAULT_AOCP_COURT_HOUSE_OU_CODE;
 import static uk.gov.moj.sjp.it.util.Defaults.DEFAULT_AOCP_LJA_NATIONAL_COURT_CODE;
 import static uk.gov.moj.sjp.it.util.Defaults.DEFAULT_LONDON_COURT_HOUSE_OU_CODE;
@@ -88,6 +89,8 @@ public class ReferenceDataServiceStub {
                         .withHeader(ID, randomUUID().toString())
                         .withHeader(CONTENT_TYPE, APPLICATION_JSON)
                         .withBody(getPayload("stub-data/referencedata.all-result-definitions.json"))));
+
+        waitForStubToBeReady(urlPath , QUERY_ALL_RESULT_DEFINITIONS_MIME_TYPE);
     }
 
     public static void stubResultDefinitionByResultCode(final String resultCode) {
@@ -113,6 +116,8 @@ public class ReferenceDataServiceStub {
                         .withHeader(ID, randomUUID().toString())
                         .withHeader(CONTENT_TYPE, APPLICATION_JSON)
                         .withBody(getPayload("stub-data/referencedata.query.get-all-fixed-list.json"))));
+
+        waitForStubToBeReady(urlPath , QUERY_ALL_FIXED_LIST_MIME_TYPE);
     }
 
     public static void stubBailStatuses() {

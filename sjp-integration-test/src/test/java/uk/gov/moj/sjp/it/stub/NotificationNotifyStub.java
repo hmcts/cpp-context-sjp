@@ -14,6 +14,7 @@ import static javax.ws.rs.core.HttpHeaders.CONTENT_TYPE;
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
 import static javax.ws.rs.core.Response.Status.ACCEPTED;
 import static org.hamcrest.Matchers.hasSize;
+import static uk.gov.moj.sjp.it.stub.StubHelper.waitForPostStubToBeReady;
 
 import uk.gov.justice.service.wiremock.testutil.InternalEndpointMockUtils;
 import uk.gov.justice.services.test.utils.core.messaging.MessageProducerClient;
@@ -45,6 +46,8 @@ public class NotificationNotifyStub {
                 .willReturn(aResponse().withStatus(ACCEPTED.getStatusCode())
                         .withHeader("CPPID", randomUUID().toString())
                         .withHeader(CONTENT_TYPE, APPLICATION_JSON)));
+
+        waitForPostStubToBeReady(COMMAND_URL + randomUUID(), COMMAND_MEDIA_TYPE, ACCEPTED);
     }
 
     public static void verifyNotification(final String email, final String urn, final String templateId) {
@@ -58,6 +61,7 @@ public class NotificationNotifyStub {
                         .withHeader(CONTENT_TYPE, equalTo(COMMAND_MEDIA_TYPE)))
                         .stream()
                         .map(LoggedRequest::getBodyAsString)
+                        .filter(str -> ! str.equals(""))
                         .map(JSONObject::new)
                         .anyMatch(commandPayloadPredicate));
     }
@@ -68,6 +72,7 @@ public class NotificationNotifyStub {
                                 .withHeader(CONTENT_TYPE, equalTo(COMMAND_MEDIA_TYPE)))
                                 .stream()
                                 .map(LoggedRequest::getBodyAsString)
+                                .filter(str -> ! str.equals(""))
                                 .map(JsonHelper::getJsonObject)
                                 .filter(commandPayload -> commandPayload.getString("sendToAddress").equals(email))
                                 .collect(Collectors.toList())

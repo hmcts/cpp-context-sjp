@@ -1,7 +1,10 @@
 package uk.gov.moj.cpp.sjp.domain.aggregate.handler;
 
 import static java.math.BigDecimal.ROUND_DOWN;
+import static java.math.BigDecimal.TEN;
+import static java.math.BigDecimal.ZERO;
 import static java.math.BigDecimal.valueOf;
+import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
 import static uk.gov.moj.cpp.sjp.domain.CaseAssignmentType.DELEGATED_POWERS_DECISION;
 import static uk.gov.moj.cpp.sjp.domain.CaseAssignmentType.MAGISTRATE_DECISION;
@@ -75,9 +78,8 @@ public class CaseCoreHandler {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(CaseCoreHandler.class);
 
-    private static final double FINE_PERCENTAGE = 0.1;
-
-    private static final double MINIMUM_FINE = 34.0;
+    private static final double FINE_PERCENTAGE = 0.4;
+    private static final BigDecimal MAXIMUM_COMPENSATION = TEN;
 
 
     private CaseCoreHandler() {
@@ -320,12 +322,13 @@ public class CaseCoreHandler {
                     offenceCost.addAndGet(offence.getAocpStandardPenaltyAmount().doubleValue() + Optional.ofNullable(offence.getCompensation()).orElseGet(() -> BigDecimal.valueOf(0)).doubleValue());
                 }
             });
+
             if (offences.size() == aocpEligibleOffenceList.size()) {
                 final BigDecimal victimSurcharge = calculateVictimSurcharge(fineAmount.get()).setScale(2,ROUND_DOWN);
                 final BigDecimal aocpTotalCost = victimSurcharge.add(aocpCost.getCosts().add(valueOf(offenceCost.get()))).setScale(2,ROUND_DOWN);
                 final AOCPCostDefendant aocpCostDefendant = new AOCPCostDefendant(aocpCost.getDefendant().getId(), aocpEligibleOffenceList);
                 return Stream.of(new CaseEligibleForAOCP(caseId, aocpCost.getCosts(), victimSurcharge, aocpTotalCost, aocpCostDefendant));
-            }else if(hasAtLeastOneProsecutorAOCPOffered(offences)) {
+            } else if (hasAtLeastOneProsecutorAOCPOffered(offences)) {
                 return Stream.of(new PartialAocpCriteriaNotification(caseId, state.getUrn(), state.getProsecutingAuthority()));
             }
         }
@@ -333,13 +336,14 @@ public class CaseCoreHandler {
     }
 
     private BigDecimal calculateVictimSurcharge(final double fineAmount) {
-        final double victimSurcharge = fineAmount * FINE_PERCENTAGE;
-        return victimSurcharge > MINIMUM_FINE ? valueOf(victimSurcharge) : valueOf(MINIMUM_FINE);
+        return valueOf(fineAmount * FINE_PERCENTAGE);
     }
 
     private boolean isOffenceAOCPEligible(AOCPCostOffence offence) {
+
         return nonNull(offence.getIsEligibleAOCP()) && nonNull(offence.getProsecutorOfferAOCP()) &&
-                Boolean.TRUE.equals(offence.getIsEligibleAOCP()) && Boolean.TRUE.equals(offence.getProsecutorOfferAOCP());
+                Boolean.TRUE.equals(offence.getIsEligibleAOCP()) && Boolean.TRUE.equals(offence.getProsecutorOfferAOCP()) &&
+                MAXIMUM_COMPENSATION.compareTo(isNull(offence.getCompensation()) ? ZERO : offence.getCompensation()) >= 0;
     }
 
     private boolean hasAtLeastOneProsecutorAOCPOffered(final List<AOCPCostOffence> offences ) {

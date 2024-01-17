@@ -38,12 +38,12 @@ import uk.gov.moj.cpp.sjp.domain.plea.PleaType;
 import uk.gov.moj.cpp.sjp.domain.plea.SetPleas;
 import uk.gov.moj.cpp.sjp.event.CaseUpdateRejected;
 import uk.gov.moj.cpp.sjp.event.DefendantAcceptedAocp;
-import uk.gov.moj.cpp.sjp.event.DefendantAocpPleaRejected;
 import uk.gov.moj.cpp.sjp.event.FinancialMeansUpdated;
 import uk.gov.moj.cpp.sjp.event.OffenceNotFound;
 import uk.gov.moj.cpp.sjp.event.OnlinePleaPcqVisitedReceived;
 import uk.gov.moj.cpp.sjp.event.OnlinePleaReceived;
 import uk.gov.moj.cpp.sjp.event.OutstandingFinesUpdated;
+import uk.gov.moj.cpp.sjp.event.DefendantAocpPleaRejected;
 import uk.gov.moj.cpp.sjp.event.TrialRequested;
 
 import java.time.ZonedDateTime;
@@ -57,13 +57,13 @@ import com.google.common.annotations.VisibleForTesting;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-
+@SuppressWarnings("PMD.BeanMembersShouldSerialize")
 public class OnlinePleaHandler {
 
     public static final OnlinePleaHandler INSTANCE = new OnlinePleaHandler();
 
     private static final Logger LOGGER = LoggerFactory.getLogger(OnlinePleaHandler.class);
-    private static final String AOCP_REJECTED_REASON = "Case is already in Ready for Decision stage";
+    private static final String AOCP_REJECTED_REASON = "Case is already completed";
 
     private final CaseDefendantHandler caseDefendantHandler;
     private final CaseEmployerHandler caseEmployerHandler;
@@ -102,7 +102,7 @@ public class OnlinePleaHandler {
     public Stream<Object> pleadAocpAcceptedOnline(final PleadAocpOnline pleadAocpOnline, final ZonedDateTime createdOn, CaseAggregateState state) {
         final Stream.Builder<Object> builder = Stream.builder();
         final List<Offence> offences = new ArrayList<>();
-        if (!state.isCaseReadyForDecision()) {
+        if (!state.isCaseCompleted()) {
             pleadAocpOnline.getOffences().forEach(offence -> {
                 final Offence pleaOffence = Offence.builder().withValuesFrom(offence).withPleaType(AOCP_PENDING).build();
                 offences.add(pleaOffence);
@@ -182,6 +182,15 @@ public class OnlinePleaHandler {
         return new SetPleas(defendantCourtOptions, pleas);
     }
 
+    /**
+     *
+     * @param pleadOnline
+     * @param createdOn
+     * @param state
+     * @return
+     *
+     *  PersonDetails usage should be removed with CPI-1069
+     */
     private Stream<Object> addAdditionalEventsToStreamForStoreOnlinePlea(final PleadOnline pleadOnline,
                                                                          final ZonedDateTime createdOn,
                                                                          final CaseAggregateState state) {

@@ -1,16 +1,18 @@
 package uk.gov.moj.cpp.sjp.domain.aggregate.handler;
 
+import static java.math.BigDecimal.ONE;
 import static java.math.BigDecimal.ROUND_DOWN;
-import static java.math.BigDecimal.valueOf;
+import static java.math.BigDecimal.TEN;
 import static java.util.Arrays.asList;
 import static java.util.UUID.randomUUID;
 import static java.util.stream.Collectors.toList;
-import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.hasItem;
 import static uk.gov.moj.cpp.sjp.domain.aggregate.handler.CaseCoreHandler.INSTANCE;
+import static java.math.BigDecimal.valueOf;
 
 import uk.gov.justice.json.schemas.domains.sjp.events.CaseNoteAdded;
 import uk.gov.moj.cpp.sjp.domain.AOCPCost;
@@ -18,8 +20,10 @@ import uk.gov.moj.cpp.sjp.domain.AOCPCostDefendant;
 import uk.gov.moj.cpp.sjp.domain.AOCPCostOffence;
 import uk.gov.moj.cpp.sjp.domain.aggregate.state.CaseAggregateState;
 import uk.gov.moj.cpp.sjp.event.CaseEligibleForAOCP;
+import uk.gov.moj.cpp.sjp.event.PartialAocpCriteriaNotification;
 
 import java.math.BigDecimal;
+
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Stream;
@@ -53,8 +57,8 @@ public class CaseCoreHandlerTest {
                 Matchers.instanceOf(CaseEligibleForAOCP.class),
                 Matchers.<CaseNoteAdded>hasProperty("caseId", is(caseId)),
                 Matchers.<CaseNoteAdded>hasProperty("costs", is(valueOf(5.5))),
-                Matchers.<CaseNoteAdded>hasProperty("victimSurcharge", is(valueOf(34.00).setScale(2, ROUND_DOWN))),
-                Matchers.<CaseNoteAdded>hasProperty("aocpTotalCost", is(valueOf(242.00).setScale(2, ROUND_DOWN)))
+                Matchers.<CaseNoteAdded>hasProperty("victimSurcharge", is(valueOf(80.00).setScale(2, ROUND_DOWN))),
+                Matchers.<CaseNoteAdded>hasProperty("aocpTotalCost", is(valueOf(288.00).setScale(2, ROUND_DOWN)))
         )));
     }
 
@@ -74,8 +78,8 @@ public class CaseCoreHandlerTest {
                 Matchers.instanceOf(CaseEligibleForAOCP.class),
                 Matchers.<CaseNoteAdded>hasProperty("caseId", is(caseId)),
                 Matchers.<CaseNoteAdded>hasProperty("costs", is(valueOf(5.5))),
-                Matchers.<CaseNoteAdded>hasProperty("victimSurcharge", is(valueOf(80.0).setScale(2, ROUND_DOWN))),
-                Matchers.<CaseNoteAdded>hasProperty("aocpTotalCost", is(valueOf(888.00).setScale(2, ROUND_DOWN)))
+                Matchers.<CaseNoteAdded>hasProperty("victimSurcharge", is(valueOf(320.0).setScale(2, ROUND_DOWN))),
+                Matchers.<CaseNoteAdded>hasProperty("aocpTotalCost", is(valueOf(1128.00).setScale(2, ROUND_DOWN)))
         )));
     }
 
@@ -144,6 +148,9 @@ public class CaseCoreHandlerTest {
         final List<Object> eventList = eventStream.collect(toList());
 
         assertThat(eventList.size(), is(1));
+
+        final Object event = eventList.get(0);
+        assertThat(event, instanceOf(PartialAocpCriteriaNotification.class));
     }
 
     @Test
@@ -157,11 +164,41 @@ public class CaseCoreHandlerTest {
         assertThat(eventList.size(), is(1));
     }
 
+    @Test
+    public void shouldNotEligibleForAOCPWhenAtLeastOneOffenceHasCompensationMoreThanTen(){
+        setUp(true, true, true, ONE, BigDecimal.valueOf(10.1), BigDecimal.valueOf(100), BigDecimal.valueOf(100));
+        final Stream<Object> eventStream = INSTANCE.resolveCaseAOCPEligibility(caseId, true, caseAggregateState);
+
+        final List<Object> eventList = eventStream.collect(toList());
+        assertThat(eventList.size(), is(1));
+        final Object event = eventList.get(0);
+        assertThat(event, instanceOf(PartialAocpCriteriaNotification.class));
+    }
+
+    @Test
+    public void shouldEligibleForAOCPWhenOffencesHaveCompensationsAreTenOrLessThanTen(){
+        setUp(true, true, true, ONE, TEN, BigDecimal.valueOf(100), BigDecimal.valueOf(100));
+        final Stream<Object> eventStream = INSTANCE.resolveCaseAOCPEligibility(caseId, true, caseAggregateState);
+
+        final List<Object> eventList = eventStream.collect(toList());
+        assertThat(eventList.size(), is(1));
+        final Object event = eventList.get(0);
+        assertThat(event, instanceOf(CaseEligibleForAOCP.class));
+    }
+
+
     private void setUp(final Boolean prosecutorOfferAOCP, final Boolean isEligibleAOCPForOffence1,
                        final Boolean isEligibleAOCPForOffence2, long standardPenalty1, long standardPenalty2) {
 
-        final AOCPCostOffence offence1 = new AOCPCostOffence(offenceId1, null, new BigDecimal(standardPenalty1), isEligibleAOCPForOffence1, prosecutorOfferAOCP);
-        final AOCPCostOffence offence2 = new AOCPCostOffence(offenceId1, BigDecimal.valueOf(2.5), new BigDecimal(standardPenalty2), isEligibleAOCPForOffence2, prosecutorOfferAOCP);
+        setUp(prosecutorOfferAOCP, isEligibleAOCPForOffence1, isEligibleAOCPForOffence2, null, BigDecimal.valueOf(2.5), new BigDecimal(standardPenalty1), new BigDecimal(standardPenalty2));
+    }
+
+
+    private void setUp(final Boolean prosecutorOfferAOCP, final Boolean isEligibleAOCPForOffence1,
+                       final Boolean isEligibleAOCPForOffence2, BigDecimal compensation1, BigDecimal compensation2, BigDecimal standardPenalty1, BigDecimal standardPenalty2) {
+
+        final AOCPCostOffence offence1 = new AOCPCostOffence(offenceId1, compensation1, standardPenalty1, isEligibleAOCPForOffence1, prosecutorOfferAOCP);
+        final AOCPCostOffence offence2 = new AOCPCostOffence(offenceId1, compensation2, standardPenalty2, isEligibleAOCPForOffence2, prosecutorOfferAOCP);
 
         final AOCPCostDefendant defendant = new AOCPCostDefendant(randomUUID(), asList(offence1, offence2));
 

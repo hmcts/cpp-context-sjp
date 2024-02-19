@@ -38,12 +38,12 @@ import uk.gov.moj.cpp.sjp.domain.plea.PleaType;
 import uk.gov.moj.cpp.sjp.domain.plea.SetPleas;
 import uk.gov.moj.cpp.sjp.event.CaseUpdateRejected;
 import uk.gov.moj.cpp.sjp.event.DefendantAcceptedAocp;
+import uk.gov.moj.cpp.sjp.event.DefendantAocpPleaRejected;
 import uk.gov.moj.cpp.sjp.event.FinancialMeansUpdated;
 import uk.gov.moj.cpp.sjp.event.OffenceNotFound;
 import uk.gov.moj.cpp.sjp.event.OnlinePleaPcqVisitedReceived;
 import uk.gov.moj.cpp.sjp.event.OnlinePleaReceived;
 import uk.gov.moj.cpp.sjp.event.OutstandingFinesUpdated;
-import uk.gov.moj.cpp.sjp.event.DefendantAocpPleaRejected;
 import uk.gov.moj.cpp.sjp.event.TrialRequested;
 
 import java.time.ZonedDateTime;
@@ -112,7 +112,7 @@ public class OnlinePleaHandler {
             if(nonNull(pleadAocpOnline.getPersonalDetails())) {
                 ofNullable(state.getDefendantDetailsUpdateSummary(pleadAocpOnline.getPersonalDetails(), true, createdOn))
                         .ifPresent(builder::add);
-                caseDefendantHandler.getDefendantWarningEvents(pleadAocpOnline.getPersonalDetails(), createdOn, true, state)
+                caseDefendantHandler.getDefendantUpdateRequestedEvents(pleadAocpOnline.getPersonalDetails(), createdOn, true, state)
                         .forEach(builder::add);
             }
             return builder.build();
@@ -218,7 +218,7 @@ public class OnlinePleaHandler {
         if(nonNull(personalDetails)) {
             ofNullable(state.getDefendantDetailsUpdateSummary(personalDetails, updatedByOnlinePlea, createdOn))
                     .ifPresent(streamBuilder::add);
-            caseDefendantHandler.getDefendantWarningEvents(personalDetails, createdOn, updatedByOnlinePlea, state)
+            caseDefendantHandler.getDefendantUpdateRequestedEvents(personalDetails, createdOn, updatedByOnlinePlea, state)
                     .forEach(streamBuilder::add);
         }
 
@@ -227,7 +227,7 @@ public class OnlinePleaHandler {
         if(nonNull(legalEntityDefendant)) {
             ofNullable(state.getDefendantLegalEntityDetailsUpdateSummary(legalEntityDefendant, updatedByOnlinePlea, createdOn))
                     .ifPresent(streamBuilder::add);
-            caseDefendantHandler.getLegalEntityDefendantWarningEvents(legalEntityDefendant, createdOn, state)
+            caseDefendantHandler.getLegalEntityDefendantUpdateRequestedEvents(legalEntityDefendant, createdOn, state)
                     .forEach(streamBuilder::add);
         }
 

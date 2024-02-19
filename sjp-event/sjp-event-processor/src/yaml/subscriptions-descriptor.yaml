@@ -212,6 +212,13 @@ subscriptions_descriptor:
         - name: sjp.events.case-already-unreserved
           schema_uri: http://justice.gov.uk/json/schemas/domains/sjp/event/case-already-unreserved.json
 
+        - name: sjp.events.defendant-pending-changes-accepted
+          schema_uri: http://justice.gov.uk/json/schemas/domains/sjp/events/defendant-pending-changes-accepted.json
+
+        - name: sjp.events.defendant-pending-changes-rejected
+          schema_uri: http://justice.gov.uk/json/schemas/domains/sjp/events/defendant-pending-changes-rejected.json
+
+
       event_source_name: sjp
 
     - name: public event subscription

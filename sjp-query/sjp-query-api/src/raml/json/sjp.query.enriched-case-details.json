@@ -93,5 +93,23 @@
   "postingDate": "2019-02-08",
   "prosecutingAuthority": "TVL",
   "status": "NO_PLEA_RECEIVED_READY_FOR_DECISION",
-  "urn": "TVL556477M6P6"
+  "urn": "TVL556477M6P6",
+  "defendantDetailUpdateRequest": {
+    "firstName": "Brock Brock Brock",
+    "lastName": "Smith",
+    "dateOfBirth": "1968-03-20",
+    "legalEntityName": "COMPANY",
+    "caseId": "3dd22595-76bc-4045-8b06-3d037d32930f",
+    "address1": "Flat 1, Armageddon House",
+    "address2": "13 Old Road",
+    "address3": "Giggleswick",
+    "address4": "Merton",
+    "address5": "London",
+    "postcode": "DN35 1AB",
+    "status": "PENDING",
+    "updatedAt": "2019-02-08",
+    "nameUpdated": false,
+    "addressUpdated": true,
+    "dobUpdated": false
+  }
 }

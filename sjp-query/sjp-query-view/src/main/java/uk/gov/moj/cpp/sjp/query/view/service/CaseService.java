@@ -4,6 +4,7 @@ import static com.google.common.collect.Iterables.isEmpty;
 import static java.lang.Math.ceil;
 import static java.util.Arrays.asList;
 import static java.util.Comparator.comparingInt;
+import static java.util.Objects.nonNull;
 import static java.util.Optional.ofNullable;
 import static java.util.UUID.fromString;
 import static java.util.stream.Collectors.groupingBy;
@@ -29,6 +30,7 @@ import uk.gov.moj.cpp.sjp.persistence.repository.CaseApplicationRepository;
 import uk.gov.moj.cpp.sjp.persistence.repository.CaseDocumentRepository;
 import uk.gov.moj.cpp.sjp.persistence.repository.CaseRepository;
 import uk.gov.moj.cpp.sjp.persistence.repository.CaseSearchResultRepository;
+import uk.gov.moj.cpp.sjp.persistence.repository.DefendantDetailUpdateRequestRepository;
 import uk.gov.moj.cpp.sjp.persistence.repository.DefendantRepository;
 import uk.gov.moj.cpp.sjp.query.view.ExportType;
 import uk.gov.moj.cpp.sjp.query.view.converter.ProsecutingAuthorityAccessFilterConverter;
@@ -40,6 +42,8 @@ import uk.gov.moj.cpp.sjp.query.view.response.CaseSummaryView;
 import uk.gov.moj.cpp.sjp.query.view.response.CaseView;
 import uk.gov.moj.cpp.sjp.query.view.response.CaseWithoutDefendantPostcodeView;
 import uk.gov.moj.cpp.sjp.query.view.response.CasesMissingSjpnView;
+import uk.gov.moj.cpp.sjp.query.view.response.DefendantDetailUpdateRequestView;
+import uk.gov.moj.cpp.sjp.query.view.response.DefendantView;
 import uk.gov.moj.cpp.sjp.query.view.response.ResultOrdersView;
 import uk.gov.moj.cpp.sjp.query.view.response.SearchCaseByMaterialIdView;
 
@@ -129,6 +133,9 @@ public class CaseService {
     @Inject
     private UserDetailsCacheService userDetailsCacheService;
 
+    @Inject
+    private DefendantDetailUpdateRequestRepository defendantDetailUpdateRequestRepository;
+
     /**
      * Find case by id.
      *
@@ -139,10 +146,27 @@ public class CaseService {
         return getCaseView(caseRepository.findBy(id));
     }
 
+    public DefendantDetailUpdateRequestView findDefendantDetailUpdateRequest(final UUID caseId) {
+        try {
+        return ofNullable(defendantDetailUpdateRequestRepository.findBy(caseId))
+                .map(DefendantDetailUpdateRequestView::new)
+                .orElse(null);
+        }catch (NoResultException e) {
+            LOGGER.debug("No defendant detail update request found with caseId='{}'", caseId, e);
+            return null;
+        }
+    }
+
     public CaseView findCaseAndFilterOtherAndFinancialMeansDocuments(String caseId) {
         final CaseView caseView = getCaseView(caseRepository.findBy(fromString(caseId)));
-        if (caseView != null && !isEmpty(caseView.getCaseDocuments())) {
-            filterOtherAndFinancialMeansDocuments(caseView.getCaseDocuments());
+        if (caseView != null) {
+            if (!isEmpty(caseView.getCaseDocuments())) {
+                filterOtherAndFinancialMeansDocuments(caseView.getCaseDocuments());
+            }
+            final DefendantView defendantView = caseView.getDefendant();
+            if (nonNull(defendantView)) {
+                defendantView.setDefendantDetailUpdateRequestView(findDefendantDetailUpdateRequest(fromString(caseId)));
+            }
         }
         return caseView;
     }

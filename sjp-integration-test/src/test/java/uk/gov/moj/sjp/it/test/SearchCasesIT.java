@@ -78,6 +78,7 @@ public class SearchCasesIT extends BaseIntegrationTest {
 
         final UUID caseId = createCasePayloadBuilder.getId();
         UpdateDefendantDetails.updateDefendantDetailsForCaseAndPayload(caseId, UUID.fromString(CasePoller.pollUntilCaseByIdIsOk(caseId).getString("defendant.id")), updatedDefendantPayload);
+        UpdateDefendantDetails.acceptDefendantPendingChangesForCaseAndPayload(caseId, UUID.fromString(CasePoller.pollUntilCaseByIdIsOk(caseId).getString("defendant.id")), updatedDefendantPayload);
         caseSearchResultHelper.verifyPersonInfoByLastNameAndDateOfBirth(updatedDefendantPayload.getLastName(), updatedDefendantPayload.getDateOfBirth());
 
         final PersonInfoVerifier personInfoVerifier = PersonInfoVerifier.personInfoVerifierForDefendantUpdatedPayload(caseId, updatedDefendantPayload);
@@ -124,12 +125,12 @@ public class SearchCasesIT extends BaseIntegrationTest {
                         status().is(OK),
                         payload().isJson(
                                 allOf(
-                                        withJsonPath("foundCasesWithOutdatedDefendantsName", is(true)),
+                                        withJsonPath("foundCasesWithOutdatedDefendantsName", is(false)),
                                         withJsonPath(
                                                 "$.results[*]", hasItem(isJson(allOf(
                                                         withJsonPath("urn", is(historicalCaseToBeUpdated.getUrn())),
-                                                        withJsonPath("defendant.lastName", is("von Neumann")),
-                                                        withJsonPath("defendant.outdated", is(true))
+                                                        withJsonPath("defendant.lastName", is("deHistorical")),
+                                                        withJsonPath("defendant.outdated", is(false))
 
                                                 )))
                                         ),

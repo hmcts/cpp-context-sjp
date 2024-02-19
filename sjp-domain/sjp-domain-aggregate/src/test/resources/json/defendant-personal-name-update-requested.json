@@ -1,0 +1,11 @@
+{
+  "_metadata": {
+    "name": "sjp.events.defendant-name-update-requested"
+  },
+  "caseId": "c4ec3a35-76bf-4649-b43a-761e71c3765e",
+  "newPersonalName": {
+    "firstName": "Testy",
+    "lastName": "Testerson"
+  },
+  "updatedAt": "2012-02-22T02:06:58.147Z"
+}

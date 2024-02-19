@@ -44,7 +44,9 @@ import uk.gov.moj.cpp.sjp.persistence.repository.OnlinePleaDetailRepository;
 import uk.gov.moj.cpp.sjp.persistence.repository.OnlinePleaRepository;
 import uk.gov.moj.cpp.sjp.query.view.response.CaseNotGuiltyPleaView;
 import uk.gov.moj.cpp.sjp.query.view.response.CaseView;
+import uk.gov.moj.cpp.sjp.query.view.response.DefendantDetailUpdateRequestView;
 import uk.gov.moj.cpp.sjp.query.view.response.DefendantProfilingView;
+import uk.gov.moj.cpp.sjp.query.view.response.DefendantView;
 import uk.gov.moj.cpp.sjp.query.view.response.onlineplea.AocpOnlinePleaView;
 import uk.gov.moj.cpp.sjp.query.view.response.onlineplea.OnlinePleaView;
 import uk.gov.moj.cpp.sjp.query.view.response.onlineplea.PleasView;
@@ -201,13 +203,13 @@ public class SjpQueryView {
     @Inject
     private AssignmentService assignmentService;
 
-    @SuppressWarnings("squid:CallToDeprecatedMethod")
+    @SuppressWarnings({"squid:CallToDeprecatedMethod","squid:S3776"})
     @Handles("sjp.query.case")
     public JsonEnvelope findCase(final JsonEnvelope envelope) {
 
         final CaseView caseView = caseService.findCase(fromString(extract(envelope, FIELD_CASE_ID)));
         if (caseView != null) {
-            if(! isNull(caseView.getReservedBy())){
+            if (!isNull(caseView.getReservedBy())) {
                 caseView.setReservedByName(caseService.getUserName(caseView.getReservedBy().toString(), envelope));
             }
             final String prosecutingAuthority = caseView.getProsecutingAuthority();
@@ -217,6 +219,13 @@ public class SjpQueryView {
                 final UUID defendantId = caseView.getDefendant().getId();
                 hasPotentialCase = defendantPotentialCaseService.
                         hasDefendantPotentialCase(envelope, defendantId);
+            }
+            final DefendantDetailUpdateRequestView detailUpdateRequestView = caseService.findDefendantDetailUpdateRequest(fromString(extract(envelope, FIELD_CASE_ID)));
+            if (nonNull(detailUpdateRequestView)) {
+                final DefendantView defendantView = caseView.getDefendant();
+                if(nonNull(defendantView)) {
+                    defendantView.setDefendantDetailUpdateRequestView(detailUpdateRequestView);
+                }
             }
             caseView.setHasPotentialCase(hasPotentialCase);
             if (userId.isPresent()) {
@@ -400,9 +409,9 @@ public class SjpQueryView {
 
         final AocpOnlinePlea aocpOnlinePlea = aocpOnlinePleaRepository.findAocpPleaByCaseId(caseId);
 
-       AocpOnlinePleaView aocpOnlinePleaView = null;
+        AocpOnlinePleaView aocpOnlinePleaView = null;
 
-        if(aocpOnlinePlea != null) {
+        if (aocpOnlinePlea != null) {
             aocpOnlinePleaView = new AocpOnlinePleaView(aocpOnlinePlea);
             final List<OnlinePleaDetail> aocpOnlinePleaDetails = onlinePleaDetailRepository.findByCaseIdAndDefendantIdAndAocpPlea(caseId, defendantId, true);
             aocpOnlinePleaView.setOnlinePleaDetails(aocpOnlinePleaDetails);
@@ -420,7 +429,7 @@ public class SjpQueryView {
 
         OnlinePleaView onlinePleaView = null;
 
-        if(onlinePlea != null) {
+        if (onlinePlea != null) {
             onlinePleaView = new OnlinePleaView(onlinePlea);
             final List<OnlinePleaDetail> onlinePleaDetails = onlinePleaDetailRepository.findByCaseIdAndDefendantIdAndAocpPleaIsNull(caseId, defendantId);
             onlinePleaView.setOnlinePleaDetails(onlinePleaDetails);
@@ -437,11 +446,11 @@ public class SjpQueryView {
         }
 
         final List<Object> pleas = new ArrayList<>();
-        if(aocpOnlinePleaView != null){
+        if (aocpOnlinePleaView != null) {
             pleas.add(aocpOnlinePleaView);
         }
 
-        if(onlinePleaView != null){
+        if (onlinePleaView != null) {
             pleas.add(onlinePleaView);
         }
 

@@ -1,0 +1,36 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://justice.gov.uk/json/schemas/domains/sjp/events/defendant-name-update-requested.json",
+  "definitions": {
+    "personalName": {
+      "type": "object",
+      "properties": {
+        "title": {
+          "type": "string"
+        },
+        "firstName": {
+          "type": "string"
+        },
+        "lastName": {
+          "type": "string"
+        }
+      }
+    }
+  },
+  "type": "object",
+  "properties": {
+    "caseId": {
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+    },
+    "newPersonalName": {
+      "$ref": "#/definitions/personalName"
+    },
+    "newLegalEntityName": {
+      "type": "string"
+    }
+  },
+  "additionalProperties": true,
+  "required": [
+    "caseId"
+  ]
+}

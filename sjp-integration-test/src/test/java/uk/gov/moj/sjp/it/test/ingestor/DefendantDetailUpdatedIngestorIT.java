@@ -1,11 +1,10 @@
 package uk.gov.moj.sjp.it.test.ingestor;
 
 import static java.util.UUID.randomUUID;
-import static org.hamcrest.CoreMatchers.anyOf;
-import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
 import static uk.gov.moj.sjp.it.command.CreateCase.createCaseForPayloadBuilder;
+import static uk.gov.moj.sjp.it.command.UpdateDefendantDetails.acceptDefendantPendingChangesForCaseAndPayload;
 import static uk.gov.moj.sjp.it.command.UpdateDefendantDetails.updateDefendantDetailsForCaseAndPayload;
 import static uk.gov.moj.sjp.it.pollingquery.CasePoller.pollUntilCaseByIdIsOk;
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubEnforcementAreaByPostcode;
@@ -31,7 +30,6 @@ import java.io.IOException;
 import java.time.LocalDate;
 import java.util.UUID;
 
-import javax.json.JsonArray;
 import javax.json.JsonObject;
 
 import org.junit.After;
@@ -72,9 +70,7 @@ public class DefendantDetailUpdatedIngestorIT extends BaseIntegrationTest {
 
         final JsonObject outputCase = getCaseFromElasticSearchWithPredicate(casePayloadContains(FIRST_NAME), caseIdOne.toString());
         final JsonObject defendant = (JsonObject) outputCase.getJsonArray("parties").get(0);
-        final JsonArray aliases = defendant.getJsonArray("aliases");
 
-        assertThat(aliases.size(), is(2));
         assertThat(defendant.getString("_party_type"), is("DEFENDANT"));
         assertThat(defendant.getString(LABEL_TITLE), is(TITLE));
         assertThat(defendant.getString(LABEL_FIRST_NAME), is(FIRST_NAME));
@@ -83,7 +79,6 @@ public class DefendantDetailUpdatedIngestorIT extends BaseIntegrationTest {
         assertThat(defendant.getString("gender"), is("Female"));
         assertThat(defendant.getString("addressLines"), is("14 Shaftesbury Road Croydon Wales US New London"));
         assertThat(defendant.getString("postCode"), is(POST_CODE));
-        assertAliases(aliases);
 
     }
 
@@ -98,9 +93,9 @@ public class DefendantDetailUpdatedIngestorIT extends BaseIntegrationTest {
 
         final JsonObject outputCase = getCaseFromElasticSearchWithPredicate(casePayloadContains("1911-08-16"), caseIdOne.toString());
         final JsonObject defendant = (JsonObject) outputCase.getJsonArray("parties").get(0);
-        final JsonArray aliases = defendant.getJsonArray("aliases");
 
-        assertThat(aliases.size(), is(1));
+        assertThat(defendant.getString(LABEL_FIRST_NAME), is("David"));
+        assertThat(defendant.getString(_LABEL_LAST_NAME), is("LLOYD"));
     }
 
     private void pushDefendantDetailsUpdatedEvent(final UpdateDefendantDetails.DefendantDetailsPayloadBuilder builder) {
@@ -115,18 +110,8 @@ public class DefendantDetailUpdatedIngestorIT extends BaseIntegrationTest {
 
         final UUID defendantId = UUID.fromString(pollUntilCaseByIdIsOk(caseIdOne).getString("defendant.id"));
         updateDefendantDetailsForCaseAndPayload(caseIdOne, defendantId, builder);
+        acceptDefendantPendingChangesForCaseAndPayload(caseIdOne, defendantId, builder);
     }
-
-    private void assertAliases(final JsonArray aliases) {
-
-        for (int i = 0; i < aliases.size(); i++) {
-            final JsonObject alias = (JsonObject) aliases.get(i);
-            assertThat(alias.getString(LABEL_TITLE), anyOf(equalTo(TITLE)));
-            assertThat(alias.getString(LABEL_FIRST_NAME), anyOf(equalTo(FIRST_NAME), equalTo("David")));
-            assertThat(alias.getString(_LABEL_LAST_NAME), anyOf(equalTo(LAST_NAME), equalTo("LLOYD")));
-        }
-    }
-
 
     private UpdateDefendantDetails.DefendantDetailsPayloadBuilder getDefendantPayloadBuilder() {
         AddressBuilder addressBuilder = AddressBuilder.withDefaults()

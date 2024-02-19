@@ -45,6 +45,7 @@ import uk.gov.moj.cpp.sjp.event.DatesToAvoidRequired;
 import uk.gov.moj.cpp.sjp.event.DatesToAvoidTimerExpired;
 import uk.gov.moj.cpp.sjp.event.DatesToAvoidUpdated;
 import uk.gov.moj.cpp.sjp.event.DefendantAcceptedAocp;
+import uk.gov.moj.cpp.sjp.event.DefendantDetailsUpdated;
 import uk.gov.moj.cpp.sjp.event.DefendantResponseTimerExpired;
 import uk.gov.moj.cpp.sjp.event.EmployerDeleted;
 import uk.gov.moj.cpp.sjp.event.EmployerUpdated;
@@ -372,7 +373,7 @@ final class CompositeCaseAggregateStateMutator implements AggregateStateMutator<
                 .put(CaseCompleted.class, CASE_COMPLETED_MUTATOR)
                 .put(DatesToAvoidAdded.class, DATES_TO_AVOID_MUTATOR)
                 .put(DatesToAvoidUpdated.class, DATES_TO_AVOID_UPDATED_MUTATOR)
-                .put(DefendantDetailsUpdatedMutator.class, DefendantDetailsUpdatedMutator.INSTANCE)
+                .put(DefendantDetailsUpdated.class, DefendantDetailsUpdatedMutator.INSTANCE)
                 .put(EmploymentStatusUpdated.class, DEFENDANT_EMPLOYMENT_STATUS_MUTATOR)
                 .put(EmployerDeleted.class, EMPLOYER_DELETED_MUTATOR)
                 .put(EmployerUpdated.class, EMPLOYER_UPDATED_MUTATOR)

@@ -42,6 +42,26 @@
         "mobile": "020 7219 5207",
         "email": "test@test.com"
       }
+    },
+    "defendantDetailUpdateRequest": {
+      "firstName": "Brock Brock Brock",
+      "lastName": "Smith",
+      "dateOfBirth": "1968-03-20",
+      "legalEntityName": "COMPANY",
+      "caseId": "3dd22595-76bc-4045-8b06-3d037d32930f",
+      "address": {
+        "address1": "Flat 1, Armageddon House",
+        "address2": "13 Old Road",
+        "address3": "Giggleswick",
+        "address4": "Merton",
+        "address5": "London",
+        "postcode": "DN35 1AB"
+      },
+      "status": "PENDING",
+      "updatedAt": "2019-02-08",
+      "nameUpdated": false,
+      "addressUpdated": true,
+      "dobUpdated": false
     }
   },
   "dateTimeCreated": "2018-02-02T12:51:58.742Z",

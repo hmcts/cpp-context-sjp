@@ -317,4 +317,22 @@ subscriptions_descriptor:
               - name: sjp.events.case-unreserved
                 schema_uri: http://justice.gov.uk/json/schemas/domains/sjp/event/case-unreserved.json
 
+              - name: sjp.events.defendant-address-update-requested
+                schema_uri: http://justice.gov.uk/json/schemas/domains/sjp/events/defendant-address-update-requested.json
+
+              - name: sjp.events.defendant-date-of-birth-update-requested
+                schema_uri: http://justice.gov.uk/json/schemas/domains/sjp/events/defendant-date-of-birth-update-requested.json
+
+              - name: sjp.events.defendant-name-update-requested
+                schema_uri: http://justice.gov.uk/json/schemas/domains/sjp/events/defendant-name-update-requested.json
+
+              - name: sjp.events.defendant-pending-changes-accepted
+                schema_uri: http://justice.gov.uk/json/schemas/domains/sjp/events/defendant-pending-changes-accepted.json
+
+              - name: sjp.events.defendant-pending-changes-rejected
+                schema_uri: http://justice.gov.uk/json/schemas/domains/sjp/events/defendant-pending-changes-rejected.json
+
+              - name: sjp.events.defendant-detail-update-requested
+                schema_uri: http://justice.gov.uk/json/schemas/domains/sjp/events/defendant-detail-update-requested.json
+
           event_source_name: sjp

@@ -52,6 +52,7 @@ import uk.gov.moj.cpp.sjp.persistence.entity.PendingCaseToPublishPerOffence;
 import uk.gov.moj.cpp.sjp.persistence.repository.CaseDocumentRepository;
 import uk.gov.moj.cpp.sjp.persistence.repository.CaseRepository;
 import uk.gov.moj.cpp.sjp.persistence.repository.CaseSearchResultRepository;
+import uk.gov.moj.cpp.sjp.persistence.repository.DefendantDetailUpdateRequestRepository;
 import uk.gov.moj.cpp.sjp.persistence.repository.DefendantRepository;
 import uk.gov.moj.cpp.sjp.query.view.ExportType;
 import uk.gov.moj.cpp.sjp.query.view.converter.ProsecutingAuthorityAccessFilterConverter;
@@ -168,6 +169,9 @@ public class CaseServiceTest {
 
     @Mock
     private ListToJsonArrayConverter<CaseForSocCheck> caseForSockCheckListToJsonArrayConverter;
+
+    @Mock
+    private DefendantDetailUpdateRequestRepository defendantDetailUpdateRequestRepository;
 
     @Test
     public void shouldFindCaseViewWithDocumentsWherePostalPlea() {

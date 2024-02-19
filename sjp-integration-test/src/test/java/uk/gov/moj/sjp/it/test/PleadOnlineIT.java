@@ -83,6 +83,7 @@ import uk.gov.moj.cpp.sjp.domain.verdict.VerdictType;
 import uk.gov.moj.cpp.sjp.event.CaseReferredForCourtHearing;
 import uk.gov.moj.cpp.sjp.persistence.entity.PersonalDetails;
 import uk.gov.moj.sjp.it.command.CreateCase;
+import uk.gov.moj.sjp.it.command.UpdateDefendantDetails;
 import uk.gov.moj.sjp.it.helper.CaseSearchResultHelper;
 import uk.gov.moj.sjp.it.helper.CitizenHelper;
 import uk.gov.moj.sjp.it.helper.DecisionHelper;
@@ -253,6 +254,7 @@ public class PleadOnlineIT extends BaseIntegrationTest {
         verifyOnlinePleaReceivedAndUpdatedCaseDetailsFlag(createCasePayloadBuilder.getId(), false);
         final JSONObject pleaPayload = getOnlinePleaPayload(pleaType);
         pleadOnlineHelper.pleadOnline(pleaPayload.toString());
+
         //verify plea
         pleadOnlineHelper.verifyInPublicTopic(createCasePayloadBuilder.getId(), createCasePayloadBuilder.getOffenceId(), pleaType, null);
         pleadOnlineHelper.verifyPleaUpdated(createCasePayloadBuilder.getId(), pleaType, PleaMethod.ONLINE);
@@ -380,7 +382,7 @@ public class PleadOnlineIT extends BaseIntegrationTest {
                     .getValuesAs(JsonObject.class)
                     .stream()
                     .anyMatch(e -> e.getString("firstName").equalsIgnoreCase("Testy"));
-            assertThat(resultsContainUpdatedFirstNameValue, is(true));
+            assertThat(resultsContainUpdatedFirstNameValue, is(false));
         }
     }
 
@@ -480,12 +482,12 @@ public class PleadOnlineIT extends BaseIntegrationTest {
             values.put("plea3", GUILTY.name());
             values.put("mitigation", "I was drunk at the time");
             values.put("notGuiltyBecause", "I was forced to do it");
-            values.put("firstName", "Anewname");
             values.put("email", "anotheremail@test.com");
             verifyOnlinePleaReceivedAndUpdatedCaseDetailsFlag(createCasePayloadBuilder.getId(), false);
             final JsonPath pleadOnlinePayload = JsonPath.from(new StrSubstitutor(values).replace(getPayload(TEMPLATE_PLEA_MULTI_OFFENCE_CUSTOM_V2)));
             //online-plea is submitted here
             pleadOnlineHelper.pleadOnline(pleadOnlinePayload.prettify());
+
             final CaseSearchResultHelper caseSearchResultHelper = new CaseSearchResultHelper(
                     createCasePayloadBuilder.getUrn(),
                     createCasePayloadBuilder.getDefendantBuilder().getLastName(),
@@ -493,7 +495,6 @@ public class PleadOnlineIT extends BaseIntegrationTest {
             caseSearchResultHelper.verifyPleaReceivedDate();
             caseSearchResultHelper.verify(createCasePayloadBuilder.getUrn(), allOf(
                     withJsonPath("$.results[*]", hasItem(isJson(allOf(
-                            withJsonPath("defendant.firstName", equalTo("Anewname")),
                             withJsonPath("defendant.lastName", equalTo(defendantBuilder.getLastName()))
                     ))))));
         }
@@ -581,11 +582,16 @@ public class PleadOnlineIT extends BaseIntegrationTest {
             verifyOnlinePleaReceivedAndUpdatedCaseDetailsFlag(createCasePayloadBuilder.getId(), false);
             final JsonPath pleadOnlinePayload = JsonPath.from(new StrSubstitutor(values).replace(getPayload(TEMPLATE_PLEA_MULTI_OFFENCE_CUSTOM_V2)));
             pleadOnlineHelper.pleadOnline(pleadOnlinePayload.prettify());
+
+            //accept defendant updates
+            UpdateDefendantDetails.DefendantDetailsPayloadBuilder defendantPayloadBuilder =
+                    UpdateDefendantDetails.DefendantDetailsPayloadBuilder.builder().withFirstName("Anewname").withLastName("LLOYD");
+            UpdateDefendantDetails.acceptDefendantPendingChangesForCaseAndPayload(caseId, defendantBuilder.getId(), defendantPayloadBuilder);
+
             final CaseSearchResultHelper caseSearchResultHelper = new CaseSearchResultHelper(
                     createCasePayloadBuilder.getUrn(),
                     createCasePayloadBuilder.getDefendantBuilder().getLastName(),
                     createCasePayloadBuilder.getDefendantBuilder().getDateOfBirth());
-            caseSearchResultHelper.verifyPleaReceivedDate();
             caseSearchResultHelper.verify(createCasePayloadBuilder.getUrn(), allOf(
                     withJsonPath("$.results[*]", hasItem(isJson(allOf(
                             withJsonPath("defendant.firstName", equalTo("Anewname")),
@@ -767,10 +773,12 @@ public class PleadOnlineIT extends BaseIntegrationTest {
         final JSONObject pleaPayload = getOnlinePleaPayload(notGuilty);
         pleaPayload.remove("outgoings");
         pleaPayload.getJSONObject("personalDetails").put("firstName", "Changy");
+        pleaPayload.getJSONObject("personalDetails").put("lastName", "Testerson");
         pleaPayload.getJSONObject("personalDetails").put("nationalInsuranceNumber", "SR569876FD");
         assertThat(pleaPayload.has("financialMeans"), is(true));
         assertThat(pleaPayload.has("outgoings"), is(false));
         final JsonPath response = pleadOnline(pleaPayload);
+
         verifyResponseCase(response, TEMPLATE_PLEA_NOT_GUILTY_WITH_CHANGED_DETAILS_CASE_RESPONSE);
         verifyResponseOnlinePlea(TEMPLATE_PLEA_NOT_GUILTY_WITH_CHANGED_DETAILS_RESPONSE, notGuilty);
     }

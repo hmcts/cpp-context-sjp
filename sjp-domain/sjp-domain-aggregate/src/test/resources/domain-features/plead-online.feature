@@ -10,7 +10,8 @@ Feature: Plead Online
     And hearing language preference for defendant is updated
     And pleaded guilty
     And defendant details updated
-    And defendant personal name updated
+    And defendant personal name update requested
+    And defendant detail update requested
     And financial means updated
     And employer is updated
     And employment status updated

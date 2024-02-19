@@ -163,4 +163,12 @@ public final class RuleConstants {
         return asList(GROUP_LEGAL_ADVISERS);
     }
 
+    public static List<String> getAcceptPendingDefendantChanges() {
+        return asList(GROUP_LEGAL_ADVISERS, GROUP_MAGISTRATES);
+    }
+
+    public static List<String> getRejectPendingDefendantChanges() {
+        return asList(GROUP_LEGAL_ADVISERS, GROUP_MAGISTRATES);
+    }
+
 }

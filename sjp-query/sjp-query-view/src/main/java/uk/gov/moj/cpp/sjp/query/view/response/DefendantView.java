@@ -30,8 +30,10 @@ public class DefendantView {
     private final String pncIdentifier;
     private final String gobAccountNumber;
     private final UUID pcqId;
+    private DefendantDetailUpdateRequestView defendantDetailUpdateRequest;
 
 
+    @SuppressWarnings("PMD.NullAssignment")
     public DefendantView(DefendantDetail defendant) {
         this.id = defendant.getId();
         this.personalDetails = nonNull(defendant.getPersonalDetails()) ? new PersonalDetailsView(defendant) : null;
@@ -100,6 +102,14 @@ public class DefendantView {
     }
 
     public UUID getPcqId() { return pcqId; }
+
+    public DefendantDetailUpdateRequestView getDefendantDetailUpdateRequest() {
+        return defendantDetailUpdateRequest;
+    }
+
+    public void setDefendantDetailUpdateRequestView(DefendantDetailUpdateRequestView defendantDetailUpdateRequest) {
+        this.defendantDetailUpdateRequest = defendantDetailUpdateRequest;
+    }
 
     private static List<OffenceView> constructDefendantChargeView(final DefendantDetail defendant) {
         return defendant.getOffences().stream()

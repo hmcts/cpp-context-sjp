@@ -862,12 +862,8 @@ public class CaseAggregateState implements AggregateState {
                 .withCaseId(getCaseId())
                 .withDefendantId(getDefendantId());
 
-        getNameAndTitleDetailsUpdateSummary(personalDetails, updatedByOnlinePlea, builder);
-        getAddressAndContactDetailsUpdateSummary(personalDetails, builder);
-
-        if (!Objects.equals(personalDetails.getDateOfBirth(), getDefendantDateOfBirth())) {
-            builder.withDateOfBirth(personalDetails.getDateOfBirth());
-        }
+        getTitleDetailsUpdateSummary(personalDetails, updatedByOnlinePlea, builder);
+        getContactDetailsUpdateSummary(personalDetails, builder);
 
         if (!StringUtils.equals(personalDetails.getNationalInsuranceNumber(), getDefendantNationalInsuranceNumber())) {
             builder.withNationalInsuranceNumber(personalDetails.getNationalInsuranceNumber());
@@ -883,10 +879,6 @@ public class CaseAggregateState implements AggregateState {
 
         if (!StringUtils.equals(personalDetails.getDriverLicenceDetails(), getDefendantDriverLicenceDetails())) {
             builder.withDriverLicenceDetails(personalDetails.getDriverLicenceDetails());
-        }
-
-        if (!StringUtils.equals(personalDetails.getLegalEntityName(), getDefendantLegalEntityName())) {
-            builder.withLegalEntityName(personalDetails.getLegalEntityName());
         }
 
         if (builder.containsUpdate()) {
@@ -907,8 +899,7 @@ public class CaseAggregateState implements AggregateState {
                 .withCaseId(getCaseId())
                 .withDefendantId(getDefendantId());
 
-        getLegalEntityNameUpdateSummary(legalEntityDefendant, builder);
-        getAddressAndContactDetailsUpdateSummary(legalEntityDefendant, builder);
+        getContactDetailsUpdateSummary(legalEntityDefendant, builder);
 
         if (builder.containsUpdate()) {
             return builder
@@ -939,47 +930,25 @@ public class CaseAggregateState implements AggregateState {
         }
     }
 
-    private void getAddressAndContactDetailsUpdateSummary(final PersonalDetails personalDetails, final DefendantDetailsUpdated.DefendantDetailsUpdatedBuilder builder) {
+    private void getContactDetailsUpdateSummary(final PersonalDetails personalDetails, final DefendantDetailsUpdated.DefendantDetailsUpdatedBuilder builder) {
         if (!Objects.equals(personalDetails.getContactDetails(), getDefendantContactDetails())) {
             builder.withContactDetails(personalDetails.getContactDetails());
         }
-
-        if (!Objects.equals(personalDetails.getAddress(), getDefendantAddress())) {
-            builder.withAddress(personalDetails.getAddress());
-        }
     }
 
-    private void getAddressAndContactDetailsUpdateSummary(final LegalEntityDefendant legalEntityDefendant, final DefendantDetailsUpdated.DefendantDetailsUpdatedBuilder builder) {
+    private void getContactDetailsUpdateSummary(final LegalEntityDefendant legalEntityDefendant, final DefendantDetailsUpdated.DefendantDetailsUpdatedBuilder builder) {
         if (!Objects.equals(legalEntityDefendant.getContactDetails(), getDefendantContactDetails())) {
             builder.withContactDetails(legalEntityDefendant.getContactDetails());
         }
-
-        if (!Objects.equals(legalEntityDefendant.getAddress(), getDefendantAddress())) {
-            builder.withAddress(legalEntityDefendant.getAddress());
-        }
     }
 
-    private void getNameAndTitleDetailsUpdateSummary(final PersonalDetails personalDetails, final boolean updatedByOnlinePlea, final DefendantDetailsUpdated.DefendantDetailsUpdatedBuilder builder) {
-        if (!StringUtils.equals(personalDetails.getFirstName(), getDefendantFirstName())) {
-            builder.withFirstName(personalDetails.getFirstName());
-        }
-
-        if (!StringUtils.equals(personalDetails.getLastName(), getDefendantLastName())) {
-            builder.withLastName(personalDetails.getLastName());
-        }
-
+    private void getTitleDetailsUpdateSummary(final PersonalDetails personalDetails, final boolean updatedByOnlinePlea, final DefendantDetailsUpdated.DefendantDetailsUpdatedBuilder builder) {
         if (!updatedByOnlinePlea && !StringUtils.equals(personalDetails.getTitle(), getDefendantTitle())) {
             builder.withTitle(personalDetails.getTitle());
         }
 
         if (personalDetails.getGender() != null && !Objects.equals(personalDetails.getGender(), getDefendantGender())) {
             builder.withGender(personalDetails.getGender());
-        }
-    }
-
-    private void getLegalEntityNameUpdateSummary(final LegalEntityDefendant legalEntityDefendant, final DefendantDetailsUpdated.DefendantDetailsUpdatedBuilder builder) {
-        if (!StringUtils.equals(legalEntityDefendant.getName(), getDefendantLegalEntityName())) {
-            builder.withLegalEntityName(legalEntityDefendant.getName());
         }
     }
 

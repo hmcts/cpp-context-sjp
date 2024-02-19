@@ -195,6 +195,12 @@ public class NoActionController {
     @Handles("sjp.command.plead-online-pcq-visited")
     public void pleadOnlinePcqVisited(final JsonEnvelope envelope) { send(envelope); }
 
+    @Handles("sjp.command.accept-pending-defendant-changes")
+    public void acceptPendingDefendantChanges(final JsonEnvelope envelope) { send(envelope); }
+
+    @Handles("sjp.command.reject-pending-defendant-changes")
+    public void rejectPendingDefendantChanges(final JsonEnvelope envelope) { send(envelope); }
+
     private void send(final Envelope<?> envelope) {
         sender.send(envelope);
     }

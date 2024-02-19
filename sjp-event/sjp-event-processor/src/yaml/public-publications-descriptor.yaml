@@ -158,4 +158,10 @@ subscriptions_descriptor:
         - name: public.sjp.case-already-unreserved
           schema_uri: http://cpp.moj.gov.uk/sjp/json/schema/event/public.sjp.case-already-unreserved.json
 
+        - name: public.sjp.events.defendant-pending-changes-accepted
+          schema_uri: http://cpp.moj.gov.uk/sjp/json/schema/event/public.sjp.events.defendant-pending-changes-accepted.json
+
+        - name: public.sjp.events.defendant-pending-changes-rejected
+          schema_uri: http://cpp.moj.gov.uk/sjp/json/schema/event/public.sjp.events.defendant-pending-changes-rejected.json
+
       event_source_name: public.event.source

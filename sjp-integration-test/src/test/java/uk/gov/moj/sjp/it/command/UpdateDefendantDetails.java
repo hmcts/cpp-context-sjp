@@ -29,6 +29,10 @@ public class UpdateDefendantDetails {
         new UpdateDefendantDetails(payloadBuilder).updateDefendantDetails(caseId, defendantId);
     }
 
+    public static void acceptDefendantPendingChangesForCaseAndPayload(UUID caseId, UUID defendantId, DefendantDetailsPayloadBuilder payloadBuilder) {
+        new UpdateDefendantDetails(payloadBuilder).acceptDefendantPendingChanges(caseId, defendantId);
+    }
+
     public static String updateDefendantDetailsForCaseAndPayload(UUID caseId, UUID defendantId, DefendantDetailsPayloadBuilder payloadBuilder, Response.Status status) {
         return new UpdateDefendantDetails(payloadBuilder).updateDefendantDetails(caseId, defendantId, status);
     }
@@ -42,6 +46,18 @@ public class UpdateDefendantDetails {
         final JsonObject payload = preparePayload(payloadBuilder);
         String url = String.format("/cases/%s/defendant/%s", caseId, defendantId);
         makePostCall(url, "application/vnd.sjp.update-defendant-details+json", payload.toString());
+    }
+
+    public void acceptDefendantPendingChanges(UUID caseId, UUID defendantId) {
+        final JsonObject payload = preparePayload(payloadBuilder);
+        String url = String.format("/cases/%s/defendant/%s", caseId, defendantId);
+        makePostCall(url, "application/vnd.sjp.accept-pending-defendant-changes+json", payload.toString());
+    }
+
+    public static void rejectDefendantPendingChanges(UUID caseId, UUID defendantId) {
+        final JsonObject payload = createObjectBuilder().add("caseId", caseId.toString()).add("defendantId", defendantId.toString()).build();
+        String url = String.format("/cases/%s/defendant/%s", caseId, defendantId);
+        makePostCall(url, "application/vnd.sjp.reject-pending-defendant-changes+json", payload.toString());
     }
 
     private String updateDefendantDetails(final UUID caseId, final UUID defendantId, final Response.Status status) {
@@ -76,15 +92,18 @@ public class UpdateDefendantDetails {
                 .map(ContactDetailsBuilder::getEmail)
                 .ifPresent(email -> defendantDetailsUpdateBuilder.add("email", email));
 
-        final JsonObjectBuilder addressBuilder = createObjectBuilder();
-        ofNullable(payloadBuilder.getAddressBuilder().getAddress1()).ifPresent(a1 -> addressBuilder.add("address1", a1));
-        ofNullable(payloadBuilder.getAddressBuilder().getAddress2()).ifPresent(a2 -> addressBuilder.add("address2", a2));
-        ofNullable(payloadBuilder.getAddressBuilder().getAddress3()).ifPresent(a3 -> addressBuilder.add("address3", a3));
-        ofNullable(payloadBuilder.getAddressBuilder().getAddress4()).ifPresent(a4 -> addressBuilder.add("address4", a4));
-        ofNullable(payloadBuilder.getAddressBuilder().getAddress5()).ifPresent(a5 -> addressBuilder.add("address5", a5));
-        ofNullable(payloadBuilder.getAddressBuilder().getPostcode()).ifPresent(p -> addressBuilder.add("postcode", p));
+        ofNullable(payloadBuilder.getAddressBuilder()).ifPresent(builder -> {
+            final JsonObjectBuilder addressBuilder = createObjectBuilder();
+            ofNullable(builder.getAddress1()).ifPresent(a1 -> addressBuilder.add("address1", a1));
+            ofNullable(builder.getAddress2()).ifPresent(a2 -> addressBuilder.add("address2", a2));
+            ofNullable(builder.getAddress3()).ifPresent(a3 -> addressBuilder.add("address3", a3));
+            ofNullable(builder.getAddress4()).ifPresent(a4 -> addressBuilder.add("address4", a4));
+            ofNullable(builder.getAddress5()).ifPresent(a5 -> addressBuilder.add("address5", a5));
+            ofNullable(builder.getPostcode()).ifPresent(p -> addressBuilder.add("postcode", p));
 
-        defendantDetailsUpdateBuilder.add("address", addressBuilder);
+            defendantDetailsUpdateBuilder.add("address", addressBuilder);
+        });
+
 
         ofNullable(payloadBuilder.getContactDetailsBuilder())
                 .ifPresent(contactDetails -> defendantDetailsUpdateBuilder.add("contactNumber", createObjectBuilder()
@@ -123,22 +142,23 @@ public class UpdateDefendantDetails {
         String driverLicenceDetails;
 
         private DefendantDetailsPayloadBuilder() {
-            title = "Mr";
-            firstName = "David";
-            lastName = "SMITH";
-            dateOfBirth = LocalDates.from("1980-07-16");
-            gender = Gender.MALE;
-
-            contactDetailsBuilder = ContactDetailsBuilder.withDefaults();
-            addressBuilder = AddressBuilder.withDefaults()
-                    .withAddress1("14 Shaftesbury Road");
-
-            nationalInsuranceNumber = "QQ 12 34 56 C";
-            driverNumber = "MORGA753116SM9IJ";
-            legalEntityName = null;
         }
 
         public static DefendantDetailsPayloadBuilder withDefaults() {
+            return new DefendantDetailsPayloadBuilder()
+                    .withTitle("Mr")
+                    .withFirstName("David")
+                    .withLastName("SMITH")
+                    .withDateOfBirth(LocalDates.from("1980-07-16"))
+                    .withGender(Gender.MALE)
+                    .withAddress(AddressBuilder.withDefaults()
+                            .withAddress1("14 Shaftesbury Road"))
+                    .withDriverNumber("MORGA753116SM9IJ")
+                    .withContact(ContactDetailsBuilder.withDefaults())
+                    .withNationalInsuranceNumber("QQ 12 34 56 C");
+        }
+
+        public static DefendantDetailsPayloadBuilder builder() {
             return new DefendantDetailsPayloadBuilder();
         }
 
@@ -172,6 +192,11 @@ public class UpdateDefendantDetails {
             return this;
         }
 
+        public DefendantDetailsPayloadBuilder withContact(final ContactDetailsBuilder contactDetailsBuilder) {
+            this.contactDetailsBuilder = contactDetailsBuilder;
+            return this;
+        }
+
         public DefendantDetailsPayloadBuilder withDriverNumber(final String driverNumber) {
             this.driverNumber = driverNumber;
             return this;
@@ -179,6 +204,16 @@ public class UpdateDefendantDetails {
 
         public DefendantDetailsPayloadBuilder withDriverLicenceDetails(final String driverLicenceDetails) {
             this.driverLicenceDetails = driverLicenceDetails;
+            return this;
+        }
+
+        public DefendantDetailsPayloadBuilder withNationalInsuranceNumber(final String nationalInsuranceNumber) {
+            this.nationalInsuranceNumber = nationalInsuranceNumber;
+            return this;
+        }
+
+        public DefendantDetailsPayloadBuilder withLegalEntityName(final String legalEntityName) {
+            this.legalEntityName = legalEntityName;
             return this;
         }
 

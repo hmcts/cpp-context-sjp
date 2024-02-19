@@ -1,11 +1,11 @@
 package uk.gov.moj.cpp.sjp.domain.aggregate.handler.plea;
 
+import static java.time.ZonedDateTime.now;
 import static java.util.UUID.randomUUID;
 import static java.util.stream.Collectors.toList;
 import static org.codehaus.groovy.runtime.InvokerHelper.asList;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.allOf;
-import static java.time.ZonedDateTime.now;
 import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.is;
 
@@ -18,8 +18,8 @@ import uk.gov.moj.cpp.sjp.domain.onlineplea.Offence;
 import uk.gov.moj.cpp.sjp.domain.onlineplea.PersonalDetails;
 import uk.gov.moj.cpp.sjp.domain.onlineplea.PleadAocpOnline;
 import uk.gov.moj.cpp.sjp.domain.plea.PleaType;
-import uk.gov.moj.cpp.sjp.event.DefendantAocpPleaRejected;
 import uk.gov.moj.cpp.sjp.event.DefendantAcceptedAocp;
+import uk.gov.moj.cpp.sjp.event.DefendantAocpPleaRejected;
 
 import java.time.ZonedDateTime;
 import java.util.List;

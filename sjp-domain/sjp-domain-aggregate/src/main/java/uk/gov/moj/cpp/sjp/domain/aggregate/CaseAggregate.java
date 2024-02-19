@@ -75,7 +75,7 @@ import java.util.stream.Stream;
 
 import javax.json.JsonObject;
 
-@SuppressWarnings("WeakerAccess")
+@SuppressWarnings({"WeakerAccess", "squid:S1133"})
 public class CaseAggregate implements Aggregate {
 
     private static final long serialVersionUID = 19L;
@@ -259,6 +259,21 @@ public class CaseAggregate implements Aggregate {
                                                  final ZonedDateTime updatedDate) {
 
         return apply(CaseDefendantHandler.INSTANCE.updateDefendantDetails(userId, caseId, defendantId, person, updatedDate, state));
+    }
+
+    public Stream<Object> acceptPendingDefendantChanges(final UUID userId,
+                                                 final UUID caseId,
+                                                 final UUID defendantId,
+                                                 final Person person,
+                                                 final ZonedDateTime updatedDate) {
+
+        return apply(CaseDefendantHandler.INSTANCE.acceptPendingDefendantChanges(userId, caseId, defendantId, person, updatedDate, state));
+    }
+
+    public Stream<Object> rejectPendingDefendantChanges(final UUID defendantId,
+                                                        final ZonedDateTime updatedDate) {
+
+        return apply(CaseDefendantHandler.INSTANCE.rejectPendingDefendantChanges(defendantId, updatedDate, state));
     }
 
     public Stream<Object> recordCaseReferralForCourtHearingRejection(final UUID caseId,

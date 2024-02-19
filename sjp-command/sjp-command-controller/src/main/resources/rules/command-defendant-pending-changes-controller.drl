@@ -1,0 +1,20 @@
+package uk.gov.moj.cpp.accesscontrol;
+
+import uk.gov.moj.cpp.accesscontrol.drools.Outcome;
+import uk.gov.moj.cpp.accesscontrol.drools.Action;
+
+rule "Command - accept pending defendant changes"
+  when
+    $outcome: Outcome();
+    $action: Action(name == "sjp.command.accept-pending-defendant-changes");
+  then
+    $outcome.setSuccess(true);
+end
+
+rule "Command - reject pending defendant changes"
+  when
+    $outcome: Outcome();
+    $action: Action(name == "sjp.command.reject-pending-defendant-changes");
+  then
+    $outcome.setSuccess(true);
+end

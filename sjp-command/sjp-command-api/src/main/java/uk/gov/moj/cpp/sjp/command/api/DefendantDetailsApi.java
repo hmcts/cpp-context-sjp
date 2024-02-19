@@ -15,6 +15,7 @@ import javax.inject.Inject;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
 
+@SuppressWarnings("squid:CallToDeprecatedMethod")
 @ServiceComponent(COMMAND_API)
 public class DefendantDetailsApi {
 
@@ -58,4 +59,23 @@ public class DefendantDetailsApi {
     public void updateDefendantNationalInsuranceNumber(final JsonEnvelope envelope) {
         sender.send(enveloper.withMetadataFrom(envelope, "sjp.command.update-defendant-national-insurance-number").apply(envelope.payloadAsJsonObject()));
     }
+
+    @Handles("sjp.accept-pending-defendant-changes")
+    public void acceptPendingDefendantChanges(final JsonEnvelope envelope) {
+        JsonObject payload = envelope.payloadAsJsonObject();
+
+        if (payload.containsKey(ADDRESS)) {
+            final JsonObjectBuilder updateDefendantObjectBuilder = createObjectBuilderWithFilter(payload, field -> !ADDRESS.equals(field));
+            updateDefendantObjectBuilder.add(ADDRESS, normalizePostcodeInAddress(payload.getJsonObject(ADDRESS)));
+            payload = updateDefendantObjectBuilder.build();
+        }
+
+        sender.send(enveloper.withMetadataFrom(envelope, "sjp.command.accept-pending-defendant-changes").apply(payload));
+    }
+
+    @Handles("sjp.reject-pending-defendant-changes")
+    public void rejectPendingDefendantChanges(final JsonEnvelope envelope) {
+        sender.send(enveloper.withMetadataFrom(envelope, "sjp.command.reject-pending-defendant-changes").apply(envelope.payloadAsJsonObject()));
+    }
+
 }

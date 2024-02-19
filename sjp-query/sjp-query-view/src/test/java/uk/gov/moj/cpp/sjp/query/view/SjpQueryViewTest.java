@@ -80,6 +80,7 @@ import uk.gov.moj.cpp.sjp.query.view.response.CaseDocumentsView;
 import uk.gov.moj.cpp.sjp.query.view.response.CaseSearchResultsView;
 import uk.gov.moj.cpp.sjp.query.view.response.CaseView;
 import uk.gov.moj.cpp.sjp.query.view.response.CasesPendingDatesToAvoidView;
+import uk.gov.moj.cpp.sjp.query.view.response.DefendantDetailUpdateRequestView;
 import uk.gov.moj.cpp.sjp.query.view.response.DefendantDetailsUpdatesView;
 import uk.gov.moj.cpp.sjp.query.view.response.DefendantProfilingView;
 import uk.gov.moj.cpp.sjp.query.view.response.SearchCaseByMaterialIdView;
@@ -229,7 +230,10 @@ public class SjpQueryViewTest {
         setupCaseExpectations();
         final String prosecutingAuthorityFilterValue = "TFL";
         final CaseView caseView = Mockito.mock(CaseView.class);
+        final DefendantDetailUpdateRequestView defendantDetailUpdateRequestView = Mockito.mock(DefendantDetailUpdateRequestView.class);
         when(caseService.findCase(CASE_ID)).thenReturn(caseView);
+        when(caseView.getId()).thenReturn(CASE_ID.toString());
+        when(caseService.findDefendantDetailUpdateRequest(CASE_ID)).thenReturn(defendantDetailUpdateRequestView);
         when(envelope.metadata()).thenReturn(metadata);
         when(metadata.userId()).thenReturn(Optional.of(randomUUID().toString()));
         when(caseView.getProsecutingAuthority()).thenReturn(prosecutingAuthorityFilterValue);
@@ -248,6 +252,9 @@ public class SjpQueryViewTest {
         setupCaseExpectations();
         final String prosecutingAuthorityFilterValue = "TFL";
         final CaseView caseView = Mockito.mock(CaseView.class);
+        final DefendantDetailUpdateRequestView defendantDetailUpdateRequestView = Mockito.mock(DefendantDetailUpdateRequestView.class);
+        when(caseView.getId()).thenReturn(CASE_ID.toString());
+        when(caseService.findDefendantDetailUpdateRequest(CASE_ID)).thenReturn(defendantDetailUpdateRequestView);
         when(caseService.findCase(CASE_ID)).thenReturn(caseView);
         when(envelope.metadata()).thenReturn(metadata);
         when(metadata.userId()).thenReturn(Optional.of(randomUUID().toString()));

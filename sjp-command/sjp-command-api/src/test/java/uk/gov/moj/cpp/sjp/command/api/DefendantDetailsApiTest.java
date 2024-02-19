@@ -47,6 +47,10 @@ public class DefendantDetailsApiTest extends BaseDroolsAccessControlTest {
     private static final String UPDATE_NINO_NEW_COMMAND_NAME = "sjp.command.update-defendant-national-insurance-number";
     private static final String ACKNOWLEDGE_DEFENDANT_UPDATES_COMMAND_NAME = "sjp.acknowledge-defendant-details-updates";
     private static final String ACKNOWLEDGE_DEFENDANT_UPDATES_NEW_COMMAND_NAME = "sjp.command.acknowledge-defendant-details-updates";
+    private static final String ACCEPT_PENDING_DEFENDANT_CHANGES_COMMAND_NAME = "sjp.accept-pending-defendant-changes";
+    private static final String ACCEPT_PENDING_DEFENDANT_CHANGES_NEW_COMMAND_NAME = "sjp.command.accept-pending-defendant-changes";
+    private static final String REJECT_PENDING_DEFENDANT_CHANGES_COMMAND_NAME = "sjp.reject-pending-defendant-changes";
+    private static final String REJECT_PENDING_DEFENDANT_CHANGES_NEW_COMMAND_NAME = "sjp.command.reject-pending-defendant-changes";
 
     @Spy
     @SuppressWarnings("unused")
@@ -83,7 +87,8 @@ public class DefendantDetailsApiTest extends BaseDroolsAccessControlTest {
         assertThat(DefendantDetailsApi.class, isHandlerClass(COMMAND_API)
                 .with(method("updateDefendantDetails").thatHandles(UPDATE_DEFENDANT_COMMAND_NAME))
                 .with(method("updateDefendantNationalInsuranceNumber").thatHandles(UPDATE_NINO_COMMAND_NAME))
-                .with(method("acknowledgeDefendantDetailsUpdates").thatHandles(ACKNOWLEDGE_DEFENDANT_UPDATES_COMMAND_NAME)));
+                .with(method("acknowledgeDefendantDetailsUpdates").thatHandles(ACKNOWLEDGE_DEFENDANT_UPDATES_COMMAND_NAME))
+                .with(method("acceptPendingDefendantChanges").thatHandles(ACCEPT_PENDING_DEFENDANT_CHANGES_COMMAND_NAME)));
     }
 
     @Test
@@ -163,6 +168,46 @@ public class DefendantDetailsApiTest extends BaseDroolsAccessControlTest {
 
         final JsonEnvelope newCommand = envelopeCaptor.getValue();
         assertThat(newCommand.metadata(), withMetadataEnvelopedFrom(command).withName(UPDATE_DEFENDANT_NEW_COMMAND_NAME));
+        assertThat(newCommand.payloadAsJsonObject(), equalTo(expectedPayload));
+    }
+    @Test
+    public void shouldAcceptPendingDefendantChangesCommand() {
+        final JsonEnvelope command = envelopeFrom(metadataWithRandomUUID(ACCEPT_PENDING_DEFENDANT_CHANGES_COMMAND_NAME), createObjectBuilder()
+                .add("address", buildAddressWithPostcode("cr05qt")));
+
+        final JsonObject expectedPayload = createObjectBuilder()
+                .add("address", buildAddressWithPostcode("CR0 5QT"))
+                .build();
+
+        defendantDetailsApi.acceptPendingDefendantChanges(command);
+
+        verify(sender).send(envelopeCaptor.capture());
+
+        final JsonEnvelope newCommand = envelopeCaptor.getValue();
+        assertThat(newCommand.metadata(), withMetadataEnvelopedFrom(command).withName(ACCEPT_PENDING_DEFENDANT_CHANGES_NEW_COMMAND_NAME));
+        assertThat(newCommand.payloadAsJsonObject(), equalTo(expectedPayload));
+    }
+
+    @Test
+    public void shouldRejectPendingDefendantChangesCommand() {
+        final String caseId = "4ebc5dd1-9629-4b7d-a56b-efbcf0ec5e1d";
+        final String defendantId = "5ebc5dd1-9629-4b7d-a56b-efbcf0ec5e1e";
+
+        final JsonEnvelope command = envelopeFrom(metadataWithRandomUUID(REJECT_PENDING_DEFENDANT_CHANGES_COMMAND_NAME), createObjectBuilder()
+                .add("caseId", caseId)
+                .add("defendantId", defendantId));
+
+        final JsonObject expectedPayload = createObjectBuilder()
+                .add("caseId", caseId)
+                .add("defendantId", defendantId)
+                .build();
+
+        defendantDetailsApi.rejectPendingDefendantChanges(command);
+
+        verify(sender).send(envelopeCaptor.capture());
+
+        final JsonEnvelope newCommand = envelopeCaptor.getValue();
+        assertThat(newCommand.metadata(), withMetadataEnvelopedFrom(command).withName(REJECT_PENDING_DEFENDANT_CHANGES_NEW_COMMAND_NAME));
         assertThat(newCommand.payloadAsJsonObject(), equalTo(expectedPayload));
     }
 

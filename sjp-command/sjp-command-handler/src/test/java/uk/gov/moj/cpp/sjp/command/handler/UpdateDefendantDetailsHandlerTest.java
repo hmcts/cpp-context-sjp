@@ -5,6 +5,7 @@ import static java.time.format.DateTimeFormatter.ofPattern;
 import static java.util.UUID.randomUUID;
 import static javax.json.Json.createObjectBuilder;
 import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.allOf;
 import static org.mockito.Mockito.when;
@@ -30,8 +31,9 @@ import uk.gov.moj.cpp.sjp.domain.Address;
 import uk.gov.moj.cpp.sjp.domain.Defendant;
 import uk.gov.moj.cpp.sjp.domain.aggregate.CaseAggregate;
 import uk.gov.moj.cpp.sjp.domain.aggregate.CaseAggregateBaseTest;
+import uk.gov.moj.cpp.sjp.event.DefendantDetailUpdateRequested;
 import uk.gov.moj.cpp.sjp.event.DefendantDetailsUpdated;
-import uk.gov.moj.cpp.sjp.event.DefendantNameUpdated;
+import uk.gov.moj.cpp.sjp.event.DefendantNameUpdateRequested;
 
 import java.time.LocalDate;
 import java.util.UUID;
@@ -49,25 +51,6 @@ import org.mockito.runners.MockitoJUnitRunner;
 @RunWith(MockitoJUnitRunner.class)
 public class UpdateDefendantDetailsHandlerTest extends CaseAggregateBaseTest {
 
-    @Spy
-    private Clock clock = new UtcClock();
-
-    @Spy
-    private Enveloper enveloper = EnveloperFactory.createEnveloperWithEvents(
-            DefendantNameUpdated.class, DefendantDetailsUpdated.class);
-
-    @InjectMocks
-    private UpdateDefendantDetailsHandler updateDefendantDetailsHandler;
-
-    @Mock
-    private EventStream eventStream;
-
-    @Mock
-    private EventSource eventSource;
-
-    @Mock
-    private AggregateService aggregateService;
-
     private static final UUID defendantId = randomUUID();
     private static final UUID caseId = randomUUID();
     private static final String firstName = "test";
@@ -78,7 +61,6 @@ public class UpdateDefendantDetailsHandlerTest extends CaseAggregateBaseTest {
     private static final String nationalInsuranceNumber = "nationalInsuranceNumber";
     private static final String homeNumber = "homeNumber";
     private static final String dateOfBirth = LocalDate.parse("1980-07-15").toString();
-
     private static final String ADDRESS_1 = "14 Tottenham Court Road";
     private static final String ADDRESS_2 = "London";
     private static final String ADDRESS_3 = "Surrey";
@@ -88,6 +70,30 @@ public class UpdateDefendantDetailsHandlerTest extends CaseAggregateBaseTest {
     private static final Address ADDRESS = new Address(ADDRESS_1, ADDRESS_2, ADDRESS_3, ADDRESS_4, ADDRESS_5, POSTCODE);
     private static final String REGION = "REGION";
     private static final String DRIVER_NUMBER = "MORGA753116SM9IJ";
+    @Spy
+    private Clock clock = new UtcClock();
+    @Spy
+    private Enveloper enveloper = EnveloperFactory.createEnveloperWithEvents(
+            DefendantNameUpdateRequested.class, DefendantDetailUpdateRequested.class, DefendantDetailsUpdated.class);
+    @InjectMocks
+    private UpdateDefendantDetailsHandler updateDefendantDetailsHandler;
+    @Mock
+    private EventStream eventStream;
+    @Mock
+    private EventSource eventSource;
+    @Mock
+    private AggregateService aggregateService;
+
+    private static JsonObject toJsonObject(final Address address) {
+        return createObjectBuilder()
+                .add("address1", address.getAddress1())
+                .add("address2", address.getAddress2())
+                .add("address3", address.getAddress3())
+                .add("address4", address.getAddress4())
+                .add("address5", address.getAddress5())
+                .add("postcode", address.getPostcode())
+                .build();
+    }
 
     @Test
     public void shouldUpdateDefendantDetails() throws EventStreamException {
@@ -107,8 +113,12 @@ public class UpdateDefendantDetailsHandlerTest extends CaseAggregateBaseTest {
                 streamContaining(
                         jsonEnvelope(
                                 withMetadataEnvelopedFrom(command)
-                                        .withName("sjp.events.defendant-name-updated"),
+                                        .withName("sjp.events.defendant-name-update-requested"),
                                 payloadIsJson(withJsonPath("$.newPersonalName.firstName", equalTo(firstName)))),
+                        jsonEnvelope(
+                                withMetadataEnvelopedFrom(command)
+                                        .withName("sjp.events.defendant-detail-update-requested"),
+                                payloadIsJson(withJsonPath("$.nameUpdated", is(true)))),
                         jsonEnvelope(
                                 withMetadataEnvelopedFrom(command)
                                         .withName("sjp.events.defendant-details-updated"),
@@ -116,14 +126,11 @@ public class UpdateDefendantDetailsHandlerTest extends CaseAggregateBaseTest {
                                         withJsonPath("$.defendantId", equalTo(defendantId.toString())),
                                         withJsonPath("$.caseId", equalTo(caseId.toString())),
                                         withJsonPath("$.title", equalTo(defendant.getTitle())),
-                                        withJsonPath("$.firstName", equalTo(firstName)),
-                                        withJsonPath("$.lastName", equalTo(defendant.getLastName())),
                                         withJsonPath("$.gender", equalTo(defendant.getGender().toString())),
                                         withJsonPath("$.nationalInsuranceNumber", equalTo(defendant.getNationalInsuranceNumber())),
                                         withJsonPath("$.contactDetails.email", equalTo(email)),
                                         withJsonPath("$.contactDetails.home", equalTo(defendant.getContactDetails().getHome())),
                                         withJsonPath("$.contactDetails.mobile", equalTo(defendant.getContactDetails().getMobile())),
-                                        withJsonPath("$.dateOfBirth", equalTo(defendant.getDateOfBirth().format(ofPattern("YYY-MM-dd")))),
                                         withJsonPath("$.region", equalTo(REGION)),
                                         withJsonPath("$.driverNumber", equalTo(DRIVER_NUMBER)))))
                 )));
@@ -154,17 +161,6 @@ public class UpdateDefendantDetailsHandlerTest extends CaseAggregateBaseTest {
         return envelopeFrom(
                 metadataOf(randomUUID(), "sjp.command.update-defendant-details").withUserId(userId.toString()),
                 payload.build());
-    }
-
-    private static JsonObject toJsonObject(final Address address) {
-        return createObjectBuilder()
-                .add("address1", address.getAddress1())
-                .add("address2", address.getAddress2())
-                .add("address3", address.getAddress3())
-                .add("address4", address.getAddress4())
-                .add("address5", address.getAddress5())
-                .add("postcode", address.getPostcode())
-                .build();
     }
 
 }

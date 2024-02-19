@@ -47,8 +47,8 @@
     "caseId": "${caseId}",
     "numPreviousConvictions": 2,
     "personalDetails": {
-      "firstName": "Testy",
-      "lastName": "Testerson",
+      "firstName": "David",
+      "lastName": "LLOYD",
       "address": {
         "address1": "14 Tottenham Court Road",
         "address2": "London",
@@ -62,15 +62,15 @@
       "driverNumber" : "MORGA753116SM9IJ",
       "driverLicenceDetails": "test",
       "addressChanged": false,
-      "dateOfBirth": "1990-09-09",
+      "dateOfBirth": "1980-07-15",
       "title": "Mr",
       "contactDetails": {
         "mobile": "07890123123",
         "email": "criminal@gmail.com",
         "home": "0208000888"
       },
-      "dobChanged": true,
-      "nameChanged": true
+      "dobChanged": false,
+      "nameChanged": false
     },
     "interpreter": {
       "needed": true,

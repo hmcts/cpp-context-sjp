@@ -29,6 +29,9 @@
     },
     "speakWelsh": {
       "type": "boolean"
+    },
+    "defendantDetailUpdateRequest": {
+      "$ref" : "http://justice.gov.uk/json/schemas/domains/sjp/queries/defendant-detail-update-request.json"
     }
   },
   "additionalProperties": false

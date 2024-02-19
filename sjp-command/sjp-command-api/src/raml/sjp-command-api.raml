@@ -108,6 +108,12 @@ baseUri: http://localhost:8080/sjp-command-api/command/api/rest/sjp
       (mapping):
           requestType: application/vnd.sjp.acknowledge-defendant-details-updates+json
           name: sjp.acknowledge-defendant-details-updates
+      (mapping):
+          requestType: application/vnd.sjp.accept-pending-defendant-changes+json
+          name: sjp.accept-pending-defendant-changes
+      (mapping):
+          requestType: application/vnd.sjp.reject-pending-defendant-changes+json
+          name: sjp.reject-pending-defendant-changes
       ...
     body:
       application/vnd.sjp.update-defendant-details+json:
@@ -116,6 +122,18 @@ baseUri: http://localhost:8080/sjp-command-api/command/api/rest/sjp
         schema:
           !include json/schema/sjp.update-defendant-details.json
       application/vnd.sjp.acknowledge-defendant-details-updates+json: !!null
+
+      application/vnd.sjp.accept-pending-defendant-changes+json:
+        example:
+          !include json/sjp.accept-pending-defendant-changes.json
+        schema:
+          !include json/schema/sjp.accept-pending-defendant-changes.json
+
+      application/vnd.sjp.reject-pending-defendant-changes+json:
+        example:
+          !include json/sjp.reject-pending-defendant-changes.json
+        schema:
+          !include json/schema/sjp.reject-pending-defendant-changes.json
     responses:
       500:
         description: Internal Server Error

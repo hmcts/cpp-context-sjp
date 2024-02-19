@@ -418,6 +418,7 @@ public class CreateCase {
             builder.asn = "asn";
             builder.pncIdentifier = "pncId";
             builder.pcqId = pcqId;
+            builder.legalEntityName = null;
             return builder;
         }
 

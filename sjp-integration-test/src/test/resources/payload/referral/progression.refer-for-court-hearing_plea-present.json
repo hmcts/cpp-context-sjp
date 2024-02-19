@@ -35,7 +35,7 @@
             "personDefendant": {
               "selfDefinedEthnicityId": "1daefec3-2f76-8109-82d9-2e60544a6c01",
               "personDetails": {
-                "lastName": "Testerson",
+                "lastName": "LLOYD",
                 "occupation": "worker",
                 "address": {
                   "address3": "England",
@@ -47,10 +47,10 @@
                 },
                 "gender": "MALE",
                 "nationalityId": "22ef7a73-df50-4349-8c72-ca3b9ace6363",
-                "dateOfBirth": "1990-09-09",
+                "dateOfBirth": "1980-07-15",
                 "title": "MR",
                 "documentationLanguageNeeds": "${HEARING_LANGUAGE}",
-                "firstName": "Testy",
+                "firstName": "David",
                 "interpreterLanguageNeeds": "French",
                 "occupationCode": "1",
                 "nationalInsuranceNumber": "${NINO}",

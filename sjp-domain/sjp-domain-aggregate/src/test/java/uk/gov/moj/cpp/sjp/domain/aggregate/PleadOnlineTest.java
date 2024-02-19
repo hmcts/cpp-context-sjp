@@ -16,9 +16,10 @@ import static org.hamcrest.Matchers.emptyCollectionOf;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.isEmptyOrNullString;
 import static org.hamcrest.Matchers.nullValue;
 import static org.hamcrest.core.IsNot.not;
-import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
@@ -32,13 +33,11 @@ import static uk.gov.moj.cpp.sjp.domain.testutils.StoreOnlinePleaBuilder.PERSON_
 import static uk.gov.moj.cpp.sjp.domain.testutils.StoreOnlinePleaBuilder.PERSON_LAST_NAME;
 import static uk.gov.moj.cpp.sjp.domain.testutils.StoreOnlinePleaBuilder.PERSON_NI_NUMBER;
 
-import uk.gov.moj.cpp.sjp.domain.aggregate.state.WithdrawalRequestsStatus;
-import uk.gov.moj.cpp.sjp.domain.Address;
 import uk.gov.moj.cpp.sjp.domain.Case;
 import uk.gov.moj.cpp.sjp.domain.CaseAssignmentType;
 import uk.gov.moj.cpp.sjp.domain.Defendant;
 import uk.gov.moj.cpp.sjp.domain.Interpreter;
-import uk.gov.moj.cpp.sjp.domain.PersonalName;
+import uk.gov.moj.cpp.sjp.domain.aggregate.state.WithdrawalRequestsStatus;
 import uk.gov.moj.cpp.sjp.domain.onlineplea.PleadOnline;
 import uk.gov.moj.cpp.sjp.domain.plea.PleaMethod;
 import uk.gov.moj.cpp.sjp.domain.plea.PleaType;
@@ -51,11 +50,12 @@ import uk.gov.moj.cpp.sjp.event.CaseReceived;
 import uk.gov.moj.cpp.sjp.event.CaseStatusChanged;
 import uk.gov.moj.cpp.sjp.event.CaseUpdateRejected;
 import uk.gov.moj.cpp.sjp.event.DatesToAvoidRequired;
-import uk.gov.moj.cpp.sjp.event.DefendantAddressUpdated;
-import uk.gov.moj.cpp.sjp.event.DefendantDateOfBirthUpdated;
+import uk.gov.moj.cpp.sjp.event.DefendantAddressUpdateRequested;
+import uk.gov.moj.cpp.sjp.event.DefendantDateOfBirthUpdateRequested;
+import uk.gov.moj.cpp.sjp.event.DefendantDetailUpdateRequested;
 import uk.gov.moj.cpp.sjp.event.DefendantDetailsUpdated;
+import uk.gov.moj.cpp.sjp.event.DefendantNameUpdateRequested;
 import uk.gov.moj.cpp.sjp.event.DefendantNotFound;
-import uk.gov.moj.cpp.sjp.event.DefendantNameUpdated;
 import uk.gov.moj.cpp.sjp.event.EmployerUpdated;
 import uk.gov.moj.cpp.sjp.event.EmploymentStatusUpdated;
 import uk.gov.moj.cpp.sjp.event.FinancialMeansUpdated;
@@ -70,7 +70,6 @@ import uk.gov.moj.cpp.sjp.event.PleadedNotGuilty;
 import uk.gov.moj.cpp.sjp.event.PleasSet;
 import uk.gov.moj.cpp.sjp.event.TrialRequested;
 
-import java.time.LocalDate;
 import java.time.ZonedDateTime;
 import java.util.Arrays;
 import java.util.List;
@@ -124,7 +123,6 @@ public class PleadOnlineTest {
                 PleasSet.class,
                 HearingLanguagePreferenceUpdatedForDefendant.class,
                 PleadedGuilty.class,
-                DefendantDetailsUpdated.class,
                 FinancialMeansUpdated.class,
                 EmployerUpdated.class,
                 EmploymentStatusUpdated.class,
@@ -155,7 +153,6 @@ public class PleadOnlineTest {
                 InterpreterUpdatedForDefendant.class,
                 HearingLanguagePreferenceUpdatedForDefendant.class,
                 PleadedGuiltyCourtHearingRequested.class,
-                DefendantDetailsUpdated.class,
                 FinancialMeansUpdated.class,
                 EmployerUpdated.class,
                 EmploymentStatusUpdated.class,
@@ -184,7 +181,6 @@ public class PleadOnlineTest {
                 PleasSet.class,
                 HearingLanguagePreferenceUpdatedForDefendant.class,
                 PleadedGuiltyCourtHearingRequested.class,
-                DefendantDetailsUpdated.class,
                 FinancialMeansUpdated.class,
                 EmployerUpdated.class,
                 EmploymentStatusUpdated.class,
@@ -216,7 +212,6 @@ public class PleadOnlineTest {
                 PleadedNotGuilty.class,
                 DatesToAvoidRequired.class,
                 TrialRequested.class,
-                DefendantDetailsUpdated.class,
                 FinancialMeansUpdated.class,
                 EmployerUpdated.class,
                 EmploymentStatusUpdated.class,
@@ -248,7 +243,6 @@ public class PleadOnlineTest {
                 PleadedNotGuilty.class,
                 DatesToAvoidRequired.class,
                 TrialRequested.class,
-                DefendantDetailsUpdated.class,
                 FinancialMeansUpdated.class,
                 EmployerUpdated.class,
                 EmploymentStatusUpdated.class,
@@ -302,7 +296,8 @@ public class PleadOnlineTest {
                 OutstandingFinesUpdated.class,
                 OnlinePleaReceived.class,
                 CaseMarkedReadyForDecision.class,
-                CaseStatusChanged.class));
+                CaseStatusChanged.class)
+        );
 
         //asserts expectations for all pleas
         IntStream.range(0, pleaInformationArray.length).forEach(index -> {
@@ -368,7 +363,6 @@ public class PleadOnlineTest {
                 PleasSet.class,
                 HearingLanguagePreferenceUpdatedForDefendant.class,
                 PleadedGuilty.class,
-                DefendantDetailsUpdated.class,
                 FinancialMeansUpdated.class,
                 EmployerUpdated.class,
                 EmploymentStatusUpdated.class,
@@ -398,7 +392,6 @@ public class PleadOnlineTest {
                 PleasSet.class,
                 HearingLanguagePreferenceUpdatedForDefendant.class,
                 PleadedGuilty.class,
-                DefendantDetailsUpdated.class,
                 FinancialMeansUpdated.class,
                 EmployerUpdated.class,
                 EmploymentStatusUpdated.class,
@@ -437,35 +430,6 @@ public class PleadOnlineTest {
     }
 
     @Test
-    public void shouldWarnNameChanged() {
-        //when
-        final PleadOnline pleadOnline = StoreOnlinePleaBuilder.defaultStoreOnlinePleaWithGuiltyPlea(offenceId, defendantId, true, false, false, null, null);
-        final List<Object> events = caseAggregate.pleadOnline(caseId, pleadOnline, now, randomUUID()).collect(toList());
-
-        //then
-        assertThat(events, containsEventsOf(
-                PleasSet.class,
-                HearingLanguagePreferenceUpdatedForDefendant.class,
-                PleadedGuilty.class,
-                DefendantDetailsUpdated.class,
-                DefendantNameUpdated.class,
-                FinancialMeansUpdated.class,
-                EmployerUpdated.class,
-                EmploymentStatusUpdated.class,
-                OutstandingFinesUpdated.class,
-                OnlinePleaReceived.class,
-                CaseMarkedReadyForDecision.class,
-                CaseStatusChanged.class));
-        final DefendantDetailsUpdated defendantDetailsUpdated = getDefendantDetailsUpdatedEvent(events);
-
-        assertCommonExpectations(pleadOnline, events, now);
-        assertEquals("Norman", defendantDetailsUpdated.getFirstName());
-        assertNull(defendantDetailsUpdated.getLastName());
-        assertNull(defendantDetailsUpdated.getDateOfBirth());
-        assertNull(defendantDetailsUpdated.getAddress());
-    }
-
-    @Test
     public void shouldNotRaiseDefendantDetailsUpdatedIfNoPersonalDetailsChange() {
         //when
         final PleadOnline pleadOnline = StoreOnlinePleaBuilder.defaultStoreOnlinePleaWithGuiltyPlea(offenceId, defendantId, false, false, false, null, null);
@@ -476,7 +440,6 @@ public class PleadOnlineTest {
                 PleasSet.class,
                 HearingLanguagePreferenceUpdatedForDefendant.class,
                 PleadedGuilty.class,
-                DefendantDetailsUpdated.class,
                 FinancialMeansUpdated.class,
                 EmployerUpdated.class,
                 EmploymentStatusUpdated.class,
@@ -509,8 +472,8 @@ public class PleadOnlineTest {
                 PleasSet.class,
                 HearingLanguagePreferenceUpdatedForDefendant.class,
                 PleadedGuilty.class,
-                DefendantDetailsUpdated.class,
-                DefendantAddressUpdated.class,
+                DefendantAddressUpdateRequested.class,
+                DefendantDetailUpdateRequested.class,
                 FinancialMeansUpdated.class,
                 EmployerUpdated.class,
                 EmploymentStatusUpdated.class,
@@ -518,15 +481,7 @@ public class PleadOnlineTest {
                 OnlinePleaReceived.class,
                 CaseMarkedReadyForDecision.class,
                 CaseStatusChanged.class));
-        final DefendantDetailsUpdated defendantDetailsUpdated = getDefendantDetailsUpdatedEvent(events);
-
         assertCommonExpectations(pleadOnline, events, now);
-        assertEquals(new Address("1 New Amsterdam Rd", "Tulse Hill", "Brixton", "London", "United Kingdom", "SE249HG"),
-                defendantDetailsUpdated.getAddress());
-        assertNull(defendantDetailsUpdated.getFirstName());
-        assertNull(defendantDetailsUpdated.getLastName());
-        assertNull(defendantDetailsUpdated.getDateOfBirth());
-        assertNull(defendantDetailsUpdated.getNationalInsuranceNumber());
     }
 
     @Test
@@ -540,8 +495,8 @@ public class PleadOnlineTest {
                 PleasSet.class,
                 HearingLanguagePreferenceUpdatedForDefendant.class,
                 PleadedGuilty.class,
-                DefendantDetailsUpdated.class,
-                DefendantDateOfBirthUpdated.class,
+                DefendantDateOfBirthUpdateRequested.class,
+                DefendantDetailUpdateRequested.class,
                 FinancialMeansUpdated.class,
                 EmployerUpdated.class,
                 EmploymentStatusUpdated.class,
@@ -551,12 +506,6 @@ public class PleadOnlineTest {
                 CaseStatusChanged.class));
 
         assertCommonExpectations(pleadOnline, events, now);
-        final DefendantDetailsUpdated defendantDetailsUpdated = getDefendantDetailsUpdatedEvent(events);
-
-        assertEquals(LocalDate.now().minusYears(18), defendantDetailsUpdated.getDateOfBirth());
-        assertNull(defendantDetailsUpdated.getFirstName());
-        assertNull(defendantDetailsUpdated.getLastName());
-        assertNull(defendantDetailsUpdated.getAddress());
     }
 
     private void assertCommonExpectations(final PleadOnline pleadOnline,
@@ -569,7 +518,6 @@ public class PleadOnlineTest {
 
         //boolean updateByOnlinePlea = PleaMethod.ONLINE.equals(pleaUpdated.getPleaMethod());
         boolean updateByOnlinePlea = true;
-
         assertThat(events, not(emptyCollectionOf(Object.class)));
         events.forEach(e -> {
             if (e instanceof PleasSet) {
@@ -665,29 +613,21 @@ public class PleadOnlineTest {
             } else if (e instanceof DefendantDetailsUpdated) {
                 final DefendantDetailsUpdated defendantDetailsUpdated = (DefendantDetailsUpdated) e;
                 assertTrue(defendantDetailsUpdated.isUpdateByOnlinePlea());
-            } else if (e instanceof DefendantDateOfBirthUpdated) {
-                final DefendantDateOfBirthUpdated defendantDateOfBirthUpdated = (DefendantDateOfBirthUpdated) e;
-
-                assertThat(defendantDateOfBirthUpdated.getCaseId(), equalTo(caseId));
-                assertThat(defendantDateOfBirthUpdated.getNewDateOfBirth(), equalTo(pleadOnline.getPersonalDetails().getDateOfBirth()));
-                assertThat(defendantDateOfBirthUpdated.getOldDateOfBirth(), not(equalTo(defendantDateOfBirthUpdated.getNewDateOfBirth())));
-            } else if (e instanceof DefendantNameUpdated) {
-                final DefendantNameUpdated defendantNameUpdated = (DefendantNameUpdated) e;
-
-                assertThat(defendantNameUpdated.getCaseId(), equalTo(caseId));
-                assertThat(defendantNameUpdated.getNewPersonalName(), equalTo(
-                        new PersonalName(
-                                pleadOnline.getPersonalDetails().getTitle(),
-                                pleadOnline.getPersonalDetails().getFirstName(),
-                                pleadOnline.getPersonalDetails().getLastName()
-                        )));
-                assertThat(defendantNameUpdated.getOldPersonalName(), not(equalTo(defendantNameUpdated.getNewPersonalName())));
-            } else if (e instanceof DefendantAddressUpdated) {
-                final DefendantAddressUpdated defendantAddressUpdated = (DefendantAddressUpdated) e;
-
-                assertThat(defendantAddressUpdated.getCaseId(), equalTo(caseId));
-                assertThat(defendantAddressUpdated.getNewAddress(), equalTo(pleadOnline.getPersonalDetails().getAddress()));
-                assertThat(defendantAddressUpdated.getNewAddress(), not(equalTo(defendantAddressUpdated.getOldAddress())));
+            } else if (e instanceof DefendantDetailUpdateRequested) {
+                final DefendantDetailUpdateRequested defendantDetailUpdateRequested = (DefendantDetailUpdateRequested) e;
+                assertThat(defendantDetailUpdateRequested.getNameUpdated(),is(not(nullValue())));
+                assertThat(defendantDetailUpdateRequested.getDobUpdated(),is(not(nullValue())));
+                assertThat(defendantDetailUpdateRequested.getAddressUpdated(),is(not(nullValue())));
+            } else if (e instanceof DefendantDateOfBirthUpdateRequested) {
+                final DefendantDateOfBirthUpdateRequested defendantDateOfBirthUpdateRequested = (DefendantDateOfBirthUpdateRequested) e;
+                assertThat(defendantDateOfBirthUpdateRequested.getCaseId(), equalTo(caseId));
+                assertThat(defendantDateOfBirthUpdateRequested.getNewDateOfBirth(), equalTo(pleadOnline.getPersonalDetails().getDateOfBirth()));
+            } else if (e instanceof DefendantNameUpdateRequested) {
+                final DefendantNameUpdateRequested defendantNameUpdateRequested = (DefendantNameUpdateRequested) e;
+                assertThat(defendantNameUpdateRequested.getCaseId(), equalTo(caseId));
+            } else if (e instanceof DefendantAddressUpdateRequested) {
+                final DefendantAddressUpdateRequested defendantAddressUpdateRequested = (DefendantAddressUpdateRequested) e;
+                assertThat(defendantAddressUpdateRequested.getCaseId(), equalTo(caseId));
             } else if (e instanceof OnlinePleaReceived) {
                 final OnlinePleaReceived onlinePleaReceived = (OnlinePleaReceived) e;
 

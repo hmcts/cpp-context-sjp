@@ -99,19 +99,18 @@ public class DefendantUpdatedListener {
         ofNullable(newData.getFirstName()).ifPresent(entity::setFirstName);
         ofNullable(newData.getLastName()).ifPresent(entity::setLastName);
         ofNullable(newData.getLegalEntityName()).ifPresent(legalEntity::setLegalEntityName);
+        ofNullable(newData.getDateOfBirth()).ifPresent(entity::setDateOfBirth);
         final Address address = newData.getAddress();
 
         ofNullable(newData.getPcqId()).ifPresent(defendantDetailEntity:: setPcqId);
         if (newData.isUpdateByOnlinePlea()) {
             ofNullable(newData.getNationalInsuranceNumber()).ifPresent(entity::setNationalInsuranceNumber);
-            ofNullable(newData.getDateOfBirth()).ifPresent(entity::setDateOfBirth);
             ofNullable(newData.getDriverNumber()).ifPresent(entity::setDriverNumber);
             ofNullable(newData.getDriverLicenceDetails()).ifPresent(entity::setDriverLicenceDetails);
         } else {
             ofNullable(newData.getGender()).ifPresent(entity::setGender);
             // Title can be explicitly set to null from sjp, no title comes from online plea
             entity.setTitle(newData.getTitle());
-            entity.setDateOfBirth(newData.getDateOfBirth());
             entity.setNationalInsuranceNumber(newData.getNationalInsuranceNumber());
             entity.setDriverNumber(newData.getDriverNumber());
             entity.setDriverLicenceDetails(newData.getDriverLicenceDetails());

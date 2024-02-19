@@ -69,4 +69,9 @@ public class Constants {
     public static final Integer OFFENCE_DATE_CODE_FOR_BETWEEN = 4;
 
     public static final String PUBLIC_CASE_DECISION_SAVED_EVENT = "public.sjp.case-decision-saved";
+
+    public static final String DEFENDANT_PENDING_CHANGES_ACCEPTED_PUBLIC_EVENT = "public.sjp.events.defendant-pending-changes-accepted";
+    public static final String DEFENDANT_PENDING_CHANGES_ACCEPTED_EVENT = "sjp.events.defendant-pending-changes-accepted";
+    public static final String DEFENDANT_PENDING_CHANGES_REJECTED_PUBLIC_EVENT = "public.sjp.events.defendant-pending-changes-rejected";
+    public static final String DEFENDANT_PENDING_CHANGES_REJECTED_EVENT = "sjp.events.defendant-pending-changes-rejected";
 }

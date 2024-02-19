@@ -52,8 +52,8 @@
     "personalDetails": {
       "driverNumber": "MORGA753116SM9IJ",
       "driverLicenceDetails": "test",
-      "firstName": "Changy",
-      "lastName": "Testerson",
+      "firstName": "David",
+      "lastName": "LLOYD",
       "address": {
         "address1": "14 Tottenham Court Road",
         "address2": "London",
@@ -65,15 +65,15 @@
       "gender": "Male",
       "nationalInsuranceNumber": "SR569876FD",
       "addressChanged": false,
-      "dateOfBirth": "1990-09-09",
+      "dateOfBirth": "1980-07-15",
       "title": "Mr",
       "contactDetails": {
         "mobile": "07890123123",
         "email": "criminal@gmail.com",
         "home": "0208000888"
       },
-      "dobChanged": true,
-      "nameChanged": true
+      "dobChanged": false,
+      "nameChanged": false
     },
     "interpreter": {
       "needed": true,
@@ -82,7 +82,15 @@
     "id": "${defendantId}",
     "asn": "asn",
     "pncIdentifier": "pncId",
-    "pcqId": "${pcqId}"
+    "pcqId": "${pcqId}",
+    "defendantDetailUpdateRequest": {
+      "firstName": "Changy",
+      "lastName": "Testerson",
+      "nameUpdated": true,
+      "addressUpdated": false,
+      "dobUpdated": false,
+      "status": "PENDING"
+    }
   },
   "readyForDecision": false,
   "caseDocuments": [

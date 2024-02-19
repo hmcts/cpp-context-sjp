@@ -46,7 +46,6 @@ import static uk.gov.moj.sjp.it.model.PleaInfo.pleaInfo;
 import static uk.gov.moj.sjp.it.model.ProsecutingAuthority.DVLA;
 import static uk.gov.moj.sjp.it.model.ProsecutingAuthority.TFL;
 import static uk.gov.moj.sjp.it.model.ProsecutingAuthority.TVL;
-import static uk.gov.moj.sjp.it.stub.AssignmentStub.stubAssignmentReplicationCommands;
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubAllResultDefinitions;
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubDefaultCourtByCourtHouseOUCodeQuery;
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubEnforcementAreaByPostcode;
@@ -159,7 +158,6 @@ public class CaseCourtExtractIT extends BaseIntegrationTest {
         provisionCaseAssignmentRestrictions(Sets.newHashSet(TFL, TVL, DVLA));
         stubStartSjpSessionCommand();
         stubEndSjpSessionCommand();
-        stubAssignmentReplicationCommands();
         stubDefaultCourtByCourtHouseOUCodeQuery();
         stubDocumentGeneratorEndPoint(courtExtract.getBytes());
         stubProsecutorQuery(prosecutingAuthority.name(), prosecutingAuthority.getFullName(), randomUUID());

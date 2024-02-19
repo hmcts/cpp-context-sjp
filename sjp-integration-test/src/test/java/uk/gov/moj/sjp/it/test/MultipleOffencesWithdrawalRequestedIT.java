@@ -35,7 +35,6 @@ import static uk.gov.moj.sjp.it.helper.SessionHelper.startSession;
 import static uk.gov.moj.sjp.it.model.ProsecutingAuthority.DVLA;
 import static uk.gov.moj.sjp.it.model.ProsecutingAuthority.TFL;
 import static uk.gov.moj.sjp.it.model.ProsecutingAuthority.TVL;
-import static uk.gov.moj.sjp.it.stub.AssignmentStub.stubAssignmentReplicationCommands;
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubDefaultCourtByCourtHouseOUCodeQuery;
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubEnforcementAreaByPostcode;
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubProsecutorQuery;
@@ -191,7 +190,6 @@ public class MultipleOffencesWithdrawalRequestedIT extends BaseIntegrationTest {
     public void offenceWithdrawalForSomeOffencesOnAPartiallyDecidedCaseMakesCaseReady() throws Exception {
         stubStartSjpSessionCommand();
         stubEndSjpSessionCommand();
-        stubAssignmentReplicationCommands();
         stubDefaultCourtByCourtHouseOUCodeQuery();
         stubForUserDetails(user, "ALL");
         stubEnforcementAreaByPostcode(aCase.getDefendantBuilder().getAddressBuilder().getPostcode(), "1080", "Bedfordshire Magistrates' Court");

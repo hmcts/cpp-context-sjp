@@ -79,7 +79,6 @@ import uk.gov.moj.sjp.it.helper.SetPleasHelper.SetPleasPayloadBuilder;
 import uk.gov.moj.sjp.it.model.DecisionCommand;
 import uk.gov.moj.sjp.it.model.PleaInfo;
 import uk.gov.moj.sjp.it.model.ProsecutingAuthority;
-import uk.gov.moj.sjp.it.stub.AssignmentStub;
 import uk.gov.moj.sjp.it.stub.SchedulingStub;
 import uk.gov.moj.sjp.it.util.SjpDatabaseCleaner;
 
@@ -138,7 +137,6 @@ public class CaseApplicationDecisionIT extends BaseIntegrationTest {
         stubQueryForVerdictTypes();
         stubQueryForAllProsecutors();
         provisionCaseAssignmentRestrictions(Sets.newHashSet(TFL, TVL, DVLA));
-        AssignmentStub.stubAssignmentReplicationCommands();
         SchedulingStub.stubStartSjpSessionCommand();
         stubEndSjpSessionCommand();
         stubDefaultCourtByCourtHouseOUCodeQuery();

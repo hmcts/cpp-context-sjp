@@ -56,7 +56,6 @@ import static uk.gov.moj.sjp.it.model.PleaInfo.pleaInfo;
 import static uk.gov.moj.sjp.it.model.ProsecutingAuthority.DVLA;
 import static uk.gov.moj.sjp.it.model.ProsecutingAuthority.TFL;
 import static uk.gov.moj.sjp.it.model.ProsecutingAuthority.TVL;
-import static uk.gov.moj.sjp.it.stub.AssignmentStub.stubAssignmentReplicationCommands;
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubDefaultCourtByCourtHouseOUCodeQuery;
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubHearingTypesQuery;
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubReferralReason;
@@ -166,7 +165,6 @@ public class MultipleOffencesSaveDecisionIT extends BaseIntegrationTest {
 
         stubStartSjpSessionCommand();
         stubEndSjpSessionCommand();
-        stubAssignmentReplicationCommands();
         stubDefaultCourtByCourtHouseOUCodeQuery();
         stubForUserDetails(user, "ALL");
 

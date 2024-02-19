@@ -7,7 +7,6 @@ import static uk.gov.moj.sjp.it.command.CreateCase.CreateCasePayloadBuilder.defa
 import static uk.gov.moj.sjp.it.helper.AssignmentHelper.assignCaseToUser;
 import static uk.gov.moj.sjp.it.helper.AssignmentHelper.pollUntilCaseAssignedToUser;
 import static uk.gov.moj.sjp.it.helper.AssignmentHelper.pollUntilCaseNotAssignedToUser;
-import static uk.gov.moj.sjp.it.stub.AssignmentStub.stubAssignmentReplicationCommands;
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubEnforcementAreaByPostcode;
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubRegionByPostcode;
 import static uk.gov.moj.sjp.it.stub.UsersGroupsStub.stubGroupForUser;
@@ -38,7 +37,6 @@ public class AssignCaseIT extends BaseIntegrationTest {
 
     @Before
     public void setUp() {
-        stubAssignmentReplicationCommands();
         stubGroupForUser(systemUserId, "System Users");
         stubGroupForUser(legalAdviserId, "Legal Advisers");
         stubGroupForUser(courtAdminId, "Court Administrators");

@@ -6,7 +6,6 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static uk.gov.moj.sjp.it.model.ProsecutingAuthority.DVLA;
 import static uk.gov.moj.sjp.it.model.ProsecutingAuthority.TFL;
 import static uk.gov.moj.sjp.it.model.ProsecutingAuthority.TVL;
-import static uk.gov.moj.sjp.it.stub.AssignmentStub.stubAssignmentReplicationCommands;
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubCourtByCourtHouseOUCodeQuery;
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubEnforcementAreaByPostcode;
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubProsecutorQuery;
@@ -22,7 +21,6 @@ import uk.gov.moj.sjp.it.commandclient.UnassignCaseClient;
 import uk.gov.moj.sjp.it.helper.AssignmentHelper;
 import uk.gov.moj.sjp.it.model.Defendant;
 import uk.gov.moj.sjp.it.model.ProsecutingAuthority;
-import uk.gov.moj.sjp.it.stub.AssignmentStub;
 import uk.gov.moj.sjp.it.util.CaseAssignmentRestrictionHelper;
 import uk.gov.moj.sjp.it.util.SjpDatabaseCleaner;
 
@@ -54,7 +52,6 @@ public class CaseUnassignmentIT extends BaseIntegrationTest {
     public void setUp() throws SQLException {
         stubStartSjpSessionCommand();
         stubEndSjpSessionCommand();
-        stubAssignmentReplicationCommands();
         stubCourtByCourtHouseOUCodeQuery(COURT_HOUSE_OU_CODE, "2572");
         cleaner.cleanViewStore();
 
@@ -102,7 +99,6 @@ public class CaseUnassignmentIT extends BaseIntegrationTest {
             assertThat(caseId, equalTo(CASE_ID));
 
             AssignmentHelper.assertCaseUnassigned(CASE_ID);
-            AssignmentStub.verifyRemoveAssignmentCommandSend(caseId);
         };
 
         Optional<Response> response = unassignCase.getExecutor().executeSync();

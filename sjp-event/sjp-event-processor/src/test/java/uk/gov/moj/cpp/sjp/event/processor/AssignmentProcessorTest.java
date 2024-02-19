@@ -223,18 +223,6 @@ public class AssignmentProcessorTest {
                 payloadIsJson(withJsonPath(CASE_ID, equalTo(caseId.toString())))
         )));
 
-        //TODO remove (ATCM-3097)
-        verify(sender).send(argThat(jsonEnvelope(
-                withMetadataEnvelopedFrom(caseAssignedEvent).withName("assignment.command.add-assignment-to"),
-                payloadIsJson(allOf(
-                        withJsonPath("id"),
-                        withJsonPath("version", equalTo(0)),
-                        withJsonPath("domainObjectId", equalTo(caseId.toString())),
-                        withJsonPath("assignmentNatureType", equalTo(CaseAssignmentType.MAGISTRATE_DECISION.toString())),
-                        withJsonPath("assignee", equalTo(assigneeId.toString()))
-                ))
-        )));
-
         verify(caseAssignmentTimeoutProcess).startTimer(caseId, Duration.ofMinutes(60));
     }
 
@@ -247,12 +235,6 @@ public class AssignmentProcessorTest {
         assignmentProcessor.handleCaseUnassignedEvent(caseAssignedEvent);
 
         verify(caseAssignmentTimeoutProcess).cancelTimer(caseId);
-
-        //TODO remove (ATCM-3097)
-        verify(sender).send(argThat(jsonEnvelope(
-                withMetadataEnvelopedFrom(caseAssignedEvent).withName("assignment.command.remove-assignment"),
-                payloadIsJson(withJsonPath("domainObjectId", equalTo(caseId.toString())))
-        )));
 
         verify(sender).send(argThat(jsonEnvelope(
                 withMetadataEnvelopedFrom(caseAssignedEvent).withName(AssignmentProcessor.PUBLIC_SJP_CASE_UNASSIGNED),

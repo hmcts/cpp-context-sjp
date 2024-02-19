@@ -34,11 +34,6 @@ import org.json.JSONObject;
 public class AssignmentStub {
 
     private static final String ASSIGNMENTS_QUERY_URL = "/assignment-service/query/api/rest/assignment/assignments";
-    private static final String ASSIGNMENTS_QUERY_MEDIA_TYPE = "application/vnd.assignment.query.assignments+json";
-
-    private static final String ASSIGNMENT_COMMAND_URL = "/assignment-service/command/api/rest/assignment/assignments";
-    private static final String ADD_ASSIGNMENT_MEDIA_TYPE = "application/vnd.assignment.command.add-assignment-to+json";
-    private static final String REMOVE_ASSIGNMENT_MEDIA_TYPE = "application/vnd.assignment.command.remove-assignment+json";
 
     public static void stubGetEmptyAssignmentsByDomainObjectId(final UUID caseId) {
         stubGetAssignmentsByDomainObjectId(caseId);
@@ -70,53 +65,6 @@ public class AssignmentStub {
 
     public static void stubGetAssignmentsByDomainObjectId(final UUID caseId, final UUID... assignees) {
         stubGetAssignmentsByDomainObjectId(caseId, Optional.empty(), assignees);
-    }
-
-    public static void stubAssignmentReplicationCommands() {
-        InternalEndpointMockUtils.stubPingFor("assignment-service");
-        stubAddAssignmentCommand();
-        stubRemoveAssignmentCommand();
-    }
-
-    public static void verifyAddAssignmentCommandSent(final UUID caseId, final UUID assigneeId, final CaseAssignmentType caseAssignmentType) {
-        final Predicate<JSONObject> commandPayloadPredicate = commandPayload -> commandPayload.getString("domainObjectId").equals(caseId.toString())
-                && commandPayload.getString("assignee").equals(assigneeId.toString())
-                && commandPayload.getString("assignmentNatureType").equals(caseAssignmentType.toString());
-
-        verifyCommandSent(ADD_ASSIGNMENT_MEDIA_TYPE, commandPayloadPredicate);
-    }
-
-    public static void verifyRemoveAssignmentCommandSend(final UUID caseId) {
-        final Predicate<JSONObject> commandPayloadPredicate = commandPayload -> commandPayload.getString("domainObjectId").equals(caseId.toString());
-
-        verifyCommandSent(REMOVE_ASSIGNMENT_MEDIA_TYPE, commandPayloadPredicate);
-    }
-
-    private static void verifyCommandSent(final String contentType, final Predicate<JSONObject> payloadPredicate) {
-        await()
-                .timeout(30, SECONDS)
-                .pollInterval(2, SECONDS)
-                .until(() ->
-                        findAll(postRequestedFor(urlPathEqualTo(ASSIGNMENT_COMMAND_URL))
-                                .withHeader(CONTENT_TYPE, equalTo(contentType)))
-                                .stream()
-                                .map(LoggedRequest::getBodyAsString)
-                                .map(JSONObject::new)
-                                .anyMatch(payloadPredicate));
-    }
-
-    private static void stubAddAssignmentCommand() {
-        stubFor(post(urlPathEqualTo(ASSIGNMENT_COMMAND_URL))
-                .withHeader(CONTENT_TYPE, equalTo(ADD_ASSIGNMENT_MEDIA_TYPE))
-                .willReturn(aResponse().withStatus(SC_ACCEPTED)
-                        .withHeader(CONTENT_TYPE, APPLICATION_JSON)));
-    }
-
-    private static void stubRemoveAssignmentCommand() {
-        stubFor(post(urlPathEqualTo(ASSIGNMENT_COMMAND_URL))
-                .withHeader(CONTENT_TYPE, equalTo(REMOVE_ASSIGNMENT_MEDIA_TYPE))
-                .willReturn(aResponse().withStatus(SC_ACCEPTED)
-                        .withHeader(CONTENT_TYPE, APPLICATION_JSON)));
     }
 
 }

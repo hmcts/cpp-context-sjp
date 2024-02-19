@@ -34,7 +34,6 @@ import static uk.gov.moj.sjp.it.helper.SessionHelper.startSession;
 import static uk.gov.moj.sjp.it.model.ProsecutingAuthority.DVLA;
 import static uk.gov.moj.sjp.it.model.ProsecutingAuthority.TFL;
 import static uk.gov.moj.sjp.it.model.ProsecutingAuthority.TVL;
-import static uk.gov.moj.sjp.it.stub.AssignmentStub.stubAssignmentReplicationCommands;
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubAllResultDefinitions;
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubDefaultCourtByCourtHouseOUCodeQuery;
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubEnforcementAreaByPostcode;
@@ -133,7 +132,6 @@ public class PressRestrictionsSaveDecisionIT extends BaseIntegrationTest {
         stubGroupForUser(systemUserId, "System Users");
         stubProsecutorQuery(ProsecutingAuthority.TFL.name(), ProsecutingAuthority.TFL.getFullName(), randomUUID());
         stubEndSjpSessionCommand();
-        stubAssignmentReplicationCommands();
         stubAllResultDefinitions();
         stubFixedLists();
         stubQueryForVerdictTypes();

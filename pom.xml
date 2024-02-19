@@ -57,7 +57,7 @@
         <activiti.library.version>1.3.0</activiti.library.version>
         <pojo-generation.version>1.6.0-M1</pojo-generation.version>
         <document-generator-client.version>1.0.4</document-generator-client.version>
-        <systemdocgenerator.version>8.0.35</systemdocgenerator.version>
+        <systemdocgenerator.version>8.0.69</systemdocgenerator.version>
         <apache.pdfbox.version>2.0.11</apache.pdfbox.version>
         <argLine>-Djava.locale.providers=CLDR</argLine>
         <elasticsearch-maven-plugin.version>6.13</elasticsearch-maven-plugin.version>

@@ -33,18 +33,6 @@
                         </exclusions>
                     </dependency>
                     <dependency>
-                        <groupId>uk.gov.moj.cpp.assignment</groupId>
-                        <artifactId>assignment-query-api</artifactId>
-                        <version>${assignment.version}</version>
-                        <classifier>raml</classifier>
-                        <exclusions>
-                            <exclusion>
-                                <groupId>*</groupId>
-                                <artifactId>*</artifactId>
-                            </exclusion>
-                        </exclusions>
-                    </dependency>
-                    <dependency>
                         <groupId>uk.gov.moj.cpp.referencedata.offences</groupId>
                         <artifactId>referencedataoffences-query-api</artifactId>
                         <version>${referencedata.offences.version}</version>

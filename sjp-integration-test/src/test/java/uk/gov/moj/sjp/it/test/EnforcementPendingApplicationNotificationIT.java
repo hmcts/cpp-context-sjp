@@ -69,7 +69,6 @@ import uk.gov.moj.sjp.it.command.CreateCase;
 import uk.gov.moj.sjp.it.helper.EventListener;
 import uk.gov.moj.sjp.it.model.DecisionCommand;
 import uk.gov.moj.sjp.it.model.ProsecutingAuthority;
-import uk.gov.moj.sjp.it.stub.AssignmentStub;
 import uk.gov.moj.sjp.it.stub.NotificationNotifyStub;
 import uk.gov.moj.sjp.it.stub.SchedulingStub;
 import uk.gov.moj.sjp.it.util.SjpDatabaseCleaner;
@@ -286,7 +285,6 @@ public class EnforcementPendingApplicationNotificationIT extends BaseIntegration
         databaseCleaner.cleanViewStore();
 
         provisionCaseAssignmentRestrictions(Sets.newHashSet(TFL, TVL, DVLA));
-        AssignmentStub.stubAssignmentReplicationCommands();
         SchedulingStub.stubStartSjpSessionCommand();
         stubEndSjpSessionCommand();
         stubDefaultCourtByCourtHouseOUCodeQuery();

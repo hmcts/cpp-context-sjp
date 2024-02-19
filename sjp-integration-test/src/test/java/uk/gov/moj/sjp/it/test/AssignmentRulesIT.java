@@ -48,7 +48,6 @@ import uk.gov.moj.sjp.it.helper.EventListener;
 import uk.gov.moj.sjp.it.helper.OffencesWithdrawalRequestHelper;
 import uk.gov.moj.sjp.it.helper.SessionHelper;
 import uk.gov.moj.sjp.it.helper.SetPleasHelper;
-import uk.gov.moj.sjp.it.stub.AssignmentStub;
 import uk.gov.moj.sjp.it.stub.SchedulingStub;
 import uk.gov.moj.sjp.it.util.CaseAssignmentRestrictionHelper;
 import uk.gov.moj.sjp.it.util.SjpDatabaseCleaner;
@@ -86,7 +85,6 @@ public class AssignmentRulesIT extends BaseIntegrationTest {
         databaseCleaner.cleanViewStore();
 
         stubDefaultCourtByCourtHouseOUCodeQuery();
-        AssignmentStub.stubAssignmentReplicationCommands();
         SchedulingStub.stubStartSjpSessionCommand();
 
         stubProsecutorQuery(TFL.name(), TFL.getFullName(), randomUUID());

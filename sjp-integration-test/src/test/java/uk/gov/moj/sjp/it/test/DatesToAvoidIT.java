@@ -31,7 +31,6 @@ import static uk.gov.moj.sjp.it.helper.SetPleasHelper.verifyPleadedNotGuiltyEven
 import static uk.gov.moj.sjp.it.helper.SetPleasHelper.verifySetPleasEventEmitted;
 import static uk.gov.moj.sjp.it.model.ProsecutingAuthority.*;
 import static uk.gov.moj.sjp.it.pollingquery.PendingDatesToAvoidPoller.pollUntilPendingDatesToAvoidIsOk;
-import static uk.gov.moj.sjp.it.stub.AssignmentStub.stubAssignmentReplicationCommands;
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubEnforcementAreaByPostcode;
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubProsecutorQuery;
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubRegionByPostcode;
@@ -101,7 +100,6 @@ public class DatesToAvoidIT extends BaseIntegrationTest {
         tflUserId = randomUUID();
         tvlUserId = randomUUID();
 
-        stubAssignmentReplicationCommands();
         stubGroupForUser(tflUserId, SJP_PROSECUTORS_GROUP);
         stubForUserDetails(tflUserId, TFL);
 

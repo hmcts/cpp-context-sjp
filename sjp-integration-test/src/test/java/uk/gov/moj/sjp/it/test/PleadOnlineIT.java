@@ -49,7 +49,6 @@ import static uk.gov.moj.sjp.it.model.ProsecutingAuthority.DVLA;
 import static uk.gov.moj.sjp.it.model.ProsecutingAuthority.TFL;
 import static uk.gov.moj.sjp.it.model.ProsecutingAuthority.TVL;
 import static uk.gov.moj.sjp.it.pollingquery.CasePoller.pollUntilCaseByIdIsOk;
-import static uk.gov.moj.sjp.it.stub.AssignmentStub.stubAssignmentReplicationCommands;
 import static uk.gov.moj.sjp.it.stub.IdMapperStub.stubAddMapping;
 import static uk.gov.moj.sjp.it.stub.IdMapperStub.stubGetFromIdMapper;
 import static uk.gov.moj.sjp.it.stub.NotificationNotifyStub.stubNotifications;
@@ -190,7 +189,6 @@ public class PleadOnlineIT extends BaseIntegrationTest {
         stubGetFromIdMapper(PARTIAL_AOCP_CRITERIA_NOTIFICATION.name(), this.createCasePayloadBuilder.getId().toString(),
                 "CASE_ID", this.createCasePayloadBuilder.getId().toString());
         stubAddMapping();
-        stubAssignmentReplicationCommands();
         stubEnforcementAreaByPostcode(createCasePayloadBuilder.getDefendantBuilder().getAddressBuilder().getPostcode(), NATIONAL_COURT_CODE, "Bedfordshire Magistrates' Court");
         stubRegionByPostcode(NATIONAL_COURT_CODE, DEFENDANT_REGION);
         CreateCase.createCaseForPayloadBuilder(this.createCasePayloadBuilder);

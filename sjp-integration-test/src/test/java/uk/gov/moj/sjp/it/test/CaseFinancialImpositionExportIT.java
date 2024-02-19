@@ -112,7 +112,6 @@ public class CaseFinancialImpositionExportIT extends BaseIntegrationTest {
         databaseCleaner.cleanViewStore();
 
         provisionCaseAssignmentRestrictions(Sets.newHashSet(TFL, TVL, DVLA));
-        AssignmentStub.stubAssignmentReplicationCommands();
         SchedulingStub.stubStartSjpSessionCommand();
         stubEndSjpSessionCommand();
         stubDefaultCourtByCourtHouseOUCodeQuery();

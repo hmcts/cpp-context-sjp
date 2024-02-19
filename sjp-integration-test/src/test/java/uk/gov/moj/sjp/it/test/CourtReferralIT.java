@@ -26,7 +26,6 @@ import static uk.gov.moj.sjp.it.helper.SessionHelper.startSession;
 import static uk.gov.moj.sjp.it.model.ProsecutingAuthority.DVLA;
 import static uk.gov.moj.sjp.it.model.ProsecutingAuthority.TFL;
 import static uk.gov.moj.sjp.it.model.ProsecutingAuthority.TVL;
-import static uk.gov.moj.sjp.it.stub.AssignmentStub.stubAssignmentReplicationCommands;
 import static uk.gov.moj.sjp.it.stub.IdMapperStub.stubForIdMapperSuccess;
 import static uk.gov.moj.sjp.it.stub.MaterialStub.stubMaterialMetadata;
 import static uk.gov.moj.sjp.it.stub.NotificationNotifyStub.stubNotifications;
@@ -158,7 +157,6 @@ public class CourtReferralIT extends BaseIntegrationTest {
 
         stubStartSjpSessionCommand();
         stubEndSjpSessionCommand();
-        stubAssignmentReplicationCommands();
         stubDefaultCourtByCourtHouseOUCodeQuery();
         stubQueryOffencesByCode(LIBRA_OFFENCE_CODE2);
         stubReferralReasonsQuery(REFERRAL_REASON_ID, HEARING_CODE, REFERRAL_REASON);

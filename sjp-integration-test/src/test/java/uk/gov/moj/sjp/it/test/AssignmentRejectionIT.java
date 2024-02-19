@@ -20,7 +20,6 @@ import static uk.gov.moj.sjp.it.Constants.COMMAND_HANDLE_ACTIVE_MQ_QUEUE;
 import static uk.gov.moj.sjp.it.Constants.EVENT_CASE_ASSIGNMENT_REJECTED;
 import static uk.gov.moj.sjp.it.Constants.EVENT_CASE_MARKED_READY_FOR_DECISION;
 import static uk.gov.moj.sjp.it.Constants.PUBLIC_EVENT_CASE_ASSIGNMENT_REJECTED;
-import static uk.gov.moj.sjp.it.stub.AssignmentStub.stubAssignmentReplicationCommands;
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubCourtByCourtHouseOUCodeQuery;
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubEnforcementAreaByPostcode;
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubRegionByPostcode;
@@ -55,8 +54,6 @@ public class AssignmentRejectionIT extends BaseIntegrationTest {
     public void init() {
         sessionId = randomUUID();
         userId = randomUUID();
-
-        stubAssignmentReplicationCommands();
 
         stubStartSjpSessionCommand();
         stubEndSjpSessionCommand();

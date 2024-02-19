@@ -269,7 +269,6 @@ public class NotificationToDvlaToRemoveEndorsementsIT extends BaseIntegrationTes
         databaseCleaner.cleanViewStore();
 
         provisionCaseAssignmentRestrictions(Sets.newHashSet(TFL, TVL, DVLA));
-        AssignmentStub.stubAssignmentReplicationCommands();
         SchedulingStub.stubStartSjpSessionCommand();
         stubEndSjpSessionCommand();
         stubDefaultCourtByCourtHouseOUCodeQuery();

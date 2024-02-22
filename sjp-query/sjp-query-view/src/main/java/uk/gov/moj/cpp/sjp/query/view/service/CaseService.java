@@ -55,7 +55,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
@@ -454,7 +453,7 @@ public class CaseService {
     }
 
     private String getNotNullElement(final Object elem) {
-        return Objects.nonNull(elem) ? elem.toString() : "";
+        return nonNull(elem) ? elem.toString() : "";
     }
 
     private ZonedDateTime convertToZonedDateTime(final Object object) {

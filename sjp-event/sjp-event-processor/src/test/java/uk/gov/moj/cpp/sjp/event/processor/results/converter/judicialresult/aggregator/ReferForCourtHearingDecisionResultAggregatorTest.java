@@ -135,6 +135,7 @@ public class ReferForCourtHearingDecisionResultAggregatorTest extends  BaseDecis
         assertThat(judicialResult.getNextHearing().getListedStartDateTime(), is(hearingDays.get(0).getSittingDay()));
         assertThat(judicialResult.getNextHearing().getType(), is(hearingType));
         assertThat(judicialResult.getNextHearing().getEstimatedMinutes(), is(hearingDays.get(0).getListedDurationMinutes()));
+        assertThat(judicialResult.getNextHearing().getAdjournmentReason(), is("referral reason (referral sub reason)"));
     }
 
     @Test
@@ -188,6 +189,7 @@ public class ReferForCourtHearingDecisionResultAggregatorTest extends  BaseDecis
         assertThat(judicialResult.getNextHearing().getListedStartDateTime(), is(hearingDays.get(0).getSittingDay()));
         assertThat(judicialResult.getNextHearing().getType(), is(hearingType));
         assertThat(judicialResult.getNextHearing().getEstimatedMinutes(), is(hearingDays.get(0).getListedDurationMinutes()));
+        assertThat(judicialResult.getNextHearing().getAdjournmentReason(), is("referral reason (referral sub reason)"));
 
     }
 

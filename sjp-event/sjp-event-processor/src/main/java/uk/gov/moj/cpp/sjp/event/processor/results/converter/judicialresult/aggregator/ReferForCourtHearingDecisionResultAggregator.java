@@ -123,7 +123,7 @@ public class ReferForCourtHearingDecisionResultAggregator extends DecisionResult
                             .withOrderedDate(resultedOn.format(DATE_FORMAT))
                             .withResultText(getResultText(judicialResultPrompts, resultDefinition.getString(LABEL)))
                             .withJudicialResultPrompts(getCheckJudicialPromptsEmpty(judicialResultPrompts))
-                            .withNextHearing(getNextHearing(caseOffenceListedInCriminalCourts))
+                            .withNextHearing(getNextHearing(caseOffenceListedInCriminalCourts, judicialResultPrompts))
                             .build());
             judicialResultsMap.put(offenceId, judicialResults);
         });
@@ -131,7 +131,7 @@ public class ReferForCourtHearingDecisionResultAggregator extends DecisionResult
         return judicialResultsMap;
     }
 
-    private NextHearing getNextHearing(final CaseOffenceListedInCriminalCourts caseOffenceListedInCriminalCourts) {
+    private NextHearing getNextHearing(final CaseOffenceListedInCriminalCourts caseOffenceListedInCriminalCourts, List<JudicialResultPrompt> judicialResultPrompts) {
         final HearingDay hearingDay = caseOffenceListedInCriminalCourts.getHearingDays().stream().min(Comparator.comparing(HearingDay::getSittingDay))
                 .orElseGet(() -> HearingDay.hearingDay().build());
 
@@ -140,7 +140,16 @@ public class ReferForCourtHearingDecisionResultAggregator extends DecisionResult
                 .withListedStartDateTime(hearingDay.getSittingDay())
                 .withType(caseOffenceListedInCriminalCourts.getHearingType())
                 .withEstimatedMinutes(hearingDay.getListedDurationMinutes())
+                .withAdjournmentReason(getReferralReasonFromPromptsEmpty(judicialResultPrompts))
                 .build();
+    }
+
+    private String getReferralReasonFromPromptsEmpty(final List<JudicialResultPrompt> judicialResultPrompts) {
+        return judicialResultPrompts.stream()
+                .filter(jp -> jp.getJudicialResultPromptTypeId().equals(SUMRCC_REASONS_IDS_FOR_REFERRING_TO_COURT.getId()))
+                .findFirst()
+                .map(JudicialResultPrompt::getValue)
+                .orElse(null);
     }
 
     private void populateCourtTimingDetails(final JsonObject resultDefinition,

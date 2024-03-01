@@ -35,7 +35,7 @@ public final class RuleConstants {
     }
 
     public static List<String> getQueryFinancialMeansActionGroups() {
-        return asList(GROUP_COURT_ADMINISTRATORS, GROUP_LEGAL_ADVISERS, GROUP_SYSTEM_USERS, GROUP_MAGISTRATES);
+        return asList(GROUP_COURT_ADMINISTRATORS, GROUP_LEGAL_ADVISERS, GROUP_SYSTEM_USERS, GROUP_MAGISTRATES, GROUP_SJP_PROSECUTORS);
     }
 
     public static List<String> getQueryDefendantPotentialCases() {

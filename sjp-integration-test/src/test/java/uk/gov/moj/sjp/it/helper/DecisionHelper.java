@@ -68,6 +68,7 @@ import uk.gov.moj.cpp.sjp.domain.decision.imposition.FinancialImposition;
 import uk.gov.moj.cpp.sjp.event.CaseAdjournedToLaterSjpHearingRecorded;
 import uk.gov.moj.cpp.sjp.event.CaseCompleted;
 import uk.gov.moj.cpp.sjp.event.CaseReferredForCourtHearing;
+import uk.gov.moj.cpp.sjp.event.CaseReferredForCourtHearingV2;
 import uk.gov.moj.cpp.sjp.event.CaseUnmarkedReadyForDecision;
 import uk.gov.moj.cpp.sjp.event.HearingLanguagePreferenceUpdatedForDefendant;
 import uk.gov.moj.cpp.sjp.event.InterpreterUpdatedForDefendant;
@@ -570,6 +571,21 @@ public class DecisionHelper {
     public static void verifyCaseReferredForCourtHearing(final DecisionSaved decisionSaved,
                                                          final ReferForCourtHearing referForCourtHearing,
                                                          final CaseReferredForCourtHearing caseReferredForCourtHearing,
+                                                         final List<OffenceDecisionInformation> offenceDecisionInformationList,
+                                                         final String referralReason) {
+        assertThat(caseReferredForCourtHearing.getCaseId(), is(decisionSaved.getCaseId()));
+        assertThat(caseReferredForCourtHearing.getReferralReasonId(), is(referForCourtHearing.getReferralReasonId()));
+        assertThat(caseReferredForCourtHearing.getReferralReason(), is(referralReason));
+        assertThat(caseReferredForCourtHearing.getEstimatedHearingDuration(), is(referForCourtHearing.getEstimatedHearingDuration()));
+        assertThat(caseReferredForCourtHearing.getListingNotes(), is(referForCourtHearing.getListingNotes()));
+        assertThat(caseReferredForCourtHearing.getReferredOffences(), is(offenceDecisionInformationList));
+        assertThat(caseReferredForCourtHearing.getReferredAt(), is(decisionSaved.getSavedAt()));
+        assertThat(caseReferredForCourtHearing.getDefendantCourtOptions(), is(referForCourtHearing.getDefendantCourtOptions()));
+    }
+
+    public static void verifyCaseReferredForCourtHearingV2(final DecisionSaved decisionSaved,
+                                                         final ReferForCourtHearing referForCourtHearing,
+                                                         final CaseReferredForCourtHearingV2 caseReferredForCourtHearing,
                                                          final List<OffenceDecisionInformation> offenceDecisionInformationList,
                                                          final String referralReason) {
         assertThat(caseReferredForCourtHearing.getCaseId(), is(decisionSaved.getCaseId()));

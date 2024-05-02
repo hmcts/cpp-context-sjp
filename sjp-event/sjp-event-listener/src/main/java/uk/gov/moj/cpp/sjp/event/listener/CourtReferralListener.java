@@ -10,6 +10,7 @@ import uk.gov.moj.cpp.sjp.domain.DefendantCourtOptions;
 import uk.gov.moj.cpp.sjp.domain.disability.DisabilityNeeds;
 import uk.gov.moj.cpp.sjp.event.CaseReferralForCourtHearingRejectionRecorded;
 import uk.gov.moj.cpp.sjp.event.CaseReferredForCourtHearing;
+import uk.gov.moj.cpp.sjp.event.CaseReferredForCourtHearingV2;
 import uk.gov.moj.cpp.sjp.persistence.entity.CaseCourtReferralStatus;
 import uk.gov.moj.cpp.sjp.persistence.entity.CaseDetail;
 import uk.gov.moj.cpp.sjp.persistence.repository.CaseCourtReferralStatusRepository;
@@ -60,13 +61,29 @@ public class CourtReferralListener {
 
         caseDetail.setReferredForCourtHearing(true);
         caseDetail.setManagedByAtcm(false);
-        updateDisabilityNeeds(caseReferredForCourtHearing, caseDetail);
-
-
+        updateDisabilityNeeds(caseReferredForCourtHearing.getDefendantCourtOptions(), caseDetail);
     }
 
-    private void updateDisabilityNeeds(final CaseReferredForCourtHearing caseReferredForCourtHearing, final CaseDetail caseDetail) {
-        ofNullable(caseReferredForCourtHearing.getDefendantCourtOptions())
+    @Handles("sjp.events.case-referred-for-court-hearing-v2")
+    public void handleCaseReferredForCourtHearingV2(final Envelope<CaseReferredForCourtHearingV2> envelope) {
+        final CaseReferredForCourtHearingV2 caseReferredForCourtHearing = envelope.payload();
+
+        final CaseDetail caseDetail = caseRepository.findBy(caseReferredForCourtHearing.getCaseId());
+
+        final CaseCourtReferralStatus caseCourtReferralStatus = new CaseCourtReferralStatus(
+                caseDetail.getId(),
+                caseDetail.getUrn(),
+                caseReferredForCourtHearing.getReferredAt());
+
+        caseCourtReferralStatusRepository.save(caseCourtReferralStatus);
+
+        caseDetail.setReferredForCourtHearing(true);
+        caseDetail.setManagedByAtcm(false);
+        updateDisabilityNeeds(caseReferredForCourtHearing.getDefendantCourtOptions(), caseDetail);
+    }
+
+    private void updateDisabilityNeeds(final DefendantCourtOptions defendantCourtOptions, final CaseDetail caseDetail) {
+        ofNullable(defendantCourtOptions)
                 .map(DefendantCourtOptions::getDisabilityNeeds)
                 .map(DisabilityNeeds::getDisabilityNeeds)
                 .ifPresent(disabilityNeeds -> {

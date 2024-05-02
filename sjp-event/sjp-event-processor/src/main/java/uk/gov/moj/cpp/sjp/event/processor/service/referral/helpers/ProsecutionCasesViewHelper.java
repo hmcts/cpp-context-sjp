@@ -32,7 +32,6 @@ import uk.gov.moj.cpp.sjp.domain.DefendantCourtOptions;
 import uk.gov.moj.cpp.sjp.domain.decision.SessionCourt;
 import uk.gov.moj.cpp.sjp.domain.disability.DisabilityNeeds;
 import uk.gov.moj.cpp.sjp.domain.verdict.VerdictType;
-import uk.gov.moj.cpp.sjp.event.CaseReferredForCourtHearing;
 import uk.gov.moj.cpp.sjp.event.processor.results.converter.VerdictConverter;
 import uk.gov.moj.cpp.sjp.event.processor.service.ReferenceDataOffencesService;
 import uk.gov.moj.cpp.sjp.event.processor.service.ReferenceDataService;
@@ -52,6 +51,7 @@ import uk.gov.moj.cpp.sjp.model.prosecution.ReportingRestrictionView;
 import uk.gov.moj.cpp.sjp.model.prosecution.helpers.DefendantTitleParser;
 
 import java.time.LocalDate;
+import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -95,7 +95,12 @@ public class ProsecutionCasesViewHelper {
             final EmployerDetails employer,
             final String nationalityId,
             final String ethnicityId,
-            final CaseReferredForCourtHearing caseReferredForCourtHearing,
+
+            final ZonedDateTime referredAt,
+            final DefendantCourtOptions defendantCourtOptions,
+            final LocalDate convictionDate,
+            final SessionCourt convictingCourt,
+
             final String pleaMitigation,
             final Map<String, JsonObject> offenceDefinition,
             final List<Offence> referredOffences,
@@ -108,16 +113,16 @@ public class ProsecutionCasesViewHelper {
                 caseDetails,
                 caseDecision,
                 referredOffences,
-                caseReferredForCourtHearing.getReferredAt().toLocalDate(),
+                referredAt.toLocalDate(),
                 caseFileDefendantDetails,
                 employer,
                 nationalityId,
                 ethnicityId,
                 pleaMitigation,
                 offenceDefinition,
-                caseReferredForCourtHearing.getDefendantCourtOptions(),
-                caseReferredForCourtHearing.getConvictionDate(),
-                caseReferredForCourtHearing.getConvictingCourt(),
+                defendantCourtOptions,
+                convictionDate,
+                convictingCourt,
                 emptyEnvelope);
 
         final JsonObject prosecutor = prosecutors.getJsonArray("prosecutors").getJsonObject(0);

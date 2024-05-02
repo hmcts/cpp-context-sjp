@@ -711,7 +711,8 @@ public class PleadOnlineIT extends BaseIntegrationTest {
         startSession(sjpSessionId, legalAdviser.getUserId(), DEFAULT_LONDON_COURT_HOUSE_OU_CODE, MAGISTRATE);
         requestCaseAssignment(sjpSessionId, legalAdviser.getUserId());
         final DefendantCourtOptions defendantCourtOptions = new DefendantCourtOptions(new DefendantCourtInterpreter("French", true), false, NO_DISABILITY_NEEDS);
-        final ReferForCourtHearing referForCourtHearing = new ReferForCourtHearing(null, singletonList(new OffenceDecisionInformation(offenceId, VerdictType.NO_VERDICT)), referralReasonId, listingNotes, estimatedHearingDuration, defendantCourtOptions);
+        final ReferForCourtHearing referForCourtHearing = new ReferForCourtHearing(null, singletonList(new OffenceDecisionInformation(offenceId, VerdictType.NO_VERDICT)),
+                referralReasonId, listingNotes, estimatedHearingDuration, defendantCourtOptions, null);
         final DecisionCommand decision = new DecisionCommand(sjpSessionId, createCasePayloadBuilder.getId(), null, legalAdviser, singletonList(referForCourtHearing), null);
         eventListener
                 .subscribe(CaseReferredForCourtHearing.EVENT_NAME)

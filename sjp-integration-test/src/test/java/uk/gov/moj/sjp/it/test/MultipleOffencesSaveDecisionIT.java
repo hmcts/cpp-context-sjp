@@ -551,7 +551,7 @@ public class MultipleOffencesSaveDecisionIT extends BaseIntegrationTest {
         // save a new decision
         final List<OffenceDecisionInformation> offenceDecisionInformations = asList(createOffenceDecisionInformation(offence1Id, NO_VERDICT), createOffenceDecisionInformation(offence2Id, NO_VERDICT), createOffenceDecisionInformation(offence3Id, NO_VERDICT));
         final DefendantCourtOptions defendantCourtOptions = new DefendantCourtOptions(new DefendantCourtInterpreter("French", true), false, NO_DISABILITY_NEEDS);
-        final ReferForCourtHearing referForCourtHearing = new ReferForCourtHearing(randomUUID(), offenceDecisionInformations, referralReasonId, "listing notes", 10, defendantCourtOptions);
+        final ReferForCourtHearing referForCourtHearing = new ReferForCourtHearing(randomUUID(), offenceDecisionInformations, referralReasonId, "listing notes", 10, defendantCourtOptions, null);
 
 
         final List<OffenceDecision> offencesDecisionList = asList(referForCourtHearing);
@@ -634,7 +634,7 @@ public class MultipleOffencesSaveDecisionIT extends BaseIntegrationTest {
         final ReferForCourtHearing referForCourtHearing = new ReferForCourtHearing(
                 null,
                 offenceDecisionInformationList,
-                referralReasonId, "listing notes", 30, defendantCourtOptions);
+                referralReasonId, "listing notes", 30, defendantCourtOptions, null);
 
         final DecisionCommand decision = new DecisionCommand(sessionId, caseId, null, user, asList(referForCourtHearing), null);
 
@@ -813,7 +813,7 @@ public class MultipleOffencesSaveDecisionIT extends BaseIntegrationTest {
 
         final DefendantCourtOptions defendantCourtOptions = new DefendantCourtOptions(new DefendantCourtInterpreter("French", true), false, NO_DISABILITY_NEEDS);
         final List<OffenceDecisionInformation> offenceDecisionInformationList = asList(new OffenceDecisionInformation(offence1Id, PROVED_SJP));
-        final ReferForCourtHearing referForCourtHearingDecision = new ReferForCourtHearing(null, asList(createOffenceDecisionInformation(offence1Id, PROVED_SJP)), referralReasonId, "listing notes", 30, defendantCourtOptions);
+        final ReferForCourtHearing referForCourtHearingDecision = new ReferForCourtHearing(null, asList(createOffenceDecisionInformation(offence1Id, PROVED_SJP)), referralReasonId, "listing notes", 30, defendantCourtOptions, null);
         final Withdraw withdrawDecision = new Withdraw(null, createOffenceDecisionInformation(offence2Id, NO_VERDICT), withdrawalReasonId);
         final Dismiss dismissDecision = DismissBuilder.withDefaults(offence3Id).build();
 
@@ -873,7 +873,7 @@ public class MultipleOffencesSaveDecisionIT extends BaseIntegrationTest {
 
 
         final DefendantCourtOptions defendantCourtOptions = new DefendantCourtOptions(new DefendantCourtInterpreter("French", true), false, NO_DISABILITY_NEEDS);
-        final ReferForCourtHearing referForCourtHearingDecisions = new ReferForCourtHearing(null, asList(createOffenceDecisionInformation(offence1Id, PROVED_SJP)), referralReasonId, "listing notes", 30, defendantCourtOptions);
+        final ReferForCourtHearing referForCourtHearingDecisions = new ReferForCourtHearing(null, asList(createOffenceDecisionInformation(offence1Id, PROVED_SJP)), referralReasonId, "listing notes", 30, defendantCourtOptions, null);
         final Adjourn adjournDecisions = new Adjourn(null, asList(createOffenceDecisionInformation(offence2Id, FOUND_NOT_GUILTY), createOffenceDecisionInformation(offence3Id, FOUND_NOT_GUILTY)), ADJOURN_REASON, adjournTo);
 
         final List<OffenceDecision> offencesDecisions = asList(referForCourtHearingDecisions, adjournDecisions);

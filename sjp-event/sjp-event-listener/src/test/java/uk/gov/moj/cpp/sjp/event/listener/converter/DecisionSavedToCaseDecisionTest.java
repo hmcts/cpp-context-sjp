@@ -470,7 +470,7 @@ public class DecisionSavedToCaseDecisionTest {
     }
 
     private ReferForCourtHearing referToCourtHearing(final PressRestriction pressRestriction) {
-        return new ReferForCourtHearing(randomUUID(), asList(createOffenceDecisionInformation(randomUUID(), PROVED_SJP)), randomUUID(),null, "Listing notes", 30, null, pressRestriction);
+        return new ReferForCourtHearing(randomUUID(), asList(createOffenceDecisionInformation(randomUUID(), PROVED_SJP)), randomUUID(),null, "Listing notes", 30, null, pressRestriction, null);
     }
 
     private Withdraw withdraw(final PressRestriction pressRestriction) {

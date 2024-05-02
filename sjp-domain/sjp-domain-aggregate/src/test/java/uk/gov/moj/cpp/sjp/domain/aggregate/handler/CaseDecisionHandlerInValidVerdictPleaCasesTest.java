@@ -192,7 +192,7 @@ public class CaseDecisionHandlerInValidVerdictPleaCasesTest {
                 return newArrayList(
                         new ReferForCourtHearing(UUID.randomUUID(),
                                 newArrayList(createOffenceDecisionInformation(offenceId1, verdictType)),
-                                referralReasonId, "note", 0, courtOptions));
+                                referralReasonId, "note", 0, courtOptions, null));
             default:
                 throw new NotImplementedException();
         }

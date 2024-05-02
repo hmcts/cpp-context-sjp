@@ -1,8 +1,5 @@
 package uk.gov.moj.cpp.sjp.event.processor.service.referral;
 
-import static java.util.Collections.emptyList;
-import static javax.json.Json.createObjectBuilder;
-
 import uk.gov.justice.json.schemas.domains.sjp.queries.CaseDecision;
 import uk.gov.justice.json.schemas.domains.sjp.queries.CaseDetails;
 import uk.gov.justice.json.schemas.domains.sjp.queries.Offence;
@@ -10,15 +7,20 @@ import uk.gov.justice.json.schemas.domains.sjp.queries.OnlinePleaDetail;
 import uk.gov.justice.json.schemas.domains.sjp.query.DefendantsOnlinePlea;
 import uk.gov.justice.json.schemas.domains.sjp.query.EmployerDetails;
 import uk.gov.justice.services.messaging.JsonEnvelope;
+import uk.gov.moj.cpp.sjp.domain.DefendantCourtOptions;
 import uk.gov.moj.cpp.sjp.domain.decision.OffenceDecisionInformation;
+import uk.gov.moj.cpp.sjp.domain.decision.SessionCourt;
 import uk.gov.moj.cpp.sjp.domain.verdict.VerdictType;
-import uk.gov.moj.cpp.sjp.event.CaseReferredForCourtHearing;
 import uk.gov.moj.cpp.sjp.event.processor.service.ReferenceDataOffencesService;
 import uk.gov.moj.cpp.sjp.event.processor.service.ReferenceDataService;
 import uk.gov.moj.cpp.sjp.event.processor.service.SjpService;
 import uk.gov.moj.cpp.sjp.event.processor.service.referral.helpers.ProsecutionCasesViewHelper;
 import uk.gov.moj.cpp.sjp.model.prosecution.ProsecutionCaseView;
 
+import javax.inject.Inject;
+import javax.json.JsonObject;
+import java.time.LocalDate;
+import java.time.ZonedDateTime;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -28,8 +30,8 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-import javax.inject.Inject;
-import javax.json.JsonObject;
+import static java.util.Collections.emptyList;
+import static javax.json.Json.createObjectBuilder;
 
 public class ProsecutionCasesDataSourcingService {
 
@@ -48,19 +50,23 @@ public class ProsecutionCasesDataSourcingService {
     public List<ProsecutionCaseView> createProsecutionCaseViews(
             final CaseDetails caseDetails,
             final CaseDecision caseDecision,
-            final CaseReferredForCourtHearing caseReferredForCourtHearing,
+            final List<OffenceDecisionInformation> getReferredOffences,
+            final ZonedDateTime referredAt,
+            final DefendantCourtOptions defendantCourtOptions,
+            final LocalDate convictionDate,
+            final SessionCourt convictingCourt,
             final DefendantsOnlinePlea defendantPleaDetails,
             final JsonObject prosecutionCaseFile,
             final JsonObject caseFileDefendantDetails,
             final JsonEnvelope emptyEnvelopeWithReferralEventMetadata) {
 
         final List<Offence> referredOffences = getReferredOffences(
-                caseReferredForCourtHearing.getReferredOffences(),
+                getReferredOffences,
                 caseDetails);
 
         final Map<String, JsonObject> offenceDefinition = referenceDataOffencesService.getOffenceDefinitionByOffenceCode(
                 getOffenceCodes(referredOffences),
-                caseReferredForCourtHearing.getReferredAt().toLocalDate(),
+                referredAt.toLocalDate(),
                 emptyEnvelopeWithReferralEventMetadata);
 
         final JsonObject prosecutor = referenceDataService.getProsecutors(
@@ -103,7 +109,10 @@ public class ProsecutionCasesDataSourcingService {
                 employer,
                 nationalityId,
                 ethnicityId,
-                caseReferredForCourtHearing,
+                referredAt,
+                defendantCourtOptions,
+                convictionDate,
+                convictingCourt,
                 pleaMitigation,
                 offenceDefinition,
                 referredOffences,

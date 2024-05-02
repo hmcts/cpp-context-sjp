@@ -9,11 +9,16 @@ import static java.util.UUID.randomUUID;
 import static java.util.stream.Collectors.toList;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.any;
+import static org.hamcrest.Matchers.contains;
+import static org.hamcrest.Matchers.containsInAnyOrder;
+import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.everyItem;
 import static org.hamcrest.Matchers.hasItem;
+import static org.hamcrest.Matchers.hasItemInArray;
 import static org.hamcrest.Matchers.hasProperty;
 import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.isA;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static uk.gov.justice.json.schemas.domains.sjp.NoteType.ADJOURNMENT;
@@ -36,6 +41,7 @@ import static java.math.BigDecimal.valueOf;
 
 import java.util.Arrays;
 import uk.gov.justice.core.courts.DelegatedPowers;
+import uk.gov.justice.core.courts.NextHearing;
 import uk.gov.justice.json.schemas.domains.sjp.User;
 import uk.gov.justice.json.schemas.domains.sjp.events.CaseNoteAdded;
 import uk.gov.moj.cpp.sjp.domain.AOCPCost;
@@ -76,6 +82,8 @@ import uk.gov.moj.cpp.sjp.domain.verdict.VerdictType;
 import uk.gov.moj.cpp.sjp.event.AocpPleasSet;
 import uk.gov.moj.cpp.sjp.event.CaseAdjournedToLaterSjpHearingRecorded;
 import uk.gov.moj.cpp.sjp.event.CaseCompleted;
+import uk.gov.moj.cpp.sjp.event.CaseReferredForCourtHearing;
+import uk.gov.moj.cpp.sjp.event.CaseReferredForCourtHearingV2;
 import uk.gov.moj.cpp.sjp.event.DefendantAocpResponseTimerExpired;
 import uk.gov.moj.cpp.sjp.event.decision.DecisionRejected;
 import uk.gov.moj.cpp.sjp.event.decision.DecisionSaved;
@@ -311,7 +319,7 @@ public class CaseDecisionHandlerTest {
                 new ReferForCourtHearing(randomUUID(), asList(
                         createOffenceDecisionInformation(offenceId1, null),
                         createOffenceDecisionInformation(offenceId2, null)),
-                        referralReasonId, "note", 0, courtOptions));
+                        referralReasonId, "note", 0, courtOptions, null));
 
         final Decision decision2 = new Decision(decisionId2, sessionId2, caseId, note, savedAt, legalAdviser, offenceDecisions2, null);
         final Stream<Object> eventStream = CaseDecisionHandler.INSTANCE.saveDecision(decision2, caseAggregateState, session);
@@ -365,7 +373,7 @@ public class CaseDecisionHandlerTest {
                 new ReferForCourtHearing(randomUUID(), asList(
                         createOffenceDecisionInformation(offenceId1, null),
                         createOffenceDecisionInformation(offenceId2, null)),
-                        referralReasonId, "note", 0, courtOptions));
+                        referralReasonId, "note", 0, courtOptions, null));
 
         final Decision decision = new Decision(decisionId, sessionId, caseId, note, savedAt, legalAdviser, offenceDecisions, null);
         final Stream<Object> eventStream = CaseDecisionHandler.INSTANCE.saveDecision(decision, caseAggregateState, session);
@@ -458,7 +466,8 @@ public class CaseDecisionHandlerTest {
 
         final List<OffenceDecision> offenceDecisions = newArrayList(
                 new Withdraw(randomUUID(), createOffenceDecisionInformation(offenceId1, NO_VERDICT), withdrawalReasonId1),
-                new ReferForCourtHearing(randomUUID(), createOffenceDecisionInformationList(offenceId2, PROVED_SJP), referralReasonId, "note", 0, courtOptions));
+                new ReferForCourtHearing(randomUUID(), createOffenceDecisionInformationList(offenceId2, PROVED_SJP),
+                        referralReasonId, "note", 0, courtOptions, null));
 
         final Decision decision = new Decision(decisionId, sessionId, caseId, note, savedAt, legalAdviser, offenceDecisions, null);
 
@@ -505,7 +514,8 @@ public class CaseDecisionHandlerTest {
 
         final List<OffenceDecision> offenceDecisions = newArrayList(
                 new Withdraw(randomUUID(), createOffenceDecisionInformation(offenceId1, NO_VERDICT), withdrawalReasonId1),
-                new ReferForCourtHearing(randomUUID(), createOffenceDecisionInformationList(offenceId2, PROVED_SJP), referralReasonId, "note", 0, courtOptions),
+                new ReferForCourtHearing(randomUUID(), createOffenceDecisionInformationList(offenceId2, PROVED_SJP),
+                        referralReasonId, "note", 0, courtOptions, null),
                 new Dismiss(randomUUID(), createOffenceDecisionInformation(offenceId3, FOUND_NOT_GUILTY), null));
 
         final Decision decision = new Decision(decisionId, sessionId, caseId, note, savedAt, legalAdviser, offenceDecisions, null);
@@ -695,7 +705,8 @@ public class CaseDecisionHandlerTest {
                         false,
                         disabilityNeedsOf(disabilityNeeds));
 
-        final ReferForCourtHearing referForCourtHearing = new ReferForCourtHearing(randomUUID(), createOffenceDecisionInformationList(offenceId1, NO_VERDICT), referralReasonId, "note", 0, courtOptions);
+        final ReferForCourtHearing referForCourtHearing = new ReferForCourtHearing(randomUUID(), createOffenceDecisionInformationList(offenceId1, NO_VERDICT),
+                referralReasonId, "note", 0, courtOptions, null);
         final Adjourn adjourn = new Adjourn(randomUUID(), createOffenceDecisionInformationList(offenceId2, NO_VERDICT), adjournmentReason, adjournedTo);
 
         final List<OffenceDecision> offenceDecisions = newArrayList(referForCourtHearing, adjourn);
@@ -718,7 +729,8 @@ public class CaseDecisionHandlerTest {
                         false,
                         disabilityNeedsOf(disabilityNeeds));
 
-        final ReferForCourtHearing referForCourtHearing = new ReferForCourtHearing(randomUUID(), createOffenceDecisionInformationList(offenceId1, NO_VERDICT), referralReasonId, "note", 0, courtOptions);
+        final ReferForCourtHearing referForCourtHearing = new ReferForCourtHearing(randomUUID(), createOffenceDecisionInformationList(offenceId1, NO_VERDICT),
+                referralReasonId, "note", 0, courtOptions, null);
         final Discharge discharge = createDischarge(randomUUID(), createOffenceDecisionInformation(offenceId2, FOUND_GUILTY), ABSOLUTE, null, new BigDecimal(20), null, true, null, null);
 
         final List<OffenceDecision> offenceDecisions = newArrayList(referForCourtHearing, discharge);
@@ -964,12 +976,14 @@ public class CaseDecisionHandlerTest {
     }
 
     @Test
-    public void shouldBypassPressRestrictionValidationForReferForCourtHearingDecision() {
+    public void shouldBypassPressRestrictionValidationForReferForCourtHearingDecisionWithNextHearing() {
         final ReferForCourtHearing referForCourtHearing = ReferForCourtHearingBuilder.withDefaults()
                 .addOffenceDecisionInformation(NO_VERDICT)
                 .addOffenceDecisionInformation(NO_VERDICT)
                 .pressRestriction("A random name")
+                .withNextHearing(NextHearing.nextHearing().build())
                 .build();
+
         givenCaseExistsWithMultipleOffences(newHashSet(referForCourtHearing.getOffenceIds()), legalAdviserId);
         final List<OffenceDecision> offenceDecisions = newArrayList(referForCourtHearing);
         final Decision decision = new Decision(decisionId, sessionId, caseId, note, savedAt, legalAdviser, offenceDecisions, null);
@@ -977,7 +991,9 @@ public class CaseDecisionHandlerTest {
 
         final Stream<Object> eventStream = CaseDecisionHandler.INSTANCE.saveDecision(decision, caseAggregateState, session);
 
-        thenTheDecisionIsNotRejected(eventStream.collect(toList()));
+        final List<Object> actualEvents = eventStream.collect(toList());
+        thenTheDecisionIsNotRejected(actualEvents);
+        assertThat(actualEvents.get(3).getClass(), equalTo(CaseReferredForCourtHearingV2.class));
     }
 
     @Test

@@ -40,6 +40,7 @@ import static uk.gov.moj.cpp.sjp.domain.verdict.VerdictType.FOUND_NOT_GUILTY;
 import static uk.gov.moj.cpp.sjp.domain.verdict.VerdictType.NO_VERDICT;
 import static uk.gov.moj.cpp.sjp.domain.verdict.VerdictType.PROVED_SJP;
 import static uk.gov.moj.cpp.sjp.event.CaseReferredForCourtHearing.caseReferredForCourtHearing;
+import static uk.gov.moj.cpp.sjp.event.CaseReferredForCourtHearingV2.caseReferredForCourtHearingV2;
 
 import uk.gov.justice.json.schemas.domains.sjp.Note;
 import uk.gov.justice.json.schemas.domains.sjp.NoteType;
@@ -230,7 +231,7 @@ public class CaseDecisionHandler {
             final ReferForCourtHearing referForCourtHearing = referForCourtHearingDecision.get();
             final List<OffenceDecisionInformation> offenceDecisionInformationList = referForCourtHearing.getOffenceDecisionInformation();
 
-            streamBuilder.add(caseReferredForCourtHearing()
+            streamBuilder.add(caseReferredForCourtHearingV2()
                     .withCaseId(decision.getCaseId())
                     .withDecisionId(decision.getDecisionId())
                     .withReferredAt(decision.getSavedAt())
@@ -242,6 +243,7 @@ public class CaseDecisionHandler {
                     .withDefendantCourtOptions(referForCourtHearing.getDefendantCourtOptions())
                     .withConvictionDate(referForCourtHearing.getConvictionDate())
                     .withConvictingCourt(referForCourtHearing.getConvictingCourt())
+                    .withNextHearing(referForCourtHearing.getNextHearing())
                     .build());
 
             if (isNotEmpty(referForCourtHearing.getListingNotes())) {

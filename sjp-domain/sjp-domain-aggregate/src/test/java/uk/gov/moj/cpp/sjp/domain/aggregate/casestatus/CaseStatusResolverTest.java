@@ -1292,7 +1292,7 @@ public class CaseStatusResolverTest {
             case WITHDRAW:
                 return new Withdraw(randomUUID(), createOffenceDecisionInformation(offenceId, NO_VERDICT), randomUUID());
             case REFER_FOR_COURT_HEARING:
-                return new ReferForCourtHearing(randomUUID(), singletonList(createOffenceDecisionInformation(offenceId,NO_VERDICT)), randomUUID(), null, null, null);
+                return new ReferForCourtHearing(randomUUID(), singletonList(createOffenceDecisionInformation(offenceId,NO_VERDICT)), randomUUID(), null, null, null, null);
             case DISCHARGE:
                 return new Discharge(randomUUID(), createOffenceDecisionInformation(offenceId, FOUND_GUILTY), DischargeType.ABSOLUTE, null,new BigDecimal(10), null, true,null,
                         null,null, null,null,null,null,null,null, null);

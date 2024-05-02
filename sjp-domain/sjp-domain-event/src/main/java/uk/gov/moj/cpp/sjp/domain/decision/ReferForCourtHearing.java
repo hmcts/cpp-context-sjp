@@ -4,6 +4,7 @@ import static org.apache.commons.lang3.builder.EqualsBuilder.reflectionEquals;
 import static org.apache.commons.lang3.builder.HashCodeBuilder.reflectionHashCode;
 import static uk.gov.moj.cpp.sjp.domain.decision.DecisionType.REFER_FOR_COURT_HEARING;
 
+import uk.gov.justice.core.courts.NextHearing;
 import uk.gov.moj.cpp.sjp.domain.DefendantCourtOptions;
 
 import java.time.LocalDate;
@@ -22,14 +23,17 @@ public class ReferForCourtHearing extends MultipleOffenceDecision implements Con
     private final DefendantCourtOptions defendantCourtOptions;
     private LocalDate convictionDate;
     private SessionCourt convictingCourt;
+    private final NextHearing nextHearing;
 
     public ReferForCourtHearing(final UUID id,
                                 final List<OffenceDecisionInformation> offenceDecisionInformation,
                                 final UUID referralReasonId,
                                 final String listingNotes,
                                 final Integer estimatedHearingDuration,
-                                final DefendantCourtOptions defendantCourtOptions) {
-        this(id, offenceDecisionInformation, referralReasonId, null, listingNotes, estimatedHearingDuration, defendantCourtOptions, null);
+                                final DefendantCourtOptions defendantCourtOptions,
+                                final NextHearing nextHearing) {
+        this(id, offenceDecisionInformation, referralReasonId, null, listingNotes,
+                estimatedHearingDuration, defendantCourtOptions, null, nextHearing);
     }
 
     @JsonCreator
@@ -40,13 +44,15 @@ public class ReferForCourtHearing extends MultipleOffenceDecision implements Con
                                 @JsonProperty("listingNotes") final String listingNotes,
                                 @JsonProperty("estimatedHearingDuration") final Integer estimatedHearingDuration,
                                 @JsonProperty("defendantCourtOptions") final DefendantCourtOptions defendantCourtOptions,
-                                @JsonProperty("pressRestriction") final PressRestriction pressRestriction) {
+                                @JsonProperty("pressRestriction") final PressRestriction pressRestriction,
+                                @JsonProperty("nextHearing") final NextHearing nextHearing) {
         super(id, REFER_FOR_COURT_HEARING, offenceDecisionInformation, pressRestriction);
         this.referralReasonId = referralReasonId;
         this.referralReason = referralReason;
         this.listingNotes = listingNotes;
         this.estimatedHearingDuration = estimatedHearingDuration;
         this.defendantCourtOptions = defendantCourtOptions;
+        this.nextHearing = nextHearing;
     }
 
     public UUID getReferralReasonId() {
@@ -83,6 +89,10 @@ public class ReferForCourtHearing extends MultipleOffenceDecision implements Con
 
     public void setConvictingCourt(final SessionCourt convictingCourt) {
         this.convictingCourt = convictingCourt;
+    }
+
+    public NextHearing getNextHearing() {
+        return nextHearing;
     }
 
     @Override

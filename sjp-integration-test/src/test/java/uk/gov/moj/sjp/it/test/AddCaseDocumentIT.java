@@ -212,7 +212,7 @@ public class AddCaseDocumentIT extends BaseIntegrationTest {
         requestCaseAssignment(sessionId, USER_ID);
 
         final DefendantCourtOptions defendantCourtOptions = new DefendantCourtOptions(new DefendantCourtInterpreter("French", true), false, NO_DISABILITY_NEEDS);
-        final ReferForCourtHearing referForCourtHearing = new ReferForCourtHearing(null, asList(new OffenceDecisionInformation(offenceId, VerdictType.PROVED_SJP)), referralReasonId, listingNotes, estimatedHearingDuration, defendantCourtOptions);
+        final ReferForCourtHearing referForCourtHearing = new ReferForCourtHearing(null, asList(new OffenceDecisionInformation(offenceId, VerdictType.PROVED_SJP)), referralReasonId, listingNotes, estimatedHearingDuration, defendantCourtOptions, null);
 
         final DecisionCommand decision = new DecisionCommand(sessionId, createCasePayloadBuilder.getId(), null, legalAdviser, asList(referForCourtHearing), null);
 

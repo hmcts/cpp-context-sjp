@@ -125,6 +125,9 @@ subscriptions_descriptor:
         - name: sjp.events.case-referred-for-court-hearing
           schema_uri: http://cpp.moj.gov.uk/sjp/event/case-referred-for-court-hearing.json
 
+        - name: sjp.events.case-referred-for-court-hearing-v2
+          schema_uri: http://cpp.moj.gov.uk/sjp/event/case-referred-for-court-hearing-v2.json
+
         - name: sjp.events.case-adjourned-to-later-sjp-hearing-recorded
           schema_uri: http://cpp.moj.gov.uk/sjp/event/case-adjourned-to-later-sjp-hearing-recorded.json
 

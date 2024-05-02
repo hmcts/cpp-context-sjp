@@ -30,6 +30,7 @@ import static uk.gov.moj.cpp.sjp.event.CaseReferralForCourtHearingRejectionRecor
 import static uk.gov.moj.cpp.sjp.event.CaseReferredForCourtHearing.caseReferredForCourtHearing;
 import static java.util.Collections.EMPTY_LIST;
 import static java.math.BigDecimal.valueOf;
+import static uk.gov.moj.cpp.sjp.event.CaseReferredForCourtHearingV2.caseReferredForCourtHearingV2;
 
 import uk.gov.moj.cpp.sjp.domain.Address;
 import uk.gov.moj.cpp.sjp.domain.Benefits;
@@ -65,6 +66,7 @@ import uk.gov.moj.cpp.sjp.event.CaseExpectedDateReadyChanged;
 import uk.gov.moj.cpp.sjp.event.CaseMarkedReadyForDecision;
 import uk.gov.moj.cpp.sjp.event.CaseReferralForCourtHearingRejectionRecorded;
 import uk.gov.moj.cpp.sjp.event.CaseReferredForCourtHearing;
+import uk.gov.moj.cpp.sjp.event.CaseReferredForCourtHearingV2;
 import uk.gov.moj.cpp.sjp.event.CaseReopenedUpdated;
 import uk.gov.moj.cpp.sjp.event.CaseStarted;
 import uk.gov.moj.cpp.sjp.event.CaseUnmarkedReadyForDecision;
@@ -227,6 +229,16 @@ public class CompositeCaseAggregateStateMutatorTest {
         final CaseReferralForCourtHearingRejectionRecorded event = caseReferralForCourtHearingRejectionRecorded().build();
         compositeCaseAggregateStateMutator.apply(event, caseAggregateState);
         assertThat(caseAggregateState.isManagedByAtcm(), is(true));
+    }
+
+    @Test
+    public void shouldMutateStateOnCaseReferredForCourtHearingV2Event() {
+        final CaseReferredForCourtHearingV2 caseReferredForCourtHearingV2 = caseReferredForCourtHearingV2().build();
+
+        compositeCaseAggregateStateMutator.apply(caseReferredForCourtHearingV2, caseAggregateState);
+
+        assertTrue(caseAggregateState.isCaseReferredForCourtHearing());
+        assertThat(caseAggregateState.isManagedByAtcm(), is(false));
     }
 
     @Test

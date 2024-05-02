@@ -5,6 +5,7 @@ import static java.time.ZonedDateTime.now;
 import static java.util.UUID.randomUUID;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.allOf;
+import static org.mockito.Matchers.anyObject;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.justice.services.core.annotation.Component.EVENT_LISTENER;
@@ -14,10 +15,12 @@ import static uk.gov.justice.services.test.utils.core.matchers.HandlerMethodMatc
 import static uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderFactory.metadataWithRandomUUID;
 import static uk.gov.moj.cpp.sjp.event.CaseReferralForCourtHearingRejectionRecorded.caseReferralForCourtHearingRejectionRecorded;
 import static uk.gov.moj.cpp.sjp.event.CaseReferredForCourtHearing.caseReferredForCourtHearing;
+import static uk.gov.moj.cpp.sjp.event.CaseReferredForCourtHearingV2.caseReferredForCourtHearingV2;
 
 import uk.gov.justice.services.messaging.Envelope;
 import uk.gov.moj.cpp.sjp.event.CaseReferralForCourtHearingRejectionRecorded;
 import uk.gov.moj.cpp.sjp.event.CaseReferredForCourtHearing;
+import uk.gov.moj.cpp.sjp.event.CaseReferredForCourtHearingV2;
 import uk.gov.moj.cpp.sjp.persistence.entity.CaseCourtReferralStatus;
 import uk.gov.moj.cpp.sjp.persistence.entity.CaseDetail;
 import uk.gov.moj.cpp.sjp.persistence.repository.CaseCourtReferralStatusRepository;
@@ -152,5 +155,25 @@ public class CourtReferralListenerTest {
         assertThat(caseCourtReferralStatus.getRejectedAt(), Matchers.is(REJECTED_AT));
         assertThat(caseCourtReferralStatus.getRejectionReason(), Matchers.is(REJECTION_REASON));
         verify(caseDetail).setManagedByAtcm(true);
+    }
+
+    @Test
+    public void shouldHandleCaseReferredForCourtHearingV2() {
+        final CaseReferredForCourtHearingV2 caseReferredForCourtHearing = caseReferredForCourtHearingV2()
+                .withCaseId(CASE_ID)
+                .withReferredAt(RECEIVED_AT)
+                .build();
+        Envelope<CaseReferredForCourtHearingV2> eventEnvelope = envelopeFrom(
+                metadataWithRandomUUID("sjp.events.case-referred-for-court-hearing-v2"),
+                caseReferredForCourtHearing);
+
+        final CaseCourtReferralStatus caseCourtReferralStatus = new CaseCourtReferralStatus(CASE_ID, URN, RECEIVED_AT);
+
+        when(caseCourtReferralStatusRepository.findBy(CASE_ID)).thenReturn(caseCourtReferralStatus);
+        when(caseRepository.findBy(CASE_ID)).thenReturn(caseDetail);
+        courtReferralListener.handleCaseReferredForCourtHearingV2(eventEnvelope);
+
+        verify(caseCourtReferralStatusRepository).save(anyObject());
+        verify(caseDetail).setReferredForCourtHearing(true);
     }
 }

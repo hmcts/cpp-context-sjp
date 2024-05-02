@@ -9,9 +9,10 @@ import static java.util.Collections.singletonList;
 import static java.util.UUID.randomUUID;
 import static javax.json.Json.createArrayBuilder;
 import static javax.json.Json.createObjectBuilder;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.equalTo;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.Matchers.is;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.argThat;
 import static org.mockito.Matchers.eq;
@@ -32,11 +33,18 @@ import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopePaylo
 import static uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderFactory.metadataWithRandomUUID;
 import static uk.gov.moj.cpp.core.sjp.decision.DecisionType.REFER_FOR_COURT_HEARING;
 import static uk.gov.moj.cpp.sjp.event.CaseReferredForCourtHearing.caseReferredForCourtHearing;
+import static uk.gov.moj.cpp.sjp.event.CaseReferredForCourtHearingV2.caseReferredForCourtHearingV2;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
 import uk.gov.justice.json.schemas.domains.sjp.queries.CaseDecision;
 import uk.gov.justice.json.schemas.domains.sjp.queries.CaseDetails;
 import uk.gov.justice.json.schemas.domains.sjp.queries.Defendant;
 import uk.gov.justice.json.schemas.domains.sjp.queries.QueryOffenceDecision;
+import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
+import uk.gov.justice.services.common.converter.ObjectToJsonObjectConverter;
+import uk.gov.justice.services.common.converter.jackson.ObjectMapperProducer;
 import uk.gov.justice.services.common.util.Clock;
 import uk.gov.justice.services.core.enveloper.Enveloper;
 import uk.gov.justice.services.core.sender.Sender;
@@ -44,8 +52,8 @@ import uk.gov.justice.services.messaging.Envelope;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.messaging.Metadata;
 import uk.gov.justice.services.test.utils.common.helper.StoppedClock;
-import uk.gov.moj.cpp.core.sjp.decision.DecisionType;
 import uk.gov.moj.cpp.sjp.event.CaseReferredForCourtHearing;
+import uk.gov.moj.cpp.sjp.event.CaseReferredForCourtHearingV2;
 import uk.gov.moj.cpp.sjp.event.processor.model.referral.CourtDocumentView;
 import uk.gov.moj.cpp.sjp.event.processor.model.referral.DefendantDocumentView;
 import uk.gov.moj.cpp.sjp.event.processor.model.referral.DocumentCategoryView;
@@ -110,8 +118,21 @@ public class CourtReferralProcessorTest {
     @Spy
     private Clock clock = new StoppedClock(now(UTC));
 
+    @Spy
+    private ObjectMapper objectMapper = new ObjectMapperProducer().objectMapper();
+
+    @Spy
+    @InjectMocks
+    @SuppressWarnings("unused")
+    private ObjectToJsonObjectConverter objectToJsonObjectConverter = new ObjectToJsonObjectConverter(objectMapper);
+
+    private JsonObjectToObjectConverter jsonObjectToObjectConverter = new JsonObjectToObjectConverter(objectMapper);
+
     @InjectMocks
     private CourtReferralProcessor courtReferralProcessor;
+
+    @Captor
+    private ArgumentCaptor<JsonEnvelope> commandCaptor;
 
     @Test
     public void shouldIgnoreCourtReferralRejectionForNonSjpCase() {
@@ -186,7 +207,7 @@ public class CourtReferralProcessorTest {
         when(sjpService.getCaseDetails(any(), any(JsonEnvelope.class))).thenReturn(caseDetails);
 
         final ProsecutionCaseView prosecutionCaseView = createDummyProsecutionCaseView(caseId);
-        when(prosecutionCasesDataSourcingService.createProsecutionCaseViews(any(), any(), any(), any(), any(), any(), any())).thenReturn(singletonList(prosecutionCaseView));
+        when(prosecutionCasesDataSourcingService.createProsecutionCaseViews(any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any())).thenReturn(singletonList(prosecutionCaseView));
 
         final SjpReferralView sjpReferralView = createDummySjpReferralView();
         when(sjpReferralDataSourcingService.createSjpReferralView(any(), any(),  any(), any())).thenReturn(sjpReferralView);
@@ -197,10 +218,10 @@ public class CourtReferralProcessorTest {
         when(prosecutionCaseFileService.getCaseFileDetails(eq(caseId), any())).thenReturn(caseFileDefendantDetails);
 
         final HearingRequestView listHearingRequestView = createDummyHearingRequestView();
-        when(hearingRequestsDataSourcingService.createHearingRequestViews(any(), any(), any(), any())).thenReturn(singletonList(listHearingRequestView));
+        when(hearingRequestsDataSourcingService.createHearingRequestViews(any(), any(), any(),any(), any(),any(), any(), any(), any())).thenReturn(singletonList(listHearingRequestView));
 
         final CourtDocumentView courtDocumentView = createDummyCourtDocumentView();
-        when(courtDocumentsDataSourcingService.createCourtDocumentViews(any(CaseReferredForCourtHearing.class), any(), any())).thenReturn(singletonList(courtDocumentView));
+        when(courtDocumentsDataSourcingService.createCourtDocumentViews(any(ZonedDateTime.class), any(), any())).thenReturn(singletonList(courtDocumentView));
 
         courtReferralProcessor.caseReferredForCourtHearing(caseReferredForCourtHearingEnvelope);
 
@@ -237,6 +258,84 @@ public class CourtReferralProcessorTest {
                                 withJsonPath("$.courtReferral.courtDocuments[0].materials[0].id", equalTo(courtDocumentView.getMaterials().get(0).getId().toString())),
                                 withJsonPath("$.courtReferral.courtDocuments[0].materials[0].name", equalTo(courtDocumentView.getMaterials().get(0).getName()))
                         )))));
+    }
+
+    @Test
+    public void shouldSendCommandToProgressionWhenCaseReferredForCourtHearingV2() {
+        final UUID caseId = randomUUID();
+        final UUID defendantId = randomUUID();
+
+        final CaseReferredForCourtHearingV2 caseReferredForCourtHearing = caseReferredForCourtHearingV2()
+                .withCaseId(caseId)
+                .withDecisionId(randomUUID())
+                .build();
+
+        final Metadata caseReferredForCourtHearingMetadata = metadataWithRandomUUID("sjp.events.case-referred-for-court-hearing").build();
+        final Envelope<CaseReferredForCourtHearingV2> caseReferredForCourtHearingEnvelope = envelopeFrom(
+                caseReferredForCourtHearingMetadata,
+                caseReferredForCourtHearing);
+
+        final CaseDetails caseDetails = CaseDetails.caseDetails()
+                .withId(caseId)
+                .withOnlinePleaReceived(true)
+                .withDefendant(Defendant.defendant().withId(defendantId).build())
+                .withCaseDecisions(asList(caseDecision()
+                        .withId(caseReferredForCourtHearing.getDecisionId())
+                        .withOffenceDecisions(asList(queryOffenceDecision()
+                                .withDecisionType(REFER_FOR_COURT_HEARING)
+                                .withReferralReasonId(randomUUID())
+                                .build()
+                        )).build()
+                ))
+                .build();
+        when(sjpService.getCaseDetails(any(), any(JsonEnvelope.class))).thenReturn(caseDetails);
+
+        final ProsecutionCaseView prosecutionCaseView = createDummyProsecutionCaseView(caseId);
+        when(prosecutionCasesDataSourcingService.createProsecutionCaseViews(any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any())).thenReturn(singletonList(prosecutionCaseView));
+
+        final SjpReferralView sjpReferralView = createDummySjpReferralView();
+        when(sjpReferralDataSourcingService.createSjpReferralView(any(), any(), any(), any())).thenReturn(sjpReferralView);
+
+        final Optional<JsonObject> caseFileDefendantDetails = Optional.of(createObjectBuilder()
+                .add("defendants", createArrayBuilder().add(createObjectBuilder()))
+                .build());
+        when(prosecutionCaseFileService.getCaseFileDetails(eq(caseId), any())).thenReturn(caseFileDefendantDetails);
+
+        final HearingRequestView listHearingRequestView = createDummyHearingRequestView();
+        when(hearingRequestsDataSourcingService.createHearingRequestViews(any(), any(), any(), any(), any(), any(), any(), any(), any())).thenReturn(singletonList(listHearingRequestView));
+
+        final CourtDocumentView courtDocumentView = createDummyCourtDocumentView();
+        when(courtDocumentsDataSourcingService.createCourtDocumentViews(any(ZonedDateTime.class), any(), any())).thenReturn(singletonList(courtDocumentView));
+
+        courtReferralProcessor.caseReferredForCourtHearingV2(caseReferredForCourtHearingEnvelope);
+
+        verify(sender).send(commandCaptor.capture());
+
+        final JsonEnvelope actualCommand = commandCaptor.getValue();
+        assertThat(actualCommand.metadata().name(), is("progression.refer-cases-to-court"));
+        final HearingRequestView actualListHearingRequestView = jsonObjectToObjectConverter.convert(actualCommand.payloadAsJsonObject().getJsonObject("courtReferral").getJsonArray("listHearingRequests").getJsonObject(0), HearingRequestView.class);
+
+        assertThat(actualListHearingRequestView.getJurisdictionType(), is(listHearingRequestView.getJurisdictionType()));
+        assertThat(actualListHearingRequestView.getEstimateMinutes(), is(listHearingRequestView.getEstimateMinutes()));
+        assertThat(actualListHearingRequestView.getProsecutorDatesToAvoid(), is(listHearingRequestView.getProsecutorDatesToAvoid()));
+        assertThat(actualListHearingRequestView.getListingDirections(), is(listHearingRequestView.getListingDirections()));
+        assertThat(actualListHearingRequestView.getHearingType(), is(listHearingRequestView.getHearingType()));
+        assertThat(actualListHearingRequestView.getListDefendantRequests().size(), is(listHearingRequestView.getListDefendantRequests().size()));
+
+        final ProsecutionCaseView actualProsecutionCaseView = jsonObjectToObjectConverter.convert(actualCommand.payloadAsJsonObject().getJsonObject("courtReferral").getJsonArray("prosecutionCases").getJsonObject(0), ProsecutionCaseView.class);
+        assertThat(actualProsecutionCaseView, is(prosecutionCaseView));
+
+        final SjpReferralView actualSjpReferralView = jsonObjectToObjectConverter.convert(actualCommand.payloadAsJsonObject().getJsonObject("courtReferral").getJsonObject("sjpReferral"), SjpReferralView.class);
+        assertThat(actualSjpReferralView, is(sjpReferralView));
+
+        final CourtDocumentView actualCourtDocumentView = jsonObjectToObjectConverter.convert(actualCommand.payloadAsJsonObject().getJsonObject("courtReferral").getJsonArray("courtDocuments").getJsonObject(0), CourtDocumentView.class);
+        assertThat(actualCourtDocumentView.getCourtDocumentId(), is(courtDocumentView.getCourtDocumentId()));
+        assertThat(actualCourtDocumentView.getName(), is(courtDocumentView.getName()));
+        assertThat(actualCourtDocumentView.getDocumentTypeId(), is(courtDocumentView.getDocumentTypeId()));
+        assertThat(actualCourtDocumentView.getMimeType(), is(courtDocumentView.getMimeType()));
+        assertThat(actualCourtDocumentView.getDocumentCategory().getDefendantDocument().getProsecutionCaseId(), is(courtDocumentView.getDocumentCategory().getDefendantDocument().getProsecutionCaseId()));
+        assertThat(actualCourtDocumentView.getMaterials().get(0).getId(), is(courtDocumentView.getMaterials().get(0).getId()));
+        assertThat(actualCourtDocumentView.getMaterials().get(0).getName(), is(courtDocumentView.getMaterials().get(0).getName()));
     }
 
     @Test

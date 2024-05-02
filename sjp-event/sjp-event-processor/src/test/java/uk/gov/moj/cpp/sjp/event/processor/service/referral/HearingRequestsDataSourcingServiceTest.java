@@ -83,7 +83,12 @@ public class HearingRequestsDataSourcingServiceTest {
         final DefendantsOnlinePlea defendantPlea = DefendantsOnlinePlea.defendantsOnlinePlea().build();
 
         hearingRequestsDataSourcingService.createHearingRequestViews(
-                caseReferredForCourtHearing,
+                caseReferredForCourtHearing.getCaseId(),
+                caseReferredForCourtHearing.getReferralReasonId(),
+                caseReferredForCourtHearing.getReferredOffences(),
+                caseReferredForCourtHearing.getDefendantCourtOptions(),
+                caseReferredForCourtHearing.getEstimatedHearingDuration(),
+                caseReferredForCourtHearing.getListingNotes(),
                 caseDetails,
                 defendantPlea,
                 emptyEnvelopeWithReferralEventMetadata);
@@ -91,7 +96,11 @@ public class HearingRequestsDataSourcingServiceTest {
         verify(hearingRequestsViewHelper).createHearingRequestViews(
                 caseDetails,
                 defendantPlea,
-                caseReferredForCourtHearing,
+                caseReferredForCourtHearing.getCaseId(),
+                caseReferredForCourtHearing.getReferralReasonId(),
+                caseReferredForCourtHearing.getDefendantCourtOptions(),
+                caseReferredForCourtHearing.getEstimatedHearingDuration(),
+                caseReferredForCourtHearing.getListingNotes(),
                 hearingTypesMock,
                 singletonList(OFFENCE_ID),
                 referralReasonMock);

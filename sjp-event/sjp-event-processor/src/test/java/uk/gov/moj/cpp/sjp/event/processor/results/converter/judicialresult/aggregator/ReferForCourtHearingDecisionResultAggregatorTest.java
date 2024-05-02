@@ -94,7 +94,7 @@ public class ReferForCourtHearingDecisionResultAggregatorTest extends  BaseDecis
                 REFERRAL_REASON_ID,
                 "Note",
                 30,
-                courtOptions);
+                courtOptions, null);
         final ZonedDateTime zonedDateTime = ZonedDateTime.now().plusDays(1);
         final UUID caseId = randomUUID();
         final UUID defendantId = randomUUID();
@@ -147,7 +147,7 @@ public class ReferForCourtHearingDecisionResultAggregatorTest extends  BaseDecis
                 REFERRAL_REASON_ID,
                 "Note",
                 30,
-                courtOptions);
+                courtOptions, null);
         final ZonedDateTime zonedDateTime = ZonedDateTime.now().plusDays(1);
         final UUID caseId = randomUUID();
         final UUID defendantId = randomUUID();

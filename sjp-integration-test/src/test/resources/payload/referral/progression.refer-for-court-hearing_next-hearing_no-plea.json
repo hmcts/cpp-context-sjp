@@ -178,6 +178,19 @@
         "mimeType": "pdf",
         "containsFinancialMeans": false
       }
-    ]
+    ],
+    "nextHearing": {
+      "type": {
+        "description": "Trial",
+        "id": "bf8155e1-90b9-4080-b133-bfbad895d6e4"
+      },
+      "courtCentre": {
+        "id": "4b6185e1-92f2-3634-b749-87d2fcadf1c8",
+        "name": "Basingstoke Magistrates' Court",
+        "roomId": "${ROOM_ID}"
+      },
+      "estimatedMinutes": 20,
+      "listedStartDateTime": "${LISTED_START_DATE}"
+    }
   }
 }

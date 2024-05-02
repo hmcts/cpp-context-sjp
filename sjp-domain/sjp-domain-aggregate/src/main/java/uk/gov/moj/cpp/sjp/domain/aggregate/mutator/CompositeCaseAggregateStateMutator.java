@@ -15,6 +15,7 @@ import uk.gov.moj.cpp.sjp.domain.disability.DisabilityNeeds;
 import uk.gov.moj.cpp.sjp.domain.plea.Plea;
 import uk.gov.moj.cpp.sjp.event.AllOffencesWithdrawalRequestCancelled;
 import uk.gov.moj.cpp.sjp.event.AllOffencesWithdrawalRequested;
+import uk.gov.moj.cpp.sjp.event.CaseReferredForCourtHearingV2;
 import uk.gov.moj.cpp.sjp.event.CaseReserved;
 import uk.gov.moj.cpp.sjp.event.CaseUnReserved;
 import uk.gov.moj.cpp.sjp.event.DefendantAocpResponseTimerExpired;
@@ -143,6 +144,15 @@ final class CompositeCaseAggregateStateMutator implements AggregateStateMutator<
     private static final AggregateStateMutator<AllOffencesWithdrawalRequestCancelled, CaseAggregateState> ALL_OFFENCES_CANCELLED_MUTATOR =
             (event, state) -> state.setWithdrawalAllOffencesRequested(false);
     private static final AggregateStateMutator<CaseReferredForCourtHearing, CaseAggregateState> CASE_REFERRED_FOR_COURT_HEARING_MUTATOR =
+            (event, state) -> {
+                state.markCaseReferredForCourtHearing();
+                final DisabilityNeeds disabilityNeeds = ofNullable(event.getDefendantCourtOptions())
+                        .map(DefendantCourtOptions::getDisabilityNeeds)
+                        .orElse(NO_DISABILITY_NEEDS);
+                state.updateDefendantDisabilityNeeds(state.getDefendantId(), disabilityNeeds);
+                state.setManagedByAtcm(false);
+            };
+    private static final AggregateStateMutator<CaseReferredForCourtHearingV2, CaseAggregateState> CASE_REFERRED_FOR_COURT_HEARING_MUTATOR_V2 =
             (event, state) -> {
                 state.markCaseReferredForCourtHearing();
                 final DisabilityNeeds disabilityNeeds = ofNullable(event.getDefendantCourtOptions())
@@ -365,6 +375,7 @@ final class CompositeCaseAggregateStateMutator implements AggregateStateMutator<
                 .put(CaseReceived.class, CaseReceivedMutator.INSTANCE)
                 .put(CaseDocumentAdded.class, CaseDocumentAddedMutator.INSTANCE)
                 .put(CaseReferredForCourtHearing.class, CASE_REFERRED_FOR_COURT_HEARING_MUTATOR)
+                .put(CaseReferredForCourtHearingV2.class, CASE_REFERRED_FOR_COURT_HEARING_MUTATOR_V2)
                 .put(CaseReferralForCourtHearingRejectionRecorded.class, CASE_REFERRED_FOR_COURT_HEARING_REJECTION_MUTATOR)
                 .put(CaseReopenedUndone.class, CaseReopenedUndoneMutator.INSTANCE)
                 .put(CaseReopened.class, CaseReopenedMutator.INSTANCE)

@@ -80,7 +80,7 @@ public class CaseListedInCriminalCourtsTest extends CaseAggregateBaseTest {
                         REFERRAL_REASON_ID,
                         "Note",
                         30,
-                        courtOptions);
+                        courtOptions, null);
         offenceDecisions.add(offenceDecision);
 
         final Decision decision = new Decision(decisionId, sessionId, caseId, "duplicate conviction", savedAt, savedBy, offenceDecisions, null);

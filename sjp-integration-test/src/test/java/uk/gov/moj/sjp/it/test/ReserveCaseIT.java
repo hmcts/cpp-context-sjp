@@ -548,5 +548,4 @@ public class ReserveCaseIT extends BaseIntegrationTest {
         assignCase.notAssignedHandler = (envelope) -> Log.info("Case Not Assigned");
         assignCase.getExecutor().setExecutingUserId(userId).executeSync();
     }
-
 }

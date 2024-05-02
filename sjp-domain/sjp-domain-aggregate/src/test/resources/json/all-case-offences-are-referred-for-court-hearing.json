@@ -1,6 +1,6 @@
 {
   "_metadata": {
-    "name": "sjp.events.case-referred-for-court-hearing"
+    "name": "sjp.events.case-referred-for-court-hearing-v2"
   },
   "caseId": "c4ec3a35-76bf-4649-b43a-761e71c3765e",
   "referredOffences": [
@@ -31,5 +31,18 @@
       "needed": true,
       "disabilityNeeds": "Hearing aid"
     }
+  },
+  "nextHearing": {
+    "type": {
+      "description": "Trial",
+      "id": "bf8155e1-90b9-4080-b133-bfbad895d6e4"
+    },
+    "courtCentre": {
+      "id": "4b6185e1-92f2-3634-b749-87d2fcadf1c8",
+      "name": "Basingstoke Magistrates' Court",
+      "roomId": "5c432fcf-ba6c-47ad-8c46-dd717106bf4d"
+    },
+    "estimatedMinutes": 20,
+    "listedStartDateTime": "2023-10-12T10:10:09.123Z"
   }
 }

@@ -2,35 +2,60 @@
   "courtReferral": {
     "prosecutionCases": [
       {
-        "statementOfFacts":"No ticket at the gates, forgery",
-        "statementOfFactsWelsh": "some facts in welsh",
+        "statementOfFacts": "No ticket at the gates, forgery",
         "originatingOrganisation" : "GAEAA01",
+        "statementOfFactsWelsh": "some facts in welsh",
         "defendants": [
           {
             "offences": [
               {
+                "endDate": "2019-01-10",
                 "count": 1,
+                "convictionDate": "${CONVICTION_DATE}",
                 "orderIndex": 1,
                 "id": "${OFFENCE_ID1}",
                 "wording": "Committed some offence",
                 "chargeDate": "2016-01-01",
                 "offenceDefinitionId": "9efdbffa-08f0-4cb5-905d-139511ddcadc",
                 "startDate": "2016-01-01",
-                "offenceDateCode": 1,
                 "notifiedPlea": {
                   "offenceId": "${OFFENCE_ID1}",
-                  "notifiedPleaValue": "NOTIFIED_GUILTY",
+                  "notifiedPleaValue": "NO_NOTIFICATION",
                   "notifiedPleaDate": "${PLEA_DATE}"
                 },
+                "offenceDateCode" : 1,
                 "offenceFacts" : {
                   "vehicleRegistration" : "FG59 4FD",
                   "vehicleMake" : "Ford"
-                }
+                },
+                "maxPenalty": "Max Penalty"
+              },
+              {
+                "endDate": "2019-01-10",
+                "count": 1,
+                "convictionDate": "${CONVICTION_DATE}",
+                "orderIndex": 2,
+                "id": "${OFFENCE_ID2}",
+                "wording": "Committed some offence",
+                "chargeDate": "2016-01-01",
+                "offenceDefinitionId": "4023c959-fad1-3e47-b678-ff7f0c0c1f48",
+                "startDate": "2016-01-01",
+                "notifiedPlea": {
+                  "offenceId": "${OFFENCE_ID2}",
+                  "notifiedPleaValue": "NO_NOTIFICATION",
+                  "notifiedPleaDate": "${PLEA_DATE}"
+                },
+                "offenceDateCode" : 1,
+                "offenceFacts" : {
+                  "vehicleRegistration" : "FG59 4FD",
+                  "vehicleMake" : "Ford"
+                },
+                "maxPenalty": "Max Penalty"
               }
             ],
             "numberOfPreviousConvictionsCited": 2,
             "id": "${DEFENDANT_ID}",
-            "masterDefendantId": "${DEFENDANT_ID}",
+            "masterDefendantId" : "${DEFENDANT_ID}",
             "prosecutionCaseId": "${CASE_ID}",
             "personDefendant": {
               "selfDefinedEthnicityId": "1daefec3-2f76-8109-82d9-2e60544a6c01",
@@ -49,33 +74,34 @@
                 "nationalityId": "22ef7a73-df50-4349-8c72-ca3b9ace6363",
                 "dateOfBirth": "1980-07-15",
                 "title": "MR",
+                "interpreterLanguageNeeds": "French",
                 "documentationLanguageNeeds": "${HEARING_LANGUAGE}",
                 "firstName": "David",
-                "interpreterLanguageNeeds": "French",
                 "occupationCode": "1",
+                "ethnicityId": "1daefec3-2f76-8109-82d9-2e60544a6c01",
                 "nationalInsuranceNumber": "${NINO}",
                 "contact": {
                   "secondaryEmail": "secondary-email@abv.bg",
                   "work": "+21312321312312",
-                  "mobile": "07890123123",
-                  "primaryEmail": "criminal@gmail.com",
-                  "home": "0208000888"
+                  "mobile": "07123456789",
+                  "primaryEmail": "email@email.com",
+                  "home": "02087654321"
                 },
                 "specificRequirements": "wobbling a bit, but I am fine"
               },
               "employerOrganisation": {
                 "address": {
-                  "address3": "England",
-                  "address2": "London",
-                  "address1": "18 Tottenham Court Road",
-                  "postcode": "W1T 1JY",
+                  "address3": "Lant House",
+                  "address2": "Flat 8",
+                  "address1": "Foo",
+                  "postcode": "SE1 1PJ",
                   "address5": "Greater London",
-                  "address4": "UK"
+                  "address4": "London"
                 },
                 "contact": {
-                  "work": "020 7998 0007"
+                  "work": "02020202020"
                 },
-                "name": "Pret a manger"
+                "name": "Test Org"
               },
               "driverNumber": "${DRIVER_NUMBER}",
               "arrestSummonsNumber": "asn",
@@ -98,11 +124,15 @@
       "referralDate": "${REFERRAL_DATE}",
       "referringJudicialDecision": {
         "location": "court house name",
-        "courtHouseCode": "B01OK",
+        "courtHouseCode": "B20EB00",
         "judiciary": [
           {
             "judicialRoleTypeSJP": "LEGAL_ADVISER",
             "judicialName": "John Smith"
+          },
+          {
+            "judicialRoleTypeSJP": "MAGISTRATE",
+            "judicialName": "John Smith ${MAGISTRATE_ID}"
           }
         ]
       }
@@ -124,7 +154,8 @@
             },
             "summonsRequired": "SJP_REFERRAL",
             "defendantOffences": [
-              "${OFFENCE_ID1}"
+              "${OFFENCE_ID1}",
+              "${OFFENCE_ID2}"
             ],
             "prosecutionCaseId": "${CASE_ID}"
           }
@@ -144,6 +175,7 @@
         ],
         "name": "Bank Statement",
         "documentTypeId": "${DOCUMENT_TYPE_ID}",
+        "containsFinancialMeans":false,
         "documentCategory": {
           "defendantDocument": {
             "defendants": [
@@ -152,9 +184,21 @@
             "prosecutionCaseId": "${CASE_ID}"
           }
         },
-        "mimeType": "pdf",
-        "containsFinancialMeans": false
+        "mimeType": "pdf"
       }
-    ]
+    ],
+    "nextHearing": {
+      "type": {
+        "description": "Trial",
+        "id": "bf8155e1-90b9-4080-b133-bfbad895d6e4"
+      },
+      "courtCentre": {
+        "id": "4b6185e1-92f2-3634-b749-87d2fcadf1c8",
+        "name": "Basingstoke Magistrates' Court",
+        "roomId": "${ROOM_ID}"
+      },
+      "estimatedMinutes": 20,
+      "listedStartDateTime": "${LISTED_START_DATE}"
+    }
   }
 }

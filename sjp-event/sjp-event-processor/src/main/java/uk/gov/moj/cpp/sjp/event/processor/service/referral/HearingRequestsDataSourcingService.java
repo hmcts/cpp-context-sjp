@@ -3,8 +3,8 @@ package uk.gov.moj.cpp.sjp.event.processor.service.referral;
 import uk.gov.justice.json.schemas.domains.sjp.queries.CaseDetails;
 import uk.gov.justice.json.schemas.domains.sjp.query.DefendantsOnlinePlea;
 import uk.gov.justice.services.messaging.JsonEnvelope;
+import uk.gov.moj.cpp.sjp.domain.DefendantCourtOptions;
 import uk.gov.moj.cpp.sjp.domain.decision.OffenceDecisionInformation;
-import uk.gov.moj.cpp.sjp.event.CaseReferredForCourtHearing;
 import uk.gov.moj.cpp.sjp.event.processor.model.referral.HearingRequestView;
 import uk.gov.moj.cpp.sjp.event.processor.service.ReferenceDataService;
 import uk.gov.moj.cpp.sjp.event.processor.service.referral.helpers.HearingRequestsViewHelper;
@@ -26,7 +26,12 @@ public class HearingRequestsDataSourcingService {
     private HearingRequestsViewHelper hearingRequestsViewHelper;
 
     public List<HearingRequestView> createHearingRequestViews(
-            final CaseReferredForCourtHearing caseReferredForCourtHearing,
+            final UUID caseId,
+            final UUID referralReasonId,
+            final List<OffenceDecisionInformation> referredOffences,
+            final DefendantCourtOptions defendantCourtOptions,
+            final Integer estimatedHearingDuration,
+            final String listingNotes,
             final CaseDetails caseDetails,
             final DefendantsOnlinePlea defendantPleaDetails,
             final JsonEnvelope emptyEnvelopeWithReferralEventMetadata) {
@@ -34,15 +39,18 @@ public class HearingRequestsDataSourcingService {
         final JsonObject hearingTypes = referenceDataService.getHearingTypes(
                 emptyEnvelopeWithReferralEventMetadata);
 
-        final Optional<JsonObject> referralReasonsJsonOptional = referenceDataService.getReferralReasonByReferralReasonId(caseReferredForCourtHearing.getReferralReasonId());
+        final Optional<JsonObject> referralReasonsJsonOptional = referenceDataService.getReferralReasonByReferralReasonId(referralReasonId);
         final JsonObject referralReasonsJson = referralReasonsJsonOptional.orElseThrow(IllegalArgumentException::new);
-        final List<UUID> referredOffenceIds = getReferredOffenceIds(
-                caseReferredForCourtHearing.getReferredOffences());
+        final List<UUID> referredOffenceIds = getReferredOffenceIds(referredOffences);
 
         return hearingRequestsViewHelper.createHearingRequestViews(
                 caseDetails,
                 defendantPleaDetails,
-                caseReferredForCourtHearing,
+                caseId,
+                referralReasonId,
+                defendantCourtOptions,
+                estimatedHearingDuration,
+                listingNotes,
                 hearingTypes,
                 referredOffenceIds,
                 referralReasonsJson);

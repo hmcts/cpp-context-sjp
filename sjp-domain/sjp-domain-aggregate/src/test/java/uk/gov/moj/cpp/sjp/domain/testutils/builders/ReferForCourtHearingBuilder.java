@@ -4,6 +4,7 @@ import static java.util.UUID.randomUUID;
 import static uk.gov.moj.cpp.sjp.domain.decision.OffenceDecisionInformation.createOffenceDecisionInformation;
 import static uk.gov.moj.cpp.sjp.domain.disability.DisabilityNeeds.NO_DISABILITY_NEEDS;
 
+import uk.gov.justice.core.courts.NextHearing;
 import uk.gov.moj.cpp.sjp.domain.DefendantCourtInterpreter;
 import uk.gov.moj.cpp.sjp.domain.DefendantCourtOptions;
 import uk.gov.moj.cpp.sjp.domain.decision.OffenceDecisionInformation;
@@ -28,6 +29,7 @@ public class ReferForCourtHearingBuilder {
     private String listingNotes;
     private Integer estimatedHearingDuration;
     private DefendantCourtOptions defendantCourtOptions;
+    private NextHearing nextHearing;
 
     public static ReferForCourtHearingBuilder withDefaults() {
         final ReferForCourtHearingBuilder builder = new ReferForCourtHearingBuilder();
@@ -54,7 +56,7 @@ public class ReferForCourtHearingBuilder {
                 listingNotes,
                 estimatedHearingDuration,
                 defendantCourtOptions,
-                pressRestriction
+                pressRestriction, nextHearing
         );
     }
 
@@ -65,6 +67,11 @@ public class ReferForCourtHearingBuilder {
 
     public ReferForCourtHearingBuilder addOffenceDecisionInformation(final UUID offenceId, final VerdictType verdict) {
         this.offenceDecisionInformation.add(createOffenceDecisionInformation(offenceId, verdict));
+        return this;
+    }
+
+    public ReferForCourtHearingBuilder withNextHearing(final NextHearing nextHearing) {
+        this.nextHearing = nextHearing;
         return this;
     }
 

@@ -5,7 +5,6 @@ import uk.gov.justice.json.schemas.domains.sjp.queries.Defendant;
 import uk.gov.justice.json.schemas.domains.sjp.query.DefendantsOnlinePlea;
 import uk.gov.justice.json.schemas.domains.sjp.query.PleaDetails;
 import uk.gov.moj.cpp.sjp.domain.DefendantCourtOptions;
-import uk.gov.moj.cpp.sjp.event.CaseReferredForCourtHearing;
 import uk.gov.moj.cpp.sjp.event.processor.model.referral.DefendantRequestView;
 import uk.gov.moj.cpp.sjp.event.processor.model.referral.HearingRequestView;
 import uk.gov.moj.cpp.sjp.event.processor.model.referral.HearingTypeView;
@@ -23,10 +22,16 @@ public class HearingRequestsViewHelper {
 
     public List<HearingRequestView> createHearingRequestViews(final CaseDetails caseDetails,
                                                               final DefendantsOnlinePlea defendantPleaDetails,
-            final CaseReferredForCourtHearing caseReferredForCourtHearingEvent,
-            final JsonObject hearingTypes,
-            final List<UUID> referredOffenceIds,
-            final JsonObject referralReason) {
+
+                                                              final UUID caseId,
+                                                              final UUID referralReasonId,
+                                                              final DefendantCourtOptions defendantCourtOptions,
+                                                              final Integer estimatedHearingDuration,
+                                                              final String listingNotes,
+
+                                                              final JsonObject hearingTypes,
+                                                              final List<UUID> referredOffenceIds,
+                                                              final JsonObject referralReason) {
 
         final Optional<PleaDetails> defendantPleaDetailsOptional = Optional.ofNullable(defendantPleaDetails).map(DefendantsOnlinePlea::getPleaDetails);
 
@@ -35,7 +40,9 @@ public class HearingRequestsViewHelper {
         final DefendantRequestView defendantRequestView = createDefendantRequestView(
                 caseDetails,
                 defendantUnavailability,
-                caseReferredForCourtHearingEvent,
+                caseId,
+                referralReasonId,
+                defendantCourtOptions,
                 referredOffenceIds,
                 referralReason);
 
@@ -44,14 +51,14 @@ public class HearingRequestsViewHelper {
                 .orElseThrow(() -> new IllegalStateException(
                         format("Hearing type Id not found for case %s and referral reason %s",
                                 caseDetails.getId(),
-                                caseReferredForCourtHearingEvent.getReferralReasonId()))
+                                referralReasonId))
                 );
 
         final HearingRequestView listHearingRequestView = new HearingRequestView(
                 "MAGISTRATES",
-                caseReferredForCourtHearingEvent.getEstimatedHearingDuration(),
+                estimatedHearingDuration,
                 caseDetails.getDatesToAvoid(),
-                caseReferredForCourtHearingEvent.getListingNotes(),
+                listingNotes,
                 new HearingTypeView(UUID.fromString(hearingTypeId)),
                 singletonList(defendantRequestView));
 
@@ -61,12 +68,13 @@ public class HearingRequestsViewHelper {
     private DefendantRequestView createDefendantRequestView(
             final CaseDetails caseDetails,
             final String defendantUnavailability,
-            final CaseReferredForCourtHearing referredForCourtHearing,
+            final UUID caseId,
+            final UUID referralReasonId,
+            final DefendantCourtOptions defendantCourtOptions,
             final List<UUID> referredOffenceIds,
             final JsonObject referralReason) {
 
         final Defendant defendant = caseDetails.getDefendant();
-        final UUID referralReasonId = referredForCourtHearing.getReferralReasonId();
 
         final ReferralReasonView referralReasonView = extractReferralReason(referralReason)
                 .map(referralDescription -> new ReferralReasonView(referralReasonId, referralDescription, defendant.getId()))
@@ -77,11 +85,11 @@ public class HearingRequestsViewHelper {
                                         referralReasonId)));
 
         return new DefendantRequestView(
-                referredForCourtHearing.getCaseId(),
+                caseId,
                 referralReasonView,
                 defendantUnavailability,
                 "SJP_REFERRAL",
-                determineHearingLanguage(referredForCourtHearing.getDefendantCourtOptions(), defendant.getSpeakWelsh()),
+                determineHearingLanguage(defendantCourtOptions, defendant.getSpeakWelsh()),
                 referredOffenceIds);
     }
 

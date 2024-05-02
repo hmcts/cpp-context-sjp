@@ -3,12 +3,12 @@ package uk.gov.moj.cpp.sjp.event.processor.service.referral;
 import uk.gov.justice.json.schemas.domains.sjp.queries.CaseDecision;
 import uk.gov.justice.json.schemas.domains.sjp.queries.CaseDetails;
 import uk.gov.justice.services.messaging.JsonEnvelope;
-import uk.gov.moj.cpp.sjp.event.CaseReferredForCourtHearing;
 import uk.gov.moj.cpp.sjp.event.processor.model.referral.SjpReferralView;
 import uk.gov.moj.cpp.sjp.event.processor.service.SjpService;
 import uk.gov.moj.cpp.sjp.event.processor.service.UsersGroupsService;
 import uk.gov.moj.cpp.sjp.event.processor.service.referral.helpers.SjpReferralViewHelper;
 
+import java.time.ZonedDateTime;
 import java.util.UUID;
 
 import javax.inject.Inject;
@@ -26,7 +26,7 @@ public class SjpReferralDataSourcingService {
     private SjpReferralViewHelper sjpReferralViewHelper;
 
     public SjpReferralView createSjpReferralView(
-            final CaseReferredForCourtHearing caseReferredForCourtHearing,
+            final ZonedDateTime referredAt,
             final CaseDetails caseDetails,
             final CaseDecision caseDecision,
             final JsonEnvelope emptyEnvelopeWithReferralEventMetadata) {
@@ -44,6 +44,6 @@ public class SjpReferralDataSourcingService {
                 caseDetails,
                 sessionDetails,
                 legalAdviserDetails,
-                caseReferredForCourtHearing.getReferredAt());
+                referredAt);
     }
 }

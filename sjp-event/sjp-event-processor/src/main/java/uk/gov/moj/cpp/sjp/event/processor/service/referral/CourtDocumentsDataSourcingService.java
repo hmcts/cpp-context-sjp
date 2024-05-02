@@ -9,7 +9,6 @@ import static org.apache.commons.lang3.StringUtils.upperCase;
 import uk.gov.justice.json.schemas.domains.sjp.queries.CaseDetails;
 import uk.gov.justice.json.schemas.domains.sjp.queries.Document;
 import uk.gov.justice.services.messaging.JsonEnvelope;
-import uk.gov.moj.cpp.sjp.event.CaseReferredForCourtHearing;
 import uk.gov.moj.cpp.sjp.event.processor.model.referral.ApplicationDocumentView;
 import uk.gov.moj.cpp.sjp.event.processor.model.referral.CourtDocumentView;
 import uk.gov.moj.cpp.sjp.event.processor.model.referral.DefendantDocumentView;
@@ -49,11 +48,11 @@ public class CourtDocumentsDataSourcingService {
     @Inject
     private ReferenceDataService referenceDataService;
 
-    public List<CourtDocumentView> createCourtDocumentViews(final CaseReferredForCourtHearing caseReferral,
+    public List<CourtDocumentView> createCourtDocumentViews(final ZonedDateTime referredAt,
                                                             final CaseDetails caseDetails,
                                                             final JsonEnvelope envelope) {
 
-        final LocalDate date = caseReferral.getReferredAt().toLocalDate();
+        final LocalDate date = referredAt.toLocalDate();
         final List<DocumentTypeAccess> referenceDataDocumentTypes = referenceDataService.getDocumentTypeAccess(date, envelope);
         final List<CourtDocumentView> results = new ArrayList<>();
         final List<Document> caseDocumentsToBeSent = getCaseDocumentsForReferral(caseDetails);

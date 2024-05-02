@@ -1,5 +1,6 @@
 package uk.gov.moj.cpp.sjp.event.processor.model.referral;
 
+import uk.gov.justice.core.courts.NextHearing;
 import uk.gov.moj.cpp.sjp.model.prosecution.ProsecutionCaseView;
 
 import java.util.List;
@@ -18,6 +19,20 @@ public class ReferCaseForCourtHearingCommand {
                 prosecutionCases,
                 listHearingRequests,
                 courtDocuments);
+    }
+
+    public ReferCaseForCourtHearingCommand(final SjpReferralView sjpReferral,
+                                           final List<ProsecutionCaseView> prosecutionCases,
+                                           final List<HearingRequestView> listHearingRequests,
+                                           final List<CourtDocumentView> courtDocuments,
+                                           final NextHearing nextHearing) {
+
+        this.courtReferral = new CourtReferralView(
+                sjpReferral,
+                prosecutionCases,
+                listHearingRequests,
+                courtDocuments,
+                nextHearing);
     }
 
     public CourtReferralView getCourtReferral() {

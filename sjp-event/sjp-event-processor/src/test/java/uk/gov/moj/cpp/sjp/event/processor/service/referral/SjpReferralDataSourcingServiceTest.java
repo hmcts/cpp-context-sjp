@@ -78,7 +78,7 @@ public class SjpReferralDataSourcingServiceTest {
         mockServiceCalls(emptyEnvelopeWithReferralEventMetadata, sessionDetails, legalAdviserDetails);
 
         sjpReferralDataSourcingService.createSjpReferralView(
-                caseReferredForCourtHearing,
+                caseReferredForCourtHearing.getReferredAt(),
                 caseDetails,
                 caseDetails.getCaseDecisions().get(0),
                 emptyEnvelopeWithReferralEventMetadata);

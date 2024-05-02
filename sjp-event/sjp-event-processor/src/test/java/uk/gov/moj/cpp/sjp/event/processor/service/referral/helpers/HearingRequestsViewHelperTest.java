@@ -77,7 +77,11 @@ public class HearingRequestsViewHelperTest {
         final List<HearingRequestView> hearingRequestViews = hearingRequestsViewHelper.createHearingRequestViews(
                 caseDetails,
                 defendantPlea,
-                caseReferredForCourtHearingEvent,
+                caseReferredForCourtHearingEvent.getCaseId(),
+                caseReferredForCourtHearingEvent.getReferralReasonId(),
+                caseReferredForCourtHearingEvent.getDefendantCourtOptions(),
+                caseReferredForCourtHearingEvent.getEstimatedHearingDuration(),
+                caseReferredForCourtHearingEvent.getListingNotes(),
                 hearingTypes,
                 singletonList(OFFENCE_ID),
                 referralReason

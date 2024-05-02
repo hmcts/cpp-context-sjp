@@ -1,6 +1,8 @@
 package uk.gov.moj.sjp.it.test;
 
+import static java.time.ZonedDateTime.now;
 import static java.util.Arrays.asList;
+import static java.util.UUID.fromString;
 import static java.util.UUID.randomUUID;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static uk.gov.moj.cpp.sjp.domain.SessionType.MAGISTRATE;
@@ -15,6 +17,7 @@ import static uk.gov.moj.sjp.it.helper.DecisionHelper.verifyCaseNotReadyInViewSt
 import static uk.gov.moj.sjp.it.helper.DecisionHelper.verifyCaseQueryWithDisabilityNeeds;
 import static uk.gov.moj.sjp.it.helper.DecisionHelper.verifyCaseQueryWithReferForCourtHearingDecision;
 import static uk.gov.moj.sjp.it.helper.DecisionHelper.verifyCaseReferredForCourtHearing;
+import static uk.gov.moj.sjp.it.helper.DecisionHelper.verifyCaseReferredForCourtHearingV2;
 import static uk.gov.moj.sjp.it.helper.DecisionHelper.verifyCaseUnassigned;
 import static uk.gov.moj.sjp.it.helper.DecisionHelper.verifyDecisionSaved;
 import static uk.gov.moj.sjp.it.helper.DecisionHelper.verifyHearingLanguagePreferenceUpdated;
@@ -41,6 +44,9 @@ import static uk.gov.moj.sjp.it.util.Defaults.DEFAULT_LONDON_COURT_HOUSE_OU_CODE
 import static uk.gov.moj.sjp.it.util.FileUtil.getFileContentAsJson;
 import static org.hamcrest.Matchers.notNullValue;
 
+import uk.gov.justice.core.courts.CourtCentre;
+import uk.gov.justice.core.courts.HearingType;
+import uk.gov.justice.core.courts.NextHearing;
 import uk.gov.justice.json.schemas.domains.sjp.User;
 import uk.gov.justice.json.schemas.domains.sjp.events.CaseNoteAdded;
 import uk.gov.justice.services.common.converter.ZonedDateTimes;
@@ -54,6 +60,7 @@ import uk.gov.moj.cpp.sjp.domain.decision.ReferForCourtHearing;
 import uk.gov.moj.cpp.sjp.domain.disability.DisabilityNeeds;
 import uk.gov.moj.cpp.sjp.event.CaseCompleted;
 import uk.gov.moj.cpp.sjp.event.CaseReferredForCourtHearing;
+import uk.gov.moj.cpp.sjp.event.CaseReferredForCourtHearingV2;
 import uk.gov.moj.cpp.sjp.event.CaseUnmarkedReadyForDecision;
 import uk.gov.moj.cpp.sjp.event.HearingLanguagePreferenceUpdatedForDefendant;
 import uk.gov.moj.cpp.sjp.event.InterpreterUpdatedForDefendant;
@@ -138,7 +145,7 @@ public class CaseListedInCriminalCourtsIT extends BaseIntegrationTest {
         final ReferForCourtHearing referForCourtHearing = new ReferForCourtHearing(
                 null,
                 offenceDecisionInformationList,
-                referralReasonId, "listing notes", 30, defendantCourtOptions);
+                referralReasonId, "listing notes", 30, defendantCourtOptions, getNextHearing());
 
         final DecisionCommand decision = new DecisionCommand(sessionId, caseId, null, user, asList(referForCourtHearing), null);
 
@@ -159,7 +166,7 @@ public class CaseListedInCriminalCourtsIT extends BaseIntegrationTest {
                 .subscribe(DecisionSaved.EVENT_NAME)
                 .subscribe(CaseUnassigned.EVENT_NAME)
                 .subscribe(CaseUnmarkedReadyForDecision.EVENT_NAME)
-                .subscribe(CaseReferredForCourtHearing.EVENT_NAME)
+                .subscribe(CaseReferredForCourtHearingV2.EVENT_NAME)
                 .subscribe(InterpreterUpdatedForDefendant.EVENT_NAME)
                 .subscribe(HearingLanguagePreferenceUpdatedForDefendant.EVENT_NAME)
                 .subscribe(CaseCompleted.EVENT_NAME)
@@ -169,7 +176,7 @@ public class CaseListedInCriminalCourtsIT extends BaseIntegrationTest {
         final DecisionSaved decisionSaved = eventListener.popEventPayload(DecisionSaved.class);
         final CaseNoteAdded caseNoteAdded = eventListener.popEventPayload(CaseNoteAdded.class);
         final CaseUnassigned caseUnassigned = eventListener.popEventPayload(CaseUnassigned.class);
-        final CaseReferredForCourtHearing caseReferredForCourtHearing = eventListener.popEventPayload(CaseReferredForCourtHearing.class);
+        final CaseReferredForCourtHearingV2 caseReferredForCourtHearing = eventListener.popEventPayload(CaseReferredForCourtHearingV2.class);
         final InterpreterUpdatedForDefendant interpreterUpdatedForDefendant = eventListener.popEventPayload(InterpreterUpdatedForDefendant.class);
         final HearingLanguagePreferenceUpdatedForDefendant hearingLanguagePreferenceUpdatedForDefendant = eventListener.popEventPayload(HearingLanguagePreferenceUpdatedForDefendant.class);
         final CaseCompleted caseCompleted = eventListener.popEventPayload(CaseCompleted.class);
@@ -177,7 +184,7 @@ public class CaseListedInCriminalCourtsIT extends BaseIntegrationTest {
 
         verifyDecisionSaved(decision, decisionSaved);
         verifyListingNotesAdded(decision, decisionSaved, referForCourtHearing, caseNoteAdded);
-        verifyCaseReferredForCourtHearing(decisionSaved, referForCourtHearing, caseReferredForCourtHearing, offenceDecisionInformationList, "Critical (Defendant has to attend)");
+        verifyCaseReferredForCourtHearingV2(decisionSaved, referForCourtHearing, caseReferredForCourtHearing, offenceDecisionInformationList, "Critical (Defendant has to attend)");
         verifyInterpreterUpdated(decisionSaved, referForCourtHearing, interpreterUpdatedForDefendant);
         verifyHearingLanguagePreferenceUpdated(decisionSaved, referForCourtHearing, hearingLanguagePreferenceUpdatedForDefendant);
         verifyCaseUnassigned(caseId, caseUnassigned);
@@ -215,6 +222,17 @@ public class CaseListedInCriminalCourtsIT extends BaseIntegrationTest {
         jsonEnvelope = eventListener.popEvent(PUBLIC_EVENTS_HEARING_HEARING_RESULTED);
         assertThat(jsonEnvelope.isPresent(), Matchers.is(true));
         assertThat(jsonEnvelope.get().payloadAsJsonObject().getJsonObject("hearing").getJsonArray("prosecutionCases").getJsonObject(0).getJsonArray("defendants").getJsonObject(0).getJsonArray("offences").getJsonObject(0).getJsonArray("judicialResults").getJsonObject(0).getJsonObject("nextHearing"), notNullValue());
+    }
+
+    private NextHearing getNextHearing() {
+        return NextHearing.nextHearing()
+                .withType(HearingType.hearingType().withId(fromString("bf8155e1-90b9-4080-b133-bfbad895d6e4")).withDescription("Trial").build())
+                .withEstimatedMinutes(20)
+                .withListedStartDateTime(now().plusHours(2))
+                .withCourtCentre(CourtCentre.courtCentre()
+                        .withId(fromString("4b6185e1-92f2-3634-b749-87d2fcadf1c8"))
+                        .withName("Basingstoke Magistrates' Court").withRoomId(randomUUID()).build())
+                .build();
     }
 
     private void raisePublicReferredToCourtEvent(final JsonObject payload) {

@@ -93,7 +93,7 @@ public class CourtDocumentsDataSourcingServiceTest {
                         .build()
         )).build();
 
-        final List<CourtDocumentView> courtDocuments = courtDocumentsDataSourcingService.createCourtDocumentViews(caseReferral, caseDetails, envelope);
+        final List<CourtDocumentView> courtDocuments = courtDocumentsDataSourcingService.createCourtDocumentViews(caseReferral.getReferredAt(), caseDetails, envelope);
 
         assertThat(courtDocuments, hasSize(1));
         final CourtDocumentView actual = courtDocuments.get(0);
@@ -126,7 +126,7 @@ public class CourtDocumentsDataSourcingServiceTest {
                 .withCaseApplication(CaseApplication.caseApplication().withApplicationId(APPLICATION_ID).build())
                 .build();
 
-        final List<CourtDocumentView> courtDocuments = courtDocumentsDataSourcingService.createCourtDocumentViews(caseReferral, caseDetails, envelope);
+        final List<CourtDocumentView> courtDocuments = courtDocumentsDataSourcingService.createCourtDocumentViews(caseReferral.getReferredAt(), caseDetails, envelope);
 
         assertThat(courtDocuments, hasSize(1));
         final CourtDocumentView actual = courtDocuments.get(0);
@@ -163,7 +163,7 @@ public class CourtDocumentsDataSourcingServiceTest {
 
         final CaseDetails caseDetails = caseDetails().withCaseDocuments(caseDocuments).build();
 
-        final List<CourtDocumentView> courtDocuments = courtDocumentsDataSourcingService.createCourtDocumentViews(caseReferral, caseDetails, envelope);
+        final List<CourtDocumentView> courtDocuments = courtDocumentsDataSourcingService.createCourtDocumentViews(caseReferral.getReferredAt(), caseDetails, envelope);
 
         assertThat(courtDocuments, hasSize(0));
 
@@ -190,7 +190,7 @@ public class CourtDocumentsDataSourcingServiceTest {
 
         final CaseDetails caseDetails = caseDetails().withCaseDocuments(caseDocuments).build();
 
-        final List<CourtDocumentView> courtDocuments = courtDocumentsDataSourcingService.createCourtDocumentViews(caseReferral, caseDetails, envelope);
+        final List<CourtDocumentView> courtDocuments = courtDocumentsDataSourcingService.createCourtDocumentViews(caseReferral.getReferredAt(), caseDetails, envelope);
 
         assertThat(courtDocuments, hasSize(0));
 

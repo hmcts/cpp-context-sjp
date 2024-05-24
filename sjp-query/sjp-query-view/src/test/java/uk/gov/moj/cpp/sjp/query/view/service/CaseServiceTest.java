@@ -514,32 +514,32 @@ public class CaseServiceTest {
         final UUID caseId4 = randomUUID();
         final UUID caseId5 = randomUUID();
         final UUID caseId6 = randomUUID();
-        final PendingCaseToPublishPerOffence pendingCaseToPublishWith5LinesOfAddressOffence1 = new PendingCaseToPublishPerOffence("John", "Doe", null, LocalDate.of(1980, 6, 20),
+        final PendingCaseToPublishPerOffence pendingCaseToPublishWith5LinesOfAddressOffence1 = new PendingCaseToPublishPerOffence("Mr","John", "Doe", null, LocalDate.of(1980, 6, 20),
                 caseId1, "TVL1", "address line 1", "address line 2", "Lant Street", "London", "Greater London",
-                "SE1 1PJ", "CA03014", LocalDate.of(2018, 12, 15), "offence wording", false, null, false, "TVL");
+                "SE1 1PJ", "CA03014", LocalDate.of(2018, 12, 15), "offence wording", false, null, false, "TVL","offence welsh wording");
 
-        final PendingCaseToPublishPerOffence pendingCaseToPublishWith5LinesOfAddressOffence2 = new PendingCaseToPublishPerOffence("John", "Doe", null, LocalDate.of(1980, 6, 20),
+        final PendingCaseToPublishPerOffence pendingCaseToPublishWith5LinesOfAddressOffence2 = new PendingCaseToPublishPerOffence("Mr","John", "Doe", null, LocalDate.of(1980, 6, 20),
                 caseId1, "TVL1", "address line 1", "address line 2", "Lant Street", "London", "Greater London",
-                "SE1 1PJ", "CA03014", LocalDate.of(2018, 11, 11), "offence wording", false, null, false, "TVL");
+                "SE1 1PJ", "CA03014", LocalDate.of(2018, 11, 11), "offence wording", false, null, false, "TVL","offence welsh wording");
 
-        final PendingCaseToPublishPerOffence pendingCaseToPublishWith4LinesOfAddressAndWithoutFirstName = new PendingCaseToPublishPerOffence("", "Doe", null, null,
+        final PendingCaseToPublishPerOffence pendingCaseToPublishWith4LinesOfAddressAndWithoutFirstName = new PendingCaseToPublishPerOffence("Mr","", "Doe", null, null,
                 caseId2, "TVL2", "address line 1", "address line 2", "London", "Greater London", "",
-                "S", "CA03014", LocalDate.of(2018, 8, 2), "offence wording", true, "Person 1", false, "TVL");
+                "S", "CA03014", LocalDate.of(2018, 8, 2), "offence wording", true, "Person 1", false, "TVL","offence welsh wording");
 
-        final PendingCaseToPublishPerOffence pendingCaseToPublishWithoutAddress3and4and5 = new PendingCaseToPublishPerOffence("Emma", "White", null, LocalDate.of(1980, 6, 20),
+        final PendingCaseToPublishPerOffence pendingCaseToPublishWithoutAddress3and4and5 = new PendingCaseToPublishPerOffence("Ms","Emma", "White", null, LocalDate.of(1980, 6, 20),
                 caseId3, "TVL3", "address line 1", "address line 2", null, null, null,
-                "CR0 2GE", "CA03011", LocalDate.of(2018, 8, 2), "offence wording", false, null, false, "TVL");
+                "CR0 2GE", "CA03011", LocalDate.of(2018, 8, 2), "offence wording", false, null, false, "TVL","offence welsh wording");
 
-        final PendingCaseToPublishPerOffence pendingCaseToPublishWithSingleLetterFirstName = new PendingCaseToPublishPerOffence("X", "Doe", null, null,
+        final PendingCaseToPublishPerOffence pendingCaseToPublishWithSingleLetterFirstName = new PendingCaseToPublishPerOffence("Mr","X", "Doe", null, null,
                 caseId4, "TVL2", "address line 1", "address line 2", "London", "Greater London", "",
-                "S", "CA03014", LocalDate.of(2018, 8, 2), "offence wording", false, null, false, "TVL");
+                "S", "CA03014", LocalDate.of(2018, 8, 2), "offence wording", false, null, false, "TVL","offence welsh wording");
 
-        final PendingCaseToPublishPerOffence pendingCaseToPublishWithSingleLetterFirstNameNoLastNameAndNullPostcode = new PendingCaseToPublishPerOffence("X", null, null, null,
+        final PendingCaseToPublishPerOffence pendingCaseToPublishWithSingleLetterFirstNameNoLastNameAndNullPostcode = new PendingCaseToPublishPerOffence("Mr","X", null, null, null,
                 caseId5, "TVL2", "address line 1", "address line 2", "London", "Greater London", "",
-                null, "CA03014", LocalDate.of(2018, 8, 2), "offence wording", false, null, false, "TVL");
-        final PendingCaseToPublishPerOffence pendingCaseToPublishWithLegalEntityNameNoFirstNameNoLastNameAndNullPostcode = new PendingCaseToPublishPerOffence(null, null, "Ministry Of Justice", null,
+                null, "CA03014", LocalDate.of(2018, 8, 2), "offence wording", false, null, false, "TVL","offence welsh wording");
+        final PendingCaseToPublishPerOffence pendingCaseToPublishWithLegalEntityNameNoFirstNameNoLastNameAndNullPostcode = new PendingCaseToPublishPerOffence(null,null, null, "Ministry Of Justice", null,
                 caseId6, "TVL2", "address line 1", "address line 2", "London", "Greater London", "",
-                null, "CA03014", LocalDate.of(2018, 8, 2), "offence wording", false, null, false, "TVL");
+                null, "CA03014", LocalDate.of(2018, 8, 2), "offence wording", false, null, false, "TVL","offence welsh wording");
 
         when(caseRepository.findPublicTransparencyReportPendingCases()).thenReturn(newArrayList(
                 pendingCaseToPublishWith5LinesOfAddressOffence1,
@@ -633,6 +633,17 @@ public class CaseServiceTest {
     }
 
     @Test
+    public void shouldFindPressTransparencyDeltaReportPendingCases() {
+
+        LocalDate fromDate = LocalDate.now();
+        LocalDate toDate = LocalDate.now().minusDays(1);
+        service.findPendingDeltaCasesToPublish(fromDate, toDate);
+
+
+        verify(caseRepository).findPressTransparencyDeltaReportPendingCases(any(), any());
+    }
+
+    @Test
     public void shouldFindResultOrders() {
         //given
         final LocalDate FROM_DATE = LocalDates.from("2017-01-01");
@@ -675,7 +686,7 @@ public class CaseServiceTest {
         final LocalDate TO_DATE = LocalDates.from("2017-01-10");
 
         final CaseDetail caseDetail = new CaseDetail(UUID.randomUUID(), "TFL1234", "2K2SLYFC743H", null, null, null,
-                null, new DefendantDetail(), null, null , null);
+                null, new DefendantDetail(), null, null, null);
         final CaseDocument caseDocument = new CaseDocument(UUID.randomUUID(),
                 UUID.randomUUID(), CaseDocument.RESULT_ORDER_DOCUMENT_TYPE,
                 clock.now(), caseDetail.getId(), null);
@@ -763,7 +774,7 @@ public class CaseServiceTest {
     @Test
     public void shouldFindNotGuiltyPleaCases() {
         final ZonedDateTime pleaDate = ZonedDateTime.parse("2018-03-20T18:14:29.894Z");
-        final CaseNotGuiltyPlea caseNotGuiltyPlea = new CaseNotGuiltyPlea(CASE_ID, URN, pleaDate, "Hakan", "Kurtulus", null,"TVL", IN_PROGRESS);
+        final CaseNotGuiltyPlea caseNotGuiltyPlea = new CaseNotGuiltyPlea(CASE_ID, URN, pleaDate, "Hakan", "Kurtulus", null, "TVL", IN_PROGRESS);
 
         final List<CaseNotGuiltyPlea> caseList = singletonList(caseNotGuiltyPlea);
         final JsonArray prosecutors = createArrayBuilder()
@@ -782,14 +793,14 @@ public class CaseServiceTest {
         assertThat(result.getInt("results"), is(1));
         assertThat(result.getInt("pageCount"), is(1));
         assertThat(result.getJsonArray("cases").size(), is(1));
-        assertThat(result.getJsonArray("cases").getJsonObject(0).getString("firstName"),is("Hakan"));
-        assertThat(result.getJsonArray("cases").getJsonObject(0).getString("lastName"),is("Kurtulus"));
+        assertThat(result.getJsonArray("cases").getJsonObject(0).getString("firstName"), is("Hakan"));
+        assertThat(result.getJsonArray("cases").getJsonObject(0).getString("lastName"), is("Kurtulus"));
     }
 
     @Test
     public void shouldFindNotGuiltyPleaCasesWhenDefendantIsCompany() {
         final ZonedDateTime pleaDate = ZonedDateTime.parse("2018-03-20T18:14:29.894Z");
-        final CaseNotGuiltyPlea caseNotGuiltyPlea = new CaseNotGuiltyPlea(CASE_ID, URN, pleaDate, null, null, "Samba LTD","TVL", IN_PROGRESS);
+        final CaseNotGuiltyPlea caseNotGuiltyPlea = new CaseNotGuiltyPlea(CASE_ID, URN, pleaDate, null, null, "Samba LTD", "TVL", IN_PROGRESS);
 
         final List<CaseNotGuiltyPlea> caseList = singletonList(caseNotGuiltyPlea);
         final JsonArray prosecutors = createArrayBuilder()
@@ -808,13 +819,13 @@ public class CaseServiceTest {
         assertThat(result.getInt("results"), is(1));
         assertThat(result.getInt("pageCount"), is(1));
         assertThat(result.getJsonArray("cases").size(), is(1));
-        assertThat(result.getJsonArray("cases").getJsonObject(0).getString("legalEntityName"),is("Samba LTD"));
+        assertThat(result.getJsonArray("cases").getJsonObject(0).getString("legalEntityName"), is("Samba LTD"));
     }
 
     @Test
     public void shouldFindCasesWithoutDefendantPostcode() {
         final LocalDate postingDate = LocalDate.parse("2018-03-20");
-        final CaseWithoutDefendantPostcode withoutDefendantPostcode = new CaseWithoutDefendantPostcode(CASE_ID, URN, postingDate, "Hakan", "Kurtulus", "TVL",null);
+        final CaseWithoutDefendantPostcode withoutDefendantPostcode = new CaseWithoutDefendantPostcode(CASE_ID, URN, postingDate, "Hakan", "Kurtulus", "TVL", null);
 
         final List<CaseWithoutDefendantPostcode> caseList = singletonList(withoutDefendantPostcode);
         final JsonArray prosecutors = createArrayBuilder()
@@ -1046,4 +1057,5 @@ public class CaseServiceTest {
             fail(format("%s does not contain offence with code %s and start date %s", offences.toString(), code, startDate));
         }
     }
+
 }

@@ -58,8 +58,8 @@ public class SjpReadyCasesQueryViewTest {
                 .with(metadataWithRandomUUID("sjp.query.ready-cases"))
                 .build();
 
-        final ReadyCase readyCase1 = new ReadyCase(randomUUID(), PIA, null, MAGISTRATE, 3, "TFL", now().minusDays(30));
-        final ReadyCase readyCase2 = new ReadyCase(randomUUID(), PLEADED_GUILTY, randomUUID(), MAGISTRATE, 2, "TFL", now().minusDays(15));
+        final ReadyCase readyCase1 = new ReadyCase(randomUUID(), PIA, null, MAGISTRATE, 3, "TFL", now().minusDays(30), now());
+        final ReadyCase readyCase2 = new ReadyCase(randomUUID(), PLEADED_GUILTY, randomUUID(), MAGISTRATE, 2, "TFL", now().minusDays(15), now());
 
         when(readyCaseRepository.findAll()).thenReturn(asList(readyCase1, readyCase2));
 
@@ -89,8 +89,8 @@ public class SjpReadyCasesQueryViewTest {
                 .with(metadataWithRandomUUID("sjp.query.ready-cases")).withPayloadOf(assigneeId, "assigneeId")
                 .build();
 
-        final ReadyCase readyCase1 = new ReadyCase(randomUUID(), PIA, assigneeId, MAGISTRATE, 3, "TFL", now().minusDays(30));
-        final ReadyCase readyCase2 = new ReadyCase(randomUUID(), PLEADED_GUILTY, assigneeId, MAGISTRATE, 2, "TFL", now().minusDays(15));
+        final ReadyCase readyCase1 = new ReadyCase(randomUUID(), PIA, assigneeId, MAGISTRATE, 3, "TFL", now().minusDays(30), now());
+        final ReadyCase readyCase2 = new ReadyCase(randomUUID(), PLEADED_GUILTY, assigneeId, MAGISTRATE, 2, "TFL", now().minusDays(15), now());
 
         when(readyCaseRepository.findByAssigneeId(assigneeId)).thenReturn(asList(readyCase1, readyCase2));
 

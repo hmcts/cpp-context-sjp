@@ -224,7 +224,7 @@ public class DefendantRepositoryTest extends BaseTransactionalTest {
 
         final DefendantDetail defendant = caseRepository.save(caseDetail).getDefendant();
 
-        final ReadyCase readyCase = new ReadyCase(caseDetail.getId(), CaseReadinessReason.DEFAULT_STATUS, UUID.randomUUID(), SessionType.MAGISTRATE, 3, "TFL", LocalDate.now());
+        final ReadyCase readyCase = new ReadyCase(caseDetail.getId(), CaseReadinessReason.DEFAULT_STATUS, UUID.randomUUID(), SessionType.MAGISTRATE, 3, "TFL", LocalDate.now(), LocalDate.now());
 
         readyCaseRepository.save(readyCase);
 

@@ -10,6 +10,7 @@ import static javax.ws.rs.core.Response.Status.ACCEPTED;
 import static javax.ws.rs.core.Response.Status.FORBIDDEN;
 import static javax.ws.rs.core.Response.Status.OK;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
@@ -49,26 +50,11 @@ import static uk.gov.moj.sjp.it.stub.SchedulingStub.stubEndSjpSessionCommand;
 import static uk.gov.moj.sjp.it.stub.SchedulingStub.stubStartSjpSessionCommand;
 import static uk.gov.moj.sjp.it.stub.UsersGroupsStub.stubForUserDetails;
 import static uk.gov.moj.sjp.it.stub.UsersGroupsStub.stubGroupForUser;
-import static org.hamcrest.Matchers.allOf;
 import static uk.gov.moj.sjp.it.util.DefaultRequests.getCaseByIdWithDocumentMetadata;
 import static uk.gov.moj.sjp.it.util.Defaults.DEFAULT_LONDON_COURT_HOUSE_OU_CODE;
 import static uk.gov.moj.sjp.it.util.RestPollerWithDefaults.pollWithDefaults;
 import static uk.gov.moj.sjp.it.util.UrnProvider.generate;
 
-
-import com.google.common.collect.Sets;
-import java.sql.SQLException;
-import java.time.LocalDate;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
-import javax.json.JsonObject;
-import javax.ws.rs.core.Response;
-import org.hamcrest.CoreMatchers;
-import org.hamcrest.Matchers;
-import org.junit.Before;
-import org.junit.Test;
-import org.mortbay.log.Log;
 import uk.gov.justice.json.schemas.domains.sjp.User;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.test.utils.core.matchers.ResponsePayloadMatcher;
@@ -93,6 +79,22 @@ import uk.gov.moj.sjp.it.util.HttpClientUtil;
 import uk.gov.moj.sjp.it.util.SjpDatabaseCleaner;
 import uk.gov.moj.sjp.it.util.builders.FinancialImpositionBuilder;
 import uk.gov.moj.sjp.it.util.builders.FinancialPenaltyBuilder;
+
+import java.sql.SQLException;
+import java.time.LocalDate;
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
+
+import javax.json.JsonObject;
+import javax.ws.rs.core.Response;
+
+import com.google.common.collect.Sets;
+import org.hamcrest.CoreMatchers;
+import org.hamcrest.Matchers;
+import org.junit.Before;
+import org.junit.Test;
+import org.mortbay.log.Log;
 
 public class ReserveCaseIT extends BaseIntegrationTest {
 
@@ -160,11 +162,11 @@ public class ReserveCaseIT extends BaseIntegrationTest {
     }
 
     @Test
-    public void shouldReserveCaseThenUnReserveCaseWithLegalAdviser() throws Exception{
-        try(ReserveCaseHelper  reserveCaseHelper = new ReserveCaseHelper()){
+    public void shouldReserveCaseThenUnReserveCaseWithLegalAdviser() throws Exception {
+        try (ReserveCaseHelper reserveCaseHelper = new ReserveCaseHelper()) {
             reserveCaseToUser(caseId, legalAdviserId, ACCEPTED);
 
-            final JsonEnvelope eventCaseReservedPrivateEvent =  reserveCaseHelper.getEventFromTopic();
+            final JsonEnvelope eventCaseReservedPrivateEvent = reserveCaseHelper.getEventFromTopic();
 
             assertThat(eventCaseReservedPrivateEvent, jsonEnvelope(
                     metadata().withName(EVENT_CASE_RESERVED),
@@ -175,7 +177,7 @@ public class ReserveCaseIT extends BaseIntegrationTest {
                             withJsonPath("$.reservedAt", notNullValue())
                     )))));
 
-            final JsonEnvelope eventCaseReservedPublicEvent =  reserveCaseHelper.getPublicEventFromTopic();
+            final JsonEnvelope eventCaseReservedPublicEvent = reserveCaseHelper.getPublicEventFromTopic();
 
             assertThat(eventCaseReservedPublicEvent, jsonEnvelope(
                     metadata().withName(PUBLIC_CASE_RESERVED),
@@ -188,7 +190,7 @@ public class ReserveCaseIT extends BaseIntegrationTest {
 
             reserveCaseToUser(caseId, legalAdviserId, ACCEPTED);
 
-            final JsonEnvelope eventCaseAlreadyReservedPrivateEvent =  reserveCaseHelper.getEventFromTopic();
+            final JsonEnvelope eventCaseAlreadyReservedPrivateEvent = reserveCaseHelper.getEventFromTopic();
 
             assertThat(eventCaseAlreadyReservedPrivateEvent, jsonEnvelope(
                     metadata().withName(EVENT_CASE_ALREADY_RESERVED),
@@ -196,7 +198,7 @@ public class ReserveCaseIT extends BaseIntegrationTest {
                             withJsonPath("$.caseId", equalTo(caseId.toString()))
                     )))));
 
-            final JsonEnvelope eventCaseAlreadyReservedPublicEvent =  reserveCaseHelper.getPublicEventFromTopic();
+            final JsonEnvelope eventCaseAlreadyReservedPublicEvent = reserveCaseHelper.getPublicEventFromTopic();
 
             assertThat(eventCaseAlreadyReservedPublicEvent, jsonEnvelope(
                     metadata().withName(PUBLIC_CASE_ALREADY_RESERVED),
@@ -219,7 +221,7 @@ public class ReserveCaseIT extends BaseIntegrationTest {
 
             unReserveCaseToUser(caseId, legalAdviserId, ACCEPTED);
 
-            final JsonEnvelope eventCaseUnReservedPrivateEvent =  reserveCaseHelper.getEventFromTopic();
+            final JsonEnvelope eventCaseUnReservedPrivateEvent = reserveCaseHelper.getEventFromTopic();
 
             assertThat(eventCaseUnReservedPrivateEvent, jsonEnvelope(
                     metadata().withName(EVENT_CASE_UNRESERVED),
@@ -229,7 +231,7 @@ public class ReserveCaseIT extends BaseIntegrationTest {
                             withJsonPath("$.reservedBy", equalTo(legalAdviserId.toString()))
                     )))));
 
-            final JsonEnvelope eventCaseUnReservedPublicEvent =  reserveCaseHelper.getPublicEventFromTopic();
+            final JsonEnvelope eventCaseUnReservedPublicEvent = reserveCaseHelper.getPublicEventFromTopic();
 
             assertThat(eventCaseUnReservedPublicEvent, jsonEnvelope(
                     metadata().withName(PUBLIC_CASE_UNRESERVED),
@@ -251,7 +253,7 @@ public class ReserveCaseIT extends BaseIntegrationTest {
 
             unReserveCaseToUser(caseId, legalAdviserId, ACCEPTED);
 
-            final JsonEnvelope eventCaseAlreadyUnReservedPrivateEvent =  reserveCaseHelper.getEventFromTopic();
+            final JsonEnvelope eventCaseAlreadyUnReservedPrivateEvent = reserveCaseHelper.getEventFromTopic();
 
             assertThat(eventCaseAlreadyUnReservedPrivateEvent, jsonEnvelope(
                     metadata().withName(EVENT_CASE_ALREADY_UNRESERVED),
@@ -259,7 +261,7 @@ public class ReserveCaseIT extends BaseIntegrationTest {
                             withJsonPath("$.caseId", equalTo(caseId.toString()))
                     )))));
 
-            final JsonEnvelope eventCaseAlreadyUnReservedPublicEvent =  reserveCaseHelper.getPublicEventFromTopic();
+            final JsonEnvelope eventCaseAlreadyUnReservedPublicEvent = reserveCaseHelper.getPublicEventFromTopic();
 
             assertThat(eventCaseAlreadyUnReservedPublicEvent, jsonEnvelope(
                     metadata().withName(PUBLIC_CASE_ALREADY_UNRESERVED),
@@ -270,11 +272,11 @@ public class ReserveCaseIT extends BaseIntegrationTest {
     }
 
     @Test
-    public void shouldUndoReserveCaseWhenTimeOut() throws Exception{
-        try(ReserveCaseHelper  reserveCaseHelper = new ReserveCaseHelper()) {
+    public void shouldUndoReserveCaseWhenTimeOut() throws Exception {
+        try (ReserveCaseHelper reserveCaseHelper = new ReserveCaseHelper()) {
             reserveCaseToUser(caseId, legalAdviserId, ACCEPTED);
 
-            final JsonEnvelope eventCaseReservedPrivateEvent =  reserveCaseHelper.getEventFromTopic();
+            final JsonEnvelope eventCaseReservedPrivateEvent = reserveCaseHelper.getEventFromTopic();
 
             assertThat(eventCaseReservedPrivateEvent, jsonEnvelope(
                     metadata().withName(EVENT_CASE_RESERVED),
@@ -285,7 +287,7 @@ public class ReserveCaseIT extends BaseIntegrationTest {
                             withJsonPath("$.reservedAt", notNullValue())
                     )))));
 
-            final JsonEnvelope eventCaseReservedPublicEvent =  reserveCaseHelper.getPublicEventFromTopic();
+            final JsonEnvelope eventCaseReservedPublicEvent = reserveCaseHelper.getPublicEventFromTopic();
 
             assertThat(eventCaseReservedPublicEvent, jsonEnvelope(
                     metadata().withName(PUBLIC_CASE_RESERVED),
@@ -312,7 +314,7 @@ public class ReserveCaseIT extends BaseIntegrationTest {
             final String pendingProscess = ActivitiHelper.pollUntilProcessExists("timerTimeout", caseId.toString());
             ActivitiHelper.executeTimerJobs(pendingProscess);
 
-            final JsonEnvelope eventCaseUnReservedPrivateEvent =  reserveCaseHelper.getEventFromTopic();
+            final JsonEnvelope eventCaseUnReservedPrivateEvent = reserveCaseHelper.getEventFromTopic();
 
             assertThat(eventCaseUnReservedPrivateEvent, jsonEnvelope(
                     metadata().withName(EVENT_CASE_UNRESERVED),
@@ -322,7 +324,7 @@ public class ReserveCaseIT extends BaseIntegrationTest {
                             withJsonPath("$.reservedBy", equalTo("1ac91935-4f82-4a4f-bd17-fb50397e42dd"))
                     )))));
 
-            final JsonEnvelope eventCaseUnReservedPublicEvent =  reserveCaseHelper.getPublicEventFromTopic();
+            final JsonEnvelope eventCaseUnReservedPublicEvent = reserveCaseHelper.getPublicEventFromTopic();
 
             assertThat(eventCaseUnReservedPublicEvent, jsonEnvelope(
                     metadata().withName(PUBLIC_CASE_UNRESERVED),
@@ -348,9 +350,9 @@ public class ReserveCaseIT extends BaseIntegrationTest {
     }
 
     @Test
-    public void shouldUndoReserveCaseWhenDecided() throws Exception{
+    public void shouldUndoReserveCaseWhenDecided() throws Exception {
 
-        try(ReserveCaseHelper  reserveCaseHelper = new ReserveCaseHelper()) {
+        try (ReserveCaseHelper reserveCaseHelper = new ReserveCaseHelper()) {
             reserveCaseToUser(caseId, legalAdviserId, ACCEPTED);
 
             final JsonEnvelope eventCaseReservedPrivateEvent = reserveCaseHelper.getEventFromTopic();
@@ -399,7 +401,7 @@ public class ReserveCaseIT extends BaseIntegrationTest {
             final Optional<JsonEnvelope> jsonEnvelopePublicHearingResulted = eventListener.popEvent(PUBLIC_EVENTS_HEARING_HEARING_RESULTED);
             assertThat(jsonEnvelopePublicHearingResulted.isPresent(), is(true));
 
-            final JsonEnvelope eventCaseUnReservedPrivateEvent =  reserveCaseHelper.getEventFromTopic();
+            final JsonEnvelope eventCaseUnReservedPrivateEvent = reserveCaseHelper.getEventFromTopic();
 
             assertThat(eventCaseUnReservedPrivateEvent, jsonEnvelope(
                     metadata().withName(EVENT_CASE_UNRESERVED),
@@ -409,7 +411,7 @@ public class ReserveCaseIT extends BaseIntegrationTest {
                             withJsonPath("$.reservedBy", equalTo("1ac91935-4f82-4a4f-bd17-fb50397e42dd"))
                     )))));
 
-            final JsonEnvelope eventCaseUnReservedPublicEvent =  reserveCaseHelper.getPublicEventFromTopic();
+            final JsonEnvelope eventCaseUnReservedPublicEvent = reserveCaseHelper.getPublicEventFromTopic();
 
             assertThat(eventCaseUnReservedPublicEvent, jsonEnvelope(
                     metadata().withName(PUBLIC_CASE_UNRESERVED),
@@ -435,11 +437,11 @@ public class ReserveCaseIT extends BaseIntegrationTest {
     }
 
     @Test
-    public void shouldNotSeeOtherUsersReservedCase() throws Exception{
+    public void shouldNotSeeOtherUsersReservedCase() throws Exception {
 
         final UUID reservedUser = randomUUID();
         stubGroupForUser(reservedUser, "Legal Advisers");
-        try(ReserveCaseHelper  reserveCaseHelper = new ReserveCaseHelper()) {
+        try (ReserveCaseHelper reserveCaseHelper = new ReserveCaseHelper()) {
             reserveCaseToUser(caseId, reservedUser, ACCEPTED);
 
             final JsonEnvelope eventCaseReservedPrivateEvent = reserveCaseHelper.getEventFromTopic();
@@ -471,25 +473,24 @@ public class ReserveCaseIT extends BaseIntegrationTest {
         }
     }
 
-
     @Test
-    public void shouldNotReserveCaseWithCourtAdmin(){
+    public void shouldNotReserveCaseWithCourtAdmin() {
         reserveCaseToUser(caseId, courtAdminId, FORBIDDEN);
     }
 
     @Test
-    public void shouldNotReserveCaseWithSystemAdmin(){
+    public void shouldNotReserveCaseWithSystemAdmin() {
         unReserveCaseToUser(caseId, systemAdminId, ACCEPTED);
     }
 
     @Test
-    public void shouldNotUnReserveCaseWithCourtAdmin(){
+    public void shouldNotUnReserveCaseWithCourtAdmin() {
         unReserveCaseToUser(caseId, courtAdminId, FORBIDDEN);
     }
 
     public static UUID reserveCaseToUser(final UUID caseId,
-                                        final UUID callerId,
-                                        final Response.Status expectedStatus) {
+                                         final UUID callerId,
+                                         final Response.Status expectedStatus) {
         final String contentType = "application/vnd.sjp.reserve-case+json";
         final String url = String.format("/cases/%s/reserve-case", caseId);
 
@@ -500,8 +501,8 @@ public class ReserveCaseIT extends BaseIntegrationTest {
     }
 
     public static UUID unReserveCaseToUser(final UUID caseId,
-                                         final UUID callerId,
-                                         final Response.Status expectedStatus) {
+                                           final UUID callerId,
+                                           final Response.Status expectedStatus) {
         final String contentType = "application/vnd.sjp.undo-reserve-case+json";
         final String url = String.format("/cases/%s/reserve-case", caseId);
 
@@ -517,21 +518,21 @@ public class ReserveCaseIT extends BaseIntegrationTest {
 
         AssignNextCaseClient assignCase = AssignNextCaseClient.builder().sessionId(sessionId).build();
         assignCase.assignedPrivateHandler = (envelope) ->
-            assertThat((JsonEnvelope) envelope,
-                    jsonEnvelope(
-                            metadata().withName(CaseAssigned.EVENT_NAME),
-                            payload().isJson(allOf(
-                                    withJsonPath("$.caseId", CoreMatchers.equalTo(caseId.toString())),
-                                    withJsonPath("$.assigneeId", CoreMatchers.equalTo(userId.toString())),
-                                    withJsonPath("$.assignedAt", CoreMatchers.notNullValue()),
-                                    withJsonPath("$.caseAssignmentType", CoreMatchers.equalTo( DELEGATED_POWERS_DECISION.toString()))
-                            ))));
+                assertThat((JsonEnvelope) envelope,
+                        jsonEnvelope(
+                                metadata().withName(CaseAssigned.EVENT_NAME),
+                                payload().isJson(allOf(
+                                        withJsonPath("$.caseId", CoreMatchers.equalTo(caseId.toString())),
+                                        withJsonPath("$.assigneeId", CoreMatchers.equalTo(userId.toString())),
+                                        withJsonPath("$.assignedAt", CoreMatchers.notNullValue()),
+                                        withJsonPath("$.caseAssignmentType", CoreMatchers.equalTo(DELEGATED_POWERS_DECISION.toString()))
+                                ))));
 
         assignCase.assignedPublicHandler = (envelope) ->
-            assertThat((JsonEnvelope) envelope,
-                    jsonEnvelope(
-                            metadata().withName(AssignmentProcessor.PUBLIC_SJP_CASE_ASSIGNED),
-                            payload().isJson(withJsonPath("$.caseId", CoreMatchers.equalTo(caseId.toString())))));
+                assertThat((JsonEnvelope) envelope,
+                        jsonEnvelope(
+                                metadata().withName(AssignmentProcessor.PUBLIC_SJP_CASE_ASSIGNED),
+                                payload().isJson(withJsonPath("$.caseId", CoreMatchers.equalTo(caseId.toString())))));
 
 
         assignCase.getExecutor().setExecutingUserId(userId).executeSync();

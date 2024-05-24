@@ -19,6 +19,7 @@ import java.io.InputStream;
 import java.util.Locale;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Stream;
 
 import javax.inject.Inject;
 import javax.json.JsonObject;
@@ -34,7 +35,10 @@ public class PressAndTransparencyReportStrategy implements SystemDocGeneratorRes
 
     private static final String TRANSPARENCY_TEMPLATE_IDENTIFIER = "PendingCasesEnglish";
     private static final String TRANSPARENCY_TEMPLATE_IDENTIFIER_WELSH = "PendingCasesWelsh";
-    private static final String PRESS_TRANSPARENCY_TEMPLATE_IDENTIFIER = "PressPendingCasesEnglish";
+    private static final String PRESS_TRANSPARENCY_TEMPLATE_IDENTIFIER = "PressPendingCasesFullEnglish";
+    private static final String PRESS_TRANSPARENCY_TEMPLATE_IDENTIFIER_DELTA = "PressPendingCasesDeltaEnglish";
+    private static final String PRESS_TRANSPARENCY_TEMPLATE_IDENTIFIER_WELSH = "PressPendingCasesFullWelsh";
+    private static final String PRESS_TRANSPARENCY_TEMPLATE_IDENTIFIER_WELSH_DELTA = "PressPendingCasesDeltaWelsh";
     private static final String COMMAND_TRANSPARENCY_REPORT_FAILED = "sjp.command.transparency-report-failed";
     private static final String COMMAND_PRESS_TRANSPARENCY_REPORT_FAILED = "sjp.command.press-transparency-report-failed";
     private static final Locale ENGLISH = new Locale("en", "GB");
@@ -43,7 +47,10 @@ public class PressAndTransparencyReportStrategy implements SystemDocGeneratorRes
     private static final Set<String> PROCESSABLE_TEMPLATES = Sets.newHashSet(
             TRANSPARENCY_TEMPLATE_IDENTIFIER,
             TRANSPARENCY_TEMPLATE_IDENTIFIER_WELSH,
-            PRESS_TRANSPARENCY_TEMPLATE_IDENTIFIER
+            PRESS_TRANSPARENCY_TEMPLATE_IDENTIFIER,
+            PRESS_TRANSPARENCY_TEMPLATE_IDENTIFIER_DELTA,
+            PRESS_TRANSPARENCY_TEMPLATE_IDENTIFIER_WELSH,
+            PRESS_TRANSPARENCY_TEMPLATE_IDENTIFIER_WELSH_DELTA
     );
 
     @ServiceComponent(EVENT_PROCESSOR)
@@ -71,6 +78,7 @@ public class PressAndTransparencyReportStrategy implements SystemDocGeneratorRes
         }
     }
 
+    @SuppressWarnings("squid:S1188")
     private void processDocumentAvailable(final JsonEnvelope envelope) {
         final JsonObject documentAvailablePayload = envelope.payloadAsJsonObject();
         final String templateIdentifier = getTemplateIdentifier(envelope);
@@ -91,7 +99,19 @@ public class PressAndTransparencyReportStrategy implements SystemDocGeneratorRes
                         updateTransparencyReportMetadata(envelope, reportId, WELSH, docMetadata.build());
                         break;
                     case PRESS_TRANSPARENCY_TEMPLATE_IDENTIFIER:
-                        docMetadata.add(FILE_NAME, "press-transparency-report.pdf");
+                        docMetadata.add(FILE_NAME, "press-transparency-report-full-english.pdf");
+                        updatePressTransparencyReportMetadata(envelope, reportId, docMetadata.build());
+                        break;
+                    case PRESS_TRANSPARENCY_TEMPLATE_IDENTIFIER_DELTA:
+                        docMetadata.add(FILE_NAME, "press-transparency-report-delta-english.pdf");
+                        updatePressTransparencyReportMetadata(envelope, reportId, docMetadata.build());
+                        break;
+                    case PRESS_TRANSPARENCY_TEMPLATE_IDENTIFIER_WELSH:
+                        docMetadata.add(FILE_NAME, "press-transparency-report-full-welsh.pdf");
+                        updatePressTransparencyReportMetadata(envelope, reportId, docMetadata.build());
+                        break;
+                    case PRESS_TRANSPARENCY_TEMPLATE_IDENTIFIER_WELSH_DELTA:
+                        docMetadata.add(FILE_NAME, "press-transparency-report-delta-welsh.pdf");
                         updatePressTransparencyReportMetadata(envelope, reportId, docMetadata.build());
                         break;
                     default:
@@ -195,7 +215,11 @@ public class PressAndTransparencyReportStrategy implements SystemDocGeneratorRes
     }
 
     private boolean isPressTransparencyReport(final String templateIdentifier) {
-        return PRESS_TRANSPARENCY_TEMPLATE_IDENTIFIER.equalsIgnoreCase(templateIdentifier);
+
+        return Stream.of(PRESS_TRANSPARENCY_TEMPLATE_IDENTIFIER,
+                PRESS_TRANSPARENCY_TEMPLATE_IDENTIFIER_DELTA,
+                PRESS_TRANSPARENCY_TEMPLATE_IDENTIFIER_WELSH,
+                PRESS_TRANSPARENCY_TEMPLATE_IDENTIFIER_WELSH_DELTA).anyMatch(templateIdentifier::equalsIgnoreCase);
     }
 
     private void sendPressTransparencyReportFailedCommand(final JsonEnvelope envelope) {

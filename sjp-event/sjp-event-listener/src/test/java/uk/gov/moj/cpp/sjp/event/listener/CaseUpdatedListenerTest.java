@@ -96,7 +96,7 @@ public class CaseUpdatedListenerTest {
     public void shouldUpdateCompletedStatusAndRemoveCaseReadinessIfExists() {
         final JsonObject caseCompletedEventPayload = createObjectBuilder().build();
         final JsonEnvelope envelopeIn = envelopeFrom(metadataWithRandomUUID(CaseCompleted.EVENT_NAME), caseCompletedEventPayload);
-        final ReadyCase readyCase = new ReadyCase(caseId, PIA, null, MAGISTRATE, 3, "TFL", now());
+        final ReadyCase readyCase = new ReadyCase(caseId, PIA, null, MAGISTRATE, 3, "TFL", now(), now());
 
         when(jsonObjectToObjectConverter.convert(caseCompletedEventPayload, CaseCompleted.class)).thenReturn(new CaseCompleted(caseId, newHashSet(randomUUID())));
         when(readyCaseRepository.findBy(caseId)).thenReturn(readyCase);

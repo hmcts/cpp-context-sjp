@@ -221,6 +221,12 @@ subscriptions_descriptor:
               - name: sjp.events.press-transparency-report-metadata-added
                 schema_uri: http://justice.gov.uk/json/schemas/domains/sjp/events/sjp.press-transparency-report-metadata-added.json
 
+              - name: sjp.events.press-transparency-pdf-report-generation-started
+                schema_uri: http://justice.gov.uk/json/schemas/domains/sjp/events/sjp.press-transparency-pdf-report-generation-started.json
+
+              - name: sjp.events.press-transparency-pdf-report-metadata-added
+                schema_uri: http://justice.gov.uk/json/schemas/domains/sjp/events/sjp.press-transparency-pdf-report-metadata-added.json
+
               - name: sjp.events.transparency-report-generation-failed
                 schema_uri: http://justice.gov.uk/json/schemas/domains/sjp/events/sjp.transparency-report-generation-failed.json
 

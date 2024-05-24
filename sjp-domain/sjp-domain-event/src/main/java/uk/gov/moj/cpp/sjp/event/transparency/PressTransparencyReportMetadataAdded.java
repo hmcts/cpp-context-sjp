@@ -8,7 +8,14 @@ import java.util.UUID;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+/**
+ * Event to indicate that the generation of a press transparency report has metadata added. Use either the JSON or PDF report generation  metadata added events instead.
+ *
+ * @deprecated
+ */
+@Deprecated
 @Event(PressTransparencyReportMetadataAdded.EVENT_NAME)
+@SuppressWarnings("squid:S1133")
 public class PressTransparencyReportMetadataAdded {
 
     public static final String EVENT_NAME = "sjp.events.press-transparency-report-metadata-added";
@@ -30,5 +37,4 @@ public class PressTransparencyReportMetadataAdded {
     public ReportMetadata getMetadata() {
         return metadata;
     }
-
 }

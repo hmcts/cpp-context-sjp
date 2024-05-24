@@ -3,6 +3,13 @@
   "id":"http://cpp.moj.gov.uk/sjp/json/schema/event/public.sjp.press-transparency-report-generated.json",
   "type":"object",
   "properties":{
+    "requestType": {
+      "type": "string",
+      "enum": [
+        "FULL",
+        "DELTA"
+      ]
+    },
     "language":{
       "enum":[
         "ENGLISH",
@@ -30,7 +37,19 @@
               "defendantName":{
                 "type":"string"
               },
+              "dateOfBirth":{
+                "type":"string"
+              },
+              "age":{
+                "type":"string"
+              },
               "prosecutorName":{
+                "type":"string"
+              },
+              "legalEntityName":{
+                "type":"string"
+              },
+              "title":{
                 "type":"string"
               },
               "firstName":{
@@ -43,6 +62,9 @@
                 "type":"string"
               },
               "addressLine2":{
+                "type":"string"
+              },
+              "addressLine3":{
                 "type":"string"
               },
               "town":{
@@ -62,6 +84,9 @@
                     "title":{
                       "type":"string"
                     },
+                    "wording":{
+                      "type":"string"
+                    },
                     "reportingRestriction":{
                       "type":"boolean"
                     },
@@ -79,13 +104,11 @@
         "generatedDateAndTime",
         "totalNumberOfRecords",
         "readyCases"
-      ],
-      "additionalProperties":false
+      ]
     }
   },
   "required":[
     "language",
     "listPayload"
-  ],
-  "additionalProperties":false
+  ]
 }

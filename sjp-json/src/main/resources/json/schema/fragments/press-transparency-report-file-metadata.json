@@ -1,0 +1,30 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://justice.gov.uk/json/schemas/domains/sjp/press-transparency-report-file-metadata.json",
+  "properties": {
+    "fileName": {
+      "type": "string"
+    },
+    "numberOfPages": {
+      "type": "number"
+    },
+    "fileSize": {
+      "type": "number"
+    },
+    "fileId": {
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+    },
+    "title": {
+      "type": "string"
+    },
+    "language": {
+      "type": "string"
+    }
+  },
+  "additionalProperties": false,
+  "required": [
+    "fileName",
+    "numberOfPages",
+    "fileSize"
+  ]
+}

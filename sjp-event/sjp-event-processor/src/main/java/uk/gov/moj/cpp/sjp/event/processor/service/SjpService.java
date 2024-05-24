@@ -40,7 +40,6 @@ public class SjpService {
     @Inject
     @ServiceComponent(Component.EVENT_PROCESSOR)
     private Requester requester;
-
     @Inject
     @FrameworkComponent(EVENT_PROCESSOR)
     private Sender sender;
@@ -120,13 +119,27 @@ public class SjpService {
 
     public List<JsonObject> getPendingCases(final JsonEnvelope envelope, final ExportType exportType) {
         return requester.request(
-                envelopeFrom(
-                        metadataFrom(envelope.metadata())
-                                .withName("sjp.query.pending-cases").build(),
-                        createObjectBuilder()
-                                .add("export", exportType.name().toLowerCase())
-                                .build()
-                ))
+                        envelopeFrom(
+                                metadataFrom(envelope.metadata())
+                                        .withName("sjp.query.pending-cases").build(),
+                                createObjectBuilder()
+                                        .add("export", exportType.name().toLowerCase())
+                                        .build()
+                        ))
+                .payloadAsJsonObject()
+                .getJsonArray("pendingCases")
+                .getValuesAs(JsonObject.class);
+    }
+
+    public List<JsonObject> getPendingDeltaCases(final JsonEnvelope envelope, final ExportType exportType) {
+
+        final String eventName = "sjp.query.pending-delta-cases";
+
+        final JsonObject jsonObjectBuilder = createObjectBuilder()
+                .add("export", exportType.name().toLowerCase())
+                .build();
+
+        return requester.request(envelopeFrom(metadataFrom(envelope.metadata()).withName(eventName).build(), jsonObjectBuilder))
                 .payloadAsJsonObject()
                 .getJsonArray("pendingCases")
                 .getValuesAs(JsonObject.class);
@@ -159,7 +172,7 @@ public class SjpService {
         return Optional.ofNullable(responseEnvelope.payload());
     }
 
-    public Optional<NotificationOfPartialAocpStatus> getNotificationOfPartialAocpStatus(final UUID caseId, final JsonEnvelope envelope){
+    public Optional<NotificationOfPartialAocpStatus> getNotificationOfPartialAocpStatus(final UUID caseId, final JsonEnvelope envelope) {
         final JsonEnvelope request = envelopeFrom(metadataFrom(envelope.metadata())
                         .withName("sjp.query.notification-of-partial-aocp-status"),
                 createObjectBuilder()

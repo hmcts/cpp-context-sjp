@@ -1,7 +1,6 @@
 package uk.gov.moj.cpp.sjp.event.listener;
 
 import static java.time.LocalDate.now;
-import static java.time.ZoneOffset.UTC;
 import static java.util.UUID.randomUUID;
 import static javax.json.Json.createObjectBuilder;
 import static org.hamcrest.CoreMatchers.equalTo;
@@ -27,7 +26,8 @@ import uk.gov.moj.cpp.sjp.persistence.repository.CaseRepository;
 import uk.gov.moj.cpp.sjp.persistence.repository.ReadyCaseRepository;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -45,6 +45,7 @@ import org.mockito.runners.MockitoJUnitRunner;
 public class ReadyCaseListenerTest {
 
     private static final LocalDate POSTING_DATE = now().minusDays(15);
+    private static final LocalDate MARKED_AT_DATE = now();
     private static final String PROSECUTOR_TFL = "TFL";
     private final UUID caseId = randomUUID();
     @Mock
@@ -86,7 +87,7 @@ public class ReadyCaseListenerTest {
     public void shouldKeepTheAssigneeSameIfTheCaseIsMarkedForReadyAgain() {
         setupAndMarkReadyForDecision(null);
         final UUID assigneeId = UUID.randomUUID();
-        final ReadyCase readyCase = new ReadyCase(caseId, PIA, assigneeId, MAGISTRATE, 1, "TFL", POSTING_DATE);
+        final ReadyCase readyCase = new ReadyCase(caseId, PIA, assigneeId, MAGISTRATE, 1, "TFL", POSTING_DATE, MARKED_AT_DATE);
 
         when(readyCaseRepository.findBy(caseId)).thenReturn(readyCase);
 
@@ -131,7 +132,7 @@ public class ReadyCaseListenerTest {
                 createObjectBuilder()
                         .add("caseId", caseId.toString())
                         .add("reason", CaseReadinessReason.PLEADED_GUILTY.name())
-                        .add("markedAt", LocalDateTime.now(UTC).toString())
+                        .add("markedAt", OffsetDateTime.now(ZoneOffset.UTC).toString())
                         .add("sessionType", MAGISTRATE.name())
                         .add("priority", Priority.MEDIUM.name())
                         .build());

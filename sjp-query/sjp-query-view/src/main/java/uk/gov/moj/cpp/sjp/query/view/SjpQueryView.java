@@ -102,6 +102,7 @@ public class SjpQueryView {
     private static final String NAME_RESPONSE_CASES_SEARCH_BY_MATERIAL_ID = "sjp.query.cases-search-by-material-id-response";
     private static final String NAME_RESPONSE_CASE_DOCUMENTS = "sjp.query.case-documents-response";
     private static final String NAME_RESPONSE_PENDING_CASES = "sjp.query.pending-cases";
+    private static final String NAME_RESPONSE_DELTA_PENDING_CASES = "sjp.query.pending-delta-cases";
     private static final String TRANSPARENCY_REPORT_METADATA_RESPONSE_NAME = "sjp.query.transparency-report-metadata";
     private static final String PRESS_TRANSPARENCY_REPORT_METADATA_RESPONSE_NAME = "sjp.query.press-transparency-report-metadata";
     private static final String NOT_GUILTY_PLEA_CASES_RESPONSE_NAME = "sjp.query.not-guilty-plea-cases";
@@ -374,6 +375,12 @@ public class SjpQueryView {
         final ExportType exportType = getExportType(envelope);
         return enveloper.withMetadataFrom(envelope, NAME_RESPONSE_PENDING_CASES).apply(
                 caseService.findPendingCasesToPublish(exportType));
+    }
+
+    @Handles("sjp.query.pending-delta-cases")
+    public JsonEnvelope getPendingDeltaCasesToPublish(final JsonEnvelope envelope) {
+        return enveloper.withMetadataFrom(envelope, NAME_RESPONSE_DELTA_PENDING_CASES).apply(
+                caseService.findPendingDeltaCasesToPublish(LocalDate.now().minusDays(1), LocalDate.now()));
     }
 
     @Handles("sjp.query.result-orders")

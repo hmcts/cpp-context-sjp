@@ -130,12 +130,12 @@ public abstract class CaseRepository extends AbstractEntityRepository<CaseDetail
     public abstract String getProsecutingAuthority(@QueryParam("caseId") final UUID caseId);
 
     @Query(value = "SELECT new uk.gov.moj.cpp.sjp.persistence.entity.PendingCaseToPublishPerOffence" +
-            "(d.personalDetails.firstName, d.personalDetails.lastName, d.legalEntityDetails.legalEntityName, d.personalDetails.dateOfBirth," +
+            "(d.personalDetails.title, d.personalDetails.firstName, d.personalDetails.lastName, d.legalEntityDetails.legalEntityName, d.personalDetails.dateOfBirth," +
             "cd.id, cd.urn," +
             "d.address.address1, d.address.address2," +
             "d.address.address3, d.address.address4, d.address.address5," +
             "d.address.postcode, o.code, o.startDate, o.wording, " +
-            "o.pressRestriction.requested, o.pressRestriction.name, o.completed, cd.prosecutingAuthority) " +
+            "o.pressRestriction.requested, o.pressRestriction.name, o.completed, cd.prosecutingAuthority, o.wordingWelsh) " +
             "FROM CaseDetail cd " +
             "LEFT OUTER JOIN cd.defendant d " +
             "LEFT OUTER JOIN d.offences o " +
@@ -145,18 +145,32 @@ public abstract class CaseRepository extends AbstractEntityRepository<CaseDetail
     public abstract List<PendingCaseToPublishPerOffence> findPublicTransparencyReportPendingCases();
 
     @Query(value = "SELECT new uk.gov.moj.cpp.sjp.persistence.entity.PendingCaseToPublishPerOffence" +
-            "(d.personalDetails.firstName, d.personalDetails.lastName, d.legalEntityDetails.legalEntityName, d.personalDetails.dateOfBirth," +
+            "(d.personalDetails.title, d.personalDetails.firstName, d.personalDetails.lastName, d.legalEntityDetails.legalEntityName, d.personalDetails.dateOfBirth," +
             "cd.id, cd.urn," +
             "d.address.address1, d.address.address2," +
             "d.address.address3, d.address.address4, d.address.address5," +
             "d.address.postcode, o.code, o.startDate, o.wording," +
-            "o.pressRestriction.requested, o.pressRestriction.name, o.completed, cd.prosecutingAuthority) " +
+            "o.pressRestriction.requested, o.pressRestriction.name, o.completed, cd.prosecutingAuthority, o.wordingWelsh) " +
             "FROM CaseDetail cd " +
             "LEFT OUTER JOIN cd.defendant d " +
             "LEFT OUTER JOIN d.offences o " +
             "WHERE cd.id IN (SELECT rc.id FROM ReadyCase rc) " +
             "ORDER BY cd.postingDate")
     public abstract List<PendingCaseToPublishPerOffence> findPressTransparencyReportPendingCases();
+
+    @Query(value = "SELECT new uk.gov.moj.cpp.sjp.persistence.entity.PendingCaseToPublishPerOffence" +
+            "(d.personalDetails.title, d.personalDetails.firstName, d.personalDetails.lastName, d.legalEntityDetails.legalEntityName, d.personalDetails.dateOfBirth," +
+            "cd.id, cd.urn," +
+            "d.address.address1, d.address.address2," +
+            "d.address.address3, d.address.address4, d.address.address5," +
+            "d.address.postcode, o.code, o.startDate, o.wording," +
+            "o.pressRestriction.requested, o.pressRestriction.name, o.completed, cd.prosecutingAuthority, o.wordingWelsh) " +
+            "FROM CaseDetail cd " +
+            "LEFT OUTER JOIN cd.defendant d " +
+            "LEFT OUTER JOIN d.offences o " +
+            "WHERE cd.id IN (SELECT rc.id FROM ReadyCase rc WHERE rc.markedAt BETWEEN :fromDate AND :toDate) " +
+            "ORDER BY cd.postingDate")
+    public abstract List<PendingCaseToPublishPerOffence> findPressTransparencyDeltaReportPendingCases(@QueryParam("fromDate") final LocalDate fromDate, @QueryParam("toDate") final LocalDate toDate);
 
     @Query(value = "SELECT DISTINCT new uk.gov.moj.cpp.sjp.persistence.entity.CaseNotGuiltyPlea" +
             "(e.id, e.urn, o.pleaDate, d.personalDetails.firstName, d.personalDetails.lastName, d.legalEntityDetails.legalEntityName, e.prosecutingAuthority, e.caseManagementStatus) " +

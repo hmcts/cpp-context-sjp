@@ -1,0 +1,40 @@
+{
+  "pendingCases": [
+    {
+      "caseId": "91898e9c-66b2-4363-8a78-641dbec8b726",
+      "defendantName": "J Doe",
+      "town": "London",
+      "county": "Greater London",
+      "postcode": "SE",
+      "offence": [
+        {
+          "offenceCode": "PS90003",
+          "offenceStartDate": "2018-12-04",
+          "pressRestriction": {
+            "requested": false
+          },
+          "completed" : true
+        }
+      ],
+      "prosecutorName": "TFL"
+    },
+    {
+      "caseId": "6ac98e9c-66b2-4363-8a78-641dbec8bbd2",
+      "defendantName": "D McDuck",
+      "town": "London",
+      "county": "Greater London",
+      "postcode": "S",
+      "offences": [
+        {
+          "offenceCode": "PS90003",
+          "offenceStartDate": "2018-11-01",
+          "pressRestriction": {
+            "requested": false
+          },
+          "completed" : true
+        }
+      ],
+      "prosecutorName": "TVL"
+    }
+  ]
+}

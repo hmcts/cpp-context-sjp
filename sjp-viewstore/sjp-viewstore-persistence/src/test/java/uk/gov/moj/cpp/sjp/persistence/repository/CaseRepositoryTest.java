@@ -28,6 +28,7 @@ import uk.gov.moj.cpp.sjp.persistence.entity.CaseDocument;
 import uk.gov.moj.cpp.sjp.persistence.entity.CaseWithoutDefendantPostcode;
 import uk.gov.moj.cpp.sjp.persistence.entity.DefendantDetail;
 import uk.gov.moj.cpp.sjp.persistence.entity.OffenceDetail;
+import uk.gov.moj.cpp.sjp.persistence.entity.PendingCaseToPublishPerOffence;
 import uk.gov.moj.cpp.sjp.persistence.entity.ReadyCase;
 
 import java.math.BigDecimal;
@@ -120,9 +121,9 @@ public class CaseRepositoryTest extends BaseTransactionalTest {
         // test duplicate cases aren't possible
         caseRepository.save(case1);
 
-        READY_CASES.add(new ReadyCase(case1.getId(), CaseReadinessReason.PIA, null, MAGISTRATE, 3, "TFL", now().minusDays(30)));
-        READY_CASES.add(new ReadyCase(case2.getId(), CaseReadinessReason.WITHDRAWAL_REQUESTED, null, DELEGATED_POWERS, 1, "TFL", now().minusDays(15)));
-        READY_CASES.add(new ReadyCase(case3.getId(), CaseReadinessReason.PLEADED_GUILTY, null, MAGISTRATE, 2, "TFL", now().minusDays(30)));
+        READY_CASES.add(new ReadyCase(case1.getId(), CaseReadinessReason.PIA, null, MAGISTRATE, 3, "TFL", now().minusDays(30), now()));
+        READY_CASES.add(new ReadyCase(case2.getId(), CaseReadinessReason.WITHDRAWAL_REQUESTED, null, DELEGATED_POWERS, 1, "TFL", now().minusDays(15), now()));
+        READY_CASES.add(new ReadyCase(case3.getId(), CaseReadinessReason.PLEADED_GUILTY, null, MAGISTRATE, 2, "TFL", now().minusDays(30), now()));
         // leave case 4 as not ready
 
         READY_CASES.forEach(readyCaseRepository::save);
@@ -136,6 +137,12 @@ public class CaseRepositoryTest extends BaseTransactionalTest {
         // cleaning up database after each test to avoid data collision
         CASES.values().forEach(caseRepository::attachAndRemove);
         READY_CASES.forEach(readyCaseRepository::attachAndRemove);
+    }
+
+    @Test
+    public void shouldfindPressTransparencyReportPendingCases() {
+        final List<PendingCaseToPublishPerOffence> caseDetails = caseRepository.findPressTransparencyReportPendingCases();
+        assertNotNull(caseDetails);
     }
 
     @Test

@@ -29,7 +29,7 @@ public class PressAndTransparencyReportStrategyTest {
         final JsonEnvelope envelopeWelsh = envelopeBuilder.templateIdentifier("PendingCasesWelsh").envelope();
         assertThat(strategy.canProcess(envelopeWelsh), is(true));
 
-        final JsonEnvelope envelopePress = envelopeBuilder.templateIdentifier("PressPendingCasesEnglish").envelope();
+        final JsonEnvelope envelopePress = envelopeBuilder.templateIdentifier("PressPendingCasesFullEnglish").envelope();
         assertThat(strategy.canProcess(envelopePress), is(true));
     }
 
@@ -43,7 +43,7 @@ public class PressAndTransparencyReportStrategyTest {
         final JsonEnvelope envelopeWelsh = envelopeBuilder.templateIdentifier("PendingCasesWelsh").envelope();
         assertThat(strategy.canProcess(envelopeWelsh), is(true));
 
-        final JsonEnvelope envelopePress = envelopeBuilder.templateIdentifier("PressPendingCasesEnglish").envelope();
+        final JsonEnvelope envelopePress = envelopeBuilder.templateIdentifier("PressPendingCasesFullEnglish").envelope();
         assertThat(strategy.canProcess(envelopePress), is(true));
     }
 

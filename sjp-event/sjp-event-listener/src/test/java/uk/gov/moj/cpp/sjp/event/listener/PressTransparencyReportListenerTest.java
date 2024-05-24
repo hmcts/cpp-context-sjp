@@ -10,6 +10,9 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
 import static uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderFactory.metadataWithRandomUUID;
+import static uk.gov.moj.cpp.sjp.domain.DocumentFormat.PDF;
+import static uk.gov.moj.cpp.sjp.domain.DocumentLanguage.ENGLISH;
+import static uk.gov.moj.cpp.sjp.domain.DocumentRequestType.DELTA;
 
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.sjp.persistence.entity.PressTransparencyReportMetadata;
@@ -38,6 +41,7 @@ public class PressTransparencyReportListenerTest {
     private PressTransparencyReportMetadataRepository pressTransparencyReportMetadataRepository;
 
     @Test
+    @SuppressWarnings("deprecation")
     public void shouldCreatePressReportMetadata() {
         final List<UUID> caseIds = newArrayList(randomUUID(), randomUUID());
         final UUID reportId = randomUUID();
@@ -45,6 +49,10 @@ public class PressTransparencyReportListenerTest {
         final JsonEnvelope eventEnvelope = envelopeFrom(metadataWithRandomUUID("sjp.events.press-transparency-report-generation-started"),
                 createObjectBuilder()
                         .add("pressTransparencyReportId",reportId.toString())
+                        .add("format", PDF.name())
+                        .add("requestType", DELTA.name())
+                        .add("title", "Press Transparency Report")
+                        .add("language", ENGLISH.name())
                         .add("caseIds", createJsonArrayWithCaseIds(caseIds))
                         .build());
 
@@ -58,6 +66,31 @@ public class PressTransparencyReportListenerTest {
     }
 
     @Test
+    public void shouldCreatePressReportPDFMetadata() {
+        final List<UUID> caseIds = newArrayList(randomUUID(), randomUUID());
+        final UUID reportId = randomUUID();
+
+        final JsonEnvelope eventEnvelope = envelopeFrom(metadataWithRandomUUID("sjp.events.press-transparency-pdf-report-generation-started"),
+                createObjectBuilder()
+                        .add("pressTransparencyReportId", reportId.toString())
+                        .add("format", PDF.name())
+                        .add("requestType", DELTA.name())
+                        .add("title", "Press Transparency Report")
+                        .add("language", ENGLISH.name())
+                        .add("caseIds", createJsonArrayWithCaseIds(caseIds))
+                        .build());
+
+        pressTransparencyReportListener.handlePressTransparencyPDFReportGenerated(eventEnvelope);
+
+        final ArgumentCaptor<PressTransparencyReportMetadata> pressTransparencyReportMetadataArgument = ArgumentCaptor.forClass(PressTransparencyReportMetadata.class);
+        verify(pressTransparencyReportMetadataRepository).save(pressTransparencyReportMetadataArgument.capture());
+        final PressTransparencyReportMetadata pressTransparencyReportMetadata = pressTransparencyReportMetadataArgument.getValue();
+        assertThat(pressTransparencyReportMetadata.getId(), is(reportId));
+        assertThat(pressTransparencyReportMetadata.getGeneratedAt(), is(LocalDateTime.class));
+    }
+
+    @Test
+    @SuppressWarnings("deprecation")
     public void shouldUpdateReportMetadata() {
         final UUID reportId = randomUUID();
         final PressTransparencyReportMetadata reportMetadata = new PressTransparencyReportMetadata(reportId, LocalDateTime.now());
@@ -72,10 +105,39 @@ public class PressTransparencyReportListenerTest {
                                 .add("fileId", reportFileId.toString())
                                 .add("numberOfPages", reportNumberOfPages)
                                 .add("fileSize", pdfSizeInBytes)
+                                .add("title", "Press Transparency Report")
+                                .add("language", ENGLISH.name())
                         )
                         .build());
         when(pressTransparencyReportMetadataRepository.findBy(reportId)).thenReturn(reportMetadata);
         pressTransparencyReportListener.handleMetadataAdded(eventEnvelope);
+        assertThat(reportMetadata.getFileServiceId(), is(reportFileId));
+        assertThat(reportMetadata.getNumberOfPages(), is(reportNumberOfPages));
+        assertThat(reportMetadata.getSizeInBytes(), is(pdfSizeInBytes));
+
+    }
+
+    @Test
+    public void shouldUpdateReportMetadataPDF() {
+        final UUID reportId = randomUUID();
+        final PressTransparencyReportMetadata reportMetadata = new PressTransparencyReportMetadata(reportId, LocalDateTime.now());
+        final UUID reportFileId = randomUUID();
+        final int reportNumberOfPages = 4;
+        final int pdfSizeInBytes = 412;
+
+        final JsonEnvelope eventEnvelope = envelopeFrom(metadataWithRandomUUID("sjp.events.press-transparency-pdf-report-metadata-added"),
+                createObjectBuilder()
+                        .add("pressTransparencyReportId", reportId.toString())
+                        .add("metadata", createObjectBuilder()
+                                .add("fileId", reportFileId.toString())
+                                .add("numberOfPages", reportNumberOfPages)
+                                .add("fileSize", pdfSizeInBytes)
+                                .add("title", "Press Transparency Report")
+                                .add("language", ENGLISH.name())
+                        )
+                        .build());
+        when(pressTransparencyReportMetadataRepository.findBy(reportId)).thenReturn(reportMetadata);
+        pressTransparencyReportListener.handleReportMetadataAdded(eventEnvelope);
         assertThat(reportMetadata.getFileServiceId(), is(reportFileId));
         assertThat(reportMetadata.getNumberOfPages(), is(reportNumberOfPages));
         assertThat(reportMetadata.getSizeInBytes(), is(pdfSizeInBytes));

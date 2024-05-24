@@ -46,6 +46,10 @@ public class ReadyCase {
     @Convert(converter = LocalDatePersistenceConverter.class)
     private LocalDate postingDate;
 
+    @Column(name = "marked_ready_date")
+    @Convert(converter = LocalDatePersistenceConverter.class)
+    private LocalDate markedAt;
+
     public ReadyCase() {
         //required for hibernate
     }
@@ -56,7 +60,8 @@ public class ReadyCase {
                      final SessionType sessionType,
                      final Integer priority,
                      final String prosecutionAuthority,
-                     final LocalDate postingDate) {
+                     final LocalDate postingDate,
+                     final LocalDate markedAt) {
         this.caseId = caseId;
         this.reason = reason;
         this.assigneeId = assigneeId;
@@ -64,6 +69,7 @@ public class ReadyCase {
         this.priority = priority;
         this.prosecutionAuthority = prosecutionAuthority;
         this.postingDate = postingDate;
+        this.markedAt = markedAt;
     }
 
     public UUID getCaseId() {
@@ -116,6 +122,14 @@ public class ReadyCase {
 
     public void setPostingDate(final LocalDate postingDate) {
         this.postingDate = postingDate;
+    }
+
+    public LocalDate getMarkedAt() {
+        return markedAt;
+    }
+
+    public void setMarkedAt(final LocalDate markedAt) {
+        this.markedAt = markedAt;
     }
 
     @Override

@@ -5,12 +5,13 @@ import java.util.UUID;
 
 public class PendingCaseToPublishPerOffence {
 
+    private final String title;
     private final String firstName;
     private final String lastName;
     private final String legalEntityName;
     private final LocalDate defendantDateOfBirth;
     private final UUID caseId;
-    private String caseUrn;
+    private final String caseUrn;
     private final String addressLine1;
     private final String addressLine2;
     private final String addressLine3;
@@ -24,15 +25,17 @@ public class PendingCaseToPublishPerOffence {
     private final String pressRestrictionName;
     private final Boolean completed;
     private final String prosecutor;
+    private final String offenceWelshWording;
 
     @SuppressWarnings("squid:S00107")
-    public PendingCaseToPublishPerOffence(final String firstName, final String lastName, String legalEntityName, final LocalDate defendantDateOfBirth,
+    public PendingCaseToPublishPerOffence(final String title, final String firstName, final String lastName, String legalEntityName, final LocalDate defendantDateOfBirth,
                                           final UUID caseId, final String caseUrn,
                                           final String addressLine1, final String addressLine2,
                                           final String addressLine3, final String addressLine4, final String addressLine5,
                                           final String postcode, final String offenceCode, final LocalDate offenceStartDate,
                                           final String offenceWording, final Boolean pressRestrictionRequested,
-                                          final String pressRestrictionName, final Boolean completed, final String prosecutor) {
+                                          final String pressRestrictionName, final Boolean completed, final String prosecutor, final String offenceWelshWording) {
+        this.title = title;
         this.firstName = firstName;
         this.lastName = lastName;
         this.legalEntityName = legalEntityName;
@@ -52,6 +55,11 @@ public class PendingCaseToPublishPerOffence {
         this.pressRestrictionRequested = pressRestrictionRequested;
         this.pressRestrictionName = pressRestrictionName;
         this.completed = completed;
+        this.offenceWelshWording = offenceWelshWording;
+    }
+
+    public String getTitle() {
+        return title;
     }
 
     public String getFirstName() {
@@ -128,5 +136,9 @@ public class PendingCaseToPublishPerOffence {
 
     public String getLegalEntityName() {
         return legalEntityName;
+    }
+
+    public String getOffenceWelshWording() {
+        return offenceWelshWording;
     }
 }

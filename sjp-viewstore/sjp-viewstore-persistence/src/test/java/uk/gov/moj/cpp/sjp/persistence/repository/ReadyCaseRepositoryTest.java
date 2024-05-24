@@ -34,10 +34,10 @@ public class ReadyCaseRepositoryTest extends BaseTransactionalTest {
         final UUID assigneeId2 = UUID.randomUUID();
         final UUID assigneeId3 = UUID.randomUUID();
 
-        final ReadyCase readyCase1 = new ReadyCase(UUID.randomUUID(), PIA, null, MAGISTRATE, 3, "TFL", now().minusDays(30));
-        final ReadyCase readyCase2 = new ReadyCase(UUID.randomUUID(), PIA, assigneeId1, MAGISTRATE, 3, "TFL", now().minusDays(30));
-        final ReadyCase readyCase3 = new ReadyCase(UUID.randomUUID(), PLEADED_GUILTY, assigneeId1, MAGISTRATE, 2, "TFL", now().minusDays(15));
-        final ReadyCase readyCase4 = new ReadyCase(UUID.randomUUID(), PIA, assigneeId2, MAGISTRATE, 3, "TFL", now().minusDays(30));
+        final ReadyCase readyCase1 = new ReadyCase(UUID.randomUUID(), PIA, null, MAGISTRATE, 3, "TFL", now().minusDays(30), now());
+        final ReadyCase readyCase2 = new ReadyCase(UUID.randomUUID(), PIA, assigneeId1, MAGISTRATE, 3, "TFL", now().minusDays(30), now());
+        final ReadyCase readyCase3 = new ReadyCase(UUID.randomUUID(), PLEADED_GUILTY, assigneeId1, MAGISTRATE, 2, "TFL", now().minusDays(15), now());
+        final ReadyCase readyCase4 = new ReadyCase(UUID.randomUUID(), PIA, assigneeId2, MAGISTRATE, 3, "TFL", now().minusDays(30), now());
 
         readyCaseRepository.save(readyCase1);
         readyCaseRepository.save(readyCase2);
@@ -61,6 +61,7 @@ public class ReadyCaseRepositoryTest extends BaseTransactionalTest {
                 DELEGATED_POWERS,
                 1,
                 "DVLA",
+                now(),
                 now());
 
         // when

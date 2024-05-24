@@ -14,6 +14,7 @@ import uk.gov.moj.sjp.it.util.PdfContentHelper;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UncheckedIOException;
+import java.util.Objects;
 
 import javax.json.JsonObject;
 import javax.ws.rs.core.Response;
@@ -23,10 +24,10 @@ import org.hamcrest.Matcher;
 
 public class PressTransparencyReportHelper {
 
-    public void requestToGeneratePressTransparencyReport() {
+    public void requestToGeneratePressTransparencyReport(JsonObject payload) {
         final String resource = "/press-transparency-report/request";
         final String contentType = "application/vnd.sjp.request-press-transparency-report+json";
-        HttpClientUtil.makePostCall(resource, contentType, "{}");
+        HttpClientUtil.makePostCall(resource, contentType, payload.toString());
     }
 
     public JsonObject pollForPressTransparencyReportMetadata(final Matcher matcher) {
@@ -64,9 +65,9 @@ public class PressTransparencyReportHelper {
     public String getStubbedContent() {
         String payload;
         try {
-            payload = IOUtils.toString(PressTransparencyReportHelper.class
+            payload = IOUtils.toString(Objects.requireNonNull(PressTransparencyReportHelper.class
                     .getClassLoader()
-                    .getResourceAsStream("TransparencyReportIT/report-content.txt"));
+                    .getResourceAsStream("TransparencyReportIT/report-content.txt")));
         } catch (final IOException ioException) {
             throw new UncheckedIOException(ioException);
         }

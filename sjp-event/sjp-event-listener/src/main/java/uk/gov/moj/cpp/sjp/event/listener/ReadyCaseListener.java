@@ -19,6 +19,9 @@ import uk.gov.moj.cpp.sjp.persistence.repository.CasePublishStatusRepository;
 import uk.gov.moj.cpp.sjp.persistence.repository.CaseRepository;
 import uk.gov.moj.cpp.sjp.persistence.repository.ReadyCaseRepository;
 
+import java.time.Instant;
+import java.time.LocalDate;
+import java.time.ZoneOffset;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -43,16 +46,16 @@ public class ReadyCaseListener {
         final UUID caseId = fromString(caseMarkedReadyForDecision.getString("caseId"));
         final CaseDetail caseDetail = caseRepository.findBy(caseId);
 
-        ReadyCase readyCase = readyCaseRepository.findBy(caseId);
 
-        // for set aside case we want to continue with the user id,
-        // even if it is not the case why cant the same user be getting the same case next it is ready again immediately?
+        ReadyCase readyCase = readyCaseRepository.findBy(caseId);
+        final LocalDate markedAt = Instant.parse(caseMarkedReadyForDecision.getString("markedAt")).atZone(ZoneOffset.UTC).toLocalDate();
         if (null != readyCase) {
             readyCase.setReason(CaseReadinessReason.valueOf(caseMarkedReadyForDecision.getString("reason")));
             readyCase.setSessionType(SessionType.valueOf(caseMarkedReadyForDecision.getString("sessionType")));
             readyCase.setPriority(Priority.valueOf(caseMarkedReadyForDecision.getString("priority")).getIntValue());
             readyCase.setProsecutionAuthority(caseDetail.getProsecutingAuthority());
             readyCase.setPostingDate(caseDetail.getPostingDate());
+            readyCase.setMarkedAt(markedAt);
         } else {
             readyCase = new ReadyCase(
                     caseId,
@@ -61,11 +64,11 @@ public class ReadyCaseListener {
                     SessionType.valueOf(caseMarkedReadyForDecision.getString("sessionType")),
                     Priority.valueOf(caseMarkedReadyForDecision.getString("priority")).getIntValue(),
                     caseDetail.getProsecutingAuthority(),
-                    caseDetail.getPostingDate()
+                    caseDetail.getPostingDate(),
+                    markedAt
             );
         }
         readyCaseRepository.save(readyCase);
-
         createCasePublishStatusIfNotExists(readyCase.getCaseId());
     }
 
@@ -94,7 +97,6 @@ public class ReadyCaseListener {
     private void resetCasePublishedCount(final UUID caseId) {
         final CasePublishStatus casePublishStatus = casePublishStatusRepository.findBy(caseId);
 
-        // HANDLES TRANSITION PERIOD WHEN AN EXISTING READY CASE DOES NOT CONTAIN THE casePublishStatus
         if (casePublishStatus != null) {
             casePublishStatus.setNumberOfPublishes(0);
             casePublishStatusRepository.save(casePublishStatus);

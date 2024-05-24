@@ -6,6 +6,29 @@
     "pressTransparencyReportId": {
       "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
     },
+    "format": {
+      "type": "string",
+      "enum": [
+        "PDF",
+        "JSON"
+      ]
+    },
+    "requestType": {
+      "type": "string",
+      "enum": [
+        "FULL",
+        "DELTA"
+      ]
+    },
+    "language":{
+      "enum":[
+        "ENGLISH",
+        "WELSH"
+      ]
+    },
+    "title": {
+      "type": "string"
+    },
     "caseIds": {
       "type": "array",
       "items": {

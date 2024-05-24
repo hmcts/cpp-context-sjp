@@ -12,19 +12,25 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 
+/**
+ * Event to indicate that the generation of a press transparency report has requested. Use either the JSON or PDF report generation requested events instead.
+ *
+ * @deprecated
+ */
+@Deprecated
 @Event(PressTransparencyReportRequested.EVENT_NAME)
+@SuppressWarnings("squid:S1133")
 public class PressTransparencyReportRequested {
     public static final String EVENT_NAME = "sjp.events.press-transparency-report-requested";
 
     private UUID pressTransparencyReportId = randomUUID();
-
     private ZonedDateTime requestedAt;
 
     @JsonCreator
     public PressTransparencyReportRequested(
             @JsonProperty("pressTransparencyReportId") final UUID reportId,
             @JsonProperty("requestedAt") final ZonedDateTime requestedAt) {
-        if (reportId!=null) {
+        if (reportId != null) {
             this.pressTransparencyReportId = reportId;
         }
         this.requestedAt = requestedAt;

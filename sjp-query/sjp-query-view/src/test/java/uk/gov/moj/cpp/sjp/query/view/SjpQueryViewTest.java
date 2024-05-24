@@ -94,6 +94,7 @@ import uk.gov.moj.cpp.sjp.query.view.service.FinancialMeansService;
 import uk.gov.moj.cpp.sjp.query.view.service.ProsecutionCaseService;
 import uk.gov.moj.cpp.sjp.query.view.service.ReferenceDataService;
 import uk.gov.moj.cpp.sjp.query.view.service.UserAndGroupsService;
+import uk.gov.moj.cpp.sjp.query.view.service.defendantcase.DefendantPotentialCaseService;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -122,7 +123,6 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.Spy;
 import org.mockito.runners.MockitoJUnitRunner;
-import uk.gov.moj.cpp.sjp.query.view.service.defendantcase.DefendantPotentialCaseService;
 
 @SuppressWarnings("squid:S1607")
 @RunWith(MockitoJUnitRunner.class)
@@ -332,7 +332,7 @@ public class SjpQueryViewTest {
         offenceDetail.setSequenceNumber(1);
 
         CaseDetail caseDetail = CaseDetailBuilder.aCase().withDefendantDetail(
-                aDefendantDetail().withPostcode(postcode).withId(randomUUID()).withOffences(Arrays.asList(offenceDetail)).build())
+                        aDefendantDetail().withPostcode(postcode).withId(randomUUID()).withOffences(Arrays.asList(offenceDetail)).build())
                 .withCosts(BigDecimal.ONE)
                 .withVictimSurcharge(BigDecimal.TEN)
                 .withCompleted(false).withProsecutingAuthority("TFL")
@@ -429,7 +429,7 @@ public class SjpQueryViewTest {
         offenceDetail.setSequenceNumber(1);
 
         CaseDetail caseDetail = CaseDetailBuilder.aCase().withDefendantDetail(
-                aDefendantDetail().withPostcode(postcode).withId(randomUUID()).withOffences(Arrays.asList(offenceDetail)).build())
+                        aDefendantDetail().withPostcode(postcode).withId(randomUUID()).withOffences(Arrays.asList(offenceDetail)).build())
                 .withCosts(BigDecimal.ONE)
                 .withVictimSurcharge(BigDecimal.TEN)
                 .withCompleted(false).withProsecutingAuthority("TFL")
@@ -817,7 +817,7 @@ public class SjpQueryViewTest {
 
         when(defendantService.findDefendantDetailUpdates(queryEnvelope)).thenReturn(new DefendantDetailsUpdatesView(
                 2,
-                newArrayList(defendantDetailsUpdate,defendantDetailsUpdateCompany)));
+                newArrayList(defendantDetailsUpdate, defendantDetailsUpdateCompany)));
 
         final JsonEnvelope response = sjpQueryView.findDefendantDetailUpdates(queryEnvelope);
 

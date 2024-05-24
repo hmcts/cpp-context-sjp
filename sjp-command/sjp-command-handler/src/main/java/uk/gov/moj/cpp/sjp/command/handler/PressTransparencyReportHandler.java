@@ -1,7 +1,10 @@
 package uk.gov.moj.cpp.sjp.command.handler;
 
 import static java.util.UUID.fromString;
+import static java.util.UUID.randomUUID;
 import static java.util.stream.Collectors.toList;
+import static uk.gov.moj.cpp.sjp.domain.DocumentRequestType.DELTA;
+import static uk.gov.moj.cpp.sjp.domain.DocumentRequestType.FULL;
 
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
 import uk.gov.justice.services.common.util.Clock;
@@ -30,6 +33,7 @@ import javax.json.JsonString;
 public class PressTransparencyReportHandler {
 
     private static final String PRESS_TRANSPARENCY_REPORT_ID = "pressTransparencyReportId";
+    private static final String FORMAT = "format";
 
     @Inject
     private AggregateService aggregateService;
@@ -47,12 +51,34 @@ public class PressTransparencyReportHandler {
     private JsonObjectToObjectConverter converter;
 
     @Handles("sjp.command.request-press-transparency-report")
-    public void requestPressTransparencyReport(final JsonEnvelope requestPressTransparencyReportCommand) throws EventStreamException {
-        final UUID reportId = requestPressTransparencyReportCommand.metadata().id();
-        applyToPressTransparencyReportAggregate(
-                reportId,
-                requestPressTransparencyReportCommand,
-                pressTransparencyReportAggregate -> pressTransparencyReportAggregate.requestPressTransparencyReport(reportId, clock.now()));
+    public void requestPressTransparencyReport(final JsonEnvelope envelope) throws EventStreamException {
+        final JsonObject payload = envelope.payloadAsJsonObject();
+        final String documentFormat = payload.getString(FORMAT);
+        final String language = payload.getString("language");
+        final String documentType = payload.containsKey("requestType") ? payload.getString("requestType") : "ALL";
+        initiatePressTransparencyReport(envelope, documentFormat, documentType, language);
+    }
+
+    private void initiatePressTransparencyReport(final JsonEnvelope envelope, final String documentFormat, final String documentType, final String language) throws EventStreamException {
+
+        if ("ALL".equals(documentType)) {
+            final UUID reportIdDelta = randomUUID();
+            applyToPressTransparencyReportAggregate(
+                    reportIdDelta,
+                    envelope,
+                    aggregate -> aggregate.requestPressTransparencyReport(reportIdDelta, documentFormat, DELTA.name(), language, clock.now()));
+            final UUID reportIdFull = randomUUID();
+            applyToPressTransparencyReportAggregate(
+                    reportIdFull,
+                    envelope,
+                    aggregate -> aggregate.requestPressTransparencyReport(reportIdFull, documentFormat, FULL.name(), language, clock.now()));
+        } else {
+            final UUID reportId = randomUUID();
+            applyToPressTransparencyReportAggregate(
+                    reportId,
+                    envelope,
+                    aggregate -> aggregate.requestPressTransparencyReport(reportId, documentFormat, documentType, language, clock.now()));
+        }
     }
 
     private void applyToPressTransparencyReportAggregate(
@@ -76,11 +102,10 @@ public class PressTransparencyReportHandler {
                 .map(JsonString::getString)
                 .map(UUID::fromString)
                 .collect(toList());
-
         applyToPressTransparencyReportAggregate(
                 reportId,
                 storePressTransparencyCommand,
-                pressTransparencyReportAggregate -> pressTransparencyReportAggregate.startTransparencyReportGeneration(caseIds));
+                pressTransparencyReportAggregate -> pressTransparencyReportAggregate.startTransparencyReportGeneration(caseIds, payload));
     }
 
     private JsonArray getCaseIds(final JsonObject payload) {
@@ -111,6 +136,4 @@ public class PressTransparencyReportHandler {
                 envelope,
                 PressTransparencyReportAggregate::pressTransparencyReportFailed);
     }
-
-
 }

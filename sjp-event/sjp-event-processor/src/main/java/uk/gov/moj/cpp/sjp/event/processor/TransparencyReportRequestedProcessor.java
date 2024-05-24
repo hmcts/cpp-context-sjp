@@ -14,7 +14,7 @@ import static org.apache.commons.lang3.StringUtils.lowerCase;
 import static uk.gov.justice.services.core.annotation.Component.EVENT_PROCESSOR;
 import static uk.gov.justice.services.messaging.Envelope.metadataFrom;
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
-import static uk.gov.moj.cpp.sjp.event.processor.DateTimeUtil.formatDateTimeForReport;
+import static uk.gov.moj.cpp.sjp.event.processor.DateTimeUtil.formatDateTimeForPdfReport;
 import static uk.gov.moj.cpp.sjp.event.processor.helper.JsonObjectConversionHelper.jsonObjectAsByteArray;
 
 import uk.gov.justice.services.core.annotation.FrameworkComponent;
@@ -55,7 +55,7 @@ import com.google.common.collect.Table;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-@SuppressWarnings({"squid:S1067","squid:S3776"})
+@SuppressWarnings({"squid:S1067", "squid:S3776"})
 @ServiceComponent(EVENT_PROCESSOR)
 public class TransparencyReportRequestedProcessor {
 
@@ -112,12 +112,12 @@ public class TransparencyReportRequestedProcessor {
         final List<JsonObject> filteredCases = getFilteredCases(allPendingCasesFromViewStore);
         storeReportMetadata(envelope, transparencyReportId, filteredCases);
         try {
-            final JsonObject payloadForDocumentGenerationEnglish = buildPayload(filteredCases, false,  false, envelope);
+            final JsonObject payloadForDocumentGenerationEnglish = buildPayload(filteredCases, false, false, envelope);
             final String englishPayloadFileName = String.format("transparency-report-template-parameters.english.%s.json", transparencyReportId);
             final UUID englishPayloadFileId = storeDocumentGeneratorPayload(payloadForDocumentGenerationEnglish, englishPayloadFileName, TEMPLATE_IDENTIFIER);
             requestDocumentGeneration(envelope, transparencyReportId, TEMPLATE_IDENTIFIER, englishPayloadFileId);
 
-            final JsonObject payloadForPublicEventInEnglish= buildPayload(filteredCases, false, true, envelope);
+            final JsonObject payloadForPublicEventInEnglish = buildPayload(filteredCases, false, true, envelope);
             if (LOGGER.isInfoEnabled()) {
                 LOGGER.info("publishing Sjp public event for english report {}, {}", PUBLIC_EVENT_SJP_PENDING_CASES_PUBLIC_LIST_GENERATED, payloadForPublicEventInEnglish);
             }
@@ -133,7 +133,7 @@ public class TransparencyReportRequestedProcessor {
             final UUID welshPayloadFileId = storeDocumentGeneratorPayload(payloadForDocumentGenerationWelsh, welshPayloadFileName, TEMPLATE_IDENTIFIER_WELSH);
             requestDocumentGeneration(envelope, transparencyReportId, TEMPLATE_IDENTIFIER_WELSH, welshPayloadFileId);
 
-            final JsonObject payloadForPublicEventInWelsh= buildPayload(filteredCases, true, true, envelope);
+            final JsonObject payloadForPublicEventInWelsh = buildPayload(filteredCases, true, true, envelope);
             if (LOGGER.isInfoEnabled()) {
                 LOGGER.info("publishing Sjp public event for welsh report {}, {}", PUBLIC_EVENT_SJP_PENDING_CASES_PUBLIC_LIST_GENERATED, payloadForPublicEventInEnglish);
             }
@@ -184,12 +184,13 @@ public class TransparencyReportRequestedProcessor {
 
     private JsonObject buildPayload(final List<JsonObject> pendingCases, boolean isWelsh, final boolean isPayloadForPublicEvent, final JsonEnvelope envelope) {
         return createObjectBuilder()
-                .add("generatedDateAndTime", formatDateTimeForReport(now(), isWelsh))
+                .add("generatedDateAndTime", formatDateTimeForPdfReport(now(), isWelsh))
                 .add("totalNumberOfRecords", pendingCases.size())
-                .add("readyCases", isPayloadForPublicEvent?createPendingCasesJsonArrayBuilderFromListOfPendingCasesForPublicEvent(pendingCases, isWelsh, envelope):
-                            createPendingCasesJsonArrayBuilderFromListOfPendingCases(pendingCases, isWelsh, envelope))
+                .add("readyCases", isPayloadForPublicEvent ? createPendingCasesJsonArrayBuilderFromListOfPendingCasesForPublicEvent(pendingCases, isWelsh, envelope) :
+                        createPendingCasesJsonArrayBuilderFromListOfPendingCases(pendingCases, isWelsh, envelope))
                 .build();
     }
+
     private void requestDocumentGeneration(final JsonEnvelope eventEnvelope,
                                            final UUID transparencyReportId,
                                            final String template,
@@ -243,7 +244,7 @@ public class TransparencyReportRequestedProcessor {
         pendingCases
                 .forEach(pendingCase -> {
                     final JsonObjectBuilder pendingCaseBuilder = createObjectBuilder()
-                            .add(DEFENDANT_NAME,buildDefendantName(pendingCase))
+                            .add(DEFENDANT_NAME, buildDefendantName(pendingCase))
                             .add(OFFENCE_TITLE, buildOffenceTitleFromOffenceArray(pendingCase.getJsonArray(OFFENCES), isWelsh, envelope))
                             .add(PROSECUTOR_NAME, buildProsecutorName(pendingCase.getString(PROSECUTOR_NAME), isWelsh, envelope));
 
@@ -260,7 +261,7 @@ public class TransparencyReportRequestedProcessor {
         pendingCases
                 .forEach(pendingCase -> {
                     final JsonObjectBuilder pendingCaseBuilder = createObjectBuilder()
-                            .add(DEFENDANT_NAME, pendingCase.containsKey(DEFENDANT_NAME) ? pendingCase.getString(DEFENDANT_NAME):EMPTY)
+                            .add(DEFENDANT_NAME, pendingCase.containsKey(DEFENDANT_NAME) ? pendingCase.getString(DEFENDANT_NAME) : EMPTY)
                             .add(FIRST_NAME, pendingCase.containsKey(FIRST_NAME) ? format(STRING_FORMAT, pendingCase.getString(FIRST_NAME)) : EMPTY)
                             .add(LAST_NAME, pendingCase.containsKey(LAST_NAME) ? format(STRING_FORMAT, pendingCase.getString(LAST_NAME)) : EMPTY)
                             .add(ADDRESS_LINE_1, pendingCase.containsKey(ADDRESS_LINE_1) ? format(STRING_FORMAT, pendingCase.getString(ADDRESS_LINE_1)) : EMPTY)
@@ -373,7 +374,7 @@ public class TransparencyReportRequestedProcessor {
         if (pendingCase.containsKey("legalEntityName")) {
             return pendingCase.getString("legalEntityName").toUpperCase();
         } else {
-            return format("%s %s", pendingCase.getString(FIRST_NAME).length() > 0 ? pendingCase.getString(FIRST_NAME).toUpperCase().charAt(0): "", capitalize(lowerCase(pendingCase.getString(LAST_NAME, ""))));
+            return format("%s %s", pendingCase.getString(FIRST_NAME).length() > 0 ? pendingCase.getString(FIRST_NAME).toUpperCase().charAt(0) : "", capitalize(lowerCase(pendingCase.getString(LAST_NAME, ""))));
         }
     }
 

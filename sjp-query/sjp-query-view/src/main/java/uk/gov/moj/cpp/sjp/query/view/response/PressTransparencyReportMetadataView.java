@@ -1,55 +1,115 @@
 package uk.gov.moj.cpp.sjp.query.view.response;
 
-import static java.util.Optional.ofNullable;
-import static uk.gov.moj.cpp.sjp.query.view.util.TransparencyServiceUtil.format;
-import static uk.gov.moj.cpp.sjp.query.view.util.TransparencyServiceUtil.resolveSize;
+import static com.google.common.collect.ImmutableList.copyOf;
 
-import uk.gov.moj.cpp.sjp.persistence.entity.PressTransparencyReportMetadata;
-import uk.gov.moj.cpp.sjp.query.view.util.TransparencyServiceUtil;
-
-import java.util.UUID;
+import java.util.ArrayList;
+import java.util.List;
 
 public class PressTransparencyReportMetadataView {
 
-    private String generatedAt;
+    private final List<PressTransparencyReportMetaDataView> reportsMetadata = new ArrayList<>();
 
-    private int pages;
-
-    private String size;
-
-    private String fileId;
-
-    public PressTransparencyReportMetadataView(final PressTransparencyReportMetadata reportMetadata) {
-        this.generatedAt = format(reportMetadata.getGeneratedAt());
-        this.pages = ofNullable(reportMetadata.getNumberOfPages()).orElse(0);
-        this.size = ofNullable(reportMetadata.getSizeInBytes())
-                .map(TransparencyServiceUtil::resolveSize)
-                .orElse("0b");
-        this.fileId = ofNullable(reportMetadata.getFileServiceId())
-                .map(UUID::toString)
-                .orElse(null);
+    public static PressTransparencyReportMetaDataView.Builder pressTransparencyReportMetaDataBuilder() {
+        return new PressTransparencyReportMetaDataView.Builder();
     }
 
-    public PressTransparencyReportMetadataView() {
-        this.generatedAt = "";
-        this.pages = 0;
-        this.size = resolveSize(0);
-        this.fileId = "0";
+    public List<PressTransparencyReportMetaDataView> getReportsMetadata() {
+        return copyOf(reportsMetadata);
     }
 
-    public String getGeneratedAt() {
-        return generatedAt;
+    public void addReportMetaData(final PressTransparencyReportMetaDataView pressTransparencyReportMetaDataView) {
+        reportsMetadata.add(pressTransparencyReportMetaDataView);
     }
 
-    public int getPages() {
-        return pages;
-    }
+    public static class PressTransparencyReportMetaDataView {
+        private String generatedAt;
+        private int pages;
+        private String reportIn;
+        private String size;
+        private String fileId;
+        private String title;
+        private String reportType;
+        private String language;
 
-    public String getSize() {
-        return size;
-    }
+        public String getGeneratedAt() {
+            return generatedAt;
+        }
 
-    public String getFileId() {
-        return fileId;
+        public int getPages() {
+            return pages;
+        }
+
+        public String getReportIn() {
+            return reportIn;
+        }
+
+        public String getSize() {
+            return size;
+        }
+
+        public String getFileId() {
+            return fileId;
+        }
+
+        public String getTitle() {
+            return title;
+        }
+
+        public String getReportType() {
+            return reportType;
+        }
+
+        public String getLanguage() {
+            return language;
+        }
+
+        public static class Builder {
+            private final PressTransparencyReportMetaDataView transparencyReportMetaDataView = new PressTransparencyReportMetaDataView();
+
+            public PressTransparencyReportMetaDataView.Builder withGeneratedAt(final String generatedAt) {
+                transparencyReportMetaDataView.generatedAt = generatedAt;
+                return this;
+            }
+
+            public PressTransparencyReportMetaDataView.Builder withPages(final int pages) {
+                transparencyReportMetaDataView.pages = pages;
+                return this;
+            }
+
+            public PressTransparencyReportMetaDataView.Builder withReportIn(final String reportIn) {
+                transparencyReportMetaDataView.reportIn = reportIn;
+                return this;
+            }
+
+            public PressTransparencyReportMetaDataView.Builder withSize(final String size) {
+                transparencyReportMetaDataView.size = size;
+                return this;
+            }
+
+            public PressTransparencyReportMetaDataView.Builder withFileId(final String fileId) {
+                transparencyReportMetaDataView.fileId = fileId;
+                return this;
+            }
+
+            public PressTransparencyReportMetaDataView.Builder withTitle(final String title) {
+                transparencyReportMetaDataView.title = title;
+                return this;
+            }
+
+            public PressTransparencyReportMetaDataView.Builder withReportType(final String reportType) {
+                transparencyReportMetaDataView.reportType = reportType;
+                return this;
+            }
+
+            public PressTransparencyReportMetaDataView.Builder withLanguage(final String language) {
+                transparencyReportMetaDataView.language = language;
+                return this;
+            }
+
+            public PressTransparencyReportMetaDataView build() {
+                return transparencyReportMetaDataView;
+            }
+        }
+
     }
 }

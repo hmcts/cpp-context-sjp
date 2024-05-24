@@ -521,7 +521,7 @@ public class AssignmentRepositoryTest extends BaseTransactionalTest {
 
                 assertThat(caseReadinessReason, equalTo(expectedCaseReadinessReason));
 
-                em.persist(new ReadyCase(caseId, caseReadinessReason, assigneeId, getSessionType(pendingWithdrawal, plea), getPriority(pendingWithdrawal, plea), caseDetail.getProsecutingAuthority(), caseDetail.getPostingDate()));
+                em.persist(new ReadyCase(caseId, caseReadinessReason, assigneeId, getSessionType(pendingWithdrawal, plea), getPriority(pendingWithdrawal, plea), caseDetail.getProsecutingAuthority(), caseDetail.getPostingDate(), now()));
             }
 
             return caseDetail;

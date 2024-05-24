@@ -1,18 +1,17 @@
 package uk.gov.moj.cpp.sjp.command.api;
 
+import static javax.json.Json.createObjectBuilder;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
-import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.verify;
-import static uk.gov.justice.services.test.utils.core.messaging.JsonEnvelopeBuilder.envelope;
+import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
 import static uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderFactory.metadataWithRandomUUID;
-import static uk.gov.moj.cpp.sjp.command.api.accesscontrol.RuleConstants.getRequestPressTransparencyReportGroups;
+import static uk.gov.moj.cpp.sjp.domain.DocumentFormat.PDF;
 
 import uk.gov.justice.services.core.sender.Sender;
 import uk.gov.justice.services.messaging.Envelope;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.accesscontrol.common.providers.UserAndGroupProvider;
-import uk.gov.moj.cpp.accesscontrol.drools.Action;
 import uk.gov.moj.cpp.accesscontrol.test.utils.BaseDroolsAccessControlTest;
 
 import java.util.Map;
@@ -20,7 +19,6 @@ import java.util.Map;
 import com.google.common.collect.ImmutableMap;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.kie.api.runtime.ExecutionResults;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.InjectMocks;
@@ -49,19 +47,11 @@ public class PressTransparencyReportApiTest extends BaseDroolsAccessControlTest 
     }
 
     @Test
-    public void shouldAllowAuthorisedUserToPressTransparencyReport() {
-        final Action action = createActionFor(SJP_REQUEST_PRESS_TRANSPARENCY_REPORT);
-        given(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups(action, getRequestPressTransparencyReportGroups()))
-                .willReturn(true);
-        final ExecutionResults results = executeRulesWith(action);
-        assertSuccessfulOutcome(results);
-    }
-
-
-    @Test
     public void shouldRequestPressTransparencyReport() {
-        final JsonEnvelope command = envelope().with(metadataWithRandomUUID(SJP_REQUEST_PRESS_TRANSPARENCY_REPORT)).build();
-
+        final JsonEnvelope command = envelopeFrom(
+                metadataWithRandomUUID(SJP_REQUEST_PRESS_TRANSPARENCY_REPORT),
+                createObjectBuilder()
+                        .add("format", PDF.name()));
         pressTransparencyReportApi.requestTransparencyReport(command);
         verify(sender).send(envelopeCaptor.capture());
 

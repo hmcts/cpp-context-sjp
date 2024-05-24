@@ -11,13 +11,18 @@ import java.util.UUID;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+/**
+ * Event to indicate that the generation of a press transparency report has started. Use either the JSON or PDF report generation started events instead.
+ *
+ * @deprecated
+ */
+@Deprecated
 @Event(PressTransparencyReportGenerationStarted.EVENT_NAME)
+@SuppressWarnings("squid:S1133")
 public class PressTransparencyReportGenerationStarted {
 
     public static final String EVENT_NAME = "sjp.events.press-transparency-report-generation-started";
-
     private UUID pressTransparencyReportId;
-
     private final List<UUID> caseIds;
 
     @JsonCreator
@@ -28,11 +33,12 @@ public class PressTransparencyReportGenerationStarted {
         this.caseIds = new LinkedList<>(caseIds);
     }
 
+    public UUID getPressTransparencyReportId() {
+        return pressTransparencyReportId;
+    }
+
     public List<UUID> getCaseIds() {
         return unmodifiableList(caseIds);
     }
 
-    public UUID getPressTransparencyReportId() {
-        return pressTransparencyReportId;
-    }
 }

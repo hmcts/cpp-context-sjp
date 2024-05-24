@@ -1,10 +1,14 @@
 package uk.gov.moj.cpp.sjp.query.view.service;
 
-import static java.util.Optional.ofNullable;
+import static java.time.LocalDateTime.now;
+import static uk.gov.moj.cpp.sjp.query.view.response.PressTransparencyReportMetadataView.pressTransparencyReportMetaDataBuilder;
+import static uk.gov.moj.cpp.sjp.query.view.util.TransparencyServiceUtil.format;
 
 import uk.gov.moj.cpp.sjp.persistence.entity.PressTransparencyReportMetadata;
 import uk.gov.moj.cpp.sjp.persistence.repository.PressTransparencyReportMetadataRepository;
 import uk.gov.moj.cpp.sjp.query.view.response.PressTransparencyReportMetadataView;
+
+import java.util.List;
 
 import javax.inject.Inject;
 import javax.persistence.NoResultException;
@@ -19,20 +23,29 @@ public class PressTransparencyReportService {
     @Inject
     private PressTransparencyReportMetadataRepository pressTransparencyReportMetadataRepository;
 
-    private  static final PressTransparencyReportMetadataView DEFAULT_METADATA = new PressTransparencyReportMetadataView();
-
-    public PressTransparencyReportMetadataView getMetadata(){
+    public PressTransparencyReportMetadataView getMetadata() {
+        final PressTransparencyReportMetadataView pressTransparencyReportsMetadataView = new PressTransparencyReportMetadataView();
         try {
-            final PressTransparencyReportMetadata latestPressTransparencyReportMetadata =
-                    pressTransparencyReportMetadataRepository.findLatestPressTransparencyReportMetadata();
-            return ofNullable(latestPressTransparencyReportMetadata)
-                    .map(PressTransparencyReportMetadataView::new)
-                    .orElse(DEFAULT_METADATA);
+            final List<PressTransparencyReportMetadata> reportMetadataList = pressTransparencyReportMetadataRepository.findLatestPressTransparencyReportMetadata(now().minusDays(1));
+            reportMetadataList.forEach(metadata -> pressTransparencyReportsMetadataView.addReportMetaData(buildPressTransparencyReportMetadata(metadata)));
+            return pressTransparencyReportsMetadataView;
         } catch (NoResultException e) {
             LOGGER.info("No press transparency report metadata found:", e);
         }
+        return pressTransparencyReportsMetadataView;
+    }
 
-        return DEFAULT_METADATA;
+
+    private PressTransparencyReportMetadataView.PressTransparencyReportMetaDataView buildPressTransparencyReportMetadata(final PressTransparencyReportMetadata latestPressTransparencyReportMetadata) {
+
+        final String language = latestPressTransparencyReportMetadata.getLanguage();
+        return pressTransparencyReportMetaDataBuilder()
+                .withGeneratedAt(format(latestPressTransparencyReportMetadata.getGeneratedAt()))
+                .withReportIn(language.charAt(0) + language.substring(1).toLowerCase())
+                .withPages(latestPressTransparencyReportMetadata.getNumberOfPages())
+                .withSize(latestPressTransparencyReportMetadata.getSizeInBytes().toString())
+                .withFileId(latestPressTransparencyReportMetadata.getFileServiceId().toString())
+                .withTitle(latestPressTransparencyReportMetadata.getTitle()).build();
     }
 
 }

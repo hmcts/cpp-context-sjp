@@ -565,7 +565,7 @@ baseUri: http://localhost:8080/sjp-command-api/command/api/rest/sjp
 /press-transparency-report/request:
   post:
     description: |
-      Request a new press transparency report
+      Request a new press transparency report either in pdf or json format and either for full or delta cases
       ...
       (mapping):
           requestType: application/vnd.sjp.request-press-transparency-report+json
@@ -573,10 +573,13 @@ baseUri: http://localhost:8080/sjp-command-api/command/api/rest/sjp
       ...
     body:
       application/vnd.sjp.request-press-transparency-report+json: !!null
+        example:
+          !include json/sjp.request-press-transparency-report.json
+        schema:
+          !include json/schema/sjp.request-press-transparency-report.json
     responses:
       202:
         description: Accepted
-
 
 /cases/{caseId}/notes:
   uriParameters:

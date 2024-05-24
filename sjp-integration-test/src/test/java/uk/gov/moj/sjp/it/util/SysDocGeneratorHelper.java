@@ -13,7 +13,7 @@ import javax.json.JsonObject;
 
 public class SysDocGeneratorHelper {
 
-    private static final String CONVERSION_FORMAT = "pdf";
+    private static final String CONVERSION_FORMAT = "PDF";
     private static final String ORIGINATING_SOURCE = "sjp";
 
 

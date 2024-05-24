@@ -48,6 +48,7 @@ import uk.gov.moj.cpp.sjp.query.view.response.ResultOrdersView;
 import uk.gov.moj.cpp.sjp.query.view.response.SearchCaseByMaterialIdView;
 
 import java.sql.Timestamp;
+import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
@@ -353,6 +354,18 @@ public class CaseService {
         return createObjectBuilder().add("pendingCases", pendingCases).build();
     }
 
+    public JsonObject findPendingDeltaCasesToPublish(LocalDate fromDate, final LocalDate toDate) {
+        if (fromDate.getDayOfWeek() == DayOfWeek.MONDAY) {
+            fromDate = fromDate.minusDays(3);
+        }
+        final Map<String, List<PendingCaseToPublishPerOffence>> pendingCasesGroupedByCaseId = getPendingDeltaCases(fromDate, toDate);
+
+        final JsonArrayBuilder pendingCases = createArrayBuilder();
+        pendingCasesGroupedByCaseId.forEach((key, value) -> populatePendingCasesArrayBuilder(value, pendingCases));
+
+        return createObjectBuilder().add("pendingCases", pendingCases).build();
+    }
+
     public ResultOrdersView findResultOrders(LocalDate fromDate, LocalDate toDate) {
 
         final ResultOrdersView resultOrdersView = new ResultOrdersView();
@@ -522,12 +535,19 @@ public class CaseService {
                     ofNullable(casePerOffence.getPressRestrictionName())
                             .ifPresent(pressRestrictionName -> pressRestrictionBuilder.add("name", pressRestrictionName));
 
-                    offenceArrayBuilder.add(createObjectBuilder()
+                    final JsonObjectBuilder offenceBuilder = createObjectBuilder()
                             .add("offenceCode", casePerOffence.getOffenceCode())
                             .add("offenceStartDate", casePerOffence.getOffenceStartDate().toString())
                             .add("offenceWording", casePerOffence.getOffenceWording())
                             .add("completed", ofNullable(casePerOffence.getCompleted()).orElse(false))
-                            .add("pressRestriction", pressRestrictionBuilder));
+                            .add("pressRestriction", pressRestrictionBuilder);
+
+                    ofNullable(casePerOffence.getOffenceWelshWording()).ifPresent(welshWording ->{
+                        offenceBuilder.add("offenceWelshWording", welshWording);
+                        LOGGER.info("offenceWelshWording={}", welshWording);
+                    });
+                    offenceArrayBuilder.add(offenceBuilder);
+
                 });
 
         final JsonObjectBuilder objectBuilder = createObjectBuilder()
@@ -535,6 +555,7 @@ public class CaseService {
                 .add("caseUrn", theCase.getCaseUrn())
                 .add("firstName", ofNullable(theCase.getFirstName()).orElse(""))
                 .add("lastName", ofNullable(theCase.getLastName()).orElse(""))
+                .add("title", ofNullable(theCase.getTitle()).orElse(""))
                 .add("offences", offenceArrayBuilder)
                 .add("prosecutorName", theCase.getProsecutor());
 
@@ -611,6 +632,13 @@ public class CaseService {
         } else {
             pendingCases = caseRepository.findPressTransparencyReportPendingCases();
         }
+
+        return pendingCases.stream().collect(groupingBy(caseIdPredicate()));
+    }
+
+    private Map<String, List<PendingCaseToPublishPerOffence>> getPendingDeltaCases(final LocalDate fromDate, final LocalDate toDate) {
+
+        final List<PendingCaseToPublishPerOffence> pendingCases = caseRepository.findPressTransparencyDeltaReportPendingCases(fromDate, toDate);
 
         return pendingCases.stream().collect(groupingBy(caseIdPredicate()));
     }

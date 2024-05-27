@@ -14,14 +14,12 @@ import static org.hamcrest.Matchers.isIn;
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsNull.notNullValue;
 import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
 import static uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderFactory.metadataWithRandomUUID;
-import static uk.gov.moj.cpp.sjp.domain.DocumentFormat.PDF;
 import static uk.gov.moj.cpp.sjp.event.processor.helper.JsonObjectConversionHelper.streamToJsonObject;
 
 import uk.gov.justice.services.core.sender.Sender;
@@ -32,16 +30,17 @@ import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.messaging.Metadata;
 import uk.gov.justice.services.messaging.spi.DefaultEnvelope;
 import uk.gov.moj.cpp.sjp.domain.DocumentFormat;
+import uk.gov.moj.cpp.sjp.domain.DocumentRequestType;
 import uk.gov.moj.cpp.sjp.event.processor.service.ReferenceDataOffencesService;
 import uk.gov.moj.cpp.sjp.event.processor.service.ReferenceDataService;
 import uk.gov.moj.cpp.sjp.event.processor.service.SjpService;
+import uk.gov.moj.cpp.sjp.event.processor.utils.PayloadHelper;
 
 import java.io.InputStream;
 import java.time.LocalDate;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.UUID;
 
 import javax.json.JsonArray;
@@ -92,15 +91,16 @@ public class TransparencyReportRequestedProcessorTest {
     @Captor
     private ArgumentCaptor<DefaultEnvelope> sjpPendingListPublicEnvelopeCaptor;
 
+    @Mock
+    private PayloadHelper payloadHelper;
 
     @Test
+    @SuppressWarnings("deprecation")
     public void shouldCreateTransparencyReport() throws FileServiceException {
-        final String expectedEnglishTemplateName = "PendingCasesEnglish";
-        final String expectedWelshTemplateName = "PendingCasesWelsh";
-
         final UUID englishPayloadFileUUID = randomUUID();
         final UUID welshPayloadFileUUID = randomUUID();
         final UUID transparencyReportId = randomUUID();
+        final String expectedEnglishTemplateName = "PublicPendingCasesFullEnglish";
 
         final String offenceTitle = "OffenceTitle";
         final String prosecutorName = "TFL";
@@ -110,10 +110,6 @@ public class TransparencyReportRequestedProcessorTest {
         final List<UUID> caseIds = range(0, numberOfPendingCasesForExport)
                 .mapToObj(e -> randomUUID()).collect(toList());
 
-        final Optional<JsonObject> CA03011_referenceDataPayload = Optional.of(createObjectBuilder()
-                .add("title", offenceTitle)
-                .build());
-
         // create 5 young offenders
         final List<UUID> youngOffenderCaseIds = range(0, 5)
                 .mapToObj(e -> randomUUID()).collect(toList());
@@ -122,9 +118,15 @@ public class TransparencyReportRequestedProcessorTest {
         final List<UUID> pressRestrictionCaseIds = range(0, 5)
                 .mapToObj(e -> randomUUID()).collect(toList());
 
-        when(referenceDataService.getProsecutor(eq(prosecutorName), eq(false), any())).thenReturn(prosecutorEnglish);
-        when(referenceDataService.getProsecutor(eq(prosecutorName), eq(true), any())).thenReturn(prosecutorWelsh);
-        when(referenceDataOffencesService.getOffenceReferenceData(any(), anyString(), anyString())).thenReturn(CA03011_referenceDataPayload);
+        when(payloadHelper.buildOffenceTitleFromOffenceArray(any(), eq(false), any())).thenReturn(offenceTitle);
+        when(payloadHelper.buildOffenceTitleFromOffenceArray(any(), eq(true), any())).thenReturn(offenceTitle);
+        when(payloadHelper.mapOffenceIntoOffenceTitleString(any(), eq(false), any())).thenReturn(offenceTitle);
+        when(payloadHelper.mapOffenceIntoOffenceTitleString(any(), eq(true), any())).thenReturn(offenceTitle);
+        when(payloadHelper.buildProsecutorName(eq(prosecutorName), eq(false), any())).thenReturn(prosecutorEnglish);
+        when(payloadHelper.buildProsecutorName(eq(prosecutorName), eq(true), any())).thenReturn(prosecutorWelsh);
+        when(payloadHelper.getStartDate(eq(false))).thenReturn("15 January 2024");
+        when(payloadHelper.getStartDate(eq(true))).thenReturn("ers 21 Tachwedd");
+        when(payloadHelper.getTemplateIdentifier(any(), any(), any())).thenReturn(expectedEnglishTemplateName);
 
         final List<JsonObject> pendingCasesList = pendingCasesList(caseIds, youngOffenderCaseIds, pressRestrictionCaseIds);
         when(sjpService.getPendingCases(any(), any())).thenReturn(pendingCasesList);
@@ -136,6 +138,9 @@ public class TransparencyReportRequestedProcessorTest {
                 metadataWithRandomUUID("sjp.events.transparency-report-requested"),
                 createObjectBuilder()
                         .add("transparencyReportId", transparencyReportId.toString())
+                        .add("requestType", DocumentRequestType.FULL.name())
+                        .add("language", "ENGLISH")
+                        .add("format", DocumentFormat.PDF.name())
                         .build()
         );
         processor.createTransparencyReport(privateEventEnvelope);
@@ -148,24 +153,264 @@ public class TransparencyReportRequestedProcessorTest {
 
         assertPayloadForDocumentGenerator(payloadForEnglishPdf, pendingCasesList, numberOfPendingCasesForExport, false);
         assertPayloadForDocumentGenerator(payloadForWelshPdf, pendingCasesList, numberOfPendingCasesForExport, true);
-        verify(referenceDataService).getProsecutor(eq(prosecutorName), eq(false), any());
-        verify(referenceDataService).getProsecutor(eq(prosecutorName), eq(true), any());
-
-        assertPayloadForDocumentGenerator(payloadForDocumentGenerationCaptor.getAllValues().get(0), expectedEnglishTemplateName,
-                transparencyReportId.toString(), englishPayloadFileUUID.toString());
-        assertPayloadForDocumentGenerator(payloadForDocumentGenerationCaptor.getAllValues().get(1), expectedWelshTemplateName,
-                transparencyReportId.toString(), welshPayloadFileUUID.toString());
 
         verify(sender, times(3)).send(storeTransparencyReportCommandEnvelopeCaptor.capture());
         assertTransparencyReportEnvelope(storeTransparencyReportCommandEnvelopeCaptor.getAllValues().get(0), transparencyReportId, caseIds);
-        assertSJPPendingPublicListEnvelope(storeTransparencyReportCommandEnvelopeCaptor.getAllValues().get(1), "ENGLISH", numberOfPendingCasesForExport, prosecutorEnglish);
-        assertSJPPendingPublicListEnvelope(storeTransparencyReportCommandEnvelopeCaptor.getAllValues().get(2), "WELSH", numberOfPendingCasesForExport, prosecutorWelsh);
+    }
+
+    @Test
+    public void shouldCreateTransparencyPDFReportFULL() throws FileServiceException {
+        final String expectedEnglishTemplateName = "PublicPendingCasesFullEnglish";
+        final UUID englishPayloadFileUUID = randomUUID();
+        final UUID welshPayloadFileUUID = randomUUID();
+        final UUID transparencyReportId = randomUUID();
+
+        final String offenceTitle = "OffenceTitle";
+        final String prosecutorName = "TFL";
+        final String prosecutorEnglish = "Transport For London";
+        final String prosecutorWelsh = "Transport For London - Welsh";
+        final Integer numberOfPendingCasesForExport = 9;
+        final List<UUID> caseIds = range(0, numberOfPendingCasesForExport)
+                .mapToObj(e -> randomUUID()).collect(toList());
+
+        // create 5 young offenders
+        final List<UUID> youngOffenderCaseIds = range(0, 5)
+                .mapToObj(e -> randomUUID()).collect(toList());
+
+        // create 5 press restricted case ids
+        final List<UUID> pressRestrictionCaseIds = range(0, 5)
+                .mapToObj(e -> randomUUID()).collect(toList());
+
+        when(payloadHelper.buildOffenceTitleFromOffenceArray(any(), eq(false), any())).thenReturn(offenceTitle);
+        when(payloadHelper.mapOffenceIntoOffenceTitleString(any(), eq(false), any())).thenReturn(offenceTitle);
+        when(payloadHelper.buildProsecutorName(eq(prosecutorName), eq(false), any())).thenReturn(prosecutorEnglish);
+        when(payloadHelper.buildProsecutorName(eq(prosecutorName), eq(true), any())).thenReturn(prosecutorWelsh);
+        when(payloadHelper.getTemplateIdentifier(any(), any(), any())).thenReturn(expectedEnglishTemplateName);
+        when(payloadHelper.getStartDate(eq(false))).thenReturn("15 January 2024");
+
+        final List<JsonObject> pendingCasesList = pendingCasesList(caseIds, youngOffenderCaseIds, pressRestrictionCaseIds);
+        when(sjpService.getPendingCases(any(), any())).thenReturn(pendingCasesList);
+        when(fileStorer.store(any(), any()))
+                .thenReturn(englishPayloadFileUUID)
+                .thenReturn(welshPayloadFileUUID);
+
+        final JsonEnvelope privateEventEnvelope = envelopeFrom(
+                metadataWithRandomUUID("sjp.events.transparency-pdf-report-requested"),
+                createObjectBuilder()
+                        .add("transparencyReportId", transparencyReportId.toString())
+                        .add("format", DocumentFormat.PDF.name())
+                        .add("requestType", DocumentRequestType.FULL.name())
+                        .add("language", "ENGLISH")
+                        .build()
+        );
+        processor.createTransparencyPDFReport(privateEventEnvelope);
+
+        verify(fileStorer, times(1)).store(any(JsonObject.class), payloadForFileServiceCaptor.capture());
+        verify(sender, times(1)).sendAsAdmin(payloadForDocumentGenerationCaptor.capture());
+
+        final JsonObject payloadForEnglishPdf = streamToJsonObject(payloadForFileServiceCaptor.getValue());
+
+        assertPayloadForDocumentGenerator(payloadForEnglishPdf, pendingCasesList, numberOfPendingCasesForExport, false);
+
+        assertPayloadForDocumentGenerator(payloadForDocumentGenerationCaptor.getAllValues().get(0), expectedEnglishTemplateName,
+                transparencyReportId.toString(), englishPayloadFileUUID.toString());
+
+        verify(sender, times(1)).send(storeTransparencyReportCommandEnvelopeCaptor.capture());
+        assertTransparencyReportEnvelope(storeTransparencyReportCommandEnvelopeCaptor.getAllValues().get(0), transparencyReportId, caseIds);
+    }
+
+    @Test
+    public void shouldCreateTransparencyPDFReportDELTA() throws FileServiceException {
+        final String expectedEnglishTemplateName = "PublicPendingCasesDeltaEnglish";
+        final UUID englishPayloadFileUUID = randomUUID();
+        final UUID transparencyReportId = randomUUID();
+
+        final String offenceTitle = "OffenceTitle";
+        final String prosecutorName = "TFL";
+        final String prosecutorEnglish = "Transport For London";
+        final Integer numberOfPendingCasesForExport = 9;
+        final List<UUID> caseIds = range(0, numberOfPendingCasesForExport)
+                .mapToObj(e -> randomUUID()).collect(toList());
+
+        // create 5 young offenders
+        final List<UUID> youngOffenderCaseIds = range(0, 5)
+                .mapToObj(e -> randomUUID()).collect(toList());
+
+        // create 5 press restricted case ids
+        final List<UUID> pressRestrictionCaseIds = range(0, 5)
+                .mapToObj(e -> randomUUID()).collect(toList());
+
+        when(payloadHelper.buildOffenceTitleFromOffenceArray(any(), eq(false), any())).thenReturn(offenceTitle);
+        when(payloadHelper.mapOffenceIntoOffenceTitleString(any(), eq(false), any())).thenReturn(offenceTitle);
+        when(payloadHelper.buildProsecutorName(eq(prosecutorName), eq(false), any())).thenReturn(prosecutorEnglish);
+
+        final List<JsonObject> pendingCasesList = pendingCasesList(caseIds, youngOffenderCaseIds, pressRestrictionCaseIds);
+        when(sjpService.getPendingCases(any(), any())).thenReturn(pendingCasesList);
+        when(sjpService.getPendingDeltaCases(any(), any())).thenReturn(pendingCasesList);
+        when(fileStorer.store(any(), any())).thenReturn(englishPayloadFileUUID);
+
+        final JsonEnvelope privateEventEnvelope = envelopeFrom(
+                metadataWithRandomUUID("sjp.events.transparency-pdf-report-requested"),
+                createObjectBuilder()
+                        .add("transparencyReportId", transparencyReportId.toString())
+                        .add("format", DocumentFormat.PDF.name())
+                        .add("requestType", DocumentRequestType.DELTA.name())
+                        .add("language", "ENGLISH")
+                        .build()
+        );
+
+        when(payloadHelper.getTemplateIdentifier(any(), any(), any())).thenReturn(expectedEnglishTemplateName);
+        when(payloadHelper.getStartDate(eq(false))).thenReturn("15 January 2024");
+        processor.createTransparencyPDFReport(privateEventEnvelope);
+
+        verify(fileStorer, times(1)).store(any(JsonObject.class), payloadForFileServiceCaptor.capture());
+        verify(sender, times(1)).sendAsAdmin(payloadForDocumentGenerationCaptor.capture());
+
+        final JsonObject payloadForEnglishPdf = streamToJsonObject(payloadForFileServiceCaptor.getValue());
+
+        assertPayloadForDocumentGenerator(payloadForEnglishPdf, pendingCasesList, numberOfPendingCasesForExport, false);
+
+        assertPayloadForDocumentGenerator(payloadForDocumentGenerationCaptor.getAllValues().get(0), expectedEnglishTemplateName,
+                transparencyReportId.toString(), englishPayloadFileUUID.toString());
+
+        verify(sender, times(1)).send(storeTransparencyReportCommandEnvelopeCaptor.capture());
+        assertTransparencyReportEnvelope(storeTransparencyReportCommandEnvelopeCaptor.getAllValues().get(0), transparencyReportId, caseIds);
+    }
+
+    @Test
+    public void shouldCreateTransparencyReportJSONFull() throws FileServiceException {
+        final String expectedEnglishTemplateName = "PublicPendingCasesFullEnglish";
+        final UUID englishPayloadFileUUID = randomUUID();
+        final UUID welshPayloadFileUUID = randomUUID();
+        final UUID transparencyReportId = randomUUID();
+
+        final String offenceTitle = "OffenceTitle";
+        final String prosecutorName = "TFL";
+        final String prosecutorEnglish = "Transport For London";
+        final String prosecutorWelsh = "Transport For London - Welsh";
+        final Integer numberOfPendingCasesForExport = 9;
+        final List<UUID> caseIds = range(0, numberOfPendingCasesForExport)
+                .mapToObj(e -> randomUUID()).collect(toList());
+
+        // create 5 young offenders
+        final List<UUID> youngOffenderCaseIds = range(0, 5)
+                .mapToObj(e -> randomUUID()).collect(toList());
+
+        // create 5 press restricted case ids
+        final List<UUID> pressRestrictionCaseIds = range(0, 5)
+                .mapToObj(e -> randomUUID()).collect(toList());
+
+        when(payloadHelper.buildOffenceTitleFromOffenceArray(any(), eq(false), any())).thenReturn(offenceTitle);
+        when(payloadHelper.buildOffenceTitleFromOffenceArray(any(), eq(true), any())).thenReturn(offenceTitle);
+        when(payloadHelper.mapOffenceIntoOffenceTitleString(any(), eq(false), any())).thenReturn(offenceTitle);
+        when(payloadHelper.mapOffenceIntoOffenceTitleString(any(), eq(true), any())).thenReturn(offenceTitle);
+        when(payloadHelper.buildProsecutorName(eq(prosecutorName), eq(false), any())).thenReturn(prosecutorEnglish);
+        when(payloadHelper.buildProsecutorName(eq(prosecutorName), eq(true), any())).thenReturn(prosecutorWelsh);
+        when(payloadHelper.getStartDate(eq(false))).thenReturn("15 January 2024");
+        when(payloadHelper.getStartDate(eq(true))).thenReturn("ers 21 Tachwedd");
+        when(payloadHelper.getTemplateIdentifier(any(), any(), any())).thenReturn(expectedEnglishTemplateName);
+
+        final List<JsonObject> pendingCasesList = pendingCasesList(caseIds, youngOffenderCaseIds, pressRestrictionCaseIds);
+        when(sjpService.getPendingCases(any(), any())).thenReturn(pendingCasesList);
+        when(fileStorer.store(any(), any()))
+                .thenReturn(englishPayloadFileUUID)
+                .thenReturn(welshPayloadFileUUID);
+
+        final JsonEnvelope privateEventEnvelope = envelopeFrom(
+                metadataWithRandomUUID("sjp.events.transparency-json-report-requested"),
+                createObjectBuilder()
+                        .add("transparencyReportId", transparencyReportId.toString())
+                        .add("format", DocumentFormat.JSON.name())
+                        .add("requestType", DocumentRequestType.FULL.name())
+                        .add("language", "ENGLISH")
+                        .build()
+        );
+        processor.createTransparencyJSONReport(privateEventEnvelope);
+
+        verify(sender, times(1)).send(storeTransparencyReportCommandEnvelopeCaptor.capture());
+        final Envelope jsonEnvelope = storeTransparencyReportCommandEnvelopeCaptor.getAllValues().get(0);
+        assertThat(jsonEnvelope.metadata().name(), is(PUBLIC_EVENT_SJP_PENDING_CASES_PUBLIC_LIST_GENERATED));
+        final JsonObject eventPayload = (JsonObject) jsonEnvelope.payload();
+        final JsonObject payload = eventPayload.getJsonObject("listPayload");
+        assertThat(payload.getInt("totalNumberOfRecords"), is(9));
+        final JsonArray readyCases = payload.getJsonArray("readyCases");
+        assertThat(9, is(readyCases.size()));
+        readyCases.getValuesAs(JsonObject.class).forEach(jsonObject -> {
+            assertThat(jsonObject.getJsonArray("sjpOffences"), notNullValue());
+            assertThat(jsonObject.getString("firstName"), is("A"));
+            assertThat(jsonObject.getString("lastName"), is("Schultz"));
+            assertThat(jsonObject.getString("postcode").length(), is(2));
+            assertThat(jsonObject.getString("prosecutorName"), is("Transport For London"));
+        });
+    }
+
+    @Test
+    public void shouldCreateTransparencyReportJSONDELTA() throws FileServiceException {
+        final String expectedEnglishTemplateName = "PublicPendingCasesDeltaEnglish";
+        final UUID englishPayloadFileUUID = randomUUID();
+        final UUID welshPayloadFileUUID = randomUUID();
+        final UUID transparencyReportId = randomUUID();
+
+        final String offenceTitle = "OffenceTitle";
+        final String prosecutorName = "TFL";
+        final String prosecutorEnglish = "Transport For London";
+        final String prosecutorWelsh = "Transport For London - Welsh";
+        final Integer numberOfPendingCasesForExport = 9;
+        final List<UUID> caseIds = range(0, numberOfPendingCasesForExport)
+                .mapToObj(e -> randomUUID()).collect(toList());
+
+        // create 5 young offenders
+        final List<UUID> youngOffenderCaseIds = range(0, 5)
+                .mapToObj(e -> randomUUID()).collect(toList());
+
+        // create 5 press restricted case ids
+        final List<UUID> pressRestrictionCaseIds = range(0, 5)
+                .mapToObj(e -> randomUUID()).collect(toList());
+
+        when(payloadHelper.buildOffenceTitleFromOffenceArray(any(), eq(false), any())).thenReturn(offenceTitle);
+        when(payloadHelper.buildOffenceTitleFromOffenceArray(any(), eq(true), any())).thenReturn(offenceTitle);
+        when(payloadHelper.mapOffenceIntoOffenceTitleString(any(), eq(false), any())).thenReturn(offenceTitle);
+        when(payloadHelper.mapOffenceIntoOffenceTitleString(any(), eq(true), any())).thenReturn(offenceTitle);
+        when(payloadHelper.buildProsecutorName(eq(prosecutorName), eq(false), any())).thenReturn(prosecutorEnglish);
+        when(payloadHelper.buildProsecutorName(eq(prosecutorName), eq(true), any())).thenReturn(prosecutorWelsh);
+        when(payloadHelper.getStartDate(eq(false))).thenReturn("15 January 2024");
+        when(payloadHelper.getStartDate(eq(true))).thenReturn("ers 21 Tachwedd");
+        when(payloadHelper.getTemplateIdentifier(any(), any(), any())).thenReturn(expectedEnglishTemplateName);
+
+        final List<JsonObject> pendingCasesList = pendingCasesList(caseIds, youngOffenderCaseIds, pressRestrictionCaseIds);
+        when(sjpService.getPendingCases(any(), any())).thenReturn(pendingCasesList);
+        when(sjpService.getPendingDeltaCases(any(), any())).thenReturn(pendingCasesList);
+        when(fileStorer.store(any(), any()))
+                .thenReturn(englishPayloadFileUUID)
+                .thenReturn(welshPayloadFileUUID);
+
+        final JsonEnvelope privateEventEnvelope = envelopeFrom(
+                metadataWithRandomUUID("sjp.events.transparency-json-report-requested"),
+                createObjectBuilder()
+                        .add("transparencyReportId", transparencyReportId.toString())
+                        .add("format", DocumentFormat.JSON.name())
+                        .add("requestType", DocumentRequestType.DELTA.name())
+                        .add("language", "ENGLISH")
+                        .build()
+        );
+        processor.createTransparencyPDFReport(privateEventEnvelope);
+
+        verify(fileStorer, times(1)).store(any(JsonObject.class), payloadForFileServiceCaptor.capture());
+        verify(sender, times(1)).sendAsAdmin(payloadForDocumentGenerationCaptor.capture());
+
+        final JsonObject payloadForEnglishPdf = streamToJsonObject(payloadForFileServiceCaptor.getAllValues().get(0));
+
+        assertPayloadForDocumentGenerator(payloadForEnglishPdf, pendingCasesList, numberOfPendingCasesForExport, false);
+
+        assertPayloadForDocumentGenerator(payloadForDocumentGenerationCaptor.getAllValues().get(0), expectedEnglishTemplateName,
+                transparencyReportId.toString(), englishPayloadFileUUID.toString());
+
+        verify(sender, times(1)).send(storeTransparencyReportCommandEnvelopeCaptor.capture());
     }
 
     private void assertSJPPendingPublicListEnvelope(final Envelope jsonEnvelope, final String language, final Integer numberOfPendingCasesForExport, final String prosecutorName) {
         assertThat(jsonEnvelope.metadata().name(), is(PUBLIC_EVENT_SJP_PENDING_CASES_PUBLIC_LIST_GENERATED));
         final JsonObject eventPayload = (JsonObject) jsonEnvelope.payload();
-        assertThat(language, is(eventPayload.getString("language")));
         final JsonObject payload = eventPayload.getJsonObject("listPayload");
         assertThat(payload.getInt("totalNumberOfRecords"), is(numberOfPendingCasesForExport));
         final JsonArray readyCases = payload.getJsonArray("readyCases");
@@ -305,7 +550,7 @@ public class TransparencyReportRequestedProcessorTest {
                 .add("offences", offenceArrayBuilder.build())
                 .add("prosecutorName", "TFL")
                 .add("firstName", "ALEX")
-                .add("lastName","SCHULTZ");
+                .add("lastName", "SCHULTZ");
 
         if (generateFullAddress) {
             pendingCase

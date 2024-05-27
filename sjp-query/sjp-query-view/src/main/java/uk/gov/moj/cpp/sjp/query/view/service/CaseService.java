@@ -90,6 +90,7 @@ public class CaseService {
     private static final String PAGE_SIZE = "pageSize";
     private static final String PAGE_COUNT = "pageCount";
     private static final String RESULTS = "results";
+    private static final String PENDING_CASES = "pendingCases";
 
     @Inject
     private CaseRepository caseRepository;
@@ -351,7 +352,7 @@ public class CaseService {
         final JsonArrayBuilder pendingCases = createArrayBuilder();
         pendingCasesGroupedByCaseId.forEach((key, value) -> populatePendingCasesArrayBuilder(value, pendingCases));
 
-        return createObjectBuilder().add("pendingCases", pendingCases).build();
+        return createObjectBuilder().add(PENDING_CASES, pendingCases).build();
     }
 
     public JsonObject findPendingDeltaCasesToPublish(LocalDate fromDate, final LocalDate toDate) {
@@ -363,7 +364,19 @@ public class CaseService {
         final JsonArrayBuilder pendingCases = createArrayBuilder();
         pendingCasesGroupedByCaseId.forEach((key, value) -> populatePendingCasesArrayBuilder(value, pendingCases));
 
-        return createObjectBuilder().add("pendingCases", pendingCases).build();
+        return createObjectBuilder().add(PENDING_CASES, pendingCases).build();
+    }
+
+    public JsonObject findPendingDeltaCasesToPublish(LocalDate fromDate, final LocalDate toDate, final ExportType exportType) {
+        if (fromDate.getDayOfWeek() == DayOfWeek.MONDAY) {
+            fromDate = fromDate.minusDays(3);
+        }
+        final Map<String, List<PendingCaseToPublishPerOffence>> pendingCasesGroupedByCaseId = getPendingDeltaCases(fromDate, toDate, exportType);
+
+        final JsonArrayBuilder pendingCases = createArrayBuilder();
+        pendingCasesGroupedByCaseId.forEach((key, value) -> populatePendingCasesArrayBuilder(value, pendingCases));
+
+        return createObjectBuilder().add(PENDING_CASES, pendingCases).build();
     }
 
     public ResultOrdersView findResultOrders(LocalDate fromDate, LocalDate toDate) {
@@ -542,7 +555,7 @@ public class CaseService {
                             .add("completed", ofNullable(casePerOffence.getCompleted()).orElse(false))
                             .add("pressRestriction", pressRestrictionBuilder);
 
-                    ofNullable(casePerOffence.getOffenceWelshWording()).ifPresent(welshWording ->{
+                    ofNullable(casePerOffence.getOffenceWelshWording()).ifPresent(welshWording -> {
                         offenceBuilder.add("offenceWelshWording", welshWording);
                         LOGGER.info("offenceWelshWording={}", welshWording);
                     });
@@ -643,6 +656,16 @@ public class CaseService {
         return pendingCases.stream().collect(groupingBy(caseIdPredicate()));
     }
 
+    private Map<String, List<PendingCaseToPublishPerOffence>> getPendingDeltaCases(final LocalDate fromDate, final LocalDate toDate, final ExportType exportType) {
+
+        List<PendingCaseToPublishPerOffence> pendingCases;
+        if (exportType == PUBLIC) {
+            pendingCases = caseRepository.findPublicTransparencyDeltaReportPendingCases(fromDate, toDate);
+        } else {
+            pendingCases = caseRepository.findPressTransparencyDeltaReportPendingCases(fromDate, toDate);
+        }
+        return pendingCases.stream().collect(groupingBy(caseIdPredicate()));
+    }
 }
 
 

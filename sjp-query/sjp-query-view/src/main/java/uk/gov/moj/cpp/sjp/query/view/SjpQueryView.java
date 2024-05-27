@@ -204,7 +204,7 @@ public class SjpQueryView {
     @Inject
     private AssignmentService assignmentService;
 
-    @SuppressWarnings({"squid:CallToDeprecatedMethod","squid:S3776"})
+    @SuppressWarnings({"squid:CallToDeprecatedMethod", "squid:S3776"})
     @Handles("sjp.query.case")
     public JsonEnvelope findCase(final JsonEnvelope envelope) {
 
@@ -224,7 +224,7 @@ public class SjpQueryView {
             final DefendantDetailUpdateRequestView detailUpdateRequestView = caseService.findDefendantDetailUpdateRequest(fromString(extract(envelope, FIELD_CASE_ID)));
             if (nonNull(detailUpdateRequestView)) {
                 final DefendantView defendantView = caseView.getDefendant();
-                if(nonNull(defendantView)) {
+                if (nonNull(defendantView)) {
                     defendantView.setDefendantDetailUpdateRequestView(detailUpdateRequestView);
                 }
             }
@@ -379,8 +379,9 @@ public class SjpQueryView {
 
     @Handles("sjp.query.pending-delta-cases")
     public JsonEnvelope getPendingDeltaCasesToPublish(final JsonEnvelope envelope) {
+        final ExportType exportType = getExportType(envelope);
         return enveloper.withMetadataFrom(envelope, NAME_RESPONSE_DELTA_PENDING_CASES).apply(
-                caseService.findPendingDeltaCasesToPublish(LocalDate.now().minusDays(1), LocalDate.now()));
+                caseService.findPendingDeltaCasesToPublish(LocalDate.now().minusDays(1), LocalDate.now(), exportType));
     }
 
     @Handles("sjp.query.result-orders")

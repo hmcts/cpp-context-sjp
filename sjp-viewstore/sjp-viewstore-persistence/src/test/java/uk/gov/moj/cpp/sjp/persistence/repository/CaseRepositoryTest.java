@@ -14,6 +14,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
+import static org.mockito.Matchers.any;
 import static uk.gov.moj.cpp.sjp.domain.SessionType.DELEGATED_POWERS;
 import static uk.gov.moj.cpp.sjp.domain.SessionType.MAGISTRATE;
 
@@ -140,8 +141,26 @@ public class CaseRepositoryTest extends BaseTransactionalTest {
     }
 
     @Test
-    public void shouldfindPressTransparencyReportPendingCases() {
+    public void shouldFindPressTransparencyReportPendingCases() {
         final List<PendingCaseToPublishPerOffence> caseDetails = caseRepository.findPressTransparencyReportPendingCases();
+        assertNotNull(caseDetails);
+    }
+
+    @Test
+    public void shouldFindPressTransparencyDeltaReportPendingCases() {
+        final List<PendingCaseToPublishPerOffence> caseDetails = caseRepository.findPressTransparencyDeltaReportPendingCases(any(), any());
+        assertNotNull(caseDetails);
+    }
+
+    @Test
+    public void shouldFindPublicTransparencyReportPendingCases() {
+        final List<PendingCaseToPublishPerOffence> caseDetails = caseRepository.findPublicTransparencyReportPendingCases();
+        assertNotNull(caseDetails);
+    }
+
+    @Test
+    public void shouldFindPublicTransparencyDeltaReportPendingCases() {
+        final List<PendingCaseToPublishPerOffence> caseDetails = caseRepository.findPublicTransparencyDeltaReportPendingCases(any(), any());
         assertNotNull(caseDetails);
     }
 

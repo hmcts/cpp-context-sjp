@@ -134,6 +134,12 @@ subscriptions_descriptor:
         - name: sjp.events.transparency-report-requested
           schema_uri: http://justice.gov.uk/json/schemas/domains/sjp/events/transparency-report-requested.json
 
+        - name: sjp.events.transparency-pdf-report-requested
+          schema_uri: http://justice.gov.uk/json/schemas/domains/sjp/events/transparency-pdf-report-requested.json
+
+        - name: sjp.events.transparency-json-report-requested
+          schema_uri: http://justice.gov.uk/json/schemas/domains/sjp/events/transparency-json-report-requested.json
+
         - name: sjp.events.press-transparency-report-requested
           schema_uri: http://justice.gov.uk/json/schemas/domains/sjp/events/press-transparency-report-requested.json
 

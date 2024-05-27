@@ -16,18 +16,10 @@ import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 
-/**
- * Event to indicate that the generation of a transparency report has failed.
- * Use either the JSON or PDF report generation failed events instead.
- *
- * @deprecated
- */
-@Deprecated
 @Event(EVENT_NAME)
-@SuppressWarnings("squid:S1133")
-public class TransparencyReportGenerationFailed {
+public class TransparencyPDFReportGenerationFailed {
 
-    public static final String EVENT_NAME = "sjp.events.transparency-report-generation-failed";
+    public static final String EVENT_NAME = "sjp.events.transparency-pdf-report-generation-failed";
 
     private final UUID transparencyReportId;
 
@@ -38,10 +30,10 @@ public class TransparencyReportGenerationFailed {
     private final boolean reportGenerationPreviouslyFailed;
 
     @JsonCreator
-    public TransparencyReportGenerationFailed(@JsonProperty("transparencyReportId") final UUID transparencyReportId,
-                                              @JsonProperty("templateIdentifier") final String templateIdentifier,
-                                              @JsonProperty("caseIds") final List<UUID> caseIds,
-                                              @JsonProperty("reportGenerationPreviouslyFailed") final boolean reportGenerationPreviouslyFailed) {
+    public TransparencyPDFReportGenerationFailed(@JsonProperty("transparencyReportId") final UUID transparencyReportId,
+                                                 @JsonProperty("templateIdentifier") final String templateIdentifier,
+                                                 @JsonProperty("caseIds") final List<UUID> caseIds,
+                                                 @JsonProperty("reportGenerationPreviouslyFailed") final boolean reportGenerationPreviouslyFailed) {
         this.transparencyReportId = requireNonNull(transparencyReportId);
         this.templateIdentifier = requireNonNull(templateIdentifier);
         this.caseIds = requireNonNull(caseIds);

@@ -11,25 +11,17 @@ import java.util.UUID;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-/**
- * Event to indicate that the generation of a transparency report has started.
- * Use either the JSON or PDF report generation started events instead.
- *
- * @deprecated
- */
-@Deprecated
-@Event(TransparencyReportGenerationStarted.EVENT_NAME)
-@SuppressWarnings("squid:S1133")
-public class TransparencyReportGenerationStarted {
+@Event(TransparencyJSONReportGenerationStarted.EVENT_NAME)
+public class TransparencyJSONReportGenerationStarted {
 
-    public static final String EVENT_NAME = "sjp.events.transparency-report-generation-started";
+    public static final String EVENT_NAME = "sjp.events.transparency-json-report-generation-started";
 
     private UUID transparencyReportId;
 
     private final List<UUID> caseIds;
 
     @JsonCreator
-    public TransparencyReportGenerationStarted(
+    public TransparencyJSONReportGenerationStarted(
             @JsonProperty("transparencyReportId") final UUID transparencyReportId,
             @JsonProperty("caseIds") final List<UUID> caseIds) {
         this.transparencyReportId = transparencyReportId;

@@ -149,6 +149,21 @@ public abstract class CaseRepository extends AbstractEntityRepository<CaseDetail
             "cd.id, cd.urn," +
             "d.address.address1, d.address.address2," +
             "d.address.address3, d.address.address4, d.address.address5," +
+            "d.address.postcode, o.code, o.startDate, o.wording, " +
+            "o.pressRestriction.requested, o.pressRestriction.name, o.completed, cd.prosecutingAuthority, o.wordingWelsh) " +
+            "FROM CaseDetail cd " +
+            "LEFT OUTER JOIN cd.defendant d " +
+            "LEFT OUTER JOIN d.offences o " +
+            "WHERE cd.id IN (SELECT rc.id FROM ReadyCase rc WHERE rc.markedAt BETWEEN :fromDate AND :toDate) " +
+            "AND cd.id IN (SELECT cps.caseId FROM CasePublishStatus cps WHERE cps.numberOfPublishes < 5)" +
+            "ORDER BY cd.postingDate")
+    public abstract List<PendingCaseToPublishPerOffence> findPublicTransparencyDeltaReportPendingCases(@QueryParam("fromDate") final LocalDate fromDate, @QueryParam("toDate") final LocalDate toDate);
+
+    @Query(value = "SELECT new uk.gov.moj.cpp.sjp.persistence.entity.PendingCaseToPublishPerOffence" +
+            "(d.personalDetails.title, d.personalDetails.firstName, d.personalDetails.lastName, d.legalEntityDetails.legalEntityName, d.personalDetails.dateOfBirth," +
+            "cd.id, cd.urn," +
+            "d.address.address1, d.address.address2," +
+            "d.address.address3, d.address.address4, d.address.address5," +
             "d.address.postcode, o.code, o.startDate, o.wording," +
             "o.pressRestriction.requested, o.pressRestriction.name, o.completed, cd.prosecutingAuthority, o.wordingWelsh) " +
             "FROM CaseDetail cd " +

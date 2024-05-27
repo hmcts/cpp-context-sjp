@@ -23,10 +23,10 @@ import org.hamcrest.Matcher;
 
 public class TransparencyReportHelper {
 
-    public void requestToGenerateTransparencyReport() {
+    public void requestToGenerateTransparencyReport(JsonObject payload) {
         final String resource = "/transparency-report/request";
         final String contentType = "application/vnd.sjp.request-transparency-report+json";
-        HttpClientUtil.makePostCall(resource, contentType, "{}");
+        HttpClientUtil.makePostCall(resource, contentType, payload.toString());
     }
 
     public JsonObject pollForTransparencyReportMetadata(final Matcher matcher) {

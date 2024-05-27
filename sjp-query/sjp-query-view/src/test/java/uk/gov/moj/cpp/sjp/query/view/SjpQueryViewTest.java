@@ -634,6 +634,39 @@ public class SjpQueryViewTest {
     }
 
     @Test
+    public void getPendingCasesToPublishShouldExportPressDeltaReport() {
+        setupExpectations();
+        final JsonObject payload = createObjectBuilder().add("export", "press").build();
+        when(envelope.payloadAsJsonObject()).thenReturn(payload);
+
+        sjpQueryView.getPendingDeltaCasesToPublish(envelope);
+
+        verify(caseService).findPendingDeltaCasesToPublish(now().minusDays(1), now(), ExportType.PRESS);
+    }
+
+    @Test
+    public void getPendingCasesToPublishShouldExportPublicDeltaReport() {
+        setupExpectations();
+        final JsonObject payload = createObjectBuilder().add("export", "public").build();
+        when(envelope.payloadAsJsonObject()).thenReturn(payload);
+
+        sjpQueryView.getPendingDeltaCasesToPublish(envelope);
+
+        verify(caseService).findPendingDeltaCasesToPublish(now().minusDays(1), now(), ExportType.PUBLIC);
+    }
+
+    @Test
+    public void getPendingCasesToPublishShouldExportPublicReport() {
+        setupExpectations();
+        final JsonObject payload = createObjectBuilder().add("export", "public").build();
+        when(envelope.payloadAsJsonObject()).thenReturn(payload);
+
+        sjpQueryView.getPendingCasesToPublish(envelope);
+
+        verify(caseService).findPendingCasesToPublish(ExportType.PUBLIC);
+    }
+
+    @Test
     public void getPendingCasesToPublishExportParamShouldBeCaseInsensitive() {
         setupExpectations();
         final JsonObject payload = createObjectBuilder().add("export", "Public").build();

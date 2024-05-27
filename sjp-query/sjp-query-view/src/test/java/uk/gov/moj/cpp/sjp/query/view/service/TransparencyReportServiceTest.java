@@ -1,9 +1,15 @@
 package uk.gov.moj.cpp.sjp.query.view.service;
 
 import static com.google.common.collect.Lists.newArrayList;
+import static java.util.Collections.singletonList;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
+import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.when;
+import static uk.gov.moj.cpp.sjp.domain.DocumentFormat.PDF;
+import static uk.gov.moj.cpp.sjp.domain.DocumentLanguage.ENGLISH;
+import static uk.gov.moj.cpp.sjp.domain.DocumentRequestType.DELTA;
+import static uk.gov.moj.cpp.sjp.domain.DocumentRequestType.FULL;
 import static uk.gov.moj.cpp.sjp.query.view.response.TransparencyReportsMetadataView.TransparencyReportMetaDataView;
 
 import uk.gov.moj.cpp.sjp.persistence.entity.TransparencyReportMetadata;
@@ -50,19 +56,17 @@ public class TransparencyReportServiceTest {
         final List<TransparencyReportMetaDataView> reportsMetadata = transparencyReportsMetaDataView.getReportsMetadata();
 
         // then
-        assertThat(reportsMetadata.size(), is(2));
+        assertThat(reportsMetadata.size(), is(1));
 
         final TransparencyReportMetaDataView englishTransparencyReportMetaDataView = reportsMetadata.get(0);
-        final TransparencyReportMetaDataView welshTransparencyReportMetaDataView = reportsMetadata.get(1);
 
         validateReportMetadata(englishTransparencyReportMetaDataView, false);
-        validateReportMetadata(welshTransparencyReportMetaDataView, true);
     }
 
     @Test
     public void shouldReturnEmptyMetadata() {
         // given
-        when(transparencyReportMetadataRepository.findLatestTransparencyReportMetadata()).thenThrow(new NoResultException());
+        when(transparencyReportMetadataRepository.findLatestTransparencyReportMetadata(any())).thenThrow(new NoResultException());
         final TransparencyReportsMetadataView transparencyReportsMetaDataView = transparencyReportService.getMetaData();
 
         // when
@@ -76,26 +80,25 @@ public class TransparencyReportServiceTest {
         final int index = welsh ? 1 : 0;
         assertThat(transparencyReportMetaDataView.getFileId(), is(fileServiceIds.get(index).toString()));
         assertThat(transparencyReportMetaDataView.getPages(), is(numberOfPages.get(index)));
-        assertThat(transparencyReportMetaDataView.getReportIn(), is(welsh ? "Welsh" : "English"));
-        assertThat(transparencyReportMetaDataView.getSize(), is("22MB"));
+        assertThat(transparencyReportMetaDataView.getReportIn(), is("English"));
+        assertThat(transparencyReportMetaDataView.getSize(), is("23068672"));
         assertThat(transparencyReportMetaDataView.getGeneratedAt(), is("25 December 2018 at 4:01am"));
+        assertThat(transparencyReportMetaDataView.getTitle(), is("Transparency Report"));
     }
 
     private void setUpMetadata() {
-        final TransparencyReportMetadata metadata = new TransparencyReportMetadata();
+        final TransparencyReportMetadata metadata = new TransparencyReportMetadata(UUID.randomUUID(), PDF.name(), FULL.name(), "title", ENGLISH.name(), LocalDateTime.now());
 
-        metadata.setEnglishFileServiceId(fileServiceIds.get(0));
-        metadata.setWelshFileServiceId(fileServiceIds.get(1));
-
-        metadata.setEnglishNumberOfPages(numberOfPages.get(0));
-        metadata.setWelshNumberOfPages(numberOfPages.get(1));
-
-        metadata.setEnglishSizeInBytes(fileSizes.get(0));
-        metadata.setWelshSizeInBytes(fileSizes.get(1));
-
+        metadata.setFileServiceId(fileServiceIds.get(0));
+        metadata.setNumberOfPages(numberOfPages.get(0));
+        metadata.setSizeInBytes(fileSizes.get(0));
         metadata.setGeneratedAt(generatedAt);
+        metadata.setLanguage("ENGLISH");
+        metadata.setTitle("Transparency Report");
+        metadata.setDocumentRequestType(DELTA.name());
+        metadata.setDocumentFormat(PDF.name());
 
-        when(transparencyReportMetadataRepository.findLatestTransparencyReportMetadata()).thenReturn(metadata);
+        when(transparencyReportMetadataRepository.findLatestTransparencyReportMetadata(any())).thenReturn(singletonList(metadata));
     }
 
 }

@@ -23,10 +23,10 @@ public class PressAndTransparencyReportStrategyTest {
     public void shouldBeAbleToProcessSystemDocDocumentAvailablePublicEvent() {
         final DocumentAvailableEventEnvelopeBuilder envelopeBuilder = SystemDocGeneratorEnvelopes.documentAvailablePublicEvent();
 
-        final JsonEnvelope envelopeEnglish = envelopeBuilder.templateIdentifier("PendingCasesEnglish").envelope();
+        final JsonEnvelope envelopeEnglish = envelopeBuilder.templateIdentifier("PublicPendingCasesFullEnglish").envelope();
         assertThat(strategy.canProcess(envelopeEnglish), is(true));
 
-        final JsonEnvelope envelopeWelsh = envelopeBuilder.templateIdentifier("PendingCasesWelsh").envelope();
+        final JsonEnvelope envelopeWelsh = envelopeBuilder.templateIdentifier("PublicPendingCasesFullWelsh").envelope();
         assertThat(strategy.canProcess(envelopeWelsh), is(true));
 
         final JsonEnvelope envelopePress = envelopeBuilder.templateIdentifier("PressPendingCasesFullEnglish").envelope();
@@ -37,10 +37,10 @@ public class PressAndTransparencyReportStrategyTest {
     public void shouldBeAbleToProcessSystemDocGenerationFailedPublicEvent() {
         final GenerationFailedEventEnvelopeBuilder envelopeBuilder = SystemDocGeneratorEnvelopes.generationFailedEvent();
 
-        final JsonEnvelope envelopeEnglish = envelopeBuilder.templateIdentifier("PendingCasesEnglish").envelope();
+        final JsonEnvelope envelopeEnglish = envelopeBuilder.templateIdentifier("PublicPendingCasesFullEnglish").envelope();
         assertThat(strategy.canProcess(envelopeEnglish), is(true));
 
-        final JsonEnvelope envelopeWelsh = envelopeBuilder.templateIdentifier("PendingCasesWelsh").envelope();
+        final JsonEnvelope envelopeWelsh = envelopeBuilder.templateIdentifier("PublicPendingCasesFullWelsh").envelope();
         assertThat(strategy.canProcess(envelopeWelsh), is(true));
 
         final JsonEnvelope envelopePress = envelopeBuilder.templateIdentifier("PressPendingCasesFullEnglish").envelope();

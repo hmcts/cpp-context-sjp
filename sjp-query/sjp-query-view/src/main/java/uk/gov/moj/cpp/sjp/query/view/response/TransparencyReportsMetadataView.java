@@ -1,5 +1,7 @@
 package uk.gov.moj.cpp.sjp.query.view.response;
 
+import static com.google.common.collect.ImmutableList.copyOf;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -8,7 +10,7 @@ public class TransparencyReportsMetadataView {
     private List<TransparencyReportMetaDataView> reportsMetadata = new ArrayList<>();
 
     public List<TransparencyReportMetaDataView> getReportsMetadata() {
-        return reportsMetadata;
+        return copyOf(reportsMetadata);
     }
 
     public void addReportMetaData(final TransparencyReportMetaDataView transparencyReportMetaDataView) {
@@ -25,6 +27,9 @@ public class TransparencyReportsMetadataView {
         private String reportIn;
         private String size;
         private String fileId;
+        private String title;
+        private String reportType;
+        private String language;
 
         public String getGeneratedAt() {
             return generatedAt;
@@ -44,6 +49,18 @@ public class TransparencyReportsMetadataView {
 
         public String getFileId() {
             return fileId;
+        }
+
+        public String getTitle() {
+            return title;
+        }
+
+        public String getReportType() {
+            return reportType;
+        }
+
+        public String getLanguage() {
+            return language;
         }
 
         public static class Builder {
@@ -71,6 +88,21 @@ public class TransparencyReportsMetadataView {
 
             public Builder withFileId(final String fileId) {
                 transparencyReportMetaDataView.fileId = fileId;
+                return this;
+            }
+
+            public Builder withTitle(final String title) {
+                transparencyReportMetaDataView.title = title;
+                return this;
+            }
+
+            public Builder withReportType(final String reportType) {
+                transparencyReportMetaDataView.reportType = reportType;
+                return this;
+            }
+
+            public Builder withLanguage(final String language) {
+                transparencyReportMetaDataView.language = language;
                 return this;
             }
 

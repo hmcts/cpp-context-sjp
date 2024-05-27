@@ -2,6 +2,10 @@ package uk.gov.moj.cpp.sjp.event.processor.utils;
 
 import static java.lang.String.format;
 
+import static java.time.format.DateTimeFormatter.ofPattern;
+import static java.util.Locale.ENGLISH;
+import static org.apache.commons.lang3.StringUtils.LF;
+
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.sjp.event.processor.exception.OffenceNotFoundException;
 import uk.gov.moj.cpp.sjp.event.processor.service.ReferenceDataOffencesService;
@@ -10,16 +14,17 @@ import uk.gov.moj.cpp.sjp.event.processor.service.ReferenceDataService;
 import java.time.LocalDate;
 
 import javax.inject.Inject;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.Locale;
+
+import javax.json.JsonArray;
 import javax.json.JsonObject;
 
 import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.Table;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public class PayloadHelper {
-
-    private static final Logger LOGGER = LoggerFactory.getLogger(PayloadHelper.class);
 
     public static final String TITLE = "title";
     public static final String WELSH_TITLE = "titleWelsh";
@@ -28,6 +33,7 @@ public class PayloadHelper {
     public static final String LEGAL_ENTITY_NAME = "legalEntityName";
     private Table<String, Boolean, String> prosecutorDataTable;
     private Table<String, String, JsonObject> offenceDataTable;
+    private static final DateTimeFormatter START_DATE_FORMAT = ofPattern("dd MMMM yyyy");
 
     @Inject
     private ReferenceDataService referenceDataService;
@@ -54,6 +60,14 @@ public class PayloadHelper {
         return prosecutor;
     }
 
+    public String buildOffenceTitleFromOffenceArray(final JsonArray offenceJsonArray, final Boolean isWelsh, final JsonEnvelope envelope) {
+        // REFDATA-219 -- Call reference data offences only once by passing all the offence codes and the service should return the offences including the legacy versions
+        return offenceJsonArray.getValuesAs(JsonObject.class).stream()
+                .map(e -> mapOffenceIntoOffenceTitleString(e, isWelsh, envelope))
+                .reduce((offenceTitle1, offenceTitle2) -> offenceTitle1.concat(LF).concat(offenceTitle2))
+                .orElseThrow(() -> new RuntimeException("Error during processing payload for document generator! "));
+    }
+
     public String mapOffenceIntoOffenceTitleString(final JsonObject offence, final Boolean isWelsh, final JsonEnvelope envelope) {
         final String offenceCode = offence.getString("offenceCode");
         final String offenceStartDate = LocalDate.now().toString();
@@ -70,7 +84,6 @@ public class PayloadHelper {
         } else {
             offenceReferenceData = offenceDataTable.get(offenceCode, offenceStartDate);
         }
-        LOGGER.error("reference offences payload {}", offenceReferenceData);
         return getOffenceTitle(offenceReferenceData, isWelsh);
     }
 
@@ -88,5 +101,17 @@ public class PayloadHelper {
         } else {
             return format("%s %s", pendingCase.getString(FIRST_NAME, ""), pendingCase.getString(LAST_NAME, "").toUpperCase());
         }
+    }
+
+    public String getStartDate(boolean isWelsh) {
+        final LocalDateTime date = LocalDateTime.now().minusDays(1);
+        final Locale locale = isWelsh ? new Locale("cy") : ENGLISH;
+        return date.format(START_DATE_FORMAT.withLocale(locale));
+    }
+
+    public String getTemplateIdentifier(final String type, String lang, String exportType) {
+        lang = lang.toLowerCase();
+        lang = lang.substring(0, 1).toUpperCase() + lang.substring(1);
+        return "PRESS".equalsIgnoreCase(exportType) ? "PressPendingCases" + type + lang : "PublicPendingCases" + type + lang;
     }
 }

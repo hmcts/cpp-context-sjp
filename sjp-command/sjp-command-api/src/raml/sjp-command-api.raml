@@ -550,7 +550,7 @@ baseUri: http://localhost:8080/sjp-command-api/command/api/rest/sjp
 /transparency-report/request:
   post:
     description: |
-      Request a new transparency report
+      Request a new transparency report either in pdf or json format and either for full or delta cases
       ...
       (mapping):
           requestType: application/vnd.sjp.request-transparency-report+json
@@ -558,6 +558,10 @@ baseUri: http://localhost:8080/sjp-command-api/command/api/rest/sjp
       ...
     body:
       application/vnd.sjp.request-transparency-report+json: !!null
+        example:
+          !include json/sjp.request-transparency-report.json
+        schema:
+          !include json/schema/sjp.request-transparency-report.json
     responses:
       202:
         description: Accepted

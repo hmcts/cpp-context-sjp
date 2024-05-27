@@ -1,15 +1,20 @@
 package uk.gov.moj.cpp.sjp.command.api;
 
+import static javax.json.Json.createObjectBuilder;
+import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.verify;
+import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMetadataMatcher.withMetadataEnvelopedFrom;
 import static uk.gov.justice.services.test.utils.core.messaging.JsonEnvelopeBuilder.envelope;
 import static uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderFactory.metadataWithRandomUUID;
 import static uk.gov.moj.cpp.sjp.command.api.accesscontrol.RuleConstants.getRequestTransparencyReportGroups;
+import static uk.gov.moj.cpp.sjp.domain.DocumentFormat.PDF;
 
 import uk.gov.justice.services.core.enveloper.Enveloper;
 import uk.gov.justice.services.core.sender.Sender;
+import uk.gov.justice.services.messaging.Envelope;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.test.utils.core.enveloper.EnveloperFactory;
 import uk.gov.moj.cpp.accesscontrol.common.providers.UserAndGroupProvider;
@@ -54,23 +59,16 @@ public class TransparencyApiTest extends BaseDroolsAccessControlTest {
     }
 
     @Test
-    public void shouldAllowAuthorisedStartSession() {
-        final Action action = createActionFor(SJP_REQUEST_TRANSPARENCY_REPORT);
-        given(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups(action, getRequestTransparencyReportGroups()))
-                .willReturn(true);
-        final ExecutionResults results = executeRulesWith(action);
-        assertSuccessfulOutcome(results);
-    }
-
-    @Test
     public void shouldRequestTransparencyReport() {
-        final JsonEnvelope command = envelope().with(metadataWithRandomUUID(SJP_REQUEST_TRANSPARENCY_REPORT)).build();
-
+        final JsonEnvelope command = envelopeFrom(
+                metadataWithRandomUUID(SJP_REQUEST_TRANSPARENCY_REPORT),
+                createObjectBuilder()
+                        .add("format", PDF.name()));
         transparencyApi.requestTransparencyReport(command);
-        verify(enveloper).withMetadataFrom(command, "sjp.command.request-transparency-report");
         verify(sender).send(envelopeCaptor.capture());
 
-        final JsonEnvelope newCommand = envelopeCaptor.getValue();
-        assertThat(newCommand.metadata(), withMetadataEnvelopedFrom(command).withName("sjp.command.request-transparency-report"));
+        final Envelope newCommand = envelopeCaptor.getValue();
+        assertThat(newCommand.metadata().name(), is("sjp.command.request-transparency-report"));
+        assertThat(newCommand.metadata().id(), is(command.metadata().id()));
     }
 }

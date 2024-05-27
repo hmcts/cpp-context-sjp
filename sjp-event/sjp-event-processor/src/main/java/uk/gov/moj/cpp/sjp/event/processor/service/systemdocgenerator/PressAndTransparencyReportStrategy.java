@@ -33,8 +33,10 @@ public class PressAndTransparencyReportStrategy implements SystemDocGeneratorRes
 
     private static final Logger LOGGER = LoggerFactory.getLogger(PressAndTransparencyReportStrategy.class);
 
-    private static final String TRANSPARENCY_TEMPLATE_IDENTIFIER = "PendingCasesEnglish";
-    private static final String TRANSPARENCY_TEMPLATE_IDENTIFIER_WELSH = "PendingCasesWelsh";
+    private static final String TRANSPARENCY_TEMPLATE_IDENTIFIER = "PublicPendingCasesFullEnglish";
+    private static final String TRANSPARENCY_TEMPLATE_IDENTIFIER_DELTA = "PublicPendingCasesDeltaEnglish";
+    private static final String TRANSPARENCY_TEMPLATE_IDENTIFIER_WELSH = "PublicPendingCasesFullWelsh";
+    private static final String TRANSPARENCY_TEMPLATE_IDENTIFIER_WELSH_DELTA = "PublicPendingCasesDeltaWelsh";
     private static final String PRESS_TRANSPARENCY_TEMPLATE_IDENTIFIER = "PressPendingCasesFullEnglish";
     private static final String PRESS_TRANSPARENCY_TEMPLATE_IDENTIFIER_DELTA = "PressPendingCasesDeltaEnglish";
     private static final String PRESS_TRANSPARENCY_TEMPLATE_IDENTIFIER_WELSH = "PressPendingCasesFullWelsh";
@@ -46,7 +48,9 @@ public class PressAndTransparencyReportStrategy implements SystemDocGeneratorRes
     private static final String FILE_NAME = "fileName";
     private static final Set<String> PROCESSABLE_TEMPLATES = Sets.newHashSet(
             TRANSPARENCY_TEMPLATE_IDENTIFIER,
+            TRANSPARENCY_TEMPLATE_IDENTIFIER_DELTA,
             TRANSPARENCY_TEMPLATE_IDENTIFIER_WELSH,
+            TRANSPARENCY_TEMPLATE_IDENTIFIER_WELSH_DELTA,
             PRESS_TRANSPARENCY_TEMPLATE_IDENTIFIER,
             PRESS_TRANSPARENCY_TEMPLATE_IDENTIFIER_DELTA,
             PRESS_TRANSPARENCY_TEMPLATE_IDENTIFIER_WELSH,
@@ -91,11 +95,19 @@ public class PressAndTransparencyReportStrategy implements SystemDocGeneratorRes
 
                 switch (templateIdentifier) {
                     case TRANSPARENCY_TEMPLATE_IDENTIFIER:
-                        docMetadata.add(FILE_NAME, "transparency-report-english.pdf");
+                        docMetadata.add(FILE_NAME, "transparency-report-full-english.pdf");
                         updateTransparencyReportMetadata(envelope, reportId, ENGLISH, docMetadata.build());
                         break;
                     case TRANSPARENCY_TEMPLATE_IDENTIFIER_WELSH:
-                        docMetadata.add(FILE_NAME, "transparency-report-welsh.pdf");
+                        docMetadata.add(FILE_NAME, "transparency-report-full-welsh.pdf");
+                        updateTransparencyReportMetadata(envelope, reportId, WELSH, docMetadata.build());
+                        break;
+                    case TRANSPARENCY_TEMPLATE_IDENTIFIER_DELTA:
+                        docMetadata.add(FILE_NAME, "transparency-report-delta-english.pdf");
+                        updateTransparencyReportMetadata(envelope, reportId, ENGLISH, docMetadata.build());
+                        break;
+                    case TRANSPARENCY_TEMPLATE_IDENTIFIER_WELSH_DELTA:
+                        docMetadata.add(FILE_NAME, "transparency-report-delta-welsh.pdf");
                         updateTransparencyReportMetadata(envelope, reportId, WELSH, docMetadata.build());
                         break;
                     case PRESS_TRANSPARENCY_TEMPLATE_IDENTIFIER:
@@ -211,7 +223,9 @@ public class PressAndTransparencyReportStrategy implements SystemDocGeneratorRes
 
     private boolean isTransparencyReport(final String templateIdentifier) {
         return TRANSPARENCY_TEMPLATE_IDENTIFIER.equalsIgnoreCase(templateIdentifier) ||
-                TRANSPARENCY_TEMPLATE_IDENTIFIER_WELSH.equalsIgnoreCase(templateIdentifier);
+                TRANSPARENCY_TEMPLATE_IDENTIFIER_WELSH.equalsIgnoreCase(templateIdentifier) ||
+                TRANSPARENCY_TEMPLATE_IDENTIFIER_DELTA.equalsIgnoreCase(templateIdentifier) ||
+                TRANSPARENCY_TEMPLATE_IDENTIFIER_WELSH_DELTA.equalsIgnoreCase(templateIdentifier);
     }
 
     private boolean isPressTransparencyReport(final String templateIdentifier) {

@@ -637,10 +637,19 @@ public class CaseServiceTest {
 
         LocalDate fromDate = LocalDate.now();
         LocalDate toDate = LocalDate.now().minusDays(1);
-        service.findPendingDeltaCasesToPublish(fromDate, toDate);
-
+        service.findPendingDeltaCasesToPublish(fromDate, toDate, ExportType.PRESS);
 
         verify(caseRepository).findPressTransparencyDeltaReportPendingCases(any(), any());
+    }
+
+    @Test
+    public void shouldFindPublicTransparencyDeltaReportPendingCases() {
+
+        LocalDate fromDate = LocalDate.now();
+        LocalDate toDate = LocalDate.now().minusDays(1);
+        service.findPendingDeltaCasesToPublish(fromDate, toDate, ExportType.PUBLIC);
+
+        verify(caseRepository).findPublicTransparencyDeltaReportPendingCases(any(), any());
     }
 
     @Test

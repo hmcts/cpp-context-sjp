@@ -44,7 +44,6 @@ import uk.gov.moj.cpp.sjp.event.transparency.PressTransparencyJSONReportRequeste
 import uk.gov.moj.cpp.sjp.event.transparency.PressTransparencyPDFReportRequested;
 
 import java.io.ByteArrayInputStream;
-import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeParseException;
@@ -247,9 +246,6 @@ public class PressTransparencyReportRequestedProcessor {
     private UUID storeDocumentGeneratorPayload(final JsonObject documentGeneratorPayload, final String fileName, final String type, final String language) throws FileServiceException {
         final byte[] jsonPayloadInBytes = jsonObjectAsByteArray(documentGeneratorPayload);
 
-        LOGGER.info("press report store document generator payload documentGeneratorPayload {}", documentGeneratorPayload);
-        LOGGER.info("press report store document generator payload bytes to string {}", new String(jsonPayloadInBytes, StandardCharsets.UTF_8));
-
         final JsonObject metadata = createObjectBuilder()
                 .add("fileName", fileName)
                 .add("conversionFormat", CONVERSION_FORMAT)
@@ -257,7 +253,6 @@ public class PressTransparencyReportRequestedProcessor {
                 .add("numberOfPages", 1)
                 .add("fileSize", jsonPayloadInBytes.length)
                 .build();
-        LOGGER.info("press report store document generator metadata {}", metadata);
         return fileStorer.store(metadata, new ByteArrayInputStream(jsonPayloadInBytes));
     }
 
@@ -273,7 +268,6 @@ public class PressTransparencyReportRequestedProcessor {
                 .add("payloadFileServiceId", payloadFileServiceUUID.toString())
                 .build();
 
-        LOGGER.info("press report document generator payload {}", docGeneratorPayload);
         sender.sendAsAdmin(
                 Envelope.envelopeFrom(
                         metadataFrom(eventEnvelope.metadata()).withName("systemdocgenerator.generate-document"),
@@ -401,7 +395,6 @@ public class PressTransparencyReportRequestedProcessor {
             final boolean pressRestrictionRequested = pendingCasePressRestriction.getBoolean("requested");
             final String welshWording = pendingCaseOffence.containsKey(OFFENCE_WELSH_WORDING) ? pendingCaseOffence.getString(OFFENCE_WELSH_WORDING) : EMPTY;
             final String wording = isWelsh ? welshWording : pendingCaseOffence.getString(OFFENCE_WORDING);
-            LOGGER.info("welshWording={}, wording={}, isWelsh={}", welshWording, wording, isWelsh);
             final JsonObjectBuilder readyCaseOffence = createObjectBuilder()
                     .add(TITLE, payloadHelper.mapOffenceIntoOffenceTitleString(pendingCaseOffence, isWelsh, envelope))
                     .add(WORDING, wording)

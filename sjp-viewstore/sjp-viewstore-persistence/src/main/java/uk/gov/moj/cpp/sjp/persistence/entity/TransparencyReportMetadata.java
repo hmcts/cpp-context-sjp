@@ -18,6 +18,7 @@ public class TransparencyReportMetadata {
     @Column(name = "id")
     private UUID id;
 
+    // use file_service_id instead
     @Column(name = "english_file_service_id")
     private UUID englishFileServiceId;
 
@@ -36,8 +37,29 @@ public class TransparencyReportMetadata {
     @Column(name = "welsh_size_in_bytes")
     private Integer welshSizeInBytes;
 
+    @Column(name = "document_format")
+    private String documentFormat;
+
+    @Column(name = "document_request_type")
+    private String documentRequestType;
+
+    @Column(name = "title")
+    private String title;
+
+    @Column(name = "language")
+    private String language;
+
     @Column(name = "generated_at")
     private LocalDateTime generatedAt;
+
+    @Column(name = "file_service_id")
+    private UUID fileServiceId;
+
+    @Column(name = "number_of_pages")
+    private Integer numberOfPages;
+
+    @Column(name = "size_in_bytes")
+    private Integer sizeInBytes;
 
     // for JPA
     public TransparencyReportMetadata() {
@@ -50,7 +72,8 @@ public class TransparencyReportMetadata {
                                       final UUID welshFileServiceId,
                                       final Integer welshNumberOfPages,
                                       final Integer welshSizeInBytes,
-                                      final LocalDateTime generatedAt) {
+                                      final LocalDateTime generatedAt
+    ) {
         this.id = randomUUID();
         this.englishFileServiceId = englishFileServiceId;
         this.englishNumberOfPages = englishNumberOfPages;
@@ -61,8 +84,12 @@ public class TransparencyReportMetadata {
         this.generatedAt = generatedAt;
     }
 
-    public TransparencyReportMetadata(final UUID id, final LocalDateTime generatedAt) {
+    public TransparencyReportMetadata(final UUID id, final String documentFormat, final String documentRequestType, final String title, final String language, final LocalDateTime generatedAt) {
         this.id = id;
+        this.documentFormat = documentFormat;
+        this.documentRequestType = documentRequestType;
+        this.title = title;
+        this.language = language;
         this.generatedAt = generatedAt;
     }
 
@@ -122,11 +149,67 @@ public class TransparencyReportMetadata {
         this.welshSizeInBytes = welshSizeInBytes;
     }
 
+    public String getDocumentFormat() {
+        return documentFormat;
+    }
+
+    public void setDocumentFormat(final String documentFormat) {
+        this.documentFormat = documentFormat;
+    }
+
+    public String getDocumentRequestType() {
+        return documentRequestType;
+    }
+
+    public void setDocumentRequestType(final String documentRequestType) {
+        this.documentRequestType = documentRequestType;
+    }
+
+    public String getTitle() {
+        return title;
+    }
+
+    public void setTitle(final String title) {
+        this.title = title;
+    }
+
+    public String getLanguage() {
+        return language;
+    }
+
+    public void setLanguage(final String language) {
+        this.language = language;
+    }
+
     public LocalDateTime getGeneratedAt() {
         return generatedAt;
     }
 
     public void setGeneratedAt(final LocalDateTime generatedAt) {
         this.generatedAt = generatedAt;
+    }
+
+    public UUID getFileServiceId() {
+        return fileServiceId;
+    }
+
+    public void setFileServiceId(final UUID fileServiceId) {
+        this.fileServiceId = fileServiceId;
+    }
+
+    public Integer getNumberOfPages() {
+        return numberOfPages;
+    }
+
+    public void setNumberOfPages(final Integer numberOfPages) {
+        this.numberOfPages = numberOfPages;
+    }
+
+    public Integer getSizeInBytes() {
+        return sizeInBytes;
+    }
+
+    public void setSizeInBytes(final Integer sizeInBytes) {
+        this.sizeInBytes = sizeInBytes;
     }
 }

@@ -3,6 +3,12 @@
   "id": "http://cpp.moj.gov.uk/sjp/json/schema/event/public.sjp.pending-cases-public-list-generated.json",
   "type": "object",
   "properties": {
+    "requestType": {
+      "enum": [
+        "FULL",
+        "DELTA"
+      ]
+    },
     "language": {
       "enum": [
         "ENGLISH",
@@ -19,6 +25,9 @@
         "totalNumberOfRecords": {
           "type": "integer"
         },
+        "startDate": {
+          "type": "string"
+        },
         "readyCases": {
           "type": "array",
           "items": {
@@ -30,26 +39,17 @@
               "prosecutorName": {
                 "type": "string"
               },
-              "firstName":{
-                "type":"string"
+              "legalEntityName": {
+                "type": "string"
               },
-              "lastName":{
-                "type":"string"
+              "firstName": {
+                "type": "string"
               },
-              "addressLine1":{
-                "type":"string"
+              "lastName": {
+                "type": "string"
               },
-              "addressLine2":{
-                "type":"string"
-              },
-              "town":{
-                "type":"string"
-              },
-              "county":{
-                "type":"string"
-              },
-              "postcode":{
-                "type":"string"
+              "postcode": {
+                "type": "string"
               },
               "sjpOffences": {
                 "type": "array",
@@ -57,12 +57,6 @@
                   "type": "object",
                   "properties": {
                     "title": {
-                      "type": "string"
-                    },
-                    "reportingRestriction": {
-                      "type": "boolean"
-                    },
-                    "pressRestrictionName": {
                       "type": "string"
                     }
                   }

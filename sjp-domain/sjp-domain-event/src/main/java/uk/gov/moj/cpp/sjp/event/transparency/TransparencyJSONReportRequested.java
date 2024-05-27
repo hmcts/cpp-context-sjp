@@ -3,6 +3,8 @@ package uk.gov.moj.cpp.sjp.event.transparency;
 import static java.util.UUID.randomUUID;
 
 import uk.gov.justice.domain.annotation.Event;
+import uk.gov.moj.cpp.sjp.domain.DocumentFormat;
+import uk.gov.moj.cpp.sjp.domain.DocumentRequestType;
 
 import java.time.ZonedDateTime;
 import java.util.UUID;
@@ -12,32 +14,30 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 
-/**
- * Event to indicate that the generation of a press transparency report has requested.
- * Use either the JSON or PDF report generation requested events instead.
- *
- * @deprecated
- */
-@Deprecated
-@Event(TransparencyReportRequested.EVENT_NAME)
-@SuppressWarnings("squid:S1133")
-public class TransparencyReportRequested {
-    public static final String EVENT_NAME = "sjp.events.transparency-report-requested";
+@Event(TransparencyJSONReportRequested.EVENT_NAME)
+public class TransparencyJSONReportRequested {
+    public static final String EVENT_NAME = "sjp.events.transparency-json-report-requested";
 
     /**
      * Default value assigned for event replay where old versions of this
      * event don't have an id.
      */
     private UUID transparencyReportId = randomUUID();
-
+    private final String format = DocumentFormat.JSON.name();
+    private String requestType = DocumentRequestType.DELTA.name();
+    private String language;
     private ZonedDateTime requestedAt;
 
     @JsonCreator
-    public TransparencyReportRequested(
+    public TransparencyJSONReportRequested(
             @JsonProperty("transparencyReportId") final UUID transparencyReportId,
+            @JsonProperty("requestType") final String requestType,
+            @JsonProperty("language") final String language,
             @JsonProperty("requestedAt") final ZonedDateTime requestedAt) {
         if (transparencyReportId != null) {
             this.transparencyReportId = transparencyReportId;
+            this.requestType = requestType;
+            this.language = language;
         }
         this.requestedAt = requestedAt;
     }
@@ -48,6 +48,18 @@ public class TransparencyReportRequested {
 
     public UUID getTransparencyReportId() {
         return transparencyReportId;
+    }
+
+    public String getFormat() {
+        return format;
+    }
+
+    public String getRequestType() {
+        return requestType;
+    }
+
+    public String getLanguage() {
+        return language;
     }
 
     @Override

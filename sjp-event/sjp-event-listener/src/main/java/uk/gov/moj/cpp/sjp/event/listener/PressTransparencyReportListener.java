@@ -29,8 +29,8 @@ public class PressTransparencyReportListener {
     private PressTransparencyReportMetadataRepository pressTransparencyReportMetadataRepository;
 
     /**
-     * Handles the event when a press transparency report is generated. Use either the JSON or PDF
-     * report generation events instead. @Link{PressTransparencyReportGenerationStarted}
+     * Handles the event when a press transparency report is generated.
+     * Use either the JSON or PDF report generation events instead. @Link{PressTransparencyReportGenerationStarted}
      *
      * @deprecated
      */

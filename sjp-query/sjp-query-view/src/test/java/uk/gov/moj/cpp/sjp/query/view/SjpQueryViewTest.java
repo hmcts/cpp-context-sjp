@@ -641,7 +641,7 @@ public class SjpQueryViewTest {
 
         sjpQueryView.getPendingDeltaCasesToPublish(envelope);
 
-        verify(caseService).findPendingDeltaCasesToPublish(now().minusDays(1), now(), ExportType.PRESS);
+        verify(caseService).findPendingDeltaCasesToPublish(ExportType.PRESS);
     }
 
     @Test
@@ -652,7 +652,7 @@ public class SjpQueryViewTest {
 
         sjpQueryView.getPendingDeltaCasesToPublish(envelope);
 
-        verify(caseService).findPendingDeltaCasesToPublish(now().minusDays(1), now(), ExportType.PUBLIC);
+        verify(caseService).findPendingDeltaCasesToPublish(ExportType.PUBLIC);
     }
 
     @Test

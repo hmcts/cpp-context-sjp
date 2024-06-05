@@ -18,6 +18,7 @@ import static uk.gov.moj.cpp.sjp.domain.DocumentRequestType.FULL;
 import static uk.gov.moj.cpp.sjp.event.processor.DateTimeUtil.ENGLISH_TITLE_DATE_FORMATTER;
 import static uk.gov.moj.cpp.sjp.event.processor.DateTimeUtil.formatDateTimeForPdfReport;
 import static uk.gov.moj.cpp.sjp.event.processor.DateTimeUtil.formatPublicationDateTimeForJsonReport;
+import static uk.gov.moj.cpp.sjp.event.processor.DateTimeUtil.getDateTimeForDeltaReport;
 import static uk.gov.moj.cpp.sjp.event.processor.helper.JsonObjectConversionHelper.jsonObjectAsByteArray;
 
 import uk.gov.justice.services.core.annotation.FrameworkComponent;
@@ -41,7 +42,6 @@ import uk.gov.moj.cpp.sjp.event.transparency.TransparencyReportRequested;
 
 import java.io.ByteArrayInputStream;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.time.Period;
 import java.util.Comparator;
 import java.util.List;
@@ -346,10 +346,9 @@ public class TransparencyReportRequestedProcessor {
     }
 
     private String getTitle(String type, String language) {
-        final LocalDateTime fromDate = now().minusDays(1);
         final String titleLanguage = " (" + language + ")";
         return type.equalsIgnoreCase(FULL.name()) ? "All Pending cases" +
-                titleLanguage : "New cases, since " + fromDate.format(ENGLISH_TITLE_DATE_FORMATTER) + titleLanguage;
+                titleLanguage : "New cases, since " + getDateTimeForDeltaReport().format(ENGLISH_TITLE_DATE_FORMATTER) + titleLanguage;
     }
 
     private JsonArrayBuilder createPendingCasesJsonArrayBuilderFromListOfPendingCases(final List<JsonObject> pendingCases, final Boolean isWelsh, final JsonEnvelope envelope) {

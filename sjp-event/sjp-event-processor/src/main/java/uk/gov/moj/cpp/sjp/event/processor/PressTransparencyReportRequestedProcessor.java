@@ -23,6 +23,7 @@ import static uk.gov.moj.cpp.sjp.event.processor.DateTimeUtil.ENGLISH_TITLE_DATE
 import static uk.gov.moj.cpp.sjp.event.processor.DateTimeUtil.START_DATE_FORMAT;
 import static uk.gov.moj.cpp.sjp.event.processor.DateTimeUtil.formatDateTimeForPdfReport;
 import static uk.gov.moj.cpp.sjp.event.processor.DateTimeUtil.formatPublicationDateTimeForJsonReport;
+import static uk.gov.moj.cpp.sjp.event.processor.DateTimeUtil.getDateTimeForDeltaReport;
 import static uk.gov.moj.cpp.sjp.event.processor.helper.JsonObjectConversionHelper.jsonObjectAsByteArray;
 
 import uk.gov.justice.services.core.annotation.FrameworkComponent;
@@ -219,12 +220,12 @@ public class PressTransparencyReportRequestedProcessor {
         sender.send(envelopeToSend);
     }
 
-    private String getTitle(String type, String language) {
-        final LocalDateTime fromDate = now().minusDays(1);
+    private String getTitle(final String type, final String language) {
         final String titleLanguage = " (" + language + ")";
         return type.equalsIgnoreCase(FULL.name()) ? "All Pending cases (Press version)" +
-                titleLanguage : "New cases, since " + fromDate.format(ENGLISH_TITLE_DATE_FORMATTER) + titleLanguage;
+                titleLanguage : "New cases, since " + getDateTimeForDeltaReport().format(ENGLISH_TITLE_DATE_FORMATTER) + titleLanguage;
     }
+
 
     private JsonArrayBuilder jsonArrayWithCaseIds(final List<JsonObject> pendingCases) {
         final JsonArrayBuilder caseIdsBuilder = createArrayBuilder();

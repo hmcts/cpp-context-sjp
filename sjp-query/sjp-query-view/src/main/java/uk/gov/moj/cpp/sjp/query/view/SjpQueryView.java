@@ -381,7 +381,7 @@ public class SjpQueryView {
     public JsonEnvelope getPendingDeltaCasesToPublish(final JsonEnvelope envelope) {
         final ExportType exportType = getExportType(envelope);
         return enveloper.withMetadataFrom(envelope, NAME_RESPONSE_DELTA_PENDING_CASES).apply(
-                caseService.findPendingDeltaCasesToPublish(LocalDate.now().minusDays(1), LocalDate.now(), exportType));
+                caseService.findPendingDeltaCasesToPublish(exportType));
     }
 
     @Handles("sjp.query.result-orders")

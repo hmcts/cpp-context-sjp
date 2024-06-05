@@ -355,22 +355,14 @@ public class CaseService {
         return createObjectBuilder().add(PENDING_CASES, pendingCases).build();
     }
 
-    public JsonObject findPendingDeltaCasesToPublish(LocalDate fromDate, final LocalDate toDate) {
-        if (fromDate.getDayOfWeek() == DayOfWeek.MONDAY) {
-            fromDate = fromDate.minusDays(3);
+    public JsonObject findPendingDeltaCasesToPublish(final ExportType exportType) {
+        final LocalDate toDate = LocalDate.now();
+        LocalDate fromDate = LocalDate.now().minusDays(1);
+
+        if (toDate.getDayOfWeek() == DayOfWeek.MONDAY) {
+            fromDate = fromDate.minusDays(2);
         }
-        final Map<String, List<PendingCaseToPublishPerOffence>> pendingCasesGroupedByCaseId = getPendingDeltaCases(fromDate, toDate);
 
-        final JsonArrayBuilder pendingCases = createArrayBuilder();
-        pendingCasesGroupedByCaseId.forEach((key, value) -> populatePendingCasesArrayBuilder(value, pendingCases));
-
-        return createObjectBuilder().add(PENDING_CASES, pendingCases).build();
-    }
-
-    public JsonObject findPendingDeltaCasesToPublish(LocalDate fromDate, final LocalDate toDate, final ExportType exportType) {
-        if (fromDate.getDayOfWeek() == DayOfWeek.MONDAY) {
-            fromDate = fromDate.minusDays(3);
-        }
         final Map<String, List<PendingCaseToPublishPerOffence>> pendingCasesGroupedByCaseId = getPendingDeltaCases(fromDate, toDate, exportType);
 
         final JsonArrayBuilder pendingCases = createArrayBuilder();
@@ -645,13 +637,6 @@ public class CaseService {
         } else {
             pendingCases = caseRepository.findPressTransparencyReportPendingCases();
         }
-
-        return pendingCases.stream().collect(groupingBy(caseIdPredicate()));
-    }
-
-    private Map<String, List<PendingCaseToPublishPerOffence>> getPendingDeltaCases(final LocalDate fromDate, final LocalDate toDate) {
-
-        final List<PendingCaseToPublishPerOffence> pendingCases = caseRepository.findPressTransparencyDeltaReportPendingCases(fromDate, toDate);
 
         return pendingCases.stream().collect(groupingBy(caseIdPredicate()));
     }

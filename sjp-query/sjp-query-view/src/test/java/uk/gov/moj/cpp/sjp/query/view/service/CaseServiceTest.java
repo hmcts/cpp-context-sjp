@@ -66,6 +66,7 @@ import uk.gov.moj.cpp.sjp.query.view.response.ResultOrdersView;
 import uk.gov.moj.cpp.sjp.query.view.response.SearchCaseByMaterialIdView;
 
 import java.sql.Timestamp;
+import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZonedDateTime;
@@ -635,21 +636,23 @@ public class CaseServiceTest {
     @Test
     public void shouldFindPressTransparencyDeltaReportPendingCases() {
 
-        LocalDate fromDate = LocalDate.now();
-        LocalDate toDate = LocalDate.now().minusDays(1);
-        service.findPendingDeltaCasesToPublish(fromDate, toDate, ExportType.PRESS);
-
-        verify(caseRepository).findPressTransparencyDeltaReportPendingCases(any(), any());
+        service.findPendingDeltaCasesToPublish(ExportType.PRESS);
+        LocalDate fromDate = LocalDate.now().minusDays(1);
+        if (now().getDayOfWeek() == DayOfWeek.MONDAY) {
+            fromDate = fromDate.minusDays(2);
+        }
+        verify(caseRepository).findPressTransparencyDeltaReportPendingCases(fromDate, now());
     }
 
     @Test
     public void shouldFindPublicTransparencyDeltaReportPendingCases() {
 
-        LocalDate fromDate = LocalDate.now();
-        LocalDate toDate = LocalDate.now().minusDays(1);
-        service.findPendingDeltaCasesToPublish(fromDate, toDate, ExportType.PUBLIC);
-
-        verify(caseRepository).findPublicTransparencyDeltaReportPendingCases(any(), any());
+        service.findPendingDeltaCasesToPublish(ExportType.PUBLIC);
+        LocalDate fromDate = LocalDate.now().minusDays(1);
+        if (now().getDayOfWeek() == DayOfWeek.MONDAY) {
+            fromDate = fromDate.minusDays(2);
+        }
+        verify(caseRepository).findPublicTransparencyDeltaReportPendingCases(fromDate, now());
     }
 
     @Test

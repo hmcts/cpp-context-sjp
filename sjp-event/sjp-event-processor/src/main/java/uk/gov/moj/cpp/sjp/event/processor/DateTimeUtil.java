@@ -3,6 +3,7 @@ package uk.gov.moj.cpp.sjp.event.processor;
 import static java.time.format.DateTimeFormatter.ofPattern;
 import static java.util.Locale.ENGLISH;
 
+import java.time.DayOfWeek;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Locale;
@@ -37,6 +38,15 @@ public class DateTimeUtil {
 
     public static String formatPublicationDateTimeForJsonReport(final LocalDateTime dateTime, final Boolean isWelsh) {
         return dateTime.format(PUBLICATION_DATE_FORMATTER.withLocale(isWelsh ? new Locale("cy") : ENGLISH));
+    }
+
+    public static LocalDateTime getDateTimeForDeltaReport() {
+        LocalDateTime fromDate = LocalDateTime.now().minusDays(1);
+
+        if (LocalDateTime.now().getDayOfWeek() == DayOfWeek.MONDAY) {
+            fromDate = fromDate.minusDays(2);
+        }
+        return fromDate;
     }
 
 }

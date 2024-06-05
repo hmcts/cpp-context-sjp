@@ -10,6 +10,8 @@
   "postingDate": "2018-07-01",
   "defendant": {
     "id": "50770ba9-37ea-4713-8cab-fe5bf1202716",
+    "firstName": "John",
+    "lastName": "Smith",
     "numPreviousConvictions": 0,
     "offences": [
       {

@@ -17,7 +17,6 @@ import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMetad
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopePayloadMatcher.payloadIsJson;
 import static uk.gov.moj.cpp.sjp.event.processor.results.converter.ResultingToResultsConverterHelper.buildCaseDetails;
 
-
 import uk.gov.justice.json.schemas.domains.sjp.results.PublicHearingResulted;
 import uk.gov.justice.services.core.enveloper.Enveloper;
 import uk.gov.justice.services.core.featurecontrol.FeatureControlGuard;
@@ -80,6 +79,7 @@ public class CaseDecisionProcessorTest {
     private ArgumentCaptor<Envelope> envelopeCaptor;
 
     private static final String PUBLIC_CASE_DECISION_SAVED_EVENT = "public.sjp.case-decision-saved";
+    private static final String PUBLIC_CASE_DECISION_REFERRED_TO_COURT_EVENT = "public.events.sjp.case-referred-to-court";
     private static final String PUBLIC_HEARING_RESULTED_EVENT = "public.hearing.resulted";
     private static final String PUBLIC_EVENTS_HEARING_RESULTED = "public.events.hearing.hearing-resulted";
     private static final String PRIVATE_CASE_DECISION_SAVED_EVENT = "sjp.events.decision-saved";
@@ -97,6 +97,9 @@ public class CaseDecisionProcessorTest {
         final UUID caseId = randomUUID();
         final UUID decisionId = randomUUID();
         final UUID sessionId = randomUUID();
+        final UUID defendantId = randomUUID();
+        final String urn = "TFL12345567";
+        final String defendantName = "James Smith";
         final LocalDate savedAt = LocalDate.now();
         final UUID offence1Id = randomUUID();
         final UUID offence2Id = randomUUID();
@@ -107,9 +110,12 @@ public class CaseDecisionProcessorTest {
         final JsonEnvelope privateEvent = createEnvelope(PRIVATE_CASE_DECISION_SAVED_EVENT,
                 createObjectBuilder()
                         .add("caseId", caseId.toString())
+                        .add("urn", urn)
                         .add("decisionId", decisionId.toString())
                         .add("sessionId", sessionId.toString())
                         .add("savedAt", savedAt.toString())
+                        .add("defendantId", defendantId.toString())
+                        .add("defendantName", defendantName)
                         .add("offenceDecisions",
                                 createArrayBuilder()
                                         .add(createObjectBuilder()
@@ -173,6 +179,7 @@ public class CaseDecisionProcessorTest {
     @Test
     public void shouldCallSetPleasWhenCaseDecisionSavedIsSetAside() {
         final UUID caseId = randomUUID();
+        final String urn = "TFL12345567";
         final UUID decisionId = randomUUID();
         final UUID sessionId = randomUUID();
         final LocalDate savedAt = LocalDate.now();
@@ -183,6 +190,7 @@ public class CaseDecisionProcessorTest {
         final JsonEnvelope privateEvent = createEnvelope(PRIVATE_CASE_DECISION_SAVED_EVENT,
                 createObjectBuilder()
                         .add("caseId", caseId.toString())
+                        .add("urn", urn)
                         .add("decisionId", decisionId.toString())
                         .add("sessionId", sessionId.toString())
                         .add("savedAt", savedAt.toString())
@@ -209,8 +217,11 @@ public class CaseDecisionProcessorTest {
     }
 
     @Test
-    public void handleCaseDecisionSaved_shouldNotInitiatePublicHearingResultedEvent() {
+    public void handleCaseDecisionSaved_shouldInitiatePublicCaseReferredToCourtEvent() {
         final UUID caseId = randomUUID();
+        final String urn = "TFL12345567";
+        final UUID defendantId = randomUUID();
+        final String defendantName = "James Smith";
         final UUID decisionId = randomUUID();
         final UUID sessionId = randomUUID();
         final LocalDate savedAt = LocalDate.now();
@@ -223,6 +234,9 @@ public class CaseDecisionProcessorTest {
         final JsonEnvelope privateEvent = createEnvelope(PRIVATE_CASE_DECISION_SAVED_EVENT,
                 createObjectBuilder()
                         .add("caseId", caseId.toString())
+                        .add("urn", urn)
+                        .add("defendantId", defendantId.toString())
+                        .add("defendantName", defendantName)
                         .add("decisionId", decisionId.toString())
                         .add("sessionId", sessionId.toString())
                         .add("savedAt", savedAt.toString())
@@ -244,9 +258,33 @@ public class CaseDecisionProcessorTest {
 
         caseDecisionProcessor.handleCaseDecisionSaved(privateEvent);
 
-        verify(sender, times(0)).send(jsonEnvelopeCaptor.capture());
+        verify(sender, times(1)).send(jsonEnvelopeCaptor.capture());
 
+        final List<JsonEnvelope> eventEnvelopes = jsonEnvelopeCaptor.getAllValues();
+        final Envelope<JsonValue> decisionSavedPublicEvent = eventEnvelopes.get(0);
 
+        assertThat(decisionSavedPublicEvent.metadata(),
+                withMetadataEnvelopedFrom(privateEvent)
+                        .withName(PUBLIC_CASE_DECISION_REFERRED_TO_COURT_EVENT));
+
+        assertThat(decisionSavedPublicEvent.payload(),
+                payloadIsJson(allOf(
+                        withJsonPath("caseId", is(caseId.toString())),
+                        withJsonPath("urn", is(urn)),
+                        withJsonPath("decisionId", is(decisionId.toString())),
+                        withJsonPath("sessionId", is(sessionId.toString())),
+                        withJsonPath("savedAt", is(savedAt.toString())),
+                        withJsonPath("defendantId", is(defendantId.toString())),
+                        withJsonPath("defendantName", is(defendantName)),
+                        withJsonPath("offenceDecisions[0].type", is(type)),
+                        withJsonPath("offenceDecisions[0].offenceId", is(offence1Id.toString())),
+                        withJsonPath("offenceDecisions[0].withdrawalReasonId", is(withdrawalReasonId.toString())),
+                        withJsonPath("offenceDecisions[0].verdict", is(verdict)),
+                        withJsonPath("offenceDecisions[1].type", is(type)),
+                        withJsonPath("offenceDecisions[1].offenceId", is(offence2Id.toString())),
+                        withJsonPath("offenceDecisions[1].withdrawalReasonId", is(withdrawalReasonId.toString())),
+                        withJsonPath("offenceDecisions[1].verdict", is(verdict))
+                )));
     }
 
 }

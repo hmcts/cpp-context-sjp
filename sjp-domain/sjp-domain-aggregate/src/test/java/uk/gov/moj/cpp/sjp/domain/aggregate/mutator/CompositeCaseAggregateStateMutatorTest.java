@@ -116,6 +116,7 @@ import org.junit.Test;
 public class CompositeCaseAggregateStateMutatorTest {
 
     private final UUID caseId = randomUUID();
+    private final String urn = "TFL12345678";
     private final UUID userId = randomUUID();
     private final UUID defendantId = randomUUID();
     private final UUID offenceId = randomUUID();
@@ -479,7 +480,7 @@ public class CompositeCaseAggregateStateMutatorTest {
         final Withdraw offence2Decision = new Withdraw(randomUUID(), createOffenceDecisionInformation(randomUUID(), VerdictType.NO_VERDICT), randomUUID());
         final List<OffenceDecision> offenceDecisions = newArrayList(offence1Decision, offence2Decision);
         final UUID sessionId = randomUUID();
-        final DecisionSaved decisionSaved = new DecisionSaved(randomUUID(), sessionId, caseId, now(), offenceDecisions);
+        final DecisionSaved decisionSaved = new DecisionSaved(randomUUID(), sessionId, caseId, urn, now(), offenceDecisions);
 
         compositeCaseAggregateStateMutator.apply(decisionSaved, caseAggregateState);
 
@@ -495,7 +496,7 @@ public class CompositeCaseAggregateStateMutatorTest {
         final Withdraw offence2Decision = new Withdraw(randomUUID(), createOffenceDecisionInformation(randomUUID(), VerdictType.NO_VERDICT), randomUUID());
         final List<OffenceDecision> offenceDecisions = newArrayList(offence1Decision, offence2Decision);
         final UUID sessionId = randomUUID();
-        final DecisionSaved decisionSaved = new DecisionSaved(randomUUID(), sessionId, caseId, now(), offenceDecisions);
+        final DecisionSaved decisionSaved = new DecisionSaved(randomUUID(), sessionId, caseId, urn, now(), offenceDecisions);
         final DecisionResubmitted decisionResubmitted = new DecisionResubmitted(decisionSaved, ZonedDateTime.now(),
                 new PaymentTermsInfo(10, false), "fixed","SW13213141");
 

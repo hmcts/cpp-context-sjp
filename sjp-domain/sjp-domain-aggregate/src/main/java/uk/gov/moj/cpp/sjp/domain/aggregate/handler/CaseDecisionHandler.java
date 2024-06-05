@@ -139,13 +139,21 @@ public class CaseDecisionHandler {
         addOffencesConvictionDetails(decision, state, convictingCourt.orElse(null));
         addOffencesPressRestrictable(decision, state);
 
+        final String defendantFirstName = state.getDefendantFirstName();
+        final String defendantLastName = state.getDefendantLastName();
+        final String defendantName = defendantFirstName + " " + defendantLastName;
+        final UUID defendantId = state.getDefendantId();
+
         streamBuilder.add(new DecisionSaved(
                 decision.getDecisionId(),
                 decision.getSessionId(),
                 decision.getCaseId(),
+                state.getUrn(),
                 decision.getSavedAt(),
                 decision.getOffenceDecisions(),
                 decision.getFinancialImposition(),
+                defendantId,
+                defendantName,
                 resultedThroughAocp));
     }
     private static void addOffencesPressRestrictable(final Decision decision, final CaseAggregateState state) {

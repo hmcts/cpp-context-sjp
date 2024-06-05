@@ -104,6 +104,9 @@ subscriptions_descriptor:
         - name: public.sjp.case-decision-saved
           schema_uri: http://cpp.moj.gov.uk/sjp/json/schema/event/public-case-decision-saved.json
 
+        - name: public.events.sjp.case-referred-to-court
+          schema_uri: http://cpp.moj.gov.uk/sjp/json/schema/event/public.events.sjp.case-referred-to-court.json
+
         - name: public.sjp.case-unassigned
           schema_uri: http://cpp.moj.gov.uk/sjp/json/schema/event/public-case-unassigned.json
 

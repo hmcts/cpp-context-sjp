@@ -87,6 +87,7 @@ public class DecisionSavedToCaseDecisionTest {
     private final UUID decisionId = randomUUID();
     private final UUID sessionId = randomUUID();
     private final UUID caseId = randomUUID();
+    private final String urn = "TFL12345678";
     private final ZonedDateTime now = now();
 
     @InjectMocks
@@ -327,7 +328,7 @@ public class DecisionSavedToCaseDecisionTest {
     }
 
     private DecisionSaved buildDecisionSavedEvent(final List<OffenceDecision> offenceDecisions) {
-        return new DecisionSaved(caseDecisionId, randomUUID(), randomUUID(), now(), offenceDecisions);
+        return new DecisionSaved(caseDecisionId, randomUUID(), randomUUID(), urn, now(), offenceDecisions);
     }
 
     private List<OffenceDecision> buildMultipleOffenceDecisionsWith(final List<DecisionType> decisionTypes) {
@@ -439,7 +440,7 @@ public class DecisionSavedToCaseDecisionTest {
 
     private DecisionSaved decisionSavedEvent(final OffenceDecision... offenceDecisions) {
         when(em.getReference(Session.class, sessionId)).thenReturn(session);
-        return new DecisionSaved(decisionId, sessionId, caseId, now, Arrays.asList(offenceDecisions));
+        return new DecisionSaved(decisionId, sessionId, caseId, urn, now, Arrays.asList(offenceDecisions));
     }
 
     private FinancialPenalty financialPenalty(final PressRestriction pressRestriction) {

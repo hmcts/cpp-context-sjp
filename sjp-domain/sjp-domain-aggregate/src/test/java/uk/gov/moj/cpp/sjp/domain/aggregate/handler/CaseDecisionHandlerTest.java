@@ -119,6 +119,9 @@ public class CaseDecisionHandlerTest {
     private final UUID caseId = randomUUID();
     private final UUID legalAdviserId = randomUUID();
     private final UUID defendantId = randomUUID();
+    private final String defendantFirstName = "John";
+    private final String urn = "TFL12345567";
+    private final String defendantLastName = "Smith";
     private final UUID offenceId1 = randomUUID();
     private final UUID offenceId2 = randomUUID();
     private final UUID offenceId3 = randomUUID();
@@ -1261,8 +1264,11 @@ public class CaseDecisionHandlerTest {
     private void givenCaseExistsWithMultipleOffences(final HashSet<UUID> uuids, final UUID savedByUser) {
         caseAggregateState.addOffenceIdsForDefendant(defendantId, uuids);
         caseAggregateState.setDefendantId(defendantId);
+        caseAggregateState.setDefendantFirstName(defendantFirstName);
+        caseAggregateState.setDefendantLastName(defendantLastName);
         caseAggregateState.setAssigneeId(savedByUser);
         caseAggregateState.setCosts(BigDecimal.valueOf(40));
+        caseAggregateState.setUrn(urn);
     }
 
     private void thenTheDecisionIsRejected(final Decision decision, final List<String> expectedRejectionReasons, final Stream<Object> eventStream) {
@@ -1276,8 +1282,8 @@ public class CaseDecisionHandlerTest {
     }
 
     private void thenTheDecisionIsAccepted(final Decision decision, final List<Object> eventList) {
-        assertThat(eventList, hasItem(new DecisionSaved(decisionId, sessionId, caseId, savedAt, decision.getOffenceDecisions(),
-                decision.getFinancialImposition(), null)));
+        assertThat(eventList, hasItem(new DecisionSaved(decisionId, sessionId, caseId, urn, savedAt, decision.getOffenceDecisions(),
+                decision.getFinancialImposition(), defendantId, defendantFirstName + " " + defendantLastName, null)));
         assertThat(eventList, hasItem(allOf(
                 Matchers.instanceOf(CaseNoteAdded.class),
                 Matchers.<CaseNoteAdded>hasProperty("caseId", is(caseId)),
@@ -1305,7 +1311,7 @@ public class CaseDecisionHandlerTest {
                                                                               final List<OffenceDecision> offenceDecisions,
                                                                               final List<Object> eventList, final LocalDate adjournedTo,
                                                                               final boolean shouldHaveConvictionDetails) {
-        assertThat(eventList, hasItem(new DecisionSaved(decisionId, sessionId, caseId, savedAt, offenceDecisions)));
+        assertThat(eventList, hasItem(new DecisionSaved(decisionId, sessionId, caseId, urn, savedAt, offenceDecisions, defendantId, defendantFirstName + " " + defendantLastName)));
         assertThat(eventList, hasItem(allOf(
                 Matchers.instanceOf(DecisionSaved.class),
                 Matchers.<DecisionSaved>hasProperty("offenceDecisions"))));
@@ -1353,7 +1359,8 @@ public class CaseDecisionHandlerTest {
     }
 
     private void thenTheDecisionIsAcceptedAlongWithCaseReferForCourtHearingRecordedEvent(final UUID decisionId, final UUID sessionId, final List<OffenceDecision> offenceDecisions, final List<Object> eventList) {
-        assertThat(eventList, hasItem(new DecisionSaved(decisionId, sessionId, caseId, savedAt, offenceDecisions)));
+        assertThat(eventList, hasItem(new DecisionSaved(decisionId, sessionId, caseId, urn, savedAt, offenceDecisions, defendantId, defendantFirstName + " " + defendantLastName)));
+
         assertThat(eventList, hasItem(allOf(
                 Matchers.instanceOf(CaseNoteAdded.class),
                 Matchers.<CaseNoteAdded>hasProperty("caseId", is(caseId)),

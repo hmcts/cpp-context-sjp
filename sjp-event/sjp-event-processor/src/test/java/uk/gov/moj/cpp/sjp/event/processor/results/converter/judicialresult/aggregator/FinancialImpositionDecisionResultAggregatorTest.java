@@ -53,6 +53,7 @@ public class FinancialImpositionDecisionResultAggregatorTest extends BaseDecisio
 
     private final UUID defendantId = randomUUID();
     private final UUID caseId = randomUUID();
+    private final String urn = "TFL12345678";
     private final UUID offenceId1 = randomUUID();
     private final UUID offenceId2 = randomUUID();
     private final UUID decisionId = randomUUID();
@@ -82,7 +83,7 @@ public class FinancialImpositionDecisionResultAggregatorTest extends BaseDecisio
                 ), null)
         );
 
-        final DecisionSaved decisionSaved = new DecisionSaved(decisionId, sessionId, caseId, now(), offenceDecisions, financialImposition, null);
+        final DecisionSaved decisionSaved = new DecisionSaved(decisionId, sessionId, caseId, urn, now(), offenceDecisions, financialImposition, randomUUID(), "John Smith", null);
 
         aggregator.aggregate(decisionSaved, sjpSessionEnvelope, resultsAggregate, defendantId, caseId, resultedOn, "TVL");
 
@@ -114,7 +115,7 @@ public class FinancialImpositionDecisionResultAggregatorTest extends BaseDecisio
                 ), null)
         );
 
-        final DecisionSaved decisionSaved = new DecisionSaved(decisionId, sessionId, caseId, now(), offenceDecisions, financialImposition, null);
+        final DecisionSaved decisionSaved = new DecisionSaved(decisionId, sessionId, caseId, urn, now(), offenceDecisions, financialImposition, randomUUID(), "John Smith", null);
 
         aggregator.aggregate(decisionSaved, sjpSessionEnvelope, resultsAggregate, defendantId, caseId, resultedOn, "TVL");
 
@@ -145,7 +146,7 @@ public class FinancialImpositionDecisionResultAggregatorTest extends BaseDecisio
                 ), null)
         );
 
-        final DecisionSaved decisionSaved = new DecisionSaved(decisionId, sessionId, caseId, now(), offenceDecisions, financialImposition, null);
+        final DecisionSaved decisionSaved = new DecisionSaved(decisionId, sessionId, caseId, urn, now(), offenceDecisions, financialImposition, randomUUID(), "John Smith", null);
 
         aggregator.aggregate(decisionSaved, sjpSessionEnvelope, resultsAggregate, defendantId, caseId, resultedOn, "TVL");
 
@@ -181,7 +182,7 @@ public class FinancialImpositionDecisionResultAggregatorTest extends BaseDecisio
                 ), null)
         );
 
-        final DecisionSaved decisionSaved = new DecisionSaved(decisionId, sessionId, caseId, now(), offenceDecisions, financialImposition, null);
+        final DecisionSaved decisionSaved = new DecisionSaved(decisionId, sessionId, caseId, urn, now(), offenceDecisions, financialImposition, randomUUID(), "John Smith", null);
 
         aggregator.aggregate(decisionSaved, sjpSessionEnvelope, resultsAggregate, defendantId, caseId, resultedOn, "TVL");
 
@@ -215,7 +216,7 @@ public class FinancialImpositionDecisionResultAggregatorTest extends BaseDecisio
                 ), null)
         );
 
-        final DecisionSaved decisionSaved = new DecisionSaved(decisionId, sessionId, caseId, now(), offenceDecisions, financialImposition, null);
+        final DecisionSaved decisionSaved = new DecisionSaved(decisionId, sessionId, caseId, urn, now(), offenceDecisions, financialImposition, randomUUID(), "John Smith", null);
 
         aggregator.aggregate(decisionSaved, sjpSessionEnvelope, resultsAggregate, defendantId, caseId, resultedOn, "TVL");
 
@@ -248,7 +249,7 @@ public class FinancialImpositionDecisionResultAggregatorTest extends BaseDecisio
                 ), null)
         );
 
-        final DecisionSaved decisionSaved = new DecisionSaved(decisionId, sessionId, caseId, now(), offenceDecisions, financialImposition, null);
+        final DecisionSaved decisionSaved = new DecisionSaved(decisionId, sessionId, caseId, urn, now(), offenceDecisions, financialImposition, randomUUID(), "John Smith", null);
 
         aggregator.aggregate(decisionSaved, sjpSessionEnvelope, resultsAggregate, defendantId, caseId, resultedOn, "TVL");
 
@@ -280,7 +281,7 @@ public class FinancialImpositionDecisionResultAggregatorTest extends BaseDecisio
                 ), null)
         );
 
-        final DecisionSaved decisionSaved = new DecisionSaved(decisionId, sessionId, caseId, now(), offenceDecisions, financialImposition, null);
+        final DecisionSaved decisionSaved = new DecisionSaved(decisionId, sessionId, caseId, urn, now(), offenceDecisions, financialImposition, randomUUID(), "John Smith", null);
 
         aggregator.aggregate(decisionSaved, sjpSessionEnvelope, resultsAggregate, defendantId, caseId, resultedOn, "TVL");
 
@@ -312,7 +313,7 @@ public class FinancialImpositionDecisionResultAggregatorTest extends BaseDecisio
                 ), null)
         );
 
-        final DecisionSaved decisionSaved = new DecisionSaved(decisionId, sessionId, caseId, now(), offenceDecisions, financialImposition, null);
+        final DecisionSaved decisionSaved = new DecisionSaved(decisionId, sessionId, caseId, urn, now(), offenceDecisions, financialImposition, randomUUID(), "John Smith", null);
 
         aggregator.aggregate(decisionSaved, sjpSessionEnvelope, resultsAggregate, defendantId, caseId, resultedOn, "TVL");
 
@@ -361,7 +362,7 @@ public class FinancialImpositionDecisionResultAggregatorTest extends BaseDecisio
                 ), null)
         );
 
-        final DecisionSaved decisionSaved = new DecisionSaved(decisionId, sessionId, caseId, now(), offenceDecisions, financialImposition, null);
+        final DecisionSaved decisionSaved = new DecisionSaved(decisionId, sessionId, caseId, urn, now(), offenceDecisions, financialImposition, randomUUID(), "John Smith", null);
 
         aggregator.aggregate(decisionSaved, sjpSessionEnvelope, resultsAggregate, defendantId, caseId, resultedOn, "TVL");
 
@@ -410,7 +411,7 @@ public class FinancialImpositionDecisionResultAggregatorTest extends BaseDecisio
                 ), null)
         );
 
-        final DecisionSaved decisionSaved = new DecisionSaved(decisionId, sessionId, caseId, now(), offenceDecisions, financialImposition, null);
+        final DecisionSaved decisionSaved = new DecisionSaved(decisionId, sessionId, caseId, urn, now(), offenceDecisions, financialImposition, randomUUID(), "John Smith", null);
 
         aggregator.aggregate(decisionSaved, sjpSessionEnvelope, resultsAggregate, defendantId, caseId, resultedOn, "TVL");
 
@@ -443,7 +444,7 @@ public class FinancialImpositionDecisionResultAggregatorTest extends BaseDecisio
                 ), null)
         );
 
-        final DecisionSaved decisionSaved = new DecisionSaved(decisionId, sessionId, caseId, now(), offenceDecisions, financialImposition, null);
+        final DecisionSaved decisionSaved = new DecisionSaved(decisionId, sessionId, caseId, urn, now(), offenceDecisions, financialImposition, randomUUID(), "John Smith", null);
 
         aggregator.aggregate(decisionSaved, sjpSessionEnvelope, resultsAggregate, defendantId, caseId, resultedOn, "TVL");
 
@@ -476,7 +477,7 @@ public class FinancialImpositionDecisionResultAggregatorTest extends BaseDecisio
                 ), null)
         );
 
-        final DecisionSaved decisionSaved = new DecisionSaved(decisionId, sessionId, caseId, now(), offenceDecisions, financialImposition, null);
+        final DecisionSaved decisionSaved = new DecisionSaved(decisionId, sessionId, caseId, urn, now(), offenceDecisions, financialImposition, randomUUID(), "John Smith", null);
 
         aggregator.aggregate(decisionSaved, sjpSessionEnvelope, resultsAggregate, defendantId, caseId, resultedOn, "TVL");
 
@@ -517,7 +518,7 @@ public class FinancialImpositionDecisionResultAggregatorTest extends BaseDecisio
                 ), null)
         );
 
-        final DecisionSaved decisionSaved = new DecisionSaved(decisionId, sessionId, caseId, now(), offenceDecisions, financialImposition, null);
+        final DecisionSaved decisionSaved = new DecisionSaved(decisionId, sessionId, caseId, urn, now(), offenceDecisions, financialImposition, randomUUID(), "John Smith", null);
 
         aggregator.aggregate(decisionSaved, sjpSessionEnvelope, resultsAggregate, defendantId, caseId, resultedOn, "TVL");
 

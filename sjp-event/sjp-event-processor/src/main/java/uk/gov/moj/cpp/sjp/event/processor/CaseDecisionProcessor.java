@@ -13,6 +13,7 @@ import uk.gov.justice.services.core.annotation.Component;
 import uk.gov.justice.services.core.annotation.Handles;
 import uk.gov.justice.services.core.annotation.ServiceComponent;
 import uk.gov.justice.services.core.enveloper.Enveloper;
+import uk.gov.justice.services.core.featurecontrol.FeatureControlGuard;
 import uk.gov.justice.services.core.sender.Sender;
 import uk.gov.justice.services.messaging.Envelope;
 import uk.gov.justice.services.messaging.JsonEnvelope;
@@ -25,6 +26,7 @@ import uk.gov.moj.cpp.sjp.event.processor.service.SjpService;
 import javax.inject.Inject;
 import javax.json.JsonArrayBuilder;
 import javax.json.JsonObject;
+import javax.json.JsonObjectBuilder;
 import javax.json.JsonValue;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
@@ -70,11 +72,18 @@ public class CaseDecisionProcessor {
     private SjpToHearingConverter sjpToHearingConverter;
 
     @Inject
+    private FeatureControlGuard featureControlGuard;
+
+    @Inject
     private JsonObjectToObjectConverter jsonObjectToObjectConverter;
 
     private static final String PUBLIC_CASE_DECISION_SAVED_EVENT = "public.sjp.case-decision-saved";
+    private static final String PUBLIC_CASE_DECISION_REFERRED_TO_COURT = "public.events.sjp.case-referred-to-court";
     private static final String PUBLIC_EVENTS_CASE_DECISION__RESUBMITTED = "public.sjp.events.case-decision-resubmitted";
     private static final String PUBLIC_EVENTS_HEARING_RESULTED = "public.events.hearing.hearing-resulted";
+    private static final String OFFENCE_DECISIONS = "offenceDecisions";
+    private static final String FINANCIAL_IMPOSITION = "financialImposition";
+    private static final String CASE_ID = "caseId";
     public static final String UNDO_RESERVE_CASE_TIMER_COMMAND = "sjp.command.undo-reserve-case";
 
     @Handles(DecisionSaved.EVENT_NAME)
@@ -83,27 +92,40 @@ public class CaseDecisionProcessor {
         final String caseId = savedDecision.getString(EventProcessorConstants.CASE_ID);
         setAside(caseDecisionSavedEnvelope, savedDecision, caseId);
 
-        sender.sendAsAdmin(envelop(createObjectBuilder().add("caseId", caseId).build())
+        sender.sendAsAdmin(envelop(createObjectBuilder().add(CASE_ID, caseId).build())
                 .withName(UNDO_RESERVE_CASE_TIMER_COMMAND)
                 .withMetadataFrom(caseDecisionSavedEnvelope));
 
         // DD-14110 When the decision type is refer to court then do not emit hearing resulted event
+        // CCT-1333, but instead create a new public event that is required to create a Camunda Task
         final boolean isDecisionReferredToCourt = savedDecision
-                .getJsonArray("offenceDecisions")
+                .getJsonArray(OFFENCE_DECISIONS)
                 .stream()
                 .anyMatch(e -> ((JsonObject) e).getString("type").equals(DecisionType.REFER_FOR_COURT_HEARING.toString()));
 
         if (isDecisionReferredToCourt) {
-            return;
+            sender.send(envelop(savedDecision)
+                    .withName(PUBLIC_CASE_DECISION_REFERRED_TO_COURT)
+                    .withMetadataFrom(caseDecisionSavedEnvelope));
+        } else {
+            final JsonObjectBuilder decisionSaved = createObjectBuilder()
+                    .add("decisionId", savedDecision.getString("decisionId"))
+                    .add("sessionId", savedDecision.getString("sessionId"))
+                    .add(CASE_ID, savedDecision.getString(CASE_ID))
+                    .add("savedAt", savedDecision.getString("savedAt"))
+                    .add(OFFENCE_DECISIONS, savedDecision.getJsonArray(OFFENCE_DECISIONS));
+            if (savedDecision.containsKey(FINANCIAL_IMPOSITION)) {
+                decisionSaved.add(FINANCIAL_IMPOSITION, savedDecision.getJsonObject(FINANCIAL_IMPOSITION));
+            }
+
+            sender.send(envelop(decisionSaved.build())
+                    .withName(PUBLIC_CASE_DECISION_SAVED_EVENT)
+                    .withMetadataFrom(caseDecisionSavedEnvelope));
+
+            final PublicHearingResulted publicHearingResulted = sjpToHearingConverter.convertCaseDecision(caseDecisionSavedEnvelope);
+
+            publishHearingEvent(caseDecisionSavedEnvelope, publicHearingResulted);
         }
-        sender.send(envelop(savedDecision)
-                .withName(PUBLIC_CASE_DECISION_SAVED_EVENT)
-                .withMetadataFrom(caseDecisionSavedEnvelope));
-
-        final PublicHearingResulted publicHearingResulted = sjpToHearingConverter.convertCaseDecision(caseDecisionSavedEnvelope);
-
-
-        publishHearingEvent(caseDecisionSavedEnvelope, publicHearingResulted);
     }
 
     @Handles(DecisionResubmitted.EVENT_NAME)
@@ -153,11 +175,9 @@ public class CaseDecisionProcessor {
     }
 
     /**
-     * Here we have to transform the lump sum date as the common code is calculating the lump sum within date using the original decision saved (as we want to preserve this based on the business input)
-     *
-     * @param publicHearingResulted
-     * @param defendantJudicialResult
-     * @return
+     * Here we have to transform the lump sum date as the common code is calculating the lump sum
+     * within date using the original decision saved (as we want to preserve this based on the
+     * business input)
      */
     private DefendantJudicialResult transformTheLumpSumResult(final PublicHearingResulted publicHearingResulted,
                                                               final DefendantJudicialResult defendantJudicialResult) {
@@ -215,7 +235,7 @@ public class CaseDecisionProcessor {
 
         final JsonObject payload = createObjectBuilder()
                 .add("pleas", pleas)
-                .add("caseId", caseId)
+                .add(CASE_ID, caseId)
                 .build();
 
         sender.send(enveloper
@@ -235,7 +255,7 @@ public class CaseDecisionProcessor {
 
     private void setAside(JsonEnvelope caseDecisionSavedEnvelope, JsonObject savedDecision, String caseId) {
         final boolean isSetAside = savedDecision
-                .getJsonArray("offenceDecisions")
+                .getJsonArray(OFFENCE_DECISIONS)
                 .stream()
                 .allMatch(e -> ((JsonObject) e).getString("type").equals(DecisionType.SET_ASIDE.toString()));
 

@@ -95,10 +95,13 @@ public class CaseDecisionListener {
                 decisionSavedWithPaymentTermsChanged.getDecisionSaved().getDecisionId(),
                 decisionSavedWithPaymentTermsChanged.getDecisionSaved().getSessionId(),
                 decisionSavedWithPaymentTermsChanged.getDecisionSaved().getCaseId(),
+                decisionSavedWithPaymentTermsChanged.getDecisionSaved().getUrn(),
                 decisionSavedWithPaymentTermsChanged.getDecisionSaved().getSavedAt(),
                 decisionSavedWithPaymentTermsChanged.getDecisionSaved().getOffenceDecisions(),
                 decisionSavedWithPaymentTermsChanged.getDecisionSaved().getFinancialImposition(),
-               null);
+                null,
+                null,
+                null);
 
         final CaseDecision caseDecision = eventConverter.convert(decisionSaved);
         final CaseDecision enrichedCaseDecision = enrichOffenceDecision(caseDecision);

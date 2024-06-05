@@ -297,7 +297,7 @@ public class CaseDecisionListenerTest {
         caseDecision.setOffenceDecisions(asList(offenceDecision1));
         caseDecision.setResultedThroughAOCP(true);
 
-        final DecisionSaved decisionSaved = new DecisionSaved(decisionId, randomUUID(), caseId, null, null, null, true);
+        final DecisionSaved decisionSaved = new DecisionSaved(decisionId, randomUUID(), caseId, null, null, null, null, null, null, true);
         final Envelope<DecisionSaved> decisionSavedEnvelope = envelopeFrom(metadataWithRandomUUID("sjp.events.case-note-added"), decisionSaved);
 
         when(eventConverter.convert(any())).thenReturn(caseDecision);

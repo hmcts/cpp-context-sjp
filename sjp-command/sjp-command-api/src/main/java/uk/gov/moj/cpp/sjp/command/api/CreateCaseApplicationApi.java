@@ -25,5 +25,4 @@ public class CreateCaseApplicationApi {
                 envelope.payloadAsJsonObject()
         ));
     }
-
 }

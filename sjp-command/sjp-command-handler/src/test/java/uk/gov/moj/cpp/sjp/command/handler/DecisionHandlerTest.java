@@ -109,6 +109,7 @@ public class DecisionHandlerTest {
         final UUID decisionId = randomUUID();
         final UUID sessionId = randomUUID();
         final UUID caseId = randomUUID();
+        final String urn = "TFL1244567";
         final UUID userId = randomUUID();
         final UUID offenceId1 = randomUUID();
         final UUID offenceId2 = randomUUID();
@@ -126,7 +127,7 @@ public class DecisionHandlerTest {
 
         final Decision decision = new Decision(decisionId, sessionId, caseId, "duplicate conviction", savedAt, savedBy, offenceDecisions, null);
 
-        final DecisionSaved decisionSaved = new DecisionSaved(decisionId, sessionId, caseId, decision.getSavedAt(), offenceDecisions);
+        final DecisionSaved decisionSaved = new DecisionSaved(decisionId, sessionId, caseId, urn, decision.getSavedAt(), offenceDecisions);
 
         when(eventSource.getStreamById(sessionId)).thenReturn(eventStream);
         when(aggregateService.get(eventStream, Session.class)).thenReturn(session);
@@ -147,6 +148,7 @@ public class DecisionHandlerTest {
                                 .withName("sjp.events.decision-saved"),
                         payloadIsJson(allOf(
                                 withJsonPath("$.caseId", equalTo(caseId.toString())),
+                                withJsonPath("$.urn", equalTo(urn)),
                                 withJsonPath("$.decisionId", equalTo(decisionId.toString())),
                                 withJsonPath("$.sessionId", equalTo(sessionId.toString())),
                                 withJsonPath("$.savedAt", equalTo(decision.getSavedAt().format(new DateTimeFormatterBuilder()
@@ -168,6 +170,7 @@ public class DecisionHandlerTest {
         final UUID decisionId = randomUUID();
         final UUID sessionId = randomUUID();
         final UUID caseId = randomUUID();
+        final String urn = "TFL1244567";
         final UUID userId = randomUUID();
         final UUID offenceId1 = randomUUID();
         final UUID offenceId2 = randomUUID();
@@ -183,7 +186,7 @@ public class DecisionHandlerTest {
 
         final Decision decision = new Decision(decisionId, sessionId, caseId, "duplicate conviction", savedAt, savedBy, offenceDecisions, null);
 
-        final DecisionSaved decisionSaved = new DecisionSaved(decisionId, sessionId, caseId, decision.getSavedAt(), offenceDecisions);
+        final DecisionSaved decisionSaved = new DecisionSaved(decisionId, sessionId, caseId, urn, decision.getSavedAt(), offenceDecisions);
 
         when(eventSource.getStreamById(sessionId)).thenReturn(eventStream);
         when(aggregateService.get(eventStream, Session.class)).thenReturn(session);
@@ -203,6 +206,7 @@ public class DecisionHandlerTest {
                                 .withName("sjp.events.decision-saved"),
                         payloadIsJson(allOf(
                                 withJsonPath("$.caseId", equalTo(caseId.toString())),
+                                withJsonPath("$.urn", equalTo(urn)),
                                 withJsonPath("$.decisionId", equalTo(decisionId.toString())),
                                 withJsonPath("$.sessionId", equalTo(sessionId.toString())),
                                 withJsonPath("$.savedAt", equalTo(decision.getSavedAt().format(new DateTimeFormatterBuilder()
@@ -222,6 +226,7 @@ public class DecisionHandlerTest {
         final UUID decisionId = randomUUID();
         final UUID sessionId = randomUUID();
         final UUID caseId = randomUUID();
+        final String urn = "TFL1244567";
         final UUID userId = randomUUID();
         final UUID offenceId1 = randomUUID();
         final UUID offenceId2 = randomUUID();
@@ -240,7 +245,7 @@ public class DecisionHandlerTest {
 
         final Decision decision = new Decision(decisionId, sessionId, caseId, "duplicate conviction", savedAt, savedBy, offenceDecisions, null);
 
-        final DecisionSaved decisionSaved = new DecisionSaved(decisionId, sessionId, caseId, decision.getSavedAt(), offenceDecisions);
+        final DecisionSaved decisionSaved = new DecisionSaved(decisionId, sessionId, caseId, urn, decision.getSavedAt(), offenceDecisions);
 
         mockCalls(caseId, sessionId);
         when(caseAggregate.saveDecision(decision, session)).thenReturn(Stream.of(decisionSaved));
@@ -255,6 +260,7 @@ public class DecisionHandlerTest {
                                 .withName("sjp.events.decision-saved"),
                         payloadIsJson(allOf(
                                 withJsonPath("$.caseId", equalTo(caseId.toString())),
+                                withJsonPath("$.urn", equalTo(urn)),
                                 withJsonPath("$.decisionId", equalTo(decisionId.toString())),
                                 withJsonPath("$.sessionId", equalTo(sessionId.toString())),
                                 withJsonPath("$.savedAt", equalTo(decision.getSavedAt().format(new DateTimeFormatterBuilder()

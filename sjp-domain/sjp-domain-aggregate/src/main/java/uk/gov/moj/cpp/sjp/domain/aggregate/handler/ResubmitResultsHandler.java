@@ -61,9 +61,12 @@ public class ResubmitResultsHandler {
             streamBuilder.add(new DecisionResubmitted(new DecisionSaved(randomUUID(),
                     decisionSaved.getSessionId(),
                     decisionSaved.getCaseId(),
+                    decisionSaved.getUrn(),
                     decisionSaved.getSavedAt(),
                     decisionSaved.getOffenceDecisions(),
-                    new FinancialImposition(financialImposition.getCostsAndSurcharge(), newPayment), null
+                    new FinancialImposition(financialImposition.getCostsAndSurcharge(), newPayment),
+                    state.getDefendantId(),
+                    state.getDefendantFirstName() + " " + state.getDefendantLastName(), null
             ), ZonedDateTime.now(), paymentTermsInfo, accountNote, state.getUrn()));
 
             if (newPayment != financialImposition.getPayment()) {

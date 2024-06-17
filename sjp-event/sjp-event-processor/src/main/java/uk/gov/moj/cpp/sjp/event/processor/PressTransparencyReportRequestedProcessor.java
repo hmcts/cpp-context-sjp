@@ -4,7 +4,6 @@ import static java.lang.String.format;
 import static java.time.LocalDate.parse;
 import static java.time.LocalDateTime.now;
 import static java.time.temporal.ChronoUnit.YEARS;
-import static java.util.Locale.ENGLISH;
 import static java.util.Objects.nonNull;
 import static java.util.Optional.empty;
 import static java.util.Optional.of;
@@ -20,7 +19,6 @@ import static uk.gov.moj.cpp.sjp.domain.DocumentRequestType.FULL;
 import static uk.gov.moj.cpp.sjp.event.processor.DateTimeUtil.DATE_FORMAT;
 import static uk.gov.moj.cpp.sjp.event.processor.DateTimeUtil.DOB_FORMAT;
 import static uk.gov.moj.cpp.sjp.event.processor.DateTimeUtil.ENGLISH_TITLE_DATE_FORMATTER;
-import static uk.gov.moj.cpp.sjp.event.processor.DateTimeUtil.START_DATE_FORMAT;
 import static uk.gov.moj.cpp.sjp.event.processor.DateTimeUtil.formatDateTimeForPdfReport;
 import static uk.gov.moj.cpp.sjp.event.processor.DateTimeUtil.formatPublicationDateTimeForJsonReport;
 import static uk.gov.moj.cpp.sjp.event.processor.DateTimeUtil.getDateTimeForDeltaReport;
@@ -46,10 +44,8 @@ import uk.gov.moj.cpp.sjp.event.transparency.PressTransparencyPDFReportRequested
 
 import java.io.ByteArrayInputStream;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.time.format.DateTimeParseException;
 import java.util.List;
-import java.util.Locale;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -283,14 +279,8 @@ public class PressTransparencyReportRequestedProcessor {
                 .add("generatedDateAndTime", isPayloadForPublicEvent ? formatPublicationDateTimeForJsonReport(now(), isWelsh) : formatDateTimeForPdfReport(now(), isWelsh))
                 .add("totalNumberOfRecords", readyCases.size())
                 .add("readyCases", readyCases)
-                .add("startDate", getStartDate(isWelsh))
+                .add("startDate", payloadHelper.getStartDate(isWelsh))
                 .build();
-    }
-
-    private String getStartDate(boolean isWelsh) {
-        final LocalDateTime date = LocalDateTime.now().minusDays(1);
-        final Locale locale = isWelsh ? new Locale("cy") : ENGLISH;
-        return date.format(START_DATE_FORMAT.withLocale(locale));
     }
 
     private JsonArrayBuilder createReadyCases(final List<JsonObject> pendingCases, final boolean isPayloadForPublicEvent,

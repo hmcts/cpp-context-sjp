@@ -1,7 +1,6 @@
 package uk.gov.moj.cpp.sjp.event.processor.utils;
 
 import static java.lang.String.format;
-
 import static java.time.format.DateTimeFormatter.ofPattern;
 import static java.util.Locale.ENGLISH;
 import static org.apache.commons.lang3.StringUtils.LF;
@@ -11,13 +10,13 @@ import uk.gov.moj.cpp.sjp.event.processor.exception.OffenceNotFoundException;
 import uk.gov.moj.cpp.sjp.event.processor.service.ReferenceDataOffencesService;
 import uk.gov.moj.cpp.sjp.event.processor.service.ReferenceDataService;
 
+import java.time.DayOfWeek;
 import java.time.LocalDate;
-
-import javax.inject.Inject;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Locale;
 
+import javax.inject.Inject;
 import javax.json.JsonArray;
 import javax.json.JsonObject;
 
@@ -104,9 +103,13 @@ public class PayloadHelper {
     }
 
     public String getStartDate(boolean isWelsh) {
-        final LocalDateTime date = LocalDateTime.now().minusDays(1);
+        LocalDateTime fromDate = LocalDateTime.now().minusDays(1);
+
+        if (LocalDateTime.now().getDayOfWeek() == DayOfWeek.MONDAY) {
+            fromDate = fromDate.minusDays(2);
+        }
         final Locale locale = isWelsh ? new Locale("cy") : ENGLISH;
-        return date.format(START_DATE_FORMAT.withLocale(locale));
+        return fromDate.format(START_DATE_FORMAT.withLocale(locale));
     }
 
     public String getTemplateIdentifier(final String type, String lang, String exportType) {

@@ -12,6 +12,12 @@
     "postingOrHearingDate": {
       "type": "string"
     },
+    "prosecutorName": {
+      "type": "string"
+    },
+    "expiryDate": {
+      "type": "string"
+    },
     "offenceTitles": {
       "type": "array",
       "items": {

@@ -11,8 +11,10 @@ import uk.gov.moj.cpp.sjp.persistence.entity.CaseDecision;
 import uk.gov.moj.cpp.sjp.persistence.entity.CaseDetail;
 import uk.gov.moj.cpp.sjp.persistence.entity.DefendantDetail;
 import uk.gov.moj.cpp.sjp.persistence.entity.OffenceDetail;
+import uk.gov.moj.cpp.sjp.persistence.entity.ReadyCase;
 import uk.gov.moj.cpp.sjp.persistence.repository.CaseDecisionRepository;
 import uk.gov.moj.cpp.sjp.persistence.repository.CaseRepository;
+import uk.gov.moj.cpp.sjp.persistence.repository.ReadyCaseRepository;
 import uk.gov.moj.cpp.sjp.query.view.service.DefendantService;
 import uk.gov.moj.cpp.sjp.query.view.service.ProgressionService;
 import uk.gov.moj.cpp.sjp.query.view.service.defendantcase.rules.AbstractCaseRule;
@@ -30,6 +32,7 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -47,6 +50,9 @@ public class DefendantPotentialCaseServiceImpl implements DefendantPotentialCase
 
     @Inject
     private CaseRepository caseRepository;
+
+    @Inject
+    private ReadyCaseRepository readyCaseRepository;
 
     @Inject
     private CaseDecisionRepository caseDecisionRepository;
@@ -96,7 +102,7 @@ public class DefendantPotentialCaseServiceImpl implements DefendantPotentialCase
         }
 
         final List<DefendantCase> defendantCases =
-                            defendantCaseSearcher.searchDefendantCases(envelope, defendantDetail);
+                defendantCaseSearcher.searchDefendantCases(envelope, defendantDetail);
         LOGGER.info("Number of defendant cases matching defendant is {}", defendantCases.size());
         if (defendantCases.isEmpty()) {
             return PotentialCases.emptyPotentialCase();
@@ -108,12 +114,12 @@ public class DefendantPotentialCaseServiceImpl implements DefendantPotentialCase
                 final CaseRuleResult ruleResult = rule.executeRule(defendantCase);
                 if (ruleResult.isMatch()) {
                     final CaseOffenceDetails.CaseOffenceDetailsBuilder
-                                                      builder = CaseOffenceDetails.createBuilder();
+                            builder = CaseOffenceDetails.createBuilder();
                     builder.withCaseId(defendantCase.getCaseId()).
                             withCaseRef(defendantCase.getCaseReference());
                     decorateBuilderByRuleType(builder,
-                                              rule.getRuleType(),
-                                              defendantDetail, defendantCase);
+                            rule.getRuleType(),
+                            defendantDetail, defendantCase);
                     response.add(ruleResult.getRuleType(), builder.build());
                     break;
                 }
@@ -127,31 +133,40 @@ public class DefendantPotentialCaseServiceImpl implements DefendantPotentialCase
                                            CaseRuleType ruleType,
                                            final DefendantDetail defendant,
                                            DefendantCase defendantCase) {
+        final CaseDetail caseDetail = caseRepository.findBy(defendantCase.getCaseId());
+
+
         if (ruleType == SJP_OPEN || ruleType == SJP_CLOSED) {
-            final CaseDetail caseDetail = caseRepository.findBy(defendantCase.getCaseId());
-            final List<String> offences = caseDetail.getDefendant().getOffences().
-                                                stream().
-                                                map(OffenceDetail::getWording).
-                                                collect(Collectors.toList());
-            builder.withPostingOrHearingDate(caseDetail.getPostingDate()).
-                    withOffenceTitles(offences);
+            final ReadyCase readyCase = readyCaseRepository.findBy(defendantCase.getCaseId());
+            final List<String> offences = caseDetail.getDefendant().getOffences()
+                    .stream()
+                    .map(OffenceDetail::getWording)
+                    .collect(Collectors.toList());
+
+            builder.withPostingOrHearingDate(caseDetail.getPostingDate())
+                    .withProsecutorName(getProsecutingAuthority(caseDetail))
+                    .withExpiryDate(getExpiryDateForCase(readyCase, caseDetail.getPostingDate()))
+                    .withOffenceTitles(offences);
+
         } else if (ruleType == COURT_CASE_OPEN || ruleType == COURT_CASE_CLOSED) {
             final LocalDate lastHearingDate = findLastHearingDate(defendantCase.getHearings());
-            final List<String> defendantOffences =
-                        progressionService.findDefendantOffences(defendantCase.getCaseId(), defendant);
-            builder.withPostingOrHearingDate(lastHearingDate).
-                    withOffenceTitles(defendantOffences);
+            final List<String> defendantOffences = progressionService.findDefendantOffences(defendantCase.getCaseId(), defendant);
+
+            builder.withPostingOrHearingDate(lastHearingDate)
+                    .withProsecutorName(getProsecutingAuthority(caseDetail))
+                    .withOffenceTitles(defendantOffences);
         } else {
             LOGGER.warn("Invalid rule type provided - ruleType={}", ruleType);
         }
     }
 
+
     public List<CaseRuleResult> findDefendantCaseMatchingRule(Envelope<?> envelope,
-                                                        DefendantDetail defendant) {
+                                                              DefendantDetail defendant) {
         LOGGER.info("Checking whether defendant has any potential Open/Closed Sjp " +
-                    "or CourtCase - defendant={}", defendant);
+                "or CourtCase - defendant={}", defendant);
         final List<DefendantCase> defendantCases =
-                                defendantCaseSearcher.searchDefendantCases(envelope, defendant);
+                defendantCaseSearcher.searchDefendantCases(envelope, defendant);
         final List<CaseRuleResult> caseRuleResultList = new ArrayList<>();
         LOGGER.info("Number of defendant cases matching search criteria is {}", defendantCases.size());
         for (final DefendantCase defendantCase : defendantCases) {
@@ -164,7 +179,7 @@ public class DefendantPotentialCaseServiceImpl implements DefendantPotentialCase
             }
         }
         LOGGER.info("Defendant has number of potential case matching rule = {}", caseRuleResultList.size());
-        if(caseRuleResultList.isEmpty()){
+        if (caseRuleResultList.isEmpty()) {
             caseRuleResultList.add(new CaseRuleResult(CaseRuleType.NONE, false));
         }
         return caseRuleResultList;
@@ -174,13 +189,31 @@ public class DefendantPotentialCaseServiceImpl implements DefendantPotentialCase
         CaseDecision caseDecision = null;
         try {
             caseDecision = caseDecisionRepository.findCaseDecisionById(caseId);
-        }catch (PersistenceException exception){
-            LOGGER.error("No casedecision found for given caseId {} with message {} ", caseId , exception);
+        } catch (PersistenceException exception) {
+            LOGGER.error("No casedecision found for given caseId {} with message {} ", caseId, exception);
         }
         return caseDecision;
     }
 
     public Optional<JsonObject> findProgressionCaseById(final UUID caseId) {
         return progressionService.findCaseById(caseId);
+    }
+
+    private static String getProsecutingAuthority(final CaseDetail caseDetail) {
+        return Optional.ofNullable(caseDetail)
+                .map(CaseDetail::getProsecutingAuthority)
+                .orElse("");
+    }
+
+    private String getExpiryDateForCase(final ReadyCase readyCase, final LocalDate postingDate) {
+        if (Objects.isNull(readyCase)) {
+            final LocalDate currentDate = LocalDate.now();
+            final LocalDate futureExpiryDate = postingDate.plusDays(28);
+
+            if (currentDate.isBefore(postingDate.plusDays(28))) {
+                return String.valueOf(futureExpiryDate);
+            }
+        }
+        return "";
     }
 }

@@ -8,11 +8,15 @@
     },
     "assignedToMe": {
       "type": "boolean"
+    },
+    "reservedCases": {
+      "type": "integer"
     }
   },
   "required": [
     "assigned",
-    "assignedToMe"
+    "assignedToMe",
+    "reservedCases"
   ],
   "additionalProperties": false
 }

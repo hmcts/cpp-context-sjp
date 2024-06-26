@@ -29,7 +29,7 @@ public class ReserveCaseHandler {
         }else {
             final ZonedDateTime reservedAt = ZonedDateTime.now();
             streamBuilder.add(new CaseReserved(caseAggregateState.getCaseId(), caseAggregateState.getUrn(), reservedAt, reservedBy));
-            streamBuilder.add(new CaseMarkedReadyForDecision(caseAggregateState.getCaseId(), CaseReadinessReason.UNKNOWN, reservedAt, SessionType.DELEGATED_POWERS, getPriority(caseAggregateState)));
+            streamBuilder.add(new CaseMarkedReadyForDecision(caseAggregateState.getCaseId(), CaseReadinessReason.UNKNOWN, reservedAt, SessionType.MAGISTRATE, getPriority(caseAggregateState)));
         }
         return streamBuilder.build();
     }

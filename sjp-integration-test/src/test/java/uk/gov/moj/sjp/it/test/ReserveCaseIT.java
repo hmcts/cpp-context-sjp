@@ -19,8 +19,8 @@ import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMetad
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopePayloadMatcher.payload;
 import static uk.gov.justice.services.test.utils.core.matchers.JsonValueIsJsonMatcher.isJson;
 import static uk.gov.justice.services.test.utils.core.matchers.ResponseStatusMatcher.status;
-import static uk.gov.moj.cpp.sjp.domain.CaseAssignmentType.DELEGATED_POWERS_DECISION;
-import static uk.gov.moj.cpp.sjp.domain.SessionType.DELEGATED_POWERS;
+import static uk.gov.moj.cpp.sjp.domain.CaseAssignmentType.MAGISTRATE_DECISION;
+import static uk.gov.moj.cpp.sjp.domain.SessionType.MAGISTRATE;
 import static uk.gov.moj.sjp.it.Constants.DEFAULT_OFFENCE_CODE;
 import static uk.gov.moj.sjp.it.Constants.EVENT_CASE_ALREADY_RESERVED;
 import static uk.gov.moj.sjp.it.Constants.EVENT_CASE_ALREADY_UNRESERVED;
@@ -514,7 +514,7 @@ public class ReserveCaseIT extends BaseIntegrationTest {
 
     private static void verifyCaseAssigned(final String courtHouseOUCode, final UUID caseId, final UUID userId, final UUID sessionId) {
 
-        SessionHelper.startSession(sessionId, userId, courtHouseOUCode, DELEGATED_POWERS);
+        SessionHelper.startSession(sessionId, userId, courtHouseOUCode, MAGISTRATE);
 
         AssignNextCaseClient assignCase = AssignNextCaseClient.builder().sessionId(sessionId).build();
         assignCase.assignedPrivateHandler = (envelope) ->
@@ -525,7 +525,7 @@ public class ReserveCaseIT extends BaseIntegrationTest {
                                         withJsonPath("$.caseId", CoreMatchers.equalTo(caseId.toString())),
                                         withJsonPath("$.assigneeId", CoreMatchers.equalTo(userId.toString())),
                                         withJsonPath("$.assignedAt", CoreMatchers.notNullValue()),
-                                        withJsonPath("$.caseAssignmentType", CoreMatchers.equalTo(DELEGATED_POWERS_DECISION.toString()))
+                                        withJsonPath("$.caseAssignmentType", CoreMatchers.equalTo(MAGISTRATE_DECISION.toString()))
                                 ))));
 
         assignCase.assignedPublicHandler = (envelope) ->
@@ -543,7 +543,7 @@ public class ReserveCaseIT extends BaseIntegrationTest {
     private static void verifyCaseNotFound(final String courtHouseOUCode, final UUID userId) {
         final UUID sessionId = randomUUID();
 
-        SessionHelper.startSession(sessionId, userId, courtHouseOUCode, DELEGATED_POWERS);
+        SessionHelper.startSession(sessionId, userId, courtHouseOUCode, MAGISTRATE);
 
         AssignNextCaseClient assignCase = AssignNextCaseClient.builder().sessionId(sessionId).build();
         assignCase.notAssignedHandler = (envelope) -> Log.info("Case Not Assigned");

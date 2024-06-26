@@ -109,7 +109,7 @@ public class ReadyCaseIT extends BaseIntegrationTest {
             offencesWithdrawalRequestHelper.requestWithdrawalOfOffences(caseId, getRequestWithdrawalPayload());
 
             caseSearchResultHelper.verifyCaseStatus(CaseStatus.WITHDRAWAL_REQUEST_READY_FOR_DECISION);
-            readyCaseHelper.verifyCaseMarkedReadyForDecisionEventEmitted(caseId, WITHDRAWAL_REQUESTED, DELEGATED_POWERS, HIGH);
+            readyCaseHelper.verifyCaseMarkedReadyForDecisionEventEmitted(caseId, WITHDRAWAL_REQUESTED, MAGISTRATE, HIGH);
             verifyCaseReadyInViewStore(caseId, WITHDRAWAL_REQUESTED);
 
 

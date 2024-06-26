@@ -9,7 +9,9 @@ import org.apache.deltaspike.data.api.EntityRepository;
 import org.apache.deltaspike.data.api.Repository;
 
 @Repository
-public abstract class ReadyCaseRepository implements EntityRepository<ReadyCase, UUID> {
+public interface ReadyCaseRepository extends EntityRepository<ReadyCase, UUID> {
 
-    public abstract List<ReadyCase> findByAssigneeId(final UUID assigneeId);
+    List<ReadyCase> findByAssigneeId(final UUID assigneeId);
+
+    ReadyCase findByCaseId(final UUID caseId);
 }

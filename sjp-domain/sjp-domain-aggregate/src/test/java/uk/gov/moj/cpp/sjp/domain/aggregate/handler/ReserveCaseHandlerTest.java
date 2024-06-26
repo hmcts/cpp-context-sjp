@@ -51,7 +51,7 @@ public class ReserveCaseHandlerTest {
         assertThat(caseMarkedReadyForDecision.getCaseId(), is(caseAggregateState.getCaseId()));
         assertThat(caseMarkedReadyForDecision.getReason(), is(CaseReadinessReason.UNKNOWN));
         assertThat(caseMarkedReadyForDecision.getMarkedAt(), is(notNullValue()));
-        assertThat(caseMarkedReadyForDecision.getSessionType(), is(SessionType.DELEGATED_POWERS));
+        assertThat(caseMarkedReadyForDecision.getSessionType(), is(SessionType.MAGISTRATE));
         assertThat(caseMarkedReadyForDecision.getPriority(), is(Priority.HIGH));
 
     }

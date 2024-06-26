@@ -4,8 +4,12 @@ import static com.fasterxml.jackson.annotation.JsonCreator.Mode.PROPERTIES;
 import static java.util.UUID.randomUUID;
 import static javax.json.Json.createArrayBuilder;
 import static javax.json.Json.createObjectBuilder;
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.Matchers.isEmptyString;
+import static org.hamcrest.Matchers.not;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
@@ -44,8 +48,10 @@ import uk.gov.moj.cpp.sjp.persistence.entity.CaseDetail;
 import uk.gov.moj.cpp.sjp.persistence.entity.DefendantDetail;
 import uk.gov.moj.cpp.sjp.persistence.entity.OffenceDetail;
 import uk.gov.moj.cpp.sjp.persistence.entity.PersonalDetails;
+import uk.gov.moj.cpp.sjp.persistence.entity.ReadyCase;
 import uk.gov.moj.cpp.sjp.persistence.repository.CaseDecisionRepository;
 import uk.gov.moj.cpp.sjp.persistence.repository.CaseRepository;
+import uk.gov.moj.cpp.sjp.persistence.repository.ReadyCaseRepository;
 import uk.gov.moj.cpp.sjp.query.view.service.DefendantService;
 import uk.gov.moj.cpp.sjp.query.view.service.ProgressionService;
 import uk.gov.moj.cpp.sjp.query.view.service.defendantcase.rules.CaseRuleResult;
@@ -102,6 +108,9 @@ public class DefendantPotentialCaseServiceTest {
     private CaseRepository caseRepository;
 
     @Mock
+    private ReadyCaseRepository readyCaseRepository;
+
+    @Mock
     private ProgressionService progressionService;
 
     @Mock
@@ -126,10 +135,10 @@ public class DefendantPotentialCaseServiceTest {
     private DefendantPotentialCaseServiceImpl defendantCaseService;
 
     private final DefendantDetail defendant = createDefendant(UUID.randomUUID(),
-                                                "John",
-                                                "Smith",
-                                                "1980-01-05",
-                                                "2 Abc Street", "EC1 1NN", "ASN-1");
+            "John",
+            "Smith",
+            "1980-01-05",
+            "2 Abc Street", "EC1 1NN", "ASN-1");
 
     @Before
     public void setup() {
@@ -150,6 +159,7 @@ public class DefendantPotentialCaseServiceTest {
         final CaseDetail caseDetail = new CaseDetail();
         caseDetail.setPostingDate(LocalDate.now().minusDays(10));
         caseDetail.setDefendant(defendant);
+        caseDetail.setProsecutingAuthority("TFL");
         when(caseRepository.findBy(CASE_ID)).thenReturn(caseDetail);
 
         JsonObject progCaseSearchResult = createProgressionCaseSearchJsonObject(CASE_ID, "ACTIVE");
@@ -164,22 +174,22 @@ public class DefendantPotentialCaseServiceTest {
     @Test
     public void shouldDefendantQueryDetailsSubmittedToUnifiedSearch() {
         JsonObject searchResult = createSingleCaseUnifiedSearchResult(CASE_ID,
-                                                                  CASE_REF,
-                                                                  true,
-                                                                  CaseStatus.NO_PLEA_RECEIVED.toString(),
-                                                                  defendant,
-                                                                  DATE_OFFSET_WITHIN_28_DAYS);
+                CASE_REF,
+                true,
+                CaseStatus.NO_PLEA_RECEIVED.toString(),
+                defendant,
+                DATE_OFFSET_WITHIN_28_DAYS);
         DefendantCaseQueryResult result = jsonObjectConverter.
-                                                convert(searchResult, DefendantCaseQueryResult.class);
+                convert(searchResult, DefendantCaseQueryResult.class);
         when(potentialCaseSearchResponse.payload()).thenReturn(result);
         when(requester.requestAsAdmin(unifiedSearchQueryParamCapture.capture(),
-                                      eq(DefendantCaseQueryResult.class))).thenReturn(potentialCaseSearchResponse);
+                eq(DefendantCaseQueryResult.class))).thenReturn(potentialCaseSearchResponse);
         defendantCaseService.findDefendantCaseMatchingRule(envelope, defendant);
         final JsonObject queryParamPayload = unifiedSearchQueryParamCapture.getAllValues().get(0).payload();
         assertEquals(CASES_DEFAULT_PAGE_SIZE, queryParamPayload.getInt(CASES_PAGE_SIZE));
         assertEquals(0, queryParamPayload.getInt(CASES_START_FROM));
         final PersonalDetails personalDetails = defendant.getPersonalDetails();
-        assertEquals(queryParamPayload.getString(PARTY_NAME_QUERY_PARAM), String.join(" ", personalDetails.getFirstName(),personalDetails.getLastName()));
+        assertEquals(queryParamPayload.getString(PARTY_NAME_QUERY_PARAM), String.join(" ", personalDetails.getFirstName(), personalDetails.getLastName()));
         assertEquals(queryParamPayload.getString(DOB_QUERY_PARAM), personalDetails.getDateOfBirth().toString());
         assertEquals(queryParamPayload.getString(ADDRESS_LINE1_QUERY_PARAM), defendant.getAddress().getAddress1());
         assertEquals(queryParamPayload.getString(POSTCODE_QUERY_PARAM), defendant.getAddress().getPostcode());
@@ -188,20 +198,24 @@ public class DefendantPotentialCaseServiceTest {
     @Test
     public void shouldDefendantHasPotentialCase_WhenCaseSjpOpen() {
         JsonObject searchResult = createSingleCaseUnifiedSearchResult(CASE_ID,
-                                                                  CASE_REF,
-                                                                  true,
-                                                                  CaseStatus.NO_PLEA_RECEIVED.toString(),
-                                                                  defendant,
-                                                                  DATE_OFFSET_WITHIN_28_DAYS);
+                CASE_REF,
+                true,
+                CaseStatus.NO_PLEA_RECEIVED.toString(),
+                defendant,
+                DATE_OFFSET_WITHIN_28_DAYS);
         DefendantCaseQueryResult result = jsonObjectConverter.
-                                                convert(searchResult, DefendantCaseQueryResult.class);
+                convert(searchResult, DefendantCaseQueryResult.class);
+        ReadyCase readyCase = new ReadyCase();
+        readyCase.setMarkedAt(LocalDate.now());
+        when(readyCaseRepository.findBy(any())).thenReturn(readyCase);
         when(potentialCaseSearchResponse.payload()).thenReturn(result);
+
         when(requester.requestAsAdmin(unifiedSearchQueryParamCapture.capture(),
-                                      eq(DefendantCaseQueryResult.class))).thenReturn(potentialCaseSearchResponse);
-        boolean hasDefendantPotentialCase = defendantCaseService. hasDefendantPotentialCase(envelope, defendant.getId());
+                eq(DefendantCaseQueryResult.class))).thenReturn(potentialCaseSearchResponse);
+        boolean hasDefendantPotentialCase = defendantCaseService.hasDefendantPotentialCase(envelope, defendant.getId());
         assertTrue(hasDefendantPotentialCase);
 
-        List<CaseRuleResult>  potentialCaseResults = defendantCaseService.findDefendantCaseMatchingRule(envelope, defendant);
+        List<CaseRuleResult> potentialCaseResults = defendantCaseService.findDefendantCaseMatchingRule(envelope, defendant);
         potentialCaseResults.forEach(potentialCaseResult -> {
             assertEquals(true, potentialCaseResult.isMatch());
         });
@@ -212,6 +226,8 @@ public class DefendantPotentialCaseServiceTest {
         final CaseOffenceDetails caseOffenceDetails = potentialCases.getSjpOpenCases().get(0);
         assertCaseOffenceDetails(CASE_ID, CASE_REF, DATE_OFFSET_WITHIN_28_DAYS, caseOffenceDetails);
 
+        assertThat(caseOffenceDetails.getProsecutorName(), is("TFL"));
+        assertThat(caseOffenceDetails.getExpiryDate(), is(""));
         assertTrue(potentialCases.getSjpClosedCases().isEmpty());
         assertTrue(potentialCases.getCourtOpenCases().isEmpty());
         assertTrue(potentialCases.getCourtClosedCases().isEmpty());
@@ -220,28 +236,33 @@ public class DefendantPotentialCaseServiceTest {
     @Test
     public void shouldDefendantHasPotentialCase_WhenCaseSjpClosedWithin28Days() {
         JsonObject searchResult = createSingleCaseUnifiedSearchResult(CASE_ID,
-                                                                  CASE_REF,
-                                                                  true,
-                                                                  CaseStatus.COMPLETED.toString(),
-                                                                  defendant,
-                                                                  DATE_OFFSET_WITHIN_28_DAYS);
+                CASE_REF,
+                true,
+                CaseStatus.COMPLETED.toString(),
+                defendant,
+                DATE_OFFSET_WITHIN_28_DAYS);
         DefendantCaseQueryResult result = jsonObjectConverter.
-                                                convert(searchResult, DefendantCaseQueryResult.class);
+                convert(searchResult, DefendantCaseQueryResult.class);
         when(potentialCaseSearchResponse.payload()).thenReturn(result);
 
         final CaseDecision caseDecision = new CaseDecision();
         caseDecision.setCaseId(CASE_ID);
         ZonedDateTime weekAgo = ZonedDateTime.now().minusDays(7);
         caseDecision.setSavedAt(weekAgo);
+
+        ReadyCase readyCase = new ReadyCase();
+        readyCase.setMarkedAt(LocalDate.now());
+        when(readyCaseRepository.findBy(any())).thenReturn(readyCase);
+
         when(caseDecisionRepository.findCaseDecisionById(CASE_ID)).thenReturn(caseDecision);
         when(requester.requestAsAdmin(unifiedSearchQueryParamCapture.capture(),
-                                      eq(DefendantCaseQueryResult.class))).thenReturn(potentialCaseSearchResponse);
+                eq(DefendantCaseQueryResult.class))).thenReturn(potentialCaseSearchResponse);
 
         boolean hasDefendantPotentialCase = defendantCaseService.hasDefendantPotentialCase(envelope, defendant.getId());
         assertTrue(hasDefendantPotentialCase);
 
 
-        List<CaseRuleResult>  potentialCaseResults = defendantCaseService.findDefendantCaseMatchingRule(envelope, defendant);
+        List<CaseRuleResult> potentialCaseResults = defendantCaseService.findDefendantCaseMatchingRule(envelope, defendant);
         potentialCaseResults.forEach(potentialCaseResult -> {
             assertEquals(true, potentialCaseResult.isMatch());
         });
@@ -251,6 +272,8 @@ public class DefendantPotentialCaseServiceTest {
         final CaseOffenceDetails caseOffenceDetails = potentialCases.getSjpClosedCases().get(0);
         assertCaseOffenceDetails(CASE_ID, CASE_REF, DATE_OFFSET_WITHIN_28_DAYS, caseOffenceDetails);
 
+        assertThat(caseOffenceDetails.getProsecutorName(), is("TFL"));
+        assertThat(caseOffenceDetails.getExpiryDate(), is(""));
         assertTrue(potentialCases.getSjpOpenCases().isEmpty());
         assertTrue(potentialCases.getCourtOpenCases().isEmpty());
         assertTrue(potentialCases.getCourtClosedCases().isEmpty());
@@ -259,13 +282,13 @@ public class DefendantPotentialCaseServiceTest {
     @Test
     public void shouldDefendantHasNoPotentialCase_WhenSjpClosedBeyond28Days() {
         JsonObject searchResult = createSingleCaseUnifiedSearchResult(CASE_ID,
-                                                                 CASE_REF,
-                                                                 true,
-                                                                 CaseStatus.COMPLETED.toString(),
-                                                                 defendant,
-                                                                 DATE_OFFSET_WITHIN_28_DAYS);
+                CASE_REF,
+                true,
+                CaseStatus.COMPLETED.toString(),
+                defendant,
+                DATE_OFFSET_WITHIN_28_DAYS);
         DefendantCaseQueryResult result = jsonObjectConverter.
-                                                convert(searchResult, DefendantCaseQueryResult.class);
+                convert(searchResult, DefendantCaseQueryResult.class);
         when(potentialCaseSearchResponse.payload()).thenReturn(result);
 
         CaseDecision caseDecision = new CaseDecision();
@@ -276,12 +299,12 @@ public class DefendantPotentialCaseServiceTest {
         when(progressionService.findCaseById(CASE_ID)).thenReturn(Optional.empty());
         when(potentialCaseSearchResponse.payload()).thenReturn(result);
         when(requester.requestAsAdmin(unifiedSearchQueryParamCapture.capture(),
-                                      eq(DefendantCaseQueryResult.class))).thenReturn(potentialCaseSearchResponse);
+                eq(DefendantCaseQueryResult.class))).thenReturn(potentialCaseSearchResponse);
 
         boolean hasDefendantPotentialCase = defendantCaseService.hasDefendantPotentialCase(envelope, defendant.getId());
         assertFalse(hasDefendantPotentialCase);
 
-        List<CaseRuleResult>  potentialCaseResults = defendantCaseService.findDefendantCaseMatchingRule(envelope, defendant);
+        List<CaseRuleResult> potentialCaseResults = defendantCaseService.findDefendantCaseMatchingRule(envelope, defendant);
         potentialCaseResults.forEach(potentialCaseResult -> {
             assertEquals(CaseRuleType.NONE, potentialCaseResult.getRuleType());
             assertEquals(false, potentialCaseResult.isMatch());
@@ -297,20 +320,20 @@ public class DefendantPotentialCaseServiceTest {
     @Test
     public void shouldDefendantHasPotentialCase_WhenCourtCaseOpen() {
         JsonObject searchResult = createSingleCaseUnifiedSearchResult(CASE_ID,
-                                                                  CASE_REF,
-                                                                  false,
-                                                                  "ACTIVE",
-                                                                  defendant,
-                                                                  DATE_OFFSET_WITHIN_28_DAYS);
+                CASE_REF,
+                false,
+                "ACTIVE",
+                defendant,
+                DATE_OFFSET_WITHIN_28_DAYS);
         DefendantCaseQueryResult result = jsonObjectConverter.
-                                                convert(searchResult, DefendantCaseQueryResult.class);
+                convert(searchResult, DefendantCaseQueryResult.class);
         when(potentialCaseSearchResponse.payload()).thenReturn(result);
         when(requester.requestAsAdmin(unifiedSearchQueryParamCapture.capture(),
-                                      eq(DefendantCaseQueryResult.class))).thenReturn(potentialCaseSearchResponse);
+                eq(DefendantCaseQueryResult.class))).thenReturn(potentialCaseSearchResponse);
         boolean hasDefendantPotentialCase = defendantCaseService.hasDefendantPotentialCase(envelope, defendant.getId());
         assertFalse(hasDefendantPotentialCase);
 
-        List<CaseRuleResult>  potentialCaseResults = defendantCaseService.findDefendantCaseMatchingRule(envelope, defendant);
+        List<CaseRuleResult> potentialCaseResults = defendantCaseService.findDefendantCaseMatchingRule(envelope, defendant);
         potentialCaseResults.forEach(potentialCaseResult -> {
             assertTrue(potentialCaseResult.isMatch());
         });
@@ -328,21 +351,21 @@ public class DefendantPotentialCaseServiceTest {
     @Test
     public void shouldDefendantHasPotentialCase_WhenSjpReferredAndCourtCaseOpen() {
         JsonObject searchResult = createSingleCaseUnifiedSearchResult(CASE_ID,
-                                                                  CASE_REF,
-                                                                  true,
-                                                                  REFERRED_FOR_COURT_HEARING.name(),
-                                                                  defendant,
-                                                                  DATE_OFFSET_WITHIN_28_DAYS);
+                CASE_REF,
+                true,
+                REFERRED_FOR_COURT_HEARING.name(),
+                defendant,
+                DATE_OFFSET_WITHIN_28_DAYS);
         DefendantCaseQueryResult result = jsonObjectConverter.
-                                                convert(searchResult, DefendantCaseQueryResult.class);
+                convert(searchResult, DefendantCaseQueryResult.class);
         when(potentialCaseSearchResponse.payload()).thenReturn(result);
         when(requester.requestAsAdmin(unifiedSearchQueryParamCapture.capture(),
-                                      eq(DefendantCaseQueryResult.class))).thenReturn(potentialCaseSearchResponse);
+                eq(DefendantCaseQueryResult.class))).thenReturn(potentialCaseSearchResponse);
 
         boolean hasDefendantPotentialCase = defendantCaseService.hasDefendantPotentialCase(envelope, defendant.getId());
         assertFalse(hasDefendantPotentialCase);
 
-        List<CaseRuleResult>  potentialCaseResults = defendantCaseService.findDefendantCaseMatchingRule(envelope, defendant);
+        List<CaseRuleResult> potentialCaseResults = defendantCaseService.findDefendantCaseMatchingRule(envelope, defendant);
         potentialCaseResults.forEach(potentialCaseResult -> {
             assertTrue(potentialCaseResult.isMatch());
         });
@@ -360,21 +383,21 @@ public class DefendantPotentialCaseServiceTest {
     @Test
     public void shouldDefendantHasPotentialCase_WhenCourtCaseClosedWithin28Days() {
         JsonObject sjpOpenCase = createSingleCaseUnifiedSearchResult(CASE_ID,
-                                                                 CASE_REF,
-                                                                 false,
-                                                                 CaseRuleUtils.CC_INACTIVE_STATUS,
-                                                                 defendant,
-                                                                 DATE_OFFSET_WITHIN_28_DAYS);
+                CASE_REF,
+                false,
+                CaseRuleUtils.CC_INACTIVE_STATUS,
+                defendant,
+                DATE_OFFSET_WITHIN_28_DAYS);
         DefendantCaseQueryResult result = jsonObjectConverter.
-                                                convert(sjpOpenCase, DefendantCaseQueryResult.class);
+                convert(sjpOpenCase, DefendantCaseQueryResult.class);
         when(potentialCaseSearchResponse.payload()).thenReturn(result);
         when(requester.requestAsAdmin(unifiedSearchQueryParamCapture.capture(),
-                                      eq(DefendantCaseQueryResult.class))).thenReturn(potentialCaseSearchResponse);
+                eq(DefendantCaseQueryResult.class))).thenReturn(potentialCaseSearchResponse);
 
         boolean hasDefendantPotentialCase = defendantCaseService.hasDefendantPotentialCase(envelope, defendant.getId());
         assertFalse(hasDefendantPotentialCase);
 
-        List<CaseRuleResult>  potentialCaseResults = defendantCaseService.findDefendantCaseMatchingRule(envelope, defendant);
+        List<CaseRuleResult> potentialCaseResults = defendantCaseService.findDefendantCaseMatchingRule(envelope, defendant);
         potentialCaseResults.forEach(potentialCaseResult -> {
             assertTrue(potentialCaseResult.isMatch());
         });
@@ -392,24 +415,24 @@ public class DefendantPotentialCaseServiceTest {
     @Test
     public void shouldDefendantHasPotentialCase_WhenSjpReferredAndCourtCaseClosedWithin28Days() {
         JsonObject sjpOpenCase = createSingleCaseUnifiedSearchResult(CASE_ID,
-                                                                 CASE_REF,
-                                                                 true,
-                                                                 REFERRED_FOR_COURT_HEARING.name(),
-                                                                 defendant,
-                                                                 DATE_OFFSET_WITHIN_28_DAYS);
+                CASE_REF,
+                true,
+                REFERRED_FOR_COURT_HEARING.name(),
+                defendant,
+                DATE_OFFSET_WITHIN_28_DAYS);
         DefendantCaseQueryResult result = jsonObjectConverter.
-                                                convert(sjpOpenCase, DefendantCaseQueryResult.class);
+                convert(sjpOpenCase, DefendantCaseQueryResult.class);
 
         when(potentialCaseSearchResponse.payload()).thenReturn(result);
         JsonObject progCaseSearchResult = createProgressionCaseSearchJsonObject(CASE_ID, "INACTIVE");
         when(progressionService.findCaseById(CASE_ID)).thenReturn(Optional.of(progCaseSearchResult));
         when(requester.requestAsAdmin(unifiedSearchQueryParamCapture.capture(),
-                        eq(DefendantCaseQueryResult.class))).thenReturn(potentialCaseSearchResponse);
+                eq(DefendantCaseQueryResult.class))).thenReturn(potentialCaseSearchResponse);
 
         boolean hasDefendantPotentialCase = defendantCaseService.hasDefendantPotentialCase(envelope, defendant.getId());
         assertFalse(hasDefendantPotentialCase);
 
-        List<CaseRuleResult>  potentialCaseResults = defendantCaseService.findDefendantCaseMatchingRule(envelope, defendant);
+        List<CaseRuleResult> potentialCaseResults = defendantCaseService.findDefendantCaseMatchingRule(envelope, defendant);
         potentialCaseResults.forEach(potentialCaseResult -> {
             assertTrue(potentialCaseResult.isMatch());
         });
@@ -427,23 +450,23 @@ public class DefendantPotentialCaseServiceTest {
     @Test
     public void shouldDefendantHasNoPotentialCase_WhenSjpReferredAndCourtCaseClosedBeyond28Days() {
         JsonObject sjpOpenCase = createSingleCaseUnifiedSearchResult(CASE_ID,
-                                                                 CASE_REF,
-                                                                 true,
-                                                                 REFERRED_FOR_COURT_HEARING.name(),
-                                                                 defendant,
-                                                                 DATE_OFFSET_BEYOND_28_DAYS);
+                CASE_REF,
+                true,
+                REFERRED_FOR_COURT_HEARING.name(),
+                defendant,
+                DATE_OFFSET_BEYOND_28_DAYS);
         DefendantCaseQueryResult result = jsonObjectConverter.
-                                                convert(sjpOpenCase, DefendantCaseQueryResult.class);
+                convert(sjpOpenCase, DefendantCaseQueryResult.class);
         when(potentialCaseSearchResponse.payload()).thenReturn(result);
         JsonObject progCaseSearchResult = createProgressionCaseSearchJsonObject(CASE_ID, "INACTIVE");
         when(progressionService.findCaseById(CASE_ID)).thenReturn(Optional.of(progCaseSearchResult));
         when(requester.requestAsAdmin(unifiedSearchQueryParamCapture.capture(),
-                                      eq(DefendantCaseQueryResult.class))).thenReturn(potentialCaseSearchResponse);
+                eq(DefendantCaseQueryResult.class))).thenReturn(potentialCaseSearchResponse);
 
         boolean hasDefendantPotentialCase = defendantCaseService.hasDefendantPotentialCase(envelope, defendant.getId());
         assertFalse(hasDefendantPotentialCase);
 
-        List<CaseRuleResult>  potentialCaseResults = defendantCaseService.findDefendantCaseMatchingRule(envelope, defendant);
+        List<CaseRuleResult> potentialCaseResults = defendantCaseService.findDefendantCaseMatchingRule(envelope, defendant);
         potentialCaseResults.forEach(potentialCaseResult -> {
             assertEquals(CaseRuleType.NONE, potentialCaseResult.getRuleType());
             assertFalse(potentialCaseResult.isMatch());
@@ -462,11 +485,11 @@ public class DefendantPotentialCaseServiceTest {
         final UUID sjoOpenCaseId = randomUUID();
         final String sjpOpenCase =
                 createAndInterpolateSingleCase(sjoOpenCaseId,
-                                               CASE_REF + "-" + SJP_OPEN,
-                                               true,
-                                               CaseStatus.NO_PLEA_RECEIVED.toString(),
-                                               defendant,
-                                               5);
+                        CASE_REF + "-" + SJP_OPEN,
+                        true,
+                        CaseStatus.NO_PLEA_RECEIVED.toString(),
+                        defendant,
+                        5);
         final CaseDetail caseDetail = new CaseDetail();
         caseDetail.setPostingDate(LocalDate.now().minusDays(10));
         caseDetail.setDefendant(defendant);
@@ -476,11 +499,11 @@ public class DefendantPotentialCaseServiceTest {
         final UUID sjoOpenCaseId2 = randomUUID();
         final String sjpOpenCase2 =
                 createAndInterpolateSingleCase(sjoOpenCaseId2,
-                                               CASE_REF + "-" + SJP_OPEN,
-                                               true,
-                                               CaseStatus.APPEALED.toString(),
-                                               defendant,
-                                               8);
+                        CASE_REF + "-" + SJP_OPEN,
+                        true,
+                        CaseStatus.APPEALED.toString(),
+                        defendant,
+                        8);
         final CaseDetail caseDetail2 = new CaseDetail();
         caseDetail2.setPostingDate(LocalDate.now().minusDays(9));
         caseDetail2.setDefendant(defendant);
@@ -490,11 +513,11 @@ public class DefendantPotentialCaseServiceTest {
         final UUID sjoOpenCaseId3 = randomUUID();
         final String sjpOpenCase3 =
                 createAndInterpolateSingleCase(sjoOpenCaseId3,
-                                               CASE_REF + "-" + SJP_OPEN,
-                                               true,
-                                               CaseStatus.NO_PLEA_RECEIVED_READY_FOR_DECISION.toString(),
-                                               defendant,
-                                               12);
+                        CASE_REF + "-" + SJP_OPEN,
+                        true,
+                        CaseStatus.NO_PLEA_RECEIVED_READY_FOR_DECISION.toString(),
+                        defendant,
+                        12);
         final CaseDetail caseDetail3 = new CaseDetail();
         caseDetail3.setPostingDate(LocalDate.now().minusDays(7));
         caseDetail3.setDefendant(defendant);
@@ -540,7 +563,12 @@ public class DefendantPotentialCaseServiceTest {
         final JsonObject multiCaseSearchResult = createMultiCaseUnifiedSearchResult(5, casesArray);
 
         DefendantCaseQueryResult result = jsonObjectConverter.
-                                             convert(multiCaseSearchResult, DefendantCaseQueryResult.class);
+                convert(multiCaseSearchResult, DefendantCaseQueryResult.class);
+
+        ReadyCase readyCase = new ReadyCase();
+        readyCase.setMarkedAt(LocalDate.now());
+        when(readyCaseRepository.findBy(any())).thenReturn(readyCase);
+
         when(potentialCaseSearchResponse.payload()).thenReturn(result);
         when(requester.requestAsAdmin(unifiedSearchQueryParamCapture.capture(),
                 eq(DefendantCaseQueryResult.class))).thenReturn(potentialCaseSearchResponse);
@@ -551,7 +579,7 @@ public class DefendantPotentialCaseServiceTest {
         boolean hasDefendantPotentialCase = defendantCaseService.hasDefendantPotentialCase(envelope, defendant.getId());
         assertTrue(hasDefendantPotentialCase);
 
-        List<CaseRuleResult>  potentialCaseResults = defendantCaseService.findDefendantCaseMatchingRule(envelope, defendant);
+        List<CaseRuleResult> potentialCaseResults = defendantCaseService.findDefendantCaseMatchingRule(envelope, defendant);
         potentialCaseResults.forEach(potentialCaseResult -> {
             assertTrue(potentialCaseResult.isMatch());
         });
@@ -563,17 +591,54 @@ public class DefendantPotentialCaseServiceTest {
         assertTrue(potentialCases.getCourtClosedCases().isEmpty());
 
         CaseOffenceDetails[] sjpOpenCaseOffenceDetails =
-                                    new CaseOffenceDetails[potentialCases.getSjpOpenCases().size()];
+                new CaseOffenceDetails[potentialCases.getSjpOpenCases().size()];
         potentialCases.getSjpOpenCases().toArray(sjpOpenCaseOffenceDetails);
         assertCaseOffenceDetails(sjoOpenCaseId, CASE_REF + "-" + SJP_OPEN, 10, sjpOpenCaseOffenceDetails[0]);
         assertCaseOffenceDetails(sjoOpenCaseId2, CASE_REF + "-" + SJP_OPEN, 9, sjpOpenCaseOffenceDetails[1]);
         assertCaseOffenceDetails(sjoOpenCaseId3, CASE_REF + "-" + SJP_OPEN, 7, sjpOpenCaseOffenceDetails[2]);
 
         CaseOffenceDetails[] courtCaseOpenCaseOffenceDetails =
-                                    new CaseOffenceDetails[potentialCases.getCourtOpenCases().size()];
+                new CaseOffenceDetails[potentialCases.getCourtOpenCases().size()];
         potentialCases.getCourtOpenCases().toArray(courtCaseOpenCaseOffenceDetails);
         assertCaseOffenceDetails(courtCaseOpenId2, CASE_REF + "-" + COURT_CASE_OPEN, 5, courtCaseOpenCaseOffenceDetails[0]);
         assertCaseOffenceDetails(courtCaseOpenId, CASE_REF + "-" + COURT_CASE_OPEN, 15, courtCaseOpenCaseOffenceDetails[1]);
+    }
+
+    @Test
+    public void shouldHaveExpiryDate_WhenSJPOpenCaseIsNotReady() {
+        JsonObject searchResult = createSingleCaseUnifiedSearchResult(CASE_ID,
+                CASE_REF,
+                true,
+                CaseStatus.NO_PLEA_RECEIVED.toString(),
+                defendant,
+                DATE_OFFSET_WITHIN_28_DAYS);
+        DefendantCaseQueryResult result = jsonObjectConverter.
+                convert(searchResult, DefendantCaseQueryResult.class);
+        ReadyCase readyCase = null;
+        when(readyCaseRepository.findBy(any())).thenReturn(readyCase);
+        when(potentialCaseSearchResponse.payload()).thenReturn(result);
+
+        when(requester.requestAsAdmin(unifiedSearchQueryParamCapture.capture(),
+                eq(DefendantCaseQueryResult.class))).thenReturn(potentialCaseSearchResponse);
+        boolean hasDefendantPotentialCase = defendantCaseService.hasDefendantPotentialCase(envelope, defendant.getId());
+        assertTrue(hasDefendantPotentialCase);
+
+        List<CaseRuleResult> potentialCaseResults = defendantCaseService.findDefendantCaseMatchingRule(envelope, defendant);
+        potentialCaseResults.forEach(potentialCaseResult -> {
+            assertEquals(true, potentialCaseResult.isMatch());
+        });
+
+
+        final PotentialCases potentialCases = defendantCaseService.findDefendantPotentialCases(envelope, defendant.getId());
+        assertEquals(1, potentialCases.getSjpOpenCases().size());
+        final CaseOffenceDetails caseOffenceDetails = potentialCases.getSjpOpenCases().get(0);
+        assertCaseOffenceDetails(CASE_ID, CASE_REF, DATE_OFFSET_WITHIN_28_DAYS, caseOffenceDetails);
+
+        assertThat(caseOffenceDetails.getProsecutorName(), is("TFL"));
+        assertThat(caseOffenceDetails.getExpiryDate(), not(isEmptyString()));
+        assertTrue(potentialCases.getSjpClosedCases().isEmpty());
+        assertTrue(potentialCases.getCourtOpenCases().isEmpty());
+        assertTrue(potentialCases.getCourtClosedCases().isEmpty());
     }
 
     private void assertCaseOffenceDetails(UUID caseId,
@@ -591,33 +656,33 @@ public class DefendantPotentialCaseServiceTest {
 
     private JsonObject createProgressionCaseSearchJsonObject(UUID caseId, String status) {
         return createObjectBuilder().
-                   add(PROSECUTION_CASE_FIELD_NAME,
-                       createObjectBuilder().
-                           add("id", caseId.toString()).
-                           add(CASE_STATUS_FIELD_NAME, status).
-                           add(DEFENDANTS_FIELD_NAME,
-                               createArrayBuilder().
-                                   add(createObjectBuilder().
-                                           add(OFFENCES_FIELD_NAME,
-                                               createArrayBuilder().
-                                                   add(createObjectBuilder().
-                                                           add("wording", "Offence-1").
-                                                       build()).
-                                                   add(createObjectBuilder().
-                                                           add("wording", "Offence-2").
-                                                       build()).
-                                               build()).
-                                       build()).
-                               build()).
-                       build()).
-               build();
+                add(PROSECUTION_CASE_FIELD_NAME,
+                        createObjectBuilder().
+                                add("id", caseId.toString()).
+                                add(CASE_STATUS_FIELD_NAME, status).
+                                add(DEFENDANTS_FIELD_NAME,
+                                        createArrayBuilder().
+                                                add(createObjectBuilder().
+                                                        add(OFFENCES_FIELD_NAME,
+                                                                createArrayBuilder().
+                                                                        add(createObjectBuilder().
+                                                                                add("wording", "Offence-1").
+                                                                                build()).
+                                                                        add(createObjectBuilder().
+                                                                                add("wording", "Offence-2").
+                                                                                build()).
+                                                                        build()).
+                                                        build()).
+                                                build()).
+                                build()).
+                build();
     }
 
     private DefendantDetail createDefendant(final UUID id,
-                                          String firstName,
-                                          String lastName,
-                                          String dob,
-                                          String addressLine1, String postCode, String asn) {
+                                            String firstName,
+                                            String lastName,
+                                            String dob,
+                                            String addressLine1, String postCode, String asn) {
         final DefendantDetail defendantDetail = new DefendantDetail(id);
         defendantDetail.setAsn(asn);
 
@@ -683,72 +748,72 @@ public class DefendantPotentialCaseServiceTest {
         }
         final String hearingDateStr = hearingDates.stream().collect(Collectors.joining("\",\n\""));
         String caseResult = "    {\n" +
-                            "      \"caseId\": \"%s\",\n" +
-                            "      \"caseReference\": \"%s\",\n" +
-                            "      \"sjp\": %s,\n" +
-                            "      \"crownCourt\": true,\n" +
-                            "      \"magistrateCourt\": true,\n" +
-                            "      \"sjpNoticeServed\": \"2019-05-07\",\n" +
-                            "      \"caseStatus\": \"%s\",\n" +
-                            "      \"caseType\": \"PROSECUTION\",\n" +
-                            "      \"parties\": [\n" +
-                            "        {\n" +
-                            "          \"firstName\": \"%s\",\n" +
-                            "          \"middleName\": \"\",\n" +
-                            "          \"lastName\": \"%s\",\n" +
-                            "          \"partyType\": \"APPLICANT\",\n" +
-                            "          \"organisationName\": \"Some Org Name\",\n" +
-                            "          \"dateOfBirth\": \"%s\",\n" +
-                            "          \"addressLines\": \"%s\",\n" +
-                            "          \"postCode\": \"%s\"\n" +
-                            "        }\n" +
-                            "      ],\n" +
-                            "      \"hearings\": [\n" +
-                            "        {\n" +
-                            "          \"hearingId\": \"70baba30-f45c-4c1e-971e-4581fc2ec30b\",\n" +
-                            "          \"courtId\": \"b58bdc19-2fb8-4841-bff3-b99f3442c646\",\n" +
-                            "          \"courtCentreName\": \"Liverpool Magistrates Court\",\n" +
-                            "          \"hearingTypeId\": \"79bdc7ce-b00b-4d91-b74c-f41aee572a1c\",\n" +
-                            "          \"hearingTypeLabel\": \"HEARING TYPE LABEL 1\",\n" +
-                            "          \"hearingDates\": [\n" +
-                            "            \"%s\"\n" +
-                            "          ],\n" +
-                            "          \"isBoxHearing\": true,\n" +
-                            "          \"isVirtualBoxHearing\": true,\n" +
-                            "          \"hearingDay\": [\n" +
-                            "            {\n" +
-                            "              \"sittingDay\": \"2019-01-22T10:00:00Z\",\n" +
-                            "              \"listingSequence\": 1,\n" +
-                            "              \"listedDurationMinutes\": 60\n" +
-                            "            }\n" +
-                            "          ],\n" +
-                            "          \"jurisdictionType\": \"4e2bddef-9797-424b-980c-95c467b84e86\",\n" +
-                            "          \"judiciaryTypes\": []\n" +
-                            "        }\n" +
-                            "      ],\n" +
-                            "      \"applications\": [\n" +
-                            "        {\n" +
-                            "          \"applicationId\": \"ab746921-d839-4867-bcf9-b41db8ebc853\",\n" +
-                            "          \"applicationReference\": \"CJ03510\",\n" +
-                            "          \"applicationType\": \"Application within criminal proceedings\",\n" +
-                            "          \"receivedDate\": \"2019-01-01\",\n" +
-                            "          \"decisionDate\": \"2019-04-07\",\n" +
-                            "          \"dueDate\": \"2019-04-08\"\n" +
-                            "        }\n" +
-                            "      ]\n" +
-                            "    }\n";
+                "      \"caseId\": \"%s\",\n" +
+                "      \"caseReference\": \"%s\",\n" +
+                "      \"sjp\": %s,\n" +
+                "      \"crownCourt\": true,\n" +
+                "      \"magistrateCourt\": true,\n" +
+                "      \"sjpNoticeServed\": \"2019-05-07\",\n" +
+                "      \"caseStatus\": \"%s\",\n" +
+                "      \"caseType\": \"PROSECUTION\",\n" +
+                "      \"parties\": [\n" +
+                "        {\n" +
+                "          \"firstName\": \"%s\",\n" +
+                "          \"middleName\": \"\",\n" +
+                "          \"lastName\": \"%s\",\n" +
+                "          \"partyType\": \"APPLICANT\",\n" +
+                "          \"organisationName\": \"Some Org Name\",\n" +
+                "          \"dateOfBirth\": \"%s\",\n" +
+                "          \"addressLines\": \"%s\",\n" +
+                "          \"postCode\": \"%s\"\n" +
+                "        }\n" +
+                "      ],\n" +
+                "      \"hearings\": [\n" +
+                "        {\n" +
+                "          \"hearingId\": \"70baba30-f45c-4c1e-971e-4581fc2ec30b\",\n" +
+                "          \"courtId\": \"b58bdc19-2fb8-4841-bff3-b99f3442c646\",\n" +
+                "          \"courtCentreName\": \"Liverpool Magistrates Court\",\n" +
+                "          \"hearingTypeId\": \"79bdc7ce-b00b-4d91-b74c-f41aee572a1c\",\n" +
+                "          \"hearingTypeLabel\": \"HEARING TYPE LABEL 1\",\n" +
+                "          \"hearingDates\": [\n" +
+                "            \"%s\"\n" +
+                "          ],\n" +
+                "          \"isBoxHearing\": true,\n" +
+                "          \"isVirtualBoxHearing\": true,\n" +
+                "          \"hearingDay\": [\n" +
+                "            {\n" +
+                "              \"sittingDay\": \"2019-01-22T10:00:00Z\",\n" +
+                "              \"listingSequence\": 1,\n" +
+                "              \"listedDurationMinutes\": 60\n" +
+                "            }\n" +
+                "          ],\n" +
+                "          \"jurisdictionType\": \"4e2bddef-9797-424b-980c-95c467b84e86\",\n" +
+                "          \"judiciaryTypes\": []\n" +
+                "        }\n" +
+                "      ],\n" +
+                "      \"applications\": [\n" +
+                "        {\n" +
+                "          \"applicationId\": \"ab746921-d839-4867-bcf9-b41db8ebc853\",\n" +
+                "          \"applicationReference\": \"CJ03510\",\n" +
+                "          \"applicationType\": \"Application within criminal proceedings\",\n" +
+                "          \"receivedDate\": \"2019-01-01\",\n" +
+                "          \"decisionDate\": \"2019-04-07\",\n" +
+                "          \"dueDate\": \"2019-04-08\"\n" +
+                "        }\n" +
+                "      ]\n" +
+                "    }\n";
         PersonalDetails personalDetails = defendant.getPersonalDetails();
         caseResult = String.format(caseResult,
-                                   caseId,
-                                   caseRef,
-                                   sjp,
-                                   status,
-                                   personalDetails.getFirstName(),
-                                   personalDetails.getLastName(),
-                                   personalDetails.getDateOfBirth(),
-                                   defendant.getAddress().getAddress1(),
-                                   defendant.getAddress().getPostcode(),
-                                   hearingDateStr);
+                caseId,
+                caseRef,
+                sjp,
+                status,
+                personalDetails.getFirstName(),
+                personalDetails.getLastName(),
+                personalDetails.getDateOfBirth(),
+                defendant.getAddress().getAddress1(),
+                defendant.getAddress().getPostcode(),
+                hearingDateStr);
 
         return caseResult;
     }

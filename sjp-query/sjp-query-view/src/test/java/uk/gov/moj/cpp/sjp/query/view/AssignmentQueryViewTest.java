@@ -21,6 +21,7 @@ import uk.gov.justice.services.core.enveloper.Enveloper;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopePayloadMatcher;
 import uk.gov.moj.cpp.sjp.persistence.entity.CaseDetail;
+import uk.gov.moj.cpp.sjp.persistence.repository.ReserveCaseRepository;
 import uk.gov.moj.cpp.sjp.query.view.service.CaseService;
 
 import java.util.Optional;
@@ -50,6 +51,9 @@ public class AssignmentQueryViewTest {
     @InjectMocks
     private AssignmentQueryView assignmentQueryView;
 
+    @Mock
+    private ReserveCaseRepository reserveCaseRepository;
+
     private final UUID caseId = randomUUID();
     private final UUID userId = randomUUID();
     private final JsonEnvelope queryEnvelope = envelope()
@@ -61,6 +65,7 @@ public class AssignmentQueryViewTest {
     public void shouldReturnAssignmentWhenCaseIsAssignedToCallingUser() {
         when(caseDetail.getAssigneeId()).thenReturn(userId);
         when(caseService.getCase(caseId)).thenReturn(Optional.of(caseDetail));
+        when(reserveCaseRepository.countReservedBy(randomUUID())).thenReturn(0);
 
         final JsonEnvelope assignmentResponse = assignmentQueryView.getCaseAssignment(queryEnvelope);
 
@@ -71,6 +76,7 @@ public class AssignmentQueryViewTest {
     public void shouldReturnAssignmentWhenCaseIsAssignedToOtherUser() {
         when(caseDetail.getAssigneeId()).thenReturn(randomUUID());
         when(caseService.getCase(caseId)).thenReturn(Optional.of(caseDetail));
+        when(reserveCaseRepository.countReservedBy(randomUUID())).thenReturn(0);
 
         final JsonEnvelope assignmentResponse = assignmentQueryView.getCaseAssignment(queryEnvelope);
 
@@ -81,6 +87,7 @@ public class AssignmentQueryViewTest {
     public void shouldReturnAssignmentWhenCaseIsNotAssigned() {
         when(caseDetail.getAssigneeId()).thenReturn(null);
         when(caseService.getCase(caseId)).thenReturn(Optional.of(caseDetail));
+        when(reserveCaseRepository.countReservedBy(randomUUID())).thenReturn(0);
 
         final JsonEnvelope assignmentResponse = assignmentQueryView.getCaseAssignment(queryEnvelope);
 
@@ -90,6 +97,7 @@ public class AssignmentQueryViewTest {
     @Test
     public void shouldReturnNullResponseWhenCaseNotFound() {
         when(caseService.getCase(caseId)).thenReturn(Optional.empty());
+        when(reserveCaseRepository.countReservedBy(randomUUID())).thenReturn(0);
 
         final JsonEnvelope assignmentResponse = assignmentQueryView.getCaseAssignment(queryEnvelope);
 
@@ -109,7 +117,8 @@ public class AssignmentQueryViewTest {
     private static JsonEnvelopePayloadMatcher assignmentPayloadMatcher(final boolean assigned, final boolean assignedToMe) {
         return payload().isJson(allOf(
                 withJsonPath("$.assigned", is(assigned)),
-                withJsonPath("$.assignedToMe", is(assignedToMe))
+                withJsonPath("$.assignedToMe", is(assignedToMe)),
+                withJsonPath("$.reservedCases", is(0))
         ));
     }
 

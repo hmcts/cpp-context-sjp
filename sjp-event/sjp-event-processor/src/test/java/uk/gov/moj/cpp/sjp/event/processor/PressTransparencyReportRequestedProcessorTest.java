@@ -331,6 +331,7 @@ public class PressTransparencyReportRequestedProcessorTest {
         when(payloadHelper.buildDefendantName(any())).thenReturn("John DOE");
         when(payloadHelper.mapOffenceIntoOffenceTitleString(any(), eq(false), any())).thenReturn(OFFENCE_TITLE);
         when(payloadHelper.buildProsecutorName(eq(PROSECUTOR_NAME), eq(false), any())).thenReturn(PROSECUTOR);
+        when(payloadHelper.getStartDate(eq(false))).thenReturn("15 January 2024");
     }
 
     private void mockSjpService(List<JsonObject> pendingCasesList) {

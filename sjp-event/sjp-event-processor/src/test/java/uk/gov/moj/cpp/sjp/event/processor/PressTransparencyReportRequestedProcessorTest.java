@@ -22,6 +22,7 @@ import static org.hamcrest.core.IsNull.notNullValue;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyBoolean;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.times;
@@ -48,6 +49,7 @@ import uk.gov.moj.cpp.sjp.event.processor.service.SjpService;
 import uk.gov.moj.cpp.sjp.event.processor.utils.PayloadHelper;
 
 import java.io.InputStream;
+import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -85,7 +87,7 @@ public class PressTransparencyReportRequestedProcessorTest {
     private static final String EXPECTED_TEMPLATE_NAME_FULL = "PressPendingCasesFullEnglish";
     private static final String DATE_PATTERN = "d MMMM";
     private static final DateTimeFormatter ENGLISH_DATE_FORMATTER = ofPattern(DATE_PATTERN).withLocale(new Locale("en"));
-    private static final LocalDateTime startDate = LocalDateTime.now().minusDays(1);
+
     private static final DateTimeFormatter DATE_FORMAT = ofPattern("dd MM yyyy");
     private static final String OFFENCE_TITLE = "OffenceTitle";
     private static final String PROSECUTOR_NAME = "TFL";
@@ -328,6 +330,7 @@ public class PressTransparencyReportRequestedProcessorTest {
     }
 
     private void mockPayloadHelper() {
+        when(payloadHelper.getStartDate(anyBoolean())).thenReturn(LocalDate.now().toString());
         when(payloadHelper.buildDefendantName(any())).thenReturn("John DOE");
         when(payloadHelper.mapOffenceIntoOffenceTitleString(any(), eq(false), any())).thenReturn(OFFENCE_TITLE);
         when(payloadHelper.buildProsecutorName(eq(PROSECUTOR_NAME), eq(false), any())).thenReturn(PROSECUTOR);
@@ -535,7 +538,7 @@ public class PressTransparencyReportRequestedProcessorTest {
                                                        final UUID reportId,
                                                        final List<UUID> caseIds, final DocumentRequestType requestType) {
 
-        String expectedTitle = "New cases, since " + startDate.format(ENGLISH_DATE_FORMATTER) + " " + "(English)";
+        String expectedTitle = "New cases, since " + getStartDate().format(ENGLISH_DATE_FORMATTER) + " " + "(English)";
         expectedTitle = requestType.name().equals(FULL.name()) ? "All Pending cases (Press version) (English)" : expectedTitle;
         assertThat(storeTransparencyReportCommandEnvelope.metadata().name(), is("sjp.command.store-press-transparency-report-data"));
         assertThat(storeTransparencyReportCommandEnvelope.payloadAsJsonObject().getString("pressTransparencyReportId"), is(reportId.toString()));
@@ -544,6 +547,14 @@ public class PressTransparencyReportRequestedProcessorTest {
         final JsonArray caseIdsJsonArray = storeTransparencyReportCommandEnvelope.payloadAsJsonObject().getJsonArray("caseIds");
         assertThat(caseIdsJsonArray.size(), is(caseIds.size()));
         assertThat(range(0, caseIds.size()).mapToObj(idx -> fromString(caseIdsJsonArray.getString(idx))).collect(toList()), is(caseIds));
+    }
+
+    private static LocalDateTime getStartDate() {
+        LocalDateTime startDate = LocalDateTime.now().minusDays(1);
+        if (LocalDateTime.now().getDayOfWeek() == DayOfWeek.MONDAY) {
+            startDate = startDate.minusDays(2);
+        }
+        return startDate;
     }
 
     private void assertDocumentGenerationRequest(final Envelope<JsonObject> documentGenerationEnvelope, final JsonObject expectedPayloadForDocumentGeneration) {

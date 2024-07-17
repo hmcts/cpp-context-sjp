@@ -1,5 +1,6 @@
 package uk.gov.moj.cpp.sjp.event.processor;
 
+import static java.util.Objects.nonNull;
 import static javax.json.Json.createObjectBuilder;
 import static uk.gov.justice.services.core.annotation.Component.EVENT_PROCESSOR;
 
@@ -17,12 +18,15 @@ import javax.json.JsonObjectBuilder;
 public class ProsecutionCasesReferredToCourtProcessor {
 
     public static final String EVENT_NAME = "public.progression.prosecution-cases-referred-to-court";
+    public static final String COMMAND_HANDLER = "sjp.command.update-case-listed-in-criminal-courts";
 
     @Inject
     private Sender sender;
 
     @Inject
     private Enveloper enveloper;
+
+    private static final String HEARING_TYPE = "hearingType";
 
     @Handles(ProsecutionCasesReferredToCourtProcessor.EVENT_NAME)
     public void handleProsecutionCasesReferredToCourtEvent(final JsonEnvelope prosecutionCasesReferredToCourtEvent) {
@@ -38,10 +42,13 @@ public class ProsecutionCasesReferredToCourtProcessor {
                 .add("defendantOffences", payload.getJsonArray("defendantOffences"))
                 .add("hearingId", payload.getString("hearingId"))
                 .add("courtCentre", courtCenter)
-                .add("hearingDays", payload.getJsonArray("hearingDays"))
-                .add("hearingType", payload.getJsonObject("hearingType"));
+                .add("hearingDays", payload.getJsonArray("hearingDays"));
 
-        sender.send(enveloper.withMetadataFrom(prosecutionCasesReferredToCourtEvent, "sjp.command.update-case-listed-in-criminal-courts").
-                apply(objectBuilder.build()));
+        if (nonNull(payload.getJsonObject(HEARING_TYPE))) {
+            objectBuilder.add(HEARING_TYPE, payload.getJsonObject(HEARING_TYPE));
+        }
+
+        sender.send(enveloper.withMetadataFrom(prosecutionCasesReferredToCourtEvent, COMMAND_HANDLER)
+                .apply(objectBuilder.build()));
     }
 }

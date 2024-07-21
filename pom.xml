@@ -38,14 +38,14 @@
            </sonar.exclusions>
         <assignment.version>6.0.0</assignment.version>
         <material.version>8.0.9</material.version>
-        <notification.notify.version>7.0.14</notification.notify.version>
+        <notification.notify.version>8.0.16</notification.notify.version>
         <referencedata.version>8.0.67</referencedata.version>
-        <referencedata.offences.version>8.0.21</referencedata.offences.version>
+        <referencedata.offences.version>8.0.23</referencedata.offences.version>
         <scheduling.version>6.0.0</scheduling.version>
         <authorisation.service.version>0.1.49</authorisation.service.version>
-        <usersgroups.version>8.0.37</usersgroups.version>
-        <progression.version>8.0.190</progression.version>
-        <prosecutioncasefile.version>8.0.42</prosecutioncasefile.version>
+        <usersgroups.version>8.0.39</usersgroups.version>
+        <progression.version>8.0.193</progression.version>
+        <prosecutioncasefile.version>8.0.74</prosecutioncasefile.version>
         <access-control-sjp-providers.version>4.1.4-ATCM</access-control-sjp-providers.version>
         <cpp.framework.action.mapping.enabled>true</cpp.framework.action.mapping.enabled>
         <mvn.site.url>file://${project.build.directory}/site</mvn.site.url>
@@ -62,7 +62,7 @@
         <argLine>-Djava.locale.providers=CLDR</argLine>
         <elasticsearch-maven-plugin.version>6.13</elasticsearch-maven-plugin.version>
         <elasticsearch.embedded.version>7.16.2</elasticsearch.embedded.version>
-        <stagingenforcement.version>8.0.3</stagingenforcement.version>
+        <stagingenforcement.version>8.0.26</stagingenforcement.version>
         <criminal-court-public-model.version>${coredomain.version}</criminal-court-public-model.version>
         <unifiedsearch.version>8.0.10</unifiedsearch.version>
     </properties>

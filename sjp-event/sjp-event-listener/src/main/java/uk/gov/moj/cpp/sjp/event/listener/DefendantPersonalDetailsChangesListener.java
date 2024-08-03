@@ -147,10 +147,11 @@ public class DefendantPersonalDetailsChangesListener {
                 .convert(envelope.payloadAsJsonObject(), DefendantAddressUpdateRequested.class);
 
         final ZonedDateTime updateDate = getUpdateDate(envelope, defendantAddressUpdatedRequested.getUpdatedAt());
-
+        final DefendantDetailUpdateRequest.Status updateRequestStatus = defendantAddressUpdatedRequested.isAddressUpdateFromApplication() ?
+                                                                        DefendantDetailUpdateRequest.Status.UPDATED : DefendantDetailUpdateRequest.Status.PENDING;
         final DefendantDetailUpdateRequest request = new DefendantDetailUpdateRequest.Builder()
                 .withCaseId(defendantAddressUpdatedRequested.getCaseId())
-                .withStatus(DefendantDetailUpdateRequest.Status.PENDING)
+                .withStatus(updateRequestStatus)
                 .withUpdatedAt(defendantAddressUpdatedRequested.getUpdatedAt())
                 .withAddress1(defendantAddressUpdatedRequested.getNewAddress().getAddress1())
                 .withAddress2(defendantAddressUpdatedRequested.getNewAddress().getAddress2())
@@ -163,7 +164,7 @@ public class DefendantPersonalDetailsChangesListener {
 
         final DefendantDetailUpdateRequest detailUpdateRequest = defendantDetailUpdateRequestRepository.findBy(defendantAddressUpdatedRequested.getCaseId());
         if (nonNull(detailUpdateRequest)) {
-            detailUpdateRequest.setStatus(DefendantDetailUpdateRequest.Status.PENDING);
+            detailUpdateRequest.setStatus(updateRequestStatus);
             detailUpdateRequest.setAddress1(defendantAddressUpdatedRequested.getNewAddress().getAddress1());
             detailUpdateRequest.setAddress2(defendantAddressUpdatedRequested.getNewAddress().getAddress2());
             detailUpdateRequest.setAddress3(defendantAddressUpdatedRequested.getNewAddress().getAddress3());

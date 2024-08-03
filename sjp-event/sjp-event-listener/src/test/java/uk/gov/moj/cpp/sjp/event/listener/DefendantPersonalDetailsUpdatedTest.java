@@ -290,6 +290,29 @@ public class DefendantPersonalDetailsUpdatedTest {
     }
 
     @Test
+    public void shouldSaveDefendantAddressUpdateRequested_fromApplication() {
+        final JsonEnvelope envelope = envelopeFrom(
+                metadataWithRandomUUID("sjp.events.defendant-address-update-requested"),
+                payload);
+        UUID caseId = UUID.randomUUID();
+        ZonedDateTime updatedAt = ZonedDateTime.now(UTC);
+        Address address = new Address("address1", "address2", "address3", "address4", "address5", "postcode");
+        DefendantAddressUpdateRequested defendantAddressUpdateRequested = new DefendantAddressUpdateRequested(caseId,address,updatedAt,true);
+        when(jsonObjectToObjectConverter.convert(payload, DefendantAddressUpdateRequested.class)).thenReturn(defendantAddressUpdateRequested);
+        defendantPersonalDetailsChangesListener.defendantAddressUpdateRequested(envelope);
+        verify(defendantDetailUpdateRequestRepository, times(1)).save(captor.capture());
+
+        final DefendantDetailUpdateRequest request = captor.getValue();
+        assertThat(request.getAddress1(), equalTo("address1"));
+        assertThat(request.getAddress2(), equalTo("address2"));
+        assertThat(request.getAddress3(), equalTo("address3"));
+        assertThat(request.getAddress4(), equalTo("address4"));
+        assertThat(request.getAddress5(), equalTo("address5"));
+        assertThat(request.getPostcode(), equalTo("postcode"));
+        assertThat(request.getStatus(), equalTo(DefendantDetailUpdateRequest.Status.UPDATED));
+    }
+
+    @Test
     public void shouldSaveDefendantDOBUpdateRequested() {
         final JsonEnvelope envelope = envelopeFrom(
                 metadataWithRandomUUID("sjp.events.defendant-date-of-birth-update-requested"),

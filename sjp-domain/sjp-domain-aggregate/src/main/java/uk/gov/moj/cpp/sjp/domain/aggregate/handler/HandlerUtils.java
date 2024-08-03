@@ -62,6 +62,14 @@ public final class HandlerUtils {
                                                                  final String action,
                                                                  final UUID defendantId,
                                                                  final CaseAggregateState state) {
+        return createRejectionEvents(userId,action,defendantId,state,false);
+    }
+
+    public static Optional<Stream<Object>> createRejectionEvents(final UUID userId,
+                                                                 final String action,
+                                                                 final UUID defendantId,
+                                                                 final CaseAggregateState state,
+                                                                 final boolean isAddressUpdateFromApplication) {
         Object event = null;
         if (isNull(state.getCaseId())) {
             LOGGER.warn("Case not found: {}", action);
@@ -72,7 +80,7 @@ public final class HandlerUtils {
         } else if (nonNull(state.getAssigneeId()) && !state.isAssignee(userId)) {
             LOGGER.warn("Update rejected because case is assigned to another user: {}", action);
             event = new CaseUpdateRejected(state.getCaseId(), CaseUpdateRejected.RejectReason.CASE_ASSIGNED);
-        } else if (state.isCaseCompleted()) {
+        } else if (state.isCaseCompleted() && !isAddressUpdateFromApplication) {
             LOGGER.warn("Update rejected because case is already completed: {}", action);
             event = new CaseUpdateRejected(state.getCaseId(), CaseUpdateRejected.RejectReason.CASE_COMPLETED);
         } else if (state.isCaseReferredForCourtHearing()) {

@@ -1,5 +1,7 @@
 package uk.gov.moj.cpp.sjp.command.handler;
 
+import static uk.gov.justice.services.core.enveloper.Enveloper.toEnvelopeWithMetadataFrom;
+
 import uk.gov.justice.json.schemas.domains.sjp.Gender;
 import uk.gov.justice.services.common.util.Clock;
 import uk.gov.justice.services.core.aggregate.AggregateService;
@@ -68,6 +70,7 @@ public class UpdateDefendantDetailsHandler extends BasePersonInfoHandler {
         final Address address = createAddressFrom(payload);
         final LocalDate birthDate = dateOfBirth == null ? null : LocalDate.parse(dateOfBirth);
         final String region = getStringOrNull(payload, "region");
+        final boolean isAddressUpdateFromApplication = Boolean.parseBoolean(getStringOrNull(payload,"addressUpdateFromApplication"));
 
         final EventStream eventStream = eventSource.getStreamById(caseId);
 
@@ -76,8 +79,8 @@ public class UpdateDefendantDetailsHandler extends BasePersonInfoHandler {
         final ContactDetails contactDetails = new ContactDetails(homeNumber, mobileNumber, businessNumber, email, email2);
         final Person person = new Person(title, firstName, lastName, birthDate, gender, nationalInsuranceNumber, driverNumber, driverLicenceDetails, address, contactDetails, region, legalEntityName);
 
-        final Stream<Object> events = caseAggregate.updateDefendantDetails(getUserId(command), caseId, defendantId, person, createdAt);
+        final Stream<Object> events = caseAggregate.updateDefendantDetails(getUserId(command), caseId, defendantId, person, createdAt, isAddressUpdateFromApplication);
 
-        eventStream.append(events.map(enveloper.withMetadataFrom(command)));
+        eventStream.append(events.map(toEnvelopeWithMetadataFrom(command)));
     }
 }

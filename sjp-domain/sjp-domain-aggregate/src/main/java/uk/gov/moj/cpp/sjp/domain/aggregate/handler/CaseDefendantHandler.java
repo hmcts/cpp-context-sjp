@@ -87,12 +87,23 @@ public class CaseDefendantHandler {
                                                  final ZonedDateTime updatedDate,
                                                  final CaseAggregateState state) {
 
+        return updateDefendantDetails(userId,caseId,defendantId,person,updatedDate,state,false);
+    }
+
+    public Stream<Object> updateDefendantDetails(final UUID userId,
+                                                 final UUID caseId,
+                                                 final UUID defendantId,
+                                                 final Person person,
+                                                 final ZonedDateTime updatedDate,
+                                                 final CaseAggregateState state, final boolean isAddressUpdateFromApplication) {
+
         return createRejectionEvents(
                 userId,
                 "Update defendant detail",
                 defendantId,
-                state
-        ).orElse(createDefendantUpdateRequestedEvent(caseId, defendantId, person, updatedDate, state));
+                state,
+                isAddressUpdateFromApplication
+        ).orElse(createDefendantUpdateRequestedEvent(caseId, defendantId, person, updatedDate, state, isAddressUpdateFromApplication));
     }
 
     public Stream<Object> acceptPendingDefendantChanges(final UUID userId,
@@ -165,7 +176,7 @@ public class CaseDefendantHandler {
                                                                final UUID defendantId,
                                                                final Person person,
                                                                final ZonedDateTime updatedDate,
-                                                               final CaseAggregateState state) {
+                                                               final CaseAggregateState state, final boolean isAddressUpdateFromApplication) {
 
         final Stream.Builder<Object> events = Stream.builder();
         final boolean updatedByOnlinePlea = false;
@@ -177,10 +188,10 @@ public class CaseDefendantHandler {
             return Stream.of(new DefendantDetailsUpdateFailed(caseId, defendantId, e.getMessage()));
         }
 
-        getDefendantUpdateRequestedEvents(person, updatedDate, updatedByOnlinePlea, state)
+        getDefendantUpdateRequestedEvents(person, updatedDate, updatedByOnlinePlea, state, isAddressUpdateFromApplication)
                 .forEach(events::add);
 
-        final DefendantDetailsUpdated defendantDetailsUpdated = defendantDetailsUpdated()
+        final DefendantDetailsUpdated.DefendantDetailsUpdatedBuilder defendantDetailsUpdated = defendantDetailsUpdated()
                 .withCaseId(caseId)
                 .withDefendantId(defendantId)
                 .withTitle(person.getTitle())
@@ -191,9 +202,11 @@ public class CaseDefendantHandler {
                 .withContactDetails(person.getContactDetails())
                 .withUpdateByOnlinePlea(updatedByOnlinePlea)
                 .withUpdatedDate(updatedDate)
-                .withRegion(person.getRegion())
-                .build();
-        events.add(defendantDetailsUpdated);
+                .withRegion(person.getRegion());
+        if(isAddressUpdateFromApplication){
+            defendantDetailsUpdated.withAddress(person.getAddress());
+        }
+        events.add(defendantDetailsUpdated.build());
 
         return events.build();
     }
@@ -219,6 +232,14 @@ public class CaseDefendantHandler {
                                                             final ZonedDateTime updatedDate,
                                                             final boolean isOnlinePlea,
                                                             final CaseAggregateState state) {
+        return getDefendantUpdateRequestedEvents(person, updatedDate,isOnlinePlea,state,false);
+    }
+
+    @SuppressWarnings("squid:MethodCyclomaticComplexity")
+    public Stream<Object> getDefendantUpdateRequestedEvents(final Person person,
+                                                            final ZonedDateTime updatedDate,
+                                                            final boolean isOnlinePlea,
+                                                            final CaseAggregateState state, final boolean addressUpdateFromApplication) {
 
         final Stream.Builder<Object> events = Stream.builder();
 
@@ -242,7 +263,7 @@ public class CaseDefendantHandler {
             events.add(new DefendantAddressUpdateRequested(
                     state.getCaseId(),
                     person.getAddress(),
-                    updatedDate));
+                    updatedDate,addressUpdateFromApplication));
         }
 
         // Online plea doesn't update title
@@ -338,7 +359,7 @@ public class CaseDefendantHandler {
             events.add(new DefendantAddressUpdateRequested(
                     state.getCaseId(),
                     defendantAddress,
-                    updatedDate));
+                    updatedDate,false));
         }
 
         // Online plea doesn't update title

@@ -112,7 +112,7 @@ public class ProsecutionCaseServiceTest {
         final ProsecutionCase prosecutionCase = prosecutionCaseService.findProsecutionCase(caseDetail.getId());
 
         assertThat(prosecutionCase.getDefendants().get(0).getLegalEntityDefendant().getOrganisation().getName(),is("Legal Entity Name"));
-        assertThat(prosecutionCase.getDefendants().get(0).getPersonDefendant().getPersonDetails().getAddress().getPostcode(),is("BH8 8RW"));
+        assertThat(prosecutionCase.getDefendants().get(0).getLegalEntityDefendant().getOrganisation().getAddress().getPostcode(),is("BH8 8RW"));
 
     }
 

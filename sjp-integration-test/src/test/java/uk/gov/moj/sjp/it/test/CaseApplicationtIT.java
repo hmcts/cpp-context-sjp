@@ -95,6 +95,7 @@ import org.junit.Test;
 
 public class CaseApplicationtIT extends BaseIntegrationTest {
 
+    public static final String SJP_EVENTS_APPLICATION_ADDRESS_CHANGED = "sjp.events.application-address-changed";
     private UUID caseId;
     private UUID sessionId;
     private UUID offenceId;
@@ -181,13 +182,14 @@ public class CaseApplicationtIT extends BaseIntegrationTest {
     @Test
     public void shouldRecordCaseStartDec() {
         final ReadyCaseHelper readyCaseHelper = new ReadyCaseHelper();
-        eventListener.subscribe(SJP_EVENT_CASE_APP_RECORDED, SJP_EVENT_CASE_APP_STAT_DEC)
+        eventListener.subscribe(SJP_EVENT_CASE_APP_RECORDED, SJP_EVENT_CASE_APP_STAT_DEC, SJP_EVENTS_APPLICATION_ADDRESS_CHANGED)
                 .run(() -> createCaseApplication(USER.getUserId(), caseId, appId,
                         STAT_DEC_TYPE_ID, STAT_DEC_TYPE_CODE, "A", DATE_RECEIVED, APP_STATUS,
                         createCaseApplicationFile));
 
         final Optional<JsonEnvelope> caseApplicationRecordedEnv = eventListener.popEvent(SJP_EVENT_CASE_APP_RECORDED);
         final Optional<JsonEnvelope> caseStatDecRecorded = eventListener.popEvent(SJP_EVENT_CASE_APP_STAT_DEC);
+        final Optional<JsonEnvelope> applicationAddressChanged = eventListener.popEvent(SJP_EVENTS_APPLICATION_ADDRESS_CHANGED);
         assertThat(caseApplicationRecordedEnv.isPresent(), is(true));
 
         assertThat(caseApplicationRecordedEnv.get(), jsonEnvelope(
@@ -204,6 +206,12 @@ public class CaseApplicationtIT extends BaseIntegrationTest {
                 payloadIsJson((allOf(
                         withJsonPath("$.applicant", notNullValue()),
                         withJsonPath("$.applicationId", notNullValue())
+                )))));
+        assertThat(applicationAddressChanged.get(), jsonEnvelope(
+                metadata().withName(SJP_EVENTS_APPLICATION_ADDRESS_CHANGED),
+                payloadIsJson((allOf(
+                        withJsonPath("$.address.address1", equalTo("Test One")),
+                        withJsonPath("$.addressUpdateFromApplication", equalTo("true"))
                 )))));
 
         pollUntilCaseReady(caseId);

@@ -31,6 +31,7 @@ import uk.gov.moj.cpp.sjp.domain.Address;
 import uk.gov.moj.cpp.sjp.domain.Defendant;
 import uk.gov.moj.cpp.sjp.domain.aggregate.CaseAggregate;
 import uk.gov.moj.cpp.sjp.domain.aggregate.CaseAggregateBaseTest;
+import uk.gov.moj.cpp.sjp.event.DefendantAddressUpdateRequested;
 import uk.gov.moj.cpp.sjp.event.DefendantDetailUpdateRequested;
 import uk.gov.moj.cpp.sjp.event.DefendantDetailsUpdated;
 import uk.gov.moj.cpp.sjp.event.DefendantNameUpdateRequested;
@@ -74,7 +75,7 @@ public class UpdateDefendantDetailsHandlerTest extends CaseAggregateBaseTest {
     private Clock clock = new UtcClock();
     @Spy
     private Enveloper enveloper = EnveloperFactory.createEnveloperWithEvents(
-            DefendantNameUpdateRequested.class, DefendantDetailUpdateRequested.class, DefendantDetailsUpdated.class);
+            DefendantNameUpdateRequested.class, DefendantDetailUpdateRequested.class, DefendantDetailsUpdated.class, DefendantAddressUpdateRequested.class);
     @InjectMocks
     private UpdateDefendantDetailsHandler updateDefendantDetailsHandler;
     @Mock
@@ -136,6 +137,43 @@ public class UpdateDefendantDetailsHandlerTest extends CaseAggregateBaseTest {
                 )));
     }
 
+    @Test
+    public void shouldUpdateDefendantDetailsForCompletedCase_commandReceivedFromApplication() throws EventStreamException {
+
+        final Defendant defendant = caseReceivedEvent.getDefendant();
+        final UUID defendantId = defendant.getId();
+        final UUID caseId = caseReceivedEvent.getCaseId();
+        final JsonEnvelope command = createUpdateDefendantDetailsCommandWithUpdatedAddress(randomUUID());
+
+        when(eventSource.getStreamById(caseId)).thenReturn(eventStream);
+        when(aggregateService.get(eventStream, CaseAggregate.class)).thenReturn(caseAggregate);
+
+        updateDefendantDetailsHandler.updateDefendantDetails(command);
+
+        assertThat(eventStream, eventStreamAppendedWith(
+                streamContaining(
+                        jsonEnvelope(
+                                withMetadataEnvelopedFrom(command)
+                                        .withName("sjp.events.defendant-address-update-requested"),
+                                payloadIsJson(allOf(
+                                        withJsonPath("$.newAddress.address1", equalTo("Flat 2")),
+                                        withJsonPath("$.newAddress.address2", equalTo("1 Oxford Road")),
+                                        withJsonPath("$.newAddress.postcode", equalTo("RG2 8DS"))))),
+                        jsonEnvelope(
+                                withMetadataEnvelopedFrom(command)
+                                        .withName("sjp.events.defendant-detail-update-requested"),
+                                payloadIsJson(withJsonPath("$.addressUpdated", is(true)))),
+                        jsonEnvelope(
+                                withMetadataEnvelopedFrom(command)
+                                        .withName("sjp.events.defendant-details-updated"),
+                                payloadIsJson(allOf(
+                                        withJsonPath("$.defendantId", equalTo(defendantId.toString())),
+                                        withJsonPath("$.address.address1", equalTo("Flat 2")),
+                                        withJsonPath("$.address.address2", equalTo("1 Oxford Road")),
+                                        withJsonPath("$.address.postcode", equalTo("RG2 8DS")))))
+                )));
+    }
+
     private JsonEnvelope createUpdateDefendantDetailsCommand(UUID userId) {
         final Defendant defendant = caseReceivedEvent.getDefendant();
         final JsonObject contactNumber = createObjectBuilder()
@@ -157,6 +195,35 @@ public class UpdateDefendantDetailsHandlerTest extends CaseAggregateBaseTest {
                 .add("address", toJsonObject(defendant.getAddress()))
                 .add("region", REGION)
                 .add("driverNumber", DRIVER_NUMBER);
+
+        return envelopeFrom(
+                metadataOf(randomUUID(), "sjp.command.update-defendant-details").withUserId(userId.toString()),
+                payload.build());
+    }
+
+    private JsonEnvelope createUpdateDefendantDetailsCommandWithUpdatedAddress(UUID userId) {
+        final Defendant defendant = caseReceivedEvent.getDefendant();
+        final JsonObject contactNumber = createObjectBuilder()
+                .add("home", defendant.getContactDetails().getHome())
+                .add("mobile", defendant.getContactDetails().getMobile())
+                .build();
+        final Address updatedAddress = new Address("Flat 2","1 Oxford Road","","","","RG2 8DS");
+        final JsonObjectBuilder payload = createObjectBuilder()
+                .add("defendantId", defendant.getId().toString())
+                .add("caseId", caseReceivedEvent.getCaseId().toString())
+                .add("title", defendant.getTitle())
+                .add("firstName", defendant.getFirstName())
+                .add("lastName", defendant.getLastName())
+                .add("dateOfBirth", defendant.getDateOfBirth().format(ofPattern("YYY-MM-dd")))
+                .add("email", defendant.getContactDetails().getEmail())
+                .add("gender", defendant.getGender().toString())
+                .add("nationalInsuranceNumber", defendant.getNationalInsuranceNumber())
+                .add("contactNumber", contactNumber)
+                .add("address", toJsonObject(updatedAddress))
+                .add("region", defendant.getRegion())
+                .add("driverNumber", defendant.getDriverNumber())
+                .add("addressUpdateFromApplication","true")
+                .add("legalEntityName","legalEntityName");
 
         return envelopeFrom(
                 metadataOf(randomUUID(), "sjp.command.update-defendant-details").withUserId(userId.toString()),

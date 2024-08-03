@@ -14,10 +14,14 @@ import static uk.gov.justice.json.schemas.domains.sjp.ApplicationStatus.REOPENIN
 import static uk.gov.justice.json.schemas.domains.sjp.ApplicationStatus.STATUTORY_DECLARATION_PENDING;
 import static uk.gov.justice.json.schemas.domains.sjp.ApplicationType.STAT_DEC;
 
+import uk.gov.justice.core.courts.Address;
 import uk.gov.justice.core.courts.ApplicationStatus;
 import uk.gov.justice.core.courts.CourtApplication;
 import uk.gov.justice.core.courts.CourtApplicationParty;
 import uk.gov.justice.core.courts.CourtApplicationType;
+import uk.gov.justice.core.courts.MasterDefendant;
+import uk.gov.justice.core.courts.Person;
+import uk.gov.justice.core.courts.PersonDefendant;
 import uk.gov.justice.json.schemas.domains.sjp.commands.CreateCaseApplication;
 import uk.gov.moj.cpp.sjp.domain.aggregate.state.Application;
 import uk.gov.moj.cpp.sjp.domain.aggregate.state.CaseAggregateState;
@@ -79,6 +83,15 @@ public class CaseApplicationHandlerTest {
                             .withId(fromString("5002d600-af66-11e8-b568-0800200c9a68"))
                             .withSummonsRequired(false)
                             .withNotificationRequired(false)
+                            .withMasterDefendant(MasterDefendant.masterDefendant()
+                                    .withPersonDefendant(PersonDefendant.personDefendant()
+                                            .withPersonDetails(Person.person()
+                                                    .withAddress(Address.address()
+                                                            .withAddress1("Address One")
+                                                            .withAddress2("Address Two").withPostcode("RG1 9KS").build())
+                                                    .build())
+                                            .build())
+                                    .build())
                             .build())
                     .build())
             .withApplicationIdExists(false)
@@ -215,6 +228,7 @@ public class CaseApplicationHandlerTest {
         state.setDefendantLastName("Fossey");
         state.setDefendantId(randomUUID());
         state.setManagedByAtcm(true);
+        state.setDefendantAddress(new uk.gov.moj.cpp.sjp.domain.Address("Flat 1","10 Oxford Road","","","","RG30 4RF"));
     }
 
     @Test

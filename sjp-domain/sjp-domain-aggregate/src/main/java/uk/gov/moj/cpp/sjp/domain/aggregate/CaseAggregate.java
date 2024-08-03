@@ -258,7 +258,16 @@ public class CaseAggregate implements Aggregate {
                                                  final Person person,
                                                  final ZonedDateTime updatedDate) {
 
-        return apply(CaseDefendantHandler.INSTANCE.updateDefendantDetails(userId, caseId, defendantId, person, updatedDate, state));
+        return this.updateDefendantDetails(userId, caseId, defendantId, person, updatedDate, false);
+    }
+
+    public Stream<Object> updateDefendantDetails(final UUID userId,
+                                                 final UUID caseId,
+                                                 final UUID defendantId,
+                                                 final Person person,
+                                                 final ZonedDateTime updatedDate, final boolean isAddressUpdateFromApplication) {
+
+        return apply(CaseDefendantHandler.INSTANCE.updateDefendantDetails(userId, caseId, defendantId, person, updatedDate, state, isAddressUpdateFromApplication));
     }
 
     public Stream<Object> acceptPendingDefendantChanges(final UUID userId,

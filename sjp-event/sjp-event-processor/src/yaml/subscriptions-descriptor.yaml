@@ -233,6 +233,9 @@ subscriptions_descriptor:
         - name: sjp.events.defendant-pending-changes-rejected
           schema_uri: http://justice.gov.uk/json/schemas/domains/sjp/events/defendant-pending-changes-rejected.json
 
+        - name: sjp.events.application-address-changed
+          schema_uri: http://justice.gov.uk/json/schemas/domains/sjp/events/sjp.events.application-address-changed.json
+
 
       event_source_name: sjp
 

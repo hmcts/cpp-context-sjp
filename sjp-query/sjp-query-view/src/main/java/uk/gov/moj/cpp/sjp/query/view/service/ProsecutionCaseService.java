@@ -212,6 +212,7 @@ public class ProsecutionCaseService {
             defendantBuilder.withLegalEntityDefendant(legalEntityDefendant()
                     .withOrganisation(Organisation.organisation()
                             .withName(defendantDetail.getLegalEntityDetails().getLegalEntityName())
+                            .withAddress(createAddressView(defendantDetail.getAddress()))
                             .build()).build());
         }
 

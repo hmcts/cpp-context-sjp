@@ -9,7 +9,9 @@ import static uk.gov.justice.json.schemas.domains.sjp.ApplicationStatus.STATUTOR
 import uk.gov.justice.core.courts.CourtApplication;
 import uk.gov.justice.core.courts.CourtApplicationType;
 import uk.gov.justice.json.schemas.domains.sjp.commands.CreateCaseApplication;
+import uk.gov.moj.cpp.sjp.domain.Address;
 import uk.gov.moj.cpp.sjp.domain.aggregate.state.CaseAggregateState;
+import uk.gov.moj.cpp.sjp.event.ApplicationAddressChanged;
 import uk.gov.moj.cpp.sjp.event.ApplicationStatusChanged;
 import uk.gov.moj.cpp.sjp.event.CaseApplicationForReopeningRecorded;
 import uk.gov.moj.cpp.sjp.event.CaseApplicationRecorded;
@@ -54,7 +56,61 @@ public class CaseApplicationHandler {
             sb.add(CaseApplicationForReopeningRecorded.caseApplicationForReopeningRecorded().withApplicant(courtApplication.getApplicant()).withApplicationId(courtApplication.getId()).build());
             sb.add(ApplicationStatusChanged.applicationStatusChanged().withApplicationId(courtApplication.getId()).withStatus(REOPENING_PENDING).build());
         }
+        raiseApplicationAddressChanged(sb, state, courtApplication);
         return sb.build();
+    }
+
+    private void raiseApplicationAddressChanged(final Stream.Builder<Object> sb, final CaseAggregateState state, final CourtApplication courtApplication) {
+        if(nonNull(courtApplication.getSubject().getMasterDefendant())){
+            final boolean isDefendantOrg = nonNull(courtApplication.getSubject().getMasterDefendant().getLegalEntityDefendant());
+            final Address updatedAddress = getUpdatedAddress(state, courtApplication, isDefendantOrg);
+            if (nonNull(updatedAddress)) {
+                sb.add(ApplicationAddressChanged.applicationAddressChanged()
+                        .withCaseId(state.getCaseId())
+                        .withDefendantId(state.getDefendantId())
+                        .withTitle(state.getDefendantTitle())
+                        .withFirstName(state.getDefendantFirstName())
+                        .withLastName(state.getDefendantLastName())
+                        .withDriverNumber(state.getDefendantDriverNumber())
+                        .withDriverLicenceDetails(state.getDefendantDriverLicenceDetails())
+                        .withGender(state.getDefendantGender())
+                        .withNationalInsuranceNumber(state.getDefendantNationalInsuranceNumber())
+                        .withDateOfBirth(state.getDefendantDateOfBirth())
+                        .withEmail(nonNull(state.getDefendantContactDetails()) ? state.getDefendantContactDetails().getEmail() : "")
+                        .withEmail2(nonNull(state.getDefendantContactDetails()) ? state.getDefendantContactDetails().getEmail2() : "")
+                        .withLegalEntityName(state.getDefendantLegalEntityName())
+                        .withContactNumber(state.getDefendantContactDetails())
+                        .withAddress(updatedAddress)
+                        .withRegion(state.getDefendantRegion())
+                        .withAddressUpdateFromApplication("true").build());
+            }
+        }
+    }
+
+    private Address getUpdatedAddress(final CaseAggregateState state, final CourtApplication courtApplication, final boolean isDefendantOrg) {
+        Address addressOnApplication = null;
+        if (isDefendantOrg) {
+            if (nonNull(courtApplication.getSubject().getMasterDefendant().getLegalEntityDefendant().getOrganisation()) &&
+                    nonNull(courtApplication.getSubject().getMasterDefendant().getLegalEntityDefendant().getOrganisation().getAddress())){
+                addressOnApplication = getAddress(courtApplication.getSubject().getMasterDefendant().getLegalEntityDefendant().getOrganisation().getAddress());
+                if(!addressOnApplication.equals(state.getDefendantAddress())) {
+                    return addressOnApplication;
+                }
+            }
+        } else {
+            if (nonNull(courtApplication.getSubject().getMasterDefendant().getPersonDefendant().getPersonDetails()) &&
+                    nonNull(courtApplication.getSubject().getMasterDefendant().getPersonDefendant().getPersonDetails().getAddress())){
+                addressOnApplication = getAddress(courtApplication.getSubject().getMasterDefendant().getPersonDefendant().getPersonDetails().getAddress());
+                if(!addressOnApplication.equals(state.getDefendantAddress())) {
+                    return addressOnApplication;
+                }
+            }
+        }
+        return addressOnApplication;
+    }
+
+    private Address getAddress(final uk.gov.justice.core.courts.Address address) {
+        return new Address(address.getAddress1(), address.getAddress2(), address.getAddress3(), address.getAddress4(), address.getAddress5(),address.getPostcode());
     }
 
     private Optional<CaseApplicationRejected> validate(final CaseAggregateState state, final CreateCaseApplication createCaseApplication) {

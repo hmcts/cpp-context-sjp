@@ -1,9 +1,11 @@
 package uk.gov.moj.cpp.sjp.domain.aggregate.handler;
 
 
+import static uk.gov.justice.json.schemas.domains.sjp.NoteType.SOC_CHECK;
 import static uk.gov.justice.json.schemas.domains.sjp.events.CaseNoteAdded.caseNoteAdded;
 
 import uk.gov.justice.json.schemas.domains.sjp.Note;
+import uk.gov.justice.json.schemas.domains.sjp.NoteType;
 import uk.gov.justice.json.schemas.domains.sjp.User;
 import uk.gov.moj.cpp.sjp.domain.aggregate.state.CaseAggregateState;
 import uk.gov.moj.cpp.sjp.event.CaseNotFound;
@@ -33,7 +35,7 @@ public class CaseNoteHandler {
             LOGGER.error("Mismatch of IDs in aggregate: {} != {}", state.getCaseId(), caseId);
             return Stream.of(new CaseNotFound(caseId, "Add notes to case"));
         }
-        if (state.isCaseReferredForCourtHearing()) {
+        if (state.isCaseReferredForCourtHearing() && !SOC_CHECK.equals(note.getType())) {
             return Stream.of(new CaseNoteRejected(caseId, "Case referred for court hearing"));
         }
         return Stream.of(caseNoteAdded()

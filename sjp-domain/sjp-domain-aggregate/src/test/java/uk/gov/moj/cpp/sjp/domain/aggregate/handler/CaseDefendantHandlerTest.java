@@ -10,9 +10,13 @@ import static org.mockito.Mockito.when;
 import uk.gov.moj.cpp.sjp.domain.Address;
 import uk.gov.moj.cpp.sjp.domain.Person;
 import uk.gov.moj.cpp.sjp.domain.aggregate.state.CaseAggregateState;
+import uk.gov.moj.cpp.sjp.event.DefendantDateOfBirthUpdateRequested;
+import uk.gov.moj.cpp.sjp.event.DefendantDetailUpdateRequested;
 import uk.gov.moj.cpp.sjp.event.DefendantDetailsUpdateFailed;
 import uk.gov.moj.cpp.sjp.event.DefendantDetailsUpdated;
 
+import java.time.LocalDate;
+import java.time.Month;
 import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.UUID;
@@ -84,5 +88,31 @@ public class CaseDefendantHandlerTest extends TestCase {
         assertThat(eventList.size(), is(1));
         final Object o = eventList.get(0);
         assertThat(o, instanceOf(DefendantDetailsUpdated.class));
+    }
+
+    @Test
+    public void shouldRaiseDOBUpdateRequestEventWhenDOBIsNotProvidedAtCaseCreationAndProvidedInOnlinePlea(){
+        final ZonedDateTime updatedDate = ZonedDateTime.now();
+        when(person.getDateOfBirth()).thenReturn(LocalDate.of(1999, Month.APRIL, 1));
+        final Stream<Object> eventStream = caseDefendantHandler.getDefendantUpdateRequestedEvents(person, updatedDate, true, state);
+        final List<Object> eventList = eventStream.collect(toList());
+        assertThat(eventList.size(), is(2));
+        final Object o = eventList.get(0);
+        assertThat(o, instanceOf(DefendantDateOfBirthUpdateRequested.class));
+        final Object o1 = eventList.get(1);
+        assertThat(o1, instanceOf(DefendantDetailUpdateRequested.class));
+    }
+
+    @Test
+    public void shouldRaiseDOBUpdateRequestEventWhenDOBIsProvidedAtCaseCreationAndNotProvidedInOnlinePlea(){
+        final ZonedDateTime updatedDate = ZonedDateTime.now();
+        when(state.getDefendantDateOfBirth()).thenReturn(LocalDate.of(1999, Month.APRIL, 1));
+        final Stream<Object> eventStream = caseDefendantHandler.getDefendantUpdateRequestedEvents(person, updatedDate, true, state);
+        final List<Object> eventList = eventStream.collect(toList());
+        assertThat(eventList.size(), is(2));
+        final Object o = eventList.get(0);
+        assertThat(o, instanceOf(DefendantDateOfBirthUpdateRequested.class));
+        final Object o1 = eventList.get(1);
+        assertThat(o1, instanceOf(DefendantDetailUpdateRequested.class));
     }
 }

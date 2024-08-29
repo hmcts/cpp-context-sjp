@@ -247,7 +247,8 @@ public class CaseDefendantHandler {
         boolean isAddressChanged = false;
         boolean isNameChanged = false;
         final LocalDate defendantDateOfBirth = state.getDefendantDateOfBirth();
-        if (defendantDateOfBirth != null && !defendantDateOfBirth.equals(person.getDateOfBirth())) {
+        if ((defendantDateOfBirth != null && !defendantDateOfBirth.equals(person.getDateOfBirth()))
+                || (defendantDateOfBirth == null && person.getDateOfBirth() != null)) {
             LOGGER.info("old dob: {} new dob {} ", defendantDateOfBirth, person.getDateOfBirth());
             isDateOfBirthChanged = true;
             events.add(new DefendantDateOfBirthUpdateRequested(

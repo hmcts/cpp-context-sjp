@@ -77,7 +77,7 @@ public class CaseLegalSocCheckedProcessor {
                         .add("note", createObjectBuilder()
                                 .add("id", randomUUID().toString())
                                 .add("text", socCheckedNoteText)
-                                .add("type", NoteType.CASE.toString())
+                                .add("type", NoteType.SOC_CHECK.toString())
                                 .add("addedAt", checkedAt)
                         );
 

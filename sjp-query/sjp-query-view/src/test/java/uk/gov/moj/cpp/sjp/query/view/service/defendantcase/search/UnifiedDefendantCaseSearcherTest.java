@@ -1,5 +1,7 @@
 package uk.gov.moj.cpp.sjp.query.view.service.defendantcase.search;
 
+import org.hamcrest.MatcherAssert;
+import org.hamcrest.core.Is;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
@@ -21,9 +23,13 @@ import java.time.LocalDate;
 import java.time.ZonedDateTime;
 import java.util.UUID;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.core.Is.is;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
+
+import javax.json.JsonObject;
 
 @RunWith(MockitoJUnitRunner.class)
 
@@ -45,7 +51,7 @@ public class UnifiedDefendantCaseSearcherTest {
     private Requester requester;
 
     @Captor
-    private ArgumentCaptor<Envelope<?>> envelopeArgumentCaptor;
+    private ArgumentCaptor<Envelope<JsonObject>> envelopeArgumentCaptor;
 
     @Captor
     private ArgumentCaptor<Class<DefendantCaseQueryResult>> anycapture;
@@ -73,6 +79,8 @@ public class UnifiedDefendantCaseSearcherTest {
         when(requester.requestAsAdmin(envelopeArgumentCaptor.capture(), anycapture.capture())).thenReturn(null);
         unifiedDefendantCaseSearcher.searchDefendantCases(envelope, defendantDetail);
         verify(requester).requestAsAdmin(envelopeArgumentCaptor.getValue(), anycapture.getValue());
+        final Envelope<JsonObject> argumentCaptorValue = envelopeArgumentCaptor.getValue();
+        assertThat(argumentCaptorValue.payload().getString("partyAddress"), is("Address1"));
     }
 
 

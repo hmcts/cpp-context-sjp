@@ -11,7 +11,8 @@ import javax.json.Json;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
 
-import org.apache.commons.lang3.StringUtils;
+import static org.apache.commons.lang3.StringUtils.isNotBlank;
+import static org.apache.commons.lang3.StringUtils.isNotEmpty;
 
 public class DefendantCaseQuery {
 
@@ -23,9 +24,10 @@ public class DefendantCaseQuery {
     public static final String LASTNAME_QUERY_PARAM = "partyLastNameOrOrganisationName";
     public static final String PARTY_NAME_QUERY_PARAM = "partyName";
     public static final String DOB_QUERY_PARAM = "partyDateOfBirth";
-    public static final String ADDRESS_LINE1_QUERY_PARAM = "addressLine1";
+    public static final String ADDRESS_LINE1_QUERY_PARAM = "partyAddress";
     public static final String POSTCODE_QUERY_PARAM = "partyPostcode";
     private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+    public static final String ASN_QUERY_PARAM = "partyArrestSummonsNumber";
 
     private final DefendantDetail defendant;
     private JsonObject criteria;
@@ -40,8 +42,12 @@ public class DefendantCaseQuery {
         criteriaBuilder.add(CASES_PAGE_SIZE, CASES_DEFAULT_PAGE_SIZE);
 
         final PersonalDetails personalDetails = defendant.getPersonalDetails();
-        addQueryParam(criteriaBuilder, PARTY_NAME_QUERY_PARAM, String.join(" ", personalDetails.getFirstName(), personalDetails.getLastName()));
+        addQueryParam(criteriaBuilder, FIRSTNAME_QUERY_PARAM, personalDetails.getFirstName());
+        addQueryParam(criteriaBuilder, LASTNAME_QUERY_PARAM, personalDetails.getLastName());
         addQueryParam(criteriaBuilder, DOB_QUERY_PARAM, personalDetails.getDateOfBirth());
+        if(isNotBlank(defendant.getAsn())){
+            addQueryParam(criteriaBuilder, ASN_QUERY_PARAM, defendant.getAsn());
+        }
 
         final Address address = defendant.getAddress();
         if (address != null) {
@@ -68,7 +74,7 @@ public class DefendantCaseQuery {
     private void addQueryParam(JsonObjectBuilder defendantCriteriaBuilder,
                                String queryName,
                                String queryVal) {
-        if (StringUtils.isNotEmpty(queryVal)) {
+        if (isNotEmpty(queryVal)) {
             defendantCriteriaBuilder.add(queryName, queryVal);
         }
     }

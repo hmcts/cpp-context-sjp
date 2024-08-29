@@ -6,6 +6,7 @@
     "DECISION",
     "LISTING",
     "CASE",
-    "CASE_MANAGEMENT"
+    "CASE_MANAGEMENT",
+    "SOC_CHECK"
   ]
 }

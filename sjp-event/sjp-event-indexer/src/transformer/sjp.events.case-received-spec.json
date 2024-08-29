@@ -25,7 +25,8 @@
             "address4": "parties[0].address4",
             "address5": "parties[0].address5",
             "postcode": "parties[0].postCode"
-          }
+          },
+          "asn": "parties[0].arrestSummonsNumber"
         }
       }
     },

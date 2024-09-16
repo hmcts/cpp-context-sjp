@@ -10,6 +10,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.emptyString;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
@@ -184,6 +185,7 @@ public class DefendantPotentialCaseServiceTest {
         assertEquals(queryParamPayload.getString(DOB_QUERY_PARAM), personalDetails.getDateOfBirth().toString());
         assertEquals(queryParamPayload.getString(ADDRESS_LINE1_QUERY_PARAM), defendant.getAddress().getAddress1());
         assertEquals(queryParamPayload.getString(POSTCODE_QUERY_PARAM), defendant.getAddress().getPostcode());
+        assertNull(queryParamPayload.getString("partyArrestSummonsNumber", null));
     }
 
     @Test

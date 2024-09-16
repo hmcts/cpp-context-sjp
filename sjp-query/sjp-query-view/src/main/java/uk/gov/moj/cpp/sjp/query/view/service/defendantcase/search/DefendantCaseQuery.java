@@ -1,18 +1,16 @@
 package uk.gov.moj.cpp.sjp.query.view.service.defendantcase.search;
 
+import static org.apache.commons.lang3.StringUtils.isNotEmpty;
+
 import uk.gov.moj.cpp.sjp.persistence.entity.Address;
 import uk.gov.moj.cpp.sjp.persistence.entity.DefendantDetail;
 import uk.gov.moj.cpp.sjp.persistence.entity.PersonalDetails;
 
-import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
-
 import javax.json.Json;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
-
-import static org.apache.commons.lang3.StringUtils.isNotBlank;
-import static org.apache.commons.lang3.StringUtils.isNotEmpty;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 
 public class DefendantCaseQuery {
 
@@ -45,9 +43,6 @@ public class DefendantCaseQuery {
         addQueryParam(criteriaBuilder, FIRSTNAME_QUERY_PARAM, personalDetails.getFirstName());
         addQueryParam(criteriaBuilder, LASTNAME_QUERY_PARAM, personalDetails.getLastName());
         addQueryParam(criteriaBuilder, DOB_QUERY_PARAM, personalDetails.getDateOfBirth());
-        if(isNotBlank(defendant.getAsn())){
-            addQueryParam(criteriaBuilder, ASN_QUERY_PARAM, defendant.getAsn());
-        }
 
         final Address address = defendant.getAddress();
         if (address != null) {

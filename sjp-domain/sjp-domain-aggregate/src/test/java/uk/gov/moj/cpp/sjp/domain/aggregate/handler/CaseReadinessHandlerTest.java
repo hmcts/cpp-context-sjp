@@ -1,6 +1,5 @@
 package uk.gov.moj.cpp.sjp.domain.aggregate.handler;
 
-import static java.util.Arrays.asList;
 import static java.util.Objects.nonNull;
 import static java.util.UUID.randomUUID;
 import static java.util.stream.Collectors.toList;
@@ -8,9 +7,8 @@ import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static uk.gov.justice.json.schemas.domains.sjp.ApplicationStatus.STATUTORY_DECLARATION_GRANTED;
-import static uk.gov.justice.json.schemas.domains.sjp.ApplicationStatus.STATUTORY_DECLARATION_PENDING;
 import static uk.gov.justice.json.schemas.domains.sjp.ApplicationStatus.STATUTORY_DECLARATION_REFUSED;
 import static uk.gov.justice.json.schemas.domains.sjp.ApplicationType.STAT_DEC;
 import static uk.gov.moj.cpp.sjp.domain.aggregate.handler.CaseAggregateConfig.ApplicationBuilder.application;
@@ -33,6 +31,10 @@ import static uk.gov.moj.cpp.sjp.domain.common.CaseStatus.WITHDRAWAL_REQUEST_REA
 import static uk.gov.moj.cpp.sjp.domain.plea.PleaType.GUILTY;
 import static uk.gov.moj.cpp.sjp.domain.plea.PleaType.NOT_GUILTY;
 
+import java.util.stream.Stream;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 import uk.gov.moj.cpp.sjp.domain.aggregate.state.CaseAggregateState;
 import uk.gov.moj.cpp.sjp.domain.common.CaseState;
 import uk.gov.moj.cpp.sjp.domain.common.CaseStatus;
@@ -44,17 +46,11 @@ import uk.gov.moj.cpp.sjp.event.CaseUnmarkedReadyForDecision;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 import java.util.UUID;
 
 import org.hamcrest.Matchers;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
 
-@RunWith(Parameterized.class)
 public class CaseReadinessHandlerTest {
 
     private static final LocalDate DAYS_AGO_2 = LocalDate.now().minusDays(2);
@@ -65,466 +61,420 @@ public class CaseReadinessHandlerTest {
     private final CaseReadinessHandler caseReadinessHandler = CaseReadinessHandler.INSTANCE;
     private final UUID caseId = randomUUID();
 
-    private CaseAggregateState state;
-
-    @Parameterized.Parameter
-    public CaseStatus previousStatus;
-
-    @Parameterized.Parameter(1)
-    public CaseStatus currentStatus;
-
-    @Parameterized.Parameter(2)
-    public CaseAggregateConfig aggregateConfig;
-
-    @Parameterized.Parameter(3)
-    public Boolean isCaseStatusChanged;
-
-    @Parameterized.Parameter(4)
-    public CaseReadinessEventRaised caseReadinessEventRaised;
-
-    @Parameterized.Parameter(5)
-    public LocalDate expectedDateReady;
-
-    @Parameterized.Parameters(name = "previous case status={0}, current case status={1},  aggregateConfig={2}," +
-            "is case status changed={3}" + ", case readiness event raised={4}, expectedDateReady={5}")
-    public static Collection<Object[]> data() {
-        return asList(new Object[][]{
-                {NO_PLEA_RECEIVED, NO_PLEA_RECEIVED,
+    static Stream<Arguments> data() {
+        return Stream.of(
+                Arguments.of(NO_PLEA_RECEIVED, NO_PLEA_RECEIVED,
                         caseAggregateConfigBuilder().withPostingDateExpirationDate(IN_28_DAYS).build(),
-                        false, NONE, null},
+                        false, NONE, null),
 
-                {COMPLETED, COMPLETED_APPLICATION_PENDING,
+                Arguments.of(COMPLETED, COMPLETED_APPLICATION_PENDING,
                         caseAggregateConfigBuilder().withPostingDateExpirationDate(DAYS_AGO_2).withNotGuiltyPlea().build(),
-                        true, CASE_MARKED_READY_FOR_DECISION_RAISED, null},
+                        true, CASE_MARKED_READY_FOR_DECISION_RAISED, null),
 
-                {NO_PLEA_RECEIVED, NO_PLEA_RECEIVED_READY_FOR_DECISION,
+                Arguments.of(NO_PLEA_RECEIVED, NO_PLEA_RECEIVED_READY_FOR_DECISION,
                         caseAggregateConfigBuilder().withPostingDateExpirationDate(DAYS_AGO_2).build(),
-                        true, CASE_MARKED_READY_FOR_DECISION_RAISED, null},
+                        true, CASE_MARKED_READY_FOR_DECISION_RAISED, null),
 
-                {NO_PLEA_RECEIVED, PLEA_RECEIVED_READY_FOR_DECISION,
+                Arguments.of(NO_PLEA_RECEIVED, PLEA_RECEIVED_READY_FOR_DECISION,
                         caseAggregateConfigBuilder().withPostingDateExpirationDate(DAYS_AGO_2).withNotGuiltyPlea().build(),
-                        true, CASE_MARKED_READY_FOR_DECISION_RAISED, null},
+                        true, CASE_MARKED_READY_FOR_DECISION_RAISED, null),
 
-                {NO_PLEA_RECEIVED, PLEA_RECEIVED_NOT_READY_FOR_DECISION,
+                Arguments.of(NO_PLEA_RECEIVED, PLEA_RECEIVED_NOT_READY_FOR_DECISION,
                         caseAggregateConfigBuilder().withPostingDateExpirationDate(IN_5_DAYS).withAdjournedTo(IN_10_DAYS).build(),
-                        true, CASE_EXPECTED_DATE_READY_CHANGED_RAISED, IN_10_DAYS},
+                        true, CASE_EXPECTED_DATE_READY_CHANGED_RAISED, IN_10_DAYS),
 
-                {NO_PLEA_RECEIVED, PLEA_RECEIVED_NOT_READY_FOR_DECISION,
+                Arguments.of(NO_PLEA_RECEIVED, PLEA_RECEIVED_NOT_READY_FOR_DECISION,
                         caseAggregateConfigBuilder().withPostingDateExpirationDate(DAYS_AGO_2).withAdjournedTo(IN_5_DAYS).withDatesToAvoidExpirationDate(IN_10_DAYS).withNotGuiltyPlea().build(),
-                        true, CASE_EXPECTED_DATE_READY_CHANGED_RAISED, IN_10_DAYS},
+                        true, CASE_EXPECTED_DATE_READY_CHANGED_RAISED, IN_10_DAYS),
 
-                {NO_PLEA_RECEIVED, PLEA_RECEIVED_NOT_READY_FOR_DECISION,
+                Arguments.of(NO_PLEA_RECEIVED, PLEA_RECEIVED_NOT_READY_FOR_DECISION,
                         caseAggregateConfigBuilder().withPostingDateExpirationDate(IN_10_DAYS).withAdjournedTo(IN_5_DAYS).withDatesToAvoidExpirationDate(IN_10_DAYS).withNotGuiltyPlea().build(),
-                        true, NONE, null},
+                        true, NONE, null),
 
-                {NO_PLEA_RECEIVED, PLEA_RECEIVED_NOT_READY_FOR_DECISION,
+                Arguments.of(NO_PLEA_RECEIVED, PLEA_RECEIVED_NOT_READY_FOR_DECISION,
                         caseAggregateConfigBuilder().withPostingDateExpirationDate(IN_28_DAYS).withAdjournedTo(IN_5_DAYS).withDatesToAvoidExpirationDate(IN_10_DAYS).withGuiltyPlea().build(),
-                        true, CASE_EXPECTED_DATE_READY_CHANGED_RAISED, IN_5_DAYS},
+                        true, CASE_EXPECTED_DATE_READY_CHANGED_RAISED, IN_5_DAYS),
 
-                {NO_PLEA_RECEIVED, PLEA_RECEIVED_NOT_READY_FOR_DECISION,
+                Arguments.of(NO_PLEA_RECEIVED, PLEA_RECEIVED_NOT_READY_FOR_DECISION,
                         caseAggregateConfigBuilder().withPostingDateExpirationDate(IN_28_DAYS).withAdjournedTo(IN_5_DAYS).withDatesToAvoidExpirationDate(IN_10_DAYS).build(),
-                        true, NONE, null},
+                        true, NONE, null),
 
-                {NO_PLEA_RECEIVED, PLEA_RECEIVED_NOT_READY_FOR_DECISION,
+                Arguments.of(NO_PLEA_RECEIVED, PLEA_RECEIVED_NOT_READY_FOR_DECISION,
                         caseAggregateConfigBuilder().withPostingDateExpirationDate(IN_28_DAYS).withAdjournedTo(IN_5_DAYS).withDatesToAvoidExpirationDate(IN_10_DAYS).withNotGuiltyPlea().build(),
-                        true, CASE_EXPECTED_DATE_READY_CHANGED_RAISED, IN_10_DAYS},
+                        true, CASE_EXPECTED_DATE_READY_CHANGED_RAISED, IN_10_DAYS),
 
-                {NO_PLEA_RECEIVED, WITHDRAWAL_REQUEST_READY_FOR_DECISION,
+                Arguments.of(NO_PLEA_RECEIVED, WITHDRAWAL_REQUEST_READY_FOR_DECISION,
                         caseAggregateConfigBuilder().withPostingDateExpirationDate(DAYS_AGO_2).withNotGuiltyPlea().build(),
-                        true, CASE_MARKED_READY_FOR_DECISION_RAISED, null},
+                        true, CASE_MARKED_READY_FOR_DECISION_RAISED, null),
 
                 // NOT POSSIBLE TRANSITION
-                {NO_PLEA_RECEIVED, REFERRED_FOR_COURT_HEARING,
+                Arguments.of(NO_PLEA_RECEIVED, REFERRED_FOR_COURT_HEARING,
                         caseAggregateConfigBuilder().withPostingDateExpirationDate(DAYS_AGO_2).withNotGuiltyPlea().build(),
-                        true, NONE, null},
+                        true, NONE, null),
 
                 // NOT POSSIBLE TRANSITION
-                {NO_PLEA_RECEIVED, COMPLETED,
+                Arguments.of(NO_PLEA_RECEIVED, COMPLETED,
                         caseAggregateConfigBuilder().withPostingDateExpirationDate(DAYS_AGO_2).withNotGuiltyPlea().build(),
-                        true, NONE, null},
+                        true, NONE, null),
 
                 // NOT POSSIBLE TRANSITION
-                {NO_PLEA_RECEIVED, REOPENED_IN_LIBRA,
+                Arguments.of(NO_PLEA_RECEIVED, REOPENED_IN_LIBRA,
                         caseAggregateConfigBuilder().withPostingDateExpirationDate(DAYS_AGO_2).withNotGuiltyPlea().build(),
-                        true, NONE, null},
+                        true, NONE, null),
 
-                {NO_PLEA_RECEIVED, UNKNOWN,
+                Arguments.of(NO_PLEA_RECEIVED, UNKNOWN,
                         caseAggregateConfigBuilder().withPostingDateExpirationDate(IN_28_DAYS).build(),
-                        true, NONE, null},
+                        true, NONE, null),
 
-                {NO_PLEA_RECEIVED_READY_FOR_DECISION, NO_PLEA_RECEIVED,
+                Arguments.of(NO_PLEA_RECEIVED_READY_FOR_DECISION, NO_PLEA_RECEIVED,
                         caseAggregateConfigBuilder().withPostingDateExpirationDate(DAYS_AGO_2).withAdjournedTo(IN_5_DAYS).build(),
-                        true, CASE_UNMARKED_READY_FOR_DECISION_RAISED, IN_5_DAYS},
+                        true, CASE_UNMARKED_READY_FOR_DECISION_RAISED, IN_5_DAYS),
 
-                {NO_PLEA_RECEIVED_READY_FOR_DECISION, NO_PLEA_RECEIVED_READY_FOR_DECISION,
+                Arguments.of(NO_PLEA_RECEIVED_READY_FOR_DECISION, NO_PLEA_RECEIVED_READY_FOR_DECISION,
                         caseAggregateConfigBuilder().withPostingDateExpirationDate(DAYS_AGO_2).build(),
-                        false, NONE, null},
+                        false, NONE, null),
 
-                {NO_PLEA_RECEIVED_READY_FOR_DECISION, PLEA_RECEIVED_READY_FOR_DECISION,
+                Arguments.of(NO_PLEA_RECEIVED_READY_FOR_DECISION, PLEA_RECEIVED_READY_FOR_DECISION,
                         caseAggregateConfigBuilder().withPostingDateExpirationDate(DAYS_AGO_2).withNotGuiltyPlea().build(),
-                        true, CASE_MARKED_READY_FOR_DECISION_RAISED, null},
+                        true, CASE_MARKED_READY_FOR_DECISION_RAISED, null),
 
-                {NO_PLEA_RECEIVED_READY_FOR_DECISION, PLEA_RECEIVED_NOT_READY_FOR_DECISION,
+                Arguments.of(NO_PLEA_RECEIVED_READY_FOR_DECISION, PLEA_RECEIVED_NOT_READY_FOR_DECISION,
                         caseAggregateConfigBuilder().withPostingDateExpirationDate(IN_5_DAYS).withAdjournedTo(IN_10_DAYS).build(),
-                        true, CASE_UNMARKED_READY_FOR_DECISION_RAISED, IN_10_DAYS},
+                        true, CASE_UNMARKED_READY_FOR_DECISION_RAISED, IN_10_DAYS),
 
-                {NO_PLEA_RECEIVED_READY_FOR_DECISION, WITHDRAWAL_REQUEST_READY_FOR_DECISION,
+                Arguments.of(NO_PLEA_RECEIVED_READY_FOR_DECISION, WITHDRAWAL_REQUEST_READY_FOR_DECISION,
                         caseAggregateConfigBuilder().withPostingDateExpirationDate(DAYS_AGO_2).withNotGuiltyPlea().build(),
-                        true, CASE_MARKED_READY_FOR_DECISION_RAISED, null},
+                        true, CASE_MARKED_READY_FOR_DECISION_RAISED, null),
 
-                {NO_PLEA_RECEIVED_READY_FOR_DECISION, REFERRED_FOR_COURT_HEARING,
+                Arguments.of(NO_PLEA_RECEIVED_READY_FOR_DECISION, REFERRED_FOR_COURT_HEARING,
                         caseAggregateConfigBuilder().withPostingDateExpirationDate(DAYS_AGO_2).withNotGuiltyPlea().build(),
-                        true, NONE, null},
+                        true, NONE, null),
 
-                {NO_PLEA_RECEIVED_READY_FOR_DECISION, COMPLETED,
+                Arguments.of(NO_PLEA_RECEIVED_READY_FOR_DECISION, COMPLETED,
                         caseAggregateConfigBuilder().withPostingDateExpirationDate(DAYS_AGO_2).withNotGuiltyPlea().build(),
-                        true, NONE, null},
+                        true, NONE, null),
 
                 // NOT POSSIBLE TRANSITION
-                {NO_PLEA_RECEIVED_READY_FOR_DECISION, REOPENED_IN_LIBRA,
+                Arguments.of(NO_PLEA_RECEIVED_READY_FOR_DECISION, REOPENED_IN_LIBRA,
                         caseAggregateConfigBuilder().withPostingDateExpirationDate(DAYS_AGO_2).withNotGuiltyPlea().build(),
-                        true, NONE, null},
+                        true, NONE, null),
 
-                {NO_PLEA_RECEIVED_READY_FOR_DECISION, UNKNOWN,
+                Arguments.of(NO_PLEA_RECEIVED_READY_FOR_DECISION, UNKNOWN,
                         caseAggregateConfigBuilder().withPostingDateExpirationDate(DAYS_AGO_2).withNotGuiltyPlea().build(),
-                        true, CASE_UNMARKED_READY_FOR_DECISION_RAISED, DAYS_AGO_2},
+                        true, CASE_UNMARKED_READY_FOR_DECISION_RAISED, DAYS_AGO_2),
 
-                {PLEA_RECEIVED_READY_FOR_DECISION, NO_PLEA_RECEIVED,
+                Arguments.of(PLEA_RECEIVED_READY_FOR_DECISION, NO_PLEA_RECEIVED,
                         caseAggregateConfigBuilder().withPostingDateExpirationDate(DAYS_AGO_2).withAdjournedTo(IN_5_DAYS).build(),
-                        true, CASE_UNMARKED_READY_FOR_DECISION_RAISED, IN_5_DAYS},
+                        true, CASE_UNMARKED_READY_FOR_DECISION_RAISED, IN_5_DAYS),
 
-                {PLEA_RECEIVED_READY_FOR_DECISION, NO_PLEA_RECEIVED_READY_FOR_DECISION,
+                Arguments.of(PLEA_RECEIVED_READY_FOR_DECISION, NO_PLEA_RECEIVED_READY_FOR_DECISION,
                         caseAggregateConfigBuilder().withPostingDateExpirationDate(DAYS_AGO_2).build(),
-                        true, CASE_MARKED_READY_FOR_DECISION_RAISED, null},
+                        true, CASE_MARKED_READY_FOR_DECISION_RAISED, null),
 
-                {PLEA_RECEIVED_READY_FOR_DECISION, PLEA_RECEIVED_READY_FOR_DECISION,
+                Arguments.of(PLEA_RECEIVED_READY_FOR_DECISION, PLEA_RECEIVED_READY_FOR_DECISION,
                         caseAggregateConfigBuilder().withPostingDateExpirationDate(DAYS_AGO_2).withNotGuiltyPlea().build(),
-                        false, NONE, null},
+                        false, NONE, null),
 
-                {PLEA_RECEIVED_READY_FOR_DECISION, PLEA_RECEIVED_NOT_READY_FOR_DECISION,
+                Arguments.of(PLEA_RECEIVED_READY_FOR_DECISION, PLEA_RECEIVED_NOT_READY_FOR_DECISION,
                         caseAggregateConfigBuilder().withPostingDateExpirationDate(IN_5_DAYS).withNotGuiltyPlea().withAdjournedTo(IN_10_DAYS).build(),
-                        true, CASE_UNMARKED_READY_FOR_DECISION_RAISED, IN_10_DAYS},
+                        true, CASE_UNMARKED_READY_FOR_DECISION_RAISED, IN_10_DAYS),
 
-                {PLEA_RECEIVED_READY_FOR_DECISION, WITHDRAWAL_REQUEST_READY_FOR_DECISION,
+                Arguments.of(PLEA_RECEIVED_READY_FOR_DECISION, WITHDRAWAL_REQUEST_READY_FOR_DECISION,
                         caseAggregateConfigBuilder().withPostingDateExpirationDate(DAYS_AGO_2).withNotGuiltyPlea().build(),
-                        true, CASE_MARKED_READY_FOR_DECISION_RAISED, null},
+                        true, CASE_MARKED_READY_FOR_DECISION_RAISED, null),
 
-                {PLEA_RECEIVED_READY_FOR_DECISION, REFERRED_FOR_COURT_HEARING,
+                Arguments.of(PLEA_RECEIVED_READY_FOR_DECISION, REFERRED_FOR_COURT_HEARING,
                         caseAggregateConfigBuilder().withPostingDateExpirationDate(DAYS_AGO_2).withNotGuiltyPlea().build(),
-                        true, NONE, null},
+                        true, NONE, null),
 
-                {PLEA_RECEIVED_READY_FOR_DECISION, COMPLETED,
+                Arguments.of(PLEA_RECEIVED_READY_FOR_DECISION, COMPLETED,
                         caseAggregateConfigBuilder().withPostingDateExpirationDate(DAYS_AGO_2).withNotGuiltyPlea().build(),
-                        true, NONE, null},
+                        true, NONE, null),
 
                 // NOT POSSIBLE TRANSITION
-                {PLEA_RECEIVED_READY_FOR_DECISION, REOPENED_IN_LIBRA,
+                Arguments.of(PLEA_RECEIVED_READY_FOR_DECISION, REOPENED_IN_LIBRA,
                         caseAggregateConfigBuilder().withPostingDateExpirationDate(DAYS_AGO_2).withNotGuiltyPlea().build(),
-                        true, NONE, null},
+                        true, NONE, null),
 
-                {PLEA_RECEIVED_READY_FOR_DECISION, UNKNOWN,
+                Arguments.of(PLEA_RECEIVED_READY_FOR_DECISION, UNKNOWN,
                         caseAggregateConfigBuilder().withPostingDateExpirationDate(DAYS_AGO_2).withNotGuiltyPlea().build(),
-                        true, CASE_UNMARKED_READY_FOR_DECISION_RAISED, DAYS_AGO_2},
+                        true, CASE_UNMARKED_READY_FOR_DECISION_RAISED, DAYS_AGO_2),
 
-                {PLEA_RECEIVED_NOT_READY_FOR_DECISION, NO_PLEA_RECEIVED,
+                Arguments.of(PLEA_RECEIVED_NOT_READY_FOR_DECISION, NO_PLEA_RECEIVED,
                         caseAggregateConfigBuilder().withPostingDateExpirationDate(DAYS_AGO_2).withAdjournedTo(IN_5_DAYS).build(),
-                        true, CASE_EXPECTED_DATE_READY_CHANGED_RAISED, IN_5_DAYS},
+                        true, CASE_EXPECTED_DATE_READY_CHANGED_RAISED, IN_5_DAYS),
 
-                {PLEA_RECEIVED_NOT_READY_FOR_DECISION, NO_PLEA_RECEIVED,
+                Arguments.of(PLEA_RECEIVED_NOT_READY_FOR_DECISION, NO_PLEA_RECEIVED,
                         caseAggregateConfigBuilder().withPostingDateExpirationDate(DAYS_AGO_2).withAdjournedTo(IN_5_DAYS).withDatesToAvoidExpirationDate(IN_10_DAYS).withNotGuiltyPlea().build(),
-                        true, CASE_EXPECTED_DATE_READY_CHANGED_RAISED, IN_10_DAYS},
+                        true, CASE_EXPECTED_DATE_READY_CHANGED_RAISED, IN_10_DAYS),
 
-                {PLEA_RECEIVED_NOT_READY_FOR_DECISION, NO_PLEA_RECEIVED_READY_FOR_DECISION,
+                Arguments.of(PLEA_RECEIVED_NOT_READY_FOR_DECISION, NO_PLEA_RECEIVED_READY_FOR_DECISION,
                         caseAggregateConfigBuilder().withPostingDateExpirationDate(DAYS_AGO_2).build(),
-                        true, CASE_MARKED_READY_FOR_DECISION_RAISED, null},
+                        true, CASE_MARKED_READY_FOR_DECISION_RAISED, null),
 
-                {PLEA_RECEIVED_NOT_READY_FOR_DECISION, PLEA_RECEIVED_READY_FOR_DECISION,
+                Arguments.of(PLEA_RECEIVED_NOT_READY_FOR_DECISION, PLEA_RECEIVED_READY_FOR_DECISION,
                         caseAggregateConfigBuilder().withPostingDateExpirationDate(DAYS_AGO_2).withNotGuiltyPlea().build(),
-                        true, CASE_MARKED_READY_FOR_DECISION_RAISED, null},
+                        true, CASE_MARKED_READY_FOR_DECISION_RAISED, null),
 
-                {PLEA_RECEIVED_NOT_READY_FOR_DECISION, PLEA_RECEIVED_NOT_READY_FOR_DECISION,
+                Arguments.of(PLEA_RECEIVED_NOT_READY_FOR_DECISION, PLEA_RECEIVED_NOT_READY_FOR_DECISION,
                         caseAggregateConfigBuilder().withPostingDateExpirationDate(IN_5_DAYS).withNotGuiltyPlea().withAdjournedTo(IN_10_DAYS).build(),
-                        false, NONE, null},
+                        false, NONE, null),
 
-                {PLEA_RECEIVED_NOT_READY_FOR_DECISION, WITHDRAWAL_REQUEST_READY_FOR_DECISION,
+                Arguments.of(PLEA_RECEIVED_NOT_READY_FOR_DECISION, WITHDRAWAL_REQUEST_READY_FOR_DECISION,
                         caseAggregateConfigBuilder().withPostingDateExpirationDate(DAYS_AGO_2).withNotGuiltyPlea().build(),
-                        true, CASE_MARKED_READY_FOR_DECISION_RAISED, null},
+                        true, CASE_MARKED_READY_FOR_DECISION_RAISED, null),
 
                 // NOT POSSIBLE TRANSITION
-                {PLEA_RECEIVED_NOT_READY_FOR_DECISION, REFERRED_FOR_COURT_HEARING,
+                Arguments.of(PLEA_RECEIVED_NOT_READY_FOR_DECISION, REFERRED_FOR_COURT_HEARING,
                         caseAggregateConfigBuilder().withPostingDateExpirationDate(DAYS_AGO_2).withNotGuiltyPlea().build(),
-                        true, NONE, null},
+                        true, NONE, null),
 
                 // NOT POSSIBLE TRANSITION
-                {PLEA_RECEIVED_NOT_READY_FOR_DECISION, COMPLETED,
+                Arguments.of(PLEA_RECEIVED_NOT_READY_FOR_DECISION, COMPLETED,
                         caseAggregateConfigBuilder().withPostingDateExpirationDate(DAYS_AGO_2).withNotGuiltyPlea().build(),
-                        true, NONE, null},
+                        true, NONE, null),
 
                 // NOT POSSIBLE TRANSITION
-                {PLEA_RECEIVED_NOT_READY_FOR_DECISION, REOPENED_IN_LIBRA,
+                Arguments.of(PLEA_RECEIVED_NOT_READY_FOR_DECISION, REOPENED_IN_LIBRA,
                         caseAggregateConfigBuilder().withPostingDateExpirationDate(DAYS_AGO_2).withNotGuiltyPlea().build(),
-                        true, NONE, null},
+                        true, NONE, null),
 
                 // NOT POSSIBLE TRANSITION
-                {PLEA_RECEIVED_NOT_READY_FOR_DECISION, UNKNOWN,
+                Arguments.of(PLEA_RECEIVED_NOT_READY_FOR_DECISION, UNKNOWN,
                         caseAggregateConfigBuilder().withPostingDateExpirationDate(DAYS_AGO_2).withNotGuiltyPlea().build(),
-                        true, NONE, null},
+                        true, NONE, null),
 
-                {WITHDRAWAL_REQUEST_READY_FOR_DECISION, NO_PLEA_RECEIVED,
+                Arguments.of(WITHDRAWAL_REQUEST_READY_FOR_DECISION, NO_PLEA_RECEIVED,
                         caseAggregateConfigBuilder().withPostingDateExpirationDate(DAYS_AGO_2).withAdjournedTo(IN_5_DAYS).build(),
-                        true, CASE_UNMARKED_READY_FOR_DECISION_RAISED, IN_5_DAYS},
+                        true, CASE_UNMARKED_READY_FOR_DECISION_RAISED, IN_5_DAYS),
 
-                {WITHDRAWAL_REQUEST_READY_FOR_DECISION, NO_PLEA_RECEIVED_READY_FOR_DECISION,
+                Arguments.of(WITHDRAWAL_REQUEST_READY_FOR_DECISION, NO_PLEA_RECEIVED_READY_FOR_DECISION,
                         caseAggregateConfigBuilder().withPostingDateExpirationDate(DAYS_AGO_2).build(),
-                        true, CASE_MARKED_READY_FOR_DECISION_RAISED, null},
+                        true, CASE_MARKED_READY_FOR_DECISION_RAISED, null),
 
-                {WITHDRAWAL_REQUEST_READY_FOR_DECISION, PLEA_RECEIVED_READY_FOR_DECISION,
+                Arguments.of(WITHDRAWAL_REQUEST_READY_FOR_DECISION, PLEA_RECEIVED_READY_FOR_DECISION,
                         caseAggregateConfigBuilder().withPostingDateExpirationDate(DAYS_AGO_2).withNotGuiltyPlea().build(),
-                        true, CASE_MARKED_READY_FOR_DECISION_RAISED, null},
+                        true, CASE_MARKED_READY_FOR_DECISION_RAISED, null),
 
-                {WITHDRAWAL_REQUEST_READY_FOR_DECISION, PLEA_RECEIVED_NOT_READY_FOR_DECISION,
+                Arguments.of(WITHDRAWAL_REQUEST_READY_FOR_DECISION, PLEA_RECEIVED_NOT_READY_FOR_DECISION,
                         caseAggregateConfigBuilder().withPostingDateExpirationDate(IN_5_DAYS).withAdjournedTo(IN_10_DAYS).build(),
-                        true, CASE_UNMARKED_READY_FOR_DECISION_RAISED, IN_10_DAYS},
+                        true, CASE_UNMARKED_READY_FOR_DECISION_RAISED, IN_10_DAYS),
 
-                {WITHDRAWAL_REQUEST_READY_FOR_DECISION, WITHDRAWAL_REQUEST_READY_FOR_DECISION,
+                Arguments.of(WITHDRAWAL_REQUEST_READY_FOR_DECISION, WITHDRAWAL_REQUEST_READY_FOR_DECISION,
                         caseAggregateConfigBuilder().withPostingDateExpirationDate(DAYS_AGO_2).withNotGuiltyPlea().build(),
-                        false, NONE, null},
+                        false, NONE, null),
 
-                {WITHDRAWAL_REQUEST_READY_FOR_DECISION, REFERRED_FOR_COURT_HEARING,
+                Arguments.of(WITHDRAWAL_REQUEST_READY_FOR_DECISION, REFERRED_FOR_COURT_HEARING,
                         caseAggregateConfigBuilder().withPostingDateExpirationDate(DAYS_AGO_2).withNotGuiltyPlea().build(),
-                        true, NONE, null},
+                        true, NONE, null),
 
-                {WITHDRAWAL_REQUEST_READY_FOR_DECISION, COMPLETED,
+                Arguments.of(WITHDRAWAL_REQUEST_READY_FOR_DECISION, COMPLETED,
                         caseAggregateConfigBuilder().withPostingDateExpirationDate(DAYS_AGO_2).withNotGuiltyPlea().build(),
-                        true, NONE, null},
+                        true, NONE, null),
 
                 // NOT POSSIBLE TRANSITION
-                {WITHDRAWAL_REQUEST_READY_FOR_DECISION, REOPENED_IN_LIBRA,
+                Arguments.of(WITHDRAWAL_REQUEST_READY_FOR_DECISION, REOPENED_IN_LIBRA,
                         caseAggregateConfigBuilder().withPostingDateExpirationDate(DAYS_AGO_2).withNotGuiltyPlea().build(),
-                        true, NONE, null},
+                        true, NONE, null),
 
-                {WITHDRAWAL_REQUEST_READY_FOR_DECISION, UNKNOWN,
+                Arguments.of(WITHDRAWAL_REQUEST_READY_FOR_DECISION, UNKNOWN,
                         caseAggregateConfigBuilder().withPostingDateExpirationDate(DAYS_AGO_2).withNotGuiltyPlea().build(),
-                        true, CASE_UNMARKED_READY_FOR_DECISION_RAISED, DAYS_AGO_2},
+                        true, CASE_UNMARKED_READY_FOR_DECISION_RAISED, DAYS_AGO_2),
 
                 // NOT POSSIBLE TRANSITION
-                {REFERRED_FOR_COURT_HEARING, NO_PLEA_RECEIVED,
+                Arguments.of(REFERRED_FOR_COURT_HEARING, NO_PLEA_RECEIVED,
                         caseAggregateConfigBuilder().withPostingDateExpirationDate(DAYS_AGO_2).withAdjournedTo(IN_5_DAYS).build(),
-                        true, NONE, null},
+                        true, NONE, null),
 
                 // NOT POSSIBLE TRANSITION
-                {REFERRED_FOR_COURT_HEARING, NO_PLEA_RECEIVED_READY_FOR_DECISION,
+                Arguments.of(REFERRED_FOR_COURT_HEARING, NO_PLEA_RECEIVED_READY_FOR_DECISION,
                         caseAggregateConfigBuilder().withPostingDateExpirationDate(DAYS_AGO_2).build(),
-                        true, NONE, null},
+                        true, NONE, null),
 
                 // NOT POSSIBLE TRANSITION
-                {REFERRED_FOR_COURT_HEARING, PLEA_RECEIVED_READY_FOR_DECISION,
+                Arguments.of(REFERRED_FOR_COURT_HEARING, PLEA_RECEIVED_READY_FOR_DECISION,
                         caseAggregateConfigBuilder().withPostingDateExpirationDate(DAYS_AGO_2).withNotGuiltyPlea().build(),
-                        true, NONE, null},
+                        true, NONE, null),
 
                 // NOT POSSIBLE TRANSITION
-                {REFERRED_FOR_COURT_HEARING, PLEA_RECEIVED_NOT_READY_FOR_DECISION,
+                Arguments.of(REFERRED_FOR_COURT_HEARING, PLEA_RECEIVED_NOT_READY_FOR_DECISION,
                         caseAggregateConfigBuilder().withPostingDateExpirationDate(IN_5_DAYS).withAdjournedTo(IN_10_DAYS).build(),
-                        true, NONE, null},
+                        true, NONE, null),
 
                 // NOT POSSIBLE TRANSITION
-                {REFERRED_FOR_COURT_HEARING, WITHDRAWAL_REQUEST_READY_FOR_DECISION,
+                Arguments.of(REFERRED_FOR_COURT_HEARING, WITHDRAWAL_REQUEST_READY_FOR_DECISION,
                         caseAggregateConfigBuilder().withPostingDateExpirationDate(DAYS_AGO_2).withNotGuiltyPlea().build(),
-                        true, NONE, null},
+                        true, NONE, null),
 
                 // NOT POSSIBLE TRANSITION
-                {REFERRED_FOR_COURT_HEARING, REFERRED_FOR_COURT_HEARING,
+                Arguments.of(REFERRED_FOR_COURT_HEARING, REFERRED_FOR_COURT_HEARING,
                         caseAggregateConfigBuilder().withPostingDateExpirationDate(DAYS_AGO_2).withNotGuiltyPlea().build(),
-                        false, NONE, null},
+                        false, NONE, null),
 
                 // NOT POSSIBLE TRANSITION
-                {REFERRED_FOR_COURT_HEARING, COMPLETED,
+                Arguments.of(REFERRED_FOR_COURT_HEARING, COMPLETED,
                         caseAggregateConfigBuilder().withPostingDateExpirationDate(DAYS_AGO_2).withNotGuiltyPlea().build(),
-                        true, NONE, null},
+                        true, NONE, null),
 
                 // NOT POSSIBLE TRANSITION
-                {REFERRED_FOR_COURT_HEARING, REOPENED_IN_LIBRA,
+                Arguments.of(REFERRED_FOR_COURT_HEARING, REOPENED_IN_LIBRA,
                         caseAggregateConfigBuilder().withPostingDateExpirationDate(DAYS_AGO_2).withNotGuiltyPlea().build(),
-                        true, NONE, null},
+                        true, NONE, null),
 
-                {REFERRED_FOR_COURT_HEARING, UNKNOWN,
+                Arguments.of(REFERRED_FOR_COURT_HEARING, UNKNOWN,
                         caseAggregateConfigBuilder().withPostingDateExpirationDate(DAYS_AGO_2).withNotGuiltyPlea().build(),
-                        true, NONE, null},
+                        true, NONE, null),
 
                 // NOT POSSIBLE TRANSITION
-                {COMPLETED, NO_PLEA_RECEIVED,
+                Arguments.of(COMPLETED, NO_PLEA_RECEIVED,
                         caseAggregateConfigBuilder().withPostingDateExpirationDate(DAYS_AGO_2).withAdjournedTo(IN_5_DAYS).build(),
-                        true, NONE, null},
+                        true, NONE, null),
 
                 // NOT POSSIBLE TRANSITION
-                {COMPLETED, NO_PLEA_RECEIVED_READY_FOR_DECISION,
+                Arguments.of(COMPLETED, NO_PLEA_RECEIVED_READY_FOR_DECISION,
                         caseAggregateConfigBuilder().withPostingDateExpirationDate(DAYS_AGO_2).build(),
-                        true, NONE, null},
+                        true, NONE, null),
 
                 // NOT POSSIBLE TRANSITION
-                {COMPLETED, PLEA_RECEIVED_READY_FOR_DECISION,
+                Arguments.of(COMPLETED, PLEA_RECEIVED_READY_FOR_DECISION,
                         caseAggregateConfigBuilder().withPostingDateExpirationDate(DAYS_AGO_2).withNotGuiltyPlea().build(),
-                        true, NONE, null},
+                        true, NONE, null),
 
                 // NOT POSSIBLE TRANSITION
-                {COMPLETED, PLEA_RECEIVED_NOT_READY_FOR_DECISION,
+                Arguments.of(COMPLETED, PLEA_RECEIVED_NOT_READY_FOR_DECISION,
                         caseAggregateConfigBuilder().withPostingDateExpirationDate(IN_5_DAYS).withAdjournedTo(IN_10_DAYS).build(),
-                        true, NONE, null},
+                        true, NONE, null),
 
                 // NOT POSSIBLE TRANSITION
-                {COMPLETED, WITHDRAWAL_REQUEST_READY_FOR_DECISION,
+                Arguments.of(COMPLETED, WITHDRAWAL_REQUEST_READY_FOR_DECISION,
                         caseAggregateConfigBuilder().withPostingDateExpirationDate(DAYS_AGO_2).withNotGuiltyPlea().build(),
-                        true, NONE, null},
+                        true, NONE, null),
 
                 // NOT POSSIBLE TRANSITION
-                {COMPLETED, REFERRED_FOR_COURT_HEARING,
+                Arguments.of(COMPLETED, REFERRED_FOR_COURT_HEARING,
                         caseAggregateConfigBuilder().withPostingDateExpirationDate(DAYS_AGO_2).withNotGuiltyPlea().build(),
-                        true, NONE, null},
+                        true, NONE, null),
 
                 // NOT POSSIBLE TRANSITION
-                {COMPLETED, COMPLETED,
+                Arguments.of(COMPLETED, COMPLETED,
                         caseAggregateConfigBuilder().withPostingDateExpirationDate(DAYS_AGO_2).withNotGuiltyPlea().build(),
-                        false, NONE, null},
+                        false, NONE, null),
 
-                {COMPLETED, REOPENED_IN_LIBRA,
+                Arguments.of(COMPLETED, REOPENED_IN_LIBRA,
                         caseAggregateConfigBuilder().withPostingDateExpirationDate(DAYS_AGO_2).withNotGuiltyPlea().build(),
-                        true, NONE, null},
+                        true, NONE, null),
 
-                {COMPLETED, UNKNOWN,
+                Arguments.of(COMPLETED, UNKNOWN,
                         caseAggregateConfigBuilder().withPostingDateExpirationDate(DAYS_AGO_2).withNotGuiltyPlea().build(),
-                        true, NONE, null},
+                        true, NONE, null),
 
-                {COMPLETED_APPLICATION_PENDING, SET_ASIDE_READY_FOR_DECISION,
+                Arguments.of(COMPLETED_APPLICATION_PENDING, SET_ASIDE_READY_FOR_DECISION,
                         caseAggregateConfigBuilder()
                             .withPostingDateExpirationDate(DAYS_AGO_2)
                             .withApplication(
                                     application(STAT_DEC).withApplicationStatus(STATUTORY_DECLARATION_GRANTED).build()
                             ).build(),
-                        true, CASE_MARKED_READY_FOR_DECISION_RAISED, null},
+                        true, CASE_MARKED_READY_FOR_DECISION_RAISED, null),
 
-                {COMPLETED_APPLICATION_PENDING, COMPLETED,
+                Arguments.of(COMPLETED_APPLICATION_PENDING, COMPLETED,
                         caseAggregateConfigBuilder()
                                 .withPostingDateExpirationDate(DAYS_AGO_2)
                                 .withApplication(
                                         application(STAT_DEC).withApplicationStatus(STATUTORY_DECLARATION_REFUSED).build()
                                 ).build(),
-                        true, CASE_UNMARKED_READY_FOR_DECISION_RAISED, DAYS_AGO_2},
+                        true, CASE_UNMARKED_READY_FOR_DECISION_RAISED, DAYS_AGO_2),
 
                 // NOT POSSIBLE TRANSITION
-                {REOPENED_IN_LIBRA, NO_PLEA_RECEIVED,
+                Arguments.of(REOPENED_IN_LIBRA, NO_PLEA_RECEIVED,
                         caseAggregateConfigBuilder().withPostingDateExpirationDate(IN_28_DAYS).build(),
-                        true, NONE, null},
+                        true, NONE, null),
 
                 // NOT POSSIBLE TRANSITION
-                {REOPENED_IN_LIBRA, NO_PLEA_RECEIVED_READY_FOR_DECISION,
+                Arguments.of(REOPENED_IN_LIBRA, NO_PLEA_RECEIVED_READY_FOR_DECISION,
                         caseAggregateConfigBuilder().withPostingDateExpirationDate(DAYS_AGO_2).build(),
-                        true, NONE, null},
+                        true, NONE, null),
 
                 // NOT POSSIBLE TRANSITION
-                {REOPENED_IN_LIBRA, PLEA_RECEIVED_READY_FOR_DECISION,
+                Arguments.of(REOPENED_IN_LIBRA, PLEA_RECEIVED_READY_FOR_DECISION,
                         caseAggregateConfigBuilder().withPostingDateExpirationDate(DAYS_AGO_2).withNotGuiltyPlea().build(),
-                        true, NONE, null},
+                        true, NONE, null),
 
                 // NOT POSSIBLE TRANSITION
-                {REOPENED_IN_LIBRA, PLEA_RECEIVED_NOT_READY_FOR_DECISION,
+                Arguments.of(REOPENED_IN_LIBRA, PLEA_RECEIVED_NOT_READY_FOR_DECISION,
                         caseAggregateConfigBuilder().withPostingDateExpirationDate(IN_5_DAYS).withAdjournedTo(IN_10_DAYS).build(),
-                        true, NONE, null},
+                        true, NONE, null),
 
                 // NOT POSSIBLE TRANSITION
-                {REOPENED_IN_LIBRA, WITHDRAWAL_REQUEST_READY_FOR_DECISION,
+                Arguments.of(REOPENED_IN_LIBRA, WITHDRAWAL_REQUEST_READY_FOR_DECISION,
                         caseAggregateConfigBuilder().withPostingDateExpirationDate(DAYS_AGO_2).withNotGuiltyPlea().build(),
-                        true, NONE, null},
+                        true, NONE, null),
 
                 // NOT POSSIBLE TRANSITION
-                {REOPENED_IN_LIBRA, REFERRED_FOR_COURT_HEARING,
+                Arguments.of(REOPENED_IN_LIBRA, REFERRED_FOR_COURT_HEARING,
                         caseAggregateConfigBuilder().withPostingDateExpirationDate(DAYS_AGO_2).withNotGuiltyPlea().build(),
-                        true, NONE, null},
+                        true, NONE, null),
 
-                {REOPENED_IN_LIBRA, COMPLETED,
+                Arguments.of(REOPENED_IN_LIBRA, COMPLETED,
                         caseAggregateConfigBuilder().withPostingDateExpirationDate(DAYS_AGO_2).withNotGuiltyPlea().build(),
-                        true, NONE, null},
-
-                // NOT POSSIBLE TRANSITION
-                {REOPENED_IN_LIBRA, REOPENED_IN_LIBRA,
-                        caseAggregateConfigBuilder().withPostingDateExpirationDate(DAYS_AGO_2).withNotGuiltyPlea().build(),
-                        false, NONE, null},
+                        true, NONE, null),
 
                 // NOT POSSIBLE TRANSITION
-                {REOPENED_IN_LIBRA, UNKNOWN,
+                Arguments.of(REOPENED_IN_LIBRA, REOPENED_IN_LIBRA,
                         caseAggregateConfigBuilder().withPostingDateExpirationDate(DAYS_AGO_2).withNotGuiltyPlea().build(),
-                        true, NONE, null},
+                        false, NONE, null),
+
+                // NOT POSSIBLE TRANSITION
+                Arguments.of(REOPENED_IN_LIBRA, UNKNOWN,
+                        caseAggregateConfigBuilder().withPostingDateExpirationDate(DAYS_AGO_2).withNotGuiltyPlea().build(),
+                        true, NONE, null),
 
                 // Assume the UNKNOWN Status is a NOT_READY
-                {UNKNOWN, NO_PLEA_RECEIVED,
+                Arguments.of(UNKNOWN, NO_PLEA_RECEIVED,
                         caseAggregateConfigBuilder().withPostingDateExpirationDate(IN_28_DAYS).build(),
-                        true, NONE, null},
+                        true, NONE, null),
 
-                {UNKNOWN, NO_PLEA_RECEIVED_READY_FOR_DECISION,
+                Arguments.of(UNKNOWN, NO_PLEA_RECEIVED_READY_FOR_DECISION,
                         caseAggregateConfigBuilder().withPostingDateExpirationDate(DAYS_AGO_2).build(),
-                        true, CASE_MARKED_READY_FOR_DECISION_RAISED, null},
+                        true, CASE_MARKED_READY_FOR_DECISION_RAISED, null),
 
-                {UNKNOWN, PLEA_RECEIVED_READY_FOR_DECISION,
+                Arguments.of(UNKNOWN, PLEA_RECEIVED_READY_FOR_DECISION,
                         caseAggregateConfigBuilder().withPostingDateExpirationDate(DAYS_AGO_2).withNotGuiltyPlea().build(),
-                        true, CASE_MARKED_READY_FOR_DECISION_RAISED, null},
+                        true, CASE_MARKED_READY_FOR_DECISION_RAISED, null),
 
-                {UNKNOWN, PLEA_RECEIVED_NOT_READY_FOR_DECISION,
+                Arguments.of(UNKNOWN, PLEA_RECEIVED_NOT_READY_FOR_DECISION,
                         caseAggregateConfigBuilder().withPostingDateExpirationDate(IN_5_DAYS).withAdjournedTo(IN_10_DAYS).build(),
-                        true, CASE_EXPECTED_DATE_READY_CHANGED_RAISED, IN_10_DAYS},
+                        true, CASE_EXPECTED_DATE_READY_CHANGED_RAISED, IN_10_DAYS),
 
-                {UNKNOWN, PLEA_RECEIVED_NOT_READY_FOR_DECISION,
+                Arguments.of(UNKNOWN, PLEA_RECEIVED_NOT_READY_FOR_DECISION,
                         caseAggregateConfigBuilder().withPostingDateExpirationDate(DAYS_AGO_2).withAdjournedTo(IN_5_DAYS).withDatesToAvoidExpirationDate(IN_10_DAYS).withNotGuiltyPlea().build(),
-                        true, CASE_EXPECTED_DATE_READY_CHANGED_RAISED, IN_10_DAYS},
+                        true, CASE_EXPECTED_DATE_READY_CHANGED_RAISED, IN_10_DAYS),
 
-                {UNKNOWN, WITHDRAWAL_REQUEST_READY_FOR_DECISION,
+                Arguments.of(UNKNOWN, WITHDRAWAL_REQUEST_READY_FOR_DECISION,
                         caseAggregateConfigBuilder().withPostingDateExpirationDate(DAYS_AGO_2).withNotGuiltyPlea().build(),
-                        true, CASE_MARKED_READY_FOR_DECISION_RAISED, null},
-
-                // NOT POSSIBLE TRANSITION
-                {UNKNOWN, REFERRED_FOR_COURT_HEARING,
-                        caseAggregateConfigBuilder().withPostingDateExpirationDate(DAYS_AGO_2).withNotGuiltyPlea().build(),
-                        true, NONE, null},
+                        true, CASE_MARKED_READY_FOR_DECISION_RAISED, null),
 
                 // NOT POSSIBLE TRANSITION
-                {UNKNOWN, COMPLETED,
+                Arguments.of(UNKNOWN, REFERRED_FOR_COURT_HEARING,
                         caseAggregateConfigBuilder().withPostingDateExpirationDate(DAYS_AGO_2).withNotGuiltyPlea().build(),
-                        true, NONE, null},
+                        true, NONE, null),
 
                 // NOT POSSIBLE TRANSITION
-                {UNKNOWN, REOPENED_IN_LIBRA,
+                Arguments.of(UNKNOWN, COMPLETED,
                         caseAggregateConfigBuilder().withPostingDateExpirationDate(DAYS_AGO_2).withNotGuiltyPlea().build(),
-                        true, NONE, null},
+                        true, NONE, null),
 
-                {UNKNOWN, UNKNOWN,
+                // NOT POSSIBLE TRANSITION
+                Arguments.of(UNKNOWN, REOPENED_IN_LIBRA,
                         caseAggregateConfigBuilder().withPostingDateExpirationDate(DAYS_AGO_2).withNotGuiltyPlea().build(),
-                        false, NONE, null},
-        });
+                        true, NONE, null),
+
+                Arguments.of(UNKNOWN, UNKNOWN,
+                        caseAggregateConfigBuilder().withPostingDateExpirationDate(DAYS_AGO_2).withNotGuiltyPlea().build(),
+                        false, NONE, null)
+        );
     }
 
-    @Before
-    public void onceBeforeEachTest() {
-        state = new CaseAggregateState();
-        state.setCaseId(caseId);
-        state.setDatesToAvoidExpirationDate(aggregateConfig.getDatesToAvoidExpirationDate());
-        if (nonNull(aggregateConfig.getDatesToAvoidExpirationDate())) {
-            state.setDatesToAvoidPreviouslyRequested();
-        }
-
-        state.setAdjournedTo(aggregateConfig.getAdjournedTo());
-        state.setPostingDate(aggregateConfig.getPostingDateExpirationDate().minusDays(28));
-        state.setExpectedDateReady(aggregateConfig.getPostingDateExpirationDate());
-        setPleasFromConfig();
-
-        if (this.previousStatus.equals(REFERRED_FOR_COURT_HEARING)) {
-            state.markCaseReferredForCourtHearing();
-        }
-
-        if (this.previousStatus.equals(COMPLETED)) {
-            state.markCaseCompleted();
-        }
-        state.setCurrentApplication(aggregateConfig.getApplication());
-    }
-
-    private void setPleasFromConfig() {
+    private void setPleasFromConfig(CaseAggregateConfig aggregateConfig, CaseAggregateState state) {
         final List<Plea> pleas = new ArrayList<>();
         if (aggregateConfig.isNotGuiltyPleaPresent()) {
             pleas.add(new Plea(randomUUID(), randomUUID(), NOT_GUILTY));
@@ -537,43 +487,65 @@ public class CaseReadinessHandlerTest {
         state.setPleas(pleas);
     }
 
-    @Test
-    public void resolveCaseReadiness() {
-        int eventsRaised = 0;
-        final List<Object> events = whenStatusChangedTo(this.previousStatus, this.currentStatus);
+    @ParameterizedTest
+    @MethodSource("data")
+    public void resolveCaseReadiness(CaseStatus previousStatus, CaseStatus currentStatus, CaseAggregateConfig aggregateConfig, Boolean isCaseStatusChanged, CaseReadinessEventRaised caseReadinessEventRaised, LocalDate expectedDateReady) {
+        var state = new CaseAggregateState();
+        state.setCaseId(caseId);
+        state.setDatesToAvoidExpirationDate(aggregateConfig.getDatesToAvoidExpirationDate());
+        if (nonNull(aggregateConfig.getDatesToAvoidExpirationDate())) {
+            state.setDatesToAvoidPreviouslyRequested();
+        }
 
-        if (this.shouldMarkedReadyRaised()) {
+        state.setAdjournedTo(aggregateConfig.getAdjournedTo());
+        state.setPostingDate(aggregateConfig.getPostingDateExpirationDate().minusDays(28));
+        state.setExpectedDateReady(aggregateConfig.getPostingDateExpirationDate());
+        setPleasFromConfig(aggregateConfig, state);
+
+        if (previousStatus.equals(REFERRED_FOR_COURT_HEARING)) {
+            state.markCaseReferredForCourtHearing();
+        }
+
+        if (previousStatus.equals(COMPLETED)) {
+            state.markCaseCompleted();
+        }
+        state.setCurrentApplication(aggregateConfig.getApplication());
+
+        int eventsRaised = 0;
+        final List<Object> events = whenStatusChangedTo(previousStatus, currentStatus, state);
+
+        if (this.shouldMarkedReadyRaised(caseReadinessEventRaised)) {
             thenCaseMarkedReadyIsRaised(events);
             eventsRaised++;
-        } else if (this.shouldUnMarkedReadyRaised()) {
-            thenCaseUnMarkedReadyIsRaised(events);
+        } else if (this.shouldUnMarkedReadyRaised(caseReadinessEventRaised)) {
+            thenCaseUnMarkedReadyIsRaised(events, expectedDateReady);
             eventsRaised++;
-        } else if (this.shouldExpectedDateReadyChangedRaised()) {
-            thenCaseExpectedDateReadyChangedIsRaised(events);
+        } else if (this.shouldExpectedDateReadyChangedRaised(caseReadinessEventRaised)) {
+            thenCaseExpectedDateReadyChangedIsRaised(events, state, expectedDateReady);
             eventsRaised++;
         }
 
         if (isCaseStatusChanged) {
-            thenCaseStatusChangedIsRaised(events);
+            thenCaseStatusChangedIsRaised(events, currentStatus);
             eventsRaised++;
         }
 
         assertThat(events.size(), is(eventsRaised));
     }
 
-    private boolean shouldMarkedReadyRaised() {
-        return this.caseReadinessEventRaised == CASE_MARKED_READY_FOR_DECISION_RAISED;
+    private boolean shouldMarkedReadyRaised(CaseReadinessEventRaised caseReadinessEventRaised) {
+        return caseReadinessEventRaised == CASE_MARKED_READY_FOR_DECISION_RAISED;
     }
 
-    private boolean shouldUnMarkedReadyRaised() {
-        return this.caseReadinessEventRaised == CASE_UNMARKED_READY_FOR_DECISION_RAISED;
+    private boolean shouldUnMarkedReadyRaised(CaseReadinessEventRaised caseReadinessEventRaised) {
+        return caseReadinessEventRaised == CASE_UNMARKED_READY_FOR_DECISION_RAISED;
     }
 
-    private boolean shouldExpectedDateReadyChangedRaised() {
-        return this.caseReadinessEventRaised == CASE_EXPECTED_DATE_READY_CHANGED_RAISED;
+    private boolean shouldExpectedDateReadyChangedRaised(CaseReadinessEventRaised caseReadinessEventRaised) {
+        return caseReadinessEventRaised == CASE_EXPECTED_DATE_READY_CHANGED_RAISED;
     }
 
-    private List<Object> whenStatusChangedTo(final CaseStatus fromStatus, final CaseStatus toStatus) {
+    private List<Object> whenStatusChangedTo(final CaseStatus fromStatus, final CaseStatus toStatus, CaseAggregateState state) {
         return caseReadinessHandler.resolveCaseReadiness(state, new CaseState(fromStatus), new CaseState(toStatus))
                 .collect(toList());
     }
@@ -588,22 +560,22 @@ public class CaseReadinessHandlerTest {
                 Matchers.<CaseMarkedReadyForDecision>hasProperty("priority", notNullValue()))));
     }
 
-    private void thenCaseUnMarkedReadyIsRaised(final List<Object> eventList) {
+    private void thenCaseUnMarkedReadyIsRaised(final List<Object> eventList, LocalDate expectedDateReady) {
         assertThat(eventList, hasItem(allOf(
                 Matchers.instanceOf(CaseUnmarkedReadyForDecision.class),
                 Matchers.<CaseMarkedReadyForDecision>hasProperty("caseId", is(this.caseId)),
-                Matchers.<CaseMarkedReadyForDecision>hasProperty("expectedDateReady", is(this.expectedDateReady)))));
+                Matchers.<CaseMarkedReadyForDecision>hasProperty("expectedDateReady", is(expectedDateReady)))));
     }
 
-    private void thenCaseExpectedDateReadyChangedIsRaised(final List<Object> eventList) {
+    private void thenCaseExpectedDateReadyChangedIsRaised(final List<Object> eventList, CaseAggregateState state, LocalDate expectedDateReady) {
         assertThat(eventList, hasItem(allOf(
                 Matchers.instanceOf(CaseExpectedDateReadyChanged.class),
-                Matchers.<CaseStatusChanged>hasProperty("oldExpectedDateReady", is(this.state.getExpectedDateReady())),
-                Matchers.<CaseStatusChanged>hasProperty("newExpectedDateReady", is(this.expectedDateReady)))
+                Matchers.<CaseStatusChanged>hasProperty("oldExpectedDateReady", is(state.getExpectedDateReady())),
+                Matchers.<CaseStatusChanged>hasProperty("newExpectedDateReady", is(expectedDateReady)))
         ));
     }
 
-    private void thenCaseStatusChangedIsRaised(final List<Object> eventList) {
+    private void thenCaseStatusChangedIsRaised(final List<Object> eventList, CaseStatus currentStatus) {
         assertThat(eventList, hasItem(allOf(
                 Matchers.instanceOf(CaseStatusChanged.class),
                 Matchers.<CaseStatusChanged>hasProperty("caseId", is(caseId)),

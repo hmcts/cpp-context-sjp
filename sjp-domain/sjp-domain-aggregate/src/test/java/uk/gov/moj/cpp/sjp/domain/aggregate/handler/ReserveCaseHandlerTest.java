@@ -9,8 +9,8 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import uk.gov.moj.cpp.sjp.domain.CaseReadinessReason;
 import uk.gov.moj.cpp.sjp.domain.Priority;
 import uk.gov.moj.cpp.sjp.domain.SessionType;
@@ -26,7 +26,7 @@ public class ReserveCaseHandlerTest {
     private CaseAggregateState caseAggregateState;
 
     private final UUID userId = UUID.randomUUID();
-    @Before
+    @BeforeEach
     public void setUp() {
         // given
         caseAggregateState = new CaseAggregateState();

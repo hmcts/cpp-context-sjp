@@ -1,6 +1,6 @@
 package uk.gov.moj.sjp.it.util;
 
-import static com.jayway.awaitility.Awaitility.await;
+import static org.awaitility.Awaitility.await;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
 import static java.util.Optional.empty;
 import static javax.json.Json.createReader;
@@ -34,8 +34,8 @@ import javax.ws.rs.core.MultivaluedHashMap;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
 
-import com.jayway.awaitility.core.ConditionTimeoutException;
-import com.jayway.restassured.path.json.JsonPath;
+import io.restassured.path.json.JsonPath;
+import org.awaitility.core.ConditionTimeoutException;
 import org.hamcrest.Matcher;
 
 public class ActivitiHelper {

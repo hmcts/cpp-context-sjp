@@ -1,21 +1,18 @@
 package uk.gov.moj.cpp.sjp.event.processor;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
+import java.util.stream.Stream;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 import uk.gov.justice.services.core.annotation.Handles;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.sjp.event.AllOffencesWithdrawalRequested;
 import uk.gov.moj.cpp.sjp.event.CaseUpdateRejected;
 
 import java.lang.reflect.Method;
-import java.util.Arrays;
-import java.util.Collection;
 
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
-
-@RunWith(Parameterized.class)
 public class EventProcessorAnnotationTest {
 
     private static final String EVENT_PRIVATE_CASE_REOPENED_IN_LIBRA = "sjp.events.case-reopened-in-libra";
@@ -25,31 +22,19 @@ public class EventProcessorAnnotationTest {
     private static final String METHOD_CASE_REOPENED_IN_LIBRA_UPDATED = "handleCaseReopenedInLibraUpdated";
     private static final String METHOD_CASE_REOPENED_IN_LIBRA_UNDONE = "handleCaseReopenedInLibraUndone";
 
-    @Parameterized.Parameters
-    public static Collection<Object[]> data() {
-        return Arrays.asList(new Object[][]{
-                {CaseReopenedProcessor.class, EVENT_PRIVATE_CASE_REOPENED_IN_LIBRA, METHOD_CASE_REOPENED_IN_LIBRA},
-                {CaseReopenedProcessor.class, EVENT_PRIVATE_CASE_REOPENED_IN_LIBRA_UPDATED, METHOD_CASE_REOPENED_IN_LIBRA_UPDATED},
-                {CaseReopenedProcessor.class, EVENT_PRIVATE_CASE_REOPENED_IN_LIBRA_UNDONE, METHOD_CASE_REOPENED_IN_LIBRA_UNDONE},
-                {AllOffencesWithdrawalRequestedProcessor.class, AllOffencesWithdrawalRequested.EVENT_NAME, "handleAllOffencesWithdrawalEvent"},
-                {CaseUpdateRejectedProcessor.class, CaseUpdateRejected.EVENT_NAME, "caseUpdateRejected"}
-        });
+    static Stream<Arguments> data() {
+        return Stream.of(
+                Arguments.of(CaseReopenedProcessor.class, EVENT_PRIVATE_CASE_REOPENED_IN_LIBRA, METHOD_CASE_REOPENED_IN_LIBRA),
+                Arguments.of(CaseReopenedProcessor.class, EVENT_PRIVATE_CASE_REOPENED_IN_LIBRA_UPDATED, METHOD_CASE_REOPENED_IN_LIBRA_UPDATED),
+                Arguments.of(CaseReopenedProcessor.class, EVENT_PRIVATE_CASE_REOPENED_IN_LIBRA_UNDONE, METHOD_CASE_REOPENED_IN_LIBRA_UNDONE),
+                Arguments.of(AllOffencesWithdrawalRequestedProcessor.class, AllOffencesWithdrawalRequested.EVENT_NAME, "handleAllOffencesWithdrawalEvent"),
+                Arguments.of(CaseUpdateRejectedProcessor.class, CaseUpdateRejected.EVENT_NAME, "caseUpdateRejected")
+        );
     }
 
-    private final Class<Object> listener;
-
-    private final String eventName;
-
-    private final String methodName;
-
-    public EventProcessorAnnotationTest(Class<Object> listener, String eventName, String methodName) {
-        this.listener = listener;
-        this.eventName = eventName;
-        this.methodName = methodName;
-    }
-
-    @Test
-    public void shouldHandleCaseReopenedInLibraEventMessage() throws Exception {
+    @ParameterizedTest
+    @MethodSource("data")
+    public void shouldHandleCaseReopenedInLibraEventMessage(Class<Object> listener, String eventName, String methodName) throws Exception {
         final Method handleMethod = listener.getMethod(methodName, JsonEnvelope.class);
         final Handles handleMethodAnnotation = handleMethod.getDeclaredAnnotation(Handles.class);
         assertEquals(eventName, handleMethodAnnotation.value());

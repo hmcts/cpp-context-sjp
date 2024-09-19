@@ -1,7 +1,7 @@
 package uk.gov.moj.cpp.sjp.event.processor;
 
 import static javax.json.Json.createObjectBuilder;
-import static org.mockito.Matchers.any;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -23,17 +23,17 @@ import uk.gov.moj.cpp.sjp.event.processor.service.notificationnotify.Notificatio
 
 import java.util.UUID;
 
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class PartialAocpCriteriaNotificationProcessorTest {
     @Mock
     private Sender sender;
@@ -62,7 +62,7 @@ public class PartialAocpCriteriaNotificationProcessorTest {
     private static final String TEMPLATE_ID = "3752de75-7ab4-4c4f-8a01-2a72aa1ea63d";
 
 
-    @Before
+    @BeforeEach
     public void before() {
         // use defaults
         partialAocpCriteriaNotificationProcessor.replyToAddress = "noreply@cjscp.org.uk";

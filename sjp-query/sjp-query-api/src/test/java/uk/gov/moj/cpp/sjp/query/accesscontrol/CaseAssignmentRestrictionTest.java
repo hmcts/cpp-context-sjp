@@ -2,12 +2,16 @@ package uk.gov.moj.cpp.sjp.query.accesscontrol;
 
 import static uk.gov.moj.cpp.sjp.query.api.RuleConstants.getAllowedGroupsForCaseAssignmentRestriction;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 public class CaseAssignmentRestrictionTest extends SjpDroolsAccessControlTest {
 
     public CaseAssignmentRestrictionTest() {
-        super("sjp.query.case-assignment-restriction", getAllowedGroupsForCaseAssignmentRestriction());
+        super(
+                "QUERY_API_SESSION",
+                "sjp.query.case-assignment-restriction",
+                getAllowedGroupsForCaseAssignmentRestriction()
+        );
     }
 
     @Test

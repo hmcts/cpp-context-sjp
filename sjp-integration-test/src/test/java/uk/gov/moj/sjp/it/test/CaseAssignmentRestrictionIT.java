@@ -2,7 +2,6 @@ package uk.gov.moj.sjp.it.test;
 
 import static com.google.common.collect.Lists.newArrayList;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
-import static java.time.ZonedDateTime.now;
 import static java.util.Collections.emptyList;
 import static java.util.UUID.randomUUID;
 import static java.util.stream.Collectors.toList;
@@ -11,10 +10,10 @@ import static javax.json.Json.createObjectBuilder;
 import static org.hamcrest.CoreMatchers.allOf;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.*;
-import static org.junit.Assert.assertTrue;
+import static org.hamcrest.Matchers.containsInAnyOrder;
+import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.iterableWithSize;
 import static uk.gov.justice.json.schemas.domains.sjp.User.user;
 import static uk.gov.justice.services.test.utils.core.http.RequestParamsBuilder.requestParams;
 import static uk.gov.moj.sjp.it.stub.UsersGroupsStub.stubForUserDetails;
@@ -26,6 +25,7 @@ import static uk.gov.moj.sjp.it.util.RestPollerWithDefaults.pollWithDefaultsUnti
 import uk.gov.justice.json.schemas.domains.sjp.User;
 import uk.gov.justice.services.common.http.HeaderConstants;
 import uk.gov.justice.services.test.utils.core.http.RequestParamsBuilder;
+import uk.gov.moj.sjp.it.util.SjpDatabaseCleaner;
 
 import java.sql.SQLException;
 import java.util.List;
@@ -37,11 +37,10 @@ import javax.json.JsonObjectBuilder;
 import javax.json.JsonString;
 import javax.ws.rs.core.Response;
 
-import org.junit.Before;
-import org.junit.Test;
-import uk.gov.moj.sjp.it.util.SjpDatabaseCleaner;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
-public class CaseAssignmentRestrictionIT extends BaseIntegrationTest{
+public class CaseAssignmentRestrictionIT extends BaseIntegrationTest {
 
     private static final User systemUser = user()
             .withUserId(randomUUID())
@@ -50,7 +49,7 @@ public class CaseAssignmentRestrictionIT extends BaseIntegrationTest{
             .build();
     private static final Random random = new Random();
 
-    @Before
+    @BeforeEach
     public void setUp() throws SQLException {
         final SjpDatabaseCleaner cleaner = new SjpDatabaseCleaner();
         cleaner.cleanViewStore();

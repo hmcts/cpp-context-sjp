@@ -7,18 +7,17 @@ import static java.util.UUID.randomUUID;
 import static javax.json.Json.createObjectBuilder;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMatcher.jsonEnvelope;
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMetadataMatcher.metadata;
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopePayloadMatcher.payloadIsJson;
 import static uk.gov.moj.cpp.sjp.domain.SessionType.MAGISTRATE;
-import static uk.gov.moj.cpp.sjp.domain.decision.Discharge.createDischarge;
-import static uk.gov.moj.cpp.sjp.domain.decision.OffenceDecisionInformation.createOffenceDecisionInformation;
 import static uk.gov.moj.cpp.sjp.domain.decision.discharge.DischargeType.CONDITIONAL;
 import static uk.gov.moj.cpp.sjp.domain.decision.discharge.PeriodUnit.MONTH;
 import static uk.gov.moj.cpp.sjp.domain.decision.imposition.PaymentType.PAY_TO_COURT;
 import static uk.gov.moj.cpp.sjp.domain.verdict.VerdictType.FOUND_GUILTY;
 import static uk.gov.moj.sjp.it.Constants.NOTICE_PERIOD_IN_DAYS;
+import static uk.gov.moj.sjp.it.Constants.PUBLIC_EVENT;
 import static uk.gov.moj.sjp.it.helper.AssignmentHelper.requestCaseAssignment;
 import static uk.gov.moj.sjp.it.helper.CaseHelper.addFinancialImpositionCorrelationId;
 import static uk.gov.moj.sjp.it.helper.CaseHelper.pollUntilCaseReady;
@@ -62,7 +61,6 @@ import uk.gov.moj.sjp.it.command.CreateCase;
 import uk.gov.moj.sjp.it.helper.EventListener;
 import uk.gov.moj.sjp.it.model.DecisionCommand;
 import uk.gov.moj.sjp.it.model.ProsecutingAuthority;
-import uk.gov.moj.sjp.it.stub.AssignmentStub;
 import uk.gov.moj.sjp.it.stub.SchedulingStub;
 import uk.gov.moj.sjp.it.util.SjpDatabaseCleaner;
 import uk.gov.moj.sjp.it.util.builders.DischargeBuilder;
@@ -76,8 +74,8 @@ import java.util.UUID;
 import javax.json.JsonObject;
 
 import com.google.common.collect.Sets;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 public class CaseFinancialImpositionExportIT extends BaseIntegrationTest {
 
@@ -101,7 +99,7 @@ public class CaseFinancialImpositionExportIT extends BaseIntegrationTest {
     private static final String SJP_EVENT_FINANCIAL_IMPOSITION_ACCOUNT_NUMBER_ADDED = FinancialImpositionAccountNumberAdded.EVENT_NAME;
     private static final String PUBLIC_SJP_FINANCIAL_IMPOSITION_ACCOUNT_NUMBER_ADDED = "public.sjp.financial-imposition-account-number-added";
 
-    @Before
+    @BeforeEach
     public void setUp() throws SQLException {
         caseId = randomUUID();
         defendantId = randomUUID();
@@ -202,7 +200,7 @@ public class CaseFinancialImpositionExportIT extends BaseIntegrationTest {
 
     private void publishStagingEnforcementAcknowledgement() {
         try (final MessageProducerClient producerClient = new MessageProducerClient()) {
-            producerClient.startProducer("public.event");
+            producerClient.startProducer(PUBLIC_EVENT);
             producerClient.sendMessage("public.stagingenforcement.enforce-financial-imposition-acknowledgement",
                     enforceFinancialImpositionAcknowledgementPayload());
         }

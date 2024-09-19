@@ -4,10 +4,10 @@ import static java.time.ZonedDateTime.now;
 import static java.util.Arrays.asList;
 import static java.util.UUID.randomUUID;
 import static java.util.stream.Collectors.toList;
-import static org.apache.commons.lang.math.RandomUtils.nextInt;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
+import static org.apache.commons.lang3.RandomUtils.nextInt;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static uk.gov.moj.cpp.sjp.domain.decision.discharge.DischargeType.ABSOLUTE;
 import static uk.gov.moj.cpp.sjp.domain.decision.discharge.DischargeType.CONDITIONAL;
 import static uk.gov.moj.cpp.sjp.domain.decision.discharge.PeriodUnit.WEEK;
@@ -46,7 +46,7 @@ import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.UUID;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 
 public class PaymentViewTest {
@@ -464,7 +464,7 @@ public class PaymentViewTest {
                 setCode("CA03013").
                 setWording("offence wording").
                 setSequenceNumber(sequenceNumber).
-                setPlea(PleaType.values()[nextInt(PleaType.values().length)]).
+                setPlea(PleaType.values()[nextInt(0, PleaType.values().length)]).
                 setPleaDate(now().minusDays(3));
 
         return offenceDetailBuilder.build();

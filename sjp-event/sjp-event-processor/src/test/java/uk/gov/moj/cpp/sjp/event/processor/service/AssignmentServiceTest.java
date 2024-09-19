@@ -10,7 +10,7 @@ import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasSize;
-import static org.mockito.Matchers.argThat;
+import static org.mockito.hamcrest.MockitoHamcrest.argThat;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
@@ -41,14 +41,14 @@ import javax.json.Json;
 import com.google.common.collect.ImmutableMap;
 import org.hamcrest.CustomTypeSafeMatcher;
 import org.hamcrest.Matcher;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class AssignmentServiceTest {
 
     private static final String SESSION_STARTED_EVENT = "sjp.events.session-started";

@@ -15,16 +15,15 @@ import static javax.json.Json.createArrayBuilder;
 import static javax.json.Json.createObjectBuilder;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.not;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.isEmptyOrNullString;
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsNull.notNullValue;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyBoolean;
-import static org.mockito.Matchers.anyString;
-import static org.mockito.Matchers.eq;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyBoolean;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -41,6 +40,7 @@ import uk.gov.justice.services.fileservice.api.FileServiceException;
 import uk.gov.justice.services.fileservice.api.FileStorer;
 import uk.gov.justice.services.messaging.Envelope;
 import uk.gov.justice.services.messaging.JsonEnvelope;
+import uk.gov.justice.services.messaging.spi.DefaultEnvelope;
 import uk.gov.moj.cpp.sjp.domain.DocumentRequestType;
 import uk.gov.moj.cpp.sjp.domain.ListType;
 import uk.gov.moj.cpp.sjp.event.processor.service.ReferenceDataOffencesService;
@@ -68,16 +68,16 @@ import javax.json.JsonArrayBuilder;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
 
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class PressTransparencyReportRequestedProcessorTest {
 
     private static final DateTimeFormatter DOB_FORMAT = DateTimeFormatter.ofPattern("yyyy-MM-dd");
@@ -170,11 +170,25 @@ public class PressTransparencyReportRequestedProcessorTest {
     private ArgumentCaptor<Envelope> documentGenerationRequestCaptor;
     @Captor
     private ArgumentCaptor<JsonEnvelope> storePressTransparencyReportCommandEnvelopeCaptor;
+    @Captor
+    private ArgumentCaptor<DefaultEnvelope> defaultEnvelopeArgumentCaptor;
 
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
-        mockReferenceData();
-        mockFileStore();
+        when(payloadHelper.getStartDate(anyBoolean())).thenReturn(LocalDate.now().toString());
+        when(payloadHelper.mapOffenceIntoOffenceTitleString(any(), eq(false), any())).thenReturn(OFFENCE_TITLE);
+        when(payloadHelper.buildProsecutorName(eq(PROSECUTOR_NAME), eq(false), any())).thenReturn(PROSECUTOR);
+        when(payloadHelper.getStartDate(eq(false))).thenReturn("15 January 2024");
+    }
+
+    private void mockCommon(final List<JsonObject> sjpService, final List<JsonObject> pendingCasesList) throws FileServiceException {
+        mockSjpService(sjpService, pendingCasesList);
+        when(fileStorer.store(any(), any())).thenReturn(PAYLOAD_DOCUMENT_GENERATOR_FILE_ID);
+        when(payloadHelper.buildDefendantName(any())).thenReturn("John DOE");
+    }
+
+    private void mockSjpService(final List<JsonObject> sjpService, final List<JsonObject> pendingCasesList) {
+        when(sjpService).thenReturn(pendingCasesList);
     }
 
     @Test
@@ -185,8 +199,8 @@ public class PressTransparencyReportRequestedProcessorTest {
 
         final List<JsonObject> pendingCasesList = pendingCasesList(CASE_IDS, false, defendantDateOfBirth, false);
 
-        mockSjpService(pendingCasesList);
-        mockPayloadHelper();
+        mockCommon(sjpService.getPendingDeltaCases(any(), any()), pendingCasesList);
+
         processor.handlePressTransparencyRequest(PRIVATE_EVENT_PDF_ENVELOPE_DELTA);
 
         final JsonObject actual = getDocumentGeneratorPayloadFromFileStorer();
@@ -200,10 +214,9 @@ public class PressTransparencyReportRequestedProcessorTest {
 
         assertDocumentGenerationRequest(documentGenerationRequestCaptor.getValue(), EXPECTED_DOC_GENERATION_PAYLOAD_DELTA);
 
-        verify(sender, times(2)).send(storePressTransparencyReportCommandEnvelopeCaptor.capture());
+        verify(sender, times(1)).send(storePressTransparencyReportCommandEnvelopeCaptor.capture());
         assertPressTransparencyReportEnvelope(storePressTransparencyReportCommandEnvelopeCaptor.getValue(), REPORT_ID, CASE_IDS, DocumentRequestType.DELTA);
     }
-
 
     @Test
     public void shouldCreatePressTransparencyPDFReportDelta() throws FileServiceException {
@@ -212,8 +225,7 @@ public class PressTransparencyReportRequestedProcessorTest {
 
         final List<JsonObject> pendingCasesList = pendingCasesList(CASE_IDS, false, defendantDateOfBirth, true);
 
-        mockSjpService(pendingCasesList);
-        mockPayloadHelper();
+        mockCommon(sjpService.getPendingDeltaCases(any(), any()), pendingCasesList);
 
         processor.handlePressTransparencyPDFReportRequest(PRIVATE_EVENT_PDF_ENVELOPE_DELTA);
 
@@ -243,8 +255,7 @@ public class PressTransparencyReportRequestedProcessorTest {
 
         final List<JsonObject> pendingCasesList = pendingCasesList(CASE_IDS, false, defendantDateOfBirth, false);
 
-        mockSjpService(pendingCasesList);
-        mockPayloadHelper();
+        mockCommon(sjpService.getPendingCases(any(), any()), pendingCasesList);
 
         processor.handlePressTransparencyPDFReportRequest(PRIVATE_EVENT_PDF_ENVELOPE_FULL);
 
@@ -277,12 +288,11 @@ public class PressTransparencyReportRequestedProcessorTest {
 
         final List<JsonObject> pendingCasesList = pendingCasesList(Collections.singletonList(randomUUID()), false, defendantDateOfBirth, true);
 
-        mockSjpService(pendingCasesList);
-        mockPayloadHelper();
+        mockSjpService(sjpService.getPendingDeltaCases(any(), any()), pendingCasesList);
 
         processor.handlePressTransparencyJSONReportRequest(PRIVATE_EVENT_ENVELOPE_JSON_DELTA);
-        verify(sender, times(1)).send(storePressTransparencyReportCommandEnvelopeCaptor.capture());
-        final Envelope jsonEnvelope = storePressTransparencyReportCommandEnvelopeCaptor.getAllValues().get(0);
+        verify(sender, times(1)).send(defaultEnvelopeArgumentCaptor.capture());
+        final Envelope jsonEnvelope = defaultEnvelopeArgumentCaptor.getAllValues().get(0);
         assertThat(jsonEnvelope.metadata().name(), is(PUBLIC_EVENT_SJP_PENDING_CASES_PUBLIC_LIST_GENERATED));
         final JsonObject eventPayload = (JsonObject) jsonEnvelope.payload();
         final JsonObject payload = eventPayload.getJsonObject("listPayload");
@@ -303,12 +313,11 @@ public class PressTransparencyReportRequestedProcessorTest {
 
         final List<JsonObject> pendingCasesList = pendingCasesList(Collections.singletonList(randomUUID()), false, defendantDateOfBirth, false);
 
-        mockSjpService(pendingCasesList);
-        mockPayloadHelper();
+        mockSjpService(sjpService.getPendingCases(any(), any()), pendingCasesList);
 
         processor.handlePressTransparencyJSONReportRequest(PRIVATE_EVENT_ENVELOPE_JSON_FULL);
-        verify(sender, times(1)).send(storePressTransparencyReportCommandEnvelopeCaptor.capture());
-        final Envelope jsonEnvelope = storePressTransparencyReportCommandEnvelopeCaptor.getAllValues().get(0);
+        verify(sender, times(1)).send(defaultEnvelopeArgumentCaptor.capture());
+        final Envelope jsonEnvelope = defaultEnvelopeArgumentCaptor.getAllValues().get(0);
         assertThat(jsonEnvelope.metadata().name(), is(PUBLIC_EVENT_SJP_PENDING_CASES_PUBLIC_LIST_GENERATED));
         final JsonObject eventPayload = (JsonObject) jsonEnvelope.payload();
         final JsonObject payload = eventPayload.getJsonObject("listPayload");
@@ -323,28 +332,6 @@ public class PressTransparencyReportRequestedProcessorTest {
             assertThat(jsonObject.getString("dateOfBirth"), is("12/06/1980"));
             assertThat(jsonObject.getString("prosecutorName"), is("Transport For London"));
         });
-    }
-
-    private void mockFileStore() throws FileServiceException {
-        when(fileStorer.store(any(), any())).thenReturn(PAYLOAD_DOCUMENT_GENERATOR_FILE_ID);
-    }
-
-    private void mockPayloadHelper() {
-        when(payloadHelper.getStartDate(anyBoolean())).thenReturn(LocalDate.now().toString());
-        when(payloadHelper.buildDefendantName(any())).thenReturn("John DOE");
-        when(payloadHelper.mapOffenceIntoOffenceTitleString(any(), eq(false), any())).thenReturn(OFFENCE_TITLE);
-        when(payloadHelper.buildProsecutorName(eq(PROSECUTOR_NAME), eq(false), any())).thenReturn(PROSECUTOR);
-        when(payloadHelper.getStartDate(eq(false))).thenReturn("15 January 2024");
-    }
-
-    private void mockSjpService(List<JsonObject> pendingCasesList) {
-        when(sjpService.getPendingCases(any(), any())).thenReturn(pendingCasesList);
-        when(sjpService.getPendingDeltaCases(any(), any())).thenReturn(pendingCasesList);
-    }
-
-    private void mockReferenceData() {
-        when(referenceDataService.getProsecutor(eq(PROSECUTOR_NAME), eq(false), any())).thenReturn(PROSECUTOR);
-        when(referenceDataOffencesService.getOffenceReferenceData(any(), anyString(), anyString())).thenReturn(CA_03011_REFERENCE_DATA_PAYLOAD);
     }
 
     private JsonObject getDocumentGeneratorPayloadFromFileStorer() throws FileServiceException {
@@ -362,8 +349,7 @@ public class PressTransparencyReportRequestedProcessorTest {
 
         final List<JsonObject> pendingCasesList = pendingCasesList(CASE_IDS, false, defendantDateOfBirth, false);
 
-        mockSjpService(pendingCasesList);
-        mockPayloadHelper();
+        mockCommon(sjpService.getPendingDeltaCases(any(), any()), pendingCasesList);
 
         processor.handlePressTransparencyRequest(PRIVATE_EVENT_PDF_ENVELOPE_DELTA);
 
@@ -381,8 +367,8 @@ public class PressTransparencyReportRequestedProcessorTest {
         final String defendantDateOfBirth = "1980-06-12";
 
         final List<JsonObject> pendingCasesList = pendingCasesList(CASE_IDS, true, defendantDateOfBirth, false);
-        mockSjpService(pendingCasesList);
-        mockPayloadHelper();
+
+        mockCommon(sjpService.getPendingDeltaCases(any(), any()), pendingCasesList);
 
         processor.handlePressTransparencyRequest(PRIVATE_EVENT_PDF_ENVELOPE_DELTA);
 
@@ -400,8 +386,7 @@ public class PressTransparencyReportRequestedProcessorTest {
 
         final List<JsonObject> pendingCasesList = pendingCasesList(CASE_IDS, false, defendantDateOfBirth, false);
 
-        mockSjpService(pendingCasesList);
-        mockPayloadHelper();
+        mockCommon(sjpService.getPendingDeltaCases(any(), any()), pendingCasesList);
 
         processor.handlePressTransparencyPDFReportRequest(PRIVATE_EVENT_PDF_ENVELOPE_DELTA);
 
@@ -417,8 +402,8 @@ public class PressTransparencyReportRequestedProcessorTest {
         final String defendantDateOfBirth = "1980-06-12";
 
         final List<JsonObject> pendingCasesList = pendingCasesList(CASE_IDS, true, defendantDateOfBirth, false);
-        mockSjpService(pendingCasesList);
-        mockPayloadHelper();
+
+        mockCommon(sjpService.getPendingDeltaCases(any(), any()), pendingCasesList);
 
         processor.handlePressTransparencyPDFReportRequest(PRIVATE_EVENT_PDF_ENVELOPE_DELTA);
 

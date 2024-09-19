@@ -4,12 +4,15 @@ import uk.gov.justice.domain.annotation.Event;
 
 import java.util.UUID;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+
 @Event("sjp.events.case-document-addition-failed")
 public class CaseDocumentAlreadyExists {
 
     private final UUID documentId;
     private final String description;
 
+    @JsonCreator
     public CaseDocumentAlreadyExists(UUID documentId, String description) {
         this.documentId = documentId;
         this.description = description;

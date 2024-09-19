@@ -1,8 +1,9 @@
 package uk.gov.moj.cpp.sjp.command.handler;
 
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static org.mockito.Matchers.any;
+import static org.mockito.ArgumentMatchers.any;
 import static uk.gov.justice.services.messaging.Envelope.envelopeFrom;
 import static uk.gov.justice.services.test.utils.core.enveloper.EnveloperFactory.createEnveloperWithEvents;
 import static uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderFactory.metadataWithRandomUUID;
@@ -26,14 +27,14 @@ import java.util.stream.Stream;
 
 import javax.inject.Inject;
 
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class AocpAcceptanceTimerExpiredHandlerTest {
 
     @Mock
@@ -62,10 +63,13 @@ public class AocpAcceptanceTimerExpiredHandlerTest {
     public void testExpireDefendantResponseTimer() throws EventStreamException {
         final UUID caseId = UUID.randomUUID();
         final UUID sessionId = UUID.randomUUID();
+        final Session session = mock(Session.class);
         final AocpDecision aocpDecision = new AocpDecision(UUID.randomUUID(), sessionId, caseId, null, null);
         final Envelope<AocpDecision> envelope = envelopeFrom(metadataWithRandomUUID("sjp.command.expire-defendant-aocp-response-timer"), aocpDecision);
+        when(eventSource.getStreamById(sessionId)).thenReturn(eventStream);
         when(eventSource.getStreamById(caseId)).thenReturn(eventStream);
         when(caseAggregate.expireAocpResponseTimerAndSaveDecision(any(), any())).thenReturn(events);
+        when(aggregateService.get(eventStream, Session.class)).thenReturn(session);
         when(aggregateService.get(eventStream, CaseAggregate.class)).thenReturn(caseAggregate);
 
         aocpAcceptanceTimerExpiredHandler.aocpResponseTimeExpiredAndSaveDecision(envelope);

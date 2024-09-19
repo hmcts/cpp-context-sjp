@@ -3,9 +3,9 @@ package uk.gov.moj.cpp.sjp.command.handler;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.core.AllOf.allOf;
-import static org.junit.Assert.assertThat;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.eq;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
@@ -47,17 +47,17 @@ import java.util.stream.Stream;
 
 import javax.json.Json;
 
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class CaseReopenedHandlerTest {
 
     private static final CaseReopenDetailsBuilder CASE_REOPEN_DETAILS =
@@ -86,7 +86,7 @@ public class CaseReopenedHandlerTest {
     @Captor
     private ArgumentCaptor<Stream<JsonEnvelope>> argumentCaptor;
 
-    @Before
+    @BeforeEach
     public void setup() {
         when(eventSource.getStreamById(eq(CASE_ID))).thenReturn(eventStream);
         when(aggregateService.get(any(EventStream.class), eq(CaseAggregate.class))).thenReturn(caseAggregate);

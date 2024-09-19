@@ -9,7 +9,7 @@ import static org.hamcrest.Matchers.hasProperty;
 import static org.hamcrest.Matchers.hasSize;
 import static org.junit.Assert.assertThat;
 
-import uk.gov.justice.services.test.utils.persistence.BaseTransactionalTest;
+import uk.gov.justice.services.test.utils.persistence.BaseTransactionalJunit4Test;
 import uk.gov.moj.cpp.sjp.persistence.entity.Address;
 import uk.gov.moj.cpp.sjp.persistence.entity.CaseDetail;
 import uk.gov.moj.cpp.sjp.persistence.entity.ContactDetails;
@@ -33,7 +33,7 @@ import org.junit.runner.RunWith;
  * DB integration tests for {@link OffenceRepository} class
  */
 @RunWith(CdiTestRunner.class)
-public class OffenceRepositoryTest extends BaseTransactionalTest {
+public class OffenceRepositoryTest extends BaseTransactionalJunit4Test {
 
     private static final int NUM_PREVIOUS_CONVICTIONS = 1;
 

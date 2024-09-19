@@ -1,7 +1,7 @@
 package uk.gov.moj.sjp.it.test;
 
 import static java.util.UUID.randomUUID;
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static uk.gov.moj.sjp.it.model.ProsecutingAuthority.DVLA;
 import static uk.gov.moj.sjp.it.model.ProsecutingAuthority.TFL;
 import static uk.gov.moj.sjp.it.helper.CasesMissingSjpnHelper.getCasesMissingSjpn;
@@ -11,6 +11,7 @@ import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubProsecutorQuer
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubRegionByPostcode;
 import static uk.gov.moj.sjp.it.stub.UsersGroupsStub.stubForUserDetails;
 
+import org.junit.jupiter.api.BeforeAll;
 import uk.gov.moj.sjp.it.model.ProsecutingAuthority;
 import uk.gov.moj.sjp.it.command.CreateCase;
 import uk.gov.moj.sjp.it.pollingquery.CasePoller;
@@ -20,8 +21,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
 
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 public class FindCasesMissingSjpnAccessControlIT extends BaseIntegrationTest {
 
@@ -31,7 +31,7 @@ public class FindCasesMissingSjpnAccessControlIT extends BaseIntegrationTest {
     private static CasesMissingSjpnMetrics beforeTflMetrics, beforeCourtAdminMetrics;
     private static final String NATIONAL_COURT_CODE = "1080";
 
-    @BeforeClass
+    @BeforeAll
     public static void setupCasesAndUsers() {
 
         setupUsers();

@@ -9,7 +9,7 @@ import static org.hamcrest.CoreMatchers.allOf;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.CoreMatchers.notNullValue;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -32,16 +32,16 @@ import javax.json.JsonValue;
 
 import com.jayway.jsonpath.ReadContext;
 import org.hamcrest.Matcher;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class PleadOnlineControllerTest {
 
     private final String POSTCODE = "W1T 1JY";
@@ -65,7 +65,7 @@ public class PleadOnlineControllerTest {
     @Captor
     private ArgumentCaptor<Envelope<JsonValue>> envelopeCaptor;
 
-    @Before
+    @BeforeEach
     public void before() {
         when(referenceDataService.getEnforcementArea(POSTCODE)).thenReturn(of(enforcementAreaPayload));
     }

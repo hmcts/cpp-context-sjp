@@ -34,7 +34,7 @@ public class PressTransparencyReportListener {
      *
      * @deprecated
      */
-    @Deprecated
+    @Deprecated(forRemoval = true)
     @Transactional
     @Handles(PressTransparencyReportGenerationStarted.EVENT_NAME)
     @SuppressWarnings("squid:S1133")
@@ -50,7 +50,7 @@ public class PressTransparencyReportListener {
      *
      * @deprecated
      */
-    @Deprecated
+    @Deprecated(forRemoval = true)
     @Transactional
     @Handles(PressTransparencyReportMetadataAdded.EVENT_NAME)
     @SuppressWarnings("squid:S1133")

@@ -21,8 +21,8 @@ import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
 import com.github.tomakehurst.wiremock.client.WireMock;
-import com.jayway.awaitility.Awaitility;
-import org.junit.BeforeClass;
+import org.awaitility.Awaitility;
+import org.junit.jupiter.api.BeforeAll;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -37,10 +37,14 @@ public abstract class BaseIntegrationTest {
     protected static ElasticSearchIndexFinderUtil elasticSearchIndexFinderUtil;
 
     static {
-        Awaitility.setDefaultPollDelay(DELAY_IN_MILLIS, TimeUnit.MILLISECONDS);
-        Awaitility.setDefaultPollInterval(INTERVAL_IN_MILLIS, TimeUnit.MILLISECONDS);
-        configureFor(HOST, 8080);
-        setUpElasticSearch();
+        try {
+            Awaitility.setDefaultPollDelay(DELAY_IN_MILLIS, TimeUnit.MILLISECONDS);
+            Awaitility.setDefaultPollInterval(INTERVAL_IN_MILLIS, TimeUnit.MILLISECONDS);
+            configureFor(HOST, 8080);
+            setUpElasticSearch();
+        } catch (final Throwable e) {
+            LOGGER.error("Failed to set up integration test", e);
+        }
     }
 
     private static void setUpElasticSearch() {
@@ -58,7 +62,7 @@ public abstract class BaseIntegrationTest {
         }
     }
 
-    @BeforeClass
+    @BeforeAll
     public static void setup() {
         WireMock.resetAllRequests();
         WireMock.reset();

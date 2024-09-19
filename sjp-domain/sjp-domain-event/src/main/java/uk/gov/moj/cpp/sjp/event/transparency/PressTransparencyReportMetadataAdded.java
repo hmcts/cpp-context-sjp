@@ -13,9 +13,9 @@ import com.fasterxml.jackson.annotation.JsonProperty;
  *
  * @deprecated
  */
-@Deprecated
+@Deprecated(forRemoval = true)
 @Event(PressTransparencyReportMetadataAdded.EVENT_NAME)
-@SuppressWarnings("squid:S1133")
+@SuppressWarnings({"squid:S1133", "squid:S107"})
 public class PressTransparencyReportMetadataAdded {
 
     public static final String EVENT_NAME = "sjp.events.press-transparency-report-metadata-added";

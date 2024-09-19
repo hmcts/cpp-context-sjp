@@ -1,12 +1,13 @@
 package uk.gov.moj.cpp.sjp.command.api;
 
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
+import static java.util.Collections.singletonMap;
 import static java.util.UUID.randomUUID;
 import static javax.json.Json.createObjectBuilder;
 import static org.hamcrest.CoreMatchers.allOf;
 import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertThat;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.verify;
 import static uk.gov.justice.services.core.annotation.Component.COMMAND_API;
@@ -27,17 +28,16 @@ import java.util.Map;
 
 import javax.json.JsonObject;
 
-import com.google.common.collect.ImmutableMap;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.kie.api.runtime.ExecutionResults;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class AddFinancialImpositionAccountNumberBdfApiTest extends BaseDroolsAccessControlTest {
 
     public static final String SJP_ADD_FINANCIAL_IMPOSITION_ACCOUNT_NUMBER_BDF = "sjp.add-financial-imposition-account-number-bdf";
@@ -50,6 +50,10 @@ public class AddFinancialImpositionAccountNumberBdfApiTest extends BaseDroolsAcc
     @InjectMocks
     private AddFinancialImpositionAccountNumberBdfApi accountNumberApi;
 
+    public AddFinancialImpositionAccountNumberBdfApiTest() {
+        super("COMMAND_API_SESSION");
+    }
+
     @Test
     public void shouldHandleAddFinancialImpositionAccountNumber() {
         assertThat(AddFinancialImpositionAccountNumberBdfApi.class, isHandlerClass(COMMAND_API)
@@ -60,8 +64,8 @@ public class AddFinancialImpositionAccountNumberBdfApiTest extends BaseDroolsAcc
     private UserAndGroupProvider userAndGroupProvider;
 
     @Override
-    protected Map<Class, Object> getProviderMocks() {
-        return ImmutableMap.<Class, Object>builder().put(UserAndGroupProvider.class, userAndGroupProvider).build();
+    protected Map<Class<?>, Object> getProviderMocks() {
+        return singletonMap(UserAndGroupProvider.class, userAndGroupProvider);
     }
 
     @Test

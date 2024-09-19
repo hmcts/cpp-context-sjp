@@ -2,7 +2,6 @@ package uk.gov.moj.cpp.sjp.query.view.converter.prompts;
 
 import static java.util.Optional.empty;
 import static java.util.Optional.of;
-import static jdk.nashorn.internal.runtime.PropertyDescriptor.VALUE;
 import static uk.gov.moj.cpp.sjp.query.view.util.CaseResultsConstants.FOURTEEN_DAYS;
 import static uk.gov.moj.cpp.sjp.query.view.util.CaseResultsConstants.TWENTY_EIGHT_DAYS;
 

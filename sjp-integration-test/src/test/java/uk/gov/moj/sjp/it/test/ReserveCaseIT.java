@@ -92,11 +92,14 @@ import javax.ws.rs.core.Response;
 import com.google.common.collect.Sets;
 import org.hamcrest.CoreMatchers;
 import org.hamcrest.Matchers;
-import org.junit.Before;
-import org.junit.Test;
-import org.mortbay.log.Log;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class ReserveCaseIT extends BaseIntegrationTest {
+
+    private static final Logger log = LoggerFactory.getLogger(AssignmentRulesIT.class);
 
     private static final String NATIONAL_COURT_CODE = "1080";
 
@@ -113,7 +116,7 @@ public class ReserveCaseIT extends BaseIntegrationTest {
     private final String urn = generate(TFL);
     private String caseUrn;
 
-    @Before
+    @BeforeEach
     public void beforeEveryTest() throws SQLException {
         final SjpDatabaseCleaner databaseCleaner = new SjpDatabaseCleaner();
         databaseCleaner.cleanViewStore();
@@ -546,7 +549,7 @@ public class ReserveCaseIT extends BaseIntegrationTest {
         SessionHelper.startSession(sessionId, userId, courtHouseOUCode, MAGISTRATE);
 
         AssignNextCaseClient assignCase = AssignNextCaseClient.builder().sessionId(sessionId).build();
-        assignCase.notAssignedHandler = (envelope) -> Log.info("Case Not Assigned");
+        assignCase.notAssignedHandler = (envelope) -> log.info("Case Not Assigned");
         assignCase.getExecutor().setExecutingUserId(userId).executeSync();
     }
 }

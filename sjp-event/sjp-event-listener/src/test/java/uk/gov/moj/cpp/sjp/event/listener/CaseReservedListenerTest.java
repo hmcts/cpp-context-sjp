@@ -11,20 +11,20 @@ import static org.hamcrest.Matchers.is;
 
 
 import java.util.Collections;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.justice.services.messaging.Envelope;
 import uk.gov.moj.cpp.sjp.event.CaseReserved;
 import uk.gov.moj.cpp.sjp.event.CaseUnReserved;
 import uk.gov.moj.cpp.sjp.persistence.entity.ReserveCase;
 import uk.gov.moj.cpp.sjp.persistence.repository.ReserveCaseRepository;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class CaseReservedListenerTest {
 
     @Mock

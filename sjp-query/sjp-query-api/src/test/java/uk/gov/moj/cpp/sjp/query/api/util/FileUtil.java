@@ -1,7 +1,7 @@
 package uk.gov.moj.cpp.sjp.query.api.util;
 
 import static java.util.Collections.emptyMap;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import uk.gov.moj.cpp.sjp.query.api.helper.JsonHelper;
 

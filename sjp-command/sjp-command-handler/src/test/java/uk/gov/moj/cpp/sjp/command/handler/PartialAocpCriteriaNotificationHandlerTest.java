@@ -4,7 +4,7 @@ import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
 import static javax.json.Json.createObjectBuilder;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.Matchers.allOf;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.mockito.Mockito.when;
 import static uk.gov.justice.services.core.annotation.Component.COMMAND_HANDLER;
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
@@ -18,6 +18,7 @@ import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopePaylo
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeStreamMatcher.streamContaining;
 import static uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderFactory.metadataWithRandomUUID;
 
+import java.time.temporal.ChronoUnit;
 import uk.gov.justice.services.core.aggregate.AggregateService;
 import uk.gov.justice.services.core.enveloper.Enveloper;
 import uk.gov.justice.services.eventsourcing.source.core.EventSource;
@@ -29,19 +30,20 @@ import uk.gov.moj.cpp.sjp.event.PartialAocpCriteriaNotificationProsecutorFailed;
 import uk.gov.moj.cpp.sjp.event.PartialAocpCriteriaNotificationProsecutorQueued;
 import uk.gov.moj.cpp.sjp.event.PartialAocpCriteriaNotificationProsecutorSent;
 
+import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.util.UUID;
 import java.util.stream.Stream;
 
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class PartialAocpCriteriaNotificationHandlerTest {
 
     public static final String PARTIAL_AOCP_EMAIL_NOTIFICATION_COMMAND = "sjp.command.update-partial-aocp-criteria-notification-to-prosecutor-status";
@@ -109,7 +111,7 @@ public class PartialAocpCriteriaNotificationHandlerTest {
 
     @Test
     public void shouldRequestEmailSendNotification() throws EventStreamException {
-        final ZonedDateTime sentAt = ZonedDateTime.now();
+        final ZonedDateTime sentAt = ZonedDateTime.now(ZoneOffset.UTC);
 
         final JsonEnvelope commandEnvelope = envelopeFrom(
                 metadataWithRandomUUID(PARTIAL_AOCP_EMAIL_NOTIFICATION_COMMAND),
@@ -133,13 +135,13 @@ public class PartialAocpCriteriaNotificationHandlerTest {
                                         .withName(PartialAocpCriteriaNotificationProsecutorSent.EVENT_NAME),
                                 payloadIsJson(allOf(
                                         withJsonPath("$.caseId", equalTo(CASE_ID_STR)),
-                                        withJsonPath("$.sentTime", equalTo(sentAt.toLocalDateTime() + "Z"))
+                                        withJsonPath("$.sentTime", equalTo(sentAt.toLocalDateTime().truncatedTo(ChronoUnit.MILLIS) + "Z"))
                                 ))))));
     }
 
     @Test
     public void shouldRequestEmailFailedNotification() throws EventStreamException {
-        final ZonedDateTime failedTime = ZonedDateTime.now();
+        final ZonedDateTime failedTime = ZonedDateTime.now(ZoneOffset.UTC);
 
         final JsonEnvelope commandEnvelope = envelopeFrom(
                 metadataWithRandomUUID(PARTIAL_AOCP_EMAIL_NOTIFICATION_COMMAND),
@@ -163,7 +165,7 @@ public class PartialAocpCriteriaNotificationHandlerTest {
                                         .withName(PartialAocpCriteriaNotificationProsecutorFailed.EVENT_NAME),
                                 payloadIsJson(allOf(
                                         withJsonPath("$.caseId", equalTo(CASE_ID_STR)),
-                                        withJsonPath("$.failedTime", equalTo(failedTime.toLocalDateTime() + "Z"))
+                                        withJsonPath("$.failedTime", equalTo(failedTime.toLocalDateTime().truncatedTo(ChronoUnit.MILLIS) + "Z"))
                                 ))))));
     }
 }

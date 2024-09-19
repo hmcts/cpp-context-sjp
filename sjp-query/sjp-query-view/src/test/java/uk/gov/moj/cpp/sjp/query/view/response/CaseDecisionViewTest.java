@@ -2,7 +2,7 @@ package uk.gov.moj.cpp.sjp.query.view.response;
 
 import static java.time.ZonedDateTime.now;
 import static java.util.UUID.randomUUID;
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 
 import java.util.Arrays;
@@ -11,7 +11,7 @@ import uk.gov.moj.cpp.sjp.persistence.entity.Session;
 
 import java.util.ArrayList;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 public class CaseDecisionViewTest {
 

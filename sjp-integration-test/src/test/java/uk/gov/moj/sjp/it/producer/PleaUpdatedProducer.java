@@ -10,6 +10,7 @@ import static uk.gov.moj.cpp.sjp.event.processor.EventProcessorConstants.PLEA;
 import static uk.gov.moj.cpp.sjp.event.processor.EventProcessorConstants.PLEA_METHOD;
 import static uk.gov.moj.cpp.sjp.event.processor.EventProcessorConstants.UPDATED_DATE;
 import static uk.gov.moj.sjp.it.Constants.EVENT_SELECTOR_PLEA_UPDATED;
+import static uk.gov.moj.sjp.it.Constants.SJP_EVENT;
 import static uk.gov.moj.sjp.it.util.TopicUtil.retrieveMessage;
 
 import uk.gov.justice.services.common.converter.ZonedDateTimes;
@@ -26,7 +27,7 @@ import javax.jms.MessageConsumer;
 import javax.json.Json;
 import javax.json.JsonObject;
 
-import com.jayway.restassured.path.json.JsonPath;
+import io.restassured.path.json.JsonPath;
 
 public class PleaUpdatedProducer {
 
@@ -61,7 +62,7 @@ public class PleaUpdatedProducer {
                 pleaUpdatedPayload);
 
         try (final MessageProducerClient producerClient = new MessageProducerClient()) {
-            producerClient.startProducer("sjp.event");
+            producerClient.startProducer(SJP_EVENT);
             producerClient.sendMessage(EVENT_SELECTOR_PLEA_UPDATED, pleaUpdatedEvent);
         }
     }

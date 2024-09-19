@@ -46,10 +46,10 @@ import java.util.List;
 import java.util.UUID;
 
 import org.apache.commons.lang3.tuple.Triple;
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 
-@Ignore("Enable this when merging to master")
+@Disabled("Enable this when merging to master")
 public class ReadyCaseIT extends BaseIntegrationTest {
 
     private final UUID caseId = randomUUID();

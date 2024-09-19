@@ -2,7 +2,7 @@ package uk.gov.moj.cpp.sjp.event.decommissioned;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
 
 import uk.gov.justice.domain.annotation.Event;
 import uk.gov.justice.services.common.converter.jackson.ObjectMapperProducer;
@@ -13,7 +13,7 @@ import java.util.UUID;
 import javax.json.Json;
 import javax.json.JsonObject;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 public class CaseAssignmentDeletedTest {
 

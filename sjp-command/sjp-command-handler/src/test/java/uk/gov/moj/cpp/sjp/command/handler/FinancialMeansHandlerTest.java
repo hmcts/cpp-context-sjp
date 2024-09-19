@@ -1,10 +1,13 @@
 package uk.gov.moj.cpp.sjp.command.handler;
 
-import static org.mockito.Matchers.anyObject;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.atLeast;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import uk.gov.justice.services.eventsourcing.source.core.exception.EventStreamException;
 import uk.gov.moj.cpp.sjp.domain.Benefits;
 import uk.gov.moj.cpp.sjp.domain.FinancialMeans;
@@ -12,14 +15,16 @@ import uk.gov.moj.cpp.sjp.domain.Income;
 import uk.gov.moj.cpp.sjp.domain.IncomeFrequency;
 
 import java.math.BigDecimal;
+import java.util.Optional;
 import java.util.UUID;
 
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
+import uk.gov.moj.cpp.sjp.domain.aggregate.CaseAggregate;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class FinancialMeansHandlerTest extends CaseCommandHandlerTest {
 
     @InjectMocks
@@ -27,6 +32,15 @@ public class FinancialMeansHandlerTest extends CaseCommandHandlerTest {
 
     @Test
     public void shouldUpdateFinancialMeans() throws EventStreamException {
+        when(jsonEnvelope.payloadAsJsonObject()).thenReturn(jsonObject);
+        when(jsonObject.getString(CaseCommandHandler.STREAM_ID)).thenReturn(CASE_ID.toString());
+        when(eventSource.getStreamById(CASE_ID)).thenReturn(eventStream);
+        when(aggregateService.get(eventStream, CaseAggregate.class)).thenReturn(caseAggregate);
+        when(enveloper.withMetadataFrom(jsonEnvelope)).thenReturn(function);
+        when(events.map(function)).thenReturn(jsonEvents);
+        when(jsonEnvelope.payloadAsJsonObject()).thenReturn(jsonObject);
+        when(jsonEnvelope.metadata()).thenReturn(metadata);
+        when(metadata.userId()).thenReturn(Optional.of(userId.toString()));
 
         final Income income = new Income(IncomeFrequency.MONTHLY, BigDecimal.valueOf(1000.50));
         final Benefits benefits = new Benefits(true, "Benefits type");
@@ -44,6 +58,13 @@ public class FinancialMeansHandlerTest extends CaseCommandHandlerTest {
 
     @Test
     public void shouldRaiseFinancialMeansDeletedEvent() throws EventStreamException {
+        when(jsonEnvelope.payloadAsJsonObject()).thenReturn(jsonObject);
+        when(jsonObject.getString(CaseCommandHandler.STREAM_ID)).thenReturn(CASE_ID.toString());
+        when(eventSource.getStreamById(CASE_ID)).thenReturn(eventStream);
+        when(aggregateService.get(eventStream, CaseAggregate.class)).thenReturn(caseAggregate);
+        when(enveloper.withMetadataFrom(jsonEnvelope)).thenReturn(function);
+        when(events.map(function)).thenReturn(jsonEvents);
+        when(jsonEnvelope.payloadAsJsonObject()).thenReturn(jsonObject);
 
         final String defendantId = "c43946f7-8f39-4814-82d6-7bee1e34d07f";
         when(jsonObject.getString("defendantId")).thenReturn(defendantId);
@@ -52,7 +73,7 @@ public class FinancialMeansHandlerTest extends CaseCommandHandlerTest {
         financialMeansHandler.deleteFinancialMeans(jsonEnvelope);
 
         verify(jsonObject, atLeast(1)).getString("defendantId");
-        verify(caseAggregate).deleteFinancialMeans(anyObject());
+        verify(caseAggregate).deleteFinancialMeans(any());
     }
 
 }

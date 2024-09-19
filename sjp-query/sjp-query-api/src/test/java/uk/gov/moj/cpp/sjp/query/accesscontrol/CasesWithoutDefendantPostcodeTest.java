@@ -2,12 +2,12 @@ package uk.gov.moj.cpp.sjp.query.accesscontrol;
 
 import static uk.gov.moj.cpp.sjp.query.api.RuleConstants.getAllowedGroupsForCasesWithoutDefendantPostcode;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 public class CasesWithoutDefendantPostcodeTest extends SjpDroolsAccessControlTest {
 
     public CasesWithoutDefendantPostcodeTest() {
-        super("sjp.query.cases-without-defendant-postcode", getAllowedGroupsForCasesWithoutDefendantPostcode());
+        super("QUERY_API_SESSION", "sjp.query.cases-without-defendant-postcode", getAllowedGroupsForCasesWithoutDefendantPostcode());
     }
 
     @Test

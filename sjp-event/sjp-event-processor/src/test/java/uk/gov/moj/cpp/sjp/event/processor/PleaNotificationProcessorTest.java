@@ -30,17 +30,17 @@ import uk.gov.moj.cpp.sjp.event.processor.service.ReferenceDataService;
 import java.time.LocalDate;
 import java.util.UUID;
 
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class PleaNotificationProcessorTest {
 
     @Mock
@@ -65,7 +65,7 @@ public class PleaNotificationProcessorTest {
     private static final String WELSH_TEMPLATE_ID = "af48b904-3ee5-402b-bd82-0a80249c4405";
 
 
-    @Before
+    @BeforeEach
     public void before() {
         // use defaults
         pleaNotificationProcessor.replyToAddress = "noreply@cjscp.org.uk";

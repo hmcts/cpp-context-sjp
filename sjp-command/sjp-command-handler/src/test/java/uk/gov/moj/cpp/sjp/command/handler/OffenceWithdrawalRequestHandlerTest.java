@@ -3,14 +3,15 @@ package uk.gov.moj.cpp.sjp.command.handler;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
 import static java.time.ZoneOffset.UTC;
 import static java.time.ZonedDateTime.now;
+import static java.time.ZonedDateTime.of;
 import static java.util.UUID.randomUUID;
 import static javax.json.JsonValue.NULL;
 import static org.hamcrest.CoreMatchers.allOf;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
-import static org.junit.Assert.assertThat;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.eq;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.justice.services.core.annotation.Component.COMMAND_HANDLER;
@@ -43,6 +44,7 @@ import uk.gov.moj.cpp.sjp.domain.aggregate.CaseAggregate;
 import uk.gov.moj.cpp.sjp.domain.aggregate.state.CaseAggregateState;
 import uk.gov.moj.cpp.sjp.event.OffenceWithdrawalRequested;
 
+import java.time.LocalDateTime;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -50,16 +52,16 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class OffenceWithdrawalRequestHandlerTest {
 
     private final UUID withdrawalRequestReasonId = randomUUID();
@@ -96,7 +98,7 @@ public class OffenceWithdrawalRequestHandlerTest {
             OffenceWithdrawalRequested.class);
 
     @Spy
-    private Clock clock = new StoppedClock(now(UTC));
+    private Clock clock = new StoppedClock(of(2021, 2, 23, 13, 4, 24, 0, UTC));
 
     @InjectMocks
     private OffenceWithdrawalRequestHandler offenceWithdrawalRequestHandler;
@@ -146,7 +148,7 @@ public class OffenceWithdrawalRequestHandlerTest {
                                 .withName("sjp.events.offences-withdrawal-status-set"),
                         payloadIsJson(allOf(
                                 withJsonPath("$.caseId", equalTo(caseId.toString())),
-                                withJsonPath("$.setAt", equalTo(setAt.toString())),
+                                withJsonPath("$.setAt", equalTo("2021-02-23T13:04:24.000Z")),
                                 withJsonPath("$.setBy", equalTo(userId.toString())),
                                 withJsonPath("$.withdrawalRequestsStatus[0].offenceId", equalTo(offenceId_1.toString())),
                                 withJsonPath("$.withdrawalRequestsStatus[0].withdrawalRequestReasonId", equalTo(withdrawalRequestReasonId.toString())),
@@ -162,7 +164,7 @@ public class OffenceWithdrawalRequestHandlerTest {
                                 withJsonPath("$.offenceId", equalTo(offenceId_1.toString())),
                                 withJsonPath("$.withdrawalRequestReasonId", equalTo(withdrawalRequestReasonId.toString())),
                                 withJsonPath("$.requestedBy", equalTo(userId.toString())),
-                                withJsonPath("$.requestedAt", equalTo(setAt.toString()))
+                                withJsonPath("$.requestedAt", equalTo("2021-02-23T13:04:24.000Z"))
 
                         ))),
                 jsonEnvelope(
@@ -173,7 +175,7 @@ public class OffenceWithdrawalRequestHandlerTest {
                                 withJsonPath("$.offenceId", equalTo(offenceId_2.toString())),
                                 withJsonPath("$.withdrawalRequestReasonId", equalTo(withdrawalRequestReasonId.toString())),
                                 withJsonPath("$.requestedBy", equalTo(userId.toString())),
-                                withJsonPath("$.requestedAt", equalTo(setAt.toString()))
+                                withJsonPath("$.requestedAt", equalTo("2021-02-23T13:04:24.000Z"))
 
                         )))
 

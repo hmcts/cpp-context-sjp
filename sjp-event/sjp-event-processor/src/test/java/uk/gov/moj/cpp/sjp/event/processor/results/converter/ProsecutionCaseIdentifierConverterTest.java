@@ -1,8 +1,8 @@
 package uk.gov.moj.cpp.sjp.event.processor.results.converter;
 
 import static org.hamcrest.CoreMatchers.is;
-import static org.junit.Assert.assertThat;
-import static org.mockito.Matchers.anyObject;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 import static uk.gov.moj.cpp.sjp.event.processor.results.converter.TestConstants.CASE_URN;
 import static uk.gov.moj.cpp.sjp.event.processor.results.converter.TestConstants.COURT_CENTRE_CODE;
@@ -18,13 +18,13 @@ import javax.json.Json;
 import javax.json.JsonArray;
 import javax.json.JsonObject;
 
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class ProsecutionCaseIdentifierConverterTest {
 
     @InjectMocks
@@ -53,7 +53,7 @@ public class ProsecutionCaseIdentifierConverterTest {
                 .add("prosecutors", value)
                 .build();
 
-        when(referenceDataService.getProsecutors(anyObject(), anyObject())).thenReturn(jsonObject);
+        when(referenceDataService.getProsecutors(any(), any())).thenReturn(jsonObject);
 
         final ProsecutionCaseIdentifier prosecutionCaseIdentifier = prosecutionCaseIdentifierConverter.getProsecutionCaseIdentifier(PROSECUTION_AUTHORITY, CASE_URN);
 
@@ -82,7 +82,7 @@ public class ProsecutionCaseIdentifierConverterTest {
                 .add("prosecutors", value)
                 .build();
 
-        when(referenceDataService.getProsecutors(anyObject(), anyObject())).thenReturn(jsonObject);
+        when(referenceDataService.getProsecutors(any(), any())).thenReturn(jsonObject);
 
         final ProsecutionCaseIdentifier prosecutionCaseIdentifier = prosecutionCaseIdentifierConverter.getProsecutionCaseIdentifier(PROSECUTION_AUTHORITY, CASE_URN);
 

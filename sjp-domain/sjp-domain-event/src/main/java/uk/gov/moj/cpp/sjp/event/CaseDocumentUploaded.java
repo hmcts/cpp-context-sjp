@@ -4,6 +4,8 @@ import uk.gov.justice.domain.annotation.Event;
 
 import java.util.UUID;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+
 @Event("sjp.events.case-document-uploaded")
 public class CaseDocumentUploaded {
 
@@ -13,6 +15,7 @@ public class CaseDocumentUploaded {
 
     private final String documentType;
 
+    @JsonCreator
     public CaseDocumentUploaded(UUID caseId, UUID documentReference, String documentType) {
         this.caseId = caseId;
         this.documentReference = documentReference;

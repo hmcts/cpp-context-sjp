@@ -11,12 +11,16 @@ import uk.gov.moj.cpp.accesscontrol.test.utils.BaseDroolsAccessControlTest;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 public class AddFinancialImpositionAccountNumberBdfTest extends BaseDroolsAccessControlTest {
     @Override
-    protected Map<Class, Object> getProviderMocks() {
+    protected Map<Class<?>, Object> getProviderMocks() {
         return new HashMap<>();
+    }
+
+    public AddFinancialImpositionAccountNumberBdfTest() {
+        super("COMMAND_CONTROLLER_SESSION");
     }
 
     @Test

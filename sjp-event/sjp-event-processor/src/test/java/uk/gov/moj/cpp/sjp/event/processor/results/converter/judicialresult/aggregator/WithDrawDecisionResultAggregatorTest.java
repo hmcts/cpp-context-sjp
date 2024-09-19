@@ -3,13 +3,13 @@ package uk.gov.moj.cpp.sjp.event.processor.results.converter.judicialresult.aggr
 import static java.util.UUID.fromString;
 import static java.util.UUID.randomUUID;
 import static javax.json.Json.createObjectBuilder;
-import static org.apache.activemq.artemis.utils.JsonLoader.createArrayBuilder;
+import static javax.json.Json.createArrayBuilder;
 import static org.hamcrest.CoreMatchers.hasItem;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.Matchers.allOf;
-import static org.junit.Assert.assertThat;
-import static org.mockito.Matchers.any;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 import static uk.gov.moj.cpp.sjp.domain.decision.OffenceDecisionInformation.createOffenceDecisionInformation;
 import static uk.gov.moj.cpp.sjp.domain.verdict.VerdictType.FOUND_GUILTY;
@@ -24,12 +24,12 @@ import java.util.UUID;
 import javax.json.JsonObject;
 
 import org.hamcrest.Matchers;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class WithDrawDecisionResultAggregatorTest extends  BaseDecisionResultAggregatorTest {
 
     private WithDrawDecisionResultAggregator aggregator;
@@ -37,7 +37,7 @@ public class WithDrawDecisionResultAggregatorTest extends  BaseDecisionResultAgg
     private final UUID withdrawalReason2UUID = randomUUID();
 
 
-    @Before
+    @BeforeEach
     public void setUp() {
         super.setUp();
         final JsonObject withdrawalReason1 = createObjectBuilder()

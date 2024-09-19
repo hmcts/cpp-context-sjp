@@ -18,16 +18,17 @@ import uk.gov.moj.cpp.sjp.event.session.CaseAssignmentRejected;
 import java.util.UUID;
 import java.util.stream.Stream;
 
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mockito;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 /**
  * Tests for {@link CaseAggregate#assignCase}
  */
-@RunWith(MockitoJUnitRunner.class)
+@SuppressWarnings({"squid:S2699"})
+@ExtendWith(MockitoExtension.class)
 public class CaseAssignedTest extends CaseAggregateBaseTest {
 
     private static final CaseAssignmentType CASE_ASSIGNMENT_TYPE = MAGISTRATE_DECISION;
@@ -36,7 +37,7 @@ public class CaseAssignedTest extends CaseAggregateBaseTest {
 
 
 
-    @Before
+    @BeforeEach
     @Override
     public void setUp() {
         super.setUp();

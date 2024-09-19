@@ -6,7 +6,7 @@ import static java.util.stream.Collectors.toList;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.equalTo;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static uk.gov.moj.sjp.it.helper.CasesMissingSjpnHelper.getCasesMissingSjpn;
 import static uk.gov.moj.sjp.it.helper.CasesMissingSjpnHelper.getCasesMissingSjpnPostedDaysAgo;
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubEnforcementAreaByPostcode;
@@ -24,9 +24,9 @@ import java.util.stream.Stream;
 import javax.json.JsonObject;
 import javax.json.JsonString;
 
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 public class FindCasesMissingSjpnIT extends BaseIntegrationTest {
     private List<CreateCase.CreateCasePayloadBuilder> sjpCases;
@@ -40,7 +40,7 @@ public class FindCasesMissingSjpnIT extends BaseIntegrationTest {
 
     // TODO: close Helpers
 
-    @Before
+    @BeforeEach
     public void init() {
         final LocalDate now = LocalDate.now();
         final CreateCase.CreateCasePayloadBuilder createCasePayloadBuilder = CreateCase.CreateCasePayloadBuilder
@@ -70,7 +70,7 @@ public class FindCasesMissingSjpnIT extends BaseIntegrationTest {
                 .collect(toList());
     }
 
-    @After
+    @AfterEach
     public void tearDown() {
         sjpnDocuments.forEach(CaseDocumentHelper::close);
     }

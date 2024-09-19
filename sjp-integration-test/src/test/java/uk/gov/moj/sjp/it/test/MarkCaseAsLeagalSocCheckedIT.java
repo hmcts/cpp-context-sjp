@@ -43,8 +43,8 @@ import java.time.LocalDate;
 import java.util.UUID;
 
 import com.google.common.collect.Sets;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 public class MarkCaseAsLeagalSocCheckedIT extends BaseIntegrationTest {
 
@@ -55,7 +55,7 @@ public class MarkCaseAsLeagalSocCheckedIT extends BaseIntegrationTest {
     private LocalDate postingDate = now().minusDays(NOTICE_PERIOD_IN_DAYS + 1);
     private final EventListener eventListener = new EventListener();
 
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
 
         new SjpDatabaseCleaner().cleanViewStore();

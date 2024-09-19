@@ -1,6 +1,6 @@
 package uk.gov.moj.sjp.it.helper;
 
-import static com.jayway.awaitility.Awaitility.await;
+import static org.awaitility.Awaitility.await;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
 import static javax.json.Json.createObjectBuilder;
 import static javax.ws.rs.core.Response.Status.ACCEPTED;
@@ -19,7 +19,7 @@ import java.util.stream.Stream;
 import javax.json.JsonObject;
 import javax.ws.rs.core.Response;
 
-import com.jayway.restassured.path.json.JsonPath;
+import io.restassured.path.json.JsonPath;
 
 
 public class AssignmentHelper {

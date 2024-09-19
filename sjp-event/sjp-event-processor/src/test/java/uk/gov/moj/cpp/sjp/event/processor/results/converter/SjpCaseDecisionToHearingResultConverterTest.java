@@ -4,9 +4,10 @@ import static java.util.Collections.singletonList;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.CoreMatchers.nullValue;
-import static org.junit.Assert.assertThat;
-import static org.mockito.Matchers.anyObject;
-import static org.mockito.Matchers.anyString;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 import static uk.gov.justice.core.courts.CourtCentre.courtCentre;
 import static uk.gov.justice.core.courts.JurisdictionType.MAGISTRATES;
@@ -31,14 +32,14 @@ import uk.gov.moj.cpp.sjp.event.processor.service.SjpService;
 
 import java.util.Arrays;
 
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class SjpCaseDecisionToHearingResultConverterTest {
 
     @InjectMocks
@@ -78,7 +79,7 @@ public class SjpCaseDecisionToHearingResultConverterTest {
 
     private CourtCentre courtCentre = courtCentre().build();
 
-    @Before
+    @BeforeEach
     public void setUp() {
         resultsAggregate = new DecisionAggregate();
     }
@@ -88,18 +89,18 @@ public class SjpCaseDecisionToHearingResultConverterTest {
         Metadata sourceMetadata = metadataWithRandomUUID(RANDOM_TEXT).build();
 
         when(decisionSavedEventEnvelop.payload()).thenReturn(decisionSaved);
-        when(sjpService.getSessionInformation(anyObject(), anyObject())).thenReturn(sjpSessionEnvelope);
+        when(sjpService.getSessionInformation(any(), any())).thenReturn(sjpSessionEnvelope);
         when(decisionSaved.getSessionId()).thenReturn(ID_2);
         when(decisionSaved.getDecisionId()).thenReturn(ID_2);
         when(decisionSavedEventEnvelop.metadata()).thenReturn(sourceMetadata);
-        when(sjpService.getCaseDetails(anyObject(), anyObject())).thenReturn(caseDetails);
+        when(sjpService.getCaseDetails(any(), any())).thenReturn(caseDetails);
         when(caseDetails.getDefendant()).thenReturn(defendant);
         when(defendant.getId()).thenReturn(ID_1);
         when(defendant.getPersonalDetails()).thenReturn(personalDetails);
         when(personalDetails.getDriverNumber()).thenReturn(RANDOM_TEXT);
-        when(referencedDecisionSavedOffenceConverter.convertOffenceDecisions(anyObject(), anyObject(), anyObject(), anyObject(), anyObject(), anyString(), anyObject())).thenReturn(resultsAggregate);
-        when(hearingDaysConverter.convert(anyObject())).thenReturn(Arrays.asList(hearingDay));
-        when(courtCenterConverter.convert(anyObject(), anyObject())).thenReturn(courtCentre);
+        when(referencedDecisionSavedOffenceConverter.convertOffenceDecisions(any(), any(), any(), any(), any(), any(), any())).thenReturn(resultsAggregate);
+        when(hearingDaysConverter.convert(any())).thenReturn(Arrays.asList(hearingDay));
+        when(courtCenterConverter.convert(any(), any())).thenReturn(courtCentre);
 
         final PublicHearingResulted publicHearingResulted = sjpCaseDecisionToHearingResultConverter.convertCaseDecision(decisionSavedEventEnvelop);
 
@@ -115,18 +116,17 @@ public class SjpCaseDecisionToHearingResultConverterTest {
         Metadata sourceMetadata = metadataWithRandomUUID(RANDOM_TEXT).build();
 
         when(decisionSavedEventEnvelop.payload()).thenReturn(decisionSaved);
-        when(sjpService.getSessionInformation(anyObject(), anyObject())).thenReturn(sjpSessionEnvelope);
+        when(sjpService.getSessionInformation(any(), any())).thenReturn(sjpSessionEnvelope);
         when(decisionSaved.getSessionId()).thenReturn(ID_2);
         when(decisionSaved.getDecisionId()).thenReturn(ID_2);
         when(decisionSavedEventEnvelop.metadata()).thenReturn(sourceMetadata);
-        when(sjpService.getCaseDetails(anyObject(), anyObject())).thenReturn(caseDetails);
+        when(sjpService.getCaseDetails(any(), any())).thenReturn(caseDetails);
         when(caseDetails.getDefendant()).thenReturn(defendant);
         when(defendant.getId()).thenReturn(ID_1);
         when(defendant.getPersonalDetails()).thenReturn(null);
-        when(personalDetails.getDriverNumber()).thenReturn(RANDOM_TEXT);
-        when(referencedDecisionSavedOffenceConverter.convertOffenceDecisions(anyObject(), anyObject(), anyObject(), anyObject(), anyObject(), anyString(), anyObject())).thenReturn(resultsAggregate);
-        when(hearingDaysConverter.convert(anyObject())).thenReturn(singletonList(hearingDay));
-        when(courtCenterConverter.convert(anyObject(), anyObject())).thenReturn(courtCentre);
+        when(referencedDecisionSavedOffenceConverter.convertOffenceDecisions(any(), any(), any(), any(), any(), any(), eq(null))).thenReturn(resultsAggregate);
+        when(hearingDaysConverter.convert(any())).thenReturn(singletonList(hearingDay));
+        when(courtCenterConverter.convert(any(), any())).thenReturn(courtCentre);
 
         final PublicHearingResulted publicHearingResulted = sjpCaseDecisionToHearingResultConverter.convertCaseDecision(decisionSavedEventEnvelop);
 
@@ -142,18 +142,18 @@ public class SjpCaseDecisionToHearingResultConverterTest {
         Metadata sourceMetadata = metadataWithRandomUUID(RANDOM_TEXT).build();
 
         when(decisionSavedEventEnvelop.payload()).thenReturn(decisionSaved);
-        when(sjpService.getSessionInformation(anyObject(), anyObject())).thenReturn(sjpSessionEnvelope);
+        when(sjpService.getSessionInformation(any(), any())).thenReturn(sjpSessionEnvelope);
         when(decisionSaved.getSessionId()).thenReturn(ID_2);
         when(decisionSaved.getDecisionId()).thenReturn(ID_2);
         when(decisionSavedEventEnvelop.metadata()).thenReturn(sourceMetadata);
-        when(sjpService.getCaseDetails(anyObject(), anyObject())).thenReturn(caseDetails);
+        when(sjpService.getCaseDetails(any(), any())).thenReturn(caseDetails);
         when(caseDetails.getDefendant()).thenReturn(defendant);
         when(defendant.getId()).thenReturn(ID_1);
         when(defendant.getPersonalDetails()).thenReturn(personalDetails);
         when(personalDetails.getDriverNumber()).thenReturn(RANDOM_TEXT);
-        when(referencedDecisionSavedOffenceConverter.convertOffenceDecisions(anyObject(), anyObject(), anyObject(), anyObject(), anyObject(), anyString(), anyObject())).thenReturn(resultsAggregate);
-        when(hearingDaysConverter.convert(anyObject())).thenReturn(Arrays.asList(hearingDay));
-        when(courtCenterConverter.convert(anyObject(), anyObject())).thenReturn(courtCentre);
+        when(referencedDecisionSavedOffenceConverter.convertOffenceDecisions(any(), any(), any(), any(), any(), any(), eq(null))).thenReturn(resultsAggregate);
+        when(hearingDaysConverter.convert(any())).thenReturn(Arrays.asList(hearingDay));
+        when(courtCenterConverter.convert(any(), any())).thenReturn(courtCentre);
 
         final PublicHearingResulted publicHearingResulted = sjpCaseDecisionToHearingResultConverter.convertCaseDecision(decisionSavedEventEnvelop);
 

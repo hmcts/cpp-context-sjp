@@ -3,7 +3,7 @@ package uk.gov.moj.cpp.sjp.command.handler;
 import static java.util.UUID.fromString;
 import static javax.json.Json.createArrayBuilder;
 import static javax.json.Json.createObjectBuilder;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.justice.services.core.annotation.Component.COMMAND_HANDLER;
@@ -29,14 +29,14 @@ import java.util.List;
 import java.util.UUID;
 import java.util.stream.Stream;
 
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class UpdateCasesManagementStatusHandlerTest {
 
     //public static final String CASE_MANAGEMENT_STATUS = "sjp.command.case-management-status";

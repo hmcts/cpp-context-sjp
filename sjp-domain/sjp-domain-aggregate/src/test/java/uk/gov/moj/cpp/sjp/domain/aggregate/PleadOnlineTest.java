@@ -16,13 +16,12 @@ import static org.hamcrest.Matchers.emptyCollectionOf;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.hasSize;
-import static org.hamcrest.Matchers.isEmptyOrNullString;
 import static org.hamcrest.Matchers.nullValue;
 import static org.hamcrest.core.IsNot.not;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 import static uk.gov.moj.cpp.sjp.domain.DomainConstants.NUMBER_DAYS_WAITING_FOR_DATES_TO_AVOID;
 import static uk.gov.moj.cpp.sjp.domain.plea.EmploymentStatus.EMPLOYED;
 import static uk.gov.moj.cpp.sjp.domain.testutils.StoreOnlinePleaBuilder.PERSON_ADDRESS;
@@ -80,8 +79,8 @@ import java.util.stream.Stream;
 
 import org.hamcrest.Matcher;
 import org.hamcrest.Matchers;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 public class PleadOnlineTest {
 
@@ -95,7 +94,7 @@ public class PleadOnlineTest {
 
     private static final UUID userId = randomUUID();
 
-    @Before
+    @BeforeEach
     public void setup() {
         // single offence case
         setup(createTestCase(null,null));
@@ -267,7 +266,7 @@ public class PleadOnlineTest {
                 (UUID) pleaInformation[0]).toArray(UUID[]::new);
 
         final Case testCase = createTestCase("Mr", null,extraOffenceIds);
-        setup(testCase); // Override the @Before
+        setup(testCase); // Override the @BeforeEach
 
         final String interpreterLanguage = "French";
         final Boolean speakWelsh = TRUE;

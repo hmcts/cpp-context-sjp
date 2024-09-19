@@ -43,11 +43,7 @@ import uk.gov.moj.cpp.sjp.event.transparency.TransparencyReportRequested;
 import java.io.ByteArrayInputStream;
 import java.time.LocalDate;
 import java.time.Period;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
-import java.util.stream.Collectors;
+import java.util.*;
 
 import javax.inject.Inject;
 import javax.json.Json;
@@ -151,7 +147,7 @@ public class TransparencyReportRequestedProcessor {
      *
      * @deprecated @Link{createTransparencyPDFReport} or @Link{createTransparencyJSONReport}
      */
-    @Deprecated
+    @Deprecated(forRemoval = true)
     @SuppressWarnings({"squid:S00112", "squid:S1133"})
     @Handles(TransparencyReportRequested.EVENT_NAME)
     @Transactional
@@ -261,7 +257,7 @@ public class TransparencyReportRequestedProcessor {
         return pendingCases.stream()
                 .filter(this::caseIsForAdultDefendant)
                 .filter(this::isCaseWithoutPressRestriction)
-                .collect(Collectors.toList());
+                .toList();
     }
 
     private boolean caseIsForAdultDefendant(final JsonObject pendingCase) {

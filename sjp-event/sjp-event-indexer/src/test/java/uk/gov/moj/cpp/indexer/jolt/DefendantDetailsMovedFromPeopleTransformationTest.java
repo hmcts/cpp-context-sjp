@@ -1,9 +1,9 @@
 package uk.gov.moj.cpp.indexer.jolt;
 
-import static junit.framework.TestCase.assertEquals;
-import static junit.framework.TestCase.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.hamcrest.CoreMatchers.is;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static uk.gov.moj.cpp.indexer.jolt.helper.AddressVerificationHelper.assertAddressDetails;
 import static uk.gov.moj.cpp.indexer.jolt.helper.Constants.DOB;
 import static uk.gov.moj.cpp.indexer.jolt.helper.Constants.FIRST_NAME;
@@ -22,14 +22,14 @@ import java.io.IOException;
 
 import javax.json.JsonObject;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 public class DefendantDetailsMovedFromPeopleTransformationTest {
 
     private final JoltTransformer joltTransformer = new JoltTransformer();
 
-    @Before
+    @BeforeEach
     public void setUp() {
         initializeJolt(joltTransformer);
     }

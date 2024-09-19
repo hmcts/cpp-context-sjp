@@ -1,8 +1,9 @@
 package uk.gov.moj.cpp.sjp.command.api;
 
 import static org.hamcrest.CoreMatchers.equalTo;
-import static org.junit.Assert.assertThat;
-import static org.mockito.Matchers.any;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.justice.services.core.annotation.Component.COMMAND_API;
@@ -27,16 +28,16 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class SetPleasApiTest {
 
     private static final String COMMAND_NAME = "sjp.set-pleas";
@@ -81,7 +82,7 @@ public class SetPleasApiTest {
         assertThat(newCommand.payloadAsJsonObject(), equalTo(command.payloadAsJsonObject()));
     }
 
-    @Test(expected = BadRequestException.class)
+    @Test
     public void shouldReturnBadRequestOnValidationErrors(){
         final JsonEnvelope command = envelope().with(MetadataBuilderFactory.metadataWithRandomUUID(COMMAND_NAME)).build();
         final Map<String, List<String>> validationErrors = new HashMap<>();
@@ -91,6 +92,6 @@ public class SetPleasApiTest {
         when(setPleasValidator.validate(any(SetPleasModel.class))).
                 thenReturn(validationErrors);
 
-        setPleasApi.setPleas(command);
+        assertThrows(BadRequestException.class, () -> setPleasApi.setPleas(command));
     }
 }

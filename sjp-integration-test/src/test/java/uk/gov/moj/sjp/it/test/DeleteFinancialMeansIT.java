@@ -41,12 +41,12 @@ import javax.ws.rs.core.Response;
 
 import org.hamcrest.Matcher;
 import org.json.JSONObject;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 
-@Ignore("Enable this when merging to master")
+@Disabled("Enable this when merging to master")
 public class DeleteFinancialMeansIT extends BaseIntegrationTest {
 
     private FinancialMeansHelper financialMeansHelper;
@@ -60,7 +60,7 @@ public class DeleteFinancialMeansIT extends BaseIntegrationTest {
     private static final String NATIONAL_COURT_CODE = "1080";
 
 
-    @Before
+    @BeforeEach
     public void setUp() {
 
         //Following 3 stubs require to post online plead successfully
@@ -78,7 +78,7 @@ public class DeleteFinancialMeansIT extends BaseIntegrationTest {
         employerHelper = new EmployerHelper();
     }
 
-    @After
+    @AfterEach
     public void tearDown() throws Exception {
         financialMeansHelper.close();
     }

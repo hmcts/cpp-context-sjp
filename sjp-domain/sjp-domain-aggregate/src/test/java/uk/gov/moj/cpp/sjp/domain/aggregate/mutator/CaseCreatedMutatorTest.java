@@ -1,6 +1,6 @@
 package uk.gov.moj.cpp.sjp.domain.aggregate.mutator;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import uk.gov.moj.cpp.sjp.domain.Case;
 import uk.gov.moj.cpp.sjp.domain.aggregate.state.CaseAggregateState;
 import uk.gov.moj.cpp.sjp.domain.testutils.CaseBuilder;
@@ -10,7 +10,7 @@ import java.time.ZonedDateTime;
 
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.iterableWithSize;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
 
 public class CaseCreatedMutatorTest {
 

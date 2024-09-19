@@ -6,6 +6,7 @@ import uk.gov.moj.cpp.sjp.persistence.repository.EnforcementPendingApplicationNo
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 
 import javax.persistence.metamodel.SingularAttribute;
@@ -61,6 +62,11 @@ public class FakeEnforcementPendingApplicationNotificationRepository implements 
     }
 
     @Override
+    public Optional<EnforcementNotification> findOptionalBy(final UUID uuid) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
     public List<EnforcementNotification> findAll() {
         throw new UnsupportedOperationException();
     }
@@ -104,6 +110,8 @@ public class FakeEnforcementPendingApplicationNotificationRepository implements 
     public Long countLike(final EnforcementNotification notificationOfEndorsementStatus, final SingularAttribute<EnforcementNotification, ?>... singularAttributes) {
         throw new UnsupportedOperationException();
     }
+
+
 
     @Override
     public UUID getPrimaryKey(final EnforcementNotification notificationOfEndorsementStatus) {

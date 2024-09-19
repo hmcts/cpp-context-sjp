@@ -2,9 +2,8 @@ package uk.gov.moj.cpp.sjp.event.processor.results.converter;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
-import static org.junit.Assert.assertThat;
-import static org.mockito.Matchers.anyObject;
-import static org.mockito.Matchers.anyString;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 import static uk.gov.moj.cpp.sjp.event.processor.results.converter.TestConstants.ID;
 import static uk.gov.moj.cpp.sjp.event.processor.results.converter.TestConstants.ID_1;
@@ -26,14 +25,14 @@ import javax.json.Json;
 import javax.json.JsonObject;
 
 import com.google.common.collect.Lists;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class VerdictConverterTest {
 
     @InjectMocks
@@ -50,13 +49,11 @@ public class VerdictConverterTest {
     JCachedReferenceData jCachedReferenceData = new JCachedReferenceData(referenceDataService);
 
 
-
     @Test
     public void shouldConvertCaseDecision() {
 
         when(convictionInfo.getVerdictType()).thenReturn(VerdictType.FOUND_GUILTY);
-        when(referenceDataService.getAllVerdictTypes(anyObject())).thenReturn(allVerdictTypes());
-        when(referenceDataService.getAllVerdictTypesByJurisdiction(anyObject(),anyString())).thenReturn(allMagistrateJurisdictionTypeVerdictTypes());
+        when(referenceDataService.getAllVerdictTypesByJurisdiction(any(), any())).thenReturn(allMagistrateJurisdictionTypeVerdictTypes());
         final Verdict verdict = verdictConverter.getVerdict(convictionInfo);
 
         assertThat(verdict, is(notNullValue()));

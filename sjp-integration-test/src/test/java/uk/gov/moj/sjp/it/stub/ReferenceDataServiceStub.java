@@ -8,18 +8,15 @@ import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlPathEqualTo;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlPathMatching;
 import static java.lang.String.format;
-import static java.net.URLEncoder.encode;
 import static java.util.UUID.randomUUID;
 import static javax.json.Json.createArrayBuilder;
 import static javax.json.Json.createObjectBuilder;
 import static javax.ws.rs.core.HttpHeaders.CONTENT_TYPE;
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
-import static org.apache.commons.io.Charsets.UTF_8;
 import static org.apache.http.HttpHeaders.ACCEPT;
 import static org.apache.http.HttpStatus.SC_OK;
 import static uk.gov.justice.service.wiremock.testutil.InternalEndpointMockUtils.stubPingFor;
 import static uk.gov.justice.services.common.http.HeaderConstants.ID;
-import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 import static uk.gov.moj.sjp.it.Constants.DEFAULT_OFFENCE_CODE;
 import static uk.gov.moj.sjp.it.stub.StubHelper.waitForStubToBeReady;
 import static uk.gov.moj.sjp.it.util.Defaults.DEFAULT_AOCP_COURT_HOUSE_OU_CODE;
@@ -36,7 +33,6 @@ import uk.gov.moj.sjp.it.model.ProsecutingAuthority;
 
 import java.io.IOException;
 import java.io.UncheckedIOException;
-import java.io.UnsupportedEncodingException;
 import java.math.BigDecimal;
 import java.util.Arrays;
 import java.util.Map;
@@ -48,7 +44,7 @@ import javax.json.JsonArrayBuilder;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
 
-import com.github.tomakehurst.wiremock.client.ValueMatchingStrategy;
+import com.github.tomakehurst.wiremock.matching.StringValuePattern;
 import com.google.common.collect.ImmutableMap;
 import org.apache.commons.io.IOUtils;
 
@@ -90,7 +86,7 @@ public class ReferenceDataServiceStub {
                         .withHeader(CONTENT_TYPE, APPLICATION_JSON)
                         .withBody(getPayload("stub-data/referencedata.all-result-definitions.json"))));
 
-        waitForStubToBeReady(urlPath , QUERY_ALL_RESULT_DEFINITIONS_MIME_TYPE);
+        waitForStubToBeReady(urlPath, QUERY_ALL_RESULT_DEFINITIONS_MIME_TYPE);
     }
 
     public static void stubResultDefinitionByResultCode(final String resultCode) {
@@ -117,7 +113,7 @@ public class ReferenceDataServiceStub {
                         .withHeader(CONTENT_TYPE, APPLICATION_JSON)
                         .withBody(getPayload("stub-data/referencedata.query.get-all-fixed-list.json"))));
 
-        waitForStubToBeReady(urlPath , QUERY_ALL_FIXED_LIST_MIME_TYPE);
+        waitForStubToBeReady(urlPath, QUERY_ALL_FIXED_LIST_MIME_TYPE);
     }
 
     public static void stubBailStatuses() {
@@ -289,10 +285,10 @@ public class ReferenceDataServiceStub {
         final String mediaType = "application/vnd.reference-data.referral-reasons+json";
 
         final JsonObject response = createObjectBuilder().add("referralReasons", createArrayBuilder()
-                .add(createObjectBuilder()
-                        .add("id", referralReasonId.toString())
-                        .add("hearingCode", hearingCode)
-                        .add("reason", referralReason)))
+                        .add(createObjectBuilder()
+                                .add("id", referralReasonId.toString())
+                                .add("hearingCode", hearingCode)
+                                .add("reason", referralReason)))
                 .build();
 
         stubFor(get(urlPathEqualTo(urlPath))
@@ -308,9 +304,9 @@ public class ReferenceDataServiceStub {
         final String mediaType = "application/vnd.reference-data.offence-fine-levels+json";
 
         final JsonObject response = createObjectBuilder().add("fineLevels", createArrayBuilder()
-                .add(createObjectBuilder()
-                        .add("fineLevel", fineLevel)
-                        .add("maxValue", maxValue)))
+                        .add(createObjectBuilder()
+                                .add("fineLevel", fineLevel)
+                                .add("maxValue", maxValue)))
                 .build();
 
         stubFor(get(urlPathEqualTo(urlPath))
@@ -368,12 +364,13 @@ public class ReferenceDataServiceStub {
                 .build();
 
         stubFor(get(urlPathEqualTo(urlPath))
-                .withQueryParam("postcode", equalTo(encoded(postCode)))
+                .withQueryParam("postcode", equalTo(postCode))
                 .willReturn(aResponse().withStatus(SC_OK)
                         .withHeader(ID, randomUUID().toString())
                         .withHeader(CONTENT_TYPE, APPLICATION_JSON)
                         .withBody(stubbedResponse.toString())));
     }
+
     public static void stubEnforcementAreaByLocalLJACode(final String nationalCourtCode, final String nationalCourtName) {
         stubPingFor(REFERENCEDATA_SERVICE);
         final String urlPath = QUERY_API_PATH + "/enforcement-area";
@@ -387,7 +384,7 @@ public class ReferenceDataServiceStub {
                 .build();
 
         stubFor(get(urlPathEqualTo(urlPath))
-                .withQueryParam("localJusticeAreaNationalCourtCode", equalTo(encoded(nationalCourtCode)))
+                .withQueryParam("localJusticeAreaNationalCourtCode", equalTo(nationalCourtCode))
                 .willReturn(aResponse().withStatus(SC_OK)
                         .withHeader(ID, randomUUID().toString())
                         .withHeader(CONTENT_TYPE, APPLICATION_JSON)
@@ -399,7 +396,7 @@ public class ReferenceDataServiceStub {
         final JsonObject enforcementAreaJson = getFileContentAsJson("stub-data/referencedata.query.enforcement-area.json");
 
         stubFor(get(urlPathEqualTo(urlPath))
-                .withQueryParam("localJusticeAreaNationalCourtCode", equalTo(encoded(DEFAULT_LONDON_LJA_NATIONAL_COURT_CODE)))
+                .withQueryParam("localJusticeAreaNationalCourtCode", equalTo(DEFAULT_LONDON_LJA_NATIONAL_COURT_CODE))
                 .willReturn(aResponse().withStatus(SC_OK)
                         .withHeader(ID, randomUUID().toString())
                         .withHeader(CONTENT_TYPE, APPLICATION_JSON)
@@ -424,7 +421,7 @@ public class ReferenceDataServiceStub {
                 .build();
 
         stubFor(get(urlPathEqualTo(urlPath))
-                .withQueryParam("nationalCourtCode", equalTo(encoded(nationalCourtCode)))
+                .withQueryParam("nationalCourtCode", equalTo(nationalCourtCode))
                 .willReturn(aResponse().withStatus(SC_OK)
                         .withHeader(ID, randomUUID().toString())
                         .withHeader(CONTENT_TYPE, APPLICATION_JSON)
@@ -436,7 +433,7 @@ public class ReferenceDataServiceStub {
         final String urlPath = QUERY_API_PATH + "/country-by-postcode";
 
         stubFor(get(urlPathEqualTo(urlPath))
-                .withQueryParam("postCode", equalTo(encoded(postcode)))
+                .withQueryParam("postCode", equalTo(postcode))
                 .willReturn(aResponse().withStatus(SC_OK)
                         .withHeader(ID, randomUUID().toString())
                         .withHeader(CONTENT_TYPE, APPLICATION_JSON)
@@ -469,7 +466,7 @@ public class ReferenceDataServiceStub {
                         .withBody(getPayload(resourceName))));
     }
 
-    private static JsonObject stubQueryOffencesByCode(final String code, final ValueMatchingStrategy offenceCodeMatcher) {
+    private static JsonObject stubQueryOffencesByCode(final String code, final StringValuePattern offenceCodeMatcher) {
         stubPingFor(REFERENCEDATAOFFENCES_SERVICE);
 
         final String urlPath = "/referencedataoffences-service/query/api/rest/referencedataoffences/offences";
@@ -560,7 +557,7 @@ public class ReferenceDataServiceStub {
         final String dvlaEmailAddress = "rehab@dvla.gov.uk";
 
         stubFor(get(urlPathEqualTo(urlPath))
-                .withQueryParam("orgName", equalTo(encoded("DVLA Penalty Point Notification")))
+                .withQueryParam("orgName", equalTo("DVLA Penalty Point Notification"))
                 .willReturn(aResponse().withStatus(SC_OK)
                         .withHeader(ID, randomUUID().toString())
                         .withHeader(CONTENT_TYPE, APPLICATION_JSON)
@@ -576,14 +573,6 @@ public class ReferenceDataServiceStub {
                                         .toString()
                         )));
         return dvlaEmailAddress;
-    }
-
-    private static String encoded(final String value) {
-        try {
-            return encode(value, UTF_8.name());
-        } catch (UnsupportedEncodingException e) {
-            throw new RuntimeException("Unable to encode value", e);
-        }
     }
 
     private static String pathFor(final String endpoint) {

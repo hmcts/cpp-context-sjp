@@ -4,7 +4,7 @@ import org.apache.deltaspike.testcontrol.api.junit.CdiTestRunner;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import uk.gov.justice.services.test.utils.persistence.BaseTransactionalTest;
+import uk.gov.justice.services.test.utils.persistence.BaseTransactionalJunit4Test;
 import uk.gov.moj.cpp.sjp.domain.CaseReadinessReason;
 import uk.gov.moj.cpp.sjp.domain.SessionType;
 import uk.gov.moj.cpp.sjp.persistence.builder.CaseDetailBuilder;
@@ -31,7 +31,7 @@ import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.iterableWithSize;
 
 @RunWith(CdiTestRunner.class)
-public class DefendantRepositoryTest extends BaseTransactionalTest {
+public class DefendantRepositoryTest extends BaseTransactionalJunit4Test {
 
     @Inject
     private CaseRepository caseRepository;

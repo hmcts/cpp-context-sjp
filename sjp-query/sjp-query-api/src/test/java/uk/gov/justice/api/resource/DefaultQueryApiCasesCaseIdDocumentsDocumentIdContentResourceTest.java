@@ -11,8 +11,8 @@ import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.any;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.fail;
-import static org.mockito.Matchers.argThat;
+import static org.junit.jupiter.api.Assertions.fail;
+import static org.mockito.hamcrest.MockitoHamcrest.argThat;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -41,16 +41,16 @@ import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
 
 import com.google.common.collect.ImmutableMap;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class DefaultQueryApiCasesCaseIdDocumentsDocumentIdContentResourceTest {
 
     private static final String JSON_CONTENT_TYPE = "application/json";
@@ -80,13 +80,9 @@ public class DefaultQueryApiCasesCaseIdDocumentsDocumentIdContentResourceTest {
     private final UUID systemUserId = randomUUID();
     private final String documentUrl =  "http://filelocation.com/myfile.pdf";
 
-    @Before
-    public void init() {
-        when(serviceContextSystemUserProvider.getContextSystemUserId()).thenReturn(Optional.of(systemUserId));
-    }
-
     @Test
     public void shouldRunAllInterceptorsAndFetchAndStreamDocument() {
+        when(serviceContextSystemUserProvider.getContextSystemUserId()).thenReturn(Optional.of(systemUserId));
         final JsonEnvelope documentDetails = documentDetails(materialId);
 
         final MultivaluedMap headers = new MultivaluedHashMap(ImmutableMap.of(CONTENT_TYPE, JSON_CONTENT_TYPE));
@@ -98,7 +94,7 @@ public class DefaultQueryApiCasesCaseIdDocumentsDocumentIdContentResourceTest {
         when(interceptorChainProcessor.process(argThat((any(InterceptorContext.class))))).thenReturn(Optional.ofNullable(documentDetails));
         when(materialClient.getMaterialWithHeader(materialId, systemUserId)).thenReturn(documentContentResponse);
         when(documentContentResponse.readEntity(String.class)).thenReturn(documentUrl);
-        when(documentContentResponse.getHeaders()).thenReturn(headers);
+        //when(documentContentResponse.getHeaders()).thenReturn(headers);
         when(documentContentResponse.getStatus()).thenReturn(SC_OK);
 
         final Response documentContentResponse = endpointHandler.getDocumentContent(caseId, documentId, userId);
@@ -127,6 +123,7 @@ public class DefaultQueryApiCasesCaseIdDocumentsDocumentIdContentResourceTest {
 
     @Test
     public void shouldRunNotFoundStatusWhenMaterialNotFound() {
+        when(serviceContextSystemUserProvider.getContextSystemUserId()).thenReturn(Optional.of(systemUserId));
         final JsonEnvelope documentDetails = documentDetails(materialId);
 
         when(interceptorChainProcessor.process(argThat((any(InterceptorContext.class))))).thenReturn(Optional.ofNullable(documentDetails));

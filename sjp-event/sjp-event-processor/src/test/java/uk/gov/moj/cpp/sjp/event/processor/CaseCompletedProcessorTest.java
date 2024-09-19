@@ -5,9 +5,9 @@ import static java.util.UUID.randomUUID;
 import static javax.json.Json.createArrayBuilder;
 import static javax.json.Json.createObjectBuilder;
 import static org.hamcrest.CoreMatchers.allOf;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
-import static org.junit.Assert.assertThat;
-import static org.mockito.Matchers.any;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -45,17 +45,17 @@ import java.util.UUID;
 import javax.json.JsonObject;
 import javax.json.JsonValue;
 
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class CaseCompletedProcessorTest {
 
     private static final UUID CASE_ID = randomUUID();
@@ -90,7 +90,7 @@ public class CaseCompletedProcessorTest {
 
     private JsonObjectToObjectConverter jsonObjectToObjectConverter =null;
 
-    @Before
+    @BeforeEach
     public void setUp() {
         initMocks(this);
         jsonObjectToObjectConverter = new JsonObjectToObjectConverter();
@@ -111,8 +111,6 @@ public class CaseCompletedProcessorTest {
         final JsonObject responsePayload = createResponsePayload();
         final JsonEnvelope responseEnvelope = envelopeFrom(metadataFrom(envelope.metadata()).withName(CASE_RESULTS), responsePayload);
 
-        when(sjpService.getCaseDetails(any(), any())).thenReturn(buildCaseDetails());
-        when(requester.request(any())).thenReturn(responseEnvelope);
 
         caseCompletedProcessor.handleCaseCompleted(envelope);
 
@@ -142,15 +140,7 @@ public class CaseCompletedProcessorTest {
         final Session session = mock(uk.gov.justice.json.schemas.domains.sjp.queries.Session.class);
         final UUID sessionId = UUID.randomUUID();
 
-        when(caseDetails.getCaseApplication()).thenReturn(caseApplication);
-        when(caseApplication.getApplicationDecision()).thenReturn(queryApplicationDecision);
-        when(queryApplicationDecision.getSession()).thenReturn(session);
-        when(session.getSessionId()).thenReturn(sessionId);
-        when(caseDetails.getCaseApplication()).thenReturn(caseApplication);
-        when(sjpService.getCaseDetails(any(), any())).thenReturn(caseDetails);
         final JsonObject sessionJsonObject = mock(JsonObject.class);
-        when(sjpService.getSessionDetails(any(), any())).thenReturn(sessionJsonObject);
-        when(requester.request(any())).thenReturn(caseResultsResponse, commonCaseApplicationResponse);
 
         // when
         caseCompletedProcessor.handleCaseCompleted(envelope);
@@ -178,11 +168,8 @@ public class CaseCompletedProcessorTest {
         final JsonObject caseDetailsJson = getFileContentAsJson("CaseCompletedProcessorTest/sjp.query.case-it.json", new HashMap<>());
         final CaseDetails caseDetails = jsonObjectToObjectConverter.convert(caseDetailsJson, CaseDetails.class);
 
-        when(sjpService.getCaseDetails(any(), any())).thenReturn(caseDetails);
 
         final JsonObject sessionJsonObject = mock(JsonObject.class);
-        when(sjpService.getSessionDetails(any(), any())).thenReturn(sessionJsonObject);
-        when(requester.request(any())).thenReturn(caseResultsResponse);
 
         // when
         caseCompletedProcessor.handleCaseCompleted(envelope);

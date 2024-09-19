@@ -1,7 +1,7 @@
 package uk.gov.moj.cpp.sjp.query.view.service;
 
-import static org.junit.Assert.assertTrue;
-import static org.mockito.Matchers.eq;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 
 import uk.gov.moj.cpp.sjp.domain.Employer;
@@ -12,15 +12,15 @@ import java.util.Optional;
 import java.util.UUID;
 
 import org.apache.commons.lang3.builder.EqualsBuilder;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class EmployerServiceTest {
 
     private static final UUID DEFENDANT_ID = UUID.randomUUID();
@@ -38,7 +38,7 @@ public class EmployerServiceTest {
     @InjectMocks
     private EmployerService employerService;
 
-    @Before
+    @BeforeEach
     public void setup() {
         // given
         entityEmployer = new uk.gov.moj.cpp.sjp.persistence.entity.Employer(DEFENDANT_ID);

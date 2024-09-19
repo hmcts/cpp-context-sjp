@@ -6,8 +6,8 @@ import static java.util.UUID.randomUUID;
 import static org.apache.commons.lang3.RandomStringUtils.randomAlphanumeric;
 import static org.hamcrest.CoreMatchers.allOf;
 import static org.hamcrest.collection.IsMapContaining.hasEntry;
-import static org.mockito.Matchers.argThat;
-import static org.mockito.Matchers.eq;
+import static org.mockito.hamcrest.MockitoHamcrest.argThat;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderFactory.metadataWithRandomUUIDAndName;
@@ -39,14 +39,14 @@ import java.util.Optional;
 import java.util.UUID;
 
 import org.hamcrest.Matcher;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class CaseStateServiceTest {
 
     @Mock
@@ -60,7 +60,7 @@ public class CaseStateServiceTest {
     private String processId;
     private String metadataAsString;
 
-    @Before
+    @BeforeEach
     public void init() {
         caseId = randomUUID();
         processId = randomAlphanumeric(10);

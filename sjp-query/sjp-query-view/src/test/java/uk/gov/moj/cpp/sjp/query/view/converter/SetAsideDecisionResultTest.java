@@ -1,6 +1,6 @@
 package uk.gov.moj.cpp.sjp.query.view.converter;
 
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static uk.gov.moj.cpp.sjp.query.view.util.results.ResultsMatchers.D45;
 import static uk.gov.moj.cpp.sjp.query.view.util.results.ResultsMatchers.DPR;
 import static uk.gov.moj.cpp.sjp.query.view.util.results.ResultsMatchers.SETASIDE;
@@ -12,7 +12,7 @@ import uk.gov.moj.cpp.sjp.query.view.util.fakes.FakeCachedReferenceData;
 
 import javax.json.JsonObject;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 public class SetAsideDecisionResultTest {
 

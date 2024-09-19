@@ -45,9 +45,7 @@ import uk.gov.moj.cpp.sjp.event.transparency.PressTransparencyPDFReportRequested
 import java.io.ByteArrayInputStream;
 import java.time.LocalDate;
 import java.time.format.DateTimeParseException;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 
 import javax.inject.Inject;
 import javax.json.Json;
@@ -157,7 +155,7 @@ public class PressTransparencyReportRequestedProcessor {
      * generation {@link PressTransparencyPDFReportRequested} and {@link
      * PressTransparencyJSONReportRequested}
      */
-    @Deprecated
+    @Deprecated(forRemoval = true)
     @Handles("sjp.events.press-transparency-report-requested")
     @Transactional
     @SuppressWarnings({"squid:S00112", "squid:S1133"})

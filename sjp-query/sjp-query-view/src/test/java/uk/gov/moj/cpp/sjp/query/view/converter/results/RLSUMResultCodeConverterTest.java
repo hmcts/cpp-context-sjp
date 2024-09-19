@@ -7,37 +7,38 @@ import static org.mockito.MockitoAnnotations.initMocks;
 import java.util.Arrays;
 import java.util.Collection;
 
+import java.util.stream.Stream;
 import javax.json.JsonArray;
 import javax.json.JsonObject;
 
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 
-@RunWith(Parameterized.class)
 public class RLSUMResultCodeConverterTest extends ResultCodeConverterTest {
 
-    @Parameterized.Parameter
     public String lumpSumWithinTerminalEntry;
 
-    @Parameterized.Parameter(1)
     public String lumpSumWithinPrompt;
 
-    @Parameterized.Parameters(name ="Terminal entries with value {0} should be converted to prompt {1}")
-    public static Collection<Object[]> data() {
-        return Arrays.asList(new Object[][] {
-                { "Lump sum within 14 days", "lump sum 14 days"}, { "Lump sum within 28 days", "lump sum 28 days" }
-        });
+    static Stream<Arguments> data() {
+        return Stream.of(
+                Arguments.of( "Lump sum within 14 days", "lump sum 14 days"),
+                Arguments.of( "Lump sum within 28 days", "lump sum 28 days" )
+        );
     }
 
-    @Before
+    @BeforeEach
     public void setUp() {
         initMocks(this);
     }
 
-    @Test
-    public void shouldConvertReserveTermLumpSumResult() {
+    @ParameterizedTest
+    @MethodSource("data")
+    public void shouldConvertReserveTermLumpSumResult(String lumpSumWithinTerminalEntry, String lumpSumWithinPrompt) {
+        this.lumpSumWithinTerminalEntry = lumpSumWithinTerminalEntry;
+        this.lumpSumWithinPrompt = lumpSumWithinPrompt;
         super.testResultCode();
     }
 

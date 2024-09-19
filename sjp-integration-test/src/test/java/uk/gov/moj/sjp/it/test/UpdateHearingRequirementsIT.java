@@ -13,9 +13,9 @@ import uk.gov.moj.sjp.it.pollingquery.CasePoller;
 
 import java.util.UUID;
 
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 public class UpdateHearingRequirementsIT extends BaseIntegrationTest {
 
@@ -25,7 +25,7 @@ public class UpdateHearingRequirementsIT extends BaseIntegrationTest {
     private static UUID caseId;
     private static String defendantId;
 
-    @Before
+    @BeforeEach
     public void setUpNewCase() {
         updateHearingRequirementsHelper = new UpdateHearingRequirementsHelper();
         createCasePayloadBuilder = CreateCase.CreateCasePayloadBuilder.withDefaults();
@@ -41,7 +41,7 @@ public class UpdateHearingRequirementsIT extends BaseIntegrationTest {
         defendantId = CasePoller.pollUntilCaseByIdIsOk(caseId).getString("defendant.id");
     }
 
-    @After
+    @AfterEach
     public void tearDown() throws Exception {
         updateHearingRequirementsHelper.close();
     }

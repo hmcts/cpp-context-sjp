@@ -1,15 +1,13 @@
 package uk.gov.moj.cpp.sjp.query.view.service.defendantcase.search;
 
-import org.hamcrest.MatcherAssert;
-import org.hamcrest.core.Is;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
 import uk.gov.justice.services.core.enveloper.Enveloper;
 import uk.gov.justice.services.core.requester.Requester;
@@ -19,19 +17,18 @@ import uk.gov.moj.cpp.sjp.persistence.entity.Address;
 import uk.gov.moj.cpp.sjp.persistence.entity.DefendantDetail;
 import uk.gov.moj.cpp.sjp.persistence.entity.PersonalDetails;
 
+import javax.json.JsonObject;
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
 import java.util.UUID;
 
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.core.Is.is;
+import static org.hamcrest.Matchers.is;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
-import javax.json.JsonObject;
-
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 
 public class UnifiedDefendantCaseSearcherTest {
 
@@ -97,9 +94,6 @@ public class UnifiedDefendantCaseSearcherTest {
         address.setPostcode("IG5 6NZ");
         defendantDetail.setAddress(address);
         defendantDetail.setPersonalDetails(personalDetails);
-        Metadata metadata1 = Envelope.metadataBuilder().createdAt(ZonedDateTime.now()).withId(UUID.randomUUID()).withName("test").withClientCorrelationId(UUID.randomUUID().toString()).build();
-        when(envelope.metadata()).thenReturn(metadata1);
-        when(requester.requestAsAdmin(envelopeArgumentCaptor.capture(), anycapture.capture())).thenReturn(null);
         unifiedDefendantCaseSearcher.searchDefendantCases(envelope, defendantDetail);
         verifyNoMoreInteractions(requester);
     }
@@ -117,8 +111,6 @@ public class UnifiedDefendantCaseSearcherTest {
         defendantDetail.setAddress(address);
         defendantDetail.setPersonalDetails(personalDetails);
         Metadata metadata1 = Envelope.metadataBuilder().createdAt(ZonedDateTime.now()).withId(UUID.randomUUID()).withName("test").withClientCorrelationId(UUID.randomUUID().toString()).build();
-        when(envelope.metadata()).thenReturn(metadata1);
-        when(requester.requestAsAdmin(envelopeArgumentCaptor.capture(), anycapture.capture())).thenReturn(null);
         unifiedDefendantCaseSearcher.searchDefendantCases(envelope, defendantDetail);
         verifyNoMoreInteractions(requester);
     }
@@ -134,9 +126,6 @@ public class UnifiedDefendantCaseSearcherTest {
         address.setPostcode("IG5 6NZ");
         defendantDetail.setAddress(address);
         defendantDetail.setPersonalDetails(personalDetails);
-        Metadata metadata1 = Envelope.metadataBuilder().createdAt(ZonedDateTime.now()).withId(UUID.randomUUID()).withName("test").withClientCorrelationId(UUID.randomUUID().toString()).build();
-        when(envelope.metadata()).thenReturn(metadata1);
-        when(requester.requestAsAdmin(envelopeArgumentCaptor.capture(), anycapture.capture())).thenReturn(null);
         unifiedDefendantCaseSearcher.searchDefendantCases(envelope, defendantDetail);
         verifyNoMoreInteractions(requester);
     }

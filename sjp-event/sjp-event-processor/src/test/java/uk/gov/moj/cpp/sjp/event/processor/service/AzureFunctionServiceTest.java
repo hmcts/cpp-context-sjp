@@ -1,18 +1,21 @@
 package uk.gov.moj.cpp.sjp.event.processor.service;
 
+import uk.gov.justice.services.adapter.rest.exception.BadRequestException;
 import uk.gov.moj.cpp.sjp.event.processor.helper.HttpConnectionHelper;
 
 import java.io.IOException;
 
 import org.apache.http.HttpStatus;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.Mockito;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-@RunWith(MockitoJUnitRunner.class)
+import static org.junit.jupiter.api.Assertions.assertThrows;
+
+@ExtendWith(MockitoExtension.class)
 public class AzureFunctionServiceTest {
     private final String PAYLOAD = "dummy payload";
     @Mock
@@ -21,7 +24,7 @@ public class AzureFunctionServiceTest {
     @Mock
     private ApplicationParameters applicationParameters;
 
-    @Before
+    @BeforeEach
     public void initMocks() {
         Mockito.when(applicationParameters.getAzureFunctionHostName()).thenReturn("hostname");
         Mockito.when(applicationParameters.getRelayCaseOnCppFunctionPath()).thenReturn("RelayCaseOnCppFunctionPath");
@@ -34,11 +37,11 @@ public class AzureFunctionServiceTest {
         Integer response =azureFunctionService.relayCaseOnCPP(PAYLOAD);
     }
 
-    @Test(expected = IOException.class)
+    @Test
     public void relayCaseOnCPPFailed() throws IOException {
 
         Mockito.when(httpConnectionHelper.getResponseCode(Mockito.anyString(), Mockito.anyString())).thenThrow(IOException.class);
         AzureFunctionService azureFunctionService = new AzureFunctionService(httpConnectionHelper, applicationParameters);
-        Integer response =azureFunctionService.relayCaseOnCPP(PAYLOAD);
+        assertThrows(IOException.class, () -> azureFunctionService.relayCaseOnCPP(PAYLOAD));
     }
 }

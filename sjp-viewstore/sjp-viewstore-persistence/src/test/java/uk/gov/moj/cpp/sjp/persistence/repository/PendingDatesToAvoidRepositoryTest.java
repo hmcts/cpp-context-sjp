@@ -4,7 +4,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasSize;
 
-import uk.gov.justice.services.test.utils.persistence.BaseTransactionalTest;
+import uk.gov.justice.services.test.utils.persistence.BaseTransactionalJunit4Test;
 import uk.gov.moj.cpp.sjp.persistence.builder.DatesToAvoidTestData;
 import uk.gov.moj.cpp.sjp.persistence.entity.CaseDetail;
 import uk.gov.moj.cpp.sjp.persistence.entity.PendingDatesToAvoid;
@@ -23,7 +23,7 @@ import org.junit.runner.RunWith;
 
 
 @RunWith(CdiTestRunner.class)
-public class PendingDatesToAvoidRepositoryTest extends BaseTransactionalTest {
+public class PendingDatesToAvoidRepositoryTest extends BaseTransactionalJunit4Test {
 
     @Inject
     private PendingDatesToAvoidRepository pendingDatesToAvoidRepository;

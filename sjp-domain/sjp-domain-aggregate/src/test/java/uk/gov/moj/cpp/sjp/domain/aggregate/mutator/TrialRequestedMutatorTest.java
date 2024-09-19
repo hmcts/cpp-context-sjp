@@ -1,6 +1,6 @@
 package uk.gov.moj.cpp.sjp.domain.aggregate.mutator;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import uk.gov.moj.cpp.sjp.domain.aggregate.state.CaseAggregateState;
 import uk.gov.moj.cpp.sjp.event.TrialRequested;
 
@@ -8,7 +8,7 @@ import java.time.ZonedDateTime;
 import java.util.UUID;
 
 import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
 
 public class TrialRequestedMutatorTest {
 

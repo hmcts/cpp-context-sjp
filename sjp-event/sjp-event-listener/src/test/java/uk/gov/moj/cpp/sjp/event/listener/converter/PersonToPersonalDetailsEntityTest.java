@@ -1,7 +1,7 @@
 package uk.gov.moj.cpp.sjp.event.listener.converter;
 
 import static org.apache.commons.lang3.builder.EqualsBuilder.reflectionEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -11,13 +11,13 @@ import uk.gov.moj.cpp.sjp.persistence.entity.Address;
 import uk.gov.moj.cpp.sjp.persistence.entity.ContactDetails;
 import uk.gov.moj.cpp.sjp.persistence.entity.PersonalDetails;
 
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class PersonToPersonalDetailsEntityTest {
 
     @Mock
@@ -32,13 +32,6 @@ public class PersonToPersonalDetailsEntityTest {
     @Test
     public void shouldConvertPersonToPersonalDetailsEntity() {
         Person inputPerson = CaseBuilder.aDefaultSjpCase().build().getDefendant();
-
-        final Address mockedAddress = mock(Address.class);
-        when(addressToAddressEntityConverter.convert(inputPerson.getAddress())).thenReturn(mockedAddress);
-
-        final ContactDetails mockedContactDetails = mock(ContactDetails.class);
-        when(contactDetailsToContactDetailsEntityConverter.convert(inputPerson.getContactDetails())).thenReturn(mockedContactDetails);
-
         final PersonalDetails outputPersonalDetails = converterUnderTest.convert(inputPerson);
 
         final PersonalDetails expectedPerson = new PersonalDetails(

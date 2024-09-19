@@ -5,7 +5,7 @@ import static org.junit.Assert.assertThat;
 import static uk.gov.moj.cpp.sjp.domain.DocumentFormat.PDF;
 import static uk.gov.moj.cpp.sjp.domain.DocumentRequestType.DELTA;
 
-import uk.gov.justice.services.test.utils.persistence.BaseTransactionalTest;
+import uk.gov.justice.services.test.utils.persistence.BaseTransactionalJunit4Test;
 import uk.gov.moj.cpp.sjp.persistence.entity.PressTransparencyReportMetadata;
 
 import java.time.LocalDateTime;
@@ -18,7 +18,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 @RunWith(CdiTestRunner.class)
-public class PressTransparencyReportMetadataRepositoryTest extends BaseTransactionalTest {
+public class PressTransparencyReportMetadataRepositoryTest extends BaseTransactionalJunit4Test {
 
     @Inject
     private PressTransparencyReportMetadataRepository pressTransparencyReportMetadataRepository;

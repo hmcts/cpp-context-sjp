@@ -5,6 +5,7 @@ import uk.gov.justice.domain.annotation.Event;
 import java.io.Serializable;
 import java.util.UUID;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 
@@ -16,6 +17,7 @@ public class CaseAlreadyCompleted implements Serializable {
     private final UUID caseId;
     private final String description;
 
+    @JsonCreator
     public CaseAlreadyCompleted(UUID caseId, String description) {
         this.caseId = caseId;
         this.description = description;

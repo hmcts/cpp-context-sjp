@@ -3,8 +3,8 @@ package uk.gov.moj.cpp.sjp.event.processor;
 import static java.util.UUID.randomUUID;
 import static javax.json.Json.createObjectBuilder;
 import static org.hamcrest.core.Is.is;
-import static org.junit.Assert.assertThat;
-import static org.mockito.Matchers.any;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -31,17 +31,17 @@ import java.util.UUID;
 
 import javax.json.JsonObject;
 
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class CaseCompletedProcessorResultsTest {
 
     private static final UUID CASE_ID = randomUUID();
@@ -71,7 +71,7 @@ public class CaseCompletedProcessorResultsTest {
 
     private JsonObjectToObjectConverter jsonObjectToObjectConverter = null;
 
-    @Before
+    @BeforeEach
     public void setUp() {
 
         jsonObjectToObjectConverter = new JsonObjectToObjectConverter();
@@ -94,8 +94,6 @@ public class CaseCompletedProcessorResultsTest {
         final JsonObject caseDetailsJson = getFileContentAsJson("CaseCompletedProcessorTest/sjp.query.case-it.json", new HashMap<>());
         final CaseDetails caseDetails = jsonObjectToObjectConverter.convert(caseDetailsJson, CaseDetails.class);
 
-        when(sjpService.getCaseDetails(any(), any())).thenReturn(caseDetails);
-        when(requester.request(any())).thenReturn(caseResultsResponse);
 
 
         // when

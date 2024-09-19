@@ -2,11 +2,11 @@ package uk.gov.moj.cpp.sjp.event.processor;
 
 import static java.time.ZoneOffset.UTC;
 import static java.util.UUID.randomUUID;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertThat;
-import static org.mockito.Matchers.eq;
-import static org.mockito.Matchers.notNull;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.notNull;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.justice.services.core.annotation.Component.EVENT_PROCESSOR;
@@ -42,13 +42,14 @@ import java.util.UUID;
 
 import javax.json.Json;
 
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class PleaUpdatedProcessorTest {
 
     @Mock
@@ -103,7 +104,16 @@ public class PleaUpdatedProcessorTest {
 
         pleaUpdatedProcessor.handlePleaUpdated(privateEvent);
 
-        verify(caseStateService).pleaUpdated(caseId, offenceId, pleaType, metadataCreatedAt, privateEvent.metadata());
+        final ArgumentCaptor<ZonedDateTime> createdAtCaptor = ArgumentCaptor.forClass(ZonedDateTime.class);
+
+        verify(caseStateService).pleaUpdated(eq(caseId), eq(offenceId), eq(pleaType), createdAtCaptor.capture(), eq(privateEvent.metadata()));
+
+        final ZonedDateTime actualCreatedAt = createdAtCaptor.getValue();
+        assertThat(actualCreatedAt.getYear(), is(metadataCreatedAt.getYear()));
+        assertThat(actualCreatedAt.getMonth(), is(metadataCreatedAt.getMonth()));
+        assertThat(actualCreatedAt.getHour(), is(metadataCreatedAt.getHour()));
+        assertThat(actualCreatedAt.getMinute(), is(metadataCreatedAt.getMinute()));
+        assertThat(actualCreatedAt.getSecond(), is(metadataCreatedAt.getSecond()));
     }
 
     @Test

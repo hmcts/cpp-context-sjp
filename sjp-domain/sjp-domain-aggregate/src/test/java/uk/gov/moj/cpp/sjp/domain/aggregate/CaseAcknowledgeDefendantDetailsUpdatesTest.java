@@ -9,7 +9,7 @@ import uk.gov.moj.cpp.sjp.event.DefendantNotFound;
 
 import java.util.UUID;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /**
  * Tests for {@link CaseAggregate#acknowledgeDefendantDetailsUpdates}

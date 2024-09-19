@@ -90,8 +90,8 @@ import java.util.Optional;
 import java.util.UUID;
 
 import com.google.common.collect.Sets;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 public class CaseApplicationtIT extends BaseIntegrationTest {
 
@@ -123,7 +123,7 @@ public class CaseApplicationtIT extends BaseIntegrationTest {
     private static final String UNRECOGNIZED_APP = "Unrecognized application type or code";
     private static final String createCaseApplicationFile = "CaseApplicationIT/sjp.command.create-case-application.json";
 
-    @Before
+    @BeforeEach
     public void setUp() throws SQLException {
         caseId = randomUUID();
         offenceId = randomUUID();

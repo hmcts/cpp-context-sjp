@@ -1,6 +1,6 @@
 package uk.gov.moj.cpp;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import uk.gov.moj.cpp.sjp.CaseReceivedEventTransformer;
 
 public class CaseReceivedEventTransformerTest {

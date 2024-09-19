@@ -39,8 +39,8 @@ import java.util.List;
 import java.util.UUID;
 
 import com.google.common.collect.Sets;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 public class DecisionOnCasesWithoutDefendantPostcodeIT extends BaseIntegrationTest {
 
@@ -53,7 +53,7 @@ public class DecisionOnCasesWithoutDefendantPostcodeIT extends BaseIntegrationTe
     private LocalDate postingDate = now().minusDays(NOTICE_PERIOD_IN_DAYS + 1);
     private final EventListener eventListener = new EventListener();
 
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
 
         new SjpDatabaseCleaner().cleanViewStore();

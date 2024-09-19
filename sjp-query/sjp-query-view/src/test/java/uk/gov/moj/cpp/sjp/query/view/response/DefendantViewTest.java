@@ -2,7 +2,7 @@ package uk.gov.moj.cpp.sjp.query.view.response;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import uk.gov.moj.cpp.sjp.persistence.entity.CaseDetail;
 import uk.gov.moj.cpp.sjp.persistence.entity.DefendantDetail;
@@ -10,7 +10,7 @@ import uk.gov.moj.cpp.sjp.persistence.entity.InterpreterDetail;
 
 import java.util.UUID;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 public class DefendantViewTest {
 

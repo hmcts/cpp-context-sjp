@@ -12,7 +12,7 @@ import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.mockito.Mockito.when;
 import static uk.gov.justice.json.schemas.domains.sjp.ApplicationType.REOPENING;
 import static uk.gov.justice.json.schemas.domains.sjp.ApplicationType.STAT_DEC;
@@ -63,15 +63,15 @@ import javax.json.JsonObject;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.lang3.tuple.Pair;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class EndorsementRemovalNotificationServiceTest {
 
     private static final String OFFENCE_CODE = "OFFENCE_CODE";
@@ -114,7 +114,7 @@ public class EndorsementRemovalNotificationServiceTest {
     private ZonedDateTime applicationSavedAt;
     private CaseDetailsDecorator caseDetails;
 
-    @Before
+    @BeforeEach
     public void setUp() {
         caseId = randomUUID();
         sessionId = randomUUID();

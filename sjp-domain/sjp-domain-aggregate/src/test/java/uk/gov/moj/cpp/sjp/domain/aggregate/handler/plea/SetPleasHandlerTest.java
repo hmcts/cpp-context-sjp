@@ -6,7 +6,7 @@ import static java.util.UUID.randomUUID;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toSet;
 import static org.hamcrest.Matchers.containsInAnyOrder;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static uk.gov.justice.json.schemas.domains.sjp.User.user;
 import static uk.gov.moj.cpp.sjp.domain.DomainConstants.NUMBER_DAYS_WAITING_FOR_DATES_TO_AVOID;
 import static uk.gov.moj.cpp.sjp.domain.disability.DisabilityNeeds.disabilityNeedsOf;
@@ -43,8 +43,8 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 public class SetPleasHandlerTest {
 
@@ -62,7 +62,7 @@ public class SetPleasHandlerTest {
 
     private CaseAggregateState caseAggregateState;
 
-    @Before
+    @BeforeEach
     public void onceBeforeEachTest() {
         caseAggregateState = new CaseAggregateState();
         caseAggregateState.setCaseId(caseId);

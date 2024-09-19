@@ -3,13 +3,14 @@ package uk.gov.moj.cpp.sjp.event.listener;
 import static java.time.ZoneOffset.UTC;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
 import static uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderFactory.metadataWithRandomUUID;
 
+import java.time.temporal.ChronoUnit;
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.sjp.domain.Address;
@@ -34,15 +35,17 @@ import java.util.UUID;
 
 import javax.json.JsonObject;
 
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.junit.jupiter.MockitoSettings;
+import org.mockito.quality.Strictness;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class DefendantPersonalDetailsUpdatedTest {
 
     @InjectMocks
@@ -113,12 +116,10 @@ public class DefendantPersonalDetailsUpdatedTest {
 
         when(jsonObjectToObjectConverter.convert(payload, DefendantNameUpdated.class)).thenReturn(defendantNameUpdated);
         when(caseRepository.findBy(defendantNameUpdated.getCaseId())).thenReturn(caseDetail);
-        when(caseDetail.getDefendant()).thenReturn(defendantDetail);
-        when(defendantDetail.getPersonalDetails()).thenReturn(personalDetails);
 
         defendantPersonalDetailsChangesListener.defendantNameUpdated(envelope);
 
-        verify(caseDetail).markDefendantNameUpdated(eventCreationTime);
+        verify(caseDetail).markDefendantNameUpdated(eventCreationTime.truncatedTo(ChronoUnit.MILLIS));
         verify(caseRepository).save(caseDetail);
     }
 
@@ -133,9 +134,6 @@ public class DefendantPersonalDetailsUpdatedTest {
 
         ZonedDateTime updatedAt = ZonedDateTime.now(UTC);
         when(defendantNameUpdated.getUpdatedAt()).thenReturn(updatedAt);
-
-        when(caseDetail.getDefendant()).thenReturn(defendantDetail);
-        when(defendantDetail.getPersonalDetails()).thenReturn(personalDetails);
 
         defendantPersonalDetailsChangesListener.defendantNameUpdated(envelope);
 
@@ -155,9 +153,6 @@ public class DefendantPersonalDetailsUpdatedTest {
         ZonedDateTime updatedAt = ZonedDateTime.now(UTC);
         when(defendantDateOfBirthUpdated.getUpdatedAt()).thenReturn(updatedAt);
 
-        when(caseDetail.getDefendant()).thenReturn(defendantDetail);
-        when(defendantDetail.getPersonalDetails()).thenReturn(personalDetails);
-
         defendantPersonalDetailsChangesListener.defendantDateOfBirthUpdated(envelope);
 
         verify(caseDetail).markDefendantDateOfBirthUpdated(updatedAt);
@@ -175,9 +170,6 @@ public class DefendantPersonalDetailsUpdatedTest {
 
         ZonedDateTime updatedAt = ZonedDateTime.now(UTC);
         when(defendantAddressUpdated.getUpdatedAt()).thenReturn(updatedAt);
-
-        when(caseDetail.getDefendant()).thenReturn(defendantDetail);
-        when(defendantDetail.getPersonalDetails()).thenReturn(personalDetails);
 
         defendantPersonalDetailsChangesListener.defendantAddressUpdated(envelope);
 
@@ -222,19 +214,11 @@ public class DefendantPersonalDetailsUpdatedTest {
                 metadataWithRandomUUID("sjp.events.defendant-detail-update-requested"),
                 payload);
         UUID caseId = UUID.randomUUID();
-        DefendantDetailUpdateRequest detailUpdateRequest = new DefendantDetailUpdateRequest.Builder()
-                .withCaseId(caseId)
-                .withNameUpdated(true)
-                .withAddressUpdated(true)
-                .withDobUpdated(true)
-                .build();
+
         when(jsonObjectToObjectConverter.convert(payload, DefendantDetailUpdateRequested.class)).thenReturn(defendantDetailUpdateRequested);
-        when(defendantDetailUpdateRequested.getCaseId()).thenReturn(caseId);
-        when(defendantDetailUpdateRequestRepository.findBy(caseId)).thenReturn(null);
         when(defendantDetailUpdateRequested.getNameUpdated()).thenReturn(true);
         when(defendantDetailUpdateRequested.getAddressUpdated()).thenReturn(true);
         when(defendantDetailUpdateRequested.getDobUpdated()).thenReturn(true);
-        when(defendantNameUpdateRequested.getCaseId()).thenReturn(caseId);
 
         defendantPersonalDetailsChangesListener.defendantDetailUpdateRequested(envelope);
 

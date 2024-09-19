@@ -1,7 +1,7 @@
 package uk.gov.moj.sjp.it.verifier;
 
 import static org.hamcrest.CoreMatchers.is;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static uk.gov.moj.sjp.it.Constants.EVENT_SELECTOR_CASE_RECEIVED;
 import static uk.gov.moj.sjp.it.util.TopicUtil.retrieveMessage;
 
@@ -14,7 +14,7 @@ import java.util.UUID;
 import javax.jms.JMSException;
 import javax.jms.MessageConsumer;
 
-import com.jayway.restassured.path.json.JsonPath;
+import io.restassured.path.json.JsonPath;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

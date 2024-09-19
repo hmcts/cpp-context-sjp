@@ -2,16 +2,13 @@ package uk.gov.moj.cpp.sjp.persistence.repository;
 
 import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
-import static java.util.UUID.randomUUID;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
 
 import uk.gov.justice.services.common.util.Clock;
-import uk.gov.justice.services.test.utils.persistence.BaseTransactionalTest;
+import uk.gov.justice.services.test.utils.persistence.BaseTransactionalJunit4Test;
 import uk.gov.moj.cpp.sjp.persistence.entity.CaseAssignmentRestriction;
 
-import java.util.List;
-import java.util.UUID;
 
 import javax.inject.Inject;
 
@@ -24,7 +21,7 @@ import org.junit.runner.RunWith;
 @RunWith(CdiTestRunner.class)
 @Ignore
 // This test is ignored since h2 does not support jsonb type
-public class CaseAssignmentRestrictionRepositoryTest extends BaseTransactionalTest {
+public class CaseAssignmentRestrictionRepositoryTest extends BaseTransactionalJunit4Test {
 
     private static final String PROSECUTING_AUTHORITY_TVL = "TVL";
     private static final String PROSECUTING_AUTHORITY_TFL = "TFL";

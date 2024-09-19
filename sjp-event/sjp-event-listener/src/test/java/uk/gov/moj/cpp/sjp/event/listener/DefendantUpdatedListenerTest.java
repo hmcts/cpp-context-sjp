@@ -4,9 +4,9 @@ import static java.util.Collections.singletonList;
 import static org.apache.commons.lang3.builder.EqualsBuilder.reflectionEquals;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.Matchers.hasSize;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -33,7 +33,6 @@ import uk.gov.moj.cpp.sjp.persistence.entity.DefendantDetail;
 import uk.gov.moj.cpp.sjp.persistence.entity.PersonalDetails;
 import uk.gov.moj.cpp.sjp.persistence.repository.CaseRepository;
 import uk.gov.moj.cpp.sjp.persistence.repository.CaseSearchResultRepository;
-import uk.gov.moj.cpp.sjp.persistence.repository.OnlinePleaRepository;
 
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
@@ -42,9 +41,9 @@ import java.util.UUID;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Lists;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Answers;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
@@ -52,9 +51,9 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.mockito.Spy;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class DefendantUpdatedListenerTest {
 
     private final Clock clock = new UtcClock();
@@ -67,8 +66,7 @@ public class DefendantUpdatedListenerTest {
 
     @Spy
     @InjectMocks
-    private final CaseSearchResultService caseSearchResultService = new CaseSearchResultService();
-
+    private  CaseSearchResultService caseSearchResultService;
     @Spy
     @InjectMocks
     private ObjectToJsonObjectConverter objectToJsonObjectConverter;
@@ -112,21 +110,9 @@ public class DefendantUpdatedListenerTest {
     @Captor
     private ArgumentCaptor<CaseSearchResult> actualSearchResultsCaptor;
 
-    @Before
+    @BeforeEach
     public void setup() {
         MockitoAnnotations.initMocks(this);
-    }
-
-    private void setupMocks(final UUID caseId) {
-        when(caseRepository.findBy(caseId)).thenReturn(caseDetail);
-
-        caseDetail.getDefendant().setPersonalDetails(
-                new PersonalDetails(
-                        previousTitle, "Joe", "Blogs", LocalDate.of(1965, 8, 6),
-                        previousGender, previousNiNumber, null, null));
-
-        when(caseRepository.findCaseDefendant(caseId)).thenReturn(caseDetail.getDefendant());
-        when(caseSearchResultRepository.findByCaseId(caseId)).thenReturn(Lists.newArrayList(buildCaseSearchResult(caseDetail)));
     }
 
     private DefendantDetailsUpdated defendantDetailsUpdated(final boolean updateByOnlinePlea, final boolean nationalInsuranceNumberSuppliedInRequest) {
@@ -140,7 +126,15 @@ public class DefendantUpdatedListenerTest {
         }
 
         final DefendantDetailsUpdated defendantDetailsUpdated = defendantDetailsUpdatedBuilder.build();
-        setupMocks(defendantDetailsUpdated.getCaseId());
+        final UUID caseId = defendantDetailsUpdated.getCaseId();
+        when(caseRepository.findBy(caseId)).thenReturn(caseDetail);
+
+        caseDetail.getDefendant().setPersonalDetails(
+                new PersonalDetails(
+                        previousTitle, "Joe", "Blogs", LocalDate.of(1965, 8, 6),
+                        previousGender, previousNiNumber, null, null));
+
+        when(caseSearchResultRepository.findByCaseId(caseId)).thenReturn(Lists.newArrayList(buildCaseSearchResult(caseDetail)));
 
         return defendantDetailsUpdated;
     }
@@ -155,7 +149,15 @@ public class DefendantUpdatedListenerTest {
         defendantDetailsUpdatedBuilder.withDriverLicenceDetails("driver_licence_details");
 
         final DefendantDetailsUpdated defendantDetailsUpdated = defendantDetailsUpdatedBuilder.build();
-        setupMocks(defendantDetailsUpdated.getCaseId());
+        final UUID caseId = defendantDetailsUpdated.getCaseId();
+        when(caseRepository.findBy(caseId)).thenReturn(caseDetail);
+
+        caseDetail.getDefendant().setPersonalDetails(
+                new PersonalDetails(
+                        previousTitle, "Joe", "Blogs", LocalDate.of(1965, 8, 6),
+                        previousGender, previousNiNumber, null, null));
+
+        when(caseSearchResultRepository.findByCaseId(caseId)).thenReturn(Lists.newArrayList(buildCaseSearchResult(caseDetail)));
 
         return defendantDetailsUpdated;
     }
@@ -203,7 +205,14 @@ public class DefendantUpdatedListenerTest {
                 caseDetail.getDefendant().getId(),
                 caseDetail.getDefendant().getPersonalDetails().getNationalInsuranceNumber()
         );
-        setupMocks(event.getCaseId());
+        final UUID caseId = event.getCaseId();
+
+        caseDetail.getDefendant().setPersonalDetails(
+                new PersonalDetails(
+                        previousTitle, "Joe", "Blogs", LocalDate.of(1965, 8, 6),
+                        previousGender, previousNiNumber, null, null));
+
+        when(caseRepository.findCaseDefendant(caseId)).thenReturn(caseDetail.getDefendant());
 
         defendantUpdatedListener.defendantNationalInsuranceNumberUpdated(command(event));
     }

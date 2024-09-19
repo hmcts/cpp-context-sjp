@@ -2,15 +2,15 @@ package uk.gov.moj.cpp.sjp.command.handler;
 
 import org.hamcrest.Matchers;
 import org.hamcrest.core.AllOf;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.justice.json.schemas.domains.sjp.ApplicationStatus;
 import uk.gov.justice.services.common.util.Clock;
 import uk.gov.justice.services.common.util.UtcClock;
@@ -37,8 +37,8 @@ import static javax.json.Json.createObjectBuilder;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.allOf;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.eq;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
@@ -52,7 +52,7 @@ import static uk.gov.moj.cpp.sjp.domain.common.CaseStatus.APPEALED;
 import static uk.gov.moj.cpp.sjp.domain.common.CaseStatus.RELISTED;
 import static uk.gov.moj.cpp.sjp.domain.util.DefaultTestData.CASE_ID;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class UpdateCaseApplicationHandlerTest {
 
     private static final String CASE_ID_PROPERTY = "caseId";
@@ -82,7 +82,7 @@ public class UpdateCaseApplicationHandlerTest {
     @Spy
     private Clock clock = new UtcClock();
 
-    @Before
+    @BeforeEach
     public void setUp() {
         when(eventSource.getStreamById(eq(CASE_ID))).thenReturn(eventStream);
         when(aggregateService.get(any(EventStream.class), eq(CaseAggregate.class))).thenReturn(caseAggregate);

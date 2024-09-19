@@ -22,8 +22,8 @@ import java.util.List;
 import java.util.UUID;
 import java.util.stream.Stream;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 public class UpdateEmployerTest {
 
@@ -37,7 +37,7 @@ public class UpdateEmployerTest {
 
     private UUID userId = UUID.randomUUID();
 
-    @Before
+    @BeforeEach
     public void init() {
         caseAggregate = new CaseAggregate();
         defendantId = receiveCase().getDefendant().getId();

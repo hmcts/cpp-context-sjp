@@ -12,8 +12,8 @@ import uk.gov.moj.sjp.it.helper.CaseSearchResultHelper;
 
 import java.util.UUID;
 
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 
 public class SearchCasesAccessControlIT extends BaseIntegrationTest {
 
@@ -27,7 +27,7 @@ public class SearchCasesAccessControlIT extends BaseIntegrationTest {
     private static final String defendantLastName = "LAST_NAME_" + new StringGenerator().next();
     private static String companyName = "legalEntityName";
 
-    @BeforeClass
+    @BeforeAll
     public static void setupCasesAndUsers() {
         stubForUserDetails(ALL_PROSECUTING_AUTHORITY_ACCESS_USER, "ALL");
         stubForUserDetails(PROSECUTING_AUTHORITY_1_ACCESS_USER, PROSECUTING_AUTHORITY_1.name());

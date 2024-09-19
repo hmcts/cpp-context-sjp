@@ -4,7 +4,7 @@ import static java.util.Arrays.asList;
 import static java.util.stream.Collectors.toList;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static uk.gov.moj.cpp.sjp.domain.aggregate.handler.SetDatesToAvoidRequiredAggregateHandler.INSTANCE;
 import static uk.gov.moj.cpp.sjp.domain.plea.PleaType.NOT_GUILTY;
 
@@ -18,8 +18,8 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Stream;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 public class SetDatesToAvoidRequiredAggregateHandlerTest {
 
@@ -29,7 +29,7 @@ public class SetDatesToAvoidRequiredAggregateHandlerTest {
 
     private LocalDate pleaDate;
 
-    @Before
+    @BeforeEach
     public void setUp() {
         // given
         final UUID offenceId = UUID.randomUUID();

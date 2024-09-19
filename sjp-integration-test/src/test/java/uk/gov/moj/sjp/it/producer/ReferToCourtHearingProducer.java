@@ -1,5 +1,6 @@
 package uk.gov.moj.sjp.it.producer;
 
+import static uk.gov.moj.sjp.it.Constants.PUBLIC_EVENT;
 import static uk.gov.moj.sjp.it.util.FileUtil.getFileContentAsJson;
 
 import uk.gov.justice.services.test.utils.core.messaging.MessageProducerClient;
@@ -37,7 +38,7 @@ public final class ReferToCourtHearingProducer {
                 .build());
 
         try (final MessageProducerClient producerClient = new MessageProducerClient()) {
-            producerClient.startProducer("public.event");
+            producerClient.startProducer(PUBLIC_EVENT);
             producerClient.sendMessage("public.progression.refer-prosecution-cases-to-court-rejected", payload);
         }
     }

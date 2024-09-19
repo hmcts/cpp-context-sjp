@@ -1,39 +1,32 @@
 package uk.gov.moj.cpp.sjp.command.handler;
 
 import static java.time.ZoneOffset.UTC;
-import static java.util.Arrays.asList;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.util.stream.Stream;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.Spy;
 import uk.gov.justice.services.common.util.Clock;
 import uk.gov.justice.services.eventsourcing.source.core.exception.EventStreamException;
 
 import java.time.ZonedDateTime;
-import java.util.Collection;
 import java.util.Optional;
 import java.util.UUID;
 
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
-import org.junit.runners.Parameterized.Parameter;
-import org.junit.runners.Parameterized.Parameters;
 import org.mockito.InjectMocks;
 import org.mockito.verification.VerificationMode;
 import uk.gov.justice.services.test.utils.common.helper.StoppedClock;
-import uk.gov.moj.cpp.sjp.domain.plea.PleaMethod;
+import uk.gov.moj.cpp.sjp.domain.aggregate.CaseAggregate;
 
-@RunWith(Parameterized.class)
 public class UpdateHearingRequirementsHandlerTest extends CaseCommandHandlerTest {
 
     private static final String FRENCH = "French";
-
-    private UUID defendantId;
 
     @Spy
     private Clock clock = new StoppedClock(ZonedDateTime.now(UTC));
@@ -41,31 +34,38 @@ public class UpdateHearingRequirementsHandlerTest extends CaseCommandHandlerTest
     @InjectMocks
     private UpdateHearingRequirementsHandler updateHearingRequirementsHandler;
 
-    @Parameter(0)
-    public String interpreterLanguage;
-
-    @Parameter(1)
-    public Boolean speakWelsh;
-
-    @Parameters(name = "updateHearingRequirements() handles interpreterLanguage={0} and speakWelsh={1}")
-    public static Collection<Object[]> data() {
-        return asList(new Object[][]{
-                {FRENCH, true},
-                {FRENCH, false},
-                {FRENCH, null},
-                {"", true},
-                {"", false},
-                {"", null},
-                {null, true},
-                {null, false},
-                {null, null}
-        });
+    @BeforeEach
+    void setUp() {
+        super.setupMocks();
+        when(jsonEnvelope.payloadAsJsonObject()).thenReturn(jsonObject);
+        when(jsonObject.getString(CaseCommandHandler.STREAM_ID)).thenReturn(CASE_ID.toString());
+        when(eventSource.getStreamById(CASE_ID)).thenReturn(eventStream);
+        when(aggregateService.get(eventStream, CaseAggregate.class)).thenReturn(caseAggregate);
+        when(enveloper.withMetadataFrom(jsonEnvelope)).thenReturn(function);
+        when(events.map(function)).thenReturn(jsonEvents);
     }
 
-    @Before
-    public void prepareJsonEnvelope() {
-        // GIVEN
-        defendantId = UUID.randomUUID();
+    static Stream<Arguments> data() {
+        return Stream.of(
+                Arguments.of(FRENCH, true),
+                Arguments.of(FRENCH, false),
+                Arguments.of(FRENCH, null),
+                Arguments.of("", true),
+                Arguments.of("", false),
+                Arguments.of("", null),
+                Arguments.of(null, true),
+                Arguments.of(null, false),
+                Arguments.of(null, null)
+        );
+    }
+
+    @ParameterizedTest
+    @MethodSource("data")
+    public void whenUpdateHearingRequirements(String interpreterLanguage, Boolean speakWelsh) throws EventStreamException {
+        var defendantId = UUID.randomUUID();
+        when(jsonEnvelope.metadata()).thenReturn(metadata);
+        when(metadata.userId()).thenReturn(Optional.of(userId.toString()));
+        when(metadata.name()).thenReturn(ACTION_NAME);
 
         when(jsonObject.getString("defendantId")).thenReturn(defendantId.toString());
         when(jsonObject.getString("interpreterLanguage", null)).thenReturn(interpreterLanguage);
@@ -75,20 +75,13 @@ public class UpdateHearingRequirementsHandlerTest extends CaseCommandHandlerTest
                 .ifPresent(nonNullSpeakWelsh -> when(jsonObject.getBoolean("speakWelsh")).thenReturn(nonNullSpeakWelsh));
 
         when(caseAggregate.updateHearingRequirements(userId, defendantId, interpreterLanguage, speakWelsh)).thenReturn(events);
-    }
 
-    @Test
-    public void whenUpdateHearingRequirements() throws EventStreamException {
         // WHEN
         updateHearingRequirementsHandler.updateHearingRequirements(jsonEnvelope);
 
         // THEN updateHearingRequirements called with expected Parameters
         verify(caseAggregate).updateHearingRequirements(userId, defendantId, interpreterLanguage, speakWelsh);
-    }
 
-    @After
-    public void thenVerifyMockCalls() {
-        // THEN
         verify(jsonObject).getString("defendantId");
         verify(jsonObject).getString("interpreterLanguage", null);
         verify(jsonObject).containsKey("speakWelsh");
@@ -96,5 +89,4 @@ public class UpdateHearingRequirementsHandlerTest extends CaseCommandHandlerTest
         final VerificationMode getSpeakWelshBoolean = speakWelsh == null ? never() : times(1);
         verify(jsonObject, getSpeakWelshBoolean).getBoolean("speakWelsh");
     }
-
 }

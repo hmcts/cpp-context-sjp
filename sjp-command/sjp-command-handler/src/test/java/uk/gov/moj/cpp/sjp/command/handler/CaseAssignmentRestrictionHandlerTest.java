@@ -6,7 +6,7 @@ import static java.util.Collections.singletonList;
 import static org.hamcrest.CoreMatchers.allOf;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.mockito.Mockito.when;
 import static org.mockito.Mockito.verify;
 import static uk.gov.justice.services.core.annotation.Component.COMMAND_HANDLER;
@@ -30,6 +30,7 @@ import uk.gov.justice.services.eventsourcing.source.core.EventStream;
 import uk.gov.justice.services.eventsourcing.source.core.exception.EventStreamException;
 import uk.gov.justice.services.messaging.Envelope;
 import uk.gov.justice.services.messaging.JsonEnvelope;
+import uk.gov.justice.services.test.utils.common.helper.StoppedClock;
 import uk.gov.justice.services.test.utils.core.enveloper.EnveloperFactory;
 import uk.gov.moj.cpp.sjp.domain.aggregate.CaseAssignmentRestrictionAggregate;
 
@@ -41,21 +42,21 @@ import java.util.stream.Stream;
 
 import javax.json.JsonValue;
 
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class CaseAssignmentRestrictionHandlerTest {
     private static final String PROSECUTING_AUTHORITY = "TVL";
     private static final List<String> INCLUDE_ONLY = singletonList("1234");
     private static final List<String> EXCLUDE = singletonList("9876");
-    private static final ZonedDateTime DATE_TIME_CREATED = ZonedDateTime.now(UTC);
+    private static final ZonedDateTime DATE_TIME_CREATED = ZonedDateTime.of(2021, 2, 23, 19, 2, 12, 0, UTC);
     @InjectMocks
     private CaseAssignmentRestrictionHandler caseAssignmentRestrictionHandler;
 
@@ -80,7 +81,7 @@ public class CaseAssignmentRestrictionHandlerTest {
     private final Enveloper enveloper = EnveloperFactory.createEnveloperWithEvents(CaseAssignmentRestrictionAdded.class);
 
     @Spy
-    private Clock clock = new UtcClock();
+    private Clock clock = new StoppedClock(ZonedDateTime.of(2021, 2, 23, 19, 2, 11, 0, UTC));
 
     @Test
     public void shouldHandleCaseAssignmentRestrictionCommands() {
@@ -108,9 +109,7 @@ public class CaseAssignmentRestrictionHandlerTest {
                                 .withName("sjp.events.case-assignment-restriction-added"),
                         payloadIsJson(allOf(
                                 withJsonPath("$.prosecutingAuthority", equalTo(PROSECUTING_AUTHORITY)),
-                                withJsonPath("$.dateTimeCreated", equalTo(DateTimeFormatter.
-                                        ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'").
-                                        format(DATE_TIME_CREATED))),
+                                withJsonPath("$.dateTimeCreated", equalTo("2021-02-23T19:02:12Z")),
                                 withJsonPath("$.exclude[0]", equalTo("9876")),
                                 withJsonPath("$.includeOnly[0]", equalTo("1234"))))))));
     }

@@ -1,21 +1,21 @@
 package uk.gov.moj.cpp.sjp.command.schema;
 
 import static javax.json.Json.createReader;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMatcher.jsonEnvelope;
 import static uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderFactory.metadataWithRandomUUID;
 
+import org.junit.jupiter.api.Disabled;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 
 import javax.json.JsonObject;
 
-import org.junit.Ignore;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
+import org.junit.jupiter.api.Test;
 
-@Ignore("Those tests can be looked when the JsonSchemaValidationMatcher supports the Json catalogues...")
+@Disabled("Those tests can be looked when the JsonSchemaValidationMatcher supports the Json catalogues...")
 public class UpdateDefendantSchemaTest {
 
     @Test
@@ -95,8 +95,6 @@ public class UpdateDefendantSchemaTest {
         assertThat(envelope, jsonEnvelope().thatMatchesSchema());
     }
 
-    @Rule
-    public ExpectedException expectedException = ExpectedException.none();
 
     @Test
     public void rejectsWhenFirstNameIsMissing() {
@@ -106,8 +104,8 @@ public class UpdateDefendantSchemaTest {
                 payload);
 
         //then
-        expectedException.expectMessage("required key [firstName] not found");
-        assertThat(envelope, jsonEnvelope().thatMatchesSchema());
+        var e = assertThrows(Exception.class, () -> assertThat(envelope, jsonEnvelope().thatMatchesSchema()));
+        assertThat(e.getMessage(), is("required key [firstName] not found"));
     }
 
     @Test
@@ -118,8 +116,8 @@ public class UpdateDefendantSchemaTest {
                 payload);
 
         //then
-        expectedException.expectMessage("required key [lastName] not found");
-        assertThat(envelope, jsonEnvelope().thatMatchesSchema());
+        var e = assertThrows(Exception.class, () -> assertThat(envelope, jsonEnvelope().thatMatchesSchema()));
+        assertThat(e.getMessage(), is("required key [lastName] not found"));
     }
 
     @Test
@@ -130,8 +128,8 @@ public class UpdateDefendantSchemaTest {
                 payload);
 
         //then
-        expectedException.expectMessage("#/firstName: expected minLength: 1, actual: 0");
-        assertThat(envelope, jsonEnvelope().thatMatchesSchema());
+        var e = assertThrows(Exception.class, () -> assertThat(envelope, jsonEnvelope().thatMatchesSchema()));
+        assertThat(e.getMessage(), is("#/firstName: expected minLength: 1, actual: 0"));
     }
 
     @Test
@@ -142,8 +140,8 @@ public class UpdateDefendantSchemaTest {
                 payload);
 
         //then
-        expectedException.expectMessage("#/lastName: expected minLength: 1, actual: 0");
-        assertThat(envelope, jsonEnvelope().thatMatchesSchema());
+        var e = assertThrows(Exception.class, () -> assertThat(envelope, jsonEnvelope().thatMatchesSchema()));
+        assertThat(e.getMessage(), is("#/lastName: expected minLength: 1, actual: 0"));
     }
 
     @Test
@@ -154,8 +152,8 @@ public class UpdateDefendantSchemaTest {
                 payload);
 
         //then
-        expectedException.expectMessage("firstName: expected type: String, found: Null");
-        assertThat(envelope, jsonEnvelope().thatMatchesSchema());
+        var e = assertThrows(Exception.class, () -> assertThat(envelope, jsonEnvelope().thatMatchesSchema()));
+        assertThat(e.getMessage(), is("firstName: expected type: String, found: Null"));
     }
 
     @Test
@@ -166,8 +164,8 @@ public class UpdateDefendantSchemaTest {
                 payload);
 
         //then
-        expectedException.expectMessage("lastName: expected type: String, found: Null");
-        assertThat(envelope, jsonEnvelope().thatMatchesSchema());
+        var e = assertThrows(Exception.class, () -> assertThat(envelope, jsonEnvelope().thatMatchesSchema()));
+        assertThat(e.getMessage(), is("lastName: expected type: String, found: Null"));
     }
 
     @Test
@@ -178,8 +176,8 @@ public class UpdateDefendantSchemaTest {
                 payload);
 
         //then
-        expectedException.expectMessage("firstName: expected maxLength: 255, actual: 256");
-        assertThat(envelope, jsonEnvelope().thatMatchesSchema());
+        var e = assertThrows(Exception.class, () -> assertThat(envelope, jsonEnvelope().thatMatchesSchema()));
+        assertThat(e.getMessage(), is("firstName: expected maxLength: 255, actual: 256"));
     }
 
     @Test
@@ -190,8 +188,8 @@ public class UpdateDefendantSchemaTest {
                 payload);
 
         //then
-        expectedException.expectMessage("lastName: expected maxLength: 255, actual: 256");
-        assertThat(envelope, jsonEnvelope().thatMatchesSchema());
+        var e = assertThrows(Exception.class, () -> assertThat(envelope, jsonEnvelope().thatMatchesSchema()));
+        assertThat(e.getMessage(), is("lastName: expected maxLength: 255, actual: 256"));
     }
 
     private JsonObject readPayloadFromResource(String path) {

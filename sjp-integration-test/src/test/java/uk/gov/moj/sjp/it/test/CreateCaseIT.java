@@ -9,11 +9,11 @@ import static java.util.stream.Collectors.toList;
 import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.notNullValue;
-import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.blankOrNullString;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.core.Is.is;
-import static org.junit.Assert.assertTrue;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static uk.gov.moj.cpp.sjp.domain.DomainConstants.NUMBER_DAYS_WAITING_FOR_PLEA;
 import static uk.gov.moj.sjp.it.command.CreateCase.CreateCasePayloadBuilder.defaultCaseBuilder;
 import static uk.gov.moj.sjp.it.command.CreateCase.OffenceBuilder.defaultOffenceBuilder;
@@ -51,9 +51,9 @@ import javax.json.JsonObject;
 import javax.json.JsonValue;
 
 import com.jayway.jsonpath.matchers.JsonPathMatchers;
-import com.jayway.restassured.path.json.JsonPath;
-import org.junit.Before;
-import org.junit.Test;
+import io.restassured.path.json.JsonPath;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 /**
  * Integration test to create a case and verify the case can be read using ID and URN
@@ -69,7 +69,7 @@ public class CreateCaseIT extends BaseIntegrationTest {
     private final static String offenceCode1 = "CA03010";
     private final static String offenceCode2 = "CA03011";
 
-    @Before
+    @BeforeEach
     public void setUp(){
         stubOffenceFineLevelsQuery(fineLevel, maxValue);
         stubQueryOffencesByCode(offenceCode1);

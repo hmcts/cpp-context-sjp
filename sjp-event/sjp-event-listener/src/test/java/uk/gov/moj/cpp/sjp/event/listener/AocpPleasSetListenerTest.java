@@ -2,7 +2,7 @@ package uk.gov.moj.cpp.sjp.event.listener;
 
 import static java.util.Arrays.asList;
 import static java.util.UUID.randomUUID;
-import static org.mockito.Matchers.any;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.justice.services.test.utils.core.enveloper.EnvelopeFactory.createEnvelope;
@@ -28,14 +28,14 @@ import javax.json.Json;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class AocpPleasSetListenerTest {
 
     @InjectMocks
@@ -68,7 +68,6 @@ public class AocpPleasSetListenerTest {
         final CaseDetail caseDetail = new CaseDetail();
         caseDetail.setDefendant(defendantDetail);
 
-        when(caseRepository.findBy(any())).thenReturn(new CaseDetail());
         when(caseService.findById(any())).thenReturn(caseDetail);
 
         listener.handleAocpPleasSet(envelope);

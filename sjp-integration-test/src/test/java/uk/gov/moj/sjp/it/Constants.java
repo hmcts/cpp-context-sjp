@@ -58,8 +58,10 @@ public class Constants {
     public static final String PUBLIC_EVENT_CASE_ASSIGNMENT_REJECTED = "public.sjp.case-assignment-rejected";
     public static final String PUBLIC_EVENT_SET_PLEAS = "public.sjp.pleas-set";
 
-    public static final String PUBLIC_ACTIVE_MQ_TOPIC = "public.event";
-    public static final String PRIVATE_ACTIVE_MQ_TOPIC = "sjp.event";
+    public static final String PUBLIC_EVENT = "public.event";
+    public static final String SJP_EVENT = "sjp.event";
+    public static final String PUBLIC_ACTIVE_MQ_TOPIC = "jms.topic.public.event";
+    public static final String PRIVATE_ACTIVE_MQ_TOPIC = "jms.topic.sjp.event";
     public static final String COMMAND_HANDLE_ACTIVE_MQ_QUEUE = "sjp.handler.command";
 
     public static final Integer MESSAGE_QUEUE_TIMEOUT = 15000;

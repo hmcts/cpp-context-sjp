@@ -4,7 +4,7 @@ import static com.google.common.collect.Lists.newArrayList;
 import static java.util.Collections.emptyMap;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.equalTo;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static uk.gov.moj.cpp.sjp.command.api.validator.PleaType.GUILTY;
 import static uk.gov.moj.cpp.sjp.command.api.validator.PleaType.GUILTY_REQUEST_HEARING;
 import static uk.gov.moj.cpp.sjp.command.api.validator.PleaType.NOT_GUILTY;
@@ -22,11 +22,11 @@ import uk.gov.moj.cpp.sjp.domain.DefendantCourtOptions;
 import java.util.List;
 import java.util.Map;
 
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class SetPleasValidatorTest {
 
     private final SetPleasValidator service = new SetPleasValidator();

@@ -80,11 +80,11 @@ import javax.json.JsonObject;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Sets;
 import org.hamcrest.Matcher;
-import org.junit.Before;
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 
-@Ignore("DD-17905:Commented as part of 21.25.01 as it is failing on Jenkins at random, but works locally")
+@Disabled("DD-17905:Commented as part of 21.25.01 as it is failing on Jenkins at random, but works locally")
 public class MultipleOffencesWithdrawalRequestedIT extends BaseIntegrationTest {
 
     private final UUID withdrawalRequestReasonId1 = randomUUID();
@@ -100,7 +100,7 @@ public class MultipleOffencesWithdrawalRequestedIT extends BaseIntegrationTest {
     private CreateCase.CreateCasePayloadBuilder aCase;
     private static final String NATIONAL_COURT_CODE = "1080";
 
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
         new SjpDatabaseCleaner().cleanViewStore();
 
@@ -186,7 +186,7 @@ public class MultipleOffencesWithdrawalRequestedIT extends BaseIntegrationTest {
     }
 
     @Test
-    @Ignore("DD-17905:Commented as part of 21.25.01 as it is failing on Jenkins at random, but works locally")
+    @Disabled("DD-17905:Commented as part of 21.25.01 as it is failing on Jenkins at random, but works locally")
     public void offenceWithdrawalForSomeOffencesOnAPartiallyDecidedCaseMakesCaseReady() throws Exception {
         stubStartSjpSessionCommand();
         stubEndSjpSessionCommand();

@@ -8,6 +8,7 @@ import uk.gov.moj.cpp.sjp.persistence.repository.OffenceRepository;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -65,6 +66,11 @@ public class TestOffenceRepository implements OffenceRepository {
 
     @Override
     public void refresh(final OffenceDetail offenceDetail) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public Optional<OffenceDetail> findOptionalBy(final UUID uuid) {
         throw new UnsupportedOperationException();
     }
 

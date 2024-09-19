@@ -12,7 +12,7 @@ import java.util.UUID;
 
 import javax.jms.MessageConsumer;
 
-import com.jayway.restassured.path.json.JsonPath;
+import io.restassured.path.json.JsonPath;
 
 public class CaseUpdateRejectedHelper implements AutoCloseable {
 

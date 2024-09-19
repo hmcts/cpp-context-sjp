@@ -32,7 +32,6 @@ import java.util.Optional;
 import javax.json.JsonArrayBuilder;
 import javax.json.JsonObject;
 
-import jdk.nashorn.internal.runtime.PropertyDescriptor;
 import org.apache.commons.collections.MapUtils;
 
 public class CDResultCodeConverter extends ResultCodeConverter{
@@ -62,7 +61,7 @@ public class CDResultCodeConverter extends ResultCodeConverter{
         if (isNotBlank(length) && isNotBlank(unit)) {
             promptsPayloadBuilder.add(createObjectBuilder()
                     .add(PROMPT_DEFINITION_ID, Prompt.DURATION_VALUE_OF_CONDITIONAL_DISCHARGE.getId().toString())
-                    .add(PropertyDescriptor.VALUE, length + " " + unit));
+                    .add(VALUE, length + " " + unit));
         }
         return promptsPayloadBuilder;
     }

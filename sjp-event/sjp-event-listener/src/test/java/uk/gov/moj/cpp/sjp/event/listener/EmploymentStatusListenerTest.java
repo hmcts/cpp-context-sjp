@@ -1,7 +1,7 @@
 package uk.gov.moj.cpp.sjp.event.listener;
 
 import static org.hamcrest.CoreMatchers.equalTo;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.justice.services.test.utils.core.messaging.JsonEnvelopeBuilder.envelope;
@@ -13,17 +13,17 @@ import uk.gov.moj.cpp.sjp.persistence.repository.FinancialMeansRepository;
 
 import java.util.UUID;
 
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class EmploymentStatusListenerTest {
 
     @Mock
@@ -39,7 +39,7 @@ public class EmploymentStatusListenerTest {
     private String employmentStatus;
     private JsonEnvelope updateEmploymentStatus;
 
-    @Before
+    @BeforeEach
     public void init() {
         defendantId = UUID.randomUUID();
         employmentStatus = "EMPLOYED";

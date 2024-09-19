@@ -5,18 +5,19 @@ import static java.util.Arrays.asList;
 import static java.util.UUID.fromString;
 import static java.util.UUID.randomUUID;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.notNullValue;
 import static uk.gov.moj.cpp.sjp.domain.SessionType.MAGISTRATE;
 import static uk.gov.moj.cpp.sjp.domain.disability.DisabilityNeeds.disabilityNeedsOf;
 import static uk.gov.moj.cpp.sjp.domain.verdict.VerdictType.PROVED_SJP;
 import static uk.gov.moj.sjp.it.Constants.CASE_NOTE_ADDED_EVENT;
 import static uk.gov.moj.sjp.it.Constants.NOTICE_PERIOD_IN_DAYS;
+import static uk.gov.moj.sjp.it.Constants.PUBLIC_EVENT;
 import static uk.gov.moj.sjp.it.helper.AssignmentHelper.requestCaseAssignment;
 import static uk.gov.moj.sjp.it.helper.DecisionHelper.createCase;
 import static uk.gov.moj.sjp.it.helper.DecisionHelper.verifyCaseCompleted;
 import static uk.gov.moj.sjp.it.helper.DecisionHelper.verifyCaseNotReadyInViewStore;
 import static uk.gov.moj.sjp.it.helper.DecisionHelper.verifyCaseQueryWithDisabilityNeeds;
 import static uk.gov.moj.sjp.it.helper.DecisionHelper.verifyCaseQueryWithReferForCourtHearingDecision;
-import static uk.gov.moj.sjp.it.helper.DecisionHelper.verifyCaseReferredForCourtHearing;
 import static uk.gov.moj.sjp.it.helper.DecisionHelper.verifyCaseReferredForCourtHearingV2;
 import static uk.gov.moj.sjp.it.helper.DecisionHelper.verifyCaseUnassigned;
 import static uk.gov.moj.sjp.it.helper.DecisionHelper.verifyDecisionSaved;
@@ -42,7 +43,6 @@ import static uk.gov.moj.sjp.it.stub.SchedulingStub.stubStartSjpSessionCommand;
 import static uk.gov.moj.sjp.it.stub.UsersGroupsStub.stubForUserDetails;
 import static uk.gov.moj.sjp.it.util.Defaults.DEFAULT_LONDON_COURT_HOUSE_OU_CODE;
 import static uk.gov.moj.sjp.it.util.FileUtil.getFileContentAsJson;
-import static org.hamcrest.Matchers.notNullValue;
 
 import uk.gov.justice.core.courts.CourtCentre;
 import uk.gov.justice.core.courts.HearingType;
@@ -59,7 +59,6 @@ import uk.gov.moj.cpp.sjp.domain.decision.OffenceDecisionInformation;
 import uk.gov.moj.cpp.sjp.domain.decision.ReferForCourtHearing;
 import uk.gov.moj.cpp.sjp.domain.disability.DisabilityNeeds;
 import uk.gov.moj.cpp.sjp.event.CaseCompleted;
-import uk.gov.moj.cpp.sjp.event.CaseReferredForCourtHearing;
 import uk.gov.moj.cpp.sjp.event.CaseReferredForCourtHearingV2;
 import uk.gov.moj.cpp.sjp.event.CaseUnmarkedReadyForDecision;
 import uk.gov.moj.cpp.sjp.event.HearingLanguagePreferenceUpdatedForDefendant;
@@ -84,15 +83,14 @@ import javax.json.JsonObject;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Sets;
 import org.hamcrest.Matchers;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 public class CaseListedInCriminalCourtsIT extends BaseIntegrationTest {
 
     public static final String PUBLIC_PROGRESSION_PROSECUTION_CASES_REFERRED_TO_COURT = "public.progression.prosecution-cases-referred-to-court";
-    public static final String PUBLIC_EVENT = "public.event";
     private final UUID caseId = randomUUID();
-    private  EventListener eventListener;
+    private EventListener eventListener;
     private UUID sessionId = randomUUID();
     private UUID offence1Id = randomUUID();
     private UUID offence2Id = randomUUID();
@@ -102,8 +100,8 @@ public class CaseListedInCriminalCourtsIT extends BaseIntegrationTest {
     private UUID defendantId;
     private LocalDate postingDate = LocalDate.now().minusDays(NOTICE_PERIOD_IN_DAYS + 1);
 
-    @Before
-    public void setUp() throws Exception{
+    @BeforeEach
+    public void setUp() throws Exception {
         eventListener = new EventListener();
         new SjpDatabaseCleaner().cleanViewStore();
         stubStartSjpSessionCommand();
@@ -204,7 +202,7 @@ public class CaseListedInCriminalCourtsIT extends BaseIntegrationTest {
         Optional<JsonEnvelope> jsonEnvelope = eventListener.popEvent("sjp.events.case-offence-listed-in-criminal-courts");
         assertThat(jsonEnvelope.isPresent(), Matchers.is(true));
 
-       final JsonObject payload2 = getFileContentAsJson("CaseListedInCriminalCourtsIT/case-listed-in-criminal-courts2.json",
+        final JsonObject payload2 = getFileContentAsJson("CaseListedInCriminalCourtsIT/case-listed-in-criminal-courts2.json",
                 ImmutableMap.<String, Object>builder()
                         .put("prosecutionCaseId", caseId)
                         .put("offence3Id", offence3Id)

@@ -7,7 +7,9 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.justice.services.test.utils.core.messaging.JsonEnvelopeBuilder.envelope;
 
+import org.junit.jupiter.api.BeforeEach;
 import uk.gov.justice.services.messaging.JsonEnvelope;
+import uk.gov.justice.services.test.utils.core.reflection.ReflectionUtil;
 import uk.gov.moj.cpp.sjp.event.listener.handler.CaseSearchResultService;
 import uk.gov.moj.cpp.sjp.persistence.entity.CaseDetail;
 import uk.gov.moj.cpp.sjp.persistence.entity.CaseSearchResult;
@@ -20,20 +22,20 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
 
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class CaseSearchResultListenerTest {
 
-    @Spy
-    @InjectMocks
+    //@Spy
+    //@Mock
     private CaseSearchResultService caseSearchResultService = new CaseSearchResultService();
 
     @Mock
@@ -54,6 +56,11 @@ public class CaseSearchResultListenerTest {
     @Captor
     private ArgumentCaptor<CaseSearchResult> captor;
 
+    @BeforeEach
+    public void setUp(){
+        ReflectionUtil.setField(caseSearchResultListener,"caseSearchResultService", caseSearchResultService);
+        ReflectionUtil.setField(caseSearchResultService,"repository", caseSearchResultRepository);
+    }
     @Test
     public void shouldHandleCaseAssigned() {
         final UUID caseId = UUID.randomUUID();

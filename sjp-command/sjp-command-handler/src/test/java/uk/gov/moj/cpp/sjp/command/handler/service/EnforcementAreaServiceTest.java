@@ -1,8 +1,8 @@
 package uk.gov.moj.cpp.sjp.command.handler.service;
-import static junit.framework.TestCase.fail;
+import static org.junit.jupiter.api.Assertions.fail;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
-import static org.mockito.Matchers.any;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -13,13 +13,13 @@ import java.util.Optional;
 
 import javax.json.JsonObject;
 
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class EnforcementAreaServiceTest {
 
     private final String postcode = "CR0 2GE";
@@ -43,7 +43,6 @@ public class EnforcementAreaServiceTest {
     @Test
     public void shouldReturnEnforcementAreaForPostcode() {
         when(referenceDataService.getEnforcementAreaByPostcode(postcode, envelope)).thenReturn(Optional.of(enforcementArea1));
-        when(referenceDataService.getEnforcementAreaByLocalJusticeAreaNationalCourtCode(ljaNationalCourtCode, envelope)).thenReturn(Optional.of(enforcementArea2));
 
         final JsonObject enforcementArea = enforcementAreaService.getEnforcementArea(postcode, ljaNationalCourtCode, envelope);
         assertThat(enforcementArea, is(enforcementArea1));

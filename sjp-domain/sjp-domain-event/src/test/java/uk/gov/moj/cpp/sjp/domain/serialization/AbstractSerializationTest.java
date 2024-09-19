@@ -2,14 +2,14 @@ package uk.gov.moj.cpp.sjp.domain.serialization;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.hamcrest.Matcher;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import uk.gov.justice.services.common.converter.jackson.ObjectMapperProducer;
 
 import java.io.IOException;
 import java.util.Map;
 
 import static org.hamcrest.Matchers.equalTo;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
 
 /**
  * Serialise and Deserialize the same object to check that it doesn't lose information.

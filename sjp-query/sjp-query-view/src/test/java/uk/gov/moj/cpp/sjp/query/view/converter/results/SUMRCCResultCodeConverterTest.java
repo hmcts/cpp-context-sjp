@@ -4,49 +4,46 @@ import static javax.json.Json.createArrayBuilder;
 import static javax.json.Json.createObjectBuilder;
 import static org.mockito.MockitoAnnotations.initMocks;
 
-import java.util.Arrays;
-import java.util.Collection;
-
+import java.util.stream.Stream;
 import javax.json.JsonArray;
 import javax.json.JsonObject;
 
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 
-@RunWith(Parameterized.class)
 public class SUMRCCResultCodeConverterTest extends ResultCodeConverterTest {
 
-    @Parameterized.Parameter
     public String referralReasonIdTerminalEntry;
 
-    @Parameterized.Parameter(1)
     public String reasonPromptValue;
 
 
-    @Parameterized.Parameters(name = "Terminal entry with value {0} should be converted to prompt {1}")
-    public static Collection<Object[]> data() {
-        return Arrays.asList(new Object[][]{
-                {"0f03e10f-d9a5-47f9-92ba-a8e220448451", "Equivocal plea - Defendant to attend to clarify plea"},
-                {"33e0aeae-ef9f-40e3-8032-49d50a5a0904", "Equivocal plea - For trial"},
-                {"798e3d82-44fa-40e6-a93d-4c8f5322fa66", "Defence request"},
-                {"809f7aac-d285-43a5-9fb1-3a894db71530", "For trial"},
-                {"9753b66a-8845-491f-a42b-7fc207ae6b1b", "For a case management hearing - Defendant to attend"},
-                {"23121983-9c84-4e1e-8e5f-9b1d81124204", "For a case management hearing - No need for defendant to attend"},
-                {"bc5c3ce5-6029-489f-b149-bc59efca17d1", "For sentencing hearing - defendant to attend"},
-                {"cb23156c-fa9d-48d7-bac6-4d900d237ba0", "For disqualification - defendant to attend"},
-                {"d10c5cc4-ec2a-41ac-bd6e-a3659c5cfeb1", "Case unsuitable for SJP"}
-        });
+    static Stream<Arguments> data() {
+        return Stream.of(
+                Arguments.of("0f03e10f-d9a5-47f9-92ba-a8e220448451", "Equivocal plea - Defendant to attend to clarify plea"),
+                Arguments.of("33e0aeae-ef9f-40e3-8032-49d50a5a0904", "Equivocal plea - For trial"),
+                Arguments.of("798e3d82-44fa-40e6-a93d-4c8f5322fa66", "Defence request"),
+                Arguments.of("809f7aac-d285-43a5-9fb1-3a894db71530", "For trial"),
+                Arguments.of("9753b66a-8845-491f-a42b-7fc207ae6b1b", "For a case management hearing - Defendant to attend"),
+                Arguments.of("23121983-9c84-4e1e-8e5f-9b1d81124204", "For a case management hearing - No need for defendant to attend"),
+                Arguments.of("bc5c3ce5-6029-489f-b149-bc59efca17d1", "For sentencing hearing - defendant to attend"),
+                Arguments.of("cb23156c-fa9d-48d7-bac6-4d900d237ba0", "For disqualification - defendant to attend"),
+                Arguments.of("d10c5cc4-ec2a-41ac-bd6e-a3659c5cfeb1", "Case unsuitable for SJP")
+        );
     }
 
-    @Before
+    @BeforeEach
     public void setUp() {
         initMocks(this);
     }
 
-    @Test
-    public void shouldConvertReferCaseToCCResult() {
+    @ParameterizedTest
+    @MethodSource("data")
+    public void shouldConvertReferCaseToCCResult(String referralReasonIdTerminalEntry, String reasonPromptValue) {
+        this.referralReasonIdTerminalEntry = referralReasonIdTerminalEntry;
+        this.reasonPromptValue = reasonPromptValue;
         super.testResultCode();
     }
 

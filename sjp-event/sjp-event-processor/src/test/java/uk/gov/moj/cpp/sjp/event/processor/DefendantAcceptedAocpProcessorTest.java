@@ -18,15 +18,15 @@ import static java.util.UUID.randomUUID;
 
 import java.time.LocalDate;
 import java.util.UUID;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
 import uk.gov.justice.services.core.enveloper.Enveloper;
 import uk.gov.justice.services.core.sender.Sender;
@@ -40,7 +40,7 @@ import uk.gov.moj.cpp.sjp.event.processor.service.ReferenceDataService;
 import uk.gov.moj.cpp.sjp.event.processor.service.SystemIdMapperService;
 import uk.gov.moj.cpp.sjp.event.processor.service.timers.TimerService;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class DefendantAcceptedAocpProcessorTest {
     @Mock
     private Sender sender;
@@ -70,7 +70,7 @@ public class DefendantAcceptedAocpProcessorTest {
     private static final String WELSH_TEMPLATE_ID = "b327f28b-010d-47f9-954d-f21a4ee9ddfc";
 
 
-    @Before
+    @BeforeEach
     public void before() {
         // use defaults
         defendantAcceptedAocpProcessor.replyToAddress = "noreply@cjscp.org.uk";

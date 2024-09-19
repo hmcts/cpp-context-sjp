@@ -5,8 +5,8 @@ import static java.util.Optional.ofNullable;
 import static java.util.UUID.randomUUID;
 import static javax.json.Json.createObjectBuilder;
 import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertThat;
-import static org.mockito.Matchers.any;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
 import static uk.gov.justice.services.messaging.JsonEnvelope.metadataFrom;
@@ -19,6 +19,7 @@ import static uk.gov.moj.cpp.sjp.domain.verdict.VerdictType.PROVED_SJP;
 import static uk.gov.moj.cpp.sjp.query.view.util.FileUtil.getFileContentAsJson;
 import static uk.gov.moj.cpp.sjp.query.view.util.FileUtil.getFileContentAsJsonArray;
 
+import org.mockito.ArgumentMatchers;
 import uk.gov.justice.json.schemas.domains.sjp.Gender;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.messaging.MetadataBuilder;
@@ -51,14 +52,13 @@ import javax.json.JsonArray;
 import javax.json.JsonObject;
 
 import com.google.common.collect.ImmutableMap;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.Matchers;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class ResultsServiceTest {
 
     @Mock
@@ -102,7 +102,7 @@ public class ResultsServiceTest {
 
     MetadataBuilder metadataBuilder;
 
-    @Before
+    @BeforeEach
     public void setup() {
 
         final DecisionSavedOffenceConverter decisionSavedOffenceConverter = new DecisionSavedOffenceConverter();
@@ -128,15 +128,13 @@ public class ResultsServiceTest {
         resultedCaseEventForReferForCourtHearing = createResultedCaseEventForReferForCourtHearing(metadataBuilder);
 
         final JsonArray jsonArray =  getFileContentAsJsonArray("case-results-tests/referencedata.query.results.json", new HashMap<>());
-        when(referenceDataService.getResultIds(Matchers.isA(JsonEnvelope.class))).thenReturn(jsonArray.getValuesAs(JsonObject.class));
-
-        final JsonArray withdrawalRequestReasons =  getFileContentAsJsonArray("case-results-tests/referencedata.offence-withdraw-request-reasons.json", new HashMap<>());
-        when(referenceDataService.getWithdrawalReasons(Matchers.isA(JsonEnvelope.class))).thenReturn(withdrawalRequestReasons.getValuesAs(JsonObject.class));
+        when(referenceDataService.getResultIds(ArgumentMatchers.isA(JsonEnvelope.class))).thenReturn(jsonArray.getValuesAs(JsonObject.class));
     }
 
     @Test
     public void shouldConvertWithdrawToCaseResulted() {
-
+        final JsonArray withdrawalRequestReasons =  getFileContentAsJsonArray("case-results-tests/referencedata.offence-withdraw-request-reasons.json", new HashMap<>());
+        when(referenceDataService.getWithdrawalReasons(ArgumentMatchers.isA(JsonEnvelope.class))).thenReturn(withdrawalRequestReasons.getValuesAs(JsonObject.class));
         createCaseView(asList(getAdjournOffenceDecision(), getWithDrawCaseDecision()));
 
         when(caseService.findCase(CASE_ID)).thenReturn(caseView);
@@ -145,7 +143,6 @@ public class ResultsServiceTest {
 
         final JsonObject enforcementArea = createObjectBuilder().add("accountDivisionCode", 77).add("enforcingCourtCode", 828).build();
         when(referenceDataService.getEnforcementAreaByPostcode(any(), any())).thenReturn(Optional.of(enforcementArea));
-        when(referenceDataService.getEnforcementAreaByLocalJusticeAreaNationalCourtCode(any(), any())).thenReturn(Optional.of(enforcementArea));
 
         // find case results
         final JsonEnvelope envelope = envelopeFrom(metadataFrom(metadataBuilder.build()), createObjectBuilder()
@@ -162,7 +159,6 @@ public class ResultsServiceTest {
 
     @Test
     public void shouldConvertReferForCourtHearingToCaseResults() {
-
         createCaseView(asList(getReferForCourtHearingDecision()));
 
         when(caseService.findCase(CASE_ID)).thenReturn(caseView);
@@ -171,7 +167,6 @@ public class ResultsServiceTest {
 
         final JsonObject enforcementArea = createObjectBuilder().add("accountDivisionCode", 77).add("enforcingCourtCode", 828).build();
         when(referenceDataService.getEnforcementAreaByPostcode(any(), any())).thenReturn(Optional.of(enforcementArea));
-        when(referenceDataService.getEnforcementAreaByLocalJusticeAreaNationalCourtCode(any(), any())).thenReturn(Optional.of(enforcementArea));
 
         // find case results
         final JsonEnvelope envelope = envelopeFrom(metadataFrom(metadataBuilder.build()), createObjectBuilder()

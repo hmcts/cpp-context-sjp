@@ -6,20 +6,24 @@ import uk.gov.moj.cpp.accesscontrol.test.utils.BaseDroolsAccessControlTest;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 public class QueryCaseByUrnPostCodeTest extends BaseDroolsAccessControlTest {
 
     private static final String CONTENT_TYPE = "sjp.query.case-by-urn-postcode";
     private Action action;
 
+    public QueryCaseByUrnPostCodeTest() {
+        super("QUERY_CONTROLLER_SESSION");
+    }
+
     @Override
-    protected Map<Class, Object> getProviderMocks() {
+    protected Map<Class<?>, Object> getProviderMocks() {
         return new HashMap<>();
     }
 
-    @Before
+    @BeforeEach
     public void setUp() {
         action = createActionFor(CONTENT_TYPE);
     }

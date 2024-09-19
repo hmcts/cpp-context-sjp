@@ -1,6 +1,5 @@
 package uk.gov.moj.cpp.sjp.event.processor.model.referral;
 
-import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
@@ -14,9 +13,9 @@ public class DefendantDocumentView {
     private final List<UUID> defendants;
 
     public DefendantDocumentView(final UUID prosecutionCaseId,
-                                 final UUID defendantId) {
+                                 final List<UUID> defendants) {
         this.prosecutionCaseId = prosecutionCaseId;
-        this.defendants = Collections.singletonList(defendantId);
+        this.defendants = defendants;
     }
 
     public UUID getProsecutionCaseId() {

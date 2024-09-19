@@ -126,11 +126,11 @@ import java.util.UUID;
 import javax.json.JsonObject;
 
 import com.google.common.collect.Sets;
-import org.junit.Before;
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 
-@Ignore("Enable this when merging to master")
+@Disabled("Enable this when merging to master")
 public class MultipleOffencesSaveDecisionIT extends BaseIntegrationTest {
 
     private static final String ADJOURN_REASON = "Not enough documents present for decision, waiting for document";
@@ -159,7 +159,7 @@ public class MultipleOffencesSaveDecisionIT extends BaseIntegrationTest {
         return session.payloadAsJsonObject();
     }
 
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
         new SjpDatabaseCleaner().cleanViewStore();
 

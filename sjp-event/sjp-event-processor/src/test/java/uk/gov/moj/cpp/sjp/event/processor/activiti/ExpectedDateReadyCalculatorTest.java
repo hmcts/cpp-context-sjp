@@ -16,12 +16,12 @@ import uk.gov.moj.cpp.sjp.domain.plea.PleaType;
 import java.time.LocalDateTime;
 
 import org.activiti.engine.delegate.DelegateExecution;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class ExpectedDateReadyCalculatorTest {
 
     @Mock
@@ -90,7 +90,9 @@ public class ExpectedDateReadyCalculatorTest {
         final LocalDateTime datesToAvoidTimerExpiration = now().plusDays(7);
 
         givenCaseReceived(defendantResponseTimerExpiration);
-        givenCaseWaitingForDatesToAvoid(datesToAvoidTimerExpiration);
+        when(delegateExecution.getVariable(CASE_ADJOURNED_VARIABLE, Boolean.class)).thenReturn(false);
+        when(delegateExecution.getVariable(PLEA_READY_VARIABLE, Boolean.class)).thenReturn(false);
+        when(delegateExecution.getVariable(PLEA_DEADLINE_ADD_DATES_TO_AVOID_VARIABLE, String.class)).thenReturn(datesToAvoidTimerExpiration.toString());
 
         assertThat(expectedDateReadyCalculator.calculateExpectedDateReady(delegateExecution), is(datesToAvoidTimerExpiration));
     }
@@ -101,7 +103,9 @@ public class ExpectedDateReadyCalculatorTest {
         final LocalDateTime datesToAvoidTimerExpiration = now().plusDays(7);
 
         givenCaseReceived(defendantResponseTimerExpiration);
-        givenCaseWaitingForDatesToAvoid(datesToAvoidTimerExpiration);
+        when(delegateExecution.getVariable(CASE_ADJOURNED_VARIABLE, Boolean.class)).thenReturn(false);
+        when(delegateExecution.getVariable(PLEA_READY_VARIABLE, Boolean.class)).thenReturn(false);
+        when(delegateExecution.getVariable(PLEA_DEADLINE_ADD_DATES_TO_AVOID_VARIABLE, String.class)).thenReturn(datesToAvoidTimerExpiration.toString());
 
         assertThat(expectedDateReadyCalculator.calculateExpectedDateReady(delegateExecution), is(datesToAvoidTimerExpiration));
     }
@@ -113,7 +117,8 @@ public class ExpectedDateReadyCalculatorTest {
         final LocalDateTime adjournmentTimerExpiration = now().plusDays(7);
 
         givenCaseReceived(defendantResponseTimerExpiration);
-        givenCaseWaitingForDatesToAvoid(datesToAvoidTimerExpiration);
+        when(delegateExecution.getVariable(PLEA_READY_VARIABLE, Boolean.class)).thenReturn(false);
+        when(delegateExecution.getVariable(PLEA_DEADLINE_ADD_DATES_TO_AVOID_VARIABLE, String.class)).thenReturn(datesToAvoidTimerExpiration.toString());
         givenCaseAdjourned(adjournmentTimerExpiration);
 
         assertThat(expectedDateReadyCalculator.calculateExpectedDateReady(delegateExecution), is(datesToAvoidTimerExpiration));
@@ -126,7 +131,8 @@ public class ExpectedDateReadyCalculatorTest {
         final LocalDateTime adjournmentTimerExpiration = now().plusDays(14);
 
         givenCaseReceived(defendantResponseTimerExpiration);
-        givenCaseWaitingForDatesToAvoid(datesToAvoidTimerExpiration);
+        when(delegateExecution.getVariable(PLEA_READY_VARIABLE, Boolean.class)).thenReturn(false);
+        when(delegateExecution.getVariable(PLEA_DEADLINE_ADD_DATES_TO_AVOID_VARIABLE, String.class)).thenReturn(datesToAvoidTimerExpiration.toString());
         givenCaseAdjourned(adjournmentTimerExpiration);
 
         assertThat(expectedDateReadyCalculator.calculateExpectedDateReady(delegateExecution), is(adjournmentTimerExpiration));
@@ -146,8 +152,4 @@ public class ExpectedDateReadyCalculatorTest {
         when(delegateExecution.getVariable(CASE_ADJOURNED_DATE, String.class)).thenReturn(adjournmentTimerExpiration.toString());
     }
 
-    private void givenCaseWaitingForDatesToAvoid(final LocalDateTime datesToAvoidTimerExpiration) {
-        when(delegateExecution.getVariable(PLEA_READY_VARIABLE, Boolean.class)).thenReturn(false);
-        when(delegateExecution.getVariable(PLEA_DEADLINE_ADD_DATES_TO_AVOID_VARIABLE, String.class)).thenReturn(datesToAvoidTimerExpiration.toString());
-    }
 }

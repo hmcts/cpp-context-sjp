@@ -6,11 +6,14 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.moj.cpp.sjp.domain.plea.PleaType.NOT_GUILTY;
 
+import java.util.Optional;
+import org.junit.jupiter.api.BeforeEach;
 import uk.gov.justice.services.common.util.Clock;
 import uk.gov.justice.services.eventsourcing.source.core.exception.EventStreamException;
 import uk.gov.justice.services.test.utils.common.helper.StoppedClock;
 import uk.gov.moj.cpp.sjp.domain.Address;
 import uk.gov.moj.cpp.sjp.domain.ContactDetails;
+import uk.gov.moj.cpp.sjp.domain.aggregate.CaseAggregate;
 import uk.gov.moj.cpp.sjp.domain.onlineplea.Offence;
 import uk.gov.moj.cpp.sjp.domain.onlineplea.PersonalDetails;
 import uk.gov.moj.cpp.sjp.domain.onlineplea.PleadAocpOnline;
@@ -18,13 +21,13 @@ import uk.gov.moj.cpp.sjp.domain.onlineplea.PleadAocpOnline;
 import java.time.ZonedDateTime;
 import java.util.Arrays;
 
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Spy;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class DefendantAcceptedAOCPPleadOnlineHandlerTest extends CaseCommandHandlerTest {
 
     @InjectMocks
@@ -32,6 +35,17 @@ public class DefendantAcceptedAOCPPleadOnlineHandlerTest extends CaseCommandHand
 
     @Spy
     private Clock clock = new StoppedClock(ZonedDateTime.now(UTC));
+
+    @BeforeEach
+    void setUp() {
+        super.setupMocks();
+        when(jsonEnvelope.payloadAsJsonObject()).thenReturn(jsonObject);
+        when(jsonObject.getString(CaseCommandHandler.STREAM_ID)).thenReturn(CASE_ID.toString());
+        when(eventSource.getStreamById(CASE_ID)).thenReturn(eventStream);
+        when(aggregateService.get(eventStream, CaseAggregate.class)).thenReturn(caseAggregate);
+        when(enveloper.withMetadataFrom(jsonEnvelope)).thenReturn(function);
+        when(events.map(function)).thenReturn(jsonEvents);
+    }
 
     @Test
     public void shouldPleadAocpAcceptedOnline() throws EventStreamException {

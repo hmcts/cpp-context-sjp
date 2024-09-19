@@ -1,8 +1,8 @@
 package uk.gov.moj.cpp.sjp.domain.aggregate;
 
 import org.hamcrest.Matchers;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import uk.gov.justice.json.schemas.domains.sjp.ApplicationStatus;
 import uk.gov.moj.cpp.sjp.event.CCApplicationStatusCreated;
 import uk.gov.moj.cpp.sjp.event.CCApplicationStatusUpdated;
@@ -16,13 +16,13 @@ import static java.util.UUID.randomUUID;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.instanceOf;
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static uk.gov.moj.cpp.sjp.domain.common.CaseStatus.APPEALED;
 import static uk.gov.moj.cpp.sjp.domain.common.CaseStatus.RELISTED;
 
 public class CaseApplicationStatusUpdatedTest extends CaseAggregateBaseTest {
 
-    @Before
+    @BeforeEach
     public void setupCaseApplicationStatusUpdated() {
         super.setUp();
         caseAggregate.getState().markCaseCompleted();

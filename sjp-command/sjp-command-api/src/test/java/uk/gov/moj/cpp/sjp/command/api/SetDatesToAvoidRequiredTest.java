@@ -1,5 +1,6 @@
 package uk.gov.moj.cpp.sjp.command.api;
 
+import static java.util.Collections.singletonMap;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.assertThat;
 import static org.mockito.BDDMockito.given;
@@ -20,18 +21,17 @@ import uk.gov.moj.cpp.accesscontrol.test.utils.BaseDroolsAccessControlTest;
 import java.util.Map;
 import java.util.UUID;
 
-import com.google.common.collect.ImmutableMap;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.kie.api.runtime.ExecutionResults;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class SetDatesToAvoidRequiredTest extends BaseDroolsAccessControlTest {
 
 
@@ -53,9 +53,13 @@ public class SetDatesToAvoidRequiredTest extends BaseDroolsAccessControlTest {
 
     private UUID caseId = UUID.randomUUID();
 
+    public SetDatesToAvoidRequiredTest() {
+        super("COMMAND_API_SESSION");
+    }
+
     @Override
-    protected Map<Class, Object> getProviderMocks() {
-        return ImmutableMap.<Class, Object>builder().put(UserAndGroupProvider.class, userAndGroupProvider).build();
+    protected Map<Class<?>, Object> getProviderMocks() {
+        return singletonMap(UserAndGroupProvider.class, userAndGroupProvider);
     }
 
     @Test

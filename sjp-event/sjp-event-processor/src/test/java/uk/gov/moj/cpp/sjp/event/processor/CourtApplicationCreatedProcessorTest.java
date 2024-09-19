@@ -1,13 +1,13 @@
 package uk.gov.moj.cpp.sjp.event.processor;
 
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.justice.core.courts.CourtApplication;
 import uk.gov.justice.core.courts.CourtApplicationCase;
 import uk.gov.justice.core.courts.CourtApplicationType;
@@ -36,7 +36,7 @@ import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMetad
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopePayloadMatcher.payloadIsJson;
 import static uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderFactory.metadataWithRandomUUID;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class CourtApplicationCreatedProcessorTest {
 
     @Mock
@@ -62,7 +62,7 @@ public class CourtApplicationCreatedProcessorTest {
     private static String APPLICATION_TO_REOPEN_CASE = "Application to reopen case";
     private static String APPEAL = "Appeal";
 
-    @Before
+    @BeforeEach
     public void setUp() {
         initMocks(this);
     }

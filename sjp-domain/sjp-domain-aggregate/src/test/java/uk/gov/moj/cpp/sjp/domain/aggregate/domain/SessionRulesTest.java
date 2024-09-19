@@ -1,16 +1,16 @@
 package uk.gov.moj.cpp.sjp.domain.aggregate.domain;
 
 import com.google.common.collect.Sets;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.moj.cpp.sjp.domain.aggregate.state.CaseAggregateState;
 
 import java.util.UUID;
 
 import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.mockito.Mockito.when;
 import static uk.gov.moj.cpp.sjp.domain.CaseReadinessReason.DEFAULT_STATUS;
 import static uk.gov.moj.cpp.sjp.domain.CaseReadinessReason.PIA;
@@ -27,7 +27,7 @@ import static uk.gov.moj.cpp.sjp.domain.SessionType.MAGISTRATE;
 import static uk.gov.moj.cpp.sjp.domain.aggregate.domain.SessionRules.getPriority;
 import static uk.gov.moj.cpp.sjp.domain.aggregate.domain.SessionRules.getSessionType;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class SessionRulesTest {
 
     private static final boolean ADJOURNED_POST_CONVICTION = true;
@@ -38,7 +38,6 @@ public class SessionRulesTest {
     @Test
     public void shouldResolvePriorityToHighWhenTheWithdrawalIsRequestedOnAllOffences() {
         when(caseAggregateState.withdrawalRequestedOnAllOffences()).thenReturn(true);
-        when(caseAggregateState.getOffenceIdsWithPleas()).thenReturn(Sets.newHashSet(UUID.randomUUID()));
 
         assertThat(getPriority(caseAggregateState), is(HIGH));
     }

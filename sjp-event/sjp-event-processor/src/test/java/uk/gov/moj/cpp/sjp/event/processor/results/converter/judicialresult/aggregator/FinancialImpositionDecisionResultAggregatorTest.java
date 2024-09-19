@@ -7,8 +7,12 @@ import static java.util.UUID.randomUUID;
 import static org.hamcrest.CoreMatchers.hasItem;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.hasProperty;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static uk.gov.moj.cpp.sjp.domain.decision.Discharge.createDischarge;
+
+import java.util.Optional;
+import static org.mockito.Mockito.when;
+import static uk.gov.moj.cpp.sjp.event.processor.utils.FileUtil.getFileContentAsJson;
 import static uk.gov.moj.cpp.sjp.domain.decision.OffenceDecisionInformation.createOffenceDecisionInformation;
 import static uk.gov.moj.cpp.sjp.domain.decision.discharge.DischargeType.ABSOLUTE;
 import static uk.gov.moj.cpp.sjp.domain.decision.imposition.PaymentType.ATTACH_TO_EARNINGS;
@@ -17,6 +21,9 @@ import static uk.gov.moj.cpp.sjp.domain.decision.imposition.PaymentType.PAY_TO_C
 import static uk.gov.moj.cpp.sjp.domain.verdict.VerdictType.FOUND_GUILTY;
 import static uk.gov.moj.cpp.sjp.event.processor.results.converter.judicialresult.JCaseResultsConstants.DATE_FORMAT;
 
+import static org.mockito.ArgumentMatchers.any;
+
+import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.sjp.domain.decision.OffenceDecision;
 import uk.gov.moj.cpp.sjp.domain.decision.discharge.DischargeType;
 import uk.gov.moj.cpp.sjp.domain.decision.imposition.CostsAndSurcharge;
@@ -32,18 +39,19 @@ import uk.gov.moj.cpp.sjp.event.processor.service.SjpService;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.HashMap;
 import java.util.List;
 import java.util.UUID;
 
 import org.hamcrest.Matchers;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 @SuppressWarnings("unchecked")
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class FinancialImpositionDecisionResultAggregatorTest extends BaseDecisionResultAggregatorTest {
 
     private FinancialImpositionDecisionResultAggregator aggregator;
@@ -61,7 +69,7 @@ public class FinancialImpositionDecisionResultAggregatorTest extends BaseDecisio
     public FinancialImpositionDecisionResultAggregatorTest() {
     }
 
-    @Before
+    @BeforeEach
     public void setUp() {
         super.setUp();
         aggregator = new FinancialImpositionDecisionResultAggregator(jCachedReferenceData, sjpService);
@@ -69,6 +77,10 @@ public class FinancialImpositionDecisionResultAggregatorTest extends BaseDecisio
 
     @Test
     public void shouldPopulateCostsResult() {
+        when(referenceDataService.getFixedList(any(JsonEnvelope.class)))
+                .thenReturn((getFileContentAsJson("resultsconverter/referencedata.fixedlist.json", new HashMap<>())));
+        when(referenceDataService.getProsecutor(any(String.class), any(JsonEnvelope.class)))
+                .thenReturn((Optional.of(getFileContentAsJson("resultsconverter/prosecutor.json", new HashMap<>()))));
 
         final List<OffenceDecision> offenceDecisions = newArrayList(
                 createDischarge(randomUUID(), createOffenceDecisionInformation(offenceId1, FOUND_GUILTY), DischargeType.CONDITIONAL, null, new BigDecimal(500), null, true, null, null),
@@ -101,6 +113,8 @@ public class FinancialImpositionDecisionResultAggregatorTest extends BaseDecisio
 
     @Test
     public void shouldPopulateReasonForNoCostsResult() {
+        when(referenceDataService.getFixedList(any(JsonEnvelope.class)))
+                .thenReturn((getFileContentAsJson("resultsconverter/referencedata.fixedlist.json", new HashMap<>())));
 
         final List<OffenceDecision> offenceDecisions = newArrayList(
                 createDischarge(randomUUID(), createOffenceDecisionInformation(offenceId1, FOUND_GUILTY), DischargeType.CONDITIONAL, null, new BigDecimal(500), null, true, null, null),
@@ -132,6 +146,8 @@ public class FinancialImpositionDecisionResultAggregatorTest extends BaseDecisio
 
     @Test
     public void shouldPopulateCollectionOrderResult() {
+        when(referenceDataService.getFixedList(any(JsonEnvelope.class)))
+                .thenReturn((getFileContentAsJson("resultsconverter/referencedata.fixedlist.json", new HashMap<>())));
 
         final List<OffenceDecision> offenceDecisions = newArrayList(
                 createDischarge(randomUUID(), createOffenceDecisionInformation(offenceId1, FOUND_GUILTY), DischargeType.CONDITIONAL, null, new BigDecimal(500), null, true, null, null),
@@ -168,6 +184,8 @@ public class FinancialImpositionDecisionResultAggregatorTest extends BaseDecisio
 
     @Test
     public void shouldPopulateDeductFromBenefitsResult() {
+        when(referenceDataService.getFixedList(any(JsonEnvelope.class)))
+                .thenReturn((getFileContentAsJson("resultsconverter/referencedata.fixedlist.json", new HashMap<>())));
 
         final List<OffenceDecision> offenceDecisions = newArrayList(
                 createDischarge(randomUUID(), createOffenceDecisionInformation(offenceId1, FOUND_GUILTY), DischargeType.CONDITIONAL, null, new BigDecimal(500), null, true, null, null),
@@ -202,6 +220,8 @@ public class FinancialImpositionDecisionResultAggregatorTest extends BaseDecisio
 
     @Test
     public void shouldPopulateAttachToEarningsResult() {
+        when(referenceDataService.getFixedList(any(JsonEnvelope.class)))
+                .thenReturn((getFileContentAsJson("resultsconverter/referencedata.fixedlist.json", new HashMap<>())));
 
         final List<OffenceDecision> offenceDecisions = newArrayList(
                 createDischarge(randomUUID(), createOffenceDecisionInformation(offenceId1, FOUND_GUILTY), DischargeType.CONDITIONAL, null, new BigDecimal(500), null, true, null, null),
@@ -235,6 +255,8 @@ public class FinancialImpositionDecisionResultAggregatorTest extends BaseDecisio
 
     @Test
     public void shouldPopulateVictimSurchargeResult() {
+        when(referenceDataService.getFixedList(any(JsonEnvelope.class)))
+                .thenReturn((getFileContentAsJson("resultsconverter/referencedata.fixedlist.json", new HashMap<>())));
 
         final List<OffenceDecision> offenceDecisions = newArrayList(
                 createDischarge(randomUUID(), createOffenceDecisionInformation(offenceId1, FOUND_GUILTY), DischargeType.CONDITIONAL, null, new BigDecimal(500), null, true, null, null),
@@ -267,6 +289,8 @@ public class FinancialImpositionDecisionResultAggregatorTest extends BaseDecisio
 
     @Test
     public void shouldPopulateNoVictimSurchargeReasonResult() {
+        when(referenceDataService.getFixedList(any(JsonEnvelope.class)))
+                .thenReturn((getFileContentAsJson("resultsconverter/referencedata.fixedlist.json", new HashMap<>())));
 
         final List<OffenceDecision> offenceDecisions = newArrayList(
                 createDischarge(randomUUID(), createOffenceDecisionInformation(offenceId1, FOUND_GUILTY), DischargeType.CONDITIONAL, null, new BigDecimal(500), null, true, null, null),
@@ -299,6 +323,8 @@ public class FinancialImpositionDecisionResultAggregatorTest extends BaseDecisio
 
     @Test
     public void shouldPopulateLumSumInstallmentsWithReservedTermsResult() {
+        when(referenceDataService.getFixedList(any(JsonEnvelope.class)))
+                .thenReturn((getFileContentAsJson("resultsconverter/referencedata.fixedlist.json", new HashMap<>())));
 
         final List<OffenceDecision> offenceDecisions = newArrayList(
                 createDischarge(randomUUID(), createOffenceDecisionInformation(offenceId1, FOUND_GUILTY), DischargeType.CONDITIONAL, null, new BigDecimal(500), null, true, null, null),
@@ -348,6 +374,8 @@ public class FinancialImpositionDecisionResultAggregatorTest extends BaseDecisio
 
     @Test
     public void shouldPopulateLumSumInstallmentsWithNoReservedTermsResult() {
+        when(referenceDataService.getFixedList(any(JsonEnvelope.class)))
+                .thenReturn((getFileContentAsJson("resultsconverter/referencedata.fixedlist.json", new HashMap<>())));
 
         final List<OffenceDecision> offenceDecisions = newArrayList(
                 createDischarge(randomUUID(), createOffenceDecisionInformation(offenceId1, FOUND_GUILTY), DischargeType.CONDITIONAL, null, new BigDecimal(500), null, true, null, null),
@@ -397,6 +425,8 @@ public class FinancialImpositionDecisionResultAggregatorTest extends BaseDecisio
 
     @Test
     public void shouldPopulateLumSumWithReservedTermsResult() {
+        when(referenceDataService.getFixedList(any(JsonEnvelope.class)))
+                .thenReturn((getFileContentAsJson("resultsconverter/referencedata.fixedlist.json", new HashMap<>())));
 
         final List<OffenceDecision> offenceDecisions = newArrayList(
                 createDischarge(randomUUID(), createOffenceDecisionInformation(offenceId1, FOUND_GUILTY), DischargeType.CONDITIONAL, null, new BigDecimal(500), null, true, null, null),
@@ -430,6 +460,8 @@ public class FinancialImpositionDecisionResultAggregatorTest extends BaseDecisio
 
     @Test
     public void shouldPopulateLumSumWithNoReservedTermsResult() {
+        when(referenceDataService.getFixedList(any(JsonEnvelope.class)))
+                .thenReturn((getFileContentAsJson("resultsconverter/referencedata.fixedlist.json", new HashMap<>())));
 
         final List<OffenceDecision> offenceDecisions = newArrayList(
                 createDischarge(randomUUID(), createOffenceDecisionInformation(offenceId1, FOUND_GUILTY), DischargeType.CONDITIONAL, null, new BigDecimal(500), null, true, null, null),
@@ -463,6 +495,8 @@ public class FinancialImpositionDecisionResultAggregatorTest extends BaseDecisio
 
     @Test
     public void shouldPopulateInstallmentsWithReservedTermsResult() {
+        when(referenceDataService.getFixedList(any(JsonEnvelope.class)))
+                .thenReturn((getFileContentAsJson("resultsconverter/referencedata.fixedlist.json", new HashMap<>())));
 
         final List<OffenceDecision> offenceDecisions = newArrayList(
                 createDischarge(randomUUID(), createOffenceDecisionInformation(offenceId1, FOUND_GUILTY), DischargeType.CONDITIONAL, null, new BigDecimal(500), null, true, null, null),
@@ -504,6 +538,8 @@ public class FinancialImpositionDecisionResultAggregatorTest extends BaseDecisio
 
     @Test
     public void shouldPopulateInstallmentsWithNoReservedTermsResult() {
+        when(referenceDataService.getFixedList(any(JsonEnvelope.class)))
+                .thenReturn((getFileContentAsJson("resultsconverter/referencedata.fixedlist.json", new HashMap<>())));
 
         final List<OffenceDecision> offenceDecisions = newArrayList(
                 createDischarge(randomUUID(), createOffenceDecisionInformation(offenceId1, FOUND_GUILTY), DischargeType.CONDITIONAL, null, new BigDecimal(500), null, true, null, null),

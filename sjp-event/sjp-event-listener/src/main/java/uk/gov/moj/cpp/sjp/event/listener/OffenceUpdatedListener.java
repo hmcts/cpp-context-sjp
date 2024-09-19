@@ -49,7 +49,7 @@ public class OffenceUpdatedListener {
      * @deprecated
      * TODO: REMOVE THE LISTENER AND DECOMMISSION THE PleaUpdated event after the event transformation
      */
-    @Deprecated
+    @Deprecated(forRemoval = true)
     @Handles(PleaUpdated.EVENT_NAME)
     @Transactional
     public void updatePlea(final JsonEnvelope envelope) {

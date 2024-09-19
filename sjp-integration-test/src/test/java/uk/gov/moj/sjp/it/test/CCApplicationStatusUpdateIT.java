@@ -9,6 +9,7 @@ import static org.hamcrest.CoreMatchers.allOf;
 import static org.hamcrest.CoreMatchers.is;
 import static uk.gov.moj.cpp.sjp.domain.SessionType.MAGISTRATE;
 import static uk.gov.moj.sjp.it.Constants.DEFAULT_OFFENCE_CODE;
+import static uk.gov.moj.sjp.it.Constants.PUBLIC_EVENT;
 import static uk.gov.moj.sjp.it.command.CreateCase.createCaseForPayloadBuilder;
 import static uk.gov.moj.sjp.it.helper.AssignmentHelper.requestCaseAssignment;
 import static uk.gov.moj.sjp.it.helper.SessionHelper.startSession;
@@ -58,8 +59,8 @@ import javax.json.JsonObject;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Sets;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 public class CCApplicationStatusUpdateIT extends BaseIntegrationTest  {
 
@@ -86,7 +87,7 @@ public class CCApplicationStatusUpdateIT extends BaseIntegrationTest  {
 
 
 
-    @Before
+    @BeforeEach
     public void setUp() throws SQLException {
         databaseCleaner.cleanViewStore();
         stubFixedLists();
@@ -111,7 +112,7 @@ public class CCApplicationStatusUpdateIT extends BaseIntegrationTest  {
                         .put("APPLICATION_RECEIVED_DATE", DATE_RECEIVED)
                         .build());
         try (final MessageProducerClient producerClient = new MessageProducerClient()) {
-            producerClient.startProducer("public.event");
+            producerClient.startProducer(PUBLIC_EVENT);
             producerClient.sendMessage("public.progression.court-application-created", payload);
         }
 
@@ -136,7 +137,7 @@ public class CCApplicationStatusUpdateIT extends BaseIntegrationTest  {
                         .put("APPLICATION_RECEIVED_DATE", DATE_RECEIVED)
                         .build());
         try (final MessageProducerClient producerClient = new MessageProducerClient()) {
-            producerClient.startProducer("public.event");
+            producerClient.startProducer(PUBLIC_EVENT);
             producerClient.sendMessage("public.progression.court-application-created", payload);
         }
 
@@ -159,7 +160,7 @@ public class CCApplicationStatusUpdateIT extends BaseIntegrationTest  {
                         .put("APPLICATION_RECEIVED_DATE", DATE_RECEIVED)
                         .build());
         try (final MessageProducerClient producerClient = new MessageProducerClient()) {
-            producerClient.startProducer("public.event");
+            producerClient.startProducer(PUBLIC_EVENT);
             producerClient.sendMessage("public.progression.court-application-created", payload);
         }
 

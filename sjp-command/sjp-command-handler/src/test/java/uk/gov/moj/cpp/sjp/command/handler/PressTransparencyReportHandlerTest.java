@@ -7,10 +7,10 @@ import static java.util.stream.Collectors.toList;
 import static javax.json.Json.createArrayBuilder;
 import static javax.json.Json.createObjectBuilder;
 import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.allOf;
-import static org.junit.Assert.assertThat;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.eq;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 import static uk.gov.justice.services.core.annotation.Component.COMMAND_HANDLER;
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
@@ -43,8 +43,11 @@ import uk.gov.moj.cpp.sjp.event.transparency.PressTransparencyPDFReportGeneratio
 import uk.gov.moj.cpp.sjp.event.transparency.PressTransparencyPDFReportMetadataAdded;
 import uk.gov.moj.cpp.sjp.event.transparency.PressTransparencyPDFReportRequested;
 
+import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.TimeZone;
 import java.util.UUID;
 import java.util.stream.Stream;
 
@@ -52,16 +55,16 @@ import javax.json.JsonArrayBuilder;
 import javax.json.JsonObject;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.mockito.Spy;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class PressTransparencyReportHandlerTest {
 
     private static final String REQUEST_PRESS_TRANSPARENCY_REPORT_COMMAND = "sjp.command.request-press-transparency-report";
@@ -102,7 +105,7 @@ public class PressTransparencyReportHandlerTest {
             PressTransparencyPDFReportMetadataAdded.class,
             PressTransparencyPDFReportGenerationFailed.class);
 
-    @Before
+    @BeforeEach
     public void setUp() {
         MockitoAnnotations.initMocks(this);
     }
@@ -133,7 +136,7 @@ public class PressTransparencyReportHandlerTest {
                         .add("language", "ENGLISH")
                         .build());
 
-        final ZonedDateTime requestedAt = ZonedDateTime.now();
+        final ZonedDateTime requestedAt = ZonedDateTime.now(ZoneOffset.UTC);
         final UUID pressTransparencyReportId = UUID.randomUUID();
         when(clock.now()).thenReturn(requestedAt);
 
@@ -151,7 +154,7 @@ public class PressTransparencyReportHandlerTest {
                                 payloadIsJson(allOf(
                                         withJsonPath("$.pressTransparencyReportId", equalTo(pressTransparencyReportId.toString())),
                                         withJsonPath("$.requestType", equalTo(DELTA.name())),
-                                        withJsonPath("$.requestedAt", equalTo(requestedAt.toLocalDateTime() + "Z"))
+                                        withJsonPath("$.requestedAt", equalTo(requestedAt.toLocalDateTime().format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'"))))
                                 ))))));
     }
 

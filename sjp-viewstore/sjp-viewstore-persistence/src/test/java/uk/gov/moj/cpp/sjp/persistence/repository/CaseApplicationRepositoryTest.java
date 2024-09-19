@@ -8,7 +8,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import uk.gov.justice.services.common.util.Clock;
 import uk.gov.justice.services.test.utils.core.random.RandomGenerator;
-import uk.gov.justice.services.test.utils.persistence.BaseTransactionalTest;
+import uk.gov.justice.services.test.utils.persistence.BaseTransactionalJunit4Test;
 import uk.gov.moj.cpp.sjp.persistence.builder.CaseDetailBuilder;
 import uk.gov.moj.cpp.sjp.persistence.builder.DefendantDetailBuilder;
 import uk.gov.moj.cpp.sjp.persistence.entity.CaseApplication;
@@ -25,7 +25,7 @@ import static uk.gov.moj.cpp.sjp.persistence.entity.ApplicationType.STAT_DEC;
 
 @Ignore
 @RunWith(CdiTestRunner.class)
-public class CaseApplicationRepositoryTest extends BaseTransactionalTest {
+public class CaseApplicationRepositoryTest extends BaseTransactionalJunit4Test {
 
     private static final UUID APPLICATION_ID = UUID.randomUUID();
     private static final UUID CASE_ID = UUID.randomUUID();

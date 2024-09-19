@@ -6,13 +6,13 @@ import static java.util.Arrays.asList;
 import static java.util.Collections.singletonList;
 import static java.util.UUID.randomUUID;
 import static java.util.stream.Collectors.toList;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
-import static org.junit.Assert.assertThat;
 import static uk.gov.moj.cpp.sjp.domain.SessionType.MAGISTRATE;
 import static uk.gov.moj.cpp.sjp.domain.decision.DecisionType.ADJOURN;
 import static uk.gov.moj.cpp.sjp.domain.decision.DecisionType.DISMISS;
@@ -99,9 +99,9 @@ import java.util.UUID;
 import javax.json.JsonObject;
 
 import com.google.common.collect.Sets;
-import org.junit.Before;
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 
 @SuppressWarnings({"squid:S1607"})
 public class PressRestrictionsSaveDecisionIT extends BaseIntegrationTest {
@@ -125,7 +125,7 @@ public class PressRestrictionsSaveDecisionIT extends BaseIntegrationTest {
         return session.payloadAsJsonObject();
     }
 
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
         new SjpDatabaseCleaner().cleanViewStore();
         stubStartSjpSessionCommand();
@@ -391,7 +391,7 @@ public class PressRestrictionsSaveDecisionIT extends BaseIntegrationTest {
     }
 
     @Test
-    @Ignore
+    @Disabled
     public void shouldSavePaymentTerms() {
         // Given
         final FinancialPenalty financialPenalty = FinancialPenaltyBuilder.withDefaults().build();

@@ -1,5 +1,6 @@
 package uk.gov.moj.cpp.sjp.command.accesscontrol;
 
+import static java.util.Collections.singletonMap;
 import static org.mockito.BDDMockito.given;
 import static uk.gov.moj.cpp.sjp.command.api.accesscontrol.RuleConstants.getAcceptPendingDefendantChanges;
 
@@ -9,8 +10,7 @@ import uk.gov.moj.cpp.accesscontrol.test.utils.BaseDroolsAccessControlTest;
 
 import java.util.Map;
 
-import com.google.common.collect.ImmutableMap;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.kie.api.runtime.ExecutionResults;
 import org.mockito.Mock;
 
@@ -20,6 +20,10 @@ public class AcceptPendingDefendantChanges extends BaseDroolsAccessControlTest {
 
     @Mock
     private UserAndGroupProvider userAndGroupProvider;
+
+    public AcceptPendingDefendantChanges() {
+        super("COMMAND_API_SESSION");
+    }
 
     @Test
     public void shouldAllowAuthorisedUserToAcceptPendingDefendantChanges() {
@@ -40,8 +44,8 @@ public class AcceptPendingDefendantChanges extends BaseDroolsAccessControlTest {
     }
 
     @Override
-    protected Map<Class, Object> getProviderMocks() {
-        return ImmutableMap.<Class, Object>builder().put(UserAndGroupProvider.class, userAndGroupProvider).build();
+    protected Map<Class<?>, Object> getProviderMocks() {
+        return singletonMap(UserAndGroupProvider.class, userAndGroupProvider);
     }
 
 }

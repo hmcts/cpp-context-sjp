@@ -8,7 +8,7 @@ import javax.persistence.metamodel.SingularAttribute;
 import uk.gov.moj.cpp.sjp.persistence.entity.AocpAcceptedEmailStatus;
 import uk.gov.moj.cpp.sjp.persistence.repository.AocpAcceptedEmailNotificationStatusRepository;
 
-public class FakeAocpAcceptedEmailNotificationRepository implements AocpAcceptedEmailNotificationStatusRepository {
+public abstract class FakeAocpAcceptedEmailNotificationRepository implements AocpAcceptedEmailNotificationStatusRepository {
 
 
     private Map<UUID, AocpAcceptedEmailStatus> inMemoryStorage = new HashMap<>();

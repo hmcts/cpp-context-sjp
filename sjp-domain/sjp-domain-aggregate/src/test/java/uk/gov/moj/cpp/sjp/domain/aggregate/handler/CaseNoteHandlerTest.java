@@ -1,22 +1,15 @@
 package uk.gov.moj.cpp.sjp.domain.aggregate.handler;
 
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.*;
-import static org.mockito.Mockito.when;
-
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
-import org.mockito.Mockito;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.justice.json.schemas.domains.sjp.Note;
 import uk.gov.justice.json.schemas.domains.sjp.NoteType;
 import uk.gov.justice.json.schemas.domains.sjp.User;
 import uk.gov.justice.json.schemas.domains.sjp.events.CaseNoteAdded;
 import uk.gov.moj.cpp.sjp.domain.aggregate.state.CaseAggregateState;
 import uk.gov.moj.cpp.sjp.event.CaseNoteRejected;
-import uk.gov.moj.cpp.sjp.event.CaseReserved;
 
 import java.time.ZonedDateTime;
 import java.util.List;
@@ -24,7 +17,11 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-@RunWith(MockitoJUnitRunner.class)
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.is;
+import static org.mockito.Mockito.when;
+
+@ExtendWith(MockitoExtension.class)
 public class CaseNoteHandlerTest {
 
     private CaseNoteHandler caseNoteHandler = CaseNoteHandler.INSTANCE;

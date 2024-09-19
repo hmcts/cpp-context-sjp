@@ -53,8 +53,8 @@ import javax.json.JsonString;
 import org.hamcrest.CoreMatchers;
 import org.hamcrest.Matcher;
 import org.json.JSONObject;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 @SuppressWarnings({"squid:S1607"})
 public class TransparencyReportIT extends BaseIntegrationTest {
@@ -72,7 +72,7 @@ public class TransparencyReportIT extends BaseIntegrationTest {
     private final UUID offenceId1 = randomUUID(), offenceId2 = randomUUID();
     private TransparencyReportHelper transparencyReportHelper = new TransparencyReportHelper();
 
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
         resetAllRequests();
         new SjpDatabaseCleaner().cleanViewStore();

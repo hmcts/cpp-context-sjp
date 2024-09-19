@@ -1,7 +1,7 @@
 package uk.gov.moj.cpp.sjp.persistence.repository;
 
 import static java.util.Arrays.asList;
-import static org.apache.commons.lang.builder.EqualsBuilder.reflectionEquals;
+import static org.apache.commons.lang3.builder.EqualsBuilder.reflectionEquals;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.closeTo;
 import static org.hamcrest.Matchers.notNullValue;
@@ -11,7 +11,7 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 import uk.gov.justice.services.common.util.Clock;
-import uk.gov.justice.services.test.utils.persistence.BaseTransactionalTest;
+import uk.gov.justice.services.test.utils.persistence.BaseTransactionalJunit4Test;
 import uk.gov.moj.cpp.sjp.persistence.entity.Address;
 import uk.gov.moj.cpp.sjp.persistence.entity.CaseDetail;
 import uk.gov.moj.cpp.sjp.persistence.entity.LegalEntityFinancialMeans;
@@ -33,7 +33,7 @@ import org.junit.runner.RunWith;
 
 
 @RunWith(CdiTestRunner.class)
-public class OnlinePleaRepositoryTest extends BaseTransactionalTest {
+public class OnlinePleaRepositoryTest extends BaseTransactionalJunit4Test {
 
     public static final String HOME = "123131231";
     public static final String MOBILE = "12313131";

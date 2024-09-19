@@ -7,19 +7,21 @@ import static com.github.tomakehurst.wiremock.client.WireMock.post;
 import static com.github.tomakehurst.wiremock.client.WireMock.postRequestedFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlPathMatching;
-import static com.jayway.awaitility.Awaitility.waitAtMost;
 import static java.util.UUID.randomUUID;
 import static javax.json.Json.createObjectBuilder;
 import static javax.ws.rs.core.HttpHeaders.CONTENT_TYPE;
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
 import static javax.ws.rs.core.Response.Status.ACCEPTED;
+import static org.awaitility.Awaitility.waitAtMost;
 import static org.hamcrest.Matchers.hasSize;
+import static uk.gov.moj.sjp.it.Constants.PUBLIC_EVENT;
 import static uk.gov.moj.sjp.it.stub.StubHelper.waitForPostStubToBeReady;
 
 import uk.gov.justice.service.wiremock.testutil.InternalEndpointMockUtils;
 import uk.gov.justice.services.test.utils.core.messaging.MessageProducerClient;
 import uk.gov.moj.sjp.it.util.JsonHelper;
 
+import java.time.Duration;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
@@ -30,7 +32,6 @@ import java.util.stream.Collectors;
 import javax.json.JsonObject;
 
 import com.github.tomakehurst.wiremock.verification.LoggedRequest;
-import com.jayway.awaitility.Duration;
 import org.json.JSONObject;
 
 public class NotificationNotifyStub {
@@ -56,23 +57,23 @@ public class NotificationNotifyStub {
                 && commandPayload.getJSONObject("personalisation").getString("urn").equals(urn)
                 && commandPayload.getString("templateId").equals(templateId);
 
-        waitAtMost(Duration.TEN_SECONDS).until(() ->
+        waitAtMost(Duration.ofSeconds(10)).until(() ->
                 findAll(postRequestedFor(urlPathMatching(COMMAND_URL + ".*"))
                         .withHeader(CONTENT_TYPE, equalTo(COMMAND_MEDIA_TYPE)))
                         .stream()
                         .map(LoggedRequest::getBodyAsString)
-                        .filter(str -> ! str.equals(""))
+                        .filter(str -> !str.equals(""))
                         .map(JSONObject::new)
                         .anyMatch(commandPayloadPredicate));
     }
 
     public static JsonObject verifyNotification(final UUID notificationId, final String email) {
-        final List<JsonObject> notifications = waitAtMost(Duration.TEN_SECONDS)
+        final List<JsonObject> notifications = waitAtMost(Duration.ofSeconds(10))
                 .until(() -> findAll(postRequestedFor(urlPathMatching(COMMAND_URL + notificationId.toString()))
                                 .withHeader(CONTENT_TYPE, equalTo(COMMAND_MEDIA_TYPE)))
                                 .stream()
                                 .map(LoggedRequest::getBodyAsString)
-                                .filter(str -> ! str.equals(""))
+                                .filter(str -> !str.equals(""))
                                 .map(JsonHelper::getJsonObject)
                                 .filter(commandPayload -> commandPayload.getString("sendToAddress").equals(email))
                                 .collect(Collectors.toList())
@@ -89,7 +90,7 @@ public class NotificationNotifyStub {
                 .build();
 
         try (final MessageProducerClient producerClient = new MessageProducerClient()) {
-            producerClient.startProducer("public.event");
+            producerClient.startProducer(PUBLIC_EVENT);
             producerClient.sendMessage("public.notificationnotify.events.notification-failed", payload);
         }
     }
@@ -101,7 +102,7 @@ public class NotificationNotifyStub {
                 .build();
 
         try (final MessageProducerClient producerClient = new MessageProducerClient()) {
-            producerClient.startProducer("public.event");
+            producerClient.startProducer(PUBLIC_EVENT);
             producerClient.sendMessage("public.notificationnotify.events.notification-sent", payload);
         }
     }

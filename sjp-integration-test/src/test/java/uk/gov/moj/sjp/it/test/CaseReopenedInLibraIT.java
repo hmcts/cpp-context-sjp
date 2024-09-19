@@ -16,15 +16,15 @@ import uk.gov.moj.sjp.it.helper.DecisionHelper;
 import uk.gov.moj.sjp.it.helper.EventListener;
 import uk.gov.moj.sjp.it.util.SjpDatabaseCleaner;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 public class CaseReopenedInLibraIT extends BaseIntegrationTest {
 
     private SjpDatabaseCleaner databaseCleaner = new SjpDatabaseCleaner();
     private CreateCase.CreateCasePayloadBuilder createCasePayloadBuilder ;
 
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
         final ProsecutingAuthority prosecutingAuthority = ProsecutingAuthority.TFL;
         stubProsecutorQuery(prosecutingAuthority.name(), prosecutingAuthority.getFullName(), randomUUID());

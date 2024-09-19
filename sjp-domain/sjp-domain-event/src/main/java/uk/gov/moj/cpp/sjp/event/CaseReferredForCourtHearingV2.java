@@ -17,6 +17,7 @@ import static java.util.Collections.emptyList;
 import static java.util.Collections.unmodifiableList;
 import static java.util.Objects.nonNull;
 
+@SuppressWarnings("squid:S107")
 @Event(CaseReferredForCourtHearingV2.EVENT_NAME)
 public class CaseReferredForCourtHearingV2 {
 

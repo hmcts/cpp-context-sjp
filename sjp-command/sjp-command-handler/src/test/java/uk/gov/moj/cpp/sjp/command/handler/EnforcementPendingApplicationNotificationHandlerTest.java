@@ -1,10 +1,11 @@
 package uk.gov.moj.cpp.sjp.command.handler;
 
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
+import static java.time.temporal.ChronoUnit.MILLIS;
 import static javax.json.Json.createObjectBuilder;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.Matchers.allOf;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.mockito.Mockito.when;
 import static uk.gov.justice.services.core.annotation.Component.COMMAND_HANDLER;
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
@@ -18,6 +19,7 @@ import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopePaylo
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeStreamMatcher.streamContaining;
 import static uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderFactory.metadataWithRandomUUID;
 
+import uk.gov.justice.services.common.util.UtcClock;
 import uk.gov.justice.services.core.aggregate.AggregateService;
 import uk.gov.justice.services.core.enveloper.Enveloper;
 import uk.gov.justice.services.eventsourcing.source.core.EventSource;
@@ -35,14 +37,14 @@ import java.time.ZonedDateTime;
 import java.util.UUID;
 import java.util.stream.Stream;
 
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class EnforcementPendingApplicationNotificationHandlerTest {
 
     public static final String ENFORCEMENT_PENDING_APPLICATION_GENERATE_NOTIFICATION_COMMAND = "sjp.command.enforcement-pending-application-generate-notification";
@@ -125,7 +127,7 @@ public class EnforcementPendingApplicationNotificationHandlerTest {
 
     @Test
     public void shouldRequestEmailAttachmentGenerationNotification() throws EventStreamException {
-        final ZonedDateTime generationTime = ZonedDateTime.now();
+        final ZonedDateTime generationTime = new UtcClock().now();
 
         final JsonEnvelope commandEnvelope = envelopeFrom(
                 metadataWithRandomUUID(ENFORCEMENT_PENDING_APPLICATION_GENERATE_NOTIFICATION_COMMAND),
@@ -156,7 +158,7 @@ public class EnforcementPendingApplicationNotificationHandlerTest {
 
     @Test
     public void shouldRequestEmailAttachmentGenerationFailedNotification() throws EventStreamException {
-        final ZonedDateTime generationFailedTime = ZonedDateTime.now();
+        final ZonedDateTime generationFailedTime = new UtcClock().now();
 
         final JsonEnvelope commandEnvelope = envelopeFrom(
                 metadataWithRandomUUID(ENFORCEMENT_PENDING_APPLICATION_FAIL_GENERATION_NOTIFICATION_COMMAND),
@@ -185,7 +187,7 @@ public class EnforcementPendingApplicationNotificationHandlerTest {
 
     @Test
     public void shouldRequestEmailQueuedNotification() throws EventStreamException {
-        final ZonedDateTime queuedTime = ZonedDateTime.now();
+        final ZonedDateTime queuedTime = new UtcClock().now();
         final JsonEnvelope commandEnvelope = envelopeFrom(
                 metadataWithRandomUUID(ENFORCEMENT_PENDING_APPLICATION_QUEUE_NOTIFICATION_COMMAND),
                 createObjectBuilder()
@@ -213,7 +215,7 @@ public class EnforcementPendingApplicationNotificationHandlerTest {
 
     @Test
     public void shouldRequestEmailSendNotification() throws EventStreamException {
-        final ZonedDateTime sentAt = ZonedDateTime.now();
+        final ZonedDateTime sentAt = new UtcClock().now();
 
         final JsonEnvelope commandEnvelope = envelopeFrom(
                 metadataWithRandomUUID(ENFORCEMENT_PENDING_APPLICATION_SEND_NOTIFICATION_COMMAND),
@@ -243,7 +245,7 @@ public class EnforcementPendingApplicationNotificationHandlerTest {
 
     @Test
     public void shouldRequestEmailFailedNotification() throws EventStreamException {
-        final ZonedDateTime failedTime = ZonedDateTime.now();
+        final ZonedDateTime failedTime = new UtcClock().now();
 
         final JsonEnvelope commandEnvelope = envelopeFrom(
                 metadataWithRandomUUID(ENFORCEMENT_PENDING_APPLICATION_FAIL_NOTIFICATION_COMMAND),

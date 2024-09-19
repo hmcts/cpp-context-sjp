@@ -1,8 +1,8 @@
 package uk.gov.moj.cpp.sjp.command.handler;
 
 import static java.time.ZoneOffset.UTC;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.eq;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
@@ -27,27 +27,22 @@ import java.util.stream.Stream;
 
 import javax.json.JsonObject;
 
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class CaseReceivedHandlerTest {
 
     private static final UUID CASE_ID = UUID.randomUUID();
     private static final String ACTION_NAME = "actionName";
-
-    @Rule
-    public final ExpectedException exception = ExpectedException.none();
 
     @Mock
     private JsonObject commandJsonObject;
@@ -97,14 +92,11 @@ public class CaseReceivedHandlerTest {
     @Spy
     private Clock clock = new StoppedClock(ZonedDateTime.now(UTC));
 
-    @Before
+    @BeforeEach
     public void setup() {
         when(command.payloadAsJsonObject()).thenReturn(commandJsonObject);
-        when(command.metadata()).thenReturn(metadata);
-        when(metadata.name()).thenReturn(ACTION_NAME);
         when(commandJsonObject.getString("id")).thenReturn(CASE_ID.toString());
         when(jsonConverter.convert(any(JsonObject.class), any())).thenReturn(aCase);
-        when(aCase.getId()).thenReturn(CASE_ID);
         when(eventSource.getStreamById(any(UUID.class))).thenReturn(eventHistory);
         when(aggregateService.get(any(), eq(CaseAggregate.class))).thenReturn(caseAgg);
         ZonedDateTime now = clock.now(); // this is not inlined as it doesn't work... feel free to try

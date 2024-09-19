@@ -7,7 +7,8 @@ import static java.util.UUID.randomUUID;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMetadataMatcher.metadata;
@@ -44,26 +45,22 @@ import java.util.UUID;
 import javax.json.JsonValue;
 
 import org.apache.commons.lang3.reflect.FieldUtils;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class EnforcementPendingApplicationNotificationProcessorTest {
 
     private static final String LJA_CODE = "LJA_CODE";
     private static final LocalDate DEFENDANT_DATE_OF_BIRTH = LocalDate.of(1980, 11, 5);
 
-    @Rule
-    public ExpectedException thrown = ExpectedException.none();
     @Mock
     private SjpService sjpService;
     @Mock
@@ -88,7 +85,7 @@ public class EnforcementPendingApplicationNotificationProcessorTest {
     private String replyToAddress = "noreply@cjscp.org.uk";
     private CaseDetails caseDetails;
 
-    @Before
+    @BeforeEach
     public void setUp() throws IllegalAccessException {
 
         FieldUtils.writeField(processor, "templateId", templateId.toString(), true);
@@ -103,7 +100,7 @@ public class EnforcementPendingApplicationNotificationProcessorTest {
         final EnforcementPendingApplicationNotificationGenerated event = new EnforcementPendingApplicationNotificationGenerated(applicationId, fileId, now());
         final JsonEnvelope envelope = envelope(event);
         givenSjpCaseWithApplicationDecision(applicationId, DEFENDANT_DATE_OF_BIRTH, envelope);
-        givenAnEmailSubject(ApplicationType.STAT_DEC);
+        when(enforcementEmailAttachmentService.getEmailSubject(ApplicationType.STAT_DEC)).thenReturn("Email Subject");
 
         when(enforcementAreaEmailHelper.enforcementEmail(envelope, caseDetails, caseDetails.getDefendant().getPersonalDetails().getAddress().getPostcode())).thenReturn("notification@dvla.gov.uk");
         when(sjpService.getCaseDetailsByApplicationId(applicationId, envelope)).thenReturn(caseDetails);
@@ -130,7 +127,7 @@ public class EnforcementPendingApplicationNotificationProcessorTest {
                 new EnforcementPendingApplicationNotificationGenerated(applicationId, fileId, ZonedDateTime.now());
         final JsonEnvelope envelope = envelope(event);
         givenSjpCaseWithApplicationDecision(applicationId, envelope);
-        givenAnEmailSubject(ApplicationType.STAT_DEC);
+        when(enforcementEmailAttachmentService.getEmailSubject(ApplicationType.STAT_DEC)).thenReturn("Email Subject");
         when(sjpService.getCaseDetailsByApplicationId(applicationId, envelope)).thenReturn(caseDetails);
 
         processor.sendEmailToNotificationNotify(envelope);
@@ -149,13 +146,10 @@ public class EnforcementPendingApplicationNotificationProcessorTest {
         final EnforcementPendingApplicationNotificationGenerated event =
                 new EnforcementPendingApplicationNotificationGenerated(applicationId, fileId, now());
         final JsonEnvelope envelope = envelope(event);
-        givenAnEmailSubject(ApplicationType.STAT_DEC);
         when(sjpService.getCaseDetailsByApplicationId(applicationId, envelope)).thenReturn(null);
 
-        thrown.expect(IllegalStateException.class);
-        thrown.expectMessage("Could not find case for application id: " + applicationId);
-
-        processor.sendEmailToNotificationNotify(envelope);
+        var e = assertThrows(IllegalStateException.class, () -> processor.sendEmailToNotificationNotify(envelope));
+        assertThat(e.getMessage(), is("Could not find case for application id: " + applicationId));
     }
 
     private JsonEnvelope envelope(final EnforcementPendingApplicationNotificationGenerated event) {
@@ -192,10 +186,6 @@ public class EnforcementPendingApplicationNotificationProcessorTest {
                         .build()))
                 .build());
 
-        when(sjpService.getCaseDetails(caseId, envelope)).thenReturn(caseDetails);
     }
 
-    private void givenAnEmailSubject(ApplicationType applicationType) {
-        when(enforcementEmailAttachmentService.getEmailSubject(applicationType)).thenReturn("Email Subject");
-    }
 }

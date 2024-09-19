@@ -13,7 +13,7 @@ import uk.gov.justice.services.test.utils.core.http.RequestParamsBuilder;
 import java.util.concurrent.TimeUnit;
 
 import com.jayway.jsonpath.ReadContext;
-import com.jayway.restassured.path.json.JsonPath;
+import io.restassured.path.json.JsonPath;
 import org.hamcrest.Matcher;
 
 public class PendingDatesToAvoidPoller {

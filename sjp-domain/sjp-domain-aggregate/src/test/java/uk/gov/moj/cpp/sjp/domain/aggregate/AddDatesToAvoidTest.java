@@ -18,12 +18,12 @@ import uk.gov.moj.cpp.sjp.event.DatesToAvoidUpdated;
 
 import java.util.List;
 
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mockito;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class AddDatesToAvoidTest extends CaseAggregateBaseTest {
     private static final String DATES_TO_AVOID = "12th July 2018";
     private static final String DATES_TO_AVOID_UPDATED = "13th August 2018";

@@ -1,7 +1,7 @@
 package uk.gov.moj.cpp.sjp.event.listener.converter;
 
 import static org.apache.commons.lang3.builder.EqualsBuilder.reflectionEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import uk.gov.moj.cpp.sjp.domain.Offence;
 import uk.gov.moj.cpp.sjp.persistence.entity.OffenceDetail;
@@ -10,7 +10,7 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.UUID;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 public class OffenceToOffenceDetailTest {
 

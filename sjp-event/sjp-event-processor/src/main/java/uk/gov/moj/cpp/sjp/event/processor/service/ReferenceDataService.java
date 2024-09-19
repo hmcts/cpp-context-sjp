@@ -108,7 +108,7 @@ public class ReferenceDataService {
         final JsonObject response = requester.requestAsAdmin(jsonObjectEnvelope, JsonObject.class).payload();
         return response.getJsonArray(VERDICT_TYPES).stream()
                 .map(jsonValue -> (JsonObject) jsonValue)
-                .collect(toList());
+                .toList();
     }
 
 

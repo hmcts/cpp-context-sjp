@@ -4,47 +4,46 @@ import static javax.json.Json.createArrayBuilder;
 import static javax.json.Json.createObjectBuilder;
 import static org.mockito.MockitoAnnotations.initMocks;
 
+import java.util.stream.Stream;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 import uk.gov.justice.services.common.converter.LocalDates;
 
 import java.time.LocalDate;
-import java.util.Arrays;
-import java.util.Collection;
 
 import javax.json.JsonArray;
 import javax.json.JsonObject;
 
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
+import org.junit.jupiter.api.BeforeEach;
 
-@RunWith(Parameterized.class)
 public class LSUMResultCodeConverterTest extends ResultCodeConverterTest {
 
-    @Parameterized.Parameter
     public String lumpSumAmountTerminalEntry;
 
-    @Parameterized.Parameter(1)
     public String lumpSumWithinTerminalEntry;
 
 
-    @Parameterized.Parameter(2)
     public LocalDate payByDatePrompt;
 
-    @Parameterized.Parameters(name ="Terminal entries with value {1} should be converted to prompt {2}, the {0} is ignored")
-    public static Collection<Object[]> data() {
-        return Arrays.asList(new Object[][] {
-                { "300", "Lump sum within 14 days", now.toLocalDate().plusDays(14)}, { "400", "Lump sum within 28 days", now.toLocalDate().plusDays(28) }
-        });
+    static Stream<Arguments> data() {
+        return Stream.of(
+                Arguments.of("300", "Lump sum within 14 days", now.toLocalDate().plusDays(14)),
+                        Arguments.of("400", "Lump sum within 28 days", now.toLocalDate().plusDays(28) )
+        );
     }
 
-    @Before
+    @BeforeEach
     public void setUp() {
         initMocks(this);
     }
 
-    @Test
-    public void shouldConvertLumpSumResult() {
+    @ParameterizedTest
+    @MethodSource("data")
+    public void shouldConvertLumpSumResult(String lumpSumAmountTerminalEntry, String lumpSumWithinTerminalEntry, LocalDate payByDatePrompt) {
+        this.lumpSumAmountTerminalEntry = lumpSumAmountTerminalEntry;
+        this.lumpSumWithinTerminalEntry = lumpSumWithinTerminalEntry;
+        this.payByDatePrompt = payByDatePrompt;
         super.testResultCode();
     }
 

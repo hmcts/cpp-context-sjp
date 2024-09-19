@@ -7,9 +7,9 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertThat;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyString;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.justice.services.test.utils.core.matchers.EventStreamMatcher.eventStreamAppendedWith;
@@ -44,16 +44,16 @@ import java.math.BigDecimal;
 import java.util.UUID;
 import java.util.stream.Stream;
 
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class UpdateAllFinancialMeansCommandHandlerTest {
 
     @Mock
@@ -110,7 +110,7 @@ public class UpdateAllFinancialMeansCommandHandlerTest {
         final String empStatus = EmploymentStatus.EMPLOYED.name();
         final BigDecimal grossTurnover = new BigDecimal(100);
         final BigDecimal netTurnover = new BigDecimal(10);
-        final Integer numberOfEmployees = new Integer(10);
+        final Integer numberOfEmployees = 10;
         final Boolean tradingMoreThanTwelveMonths = false;
 
         final UpdateAllFinancialMeans updateAllFinancialMeans = getUpdateAllFinancialMeansPayload(caseId, defendantId, income, benefits, EmploymentStatus.EMPLOYED, null);
@@ -129,7 +129,7 @@ public class UpdateAllFinancialMeansCommandHandlerTest {
                 any(uk.gov.moj.cpp.sjp.domain.Income.class),
                 any(uk.gov.moj.cpp.sjp.domain.Benefits.class),
                 any(uk.gov.moj.cpp.sjp.domain.Employer.class),
-                anyString(), any(BigDecimal.class), any(BigDecimal.class), any(Integer.class), any(Boolean.class))).thenReturn(Stream.of(financialMeansUpdated, employerUpdated));
+                anyString(), any(), any(), any(), any())).thenReturn(Stream.of(financialMeansUpdated, employerUpdated));
 
         final Envelope<UpdateAllFinancialMeans> command = Envelope.envelopeFrom(
                 metadataWithRandomUUID("sjp.command.update-all-financial-means").
@@ -219,12 +219,6 @@ public class UpdateAllFinancialMeansCommandHandlerTest {
 
         when(eventSource.getStreamById(caseId)).thenReturn(eventStream);
         when(aggregateService.get(eventStream, CaseAggregate.class)).thenReturn(caseAggregate);
-        when(caseAggregate.updateAllFinancialMeans(any(UUID.class),
-                any(UUID.class),
-                any(uk.gov.moj.cpp.sjp.domain.Income.class),
-                any(uk.gov.moj.cpp.sjp.domain.Benefits.class),
-                any(uk.gov.moj.cpp.sjp.domain.Employer.class),
-                anyString(), any(), any(), any(), any())).thenReturn(Stream.of(financialMeansUpdated));
 
         final Envelope<UpdateAllFinancialMeans> command = Envelope.envelopeFrom(
                 metadataWithRandomUUID("sjp.command.update-all-financial-means").

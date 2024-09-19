@@ -10,8 +10,8 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.hasProperty;
 import static org.hamcrest.Matchers.instanceOf;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static uk.gov.moj.cpp.sjp.domain.decision.OffenceDecisionInformation.createOffenceDecisionInformation;
 import static uk.gov.moj.cpp.sjp.domain.verdict.VerdictType.FOUND_GUILTY;
 
@@ -29,12 +29,12 @@ import java.util.UUID;
 import java.util.stream.Stream;
 
 import org.apache.commons.collections.map.HashedMap;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class ResolveConvictingCourtHandlerTest {
 
     private CaseAggregateState caseAggregateState;
@@ -45,7 +45,7 @@ public class ResolveConvictingCourtHandlerTest {
     private final UUID caseId = randomUUID();
     private final UUID offenceId = randomUUID();
 
-    @Before
+    @BeforeEach
     public void onceBeforeEachTest() {
         caseAggregateState = new CaseAggregateState();
         caseAggregateState.setCaseId(caseId);
@@ -71,7 +71,7 @@ public class ResolveConvictingCourtHandlerTest {
         final Stream<Object> eventStream =
                 ResolveConvictionCourtHandler.INSTANCE.resolveConvictionCourt(caseId, caseAggregateState, sessionMap);
 
-        assertTrue("Event stream is created", nonNull(eventStream));
+        assertTrue(nonNull(eventStream), "Event stream is created");
         final List<Object> eventList = eventStream.collect(toList());
         thenConvictionCourtResolved(eventList);
     }

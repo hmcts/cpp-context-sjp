@@ -3,44 +3,38 @@ package uk.gov.moj.cpp.sjp.command.api.service;
 
 import static java.lang.Boolean.FALSE;
 import static java.util.Arrays.asList;
-import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
 import static javax.json.Json.createObjectBuilder;
-import static liquibase.util.StringUtils.isNotEmpty;
+import static org.apache.commons.lang3.StringUtils.isNotEmpty;
+import static org.hamcrest.CoreMatchers.nullValue;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
-import static org.junit.Assert.assertThat;
 import static uk.gov.moj.cpp.sjp.command.api.service.AddressService.normalizePostcodeInAddress;
 
-import java.util.Collection;
 import java.util.List;
+import java.util.stream.Stream;
 
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
 
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 
-@RunWith(Parameterized.class)
 public class AddressServiceTest {
 
-    @Parameterized.Parameter
-    public List<String> postcodeReceivedList;
-
-    @Parameterized.Parameter(1)
-    public String normalizedPostcode;
-
-    @Parameterized.Parameters(name = "Postcode {0} is normalized to {1}")
-    public static Collection<Object[]> data() {
-        return asList(new Object[][]{
-                {asList("W1T 1JY", "w1t 1jy", "W1T1JY"), "W1T 1JY"},
-                {asList("EC1A 1BB", "EC1A1BB", "eC1a 1Bb", "eC1a1Bb", " eC1a1Bb "), "EC1A 1BB"},
-                {asList(""), null},
-        });
+    static Stream<Arguments> data() {
+        return Stream.of(
+                Arguments.of(asList("W1T 1JY", "w1t 1jy", "W1T1JY"), "W1T 1JY"),
+                Arguments.of(asList("EC1A 1BB", "EC1A1BB", "eC1a 1Bb", "eC1a1Bb", " eC1a1Bb "), "EC1A 1BB"),
+                Arguments.of(asList(""), null)
+        );
     }
 
-    @Test
-    public void test() {
+    @ParameterizedTest
+    @MethodSource("data")
+    public void test(List<String> postcodeReceivedList, String normalizedPostcode) {
         postcodeReceivedList.forEach(postcodeReceived -> {
             final JsonObjectBuilder addressBuilder = createObjectBuilder()
                     .add("address1", "line1")
@@ -70,8 +64,8 @@ public class AddressServiceTest {
     }
 
     @Test
-    public void testNullAddress(){
+    public void testNullAddress() {
         final JsonObject addressObjectWithNormalized = normalizePostcodeInAddress(null);
-        isNull(addressObjectWithNormalized);
+        assertThat(addressObjectWithNormalized, is(nullValue()));
     }
 }

@@ -11,7 +11,7 @@ import static org.hamcrest.Matchers.hasProperty;
 import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.mockito.Mockito.when;
 import static uk.gov.justice.json.schemas.domains.sjp.ApplicationDecision.applicationDecision;
 import static uk.gov.justice.json.schemas.domains.sjp.ApplicationStatus.REOPENING_GRANTED;
@@ -57,13 +57,13 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Stream;
 
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class ApplicationDecisionHandlerTest {
 
     private CaseAggregateState caseAggregateState;
@@ -84,7 +84,7 @@ public class ApplicationDecisionHandlerTest {
     @Mock
     private CourtApplication courtApplication;
 
-    @Before
+    @BeforeEach
     public void onceBeforeEachTest() {
         caseAggregateState = new CaseAggregateState();
         caseAggregateState.setCaseId(randomUUID());

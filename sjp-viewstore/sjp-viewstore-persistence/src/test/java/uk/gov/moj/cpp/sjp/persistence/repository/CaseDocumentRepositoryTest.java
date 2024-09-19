@@ -3,7 +3,7 @@ package uk.gov.moj.cpp.sjp.persistence.repository;
 import static junit.framework.TestCase.assertEquals;
 
 import uk.gov.justice.services.common.converter.ZonedDateTimes;
-import uk.gov.justice.services.test.utils.persistence.BaseTransactionalTest;
+import uk.gov.justice.services.test.utils.persistence.BaseTransactionalJunit4Test;
 
 import uk.gov.moj.cpp.sjp.persistence.entity.CaseDetail;
 import uk.gov.moj.cpp.sjp.persistence.entity.CaseDocument;
@@ -24,7 +24,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 @RunWith(CdiTestRunner.class)
-public class CaseDocumentRepositoryTest extends BaseTransactionalTest {
+public class CaseDocumentRepositoryTest extends BaseTransactionalJunit4Test {
 
     @Inject
     private CaseDocumentRepository caseDocumentRepository;

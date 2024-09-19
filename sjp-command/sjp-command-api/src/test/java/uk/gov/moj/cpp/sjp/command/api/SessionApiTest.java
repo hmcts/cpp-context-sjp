@@ -2,14 +2,16 @@ package uk.gov.moj.cpp.sjp.command.api;
 
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
 import static java.time.ZoneOffset.UTC;
+import static java.util.Collections.singletonMap;
 import static org.hamcrest.CoreMatchers.allOf;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.BDDMockito.given;
-import static org.mockito.Matchers.argThat;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.mockito.hamcrest.MockitoHamcrest.argThat;
 import static uk.gov.justice.services.core.annotation.Component.COMMAND_API;
 import static uk.gov.justice.services.test.utils.core.matchers.HandlerClassMatcher.isHandlerClass;
 import static uk.gov.justice.services.test.utils.core.matchers.HandlerMethodMatcher.method;
@@ -44,28 +46,23 @@ import java.util.UUID;
 import javax.json.Json;
 import javax.json.JsonObject;
 
-import com.google.common.collect.ImmutableMap;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
-import org.junit.runner.RunWith;
+import org.hamcrest.CoreMatchers;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.kie.api.runtime.ExecutionResults;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class SessionApiTest extends BaseDroolsAccessControlTest {
 
     private static final String SJP_ASSIGN_NEXT_CASE = "sjp.assign-next-case";
     private static final String START_SESSION_COMMAND_NAME = "sjp.start-session";
     private static final String END_SESSION_COMMAND_NAME = "sjp.end-session";
-
-    @Rule
-    public ExpectedException thrown = ExpectedException.none();
 
     @Mock
     private ReferenceDataService referenceDataService;
@@ -94,9 +91,13 @@ public class SessionApiTest extends BaseDroolsAccessControlTest {
     @Mock
     private UserAndGroupProvider userAndGroupProvider;
 
+    public SessionApiTest() {
+        super("COMMAND_API_SESSION");
+    }
+
     @Override
-    protected Map<Class, Object> getProviderMocks() {
-        return ImmutableMap.<Class, Object>builder().put(UserAndGroupProvider.class, userAndGroupProvider).build();
+    protected Map<Class<?>, Object> getProviderMocks() {
+        return singletonMap(UserAndGroupProvider.class, userAndGroupProvider);
     }
 
     @Test
@@ -134,8 +135,8 @@ public class SessionApiTest extends BaseDroolsAccessControlTest {
         final JsonEnvelope startSessionCommand = envelope().with(metadataWithRandomUUID(START_SESSION_COMMAND_NAME))
                 .withPayloadOf(sessionId.toString(), "sessionId")
                 .withPayloadOf(courtHouseOUCode, "courtHouseOUCode")
-                .withPayloadOf("Jay","magistrate" )
-                .withPayloadOf( Json.createObjectBuilder().add("userId" ,userId.toString()).build(),"legalAdviser")
+                .withPayloadOf("Jay", "magistrate")
+                .withPayloadOf(Json.createObjectBuilder().add("userId", userId.toString()).build(), "legalAdviser")
                 .withPayloadOf(Json.createArrayBuilder().add("P1").add("P2").build(), "prosecutors")
                 .build();
 
@@ -168,12 +169,10 @@ public class SessionApiTest extends BaseDroolsAccessControlTest {
                 .withPayloadOf(courtHouseOUCode, "courtHouseOUCode")
                 .build();
 
-        thrown.expect(BadRequestException.class);
-        thrown.expectMessage(String.format("Court house with ou code %s not found", courtHouseOUCode));
-
         when(referenceDataService.getCourtByCourtHouseOUCode(courtHouseOUCode, startSessionCommand)).thenReturn(Optional.empty());
 
-        sessionApi.startSession(startSessionCommand);
+        var e = assertThrows(BadRequestException.class, () -> sessionApi.startSession(startSessionCommand));
+        assertThat(e.getMessage(), is(String.format("Court house with ou code %s not found", courtHouseOUCode)));
     }
 
     @Test
@@ -196,10 +195,8 @@ public class SessionApiTest extends BaseDroolsAccessControlTest {
                 .withPayloadFrom(payload)
                 .build();
 
-        thrown.expect(BadRequestException.class);
-        thrown.expectMessage("Invalid sessionId provided");
-
-        sessionApi.endSession(envelope);
+        var e = assertThrows(BadRequestException.class, () -> sessionApi.endSession(envelope));
+        assertThat(e.getMessage(), CoreMatchers.is("Invalid sessionId provided"));
     }
 
     @Test
@@ -208,10 +205,8 @@ public class SessionApiTest extends BaseDroolsAccessControlTest {
                 .withPayloadOf("invalid UUID", "sessionId")
                 .build();
 
-        thrown.expect(BadRequestException.class);
-        thrown.expectMessage("Invalid sessionId provided");
-
-        sessionApi.endSession(envelope);
+        var e = assertThrows(BadRequestException.class, () -> sessionApi.endSession(envelope));
+        assertThat(e.getMessage(), CoreMatchers.is("Invalid sessionId provided"));
     }
 
     @Test

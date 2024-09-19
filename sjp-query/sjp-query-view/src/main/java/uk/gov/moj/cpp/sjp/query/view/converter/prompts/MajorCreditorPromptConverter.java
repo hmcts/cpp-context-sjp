@@ -2,7 +2,6 @@ package uk.gov.moj.cpp.sjp.query.view.converter.prompts;
 
 import static java.util.Optional.empty;
 import static java.util.Optional.ofNullable;
-import static jdk.nashorn.internal.runtime.PropertyDescriptor.VALUE;
 
 import uk.gov.moj.cpp.sjp.query.view.converter.FixedListConverterUtil;
 import uk.gov.moj.cpp.sjp.query.view.converter.Prompt;

@@ -1,7 +1,7 @@
 package uk.gov.moj.cpp.sjp.query.view.util;
 
 import static org.hamcrest.CoreMatchers.is;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static uk.gov.moj.cpp.sjp.query.view.util.TransparencyServiceUtil.format;
 import static uk.gov.moj.cpp.sjp.query.view.util.TransparencyServiceUtil.resolveSize;
 
@@ -9,7 +9,7 @@ import java.time.LocalDateTime;
 
 import org.hamcrest.MatcherAssert;
 import org.hamcrest.Matchers;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 public class TransparencyServiceUtilTest {
 

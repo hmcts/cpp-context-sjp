@@ -2,6 +2,7 @@ package uk.gov.moj.sjp.it.util;
 
 import static java.util.UUID.randomUUID;
 import static javax.json.Json.createObjectBuilder;
+import static uk.gov.moj.sjp.it.Constants.PUBLIC_EVENT;
 
 import uk.gov.justice.services.test.utils.core.messaging.MessageProducerClient;
 
@@ -35,7 +36,7 @@ public class SysDocGeneratorHelper {
         );
 
         try (final MessageProducerClient producerClient = new MessageProducerClient()) {
-            producerClient.startProducer("public.event");
+            producerClient.startProducer(PUBLIC_EVENT);
             producerClient.sendMessage("public.systemdocgenerator.events.document-available", payload);
         }
     }
@@ -55,7 +56,7 @@ public class SysDocGeneratorHelper {
         );
 
         try (final MessageProducerClient producerClient = new MessageProducerClient()) {
-            producerClient.startProducer("public.event");
+            producerClient.startProducer(PUBLIC_EVENT);
             producerClient.sendMessage("public.systemdocgenerator.events.generation-failed", payload);
         }
     }

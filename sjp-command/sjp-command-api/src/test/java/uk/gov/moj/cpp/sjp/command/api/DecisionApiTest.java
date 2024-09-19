@@ -13,13 +13,13 @@ import static javax.json.Json.createObjectBuilder;
 import static org.hamcrest.CoreMatchers.allOf;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.justice.services.core.annotation.Component.COMMAND_API;
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
-import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 import static uk.gov.justice.services.test.utils.core.matchers.HandlerClassMatcher.isHandlerClass;
 import static uk.gov.justice.services.test.utils.core.matchers.HandlerMethodMatcher.method;
 import static uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderFactory.metadataWithRandomUUID;
@@ -59,25 +59,20 @@ import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
 
 import org.apache.commons.lang3.StringUtils;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class DecisionApiTest {
 
     private static final String SAVE_DECISION_COMMAND_NAME = "sjp.save-decision";
     private static final String SAVE_APPLICATION_DECISION_COMMAND_NAME = "sjp.save-application-decision";
-
-    @Rule
-    public ExpectedException expectedEx = ExpectedException.none();
 
     @Spy
     private Enveloper enveloper = EnveloperFactory.createEnveloper();
@@ -112,11 +107,6 @@ public class DecisionApiTest {
                                     .add("maxFineValue", MAX_FINE_VALUE)))).build();
 
 
-    private void expectBadRequestException(final String expectedMessage) {
-        expectedEx.expect(BadRequestException.class);
-        expectedEx.expectMessage(is(equalTo(expectedMessage)));
-    }
-
     @Test
     public void shouldHandleDecisionCommands() {
         assertThat(DecisionApi.class, isHandlerClass(COMMAND_API)
@@ -135,11 +125,10 @@ public class DecisionApiTest {
 
     @Test
     public void shouldThrowBadRequestWhenAdjournDateIsInThePast() {
-        expectBadRequestException("The adjournment date must be between 1 and 28 days in the future");
         final LocalDate yesterday = now().minusDays(1);
         final JsonEnvelope envelope = createCaseDecisionCommandWithOffence(buildOffenceWithAdjournDecisionWithAdjournDate(yesterday));
-        decisionApi.saveDecision(envelope);
-        verify(sender).send(envelopeCaptor.capture());
+        var e = assertThrows(BadRequestException.class, () -> decisionApi.saveDecision(envelope));
+        assertThat(e.getMessage(), is("The adjournment date must be between 1 and 28 days in the future"));
     }
 
     @Test
@@ -149,10 +138,10 @@ public class DecisionApiTest {
         final JsonEnvelope validEnvelope = createCaseDecisionCommandWithOffence(buildOffenceWithAdjournDecisionWithAdjournDate(dateWithinUpperLimit));
         decisionApi.saveDecision(validEnvelope);
 
-        expectBadRequestException("The adjournment date must be between 1 and 28 days in the future");
         final LocalDate futureAdjournDate = now().plusDays(29);
         final JsonEnvelope envelope = createCaseDecisionCommandWithOffence(buildOffenceWithAdjournDecisionWithAdjournDate(futureAdjournDate));
-        decisionApi.saveDecision(envelope);
+        var e = assertThrows(BadRequestException.class, () -> decisionApi.saveDecision(envelope));
+        assertThat(e.getMessage(), is("The adjournment date must be between 1 and 28 days in the future"));
         verify(sender).send(envelopeCaptor.capture());
     }
 
@@ -163,10 +152,10 @@ public class DecisionApiTest {
         final JsonEnvelope validEnvelope = createCaseDecisionCommandWithOffence(buildOffenceWithAdjournDecisionWithAdjournDate(tomorrow));
         decisionApi.saveDecision(validEnvelope);
 
-        expectBadRequestException("The adjournment date must be between 1 and 28 days in the future");
         final LocalDate adjournDate = now();
         final JsonEnvelope envelope = createCaseDecisionCommandWithOffence(buildOffenceWithAdjournDecisionWithAdjournDate(adjournDate));
-        decisionApi.saveDecision(envelope);
+        var e = assertThrows(BadRequestException.class, () -> decisionApi.saveDecision(envelope));
+        assertThat(e.getMessage(), is("The adjournment date must be between 1 and 28 days in the future"));
         verify(sender).send(envelopeCaptor.capture());
     }
 
@@ -181,75 +170,88 @@ public class DecisionApiTest {
 
     @Test
     public void shouldThrowBadRequestWhen_Discharge_WithoutFinancialImposition() {
-        expectBadRequestException("Financial imposition is required for discharge or financial penalty decisions");
-        saveDecision(null);
+        var e = assertThrows(BadRequestException.class, () -> saveDecision(null));
+        assertThat(e.getMessage(), is("Financial imposition is required for discharge or financial penalty decisions"));
     }
 
     @Test
     public void shouldThrowBadRequestWhen_Discharge_PayToCourt_NoReasonWhyNotAttachedOrDeducted() {
-        expectBadRequestException("reasonWhyNotAttachedOrDeducted is required if paymentType is pay to court");
         final JsonObject payment = buildPayment(PAY_TO_COURT, null, buildPaymentTerms(), null);
-        saveDecision(buildFinancialImposition(buildCostsAndSurcharge(), payment));
+        JsonObject costsAndSurcharge = buildCostsAndSurcharge();
+        JsonObject financialImposition = buildFinancialImposition(costsAndSurcharge, payment);
+        var e = assertThrows(BadRequestException.class, () -> saveDecision(financialImposition));
+        assertThat(e.getMessage(), is("reasonWhyNotAttachedOrDeducted is required if paymentType is pay to court"));
     }
 
     @Test
     public void shouldThrowBadRequestWhen_Discharge_PayToCourt_ReserveTerms_True() {
-        expectBadRequestException("reserveTerms must be false if paymentType is pay to court");
         final JsonObject paymentTerms = buildPaymentTerms(true, buildLumpSum(), buildInstallments());
-        saveDecision(buildFinancialImposition(buildCostsAndSurcharge(), buildPayment(paymentTerms)));
+        JsonObject payment = buildPayment(paymentTerms);
+        JsonObject costsAndSurcharge = buildCostsAndSurcharge();
+        JsonObject financialImposition = buildFinancialImposition(costsAndSurcharge, payment);
+        var e = assertThrows(BadRequestException.class, () -> saveDecision(financialImposition));
+        assertThat(e.getMessage(), is("reserveTerms must be false if paymentType is pay to court"));
     }
 
     @Test
     public void shouldThrowBadRequestWhen_Discharge_DeductFromBenefits_NoDeductingFromBenefitsReason() {
-        expectBadRequestException("reasonForDeductingFromBenefits is required if paymentType is deduct from benefits");
         final JsonObject paymentTerms = buildPaymentTerms(true, buildLumpSum(), buildInstallments());
         final JsonObject payment = buildPayment(DEDUCT_FROM_BENEFITS, null, paymentTerms, null);
-        saveDecision(buildFinancialImposition(buildCostsAndSurcharge(), payment));
+        JsonObject costsAndSurcharge = buildCostsAndSurcharge();
+        JsonObject financialImposition = buildFinancialImposition(costsAndSurcharge, payment);
+        var e = assertThrows(BadRequestException.class, () -> saveDecision(financialImposition));
+        assertThat(e.getMessage(), is("reasonForDeductingFromBenefits is required if paymentType is deduct from benefits"));
     }
 
     @Test
     public void shouldThrowBadRequestWhen_Discharge_DeductFromBenefits_ReserveTerms_False() {
-        expectBadRequestException("reserveTerms must be true if paymentType is deduct from benefits");
         final JsonObject paymentTerms = buildPaymentTerms(false, null, null);
         final JsonObject payment = buildPayment(DEDUCT_FROM_BENEFITS, null, paymentTerms, COMPENSATION_ORDERED);
-        saveDecision(buildFinancialImposition(buildCostsAndSurcharge(), payment));
+        JsonObject costsAndSurcharge = buildCostsAndSurcharge();
+        JsonObject financialImposition = buildFinancialImposition(costsAndSurcharge, payment);
+        var e = assertThrows(BadRequestException.class, () -> saveDecision(financialImposition));
+        assertThat(e.getMessage(), is("reserveTerms must be true if paymentType is deduct from benefits"));
     }
 
     @Test
     public void shouldThrowBadRequestWhen_Discharge_Without_LumpSum_Without_Installments() {
-        expectBadRequestException("Either lump sum or installments is required");
         final JsonObject paymentTerms = buildPaymentTerms(false, null, null);
-        saveDecision(buildFinancialImposition(buildCostsAndSurcharge(), buildPayment(paymentTerms)));
+        JsonObject payment = buildPayment(paymentTerms);
+        JsonObject costsAndSurcharge = buildCostsAndSurcharge();
+        JsonObject financialImposition = buildFinancialImposition(costsAndSurcharge, payment);
+        var e = assertThrows(BadRequestException.class, () -> saveDecision(financialImposition));
+        assertThat(e.getMessage(), is("Either lump sum or installments is required"));
     }
 
     @Test
     public void shouldThrowBadRequestWhen_Discharge_LumpSum_Without_WithinDays_Without_PayByDate() {
-        expectBadRequestException("Either withinDays or payByDate is required");
         final JsonObject lumpSum = buildLumpSum(null, null);
         final JsonObject paymentTerms = buildPaymentTerms(false, lumpSum, null);
-        saveDecision(buildFinancialImposition(buildCostsAndSurcharge(), buildPayment(paymentTerms)));
+        JsonObject payment = buildPayment(paymentTerms);
+        JsonObject costsAndSurcharge = buildCostsAndSurcharge();
+        JsonObject financialImposition = buildFinancialImposition(costsAndSurcharge, payment);
+        var e = assertThrows(BadRequestException.class, () -> saveDecision(financialImposition));
+        assertThat(e.getMessage(), is("Either withinDays or payByDate is required"));
     }
 
     @Test
     public void shouldThrowBadRequestWhen_Discharge_With_ZeroVictimSurcharge_NoReasonForNoVictimSurcharge() {
-        expectBadRequestException("reasonForNoVictimSurcharge is required");
         final JsonObject costsAndSurcharge = buildCostsAndSurcharge(BigDecimal.TEN, null, ZERO, null);
         final JsonObject financialImposition = buildFinancialImposition(costsAndSurcharge, buildPayment());
         final JsonEnvelope envelope = createCaseDecisionCommandWithOffence(buildOffenceWithDischarge(CONDITIONAL, BigDecimal.TEN, null, buildDischargedFor()), financialImposition);
         when(caseService.getCaseDetails(envelope)).thenReturn(caseDetails);
-        decisionApi.saveDecision(envelope);
-        verify(sender).send(envelopeCaptor.capture());
+        var e = assertThrows(BadRequestException.class, () -> decisionApi.saveDecision(envelope));
+        assertThat(e.getMessage(), is("reasonForNoVictimSurcharge is required"));
     }
 
     @Test
     public void shouldThrowBadRequestWhen_Discharge_Conditional_Without_DischargedFor() {
-        expectBadRequestException("dischargedFor is required for conditional discharge");
         final JsonObject costsAndSurcharge = buildCostsAndSurcharge(BigDecimal.TEN, null, BigDecimal.TEN, null);
         final JsonObject financialImposition = buildFinancialImposition(costsAndSurcharge, buildPayment());
         final JsonEnvelope envelope = createCaseDecisionCommandWithOffence(buildOffenceWithDischarge(CONDITIONAL, BigDecimal.TEN, null, null), financialImposition);
         when(caseService.getCaseDetails(envelope)).thenReturn(caseDetails);
-        decisionApi.saveDecision(envelope);
-        verify(sender).send(envelopeCaptor.capture());
+        var e = assertThrows(BadRequestException.class, () -> decisionApi.saveDecision(envelope));
+        assertThat(e.getMessage(), is("dischargedFor is required for conditional discharge"));
     }
 
     @Test
@@ -273,14 +275,12 @@ public class DecisionApiTest {
 
     @Test
     public void shouldThrowBadRequestWhen_FinancialPenalty_Compensation_And_Fine_Not_Provided() {
-        expectBadRequestException("Both compensation and fine cannot be empty");
-
         final JsonEnvelope envelope = createCaseDecisionCommandWithOffence(buildOffenceWithFinancialPenaltyDecision(), buildDefaultFinancialImposition());
 
         when(caseService.getCaseDetails(envelope)).thenReturn(caseDetails);
 
-        decisionApi.saveDecision(envelope);
-        verify(sender).send(envelopeCaptor.capture());
+        var e = assertThrows(BadRequestException.class, () -> decisionApi.saveDecision(envelope));
+        assertThat(e.getMessage(), is("Both compensation and fine cannot be empty"));
     }
 
     @Test
@@ -313,8 +313,9 @@ public class DecisionApiTest {
 
     @Test
     public void shouldThrowBadRequestWhen_FinancialPenalty_WithoutFinancialImposition() {
-        expectBadRequestException("Financial imposition is required for discharge or financial penalty decisions");
-        saveDecision(buildOffenceWithFinancialPenaltyDecisionWithCompensation(), null);
+        JsonArray offenceDecisions = buildOffenceWithFinancialPenaltyDecisionWithCompensation();
+        var e = assertThrows(BadRequestException.class, () -> saveDecision(offenceDecisions, null));
+        assertThat(e.getMessage(), is("Financial imposition is required for discharge or financial penalty decisions"));
     }
 
     @Test
@@ -330,12 +331,11 @@ public class DecisionApiTest {
                                         .add("maxFineValue", MAX_FINE_VALUE)))).build();
 
 
-        expectBadRequestException("The maximum excise penalty for this offence is £" + MAX_FINE_VALUE + "");
         final JsonEnvelope envelope = createCaseDecisionCommandWithOffence(buildOffenceWithFinancialPenaltyDecisionWithExcisePenalty());
         when(caseService.getCaseDetails(envelope)).thenReturn(caseDetails);
 
-        decisionApi.saveDecision(envelope);
-        verify(sender).send(envelopeCaptor.capture());
+        var e = assertThrows(BadRequestException.class, () -> decisionApi.saveDecision(envelope));
+        assertThat(e.getMessage(), is("The maximum excise penalty for this offence is £" + MAX_FINE_VALUE + ""));
     }
 
     @Test
@@ -350,12 +350,11 @@ public class DecisionApiTest {
                                         .add("maxFineLevel", 2)
                                         .add("maxFineValue", 9)))).build();
 
-        expectBadRequestException("The maximum fine for this offence is £9");
         final JsonEnvelope envelope = createCaseDecisionCommandWithOffence(buildOffenceWithFinancialPenaltyDecisionFineWithFineLevelLessThanFive(), buildDefaultFinancialImposition());
         when(caseService.getCaseDetails(envelope)).thenReturn(aCase);
 
-        decisionApi.saveDecision(envelope);
-        verify(sender).send(envelopeCaptor.capture());
+        var e = assertThrows(BadRequestException.class, () -> decisionApi.saveDecision(envelope));
+        assertThat(e.getMessage(), is("The maximum fine for this offence is £9"));
     }
 
     @Test
@@ -369,17 +368,17 @@ public class DecisionApiTest {
 
     @Test
     public void shouldThrowBadRequestWhenApplicationRejectedWithoutReason() {
-        expectBadRequestException("Rejection reason must be provided if application is rejected");
         final JsonEnvelope envelope = createApplicationDecisionCommand(false, null, false, null);
-        decisionApi.saveApplicationDecision(envelope);
+        var e = assertThrows(BadRequestException.class, () -> decisionApi.saveApplicationDecision(envelope));
+        assertThat(e.getMessage(), is("Rejection reason must be provided if application is rejected"));
         verify(sender, never()).send(envelopeCaptor.capture());
     }
 
     @Test
     public void shouldThrowBadRequestWhenApplicationOutOfTimeWithoutReason() {
-        expectBadRequestException("Out of time reason must be provided if application is out of time");
         final JsonEnvelope envelope = createApplicationDecisionCommand(true, null, true, null);
-        decisionApi.saveApplicationDecision(envelope);
+        var e = assertThrows(BadRequestException.class, () -> decisionApi.saveApplicationDecision(envelope));
+        assertThat(e.getMessage(), is("Out of time reason must be provided if application is out of time"));
         verify(sender, never()).send(envelopeCaptor.capture());
     }
 
@@ -470,7 +469,7 @@ public class DecisionApiTest {
     }
 
     private void verifyDecisionEnriched(JsonEnvelope envelope) {
-        JsonObjectBuilder expected = createObjectBuilder(envelope.payloadAsJsonObject());
+        JsonObjectBuilder expected = uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder(envelope.payloadAsJsonObject());
         expected.add("savedAt", clock.now().toString());
         assertThat(envelopeCaptor.getValue().payload(), equalTo(expected.build()));
     }

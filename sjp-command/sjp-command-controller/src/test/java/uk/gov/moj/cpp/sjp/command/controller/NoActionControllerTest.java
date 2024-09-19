@@ -3,7 +3,7 @@ package uk.gov.moj.cpp.sjp.command.controller;
 import static java.lang.reflect.Modifier.isPublic;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.startsWith;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static uk.gov.justice.services.core.annotation.Component.COMMAND_CONTROLLER;
 import static uk.gov.justice.services.test.utils.core.matchers.HandlerClassMatcher.isHandlerClass;
 import static uk.gov.justice.services.test.utils.core.matchers.HandlerMethodMatcher.method;
@@ -14,7 +14,7 @@ import java.lang.reflect.Method;
 import java.util.Arrays;
 
 import com.google.common.base.CaseFormat;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 public class NoActionControllerTest {
 

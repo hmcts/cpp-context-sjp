@@ -9,7 +9,7 @@ import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.mockito.Mockito.when;
 import static uk.gov.justice.json.schemas.domains.sjp.queries.Defendant.defendant;
 import static uk.gov.justice.json.schemas.domains.sjp.queries.Offence.offence;
@@ -21,7 +21,6 @@ import uk.gov.justice.json.schemas.domains.sjp.CaseApplication;
 import uk.gov.justice.json.schemas.domains.sjp.queries.CaseDetails;
 import uk.gov.justice.json.schemas.domains.sjp.queries.Document;
 import uk.gov.justice.services.messaging.JsonEnvelope;
-import uk.gov.moj.cpp.sjp.domain.CaseDocument;
 import uk.gov.moj.cpp.sjp.event.CaseReferredForCourtHearing;
 import uk.gov.moj.cpp.sjp.event.processor.model.referral.CourtDocumentView;
 import uk.gov.moj.cpp.sjp.event.processor.service.MaterialService;
@@ -35,14 +34,14 @@ import java.util.UUID;
 
 import javax.json.JsonObject;
 
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class CourtDocumentsDataSourcingServiceTest {
 
     private static final UUID MATERIAL_ID = randomUUID();
@@ -71,15 +70,21 @@ public class CourtDocumentsDataSourcingServiceTest {
 
     private JsonEnvelope envelope;
 
-    @Before
+    @BeforeEach
     public void setUp() {
         envelope = envelope();
-        mockMaterialService();
-        mockDocumentTypeAccessService();
     }
 
     @Test
     public void shouldCreateCourtDocumentWithSjpDocumentType() {
+        final JsonObject materialDataMock = createObjectBuilder()
+                .add("fileName", MATERIAL_FILE_NAME)
+                .add("materialAddedDate", MATERIAL_ADDED_DATE.toString())
+                .add("mimeType", MIME_TYPE)
+                .build();
+        when(materialService.getMaterialMetadata(MATERIAL_ID, envelope)).thenReturn(materialDataMock);
+        mockDocumentTypeAccessService();
+
         final CaseReferredForCourtHearing caseReferral = caseReferredForCourtHearing()
                 .withCaseId(CASE_ID)
                 .withReferredAt(REFERRED_AT)
@@ -112,6 +117,14 @@ public class CourtDocumentsDataSourcingServiceTest {
 
     @Test
     public void caseDoesNotHaveAnApplication() {
+        final JsonObject materialDataMock = createObjectBuilder()
+                .add("fileName", MATERIAL_FILE_NAME)
+                .add("materialAddedDate", MATERIAL_ADDED_DATE.toString())
+                .add("mimeType", MIME_TYPE)
+                .build();
+        when(materialService.getMaterialMetadata(MATERIAL_ID, envelope)).thenReturn(materialDataMock);
+        mockDocumentTypeAccessService();
+
         final CaseReferredForCourtHearing caseReferral = caseReferredForCourtHearing()
                 .withCaseId(CASE_ID)
                 .withReferredAt(REFERRED_AT)
@@ -144,6 +157,13 @@ public class CourtDocumentsDataSourcingServiceTest {
 
     @Test
     public void shouldFilterOutExcludedDocumentTypes() {
+        final JsonObject materialDataMock = createObjectBuilder()
+                .add("fileName", MATERIAL_FILE_NAME)
+                .add("materialAddedDate", MATERIAL_ADDED_DATE.toString())
+                .add("mimeType", MIME_TYPE)
+                .build();
+        mockDocumentTypeAccessService();
+
         final CaseReferredForCourtHearing caseReferral = caseReferredForCourtHearing()
                 .withCaseId(CASE_ID)
                 .withReferredAt(REFERRED_AT)
@@ -171,6 +191,13 @@ public class CourtDocumentsDataSourcingServiceTest {
 
     @Test
     public void shouldFilterOutApplicationDocumentTypeIfNoCurrentApplication() {
+        final JsonObject materialDataMock = createObjectBuilder()
+                .add("fileName", MATERIAL_FILE_NAME)
+                .add("materialAddedDate", MATERIAL_ADDED_DATE.toString())
+                .add("mimeType", MIME_TYPE)
+                .build();
+        mockDocumentTypeAccessService();
+
         final CaseReferredForCourtHearing caseReferral = caseReferredForCourtHearing()
                 .withCaseId(CASE_ID)
                 .withReferredAt(REFERRED_AT)
@@ -204,15 +231,6 @@ public class CourtDocumentsDataSourcingServiceTest {
         );
 
         when(referenceDataService.getDocumentTypeAccess(MATERIAL_ADDED_DATE.toLocalDate(), envelope)).thenReturn(documentsTypeAccess);
-    }
-
-    private void mockMaterialService() {
-        final JsonObject materialDataMock = createObjectBuilder()
-                .add("fileName", MATERIAL_FILE_NAME)
-                .add("materialAddedDate", MATERIAL_ADDED_DATE.toString())
-                .add("mimeType", MIME_TYPE)
-                .build();
-        when(materialService.getMaterialMetadata(MATERIAL_ID, envelope)).thenReturn(materialDataMock);
     }
 
     private CaseDetails.Builder caseDetails() {

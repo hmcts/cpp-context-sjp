@@ -9,8 +9,8 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.lessThan;
 import static org.hamcrest.core.Is.is;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static uk.gov.justice.json.schemas.fragments.sjp.WithdrawalRequestsStatus.withdrawalRequestsStatus;
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMatcher.jsonEnvelope;
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMetadataMatcher.metadata;
@@ -66,15 +66,15 @@ import java.util.UUID;
 
 import com.google.common.collect.ImmutableMap;
 import com.jayway.jsonpath.ReadContext;
-import com.jayway.restassured.path.json.JsonPath;
+import io.restassured.path.json.JsonPath;
 import org.apache.commons.lang3.tuple.Triple;
 import org.hamcrest.Matcher;
 import org.hamcrest.MatcherAssert;
-import org.junit.Before;
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 
-@Ignore("Enable this when merging to master")
+@Disabled("Enable this when merging to master")
 public class DatesToAvoidIT extends BaseIntegrationTest {
 
     private static final Clock CLOCK = new UtcClock();
@@ -93,7 +93,7 @@ public class DatesToAvoidIT extends BaseIntegrationTest {
     private static final String DEFENDANT_REGION = "croydon";
     private static final String NATIONAL_COURT_CODE = "1080";
 
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
         databaseCleaner.cleanViewStore();
 
@@ -217,7 +217,7 @@ public class DatesToAvoidIT extends BaseIntegrationTest {
         verifyPleadedNotGuiltyEvent(tflCaseBuilder.getId(), tflCaseBuilder.getOffenceId(), tflCaseBuilder.getDefendantBuilder().getId());
 
         //check tvl count not gone up (as a result of tfl plea update above)
-        assertEquals("Ensure that access control is ON", tvlInitialPendingDatesToAvoidCount, pollForCountOfCasesPendingDatesToAvoid(tvlUserId));
+        assertEquals(tvlInitialPendingDatesToAvoidCount, pollForCountOfCasesPendingDatesToAvoid(tvlUserId), "Ensure that access control is ON");
 
         //updates plea to NOT_GUILTY for TVL case (making it pending dates-to-avoid submission)
         updatePleaToNotGuiltyAndConfirmPleasSet(tvlCaseBuilder.getId(), tvlCaseBuilder.getOffenceId(), tvlCaseBuilder.getDefendantBuilder().getId());

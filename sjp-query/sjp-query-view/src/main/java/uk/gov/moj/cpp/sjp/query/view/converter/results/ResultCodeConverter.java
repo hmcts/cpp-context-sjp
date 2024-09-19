@@ -15,6 +15,8 @@ import javax.json.JsonObject;
 
 public abstract class ResultCodeConverter {
 
+    protected static final String VALUE = "value";
+
     public JsonArrayBuilder createPrompts(final JsonObject result, final OffenceDataSupplier offenceDataSupplier) {
 
         final JsonArrayBuilder promptsPayloadBuilder = createArrayBuilder();

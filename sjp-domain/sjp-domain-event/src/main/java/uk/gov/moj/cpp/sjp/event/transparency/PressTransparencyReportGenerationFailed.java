@@ -19,7 +19,7 @@ import org.apache.commons.lang3.builder.ToStringBuilder;
  *
  * @deprecated
  */
-@Deprecated
+@Deprecated(forRemoval = true)
 @Event(EVENT_NAME)
 @SuppressWarnings("squid:S1133")
 public class PressTransparencyReportGenerationFailed {

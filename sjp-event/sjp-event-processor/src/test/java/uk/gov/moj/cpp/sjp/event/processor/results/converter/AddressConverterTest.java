@@ -2,7 +2,7 @@ package uk.gov.moj.cpp.sjp.event.processor.results.converter;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.nullValue;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static uk.gov.moj.cpp.sjp.event.processor.results.converter.TestConstants.ADDRESS1_KEY;
 import static uk.gov.moj.cpp.sjp.event.processor.results.converter.TestConstants.ADDRESS2_KEY;
 import static uk.gov.moj.cpp.sjp.event.processor.results.converter.TestConstants.ADDRESS3_KEY;
@@ -31,7 +31,7 @@ import java.util.Optional;
 import javax.json.Json;
 import javax.json.JsonObject;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 
 public class AddressConverterTest {

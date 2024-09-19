@@ -8,6 +8,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -17,6 +18,7 @@ import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMatch
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMetadataMatcher.metadata;
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopePayloadMatcher.payload;
 
+import uk.gov.justice.services.adapter.rest.exception.BadRequestException;
 import uk.gov.justice.services.core.interceptor.InterceptorChainProcessor;
 import uk.gov.justice.services.core.interceptor.InterceptorContext;
 import uk.gov.justice.services.fileservice.api.FileRetriever;
@@ -30,17 +32,17 @@ import java.util.UUID;
 
 import javax.ws.rs.core.Response;
 
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class DefaultQueryApiTransparencyReportContentFileIdResourceTest {
 
     @Mock
@@ -62,9 +64,9 @@ public class DefaultQueryApiTransparencyReportContentFileIdResourceTest {
     private final UUID fileId = randomUUID();
     private final UUID systemUserId = randomUUID();
 
-    @Before
+    @BeforeEach
     public void init() {
-        when(serviceContextSystemUserProvider.getContextSystemUserId()).thenReturn(Optional.of(systemUserId));
+        //when(serviceContextSystemUserProvider.getContextSystemUserId()).thenReturn(Optional.of(systemUserId));
     }
 
     @Test
@@ -89,14 +91,14 @@ public class DefaultQueryApiTransparencyReportContentFileIdResourceTest {
         verifyInterceptorChainExecution();
     }
 
-    @Test(expected = RuntimeException.class) // then
+    @Test // then
     public void shouldThrowExceptionWhenTheFileIdIsNotValid() throws FileServiceException {
         // given
-        final Optional<FileReference> optionalFileReference = Optional.of(null);
+        final Optional<FileReference> optionalFileReference = Optional.empty();
         when(fileRetriever.retrieve(fileId)).thenReturn(optionalFileReference);
 
         // when
-        underTest.getTransparencyReportContentByFileId(fileId, userId);
+        assertThrows(RuntimeException.class, () -> underTest.getTransparencyReportContentByFileId(fileId, userId));
     }
 
     private void verifyInterceptorChainExecution() {

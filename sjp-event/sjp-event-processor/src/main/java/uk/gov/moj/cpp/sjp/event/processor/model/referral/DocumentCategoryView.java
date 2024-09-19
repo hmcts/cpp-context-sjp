@@ -10,14 +10,9 @@ public class DocumentCategoryView {
     private final ApplicationDocumentView applicationDocument;
     private final DefendantDocumentView defendantDocument;
 
-    public DocumentCategoryView(final DefendantDocumentView defendantDocument) {
+    public DocumentCategoryView(final DefendantDocumentView defendantDocument, final ApplicationDocumentView applicationDocument) {
         this.defendantDocument = defendantDocument;
-        this.applicationDocument = null;
-    }
-
-    public DocumentCategoryView(final ApplicationDocumentView applicationDocument) {
         this.applicationDocument = applicationDocument;
-        this.defendantDocument = null;
     }
 
     public DefendantDocumentView getDefendantDocument() {

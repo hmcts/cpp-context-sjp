@@ -2,7 +2,7 @@ package uk.gov.moj.cpp.sjp.event.listener;
 
 import static java.util.UUID.randomUUID;
 import static javax.json.Json.createObjectBuilder;
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
@@ -16,15 +16,15 @@ import java.util.UUID;
 
 import javax.json.JsonObject;
 
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class FinancialImpositionExportListenerTest {
 
     private static final UUID CASE_ID = randomUUID();
@@ -41,7 +41,7 @@ public class FinancialImpositionExportListenerTest {
     @InjectMocks
     private FinancialImpositionExportListener listener;
 
-    @Before
+    @BeforeEach
     public void setUp() {
         when(defendantRepository.findBy(DEFENDANT_ID)).thenReturn(defendantDetail);
     }

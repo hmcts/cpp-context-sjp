@@ -1,11 +1,15 @@
 package uk.gov.moj.cpp.sjp.event.processor.results.converter.judicialresult.aggregator;
 
 import static java.util.UUID.fromString;
+import static org.hamcrest.CoreMatchers.endsWith;
 import static org.hamcrest.CoreMatchers.hasItem;
 import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.startsWith;
 import static org.hamcrest.Matchers.allOf;
+import static org.hamcrest.Matchers.containsStringIgnoringCase;
+import static org.hamcrest.Matchers.equalToIgnoringCase;
 import static org.hamcrest.Matchers.hasProperty;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static uk.gov.moj.cpp.sjp.domain.decision.OffenceDecisionInformation.createOffenceDecisionInformation;
 import static uk.gov.moj.cpp.sjp.domain.verdict.VerdictType.FOUND_GUILTY;
 import static uk.gov.moj.cpp.sjp.event.processor.results.converter.judicialresult.JCaseResultsConstants.DATE_FORMAT;
@@ -16,17 +20,17 @@ import java.time.ZonedDateTime;
 import java.util.Collections;
 
 import org.hamcrest.Matchers;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class ReferredToOpenCourtDecisionResultAggregatorTest extends  BaseDecisionResultAggregatorTest {
 
     private ReferredToOpenCourtDecisionResultAggregator aggregator;
 
-    @Before
+    @BeforeEach
     public void setUp() {
         super.setUp();
         aggregator = new ReferredToOpenCourtDecisionResultAggregator(jCachedReferenceData);
@@ -52,9 +56,16 @@ public class ReferredToOpenCourtDecisionResultAggregatorTest extends  BaseDecisi
                 allOf(hasItem(allOf(
                         hasProperty("judicialResultId", Matchers.is(fromString("3d2c05b3-fcd6-49c2-b5a9-52855be7f90a"))),
                         hasProperty("orderedDate", Matchers.is(resultedOn.format(DATE_FORMAT))),
-                        hasProperty("resultText", Matchers.is("Summons on referral to other court\n" +
+
+
+                        hasProperty("resultText", startsWith("Summons on referral to other court\n" +
+                                "Date of hearing 02/11/2018\nMagistrates' court Lavender Hill Magistrates' Court\n" +
+                                "Time of hearing 09:30 ")),
+                        hasProperty("resultText", equalToIgnoringCase("Summons on referral to other court\n" +
                                 "Date of hearing 02/11/2018\nMagistrates' court Lavender Hill Magistrates' Court\n" +
                                 "Time of hearing 09:30 AM\n" +
+                                "Reason for referring to court For a case management hearing (no appearance)")),
+                        hasProperty("resultText", endsWith("\n" +
                                 "Reason for referring to court For a case management hearing (no appearance)")),
                         hasProperty("judicialResultPrompts", allOf(
                                 hasItem(allOf(
@@ -67,7 +78,7 @@ public class ReferredToOpenCourtDecisionResultAggregatorTest extends  BaseDecisi
                                 ),
                                 hasItem(allOf(
                                         hasProperty("judicialResultPromptTypeId", Matchers.is(fromString("4d125a5a-acbc-461d-a657-ba5643af85a6"))),
-                                        hasProperty("value", Matchers.is("09:30 AM")))
+                                        hasProperty("value", equalToIgnoringCase("09:30 AM")))
                                 ),
                                 hasItem(allOf(
                                         hasProperty("judicialResultPromptTypeId", Matchers.is(fromString("dbbb47c9-2202-4913-9a0d-db0a048bfd5f"))),

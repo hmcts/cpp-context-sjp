@@ -7,7 +7,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
 
 import uk.gov.justice.json.schemas.domains.sjp.NoteType;
-import uk.gov.justice.services.test.utils.persistence.BaseTransactionalTest;
+import uk.gov.justice.services.test.utils.persistence.BaseTransactionalJunit4Test;
 import uk.gov.moj.cpp.sjp.persistence.entity.CaseNote;
 
 import java.time.ZonedDateTime;
@@ -21,7 +21,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 @RunWith(CdiTestRunner.class)
-public class CaseNoteRepositoryTest extends BaseTransactionalTest {
+public class CaseNoteRepositoryTest extends BaseTransactionalJunit4Test {
 
     @Inject
     private CaseNoteRepository caseNoteRepository;

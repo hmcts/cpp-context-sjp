@@ -1,7 +1,8 @@
 package uk.gov.moj.sjp.it.test.ingestor;
 
 import static org.hamcrest.CoreMatchers.is;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static uk.gov.moj.sjp.it.Constants.SJP_EVENT;
 import static uk.gov.moj.sjp.it.test.ingestor.helper.ElasticSearchQueryHelper.getCaseFromElasticSearch;
 import static uk.gov.moj.sjp.it.test.ingestor.helper.IngesterHelper.buildEnvelope;
 import static uk.gov.moj.sjp.it.util.FileUtil.getPayload;
@@ -17,27 +18,26 @@ import java.util.UUID;
 
 import javax.json.JsonObject;
 
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 public class SjpCaseCreatedIngesterIT extends BaseIntegrationTest {
     private static final String EVENT_NAME = "sjp.events.sjp-case-created";
     private static final String PAYLOAD_PATH = "stub-data/sjp.events.sjp-case-created.json";
-    private static final String SJP_EVENT = "sjp.event";
     public static final String CASE_ID = "9f9f843e-d639-40b3-8611-8015f3a18958";
 
     private final MessageProducerClient privateEventsProducer = new MessageProducerClient();
 
     private final ViewStoreCleaner viewStoreCleaner = new ViewStoreCleaner();
 
-    @Before
+    @BeforeEach
     public void setUp() throws IOException {
         privateEventsProducer.startProducer(SJP_EVENT);
         new ElasticSearchIndexRemoverUtil().deleteAndCreateCaseIndex();
     }
 
-    @After
+    @AfterEach
     public void tearDown() {
         viewStoreCleaner.cleanDataInViewStore(UUID.fromString(CASE_ID));
         privateEventsProducer.close();

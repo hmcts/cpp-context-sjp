@@ -24,7 +24,8 @@ public class CaseAssignmentRestrictionApi {
 
     @Handles("sjp.add-case-assignment-restriction")
     public void addCaseAssignmentRestriction(final Envelope<AddCaseAssignmentRestriction> envelope) {
-        final JsonObject payload = objectToJsonObjectConverter.convert(envelope.payload());
+        final AddCaseAssignmentRestriction addCaseAssignmentRestriction = envelope.payload();
+        final JsonObject payload = objectToJsonObjectConverter.convert(addCaseAssignmentRestriction);
 
         sender.send(Envelope.envelopeFrom(
                 metadataFrom(envelope.metadata())

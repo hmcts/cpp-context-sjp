@@ -4,8 +4,8 @@ import static java.util.Arrays.asList;
 import static java.util.UUID.randomUUID;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.iterableWithSize;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import uk.gov.moj.cpp.sjp.domain.Case;
 import uk.gov.moj.cpp.sjp.domain.aggregate.state.CaseAggregateState;
@@ -18,7 +18,7 @@ import java.time.LocalDate;
 import java.time.ZonedDateTime;
 import java.util.UUID;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 public class CaseReceivedMutatorTest {
 

@@ -2,12 +2,12 @@ package uk.gov.moj.cpp.sjp.query.accesscontrol;
 
 import static uk.gov.moj.cpp.sjp.query.api.RuleConstants.getQuerySessionGroups;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 public class ProsecutingAuthorityByLjaTest extends SjpDroolsAccessControlTest {
 
     public ProsecutingAuthorityByLjaTest() {
-        super("sjp.query.prosecuting-authority-for-lja", getQuerySessionGroups());
+        super("QUERY_API_SESSION", "sjp.query.prosecuting-authority-for-lja", getQuerySessionGroups());
     }
 
     @Test

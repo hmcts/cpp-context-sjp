@@ -5,7 +5,7 @@ import static java.util.UUID.randomUUID;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.instanceOf;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.mockito.Mockito.when;
 import static uk.gov.moj.cpp.sjp.domain.disability.DisabilityNeeds.NO_DISABILITY_NEEDS;
 
@@ -29,11 +29,11 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class UploadCaseDocumentTest extends CaseAggregateBaseTest {
 
     final UUID caseId = randomUUID();
@@ -139,7 +139,6 @@ public class UploadCaseDocumentTest extends CaseAggregateBaseTest {
 
         caseAggregate.assignCase(savedBy.getUserId(), ZonedDateTime.now(), CaseAssignmentType.MAGISTRATE_DECISION);
         when(session.getSessionType()).thenReturn(SessionType.MAGISTRATE);
-        when(session.getLocalJusticeAreaNationalCourtCode()).thenReturn("1080");
         caseAggregate.saveDecision(decision, session);
     }
 }

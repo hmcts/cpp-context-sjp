@@ -1,23 +1,29 @@
 package uk.gov.moj.cpp.sjp.command.accesscontrol;
 
-import org.junit.Test;
-import uk.gov.justice.services.messaging.JsonEnvelope;
-import uk.gov.moj.cpp.accesscontrol.drools.Action;
-import uk.gov.moj.cpp.accesscontrol.test.utils.BaseDroolsAccessControlTest;
-
-import javax.json.JsonObject;
-import java.util.HashMap;
-import java.util.Map;
-
 import static java.util.UUID.randomUUID;
 import static javax.json.Json.createObjectBuilder;
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
 import static uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderFactory.metadataWithRandomUUID;
 
+import uk.gov.justice.services.messaging.JsonEnvelope;
+import uk.gov.moj.cpp.accesscontrol.drools.Action;
+import uk.gov.moj.cpp.accesscontrol.test.utils.BaseDroolsAccessControlTest;
+
+import java.util.HashMap;
+import java.util.Map;
+
+import javax.json.JsonObject;
+
+import org.junit.jupiter.api.Test;
+
 public class MarkAsLegalSocCheckedTest extends BaseDroolsAccessControlTest {
 
+    public MarkAsLegalSocCheckedTest() {
+        super("COMMAND_CONTROLLER_SESSION");
+    }
+
     @Override
-    protected Map<Class, Object> getProviderMocks() {
+    protected Map<Class<?>, Object> getProviderMocks() {
         return new HashMap<>();
     }
 

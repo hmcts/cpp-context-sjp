@@ -2,8 +2,8 @@ package uk.gov.moj.cpp.sjp.event.processor.results.converter;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
-import static org.junit.Assert.assertThat;
-import static org.mockito.Matchers.anyObject;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 import static uk.gov.moj.cpp.sjp.event.processor.results.converter.TestConstants.ADDRESS_LINE_1;
 import static uk.gov.moj.cpp.sjp.event.processor.results.converter.TestConstants.CJS_CODE;
@@ -19,13 +19,13 @@ import uk.gov.justice.core.courts.Gender;
 import uk.gov.justice.core.courts.Person;
 import uk.gov.justice.json.schemas.domains.sjp.PersonalDetails;
 
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class PersonDetailsConverterTest {
 
     @InjectMocks
@@ -74,8 +74,8 @@ public class PersonDetailsConverterTest {
                 .withDateOfBirth(DATE_OF_BIRTH)
                 .build();
 
-        when(independentContactNumberConverter.getContact(anyObject())).thenReturn(contactNumber);
-        when(addressConverter.getAddress(anyObject())).thenReturn(address);
+        when(independentContactNumberConverter.getContact(any())).thenReturn(contactNumber);
+        when(addressConverter.getAddress(any())).thenReturn(address);
 
 
         final String countryCJSCode = CJS_CODE;

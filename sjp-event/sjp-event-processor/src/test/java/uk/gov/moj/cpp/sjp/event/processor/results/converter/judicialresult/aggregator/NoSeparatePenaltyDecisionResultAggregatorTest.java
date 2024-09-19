@@ -6,8 +6,8 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.hasProperty;
-import static org.junit.Assert.assertThat;
-import static org.mockito.Matchers.anyObject;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 import static uk.gov.justice.core.courts.CourtCentre.courtCentre;
 import static uk.gov.justice.services.test.utils.core.reflection.ReflectionUtil.setField;
@@ -25,14 +25,14 @@ import java.time.ZonedDateTime;
 import java.util.Optional;
 
 import org.hamcrest.Matchers;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 @SuppressWarnings("unchecked")
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class NoSeparatePenaltyDecisionResultAggregatorTest extends  BaseDecisionResultAggregatorTest {
 
     private NoSeparatePenaltyDecisionResultAggregator aggregator;
@@ -42,13 +42,13 @@ public class NoSeparatePenaltyDecisionResultAggregatorTest extends  BaseDecision
 
     private CourtCentre courtCentre = courtCentre().build();
 
-    @Before
+    @BeforeEach
     public void setUp() {
         super.setUp();
         aggregator = new NoSeparatePenaltyDecisionResultAggregator(jCachedReferenceData);
         setField(aggregator, "courtCentreConverter", courtCentreConverter);
 
-        when(courtCentreConverter.convertByOffenceId(anyObject(), anyObject())).thenReturn(Optional.of(courtCentre));
+        when(courtCentreConverter.convertByOffenceId(any(), any())).thenReturn(Optional.of(courtCentre));
     }
 
     @Test

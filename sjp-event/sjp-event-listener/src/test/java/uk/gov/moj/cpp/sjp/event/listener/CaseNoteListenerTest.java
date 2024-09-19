@@ -3,7 +3,7 @@ package uk.gov.moj.cpp.sjp.event.listener;
 import static java.time.ZonedDateTime.now;
 import static java.util.UUID.randomUUID;
 import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.mockito.Mockito.verify;
 import static uk.gov.justice.json.schemas.domains.sjp.Note.note;
 import static uk.gov.justice.json.schemas.domains.sjp.NoteType.DECISION;
@@ -21,16 +21,16 @@ import uk.gov.moj.cpp.sjp.persistence.repository.CaseNoteRepository;
 
 import java.util.Optional;
 
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class CaseNoteListenerTest {
 
     @Mock

@@ -3,7 +3,7 @@ package uk.gov.moj.cpp.sjp.event.listener;
 import static java.util.UUID.randomUUID;
 import static org.exparity.hamcrest.date.ZonedDateTimeMatchers.after;
 import static org.hamcrest.Matchers.equalTo;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static uk.gov.moj.cpp.sjp.persistence.entity.EmailNotification.NotificationNotifyDocumentType.PARTIAL_AOCP_CRITERIA_NOTIFICATION;
 
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
@@ -20,26 +20,23 @@ import java.time.ZonedDateTime;
 import java.util.UUID;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import junit.framework.TestCase;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Spy;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 @SuppressWarnings("squid:S2187")
-public class EmailNotificationListenerTest extends TestCase {
+public class EmailNotificationListenerTest {
     @Spy
     private ObjectMapper objectMapper = new ObjectMapperProducer().objectMapper();
     @Spy
-    @InjectMocks
     private JsonObjectToObjectConverter jsonObjectToObjectConverter = new JsonObjectToObjectConverter(objectMapper);
     @Spy
-    @InjectMocks
     private ObjectToJsonObjectConverter objectToJsonObjectConverter = new ObjectToJsonObjectConverter(objectMapper);
     @Spy
-    private FakeEmailNotificationRepository repository = new FakeEmailNotificationRepository();
+    private FakeEmailNotificationRepository repository;
     @InjectMocks
     private EmailNotificationListener listener;
 

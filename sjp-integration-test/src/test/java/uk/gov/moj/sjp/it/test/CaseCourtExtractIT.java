@@ -3,6 +3,7 @@ package uk.gov.moj.sjp.it.test;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
 import static java.time.LocalDate.now;
 import static java.time.Month.JULY;
+import static java.time.ZoneOffset.UTC;
 import static java.time.format.DateTimeFormatter.ofPattern;
 import static java.util.Arrays.asList;
 import static java.util.Collections.singletonList;
@@ -113,8 +114,8 @@ import com.github.tomakehurst.wiremock.client.WireMock;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Sets;
 import org.json.JSONObject;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 public class CaseCourtExtractIT extends BaseIntegrationTest {
 
@@ -147,7 +148,7 @@ public class CaseCourtExtractIT extends BaseIntegrationTest {
     private static final String APP_STATUS = "DRAFT";
     private final static LocalDate DATE_RECEIVED = LocalDate.now().minusDays(7);
 
-    @Before
+    @BeforeEach
     public void setUp() throws SQLException {
         databaseCleaner.cleanViewStore();
         WireMock.resetAllRequests();

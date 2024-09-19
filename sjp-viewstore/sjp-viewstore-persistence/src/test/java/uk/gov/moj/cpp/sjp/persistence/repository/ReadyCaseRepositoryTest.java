@@ -11,7 +11,7 @@ import static uk.gov.moj.cpp.sjp.domain.CaseReadinessReason.PLEADED_GUILTY;
 import static uk.gov.moj.cpp.sjp.domain.SessionType.DELEGATED_POWERS;
 import static uk.gov.moj.cpp.sjp.domain.SessionType.MAGISTRATE;
 
-import uk.gov.justice.services.test.utils.persistence.BaseTransactionalTest;
+import uk.gov.justice.services.test.utils.persistence.BaseTransactionalJunit4Test;
 import uk.gov.moj.cpp.sjp.persistence.entity.ReadyCase;
 
 import java.util.UUID;
@@ -23,7 +23,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 @RunWith(CdiTestRunner.class)
-public class ReadyCaseRepositoryTest extends BaseTransactionalTest {
+public class ReadyCaseRepositoryTest extends BaseTransactionalJunit4Test {
 
     @Inject
     private ReadyCaseRepository readyCaseRepository;

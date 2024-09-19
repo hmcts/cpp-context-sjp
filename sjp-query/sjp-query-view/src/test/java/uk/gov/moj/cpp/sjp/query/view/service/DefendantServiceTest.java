@@ -13,13 +13,15 @@ import static org.hamcrest.Matchers.hasProperty;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.iterableWithSize;
 import static org.hamcrest.collection.IsEmptyIterable.emptyIterable;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
 import static uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderFactory.metadataWithRandomUUIDAndName;
 import static uk.gov.moj.cpp.sjp.persistence.builder.UpdatedDefendantDetailsBuilder.anUpdatedDefendantDetails;
 import static uk.gov.moj.cpp.sjp.query.view.response.DefendantDetailsUpdatesView.DefendantDetailsUpdate;
 
+import org.mockito.ArgumentMatchers;
 import uk.gov.justice.json.schemas.domains.sjp.Gender;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.accesscontrol.sjp.providers.ProsecutingAuthorityProvider;
@@ -40,15 +42,14 @@ import java.util.List;
 import java.util.UUID;
 import java.util.stream.IntStream;
 
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
-import org.mockito.Matchers;
 import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class DefendantServiceTest {
 
     private static final UUID LONDON_REGION_ID = UUID.randomUUID();
@@ -76,7 +77,7 @@ public class DefendantServiceTest {
     private UpdatedDefendantDetails updatedDefendantDetails4;
     private UpdatedDefendantDetails updatedDefendantDetails5;
 
-    @Before
+    @BeforeEach
     public void setup() {
         updatedDefendantDetails1 = createUpdatedDefendantDetailsWithRegion("London");
         updatedDefendantDetails2 = createUpdatedDefendantDetailsWithRegion("Oxford");
@@ -90,13 +91,6 @@ public class DefendantServiceTest {
                 updatedDefendantDetails3,
                 updatedDefendantDetails4,
                 updatedDefendantDetails5);
-
-        when(referenceDataService.getRegionalOrganisations(Matchers.any())).thenReturn(REGIONS);
-        when(defendantRepository.findUpdatedByCaseProsecutingAuthority(
-                Matchers.anyString(),
-                Matchers.any(ZonedDateTime.class),
-                Matchers.any(ZonedDateTime.class)))
-                .thenReturn(updatedDefendantDetails);
     }
 
     @Test
@@ -112,9 +106,9 @@ public class DefendantServiceTest {
                 updatedDefendantDetails3,
                 updatedDefendantDetails2);
         when(defendantRepository.findUpdatedByCaseProsecutingAuthority(
-                Matchers.anyString(),
-                Matchers.any(ZonedDateTime.class),
-                Matchers.any(ZonedDateTime.class)))
+                any(),
+                any(),
+                any()))
                 .thenReturn(updatedDefendantDetails);
 
         final DefendantDetailsUpdatesView defendantDetailUpdates = defendantService.findDefendantDetailUpdates(envelope);
@@ -137,9 +131,9 @@ public class DefendantServiceTest {
                 .mapToObj(i -> createUpdatedDefendantDetails(ZonedDateTime.now()))
                 .collect(toList());
         when(defendantRepository.findUpdatedByCaseProsecutingAuthority(
-                Matchers.anyString(),
-                Matchers.any(ZonedDateTime.class),
-                Matchers.any(ZonedDateTime.class)))
+                any(),
+                any(),
+                any()))
                 .thenReturn(updatedDefendantDetails);
 
         final DefendantDetailsUpdatesView defendantDetailUpdates = defendantService.findDefendantDetailUpdates(envelope);
@@ -175,6 +169,11 @@ public class DefendantServiceTest {
     @Test
     public void shouldReturnDefendantDetailUpdatesUnfilteredWhenNoFilterCriteriaIsProvided() {
         final JsonEnvelope envelope = envelope();
+        when(defendantRepository.findUpdatedByCaseProsecutingAuthority(
+                any(),
+                any(),
+                any()))
+                .thenReturn(updatedDefendantDetails);
 
         final DefendantDetailsUpdatesView defendantDetailUpdates = defendantService.findDefendantDetailUpdates(envelope);
 
@@ -191,6 +190,12 @@ public class DefendantServiceTest {
     @Test
     public void shouldReturnDefendantUpdatesFilteredByRegionId() {
         final JsonEnvelope envelope = envelope(LONDON_REGION_ID.toString());
+        when(referenceDataService.getRegionalOrganisations(any())).thenReturn(REGIONS);
+        when(defendantRepository.findUpdatedByCaseProsecutingAuthority(
+                any(),
+                any(),
+                any()))
+                .thenReturn(updatedDefendantDetails);
 
         final DefendantDetailsUpdatesView defendantDetailUpdates = defendantService.findDefendantDetailUpdates(envelope);
 
@@ -202,6 +207,11 @@ public class DefendantServiceTest {
     @Test
     public void shouldFindDefendantUpdatesFilteredEmptyList() {
         final JsonEnvelope envelope = envelope("UNKNOWN");
+        when(defendantRepository.findUpdatedByCaseProsecutingAuthority(
+                any(),
+                any(),
+                any()))
+                .thenReturn(updatedDefendantDetails);
 
         final DefendantDetailsUpdatesView defendantDetailUpdates = defendantService.findDefendantDetailUpdates(envelope);
 
@@ -220,9 +230,9 @@ public class DefendantServiceTest {
         final UpdatedDefendantDetails update1 = anUpdatedDefendantDetails().withUpdateTime(ZonedDateTime.now()).withRegion("").build();
         final UpdatedDefendantDetails update2 = anUpdatedDefendantDetails().withUpdateTime(ZonedDateTime.now().minusDays(1)).withRegion("").build();
         final UpdatedDefendantDetails update3 = anUpdatedDefendantDetails().withUpdateTime(ZonedDateTime.now().minusDays(2)).withRegion("").build();
-        when(defendantRepository.findUpdatedByCaseProsecutingAuthority(Matchers.anyString(),
-                Matchers.any(ZonedDateTime.class),
-                Matchers.any(ZonedDateTime.class)))
+        when(defendantRepository.findUpdatedByCaseProsecutingAuthority(any(),
+                any(),
+                any()))
                 .thenReturn(asList(update3, update2, update1));
 
         final DefendantDetailsUpdatesView defendantDetailUpdates = defendantService.findDefendantDetailUpdates(envelope);

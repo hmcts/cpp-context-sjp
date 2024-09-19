@@ -1,7 +1,7 @@
 package uk.gov.moj.cpp.sjp.domain.aggregate;
 
 import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static uk.gov.moj.cpp.sjp.domain.CaseAssignmentType.MAGISTRATE_DECISION;
 import static uk.gov.moj.cpp.sjp.domain.aggregate.CaseAggregateBaseTest.AggregateTester.when;
 import static uk.gov.moj.cpp.sjp.event.session.CaseUnassignmentRejected.RejectReason.CASE_NOT_ASSIGNED;
@@ -13,15 +13,15 @@ import uk.gov.moj.cpp.sjp.event.session.CaseUnassignmentRejected;
 
 import java.util.stream.Stream;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 /**
  * Tests for {@link CaseAggregate#unassignCase}
  */
 public class CaseUnassignedTest extends CaseAggregateBaseTest {
 
-    @Before
+    @BeforeEach
     public void assignCaseBeforeStartAnyTest() {
         final CaseAssignmentType magistrateDecision = MAGISTRATE_DECISION;
         final Stream<Object> events = caseAggregate.assignCase(caseId, clock.now(), magistrateDecision);

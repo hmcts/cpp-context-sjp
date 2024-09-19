@@ -2,12 +2,12 @@ package uk.gov.moj.cpp.sjp.query.accesscontrol;
 
 import static uk.gov.moj.cpp.sjp.query.api.RuleConstants.getQueryCasesSearchByMaterialIdActionGroups;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 public class CaseSearchByMaterialIdTest extends SjpDroolsAccessControlTest {
 
     public CaseSearchByMaterialIdTest() {
-        super("sjp.query.cases-search-by-material-id", getQueryCasesSearchByMaterialIdActionGroups());
+        super("QUERY_API_SESSION", "sjp.query.cases-search-by-material-id", getQueryCasesSearchByMaterialIdActionGroups());
     }
 
     @Test

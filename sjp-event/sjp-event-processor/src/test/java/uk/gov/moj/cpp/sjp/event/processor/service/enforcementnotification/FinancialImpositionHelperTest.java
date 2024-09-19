@@ -2,23 +2,22 @@ package uk.gov.moj.cpp.sjp.event.processor.service.enforcementnotification;
 
 import static java.util.Optional.of;
 import static org.hamcrest.CoreMatchers.is;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.mockito.Mockito.when;
 
 import uk.gov.justice.json.schemas.domains.sjp.queries.CaseDecision;
 import uk.gov.justice.json.schemas.domains.sjp.queries.CaseDetails;
 import uk.gov.justice.json.schemas.domains.sjp.queries.QueryFinancialImposition;
 
-import junit.framework.TestCase;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 @SuppressWarnings("squid:S2187")
-public class FinancialImpositionHelperTest extends TestCase {
+public class FinancialImpositionHelperTest {
     @Mock
     private LastDecisionHelper lastDecisionHelper;
 

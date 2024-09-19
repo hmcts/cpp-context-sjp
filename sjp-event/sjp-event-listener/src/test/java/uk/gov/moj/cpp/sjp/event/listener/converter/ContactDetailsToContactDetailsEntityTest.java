@@ -1,11 +1,11 @@
 package uk.gov.moj.cpp.sjp.event.listener.converter;
 
 import static org.apache.commons.lang3.builder.EqualsBuilder.reflectionEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import uk.gov.moj.cpp.sjp.persistence.entity.ContactDetails;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 public class ContactDetailsToContactDetailsEntityTest {
 

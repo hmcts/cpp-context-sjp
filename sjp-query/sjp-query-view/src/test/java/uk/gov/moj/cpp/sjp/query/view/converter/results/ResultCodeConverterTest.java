@@ -4,8 +4,8 @@ import static java.lang.String.format;
 import static javax.json.Json.createArrayBuilder;
 import static javax.json.Json.createObjectBuilder;
 import static org.hamcrest.Matchers.equalTo;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.when;
 import static uk.gov.justice.services.test.utils.core.enveloper.EnvelopeFactory.createEnvelope;
 import static uk.gov.moj.cpp.sjp.query.view.util.JsonHelper.readJsonFromFile;
@@ -36,15 +36,15 @@ import org.mockito.Mock;
 public abstract class ResultCodeConverterTest {
 
     @Mock
-    private ReferenceDataService referenceDataService;
+    protected ReferenceDataService referenceDataService;
 
-    private UUID caseId = UUID.randomUUID();
+    protected UUID caseId = UUID.randomUUID();
 
-    private UUID defendantId = UUID.randomUUID();
+    protected UUID defendantId = UUID.randomUUID();
 
     protected final static ZonedDateTime now = new UtcClock().now();
 
-    private JsonEnvelope sourceEnvelope = createEnvelope("dummy", createObjectBuilder()
+    protected JsonEnvelope sourceEnvelope = createEnvelope("dummy", createObjectBuilder()
             .add("caseId", caseId.toString())
             .add("created", ZonedDateTimes.toString(now))
             .build());
@@ -74,14 +74,14 @@ public abstract class ResultCodeConverterTest {
         /*when(sjpService.getDefendantEmployer(defendantId, sourceEnvelope))
                 .thenReturn(createEnvelope("sjp.query.employer", readJsonFromFile("data/sjp.query.employer.json")));
 */
-        when(referenceDataService.getAllFixedList(sourceEnvelope)).thenReturn(Optional.of(readJsonFromFile("data/referencedata.get-all-fixed-list.json")));
+        //when(referenceDataService.getAllFixedList(sourceEnvelope)).thenReturn(Optional.of(readJsonFromFile("data/referencedata.get-all-fixed-list.json")));
 
         final JsonObject result = givenResult();
 
         final String requestedCode = result.getString("code");
         final Optional<ResultCode> code = ResultCode.parse(requestedCode);
 
-        assertTrue(format("Unknown code: %s", requestedCode), code.isPresent());
+        assertTrue(code.isPresent(), format("Unknown code: %s", requestedCode));
 
         final ResultCode resultCode = code.get();
 

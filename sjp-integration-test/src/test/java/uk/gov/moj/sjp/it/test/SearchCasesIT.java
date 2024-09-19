@@ -38,15 +38,15 @@ import java.sql.SQLException;
 import java.util.UUID;
 
 import com.google.common.collect.Sets;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 public class SearchCasesIT extends BaseIntegrationTest {
 
     private SjpDatabaseCleaner databaseCleaner = new SjpDatabaseCleaner();
     private CreateCase.DefendantBuilder defendantBuilder;
 
-    @Before
+    @BeforeEach
     public void setUp() throws SQLException {
         databaseCleaner.cleanViewStore();
 

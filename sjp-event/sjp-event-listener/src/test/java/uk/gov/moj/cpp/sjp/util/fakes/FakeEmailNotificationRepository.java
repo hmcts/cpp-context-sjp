@@ -2,6 +2,7 @@ package uk.gov.moj.cpp.sjp.util.fakes;
 
 import static java.util.UUID.randomUUID;
 
+import java.util.Optional;
 import uk.gov.moj.cpp.sjp.persistence.entity.EmailNotification;
 import uk.gov.moj.cpp.sjp.persistence.repository.EmailNotificationRepository;
 
@@ -13,7 +14,7 @@ import java.util.UUID;
 
 import javax.persistence.metamodel.SingularAttribute;
 
-public class FakeEmailNotificationRepository implements EmailNotificationRepository {
+public abstract class FakeEmailNotificationRepository implements EmailNotificationRepository {
 
     private Map<UUID, EmailNotification> inMemoryStorage = new HashMap<>();
 

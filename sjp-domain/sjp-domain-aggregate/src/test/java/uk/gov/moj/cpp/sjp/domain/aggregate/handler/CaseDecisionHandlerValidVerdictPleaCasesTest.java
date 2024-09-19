@@ -10,8 +10,8 @@ import static org.hamcrest.Matchers.any;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static uk.gov.justice.json.schemas.domains.sjp.NoteType.DECISION;
 import static uk.gov.justice.json.schemas.domains.sjp.NoteType.LISTING;
 import static uk.gov.moj.cpp.sjp.domain.SessionType.DELEGATED_POWERS;
@@ -24,6 +24,9 @@ import static uk.gov.moj.cpp.sjp.domain.verdict.VerdictType.NO_VERDICT;
 import static uk.gov.moj.cpp.sjp.domain.verdict.VerdictType.PROVED_SJP;
 
 import java.util.Arrays;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 import uk.gov.justice.core.courts.DelegatedPowers;
 import uk.gov.justice.json.schemas.domains.sjp.Note;
 import uk.gov.justice.json.schemas.domains.sjp.User;
@@ -45,7 +48,6 @@ import uk.gov.moj.cpp.sjp.event.decision.DecisionSaved;
 import uk.gov.moj.cpp.sjp.event.session.CaseUnassigned;
 
 import java.time.ZonedDateTime;
-import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
@@ -53,12 +55,6 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
-
-@RunWith(Parameterized.class)
 public class CaseDecisionHandlerValidVerdictPleaCasesTest {
 
     private final UUID referralReasonId = randomUUID();
@@ -71,53 +67,41 @@ public class CaseDecisionHandlerValidVerdictPleaCasesTest {
     private final ZonedDateTime savedAt = now();
     private final String note = "wrongly convicted";
     private final User legalAdviser = new User("John", "Smith", legalAdviserId);
-    private DefendantCourtOptions courtOptions;
-    private CaseAggregateState caseAggregateState;
-    private Session session;
+
     private final String courtHouseCode = "1008";
     private final String courtHouseName = "Test court";
     private final String localJusticeAreaNationalCode = "1009";
     private final Optional<DelegatedPowers> legalAdviserMagistrate = Optional.of(DelegatedPowers.delegatedPowers().withFirstName("Erica").withLastName("Wilson").withUserId(randomUUID()).build());
 
 
-    @Parameterized.Parameter(0)
-    public SessionType sessionType;
 
-    @Parameterized.Parameter(1)
-    public PleaType pleaType;
 
-    @Parameterized.Parameter(2)
-    public DecisionType decisionType;
-
-    @Parameterized.Parameter(3)
-    public VerdictType verdictType;
-
-    @Parameterized.Parameters(name = "Validation rules test Session type {0} decisions-pleas {1} verdicts {2}")
-    public static Collection<Object[]> testData() {
-        return asList(new Object[][]{
-                { DELEGATED_POWERS, null, REFER_FOR_COURT_HEARING, NO_VERDICT},
-                { DELEGATED_POWERS, PleaType.GUILTY, REFER_FOR_COURT_HEARING, NO_VERDICT},
-                { DELEGATED_POWERS, PleaType.GUILTY_REQUEST_HEARING, REFER_FOR_COURT_HEARING, NO_VERDICT},
-                { DELEGATED_POWERS, PleaType.NOT_GUILTY, REFER_FOR_COURT_HEARING, NO_VERDICT},
-                { MAGISTRATE, null, REFER_FOR_COURT_HEARING, NO_VERDICT},
-                { MAGISTRATE, null, REFER_FOR_COURT_HEARING, PROVED_SJP},
-                { MAGISTRATE, PleaType.GUILTY, REFER_FOR_COURT_HEARING, NO_VERDICT},
-                { MAGISTRATE, PleaType.GUILTY, REFER_FOR_COURT_HEARING, FOUND_GUILTY},
-                { DELEGATED_POWERS, null, ADJOURN, NO_VERDICT},
-                { DELEGATED_POWERS, PleaType.GUILTY, ADJOURN, NO_VERDICT},
-                { DELEGATED_POWERS, PleaType.GUILTY_REQUEST_HEARING, ADJOURN, NO_VERDICT},
-                { DELEGATED_POWERS, PleaType.NOT_GUILTY, ADJOURN, NO_VERDICT},
-                { MAGISTRATE, null, ADJOURN, NO_VERDICT},
-                { MAGISTRATE, null, ADJOURN, PROVED_SJP},
-                { MAGISTRATE, PleaType.GUILTY, ADJOURN, NO_VERDICT},
-                { MAGISTRATE, PleaType.GUILTY, ADJOURN, FOUND_GUILTY}
-        });
+    static Stream<Arguments> testData() {
+        return Stream.of(
+                Arguments.of( DELEGATED_POWERS, null, REFER_FOR_COURT_HEARING, NO_VERDICT),
+                Arguments.of( DELEGATED_POWERS, PleaType.GUILTY, REFER_FOR_COURT_HEARING, NO_VERDICT),
+                Arguments.of( DELEGATED_POWERS, PleaType.GUILTY_REQUEST_HEARING, REFER_FOR_COURT_HEARING, NO_VERDICT),
+                Arguments.of( DELEGATED_POWERS, PleaType.NOT_GUILTY, REFER_FOR_COURT_HEARING, NO_VERDICT),
+                Arguments.of( MAGISTRATE, null, REFER_FOR_COURT_HEARING, NO_VERDICT),
+                Arguments.of( MAGISTRATE, null, REFER_FOR_COURT_HEARING, PROVED_SJP),
+                Arguments.of( MAGISTRATE, PleaType.GUILTY, REFER_FOR_COURT_HEARING, NO_VERDICT),
+                Arguments.of( MAGISTRATE, PleaType.GUILTY, REFER_FOR_COURT_HEARING, FOUND_GUILTY),
+                Arguments.of( DELEGATED_POWERS, null, ADJOURN, NO_VERDICT),
+                Arguments.of( DELEGATED_POWERS, PleaType.GUILTY, ADJOURN, NO_VERDICT),
+                Arguments.of( DELEGATED_POWERS, PleaType.GUILTY_REQUEST_HEARING, ADJOURN, NO_VERDICT),
+                Arguments.of( DELEGATED_POWERS, PleaType.NOT_GUILTY, ADJOURN, NO_VERDICT),
+                Arguments.of( MAGISTRATE, null, ADJOURN, NO_VERDICT),
+                Arguments.of( MAGISTRATE, null, ADJOURN, PROVED_SJP),
+                Arguments.of( MAGISTRATE, PleaType.GUILTY, ADJOURN, NO_VERDICT),
+                Arguments.of( MAGISTRATE, PleaType.GUILTY, ADJOURN, FOUND_GUILTY)
+        );
     }
 
-    @Before
-    public void init() {
-        caseAggregateState = new CaseAggregateState();
-        session = new Session();
+    @ParameterizedTest
+    @MethodSource("testData")
+    public void test(SessionType sessionType, PleaType pleaType, DecisionType decisionType, VerdictType verdictType) {
+        var caseAggregateState = new CaseAggregateState();
+        var session = new Session();
         switch (sessionType){
             case MAGISTRATE:
                 session.startMagistrateSession(sessionId, legalAdviserId, courtHouseCode, courtHouseName,
@@ -128,15 +112,12 @@ public class CaseDecisionHandlerValidVerdictPleaCasesTest {
                         localJusticeAreaNationalCode, now(), Arrays.asList("TFL", "DVL"));
                 break;
         }
-        givenCaseExistsWithMultipleOffences(newHashSet(offenceId1), legalAdviserId);
-        courtOptions =
+        givenCaseExistsWithMultipleOffences(newHashSet(offenceId1), legalAdviserId, caseAggregateState);
+        var courtOptions =
                 new DefendantCourtOptions(
                         new DefendantCourtInterpreter("EN", true),
                         false, NO_DISABILITY_NEEDS);
-    }
 
-    @Test
-    public void test() {
 
         final List<OffenceDecision> offenceDecisions = newArrayList(new ReferForCourtHearing(randomUUID(), newArrayList(OffenceDecisionInformation.createOffenceDecisionInformation(offenceId1, verdictType)), referralReasonId, "note", 0, courtOptions, null));
 
@@ -149,7 +130,7 @@ public class CaseDecisionHandlerValidVerdictPleaCasesTest {
         thenTheDecisionIsAcceptedAlongWithCaseReferForCourtHearingRecordedEvent(decision, eventList);
     }
 
-    private void givenCaseExistsWithMultipleOffences(final HashSet<UUID> uuids, final UUID savedByUser) {
+    private void givenCaseExistsWithMultipleOffences(final HashSet<UUID> uuids, final UUID savedByUser, CaseAggregateState caseAggregateState) {
         caseAggregateState.addOffenceIdsForDefendant(defendantId, uuids);
         caseAggregateState.setDefendantId(defendantId);
         caseAggregateState.setAssigneeId(savedByUser);
@@ -157,7 +138,7 @@ public class CaseDecisionHandlerValidVerdictPleaCasesTest {
 
     private void thenTheDecisionIsAcceptedAlongWithCaseReferForCourtHearingRecordedEvent(final Decision decision, final List<Object> eventList) {
         Optional<Object> ds = eventList.stream().filter(obj -> obj instanceof DecisionSaved).findAny();
-        assertTrue("DecisionSaved is not raised", ds.isPresent());
+        assertTrue(ds.isPresent(), "DecisionSaved is not raised");
         DecisionSaved actualDecisionSaved = ds.map(o -> (DecisionSaved)o).get();
         assertThat(String.format("DecisionSaved has no matching CaseId. Expected : %s Actual : %s", caseId, actualDecisionSaved.getCaseId()),  actualDecisionSaved.getCaseId(), equalTo(caseId));
         assertThat(String.format("DecisionSaved has no matching decisionId. Expected : %s Actual : %s", decisionId, actualDecisionSaved.getDecisionId()), actualDecisionSaved.getDecisionId(), equalTo(decisionId));
@@ -175,16 +156,16 @@ public class CaseDecisionHandlerValidVerdictPleaCasesTest {
 
         List<CaseNoteAdded> caseNoteAddedList = eventList.stream().filter(obj -> obj instanceof CaseNoteAdded).map(o -> (CaseNoteAdded)o).collect(toList());
 
-        assertTrue("CaseNoteAdded is not raised", !caseNoteAddedList.isEmpty());
+        assertTrue(!caseNoteAddedList.isEmpty(), "CaseNoteAdded is not raised");
 
         List<CaseNoteAdded> actualListeningCaseNoteAddedList = caseNoteAddedList.stream().filter(cn -> cn.getNote().getType().equals(LISTING)).collect(toList());
-        assertTrue("CaseNoteAdded for Listening is not raised", !actualListeningCaseNoteAddedList.isEmpty());
+        assertTrue(!actualListeningCaseNoteAddedList.isEmpty(), "CaseNoteAdded for Listening is not raised");
         assertCaseAddedNote(actualListeningCaseNoteAddedList.get(0));
 
 
 
         List<CaseNoteAdded> actualDecisionCaseNoteAddedList = caseNoteAddedList.stream().filter(cn -> cn.getNote().getType().equals(DECISION)).collect(toList());
-        assertTrue("CaseNoteAdded for Decision is not raised", !actualDecisionCaseNoteAddedList.isEmpty());
+        assertTrue(!actualDecisionCaseNoteAddedList.isEmpty(), "CaseNoteAdded for Decision is not raised");
         assertCaseAddedNote(actualDecisionCaseNoteAddedList.get(0));
 
         assertThat("CaseUnassigned event is not raised", eventList, hasItem(new CaseUnassigned(caseId)));

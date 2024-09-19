@@ -2,7 +2,7 @@ package uk.gov.moj.cpp.sjp.event.listener;
 
 import static java.time.ZonedDateTime.now;
 import static java.util.UUID.randomUUID;
-import static org.mockito.Matchers.any;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.justice.services.messaging.JsonEnvelope.metadataBuilder;
@@ -28,16 +28,16 @@ import java.util.Arrays;
 import java.util.UUID;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.mockito.Spy;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class DefendantAcceptedAocpListenerTest {
 
     @Mock
@@ -65,7 +65,7 @@ public class DefendantAcceptedAocpListenerTest {
     @InjectMocks
     private DefendantAcceptedAocpListener defendantAcceptedAocpListener;
 
-    @Before
+    @BeforeEach
     public void setup() {
         MockitoAnnotations.initMocks(this);
     }
@@ -91,7 +91,6 @@ public class DefendantAcceptedAocpListenerTest {
         final Offence offence = new Offence(offenceId, NOT_GUILTY, null, null);
 
         when(caseRepository.findBy(caseId)).thenReturn(caseDetail);
-        when(offenceRepository.findBy(offenceId)).thenReturn(offenceDetail);
 
         final DefendantAcceptedAocp defendantAcceptedAocp = new DefendantAcceptedAocp(caseDetail.getId(), null,
                 Arrays.asList(offence), null, null, true, null, null);

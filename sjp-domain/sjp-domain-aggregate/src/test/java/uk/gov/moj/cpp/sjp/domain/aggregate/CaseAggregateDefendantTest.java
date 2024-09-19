@@ -44,8 +44,8 @@ import java.util.UUID;
 import java.util.stream.Stream;
 
 import org.apache.commons.lang3.RandomStringUtils;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 public class CaseAggregateDefendantTest {
 
@@ -75,7 +75,7 @@ public class CaseAggregateDefendantTest {
     private CaseAggregate caseAggregate;
     private UUID userId;
 
-    @Before
+    @BeforeEach
     public void setUp() {
         caseAggregate = new CaseAggregate();
     }

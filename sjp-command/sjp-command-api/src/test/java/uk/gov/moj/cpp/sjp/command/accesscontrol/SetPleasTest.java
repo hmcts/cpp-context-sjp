@@ -1,6 +1,6 @@
 package uk.gov.moj.cpp.sjp.command.accesscontrol;
 
-import static org.codehaus.groovy.runtime.InvokerHelper.asList;
+import static java.util.Collections.singletonMap;
 import static org.mockito.BDDMockito.given;
 import static uk.gov.moj.cpp.sjp.command.api.accesscontrol.RuleConstants.getSetPleasGroups;
 
@@ -10,8 +10,7 @@ import uk.gov.moj.cpp.accesscontrol.test.utils.BaseDroolsAccessControlTest;
 
 import java.util.Map;
 
-import com.google.common.collect.ImmutableMap;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.kie.api.runtime.ExecutionResults;
 import org.mockito.Mock;
 
@@ -21,6 +20,10 @@ public class SetPleasTest extends BaseDroolsAccessControlTest {
 
     @Mock
     private UserAndGroupProvider userAndGroupProvider;
+
+    public SetPleasTest() {
+        super("COMMAND_API_SESSION");
+    }
 
     @Test
     public void shouldAllowUserInAuthorisedGroupToUpdatePlea() {
@@ -35,15 +38,13 @@ public class SetPleasTest extends BaseDroolsAccessControlTest {
     @Test
     public void shouldNotAllowUserNotInAuthorisedGroupToUpdatePlea() {
         final Action action = createActionFor(SJP_SET_PLEAS);
-        given(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups(action, asList("random group")))
-                .willReturn(true);
 
         final ExecutionResults results = executeRulesWith(action);
         assertFailureOutcome(results);
     }
 
     @Override
-    protected Map<Class, Object> getProviderMocks() {
-        return ImmutableMap.<Class, Object>builder().put(UserAndGroupProvider.class, userAndGroupProvider).build();
+    protected Map<Class<?>, Object> getProviderMocks() {
+        return singletonMap(UserAndGroupProvider.class, userAndGroupProvider);
     }
 }

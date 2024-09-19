@@ -5,21 +5,27 @@ import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
 import static java.time.LocalDateTime.now;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.core.AllOf.allOf;
-import static org.junit.Assert.assertThat;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyBoolean;
-import static org.mockito.Matchers.argThat;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyBoolean;
+import static org.mockito.hamcrest.MockitoHamcrest.argThat;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMatcher.jsonEnvelope;
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMetadataMatcher.metadata;
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopePayloadMatcher.payloadIsJson;
+import static uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderFactory.metadataWithRandomUUIDAndName;
+import static uk.gov.moj.cpp.sjp.event.processor.activiti.CaseStateService.METADATA_VARIABLE;
 import static uk.gov.moj.cpp.sjp.event.processor.activiti.CaseStateService.PLEA_READY_VARIABLE;
 import static uk.gov.moj.cpp.sjp.event.processor.activiti.CaseStateService.PLEA_TYPE_VARIABLE;
 import static uk.gov.moj.cpp.sjp.event.processor.activiti.CaseStateService.PROVED_IN_ABSENCE_VARIABLE;
 import static uk.gov.moj.cpp.sjp.event.processor.activiti.CaseStateService.WITHDRAWAL_REQUESTED_VARIABLE;
+import static uk.gov.moj.cpp.sjp.event.processor.utils.MetadataHelper.metadataToString;
 
+import com.jayway.jsonpath.Option;
+import java.util.UUID;
+import org.junit.jupiter.api.BeforeEach;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.sjp.domain.CaseReadinessReason;
 import uk.gov.moj.cpp.sjp.domain.plea.PleaType;
@@ -29,15 +35,15 @@ import uk.gov.moj.cpp.sjp.event.processor.activiti.ReadyCaseCalculator;
 import java.time.LocalDateTime;
 import java.util.Optional;
 
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class ReadyCaseDelegateTest extends AbstractCaseDelegateTest {
 
     @Mock
@@ -58,13 +64,20 @@ public class ReadyCaseDelegateTest extends AbstractCaseDelegateTest {
     @Captor
     private ArgumentCaptor<JsonEnvelope> argumentCaptor;
 
+    @BeforeEach
+    public void init() {
+        caseId = UUID.randomUUID();
+        metadata = metadataWithRandomUUIDAndName().build();
+
+        when(delegateExecution.getProcessBusinessKey()).thenReturn(caseId.toString());
+        when(delegateExecution.getVariable(METADATA_VARIABLE, String.class))
+                .thenReturn(metadataToString(metadata));
+    }
+
     @Test
     public void shouldSendUnmarkCaseReadyCommandWhenCaseIsNotReady() {
         final LocalDateTime expectedDateReady = now();
         // GIVEN
-        when(readyCaseCalculator.getReasonIfReady(anyBoolean(), anyBoolean(), anyBoolean(), any(PleaType.class), anyBoolean()))
-                .thenReturn(Optional.empty());
-
         when(expectedDateReadyCalculator.calculateExpectedDateReady(delegateExecution)).thenReturn(expectedDateReady);
 
         // WHEN
@@ -89,7 +102,7 @@ public class ReadyCaseDelegateTest extends AbstractCaseDelegateTest {
     public void shouldMarkCaseAsReadyWhenThereIsDecision() {
         // GIVEN
         final CaseReadinessReason expectedCaseReadinessReason = CaseReadinessReason.PIA;
-        when(readyCaseCalculator.getReasonIfReady(anyBoolean(), anyBoolean(), anyBoolean(), any(PleaType.class), anyBoolean()))
+        when(readyCaseCalculator.getReasonIfReady(anyBoolean(), anyBoolean(), anyBoolean(), any(), anyBoolean()))
                 .thenReturn(Optional.of(expectedCaseReadinessReason));
 
         // WHEN
@@ -125,10 +138,15 @@ public class ReadyCaseDelegateTest extends AbstractCaseDelegateTest {
     private void callDelegateWithoutPleaReadyAndWith(final PleaType pleaType) {
         final LocalDateTime expectedDateReady = now();
         // GIVEN
-        when(readyCaseCalculator.getReasonIfReady(anyBoolean(), anyBoolean(), anyBoolean(), any(PleaType.class), anyBoolean()))
+        when(readyCaseCalculator.getReasonIfReady(anyBoolean(), anyBoolean(), anyBoolean(), any(), anyBoolean()))
                 .thenReturn(Optional.empty());
         when(expectedDateReadyCalculator.calculateExpectedDateReady(delegateExecution)).thenReturn(expectedDateReady);
-        when(delegateExecution.getVariable(PLEA_READY_VARIABLE)).thenReturn(null);
+        when(delegateExecution.getVariable(METADATA_VARIABLE, String.class))
+                .thenReturn(metadataToString(metadata));
+        when(delegateExecution.getVariable(PROVED_IN_ABSENCE_VARIABLE, Boolean.class))
+                .thenReturn(null);
+        when(delegateExecution.getVariable("withdrawalRequested", Boolean.class))
+                .thenReturn(null);
         when(delegateExecution.getVariable(PLEA_TYPE_VARIABLE, String.class))
                 .thenReturn(Optional.ofNullable(pleaType).map(PleaType::name).orElse(null));
 

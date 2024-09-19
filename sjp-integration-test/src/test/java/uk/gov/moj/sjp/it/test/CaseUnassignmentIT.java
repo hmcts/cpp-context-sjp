@@ -31,13 +31,16 @@ import java.util.UUID;
 import javax.ws.rs.core.Response;
 
 import com.google.common.collect.Sets;
-import org.junit.Before;
-import org.junit.Ignore;
-import org.junit.Test;
-import org.mortbay.log.Log;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-@Ignore("Failing intermittently. Tech debt ticket ATCM-6621")
+@Disabled("Failing intermittently. Tech debt ticket ATCM-6621")
 public class CaseUnassignmentIT extends BaseIntegrationTest {
+
+    private static final Logger log = LoggerFactory.getLogger(CaseUnassignmentIT.class);
 
     private static final UUID CASE_ID = UUID.randomUUID();
     private static final UUID USER_ID = randomUUID();
@@ -48,7 +51,7 @@ public class CaseUnassignmentIT extends BaseIntegrationTest {
 
     private final SjpDatabaseCleaner cleaner = new SjpDatabaseCleaner();
 
-    @Before
+    @BeforeEach
     public void setUp() throws SQLException {
         stubStartSjpSessionCommand();
         stubEndSjpSessionCommand();
@@ -64,7 +67,7 @@ public class CaseUnassignmentIT extends BaseIntegrationTest {
         stubEnforcementAreaByPostcode(defendant.address.postcode, "1080", "Bedfordshire Magistrates' Court");
         stubRegionByPostcode("1080", "DEFENDANT_REGION");
 
-        createCase.caseReceivedHandler = envelope -> Log.info("Case is created");
+        createCase.caseReceivedHandler = envelope -> log.info("Case is created");
         Optional<Response> createCaseResponse = createCase.getExecutor().executeSync();
         assertThat(createCaseResponse.get().getStatus(), equalTo(202));
 

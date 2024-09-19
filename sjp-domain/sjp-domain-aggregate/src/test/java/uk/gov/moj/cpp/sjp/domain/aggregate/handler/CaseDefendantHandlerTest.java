@@ -4,7 +4,7 @@ import static java.util.stream.Collectors.toList;
 import static org.hamcrest.CoreMatchers.hasItems;
 import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.CoreMatchers.is;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.mockito.Mockito.when;
 
 import uk.gov.moj.cpp.sjp.domain.Address;
@@ -22,16 +22,15 @@ import java.util.List;
 import java.util.UUID;
 import java.util.stream.Stream;
 
-import junit.framework.TestCase;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 @SuppressWarnings("squid:S2187")
-@RunWith(MockitoJUnitRunner.class)
-public class CaseDefendantHandlerTest extends TestCase {
+@ExtendWith(MockitoExtension.class)
+public class CaseDefendantHandlerTest {
 
     @Mock
     private Address personAddress;
@@ -55,7 +54,6 @@ public class CaseDefendantHandlerTest extends TestCase {
         final UUID defendantId = UUID.randomUUID();
         final ZonedDateTime updatedDate = ZonedDateTime.now();
         when(state.getCaseId()).thenReturn(caseId);
-        when(state.getDefendantId()).thenReturn(defendantId);
         when(state.hasDefendant(defendantId)).thenReturn(true);
         when(state.getDefendantAddress()).thenReturn(address);
         when(person.getAddress()).thenReturn(personAddress);
@@ -76,7 +74,6 @@ public class CaseDefendantHandlerTest extends TestCase {
         final UUID defendantId = UUID.randomUUID();
         final ZonedDateTime updatedDate = ZonedDateTime.now();
         when(state.getCaseId()).thenReturn(caseId);
-        when(state.getDefendantId()).thenReturn(defendantId);
         when(state.hasDefendant(defendantId)).thenReturn(true);
         when(state.getDefendantAddress()).thenReturn(address);
         when(person.getAddress()).thenReturn(address);

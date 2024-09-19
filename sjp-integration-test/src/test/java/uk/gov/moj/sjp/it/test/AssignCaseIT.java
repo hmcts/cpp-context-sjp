@@ -11,6 +11,7 @@ import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubEnforcementAre
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubRegionByPostcode;
 import static uk.gov.moj.sjp.it.stub.UsersGroupsStub.stubGroupForUser;
 
+import org.junit.jupiter.api.Disabled;
 import uk.gov.moj.cpp.sjp.event.CaseMarkedReadyForDecision;
 import uk.gov.moj.sjp.it.command.CreateCase;
 import uk.gov.moj.sjp.it.command.CreateCase.CreateCasePayloadBuilder;
@@ -18,11 +19,10 @@ import uk.gov.moj.sjp.it.helper.EventListener;
 
 import java.util.UUID;
 
-import org.junit.Before;
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
-@Ignore("Enable this when merging to master")
+@Disabled("Enable this when merging to master")
 public class AssignCaseIT extends BaseIntegrationTest {
 
     private final UUID caseId1 = randomUUID();
@@ -35,7 +35,7 @@ public class AssignCaseIT extends BaseIntegrationTest {
     private static final String DEFENDANT_REGION = "london";
     private static final String NATIONAL_COURT_CODE = "1080";
 
-    @Before
+    @BeforeEach
     public void setUp() {
         stubGroupForUser(systemUserId, "System Users");
         stubGroupForUser(legalAdviserId, "Legal Advisers");

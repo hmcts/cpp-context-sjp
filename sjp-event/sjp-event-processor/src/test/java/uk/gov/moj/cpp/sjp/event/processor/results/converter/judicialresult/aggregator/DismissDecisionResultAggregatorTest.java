@@ -6,7 +6,7 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.hasProperty;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static uk.gov.moj.cpp.sjp.domain.decision.OffenceDecisionInformation.createOffenceDecisionInformation;
 import static uk.gov.moj.cpp.sjp.domain.verdict.VerdictType.FOUND_GUILTY;
 import static uk.gov.moj.cpp.sjp.event.processor.results.converter.judicialresult.JCaseResultsConstants.DATE_FORMAT;
@@ -15,20 +15,20 @@ import uk.gov.moj.cpp.sjp.domain.decision.Dismiss;
 import uk.gov.moj.cpp.sjp.event.processor.results.converter.judicialresult.DecisionAggregate;
 
 import org.hamcrest.Matchers;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 @SuppressWarnings("ALL")
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class DismissDecisionResultAggregatorTest extends BaseDecisionResultAggregatorTest {
 
     private final DecisionAggregate resultsAggregate = new DecisionAggregate();
 
     private DismissDecisionResultAggregator aggregator;
 
-    @Before
+    @BeforeEach
     public void setUp() {
         super.setUp();
         aggregator = new DismissDecisionResultAggregator(jCachedReferenceData);

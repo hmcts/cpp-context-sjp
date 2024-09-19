@@ -2,7 +2,7 @@ package uk.gov.moj.cpp.sjp.domain.aggregate;
 
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.notNullValue;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static uk.gov.moj.cpp.sjp.domain.testutils.CaseBuilder.aDefaultSjpCase;
 
 import uk.gov.justice.services.common.util.Clock;
@@ -15,15 +15,15 @@ import uk.gov.moj.cpp.sjp.event.CaseReceived;
 import java.time.ZonedDateTime;
 import java.util.stream.Stream;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 public class CaseStartedTest {
 
     private final Clock clock = new StoppedClock(new UtcClock().now());
     private CaseAggregate caseAggregate;
 
-    @Before
+    @BeforeEach
     public void setUp() {
         caseAggregate = new CaseAggregate();
     }

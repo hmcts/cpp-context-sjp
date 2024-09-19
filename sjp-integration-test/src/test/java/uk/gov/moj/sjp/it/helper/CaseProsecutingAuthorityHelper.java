@@ -6,7 +6,7 @@ import java.util.UUID;
 
 import javax.ws.rs.core.Response;
 
-import com.jayway.restassured.path.json.JsonPath;
+import io.restassured.path.json.JsonPath;
 
 public class CaseProsecutingAuthorityHelper {
 

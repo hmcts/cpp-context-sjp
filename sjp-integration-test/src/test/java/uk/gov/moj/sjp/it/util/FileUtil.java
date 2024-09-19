@@ -1,7 +1,7 @@
 package uk.gov.moj.sjp.it.util;
 
 import static java.util.Collections.emptyMap;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import java.nio.charset.Charset;
 import java.util.Map;

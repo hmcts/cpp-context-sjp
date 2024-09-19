@@ -12,7 +12,7 @@ import uk.gov.justice.json.schemas.domains.sjp.queries.Defendant;
 
 import java.time.LocalDate;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 public class EndorsementRemovalNotificationTemplateDataBuilderTest {
 

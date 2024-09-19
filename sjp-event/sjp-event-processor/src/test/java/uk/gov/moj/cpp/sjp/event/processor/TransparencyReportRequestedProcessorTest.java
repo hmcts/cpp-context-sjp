@@ -13,8 +13,9 @@ import static org.hamcrest.Matchers.isEmptyOrNullString;
 import static org.hamcrest.Matchers.isIn;
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsNull.notNullValue;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.eq;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -48,15 +49,15 @@ import javax.json.JsonArrayBuilder;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
 
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class TransparencyReportRequestedProcessorTest {
 
     private static final String PUBLIC_EVENT_SJP_PENDING_CASES_PUBLIC_LIST_GENERATED = "public.sjp.pending-cases-public-list-generated";
@@ -89,7 +90,7 @@ public class TransparencyReportRequestedProcessorTest {
     private ArgumentCaptor<JsonEnvelope> storeTransparencyReportCommandEnvelopeCaptor;
 
     @Captor
-    private ArgumentCaptor<DefaultEnvelope> sjpPendingListPublicEnvelopeCaptor;
+    private ArgumentCaptor<DefaultEnvelope> defaultEnvelopeArgumentCaptor;
 
     @Mock
     private PayloadHelper payloadHelper;
@@ -154,7 +155,7 @@ public class TransparencyReportRequestedProcessorTest {
         assertPayloadForDocumentGenerator(payloadForEnglishPdf, pendingCasesList, numberOfPendingCasesForExport, false);
         assertPayloadForDocumentGenerator(payloadForWelshPdf, pendingCasesList, numberOfPendingCasesForExport, true);
 
-        verify(sender, times(3)).send(storeTransparencyReportCommandEnvelopeCaptor.capture());
+        verify(sender, times(1)).send(storeTransparencyReportCommandEnvelopeCaptor.capture());
         assertTransparencyReportEnvelope(storeTransparencyReportCommandEnvelopeCaptor.getAllValues().get(0), transparencyReportId, caseIds);
     }
 
@@ -182,10 +183,7 @@ public class TransparencyReportRequestedProcessorTest {
                 .mapToObj(e -> randomUUID()).collect(toList());
 
         when(payloadHelper.buildOffenceTitleFromOffenceArray(any(), eq(false), any())).thenReturn(offenceTitle);
-        when(payloadHelper.mapOffenceIntoOffenceTitleString(any(), eq(false), any())).thenReturn(offenceTitle);
         when(payloadHelper.buildProsecutorName(eq(prosecutorName), eq(false), any())).thenReturn(prosecutorEnglish);
-        when(payloadHelper.buildProsecutorName(eq(prosecutorName), eq(true), any())).thenReturn(prosecutorWelsh);
-        when(payloadHelper.getTemplateIdentifier(any(), any(), any())).thenReturn(expectedEnglishTemplateName);
         when(payloadHelper.getStartDate(eq(false))).thenReturn("15 January 2024");
 
         final List<JsonObject> pendingCasesList = pendingCasesList(caseIds, youngOffenderCaseIds, pressRestrictionCaseIds);
@@ -241,11 +239,9 @@ public class TransparencyReportRequestedProcessorTest {
                 .mapToObj(e -> randomUUID()).collect(toList());
 
         when(payloadHelper.buildOffenceTitleFromOffenceArray(any(), eq(false), any())).thenReturn(offenceTitle);
-        when(payloadHelper.mapOffenceIntoOffenceTitleString(any(), eq(false), any())).thenReturn(offenceTitle);
         when(payloadHelper.buildProsecutorName(eq(prosecutorName), eq(false), any())).thenReturn(prosecutorEnglish);
 
         final List<JsonObject> pendingCasesList = pendingCasesList(caseIds, youngOffenderCaseIds, pressRestrictionCaseIds);
-        when(sjpService.getPendingCases(any(), any())).thenReturn(pendingCasesList);
         when(sjpService.getPendingDeltaCases(any(), any())).thenReturn(pendingCasesList);
         when(fileStorer.store(any(), any())).thenReturn(englishPayloadFileUUID);
 
@@ -259,7 +255,6 @@ public class TransparencyReportRequestedProcessorTest {
                         .build()
         );
 
-        when(payloadHelper.getTemplateIdentifier(any(), any(), any())).thenReturn(expectedEnglishTemplateName);
         when(payloadHelper.getStartDate(eq(false))).thenReturn("15 January 2024");
         processor.createTransparencyPDFReport(privateEventEnvelope);
 
@@ -300,21 +295,12 @@ public class TransparencyReportRequestedProcessorTest {
         final List<UUID> pressRestrictionCaseIds = range(0, 5)
                 .mapToObj(e -> randomUUID()).collect(toList());
 
-        when(payloadHelper.buildOffenceTitleFromOffenceArray(any(), eq(false), any())).thenReturn(offenceTitle);
-        when(payloadHelper.buildOffenceTitleFromOffenceArray(any(), eq(true), any())).thenReturn(offenceTitle);
         when(payloadHelper.mapOffenceIntoOffenceTitleString(any(), eq(false), any())).thenReturn(offenceTitle);
-        when(payloadHelper.mapOffenceIntoOffenceTitleString(any(), eq(true), any())).thenReturn(offenceTitle);
         when(payloadHelper.buildProsecutorName(eq(prosecutorName), eq(false), any())).thenReturn(prosecutorEnglish);
-        when(payloadHelper.buildProsecutorName(eq(prosecutorName), eq(true), any())).thenReturn(prosecutorWelsh);
         when(payloadHelper.getStartDate(eq(false))).thenReturn("15 January 2024");
-        when(payloadHelper.getStartDate(eq(true))).thenReturn("ers 21 Tachwedd");
-        when(payloadHelper.getTemplateIdentifier(any(), any(), any())).thenReturn(expectedEnglishTemplateName);
 
         final List<JsonObject> pendingCasesList = pendingCasesList(caseIds, youngOffenderCaseIds, pressRestrictionCaseIds);
         when(sjpService.getPendingCases(any(), any())).thenReturn(pendingCasesList);
-        when(fileStorer.store(any(), any()))
-                .thenReturn(englishPayloadFileUUID)
-                .thenReturn(welshPayloadFileUUID);
 
         final JsonEnvelope privateEventEnvelope = envelopeFrom(
                 metadataWithRandomUUID("sjp.events.transparency-json-report-requested"),
@@ -327,8 +313,8 @@ public class TransparencyReportRequestedProcessorTest {
         );
         processor.createTransparencyJSONReport(privateEventEnvelope);
 
-        verify(sender, times(1)).send(storeTransparencyReportCommandEnvelopeCaptor.capture());
-        final Envelope jsonEnvelope = storeTransparencyReportCommandEnvelopeCaptor.getAllValues().get(0);
+        verify(sender, times(1)).send(defaultEnvelopeArgumentCaptor.capture());
+        final Envelope jsonEnvelope = defaultEnvelopeArgumentCaptor.getAllValues().get(0);
         assertThat(jsonEnvelope.metadata().name(), is(PUBLIC_EVENT_SJP_PENDING_CASES_PUBLIC_LIST_GENERATED));
         final JsonObject eventPayload = (JsonObject) jsonEnvelope.payload();
         final JsonObject payload = eventPayload.getJsonObject("listPayload");
@@ -367,22 +353,15 @@ public class TransparencyReportRequestedProcessorTest {
         final List<UUID> pressRestrictionCaseIds = range(0, 5)
                 .mapToObj(e -> randomUUID()).collect(toList());
 
-        when(payloadHelper.buildOffenceTitleFromOffenceArray(any(), eq(false), any())).thenReturn(offenceTitle);
-        when(payloadHelper.buildOffenceTitleFromOffenceArray(any(), eq(true), any())).thenReturn(offenceTitle);
-        when(payloadHelper.mapOffenceIntoOffenceTitleString(any(), eq(false), any())).thenReturn(offenceTitle);
-        when(payloadHelper.mapOffenceIntoOffenceTitleString(any(), eq(true), any())).thenReturn(offenceTitle);
-        when(payloadHelper.buildProsecutorName(eq(prosecutorName), eq(false), any())).thenReturn(prosecutorEnglish);
-        when(payloadHelper.buildProsecutorName(eq(prosecutorName), eq(true), any())).thenReturn(prosecutorWelsh);
-        when(payloadHelper.getStartDate(eq(false))).thenReturn("15 January 2024");
-        when(payloadHelper.getStartDate(eq(true))).thenReturn("ers 21 Tachwedd");
-        when(payloadHelper.getTemplateIdentifier(any(), any(), any())).thenReturn(expectedEnglishTemplateName);
+        given(payloadHelper.buildOffenceTitleFromOffenceArray(any(), eq(false), any())).willReturn(offenceTitle);
+        given(payloadHelper.buildProsecutorName(eq(prosecutorName), eq(false), any())).willReturn(prosecutorEnglish);
+        given(payloadHelper.getStartDate(eq(false))).willReturn("15 January 2024");
 
         final List<JsonObject> pendingCasesList = pendingCasesList(caseIds, youngOffenderCaseIds, pressRestrictionCaseIds);
-        when(sjpService.getPendingCases(any(), any())).thenReturn(pendingCasesList);
-        when(sjpService.getPendingDeltaCases(any(), any())).thenReturn(pendingCasesList);
-        when(fileStorer.store(any(), any()))
-                .thenReturn(englishPayloadFileUUID)
-                .thenReturn(welshPayloadFileUUID);
+        given(sjpService.getPendingDeltaCases(any(), any())).willReturn(pendingCasesList);
+        given(fileStorer.store(any(), any()))
+                .willReturn(englishPayloadFileUUID)
+                .willReturn(welshPayloadFileUUID);
 
         final JsonEnvelope privateEventEnvelope = envelopeFrom(
                 metadataWithRandomUUID("sjp.events.transparency-json-report-requested"),

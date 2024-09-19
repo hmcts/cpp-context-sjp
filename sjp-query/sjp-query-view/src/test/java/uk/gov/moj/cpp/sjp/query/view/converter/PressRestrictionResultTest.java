@@ -12,26 +12,21 @@ import uk.gov.moj.cpp.sjp.query.view.service.CachedReferenceData;
 
 import javax.json.JsonObject;
 
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class PressRestrictionResultTest {
 
     @Mock
     private CachedReferenceData referenceData;
 
-    @Before
-    public void setUp() {
-        when(referenceData.getResultId(D45.name())).thenReturn(D45.getResultDefinitionId());
-        when(referenceData.getResultId(DPR.name())).thenReturn(DPR.getResultDefinitionId());
-    }
-
     @Test
     public void shouldParsePressRestrictionApplied() {
+        when(referenceData.getResultId(D45.name())).thenReturn(D45.getResultDefinitionId());
         final JsonObject pressRestriction = createObjectBuilder()
                 .add("name", "A Name")
                 .add("requested", true)
@@ -44,6 +39,7 @@ public class PressRestrictionResultTest {
 
     @Test
     public void shouldParsePressRestrictionRevoked() {
+        when(referenceData.getResultId(DPR.name())).thenReturn(DPR.getResultDefinitionId());
         final JsonObject pressRestriction = createObjectBuilder()
                 .addNull("name")
                 .add("requested", false)

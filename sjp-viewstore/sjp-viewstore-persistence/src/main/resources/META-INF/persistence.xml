@@ -12,9 +12,6 @@
             it is required just into the test package. -> e.g. check PendingDatesToAvoidRepositoryTest
         -->
         <class>uk.gov.moj.cpp.sjp.persistence.entity.converter.TimestampConverter</class>
-        <properties>
-            <property name="jboss.as.jpa.providerModule" value="org.hibernate:5.2"/>
-        </properties>
     </persistence-unit>
 
 </persistence>

@@ -2,11 +2,13 @@ package uk.gov.moj.cpp.sjp.event.processor.service;
 
 import static javax.json.Json.createObjectBuilder;
 import static org.hamcrest.Matchers.equalTo;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import javax.json.JsonObject;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+import uk.gov.justice.services.adapter.rest.exception.BadRequestException;
 
 public class LocalJusticeAreaTest {
 
@@ -23,10 +25,10 @@ public class LocalJusticeAreaTest {
         assertThat(actual.getNationalCourtCode(), equalTo("2577"));
     }
 
-    @Test(expected = NullPointerException.class)
+    @Test
     public void shouldThrowErrorIfArgumentsMissing() {
         final JsonObject localJusticeArea = createObjectBuilder().build();
 
-        LocalJusticeArea.fromJson(localJusticeArea);
+        assertThrows(NullPointerException.class, () -> LocalJusticeArea.fromJson(localJusticeArea));
     }
 }

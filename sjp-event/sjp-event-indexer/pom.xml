@@ -3,7 +3,7 @@
     <parent>
         <artifactId>sjp-event</artifactId>
         <groupId>uk.gov.moj.cpp.sjp</groupId>
-        <version>8.0.93-SNAPSHOT</version>
+        <version>17.0.4-FRAMEWORK-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -24,6 +24,14 @@
             <artifactId>javaee-api</artifactId>
             <scope>provided</scope>
         </dependency>
+        <dependency>
+            <groupId>uk.gov.justice.framework-generators</groupId>
+            <artifactId>unifiedsearch-core</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>uk.gov.moj.cpp.unifiedsearch</groupId>
+            <artifactId>unifiedsearch-client</artifactId>
+        </dependency>
 
         <!-- Test Dependencies -->
         <dependency>
@@ -35,6 +43,12 @@
             <groupId>uk.gov.justice.services</groupId>
             <artifactId>test-utils-core</artifactId>
             <scope>test</scope>
+            <exclusions>
+                <exclusion>
+                    <groupId>ch.qos.logback</groupId>
+                    <artifactId>logback-classic</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>uk.gov.justice.utils</groupId>
@@ -101,7 +115,7 @@
                             <dependency>
                                 <groupId>javax</groupId>
                                 <artifactId>javaee-api</artifactId>
-                                <version>${jee.api.version}</version>
+                                <version>${javaee-api.version}</version>
                                 <scope>runtime</scope>
                             </dependency>
                         </dependencies>

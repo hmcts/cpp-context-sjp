@@ -7,9 +7,9 @@ import static java.util.UUID.randomUUID;
 import static javax.json.Json.createObjectBuilder;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
-import static org.junit.Assert.assertThat;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyListOf;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
@@ -17,6 +17,10 @@ import static uk.gov.justice.services.messaging.Envelope.metadataBuilder;
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
 import static uk.gov.justice.services.test.utils.core.enveloper.EnveloperFactory.createEnveloper;
 
+import java.util.stream.Stream;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 import uk.gov.justice.services.core.enveloper.Enveloper;
 import uk.gov.justice.services.core.requester.Requester;
 import uk.gov.justice.services.messaging.JsonEnvelope;
@@ -29,19 +33,14 @@ import java.util.UUID;
 
 import javax.json.JsonObject;
 
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
-import org.junit.runners.Parameterized.Parameter;
-import org.junit.runners.Parameterized.Parameters;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
 
-@RunWith(Parameterized.class)
 public class UserAndGroupsServiceTest {
 
     @InjectMocks
@@ -65,61 +64,53 @@ public class UserAndGroupsServiceTest {
     @Captor
     private ArgumentCaptor<Action> actionCaptor;
 
-    @Parameter(0)
-    public boolean expectedResult;
-
-    @Parameter(1)
-    public List<String> loggedUserGroups;
-
     private final UUID userId = randomUUID();
     private static final String USER_DETAILS_QUERY_NAME = "usersgroups.get-user-details";
 
-
-
-    @Before
+    @BeforeEach
     public void setup() {
         initMocks(this);
-
-        when(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups(any(Action.class), anyListOf(String.class)))
-                .thenReturn(expectedResult);
     }
 
-    @Parameters(name = "canSeeOnlinePleaFinances() returns {0} when user within groups {1}.")
-    public static Collection<Object[]> data() {
-        return asList(new Object[][] {
+    static Stream<Arguments> data() {
+        return Stream.of(
                 // Non existing group
-                {false, asList("foo", "bar")},
+                Arguments.of(false, asList("foo", "bar")),
 
                 // Real Groups:
-                {true,  singletonList("Court Administrators")},
-                {true,  singletonList("Legal Advisers")},
-                {true,  singletonList("Magistrates")},
-                {false, singletonList("SJP Prosecutors")},
-                {false, singletonList("TFL Prosecutors")},
-                {false, singletonList("TVL Prosecutors")},
+                Arguments.of(true,  singletonList("Court Administrators")),
+                Arguments.of(true,  singletonList("Legal Advisers")),
+                Arguments.of(true,  singletonList("Magistrates")),
+                Arguments.of(false, singletonList("SJP Prosecutors")),
+                Arguments.of(false, singletonList("TFL Prosecutors")),
+                Arguments.of(false, singletonList("TVL Prosecutors")),
 
                 // Typo/case-insensitive/particular cases
-                {false, emptyList()},
-                {false, singletonList("LegalAdvisers")},
-                {false, singletonList("Legal Advisers ")},
-                {false, singletonList(" Legal Advisers")},
-                {false, singletonList("Legal Adviser")},
-                {false, singletonList("egal advisers")},
+                Arguments.of(false, emptyList()),
+                Arguments.of(false, singletonList("LegalAdvisers")),
+                Arguments.of(false, singletonList("Legal Advisers ")),
+                Arguments.of(false, singletonList(" Legal Advisers")),
+                Arguments.of(false, singletonList("Legal Adviser")),
+                Arguments.of(false, singletonList("egal advisers")),
 
                 // Combinations
-                {true,  asList("TFL Prosecutors", "Court Administrators", "Legal Advisers")},
-                {false,  asList("SJP Prosecutors", "TFL Prosecutors")},
-                {false,  asList("TVL Prosecutors", "SJP Prosecutors")},
-                {true,  asList("TVL Prosecutors", "SJP Prosecutors", "Legal Advisers")},
-                {true,  asList("TVL Prosecutors", "Court Administrators")},
-                {true,  asList("TFL Prosecutors", "Legal Advisers")},
+                Arguments.of(true,  asList("TFL Prosecutors", "Court Administrators", "Legal Advisers")),
+                Arguments.of(false,  asList("SJP Prosecutors", "TFL Prosecutors")),
+                Arguments.of(false,  asList("TVL Prosecutors", "SJP Prosecutors")),
+                Arguments.of(true,  asList("TVL Prosecutors", "SJP Prosecutors", "Legal Advisers")),
+                Arguments.of(true,  asList("TVL Prosecutors", "Court Administrators")),
+                Arguments.of(true,  asList("TFL Prosecutors", "Legal Advisers")),
 
-                {true,  asList("Court Administrators", "foobar", "Legal Advisers")}
-        });
+                Arguments.of(true,  asList("Court Administrators", "foobar", "Legal Advisers"))
+        );
     }
 
-    @Test
-    public void canSeeOnlinePleaFinances() {
+    @ParameterizedTest
+    @MethodSource("data")
+    public void canSeeOnlinePleaFinances(boolean expectedResult, List<String> loggedUserGroups) {
+        when(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups(any(Action.class), anyList()))
+                .thenReturn(expectedResult);
+
         boolean actualResult = service.canSeeOnlinePleaFinances(inputJsonEnvelope);
         assertThat(actualResult, is(expectedResult));
 

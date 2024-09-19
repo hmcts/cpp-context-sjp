@@ -5,6 +5,8 @@ import uk.gov.moj.cpp.sjp.domain.CaseDocument;
 
 import java.util.UUID;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+
 @Event(CaseDocumentAdded.EVENT_NAME)
 public class CaseDocumentAdded {
 
@@ -16,6 +18,7 @@ public class CaseDocumentAdded {
 
     private int indexWithinDocumentType;
 
+    @JsonCreator
     public CaseDocumentAdded(UUID caseId, CaseDocument caseDocument, int indexWithinDocumentType) {
         this.caseId = caseId;
         this.caseDocument = caseDocument;

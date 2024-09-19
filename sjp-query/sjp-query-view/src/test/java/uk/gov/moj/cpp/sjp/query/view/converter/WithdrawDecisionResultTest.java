@@ -1,7 +1,7 @@
 package uk.gov.moj.cpp.sjp.query.view.converter;
 
 import static java.util.UUID.fromString;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static uk.gov.moj.cpp.sjp.query.view.util.results.ResultsMatchers.D45;
 import static uk.gov.moj.cpp.sjp.query.view.util.results.ResultsMatchers.DPR;
 import static uk.gov.moj.cpp.sjp.query.view.util.results.ResultsMatchers.WDRNNOT;
@@ -15,8 +15,8 @@ import java.util.UUID;
 
 import javax.json.JsonObject;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 public class WithdrawDecisionResultTest {
 
@@ -25,7 +25,7 @@ public class WithdrawDecisionResultTest {
 
     private FakeCachedReferenceData referenceData = new FakeCachedReferenceData();
 
-    @Before
+    @BeforeEach
     public void setUp() {
         referenceData.addWithdrawalReason(WITHDRAW_REASON_ID, WITHDRAW_REASON);
     }

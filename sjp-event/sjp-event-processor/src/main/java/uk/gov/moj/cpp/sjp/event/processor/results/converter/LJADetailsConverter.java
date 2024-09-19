@@ -1,6 +1,5 @@
 package uk.gov.moj.cpp.sjp.event.processor.results.converter;
 
-import static org.apache.log4j.spi.Configurator.NULL;
 import static uk.gov.moj.cpp.sjp.event.processor.results.converter.ConverterUtils.getString;
 
 import uk.gov.justice.core.courts.LjaDetails;
@@ -13,6 +12,7 @@ public class LJADetailsConverter {
     private static final String LJA_CODE = "localJusticeAreaNationalCourtCode";
     private static final String LJA_NAME = "oucodeL3Name";
     private static final String LJA_WELSH_NAME = "oucodeL3WelshName";
+    private static final String NULL = "null";
 
     public LjaDetails convert(final JsonObject sjpSessionPayload,
                               final Optional<JsonObject> court) {

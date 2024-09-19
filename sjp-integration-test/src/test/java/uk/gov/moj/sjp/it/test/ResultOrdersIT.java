@@ -23,10 +23,10 @@ import java.util.UUID;
 
 import javax.json.Json;
 
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 
 public class ResultOrdersIT extends BaseIntegrationTest {
 
@@ -36,7 +36,7 @@ public class ResultOrdersIT extends BaseIntegrationTest {
     private CreateCase.CreateCasePayloadBuilder case1;
     private CaseDocumentHelper resultOrder1;
 
-    @Before
+    @BeforeEach
     public void givenResultOrders() {
         case0 = createCase();
         resultOrder0 = createResultOrder(case0.getId());
@@ -45,14 +45,14 @@ public class ResultOrdersIT extends BaseIntegrationTest {
         resultOrder1 = createResultOrder(case1.getId());
     }
 
-    @After
+    @AfterEach
     public void tearDown() {
         resultOrder0.close();
         resultOrder1.close();
     }
 
     @Test
-    @Ignore("To be removed as part of - ATCM-4077, unstable test for not needed functionality")
+    @Disabled("To be removed as part of - ATCM-4077, unstable test for not needed functionality")
     public void whenGetResultOrders() {
         //when
         final LocalDate FROM_DATE = LocalDate.now(ZoneOffset.UTC);

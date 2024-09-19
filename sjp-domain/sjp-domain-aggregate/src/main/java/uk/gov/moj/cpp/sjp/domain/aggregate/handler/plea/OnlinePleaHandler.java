@@ -6,7 +6,7 @@ import static java.util.stream.Collectors.toList;
 import static java.util.stream.Stream.concat;
 import static java.util.stream.Stream.of;
 import static org.apache.commons.collections.CollectionUtils.isEmpty;
-import static org.apache.commons.lang.BooleanUtils.isTrue;
+import static org.apache.commons.lang3.BooleanUtils.isTrue;
 import static uk.gov.moj.cpp.sjp.domain.aggregate.handler.HandlerUtils.createRejectionEvents;
 import static uk.gov.moj.cpp.sjp.domain.aggregate.handler.plea.PleaHandlerUtils.createSetPleasEvents;
 import static uk.gov.moj.cpp.sjp.domain.disability.DisabilityNeeds.NO_DISABILITY_NEEDS;

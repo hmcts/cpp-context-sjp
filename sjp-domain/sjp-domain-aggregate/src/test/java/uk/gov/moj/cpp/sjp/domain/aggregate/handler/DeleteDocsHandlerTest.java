@@ -7,8 +7,8 @@ import static java.util.UUID.randomUUID;
 import static java.util.stream.Collectors.toList;
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.fail;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.jupiter.api.Assertions.fail;
 import static uk.gov.moj.cpp.sjp.domain.decision.OffenceDecisionInformation.createOffenceDecisionInformation;
 import static uk.gov.moj.cpp.sjp.domain.verdict.VerdictType.FOUND_GUILTY;
 import static uk.gov.moj.cpp.sjp.domain.verdict.VerdictType.FOUND_NOT_GUILTY;
@@ -27,8 +27,8 @@ import java.util.List;
 import java.util.UUID;
 import java.util.stream.Stream;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 public class DeleteDocsHandlerTest {
 
@@ -42,7 +42,7 @@ public class DeleteDocsHandlerTest {
     private final UUID withdrawalReasonId1 = randomUUID();
     private final UUID withdrawalReasonId2 = randomUUID();
 
-    @Before
+    @BeforeEach
     public void setUp() {
         caseAggregateState = new CaseAggregateState();
         caseAggregateState.setCaseId(caseId);

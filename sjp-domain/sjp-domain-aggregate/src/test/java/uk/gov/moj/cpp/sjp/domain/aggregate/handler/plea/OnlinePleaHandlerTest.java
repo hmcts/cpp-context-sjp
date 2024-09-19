@@ -27,8 +27,8 @@ import java.util.UUID;
 import java.util.stream.Stream;
 
 import org.hamcrest.Matchers;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import uk.gov.moj.cpp.sjp.event.DefendantDetailsUpdated;
 
 public class OnlinePleaHandlerTest {
@@ -41,7 +41,7 @@ public class OnlinePleaHandlerTest {
     private static final String AOCP_REJECTED_REASON = "Case is already completed";
     private static final ZonedDateTime pleadDate = now();;
 
-    @Before
+    @BeforeEach
     public void init() {
         caseAggregateState = new CaseAggregateState();
         caseAggregateState.setCaseId(caseId);

@@ -3,6 +3,7 @@ package uk.gov.moj.cpp.sjp.command.handler;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
 import static java.time.ZoneOffset.UTC;
 import static java.time.ZonedDateTime.now;
+import static java.time.ZonedDateTime.of;
 import static java.util.UUID.randomUUID;
 import static javax.json.Json.createObjectBuilder;
 import static org.hamcrest.CoreMatchers.equalTo;
@@ -41,15 +42,15 @@ import java.time.ZonedDateTime;
 import java.util.UUID;
 import java.util.stream.Stream;
 
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class CaseAdjournmentHandlerTest {
 
     private final UUID caseId = randomUUID();
@@ -67,7 +68,7 @@ public class CaseAdjournmentHandlerTest {
     private CaseAggregate caseAggregate;
 
     @Spy
-    private Clock clock = new StoppedClock(now(UTC));
+    private Clock clock = new StoppedClock(of(2021,2, 23, 17, 11, 23, 0, UTC));
 
     @Spy
     private Enveloper enveloper = createEnveloperWithEvents(
@@ -77,14 +78,10 @@ public class CaseAdjournmentHandlerTest {
     @InjectMocks
     private CaseAdjournmentHandler caseAdjournmentHandler;
 
-    @Before
-    public void init() {
-        when(eventSource.getStreamById(caseId)).thenReturn(caseEventStream);
-        when(aggregateService.get(caseEventStream, CaseAggregate.class)).thenReturn(caseAggregate);
-    }
-
     @Test
     public void shouldRecordCaseAdjournedToLaterSjpHearing() throws EventStreamException {
+        when(eventSource.getStreamById(caseId)).thenReturn(caseEventStream);
+        when(aggregateService.get(caseEventStream, CaseAggregate.class)).thenReturn(caseAggregate);
         final UUID sessionId = randomUUID();
         final LocalDate adjournedTo = LocalDate.now();
 
@@ -119,6 +116,8 @@ public class CaseAdjournmentHandlerTest {
 
     @Test
     public void shouldRecordCaseAdjournmentToLaterSjpHearingElapsed() throws EventStreamException {
+        when(eventSource.getStreamById(caseId)).thenReturn(caseEventStream);
+        when(aggregateService.get(caseEventStream, CaseAggregate.class)).thenReturn(caseAggregate);
         final ZonedDateTime elapsedAt = clock.now();
 
         final JsonEnvelope command = envelopeFrom(metadataWithRandomUUID("sjp.command.record-case-adjournment-to-later-sjp-hearing-elapsed"),

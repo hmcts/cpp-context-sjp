@@ -2,17 +2,18 @@ package uk.gov.moj.cpp.sjp.command.handler;
 
 import static com.google.common.collect.Lists.newArrayList;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
+import static java.time.ZoneOffset.UTC;
 import static java.util.Arrays.asList;
 import static java.util.UUID.randomUUID;
 import static java.util.stream.Collectors.toList;
 import static javax.json.Json.createArrayBuilder;
 import static javax.json.Json.createObjectBuilder;
 import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertThat;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.eq;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 import static uk.gov.justice.services.core.annotation.Component.COMMAND_HANDLER;
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
@@ -51,14 +52,14 @@ import java.util.stream.Stream;
 import javax.json.JsonArrayBuilder;
 import javax.json.JsonObject;
 
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class TransparencyReportHandlerTest {
 
     public static final String UPDATE_TRANSPARENCY_REPORT_DATA_COMMAND = "sjp.command.update-transparency-report-data";
@@ -116,7 +117,7 @@ public class TransparencyReportHandlerTest {
                 ));
     }
 
-//    @Test
+    //    @Test
     public void shouldRequestTransparencyReport() throws EventStreamException {
         final JsonEnvelope requestTransparencyReportCommandJsonEnvelope = envelopeFrom(
                 metadataWithRandomUUID(REQUEST_TRANSPARENCY_REPORT_COMMAND),
@@ -128,7 +129,7 @@ public class TransparencyReportHandlerTest {
 
         final UUID transparencyReportId = UUID.randomUUID();
 
-        final ZonedDateTime requestedAt = ZonedDateTime.now();
+        final ZonedDateTime requestedAt = ZonedDateTime.now(UTC);;
         when(clock.now()).thenReturn(requestedAt);
 
         final TransparencyPDFReportRequested transparencyReportRequested = new TransparencyPDFReportRequested(transparencyReportId, DELTA.name(), "ENGLISH", clock.now());

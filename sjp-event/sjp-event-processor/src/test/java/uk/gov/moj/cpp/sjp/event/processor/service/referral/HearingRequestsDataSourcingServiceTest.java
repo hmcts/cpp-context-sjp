@@ -5,7 +5,7 @@ import static java.util.Collections.singletonList;
 import static java.util.UUID.randomUUID;
 import static javax.json.Json.createObjectBuilder;
 import static javax.json.JsonValue.NULL;
-import static org.mockito.Matchers.any;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.justice.json.schemas.domains.sjp.queries.CaseDecision.caseDecision;
@@ -34,13 +34,13 @@ import java.util.UUID;
 import javax.json.Json;
 import javax.json.JsonObject;
 
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class HearingRequestsDataSourcingServiceTest {
 
     @Mock

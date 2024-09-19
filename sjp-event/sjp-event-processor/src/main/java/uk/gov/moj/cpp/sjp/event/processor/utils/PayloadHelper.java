@@ -67,6 +67,7 @@ public class PayloadHelper {
                 .orElseThrow(() -> new RuntimeException("Error during processing payload for document generator! "));
     }
 
+    @SuppressWarnings({"squid:S2259"})
     public String mapOffenceIntoOffenceTitleString(final JsonObject offence, final Boolean isWelsh, final JsonEnvelope envelope) {
         final String offenceCode = offence.getString("offenceCode");
         final String offenceStartDate = LocalDate.now().toString();

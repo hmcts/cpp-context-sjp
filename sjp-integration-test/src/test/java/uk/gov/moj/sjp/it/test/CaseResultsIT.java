@@ -61,8 +61,8 @@ import javax.json.JsonObject;
 
 import com.google.common.collect.Sets;
 import org.hamcrest.Matchers;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 public class CaseResultsIT extends BaseIntegrationTest {
 
@@ -83,7 +83,7 @@ public class CaseResultsIT extends BaseIntegrationTest {
     private final UUID offenceId = randomUUID();
     private final UUID defendantId = randomUUID();
 
-    @Before
+    @BeforeEach
     public void beforeEveryTest() throws SQLException {
         databaseCleaner.cleanViewStore();
 

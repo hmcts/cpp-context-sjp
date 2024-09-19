@@ -1,26 +1,33 @@
 package uk.gov.moj.cpp.sjp.command.utils;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+import uk.gov.justice.services.adapter.rest.exception.BadRequestException;
+
+import javax.json.JsonObject;
 
 import static javax.json.Json.createObjectBuilder;
 import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 public class NullSafeJsonObjectHelperTest {
 
-    @Test(expected = NullPointerException.class)
+    @Test
     public void keyMustNotBeNull() {
-        NullSafeJsonObjectHelper.notNull(null, createObjectBuilder().build());
+        JsonObject jsonObject = createObjectBuilder().build();
+        assertThrows(NullPointerException.class, () -> NullSafeJsonObjectHelper.notNull(null, jsonObject));
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void keyMustNotBeEmpty() {
-        NullSafeJsonObjectHelper.notNull("", createObjectBuilder().build());
+        JsonObject jsonObject = createObjectBuilder().build();
+        assertThrows(IllegalArgumentException.class, () -> NullSafeJsonObjectHelper.notNull("", jsonObject));
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void keyMustNotBeBlank() {
-        NullSafeJsonObjectHelper.notNull(" ", createObjectBuilder().build());
+        JsonObject jsonObject = createObjectBuilder().build();
+        assertThrows(IllegalArgumentException.class, () -> NullSafeJsonObjectHelper.notNull(" ", jsonObject));
     }
 
     @Test

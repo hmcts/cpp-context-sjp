@@ -4,10 +4,10 @@ import static java.time.LocalDate.now;
 import static java.util.UUID.randomUUID;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasSize;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import uk.gov.moj.cpp.sjp.persistence.entity.CaseSearchResult;
 import uk.gov.moj.cpp.sjp.persistence.entity.CaseSummary;
@@ -19,17 +19,16 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.UUID;
 
 import com.google.common.collect.Lists;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 public class CaseSearchResultsViewTest {
 
     private CaseSearchResult caseSearchResult;
 
-    @Before
+    @BeforeEach
     public void setup() {
         caseSearchResult = createCaseSearchResult();
     }
@@ -88,16 +87,17 @@ public class CaseSearchResultsViewTest {
         assertThat(caseSearchResultsView.getResults(), hasSize(1));
     }
 
-    @Test(expected = UnsupportedOperationException.class)
+    @Test
     public void modifyingTheViewIsNotAllowed() {
         // given
         final CaseSearchResultsView caseSearchResultsView = new CaseSearchResultsView(Lists.newArrayList(caseSearchResult));
 
         // when
-        caseSearchResultsView.getResults().add(new CaseSearchResultsView.CaseSearchResultView(caseSearchResult));
+        assertThrows(UnsupportedOperationException.class, () -> addCaseSearchResultView(caseSearchResultsView));
+    }
 
-        // then the exception should have been thrown
-        fail("Unreachable code");
+    private void addCaseSearchResultView(CaseSearchResultsView caseSearchResultsView) {
+        caseSearchResultsView.getResults().add(new CaseSearchResultsView.CaseSearchResultView(caseSearchResult));
     }
 
     @Test

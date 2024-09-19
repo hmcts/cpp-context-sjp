@@ -2,14 +2,15 @@ package uk.gov.moj.cpp.sjp.command.handler;
 
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
 import static java.time.ZoneOffset.UTC;
+import static java.time.ZonedDateTime.of;
 import static java.util.UUID.randomUUID;
 import static javax.json.Json.createArrayBuilder;
 import static javax.json.Json.createObjectBuilder;
-import static org.apache.commons.lang.math.RandomUtils.nextInt;
+import static org.apache.commons.lang3.RandomUtils.nextInt;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.allOf;
-import static org.mockito.Matchers.any;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -52,14 +53,14 @@ import java.util.stream.Stream;
 
 import javax.json.Json;
 
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class AssignmentHandlerTest {
 
     private static final String ASSIGN_CASE_COMMAND = "sjp.command.assign-next-case";
@@ -86,7 +87,7 @@ public class AssignmentHandlerTest {
     private Enveloper enveloper = createEnveloperWithEvents(CaseAssigned.class, CaseAssignmentRequested.class, CaseAssignmentRejected.class, CaseUnassigned.class);
 
     @Spy
-    private Clock clock = new StoppedClock(ZonedDateTime.now(UTC));
+    private Clock clock = new StoppedClock(of(2021, 2, 23, 14, 22, 19, 0, UTC));
 
     @InjectMocks
     private AssignmentHandler assignmentHandler;
@@ -125,11 +126,8 @@ public class AssignmentHandlerTest {
 
         when(eventSource.getStreamById(sessionId)).thenReturn(sessionEventStream);
         when(aggregateService.get(sessionEventStream, Session.class)).thenReturn(session);
-        when(aggregateService.get(case1EventStream, CaseAggregate.class)).thenReturn(caseAggregate1);
         when(aggregateService.get(case2EventStream, CaseAggregate.class)).thenReturn(caseAggregate2);
-        when(aggregateService.get(case3EventStream, CaseAggregate.class)).thenReturn(caseAggregate3);
 
-        when(session.getId()).thenReturn(sessionId);
         when(session.getUser()).thenReturn(assigneeId);
         when(session.getSessionType()).thenReturn(SessionType.MAGISTRATE);
 
@@ -154,7 +152,7 @@ public class AssignmentHandlerTest {
                                 payloadIsJson(allOf(
                                         withJsonPath("$.caseId", equalTo(assignmentCandidate2Id.toString())),
                                         withJsonPath("$.assigneeId", equalTo(assigneeId.toString())),
-                                        withJsonPath("$.assignedAt", equalTo(assignedAt.toString())),
+                                        withJsonPath("$.assignedAt", equalTo("2021-02-23T14:22:19.000Z")),
                                         withJsonPath("$.caseAssignmentType", equalTo(MAGISTRATE_DECISION.toString()))
                                 ))))));
     }
@@ -307,7 +305,7 @@ public class AssignmentHandlerTest {
                                 payloadIsJson(allOf(
                                         withJsonPath("$.caseId", equalTo(caseToBeAssignedId.toString())),
                                         withJsonPath("$.assigneeId", equalTo(userId.toString())),
-                                        withJsonPath("$.assignedAt", equalTo(assignedAt.toString())),
+                                        withJsonPath("$.assignedAt", equalTo("2021-02-23T14:22:19.000Z")),
                                         withJsonPath("$.caseAssignmentType", equalTo(caseAssignmentType.toString()))
                                 ))))));
 

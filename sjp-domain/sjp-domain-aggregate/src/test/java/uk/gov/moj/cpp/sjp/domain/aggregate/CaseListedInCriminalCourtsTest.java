@@ -4,7 +4,7 @@ import static java.util.UUID.randomUUID;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.instanceOf;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static uk.gov.justice.services.test.utils.core.reflection.ReflectionUtil.setField;
 import static uk.gov.moj.cpp.sjp.domain.disability.DisabilityNeeds.NO_DISABILITY_NEEDS;
 
@@ -35,8 +35,8 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 public class CaseListedInCriminalCourtsTest extends CaseAggregateBaseTest {
 
@@ -50,7 +50,7 @@ public class CaseListedInCriminalCourtsTest extends CaseAggregateBaseTest {
     final HearingType hearingType = new HearingType(null, null, null);
 
 
-    @Before
+    @BeforeEach
     public void setUp() {
         super.setUp();
         caseAggregate = new CaseAggregate();

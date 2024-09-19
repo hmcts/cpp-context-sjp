@@ -103,12 +103,12 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.hamcrest.Matchers;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class CaseDecisionHandlerTest {
 
     private final UUID referralReasonId = randomUUID();
@@ -139,7 +139,7 @@ public class CaseDecisionHandlerTest {
     private final String disabilityNeeds = "Disability_needs";
     private final Optional<DelegatedPowers> legalAdviserMagistrate = Optional.of(DelegatedPowers.delegatedPowers().withFirstName("Erica").withLastName("Wilson").withUserId(randomUUID()).build());
 
-    @Before
+    @BeforeEach
     public void onceBeforeEachTest() {
         caseAggregateState = new CaseAggregateState();
         session = new Session();

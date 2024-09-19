@@ -1,6 +1,5 @@
 package uk.gov.moj.sjp.it.util;
 
-import org.junit.Before;
 import uk.gov.justice.json.schemas.domains.sjp.User;
 import uk.gov.justice.services.common.http.HeaderConstants;
 import uk.gov.justice.services.test.utils.core.http.RequestParamsBuilder;

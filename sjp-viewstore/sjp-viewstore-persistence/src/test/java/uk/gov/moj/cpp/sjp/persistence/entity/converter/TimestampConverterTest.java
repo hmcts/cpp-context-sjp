@@ -3,12 +3,12 @@ package uk.gov.moj.cpp.sjp.persistence.entity.converter;
 import static java.time.ZoneOffset.UTC;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.nullValue;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
 
 import java.sql.Timestamp;
 import java.time.ZonedDateTime;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 public class TimestampConverterTest {
 

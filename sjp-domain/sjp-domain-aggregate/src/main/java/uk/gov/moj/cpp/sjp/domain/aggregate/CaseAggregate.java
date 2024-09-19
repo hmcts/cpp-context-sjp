@@ -133,7 +133,7 @@ public class CaseAggregate implements Aggregate {
     /**
      * @deprecated The CaseMarkedReadyForDecision is raised from {@link CaseReadinessHandler#resolveCaseReadiness}
      */
-    @Deprecated
+    @Deprecated(forRemoval = true)
     public Stream<Object> markCaseReadyForDecision(final CaseReadinessReason readinessReason, final ZonedDateTime markedAt) {
         return apply(CaseCoreHandler.INSTANCE.markCaseReadyForDecision(readinessReason, markedAt, state));
     }
@@ -143,6 +143,7 @@ public class CaseAggregate implements Aggregate {
      * raised from {@link CaseReadinessHandler#resolveCaseReadiness}
      */
     @Deprecated
+    @SuppressWarnings("squid:MissingDeprecatedCheck")
     public Stream<Object> unmarkCaseReadyForDecision(final LocalDate expectedDateReady) {
         return apply(CaseCoreHandler.INSTANCE.unmarkCaseReadyForDecision(expectedDateReady, state));
     }

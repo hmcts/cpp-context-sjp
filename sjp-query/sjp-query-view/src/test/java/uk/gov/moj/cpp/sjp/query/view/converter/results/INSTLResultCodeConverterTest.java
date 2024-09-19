@@ -4,45 +4,42 @@ import static javax.json.Json.createArrayBuilder;
 import static javax.json.Json.createObjectBuilder;
 import static org.mockito.MockitoAnnotations.initMocks;
 
-import java.util.Arrays;
-import java.util.Collection;
-
+import java.util.stream.Stream;
 import javax.json.JsonArray;
 import javax.json.JsonObject;
 
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 
-@RunWith(Parameterized.class)
 public class INSTLResultCodeConverterTest extends ResultCodeConverterTest {
 
-    @Parameterized.Parameter()
     public String instalmentAmountTerminalEntry;
 
-    @Parameterized.Parameter(1)
     public String frequencyTerminalEntry;
 
-    @Parameterized.Parameter(2)
     public String startDateTerminalEntry;
 
-    @Parameterized.Parameters(name ="Terminal entries with value {0}, {1}, {2} should match to the same prompt values")
-    public static Collection<Object[]> data() {
-        return Arrays.asList(new Object[][] {
-                { "15", "monthly", "2016-02-28"},
-                { "25", "fortnightly", "2016-02-28"},
-                { "35", "weekly", "2016-02-28"},
-        });
+    static Stream<Arguments> data() {
+        return Stream.of(
+                Arguments.of( "15", "monthly", "2016-02-28"),
+                Arguments.of( "25", "fortnightly", "2016-02-28"),
+                Arguments.of("35", "weekly", "2016-02-28")
+        );
     }
 
-    @Before
+    @BeforeEach
     public void setUp() {
         initMocks(this);
     }
 
-    @Test
-    public void shouldConvertInstalmentsResult() {
+    @ParameterizedTest
+    @MethodSource("data")
+    public void shouldConvertInstalmentsResult(String instalmentAmountTerminalEntry, String frequencyTerminalEntry, String startDateTerminalEntry) {
+        this.instalmentAmountTerminalEntry = instalmentAmountTerminalEntry;
+        this.frequencyTerminalEntry = frequencyTerminalEntry;
+        this.startDateTerminalEntry = startDateTerminalEntry;
         super.testResultCode();
     }
 

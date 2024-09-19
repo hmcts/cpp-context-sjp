@@ -6,7 +6,8 @@ import org.apache.deltaspike.testcontrol.api.junit.CdiTestRunner;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import uk.gov.justice.services.test.utils.persistence.BaseTransactionalTest;
+import uk.gov.justice.services.test.utils.persistence.BaseTransactionalJunit4Test;
+import uk.gov.justice.services.test.utils.persistence.BaseTransactionalJunit4Test;
 import uk.gov.moj.cpp.sjp.domain.AssignmentCandidate;
 import uk.gov.moj.cpp.sjp.domain.CaseReadinessReason;
 import uk.gov.moj.cpp.sjp.domain.SessionType;
@@ -65,7 +66,7 @@ import static uk.gov.moj.cpp.sjp.domain.plea.PleaType.GUILTY_REQUEST_HEARING;
 import static uk.gov.moj.cpp.sjp.domain.plea.PleaType.NOT_GUILTY;
 
 @RunWith(CdiTestRunner.class)
-public class AssignmentRepositoryTest extends BaseTransactionalTest {
+public class AssignmentRepositoryTest extends BaseTransactionalJunit4Test {
 
     private static final ZonedDateTime TODAY_MIDNIGHT = ZonedDateTime.now(UTC).truncatedTo(ChronoUnit.DAYS);
     private final int NO_LIMIT = Integer.MAX_VALUE;

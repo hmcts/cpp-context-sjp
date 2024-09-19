@@ -33,15 +33,15 @@ import java.util.UUID;
 
 import javax.json.JsonObjectBuilder;
 
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class ReadyCaseListenerTest {
 
     private static final LocalDate POSTING_DATE = now().minusDays(15);
@@ -88,9 +88,6 @@ public class ReadyCaseListenerTest {
         setupAndMarkReadyForDecision(null);
         final UUID assigneeId = UUID.randomUUID();
         final ReadyCase readyCase = new ReadyCase(caseId, PIA, assigneeId, MAGISTRATE, 1, "TFL", POSTING_DATE, MARKED_AT_DATE);
-
-        when(readyCaseRepository.findBy(caseId)).thenReturn(readyCase);
-
 
         assertThat(readyCase.getReason(), equalTo(PIA));
         assertThat(readyCase.getCaseId(), equalTo(caseId));

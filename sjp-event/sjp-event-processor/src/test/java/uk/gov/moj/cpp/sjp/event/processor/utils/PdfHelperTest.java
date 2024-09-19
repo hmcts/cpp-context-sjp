@@ -2,12 +2,12 @@ package uk.gov.moj.cpp.sjp.event.processor.utils;
 
 import static org.apache.commons.io.FileUtils.readFileToByteArray;
 import static org.hamcrest.core.Is.is;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
 
 import java.io.File;
 import java.io.IOException;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 public class PdfHelperTest {
 

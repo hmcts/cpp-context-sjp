@@ -1,10 +1,11 @@
 package uk.gov.moj.cpp.sjp.command.api;
 
+import static java.util.Collections.singletonMap;
 import static java.util.UUID.randomUUID;
 import static javax.json.Json.createObjectBuilder;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertThat;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.verify;
 import static uk.gov.justice.services.core.annotation.Component.COMMAND_API;
@@ -22,17 +23,16 @@ import uk.gov.moj.cpp.accesscontrol.test.utils.BaseDroolsAccessControlTest;
 
 import java.util.Map;
 
-import com.google.common.collect.ImmutableMap;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.kie.api.runtime.ExecutionResults;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class RequestDeleteDocsApiTest extends BaseDroolsAccessControlTest {
 
     public static final String SJP_REQUEST_DELETE_DOCS = "sjp.request-delete-docs";
@@ -48,9 +48,13 @@ public class RequestDeleteDocsApiTest extends BaseDroolsAccessControlTest {
     @Mock
     private UserAndGroupProvider userAndGroupProvider;
 
+    public RequestDeleteDocsApiTest() {
+        super("COMMAND_API_SESSION");
+    }
+
     @Override
-    protected Map<Class, Object> getProviderMocks() {
-        return ImmutableMap.<Class, Object>builder().put(UserAndGroupProvider.class, userAndGroupProvider).build();
+    protected Map<Class<?>, Object> getProviderMocks() {
+        return singletonMap(UserAndGroupProvider.class, userAndGroupProvider);
     }
 
     @Test
@@ -66,7 +70,7 @@ public class RequestDeleteDocsApiTest extends BaseDroolsAccessControlTest {
     public void shouldHandleRequestDeleteDocsCommands() {
         assertThat(RequestDeleteDocsApi.class, isHandlerClass(COMMAND_API)
                 .with(method("requestDeleteDocs")
-                .thatHandles(SJP_REQUEST_DELETE_DOCS)));
+                        .thatHandles(SJP_REQUEST_DELETE_DOCS)));
     }
 
     @Test

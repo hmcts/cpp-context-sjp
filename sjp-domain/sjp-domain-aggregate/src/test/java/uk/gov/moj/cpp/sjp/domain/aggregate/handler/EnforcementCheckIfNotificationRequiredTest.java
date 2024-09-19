@@ -4,7 +4,7 @@ import static java.util.UUID.randomUUID;
 import static java.util.stream.Collectors.toList;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.mockito.Mockito.when;
 import static uk.gov.justice.json.schemas.domains.sjp.ApplicationStatus.STATUTORY_DECLARATION_PENDING;
 import static uk.gov.justice.json.schemas.domains.sjp.ApplicationType.STAT_DEC;
@@ -22,15 +22,14 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
 
-import junit.framework.TestCase;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 @SuppressWarnings("squid:S2187")
-@RunWith(MockitoJUnitRunner.class)
-public class EnforcementCheckIfNotificationRequiredTest extends TestCase {
+@ExtendWith(MockitoExtension.class)
+public class EnforcementCheckIfNotificationRequiredTest {
     private final CaseAggregateState caseAggregateState = new CaseAggregateState();
     // given
     final UUID caseId = randomUUID();
@@ -46,7 +45,7 @@ public class EnforcementCheckIfNotificationRequiredTest extends TestCase {
     @Mock
     private CourtApplication courtApplication;
 
-    @Before
+    @BeforeEach
     public void setUp() {
 
         caseAggregateState.setCaseId(caseId);

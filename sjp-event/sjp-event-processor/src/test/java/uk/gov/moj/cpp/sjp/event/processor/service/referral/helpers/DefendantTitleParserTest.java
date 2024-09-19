@@ -6,7 +6,7 @@ import static org.hamcrest.Matchers.isEmptyOrNullString;
 
 import uk.gov.moj.cpp.sjp.model.prosecution.helpers.DefendantTitleParser;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 
 public class DefendantTitleParserTest {

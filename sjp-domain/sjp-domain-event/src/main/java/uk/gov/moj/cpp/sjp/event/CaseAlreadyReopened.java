@@ -4,6 +4,8 @@ import uk.gov.justice.domain.annotation.Event;
 
 import java.util.UUID;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+
 /**
  * Event for rejecting reopening a case if it's already been reopened
  */
@@ -13,6 +15,7 @@ public class CaseAlreadyReopened {
     private final UUID caseId;
     private final String description;
 
+    @JsonCreator
     public CaseAlreadyReopened(UUID caseId, String description) {
         this.caseId = caseId;
         this.description = description;

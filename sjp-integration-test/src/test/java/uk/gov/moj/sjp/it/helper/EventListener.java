@@ -1,12 +1,15 @@
 package uk.gov.moj.sjp.it.helper;
 
+import static java.lang.String.format;
 import static java.util.Objects.isNull;
 import static java.util.Optional.ofNullable;
 import static java.util.stream.Collectors.toMap;
+import static org.apache.commons.lang3.StringUtils.isEmpty;
 import static uk.gov.justice.services.messaging.Envelope.envelopeFrom;
 import static uk.gov.moj.sjp.it.Constants.MESSAGE_QUEUE_TIMEOUT;
 import static uk.gov.moj.sjp.it.Constants.PRIVATE_ACTIVE_MQ_TOPIC;
 import static uk.gov.moj.sjp.it.Constants.PUBLIC_ACTIVE_MQ_TOPIC;
+import static uk.gov.moj.sjp.it.Constants.SJP_EVENT;
 
 import uk.gov.justice.domain.annotation.Event;
 import uk.gov.justice.services.messaging.DefaultJsonObjectEnvelopeConverter;
@@ -22,8 +25,6 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.Callable;
-
-import com.google.common.base.Strings;
 
 /**
  * EventListener
@@ -192,14 +193,18 @@ public class EventListener {
     }
 
     private String determineTopic(String eventName) {
-        if (Strings.isNullOrEmpty(eventName)) {
-            throw new RuntimeException("Event topic could not be determined");
+        if (isEmpty(eventName)) {
+            throw new RuntimeException("Event topic could not be determined. eventName empty.");
+        } else if (PUBLIC_ACTIVE_MQ_TOPIC.equals(eventName)) {
+            return PUBLIC_ACTIVE_MQ_TOPIC;
+        } else if (PRIVATE_ACTIVE_MQ_TOPIC.equals(eventName)) {
+            return PRIVATE_ACTIVE_MQ_TOPIC;
         } else if (eventName.startsWith("public")) {
             return PUBLIC_ACTIVE_MQ_TOPIC;
-        } else if (eventName.contains(PRIVATE_ACTIVE_MQ_TOPIC)) {
+        } else if (eventName.contains(SJP_EVENT)) {
             return PRIVATE_ACTIVE_MQ_TOPIC;
         } else {
-            throw new RuntimeException("Event topic could not be determined");
+            throw new RuntimeException(format("Event topic for %s could not be determined", eventName));
         }
     }
 

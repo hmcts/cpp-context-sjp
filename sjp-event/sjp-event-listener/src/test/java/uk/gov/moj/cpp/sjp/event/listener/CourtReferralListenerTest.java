@@ -5,7 +5,7 @@ import static java.time.ZonedDateTime.now;
 import static java.util.UUID.randomUUID;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.allOf;
-import static org.mockito.Matchers.anyObject;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.justice.services.core.annotation.Component.EVENT_LISTENER;
@@ -30,13 +30,13 @@ import java.time.ZonedDateTime;
 import java.util.UUID;
 
 import org.hamcrest.Matchers;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class CourtReferralListenerTest {
 
     private static final UUID CASE_ID = randomUUID();
@@ -169,11 +169,10 @@ public class CourtReferralListenerTest {
 
         final CaseCourtReferralStatus caseCourtReferralStatus = new CaseCourtReferralStatus(CASE_ID, URN, RECEIVED_AT);
 
-        when(caseCourtReferralStatusRepository.findBy(CASE_ID)).thenReturn(caseCourtReferralStatus);
         when(caseRepository.findBy(CASE_ID)).thenReturn(caseDetail);
         courtReferralListener.handleCaseReferredForCourtHearingV2(eventEnvelope);
 
-        verify(caseCourtReferralStatusRepository).save(anyObject());
+        verify(caseCourtReferralStatusRepository).save(any());
         verify(caseDetail).setReferredForCourtHearing(true);
     }
 }

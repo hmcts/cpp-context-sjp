@@ -2,6 +2,7 @@ package uk.gov.moj.sjp.it.test;
 
 import static java.util.Collections.singletonList;
 import static java.util.UUID.randomUUID;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static uk.gov.moj.cpp.sjp.domain.SessionType.DELEGATED_POWERS;
 import static uk.gov.moj.cpp.sjp.domain.SessionType.MAGISTRATE;
 import static uk.gov.moj.cpp.sjp.domain.plea.PleaType.GUILTY;
@@ -14,6 +15,7 @@ import static uk.gov.moj.sjp.it.model.ProsecutingAuthority.DVLA;
 import static uk.gov.moj.sjp.it.model.ProsecutingAuthority.TFL;
 import static uk.gov.moj.sjp.it.model.ProsecutingAuthority.TVL;
 import static uk.gov.moj.sjp.it.stub.AssignmentStub.stubGetEmptyAssignmentsByDomainObjectId;
+import static uk.gov.moj.sjp.it.stub.IdMapperStub.stubAddMapping;
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubDefaultCourtByCourtHouseOUCodeQuery;
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubEnforcementAreaByPostcode;
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubProsecutorQuery;
@@ -25,8 +27,9 @@ import com.google.common.collect.Sets;
 import java.time.LocalDate;
 import java.util.UUID;
 import org.apache.commons.lang3.tuple.Triple;
-import org.junit.Before;
-import org.junit.Test;
+import org.hamcrest.Matchers;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import uk.gov.moj.sjp.it.command.CreateCase;
 import uk.gov.moj.sjp.it.commandclient.AssignNextCaseClient;
 import uk.gov.moj.sjp.it.helper.EventListener;
@@ -42,7 +45,7 @@ public class FilterSessionByProsecutorIT extends BaseIntegrationTest{
 
     private final EventListener eventListener = new EventListener();
 
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
         final SjpDatabaseCleaner databaseCleaner = new SjpDatabaseCleaner();
         databaseCleaner.cleanAll();
@@ -89,7 +92,7 @@ public class FilterSessionByProsecutorIT extends BaseIntegrationTest{
         AssignNextCaseClient assignCase = AssignNextCaseClient.builder().sessionId(sessionId).build();
         assignCase.getExecutor().setExecutingUserId(userId).executeSync();
 
-        pollUntilCaseAssignedToUser(tflPleadedGuiltyCasePayloadBuilder.getId(), userId);
+        assertThat(pollUntilCaseAssignedToUser(tflPleadedGuiltyCasePayloadBuilder.getId(), userId), Matchers.is(true));
     }
 
     @Test
@@ -121,7 +124,7 @@ public class FilterSessionByProsecutorIT extends BaseIntegrationTest{
         AssignNextCaseClient assignCase = AssignNextCaseClient.builder().sessionId(sessionId).build();
         assignCase.getExecutor().setExecutingUserId(userId).executeSync();
 
-        pollUntilCaseNotAssignedToUser(tvlPleadedGuiltyCasePayloadBuilder.getId(), userId);
+        assertThat(pollUntilCaseNotAssignedToUser(tvlPleadedGuiltyCasePayloadBuilder.getId(), userId), Matchers.is(false));
 
     }
 
@@ -153,7 +156,7 @@ public class FilterSessionByProsecutorIT extends BaseIntegrationTest{
         AssignNextCaseClient assignCase = AssignNextCaseClient.builder().sessionId(sessionId).build();
         assignCase.getExecutor().setExecutingUserId(userId).executeSync();
 
-        pollUntilCaseAssignedToUser(tflPleadedNotGuiltyCasePayloadBuilder.getId(), userId);
+        assertThat(pollUntilCaseAssignedToUser(tflPleadedNotGuiltyCasePayloadBuilder.getId(), userId), Matchers.is(true));
     }
 
     @Test
@@ -185,7 +188,7 @@ public class FilterSessionByProsecutorIT extends BaseIntegrationTest{
         AssignNextCaseClient assignCase = AssignNextCaseClient.builder().sessionId(sessionId).build();
         assignCase.getExecutor().setExecutingUserId(userId).executeSync();
 
-        pollUntilCaseNotAssignedToUser(tvlPleadedNotGuiltyCasePayloadBuilder.getId(), userId);
+        assertThat(pollUntilCaseNotAssignedToUser(tvlPleadedNotGuiltyCasePayloadBuilder.getId(), userId), Matchers.is(false));
     }
 
     private static LocalDate daysAgo(int days) {

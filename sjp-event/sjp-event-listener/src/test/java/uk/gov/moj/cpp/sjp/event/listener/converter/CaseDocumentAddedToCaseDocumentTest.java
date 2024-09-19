@@ -2,7 +2,7 @@ package uk.gov.moj.cpp.sjp.event.listener.converter;
 
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsNull.notNullValue;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
 
 import uk.gov.justice.services.common.util.Clock;
 import uk.gov.justice.services.common.util.UtcClock;
@@ -11,12 +11,12 @@ import uk.gov.moj.cpp.sjp.event.CaseDocumentAdded;
 
 import java.util.UUID;
 
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class CaseDocumentAddedToCaseDocumentTest {
 
     private CaseDocumentAddedToCaseDocument converter;
@@ -27,7 +27,7 @@ public class CaseDocumentAddedToCaseDocumentTest {
     private UUID caseDocId = UUID.randomUUID();
     private UUID caseDocMaterialId = UUID.randomUUID();
 
-    @Before
+    @BeforeEach
     public void setup() {
         CaseDocument caseDocument = new CaseDocument(caseDocId, caseDocMaterialId, "SJPN", clock.now());
 

@@ -20,8 +20,8 @@ import uk.gov.moj.cpp.sjp.event.InterpreterUpdatedForDefendant;
 import java.util.List;
 import java.util.UUID;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 /**
  * Test for {@link CaseAggregate#updateHearingRequirements}
@@ -33,7 +33,7 @@ public class UpdateHearingRequirementsTest extends CaseAggregateBaseTest {
 
     private UUID userId;
 
-    @Before
+    @BeforeEach
     public void init() {
         userId = randomUUID();
     }

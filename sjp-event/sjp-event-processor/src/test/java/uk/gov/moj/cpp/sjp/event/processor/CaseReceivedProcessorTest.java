@@ -8,10 +8,10 @@ import static java.util.UUID.randomUUID;
 import static javax.json.Json.createObjectBuilder;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.eq;
+import static org.hamcrest.Matchers.allOf;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -28,8 +28,8 @@ import static uk.gov.moj.cpp.sjp.event.processor.EventProcessorConstants.DEFENDA
 import static uk.gov.moj.cpp.sjp.event.processor.EventProcessorConstants.DEFENDANT_ID;
 import static uk.gov.moj.cpp.sjp.event.processor.EventProcessorConstants.EXPECTED_DATE_READY;
 import static uk.gov.moj.cpp.sjp.event.processor.EventProcessorConstants.POSTING_DATE;
-import static uk.gov.moj.cpp.sjp.event.processor.EventProcessorConstants.URN;
 import static uk.gov.moj.cpp.sjp.event.processor.EventProcessorConstants.PROSECUTING_AUTHORITY;
+import static uk.gov.moj.cpp.sjp.event.processor.EventProcessorConstants.URN;
 
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
 import uk.gov.justice.services.core.sender.Sender;
@@ -49,17 +49,16 @@ import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
 import javax.json.JsonValue;
 
-import org.junit.Ignore;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class CaseReceivedProcessorTest {
 
     @InjectMocks
@@ -81,29 +80,29 @@ public class CaseReceivedProcessorTest {
     ReferenceDataService referenceDataService;
 
     @Spy
-    @InjectMocks
-    private JsonObjectToObjectConverter jsonObjectToObjectConverter= createJsonObjectToObjectConverter();
+    @SuppressWarnings("unused")
+    private JsonObjectToObjectConverter jsonObjectToObjectConverter = createJsonObjectToObjectConverter();
 
     @Test
     public void shouldResolveAOCPEligibilityWhenRefDataNotFound() throws IOException {
         final UUID caseId = randomUUID();
-        final String urn = randomUUID().toString().replace("-", "").toUpperCase().substring(0,13);
+        final String urn = randomUUID().toString().replace("-", "").toUpperCase().substring(0, 13);
         final LocalDate postingDate = now();
         final LocalDate expectedDateReady = now().plusDays(28);
 
         final JsonEnvelope privateEvent = createPayload(caseId, urn, postingDate, expectedDateReady, null, null);
 
         when(referenceDataService.getProsecutor(any(), any())).thenReturn(java.util.Optional.ofNullable((createObjectBuilder()
-                        .add("id", randomUUID().toString())
-                        .add("aocpApproved", true)
-                        .build())));
+                .add("id", randomUUID().toString())
+                .add("aocpApproved", true)
+                .build())));
         when(referenceDataService.getVictimSurcharges(any(), any(), eq("Fine"), eq("Adult"))).thenReturn(asList());
 
         caseReceivedProcessor.handleCaseReceivedEvent(privateEvent);
 
         verify(sender, times(2)).send(envelopeCaptor.capture());
 
-        final JsonEnvelope firstCommandEvent =  this.envelopeCaptor.getAllValues().get(0);
+        final JsonEnvelope firstCommandEvent = this.envelopeCaptor.getAllValues().get(0);
         assertThat(firstCommandEvent.metadata().name(), is(RESOLVE_CASE_AOCP_ELIGIBILITY));
         final JsonObject commandPayload = (JsonObject) firstCommandEvent.payload();
         assertThat(commandPayload.getString("caseId"), is(caseId.toString()));
@@ -116,11 +115,10 @@ public class CaseReceivedProcessorTest {
     }
 
 
-
     @Test
     public void shouldUpdateCaseStateAndResolveCaseAOCPEligibility() throws IOException {
         final UUID caseId = randomUUID();
-        final String urn = randomUUID().toString().replace("-", "").toUpperCase().substring(0,13);
+        final String urn = randomUUID().toString().replace("-", "").toUpperCase().substring(0, 13);
         final LocalDate postingDate = now();
         final LocalDate expectedDateReady = now().plusDays(28);
 
@@ -144,7 +142,7 @@ public class CaseReceivedProcessorTest {
 
         verify(sender, times(2)).send(envelopeCaptor.capture());
 
-        final JsonEnvelope firstCommandEvent =  this.envelopeCaptor.getAllValues().get(0);
+        final JsonEnvelope firstCommandEvent = this.envelopeCaptor.getAllValues().get(0);
         assertThat(firstCommandEvent.metadata().name(), is(RESOLVE_CASE_AOCP_ELIGIBILITY));
         final JsonObject commandPayload = (JsonObject) firstCommandEvent.payload();
         assertThat(commandPayload.getString("caseId"), is(caseId.toString()));
@@ -169,7 +167,7 @@ public class CaseReceivedProcessorTest {
     @Test
     public void shouldUpdateCaseStateAndResolveCaseAOCPEligibilityWhenSurchangeAmountIsNull() throws IOException {
         final UUID caseId = randomUUID();
-        final String urn = randomUUID().toString().replace("-", "").toUpperCase().substring(0,13);
+        final String urn = randomUUID().toString().replace("-", "").toUpperCase().substring(0, 13);
         final LocalDate postingDate = now();
         final LocalDate expectedDateReady = now().plusDays(28);
 
@@ -192,7 +190,7 @@ public class CaseReceivedProcessorTest {
 
         verify(sender, times(2)).send(envelopeCaptor.capture());
 
-        final JsonEnvelope firstCommandEvent =  this.envelopeCaptor.getAllValues().get(0);
+        final JsonEnvelope firstCommandEvent = this.envelopeCaptor.getAllValues().get(0);
         assertThat(firstCommandEvent.metadata().name(), is(RESOLVE_CASE_AOCP_ELIGIBILITY));
         final JsonObject commandPayload = (JsonObject) firstCommandEvent.payload();
         assertThat(commandPayload.getString("caseId"), is(caseId.toString()));
@@ -216,7 +214,7 @@ public class CaseReceivedProcessorTest {
     @Test
     public void shouldUpdateCaseStateAndResolveCaseAOCPEligibilityWhenMinAndMaxVictimSurchargeIsNull() throws IOException {
         final UUID caseId = randomUUID();
-        final String urn = randomUUID().toString().replace("-", "").toUpperCase().substring(0,13);
+        final String urn = randomUUID().toString().replace("-", "").toUpperCase().substring(0, 13);
         final LocalDate postingDate = now();
         final LocalDate expectedDateReady = now().plusDays(28);
 
@@ -241,7 +239,7 @@ public class CaseReceivedProcessorTest {
 
         verify(sender, times(2)).send(envelopeCaptor.capture());
 
-        final JsonEnvelope firstCommandEvent =  this.envelopeCaptor.getAllValues().get(0);
+        final JsonEnvelope firstCommandEvent = this.envelopeCaptor.getAllValues().get(0);
         assertThat(firstCommandEvent.metadata().name(), is(RESOLVE_CASE_AOCP_ELIGIBILITY));
         final JsonObject commandPayload = (JsonObject) firstCommandEvent.payload();
         assertThat(commandPayload.getString("caseId"), is(caseId.toString()));
@@ -266,7 +264,7 @@ public class CaseReceivedProcessorTest {
     @Test
     public void shouldResolveCaseAOCPEligibilityWhenDefendantIsOlderThan18YearsOld() {
         final UUID caseId = randomUUID();
-        final String urn = randomUUID().toString().replace("-", "").toUpperCase().substring(0,13);
+        final String urn = randomUUID().toString().replace("-", "").toUpperCase().substring(0, 13);
         final LocalDate postingDate = now();
         final LocalDate expectedDateReady = now().plusDays(28);
 
@@ -282,8 +280,8 @@ public class CaseReceivedProcessorTest {
         when(referenceDataService.getVictimSurcharges(any(), any(), eq("Fine"), eq("Adult"))).thenReturn(
                 asList(createObjectBuilder()
                         .add("surchargeAmountMin", surchargeAmountMin)
-                        .add("surchargeAmountMax",surchargeAmountMax)
-                        .add("surchargeFinePercentage",surchargeFinePercentage)
+                        .add("surchargeAmountMax", surchargeAmountMax)
+                        .add("surchargeFinePercentage", surchargeFinePercentage)
                         .add("surchargeAmount", JsonValue.NULL)
                         .build())
         );
@@ -292,7 +290,7 @@ public class CaseReceivedProcessorTest {
 
         verify(sender, times(2)).send(envelopeCaptor.capture());
 
-        final JsonEnvelope firstCommandEvent =  this.envelopeCaptor.getAllValues().get(0);
+        final JsonEnvelope firstCommandEvent = this.envelopeCaptor.getAllValues().get(0);
         assertThat(firstCommandEvent.metadata().name(), is(RESOLVE_CASE_AOCP_ELIGIBILITY));
         final JsonObject commandPayload = (JsonObject) firstCommandEvent.payload();
         assertThat(commandPayload.getString("caseId"), is(caseId.toString()));
@@ -307,7 +305,7 @@ public class CaseReceivedProcessorTest {
     @Test
     public void shouldResolveCaseAOCPEligibilityWhenDefendantIsYoungerThan18YearsOld() {
         final UUID caseId = randomUUID();
-        final String urn = randomUUID().toString().replace("-", "").toUpperCase().substring(0,13);
+        final String urn = randomUUID().toString().replace("-", "").toUpperCase().substring(0, 13);
         final LocalDate postingDate = now();
         final LocalDate expectedDateReady = now().plusDays(28);
 
@@ -332,7 +330,7 @@ public class CaseReceivedProcessorTest {
 
         verify(sender, times(2)).send(envelopeCaptor.capture());
 
-        final JsonEnvelope firstCommandEvent =  this.envelopeCaptor.getAllValues().get(0);
+        final JsonEnvelope firstCommandEvent = this.envelopeCaptor.getAllValues().get(0);
         assertThat(firstCommandEvent.metadata().name(), is(RESOLVE_CASE_AOCP_ELIGIBILITY));
         final JsonObject commandPayload = (JsonObject) firstCommandEvent.payload();
         assertThat(commandPayload.getString("caseId"), is(caseId.toString()));
@@ -347,7 +345,7 @@ public class CaseReceivedProcessorTest {
     @Test
     public void shouldResolveCaseAOCPEligibilityWhenDefendantIs18YearsOld() {
         final UUID caseId = randomUUID();
-        final String urn = randomUUID().toString().replace("-", "").toUpperCase().substring(0,13);
+        final String urn = randomUUID().toString().replace("-", "").toUpperCase().substring(0, 13);
         final LocalDate postingDate = now();
         final LocalDate expectedDateReady = now().plusDays(28);
 
@@ -364,8 +362,8 @@ public class CaseReceivedProcessorTest {
         when(referenceDataService.getVictimSurcharges(any(), any(), eq("Fine"), eq("Adult"))).thenReturn(
                 asList(createObjectBuilder()
                         .add("surchargeAmountMin", surchargeAmountMin)
-                        .add("surchargeAmountMax",surchargeAmountMax)
-                        .add("surchargeFinePercentage",surchargeFinePercentage)
+                        .add("surchargeAmountMax", surchargeAmountMax)
+                        .add("surchargeFinePercentage", surchargeFinePercentage)
                         .add("surchargeAmount", JsonValue.NULL)
                         .build())
         );
@@ -374,7 +372,7 @@ public class CaseReceivedProcessorTest {
 
         verify(sender, times(2)).send(envelopeCaptor.capture());
 
-        final JsonEnvelope firstCommandEvent =  this.envelopeCaptor.getAllValues().get(0);
+        final JsonEnvelope firstCommandEvent = this.envelopeCaptor.getAllValues().get(0);
         assertThat(firstCommandEvent.metadata().name(), is(RESOLVE_CASE_AOCP_ELIGIBILITY));
         final JsonObject commandPayload = (JsonObject) firstCommandEvent.payload();
         assertThat(commandPayload.getString("caseId"), is(caseId.toString()));
@@ -389,7 +387,7 @@ public class CaseReceivedProcessorTest {
     @Test
     public void shouldResolveCaseAOCPEligibilityWhenDefendantIsOrganization() {
         final UUID caseId = randomUUID();
-        final String urn = randomUUID().toString().replace("-", "").toUpperCase().substring(0,13);
+        final String urn = randomUUID().toString().replace("-", "").toUpperCase().substring(0, 13);
         final LocalDate postingDate = now();
         final LocalDate expectedDateReady = now().plusDays(28);
 
@@ -405,8 +403,8 @@ public class CaseReceivedProcessorTest {
         when(referenceDataService.getVictimSurcharges(any(), any(), eq("Fine"), eq("Organisation"))).thenReturn(
                 asList(createObjectBuilder()
                         .add("surchargeAmountMin", surchargeAmountMin)
-                        .add("surchargeAmountMax",surchargeAmountMax)
-                        .add("surchargeFinePercentage",surchargeFinePercentage)
+                        .add("surchargeAmountMax", surchargeAmountMax)
+                        .add("surchargeFinePercentage", surchargeFinePercentage)
                         .add("surchargeAmount", JsonValue.NULL)
                         .build())
         );
@@ -415,7 +413,7 @@ public class CaseReceivedProcessorTest {
 
         verify(sender, times(2)).send(envelopeCaptor.capture());
 
-        final JsonEnvelope firstCommandEvent =  this.envelopeCaptor.getAllValues().get(0);
+        final JsonEnvelope firstCommandEvent = this.envelopeCaptor.getAllValues().get(0);
         assertThat(firstCommandEvent.metadata().name(), is(RESOLVE_CASE_AOCP_ELIGIBILITY));
         final JsonObject commandPayload = (JsonObject) firstCommandEvent.payload();
         assertThat(commandPayload.getString("caseId"), is(caseId.toString()));

@@ -1,14 +1,14 @@
 package uk.gov.moj.cpp.sjp.event.processor;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.justice.core.courts.CourtApplication;
 import uk.gov.justice.core.courts.CourtApplicationType;
 import uk.gov.justice.core.courts.JudicialResult;
@@ -39,7 +39,7 @@ import static uk.gov.moj.cpp.sjp.event.processor.utils.ApplicationResult.G;
 import static uk.gov.moj.cpp.sjp.event.processor.utils.SjpApplicationTypes.APPEARANCE_TO_MAKE_STATUTORY_DECLARATION_SJP;
 
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class HearingResultedProcessorTest {
 
     @Mock
@@ -57,7 +57,7 @@ public class HearingResultedProcessorTest {
 
     final UUID caseId = randomUUID();
 
-    @Before
+    @BeforeEach
     public void setUp() {
         objectToJsonObjectConverter = new ObjectToJsonObjectConverter();
         jsonObjectConverter = new JsonObjectToObjectConverter();

@@ -1,11 +1,10 @@
 package uk.gov.moj.cpp.sjp.event.processor.service.enforcementnotification;
 
-import static java.time.ZonedDateTime.now;
 import static java.util.Optional.empty;
 import static java.util.Optional.of;
 import static org.hamcrest.CoreMatchers.is;
-import static org.junit.Assert.assertThat;
-import static org.mockito.Matchers.any;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
 import uk.gov.justice.json.schemas.domains.sjp.queries.CaseDecision;
@@ -16,16 +15,15 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Stream;
 
-import junit.framework.TestCase;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 @SuppressWarnings("squid:S2187")
-public class LastDecisionHelperTest extends TestCase {
+public class LastDecisionHelperTest {
 
     @Mock
     private CaseDecision lastDecision;
@@ -45,8 +43,6 @@ public class LastDecisionHelperTest extends TestCase {
     @Test
     public void shouldReturnLastDecision() {
         when(caseDetails.getCaseDecisions()).thenReturn(caseDecisions);
-        when(caseDecisions.get(0)).thenReturn(lastDecision);
-        when(lastDecision.getSavedAt()).thenReturn(now());
         when(caseDecisions.stream()).thenReturn(streamOfCaseDecisions);
         final Optional<CaseDecision> lastDecision1 = of(this.lastDecision);
         when(streamOfCaseDecisions.max(any())).thenReturn(lastDecision1);
@@ -57,10 +53,7 @@ public class LastDecisionHelperTest extends TestCase {
     @Test
     public void shouldReturnNoLastDecision() {
         when(caseDetails.getCaseDecisions()).thenReturn(new ArrayList());
-        when(lastDecision.getSavedAt()).thenReturn(now());
-        when(caseDecisions.stream()).thenReturn(streamOfCaseDecisions);
         final Optional<CaseDecision> lastDecision1 = of(this.lastDecision);
-        when(streamOfCaseDecisions.max(any())).thenReturn(lastDecision1);
         final Optional<CaseDecision> caseDecisionOpt = lastDecisionHelper.getLastDecision(caseDetails);
         assertThat(caseDecisionOpt, is(empty()));
     }

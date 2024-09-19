@@ -3,7 +3,7 @@ package uk.gov.moj.cpp.sjp.event.listener;
 import static java.time.ZonedDateTime.now;
 import static java.util.UUID.randomUUID;
 import static javax.json.Json.createObjectBuilder;
-import static org.mockito.Matchers.any;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.justice.services.messaging.JsonEnvelope.metadataBuilder;
@@ -25,16 +25,16 @@ import uk.gov.moj.cpp.sjp.persistence.repository.OnlinePleaRepository;
 import java.util.UUID;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.mockito.Spy;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class OnlinePleaReceivedListenerTest {
 
     @Mock
@@ -57,7 +57,7 @@ public class OnlinePleaReceivedListenerTest {
     @InjectMocks
     private OnlinePleaReceivedListener onlinePleaReceivedListener;
 
-    @Before
+    @BeforeEach
     public void setup() {
         MockitoAnnotations.initMocks(this);
     }
@@ -85,18 +85,6 @@ public class OnlinePleaReceivedListenerTest {
         caseDetail.setId(caseId);
 
         when(caseRepository.findBy(caseId)).thenReturn(caseDetail);
-        final Address address = new Address("test", "test1", "test2", "test3", "test4", "OX4 3ED");
-        final ContactDetails contactDetails = new ContactDetails("01885654327", "018856443222", "12388383", "criminal@criminal.com", null);
-
-
-        final PleadOnline pleadOnline = new PleadOnline(caseDetail.getDefendant().getId(), null,
-                null, null, null, null,
-                null, null, null, null,
-                null, null, null, null,
-                LegalEntityDefendant.legalEntityDefendant().withAdddres(address).withContactDetails(contactDetails).withPosition(null).withName("test").build(),
-                null
-        );
-        when(jsonObjectToObjectConverter.convert(event.payloadAsJsonObject(), PleadOnline.class)).thenReturn(pleadOnline);
 
         onlinePleaReceivedListener.onlinePleaReceived(event);
 

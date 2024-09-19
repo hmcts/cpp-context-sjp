@@ -13,7 +13,7 @@ import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.text.MatchesPattern.matchesPattern;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static uk.gov.justice.json.schemas.domains.sjp.NoteType.ADJOURNMENT;
 import static uk.gov.justice.json.schemas.domains.sjp.NoteType.CASE;
 import static uk.gov.justice.json.schemas.domains.sjp.NoteType.CASE_MANAGEMENT;
@@ -37,8 +37,8 @@ import java.util.UUID;
 
 import javax.json.JsonObject;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 public class CaseNotesIT extends BaseIntegrationTest {
 
@@ -46,7 +46,7 @@ public class CaseNotesIT extends BaseIntegrationTest {
     private UUID caseId, decisionId;
     private User legalAdviser, courtAdmin, prosecutor;
 
-    @Before
+    @BeforeEach
     public void setUp() {
         caseId = randomUUID();
         decisionId = randomUUID();

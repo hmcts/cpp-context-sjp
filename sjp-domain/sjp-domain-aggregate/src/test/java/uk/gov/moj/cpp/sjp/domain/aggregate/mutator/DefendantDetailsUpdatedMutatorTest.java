@@ -1,6 +1,6 @@
 package uk.gov.moj.cpp.sjp.domain.aggregate.mutator;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import uk.gov.moj.cpp.sjp.domain.Address;
 import uk.gov.moj.cpp.sjp.domain.aggregate.state.CaseAggregateState;
 import uk.gov.moj.cpp.sjp.event.DefendantDetailsUpdated;
@@ -8,7 +8,7 @@ import uk.gov.moj.cpp.sjp.event.DefendantDetailsUpdated;
 import java.time.LocalDate;
 
 import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
 
 public class DefendantDetailsUpdatedMutatorTest {
 

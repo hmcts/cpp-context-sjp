@@ -2,12 +2,12 @@ package uk.gov.moj.cpp.sjp.query.accesscontrol;
 
 import static uk.gov.moj.cpp.sjp.query.api.RuleConstants.getQueryFinancialMeansActionGroups;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 public class FinancialMeansTest extends SjpDroolsAccessControlTest {
 
     public FinancialMeansTest() {
-        super("sjp.query.financial-means", getQueryFinancialMeansActionGroups());
+        super("QUERY_API_SESSION", "sjp.query.financial-means", getQueryFinancialMeansActionGroups());
     }
 
     @Test

@@ -3,7 +3,7 @@ package uk.gov.moj.cpp.sjp.domain.aggregate.handler;
 import static java.util.UUID.randomUUID;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.beans.SamePropertyValuesAs.samePropertyValuesAs;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
 
 import uk.gov.moj.cpp.sjp.domain.Address;
 import uk.gov.moj.cpp.sjp.domain.Benefits;
@@ -23,11 +23,11 @@ import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class UpdateAllFinancialMeansHandlerTest {
 
     final private UpdateAllFinancialMeansAggregateHandler updateAllFinancialMeansHandler = UpdateAllFinancialMeansAggregateHandler.INSTANCE;

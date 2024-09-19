@@ -8,7 +8,7 @@ import static java.util.Collections.singletonList;
 import static java.util.Collections.singletonMap;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static uk.gov.justice.json.schemas.domains.sjp.command.FinancialMeans.financialMeans;
 import static uk.gov.justice.json.schemas.domains.sjp.command.Plea.GUILTY;
 import static uk.gov.justice.json.schemas.domains.sjp.command.Plea.NOT_GUILTY;
@@ -17,6 +17,10 @@ import static uk.gov.moj.cpp.sjp.domain.common.CaseStatus.COMPLETED;
 import static uk.gov.moj.cpp.sjp.domain.common.CaseStatus.NO_PLEA_RECEIVED_READY_FOR_DECISION;
 import static uk.gov.moj.cpp.sjp.domain.common.CaseStatus.REFERRED_FOR_COURT_HEARING;
 
+import java.util.stream.Stream;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 import uk.gov.justice.json.schemas.domains.sjp.command.Benefits;
 import uk.gov.justice.json.schemas.domains.sjp.command.FinancialMeans;
 import uk.gov.justice.json.schemas.domains.sjp.command.Frequency;
@@ -40,13 +44,12 @@ import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
 
 import org.hamcrest.Matcher;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameter;
 import org.junit.runners.Parameterized.Parameters;
 
-@RunWith(Parameterized.class)
 public class PleadOnlineValidatorTest {
 
     private static final Map<String, List<String>> ERROR_MISSING_FINANCIAL_MEANS = singletonMap("FinancialMeansRequiredWhenPleadingGuilty", singletonList("Financial Means are required when you are pleading GUILTY"));
@@ -61,38 +64,28 @@ public class PleadOnlineValidatorTest {
 
     private PleadOnlineValidator validatorUnderTest = new PleadOnlineValidator();
 
-    @Parameter(0)
-    public Plea inputPleaType;
-
-    @Parameter(1)
-    public FinancialMeans inputFinancialMeans;
-
-    @Parameter(2)
-    public Matcher<Map<String, List<String>>> expectedErrors;
-
-    @Parameters(name = "PleaOnline as {0} with FinancialMeans={1} will give errors={2}")
-    public static Collection<Object[]> data() {
-        return asList(new Object[][]{
-                {
+    static Stream<Arguments> data() {
+        return Stream.of(
+                Arguments.of(
                         GUILTY,
                         null,
                         equalTo(ERROR_MISSING_FINANCIAL_MEANS)
-                },
-                {
+                ),
+                Arguments.of(
                         GUILTY,
                         financialMeans().build(),
                         equalTo(ERROR_MISSING_FINANCIAL_MEANS)
-                },
-                {
+                ),
+                Arguments.of(
                         GUILTY,
                         financialMeans()
                                 // .withoutBenefits
                                 .withEmploymentStatus("EMPLOYED")
                                 .withIncome(new Income(BigDecimal.TEN, Frequency.FORTNIGHTLY))
                                 .build(),
-                        equalTo(ERROR_MISSING_FINANCIAL_MEANS),
-                },
-                {
+                        equalTo(ERROR_MISSING_FINANCIAL_MEANS)
+                ),
+                Arguments.of(
                         GUILTY,
                         financialMeans()
                                 .withBenefits(new Benefits(true, true, "Universal Credit"))
@@ -100,8 +93,8 @@ public class PleadOnlineValidatorTest {
                                 .withIncome(new Income(BigDecimal.TEN, Frequency.FORTNIGHTLY))
                                 .build(),
                         equalTo(ERROR_MISSING_FINANCIAL_MEANS)
-                },
-                {
+                ),
+                Arguments.of(
                         GUILTY,
                         financialMeans()
                                 .withBenefits(new Benefits(true, true, "Universal Credit"))
@@ -110,10 +103,10 @@ public class PleadOnlineValidatorTest {
                                 .build(),
 
                         equalTo(ERROR_MISSING_FINANCIAL_MEANS)
-                },
+                ),
 
                 // POSITIVE SCENARIO - GUILTY
-                {
+                Arguments.of(
                         GUILTY,
                         financialMeans()
                                 .withBenefits(new Benefits(true, true, "Universal Credit"))
@@ -121,25 +114,25 @@ public class PleadOnlineValidatorTest {
                                 .withIncome(new Income(BigDecimal.TEN, Frequency.FORTNIGHTLY))
                                 .build(),
                         is(emptyMap())
-                },
+                ),
 
                 // POSITIVE SCENARIO - NON_GUILTY
-                {
+                Arguments.of(
                         NOT_GUILTY,
                         financialMeans().build(),
                         is(emptyMap())
-                },
-                {
+                ),
+                Arguments.of(
                         NOT_GUILTY,
                         null,
                         is(emptyMap())
-                },
-
-        });
+                )
+        );
     }
 
-    @Test
-    public void shouldFailValidationWhenPleaGuiltyWithoutFinances() {
+    @ParameterizedTest
+    @MethodSource("data")
+    public void shouldFailValidationWhenPleaGuiltyWithoutFinances(Plea inputPleaType, FinancialMeans inputFinancialMeans, Matcher<Map<String, List<String>>> expectedErrors) {
         final PleadOnline pleadOnline = buildPleadOnline(inputPleaType, inputFinancialMeans);
 
         final Map<String, List<String>> validate = validatorUnderTest.validate(pleadOnline);

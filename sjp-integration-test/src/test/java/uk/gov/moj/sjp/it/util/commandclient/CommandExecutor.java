@@ -4,6 +4,7 @@ import static java.lang.String.format;
 import static org.apache.commons.lang3.StringUtils.isEmpty;
 import static uk.gov.moj.sjp.it.Constants.PRIVATE_ACTIVE_MQ_TOPIC;
 import static uk.gov.moj.sjp.it.Constants.PUBLIC_ACTIVE_MQ_TOPIC;
+import static uk.gov.moj.sjp.it.Constants.SJP_EVENT;
 
 import uk.gov.justice.services.common.converter.jackson.ObjectMapperProducer;
 import uk.gov.justice.services.common.http.HeaderConstants;
@@ -202,7 +203,7 @@ public class CommandExecutor {
             ListenerConfig listenerConfig = listenerConfigs.get(config.key());
             final long timeout = listenerConfig != null ? listenerConfig.timeout() : Constants.MESSAGE_QUEUE_TIMEOUT;
             final ListeningStrategy until = listenerConfig != null ? listenerConfig.until() : ListeningStrategy.UNTIL_RECEIVAL;
-            EventListener listener = new EventListener(config.topic(), Arrays.asList(config.events()), timeout, until, this.correlationId);
+            EventListener listener = new EventListener(determineTopic(config.topic()), Arrays.asList(config.events()), timeout, until, this.correlationId);
             this.listeners.put(config.key(), listener);
         });
     }
@@ -339,10 +340,14 @@ public class CommandExecutor {
 
     private static String determineTopic(String eventName) {
         if (isEmpty(eventName)) {
-            throw new RuntimeException(format("Event topic for %s could not be determined", eventName));
+            throw new RuntimeException("Event topic could not be determined. eventName empty.");
+        } else if (PUBLIC_ACTIVE_MQ_TOPIC.equals(eventName)) {
+            return PUBLIC_ACTIVE_MQ_TOPIC;
+        } else if (PRIVATE_ACTIVE_MQ_TOPIC.equals(eventName)) {
+            return PRIVATE_ACTIVE_MQ_TOPIC;
         } else if (eventName.startsWith("public")) {
             return PUBLIC_ACTIVE_MQ_TOPIC;
-        } else if (eventName.contains(PRIVATE_ACTIVE_MQ_TOPIC)) {
+        } else if (eventName.contains(SJP_EVENT)) {
             return PRIVATE_ACTIVE_MQ_TOPIC;
         } else {
             throw new RuntimeException(format("Event topic for %s could not be determined", eventName));

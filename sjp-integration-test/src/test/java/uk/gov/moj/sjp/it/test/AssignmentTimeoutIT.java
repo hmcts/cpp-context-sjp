@@ -3,6 +3,7 @@ package uk.gov.moj.sjp.it.test;
 import static java.time.LocalDate.now;
 import static java.util.UUID.randomUUID;
 import static org.codehaus.groovy.runtime.InvokerHelper.asList;
+import static uk.gov.moj.sjp.it.Constants.PRIVATE_ACTIVE_MQ_TOPIC;
 import static uk.gov.moj.sjp.it.helper.AssignmentHelper.assertCaseUnassigned;
 import static uk.gov.moj.sjp.it.helper.AssignmentHelper.requestCaseAssignment;
 import static uk.gov.moj.sjp.it.model.ProsecutingAuthority.DVLA;
@@ -32,8 +33,8 @@ import uk.gov.moj.sjp.it.util.SjpDatabaseCleaner;
 import java.util.UUID;
 
 import com.google.common.collect.Sets;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 public class AssignmentTimeoutIT extends BaseIntegrationTest {
 
@@ -48,7 +49,7 @@ public class AssignmentTimeoutIT extends BaseIntegrationTest {
     private static final String NATIONAL_COURT_CODE = "1080";
 
 
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
         databaseCleaner.cleanViewStore();
 
@@ -87,7 +88,7 @@ public class AssignmentTimeoutIT extends BaseIntegrationTest {
 
     private static void createCaseAndWaitUntilReady(final UUID caseId, final UUID offenceId) {
         try (final MessageConsumerClient messageConsumerClient = new MessageConsumerClient()) {
-            messageConsumerClient.startConsumer(CaseMarkedReadyForDecision.EVENT_NAME, "sjp.event");
+            messageConsumerClient.startConsumer(CaseMarkedReadyForDecision.EVENT_NAME, PRIVATE_ACTIVE_MQ_TOPIC);
             CreateCase.createCaseForPayloadBuilder(createCasePayloadBuilder);
             messageConsumerClient.retrieveMessage();
         }

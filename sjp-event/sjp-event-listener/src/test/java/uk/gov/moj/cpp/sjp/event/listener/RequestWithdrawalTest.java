@@ -2,7 +2,7 @@ package uk.gov.moj.cpp.sjp.event.listener;
 
 import static java.util.Arrays.asList;
 import static org.hamcrest.Matchers.equalTo;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.mockito.Mockito.when;
 
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
@@ -19,15 +19,15 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.UUID;
 
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class RequestWithdrawalTest {
 
     @Spy
@@ -47,7 +47,7 @@ public class RequestWithdrawalTest {
 
     private UUID caseId;
 
-    @Before
+    @BeforeEach
     public void setup() throws NoSuchFieldException, IllegalAccessException {
 
         this.caseId = UUID.randomUUID();
@@ -55,13 +55,9 @@ public class RequestWithdrawalTest {
         final DefendantDetail defendantDetail = new DefendantDetail();
         final CaseDetail caseDetail = new CaseDetail();
         caseDetail.setDefendant(defendantDetail);
-        when(caseRepository.findBy(caseId)).thenReturn(caseDetail);
-
-        when(searchResultRepository.findByCaseId(caseId))
-                .thenReturn(asList(caseSearchResult));
 
         // Super class because the converter is modified by mockito so it does not have this field
-        final Class<?> aClass = jsonObjectToObjectConverter.getClass().getSuperclass();
+        final Class<?> aClass = jsonObjectToObjectConverter.getClass();
 
         final Field objectMapperField = aClass.getDeclaredField("objectMapper");
         objectMapperField.setAccessible(true);

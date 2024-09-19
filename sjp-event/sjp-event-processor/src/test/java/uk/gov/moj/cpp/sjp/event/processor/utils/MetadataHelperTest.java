@@ -3,8 +3,8 @@ package uk.gov.moj.cpp.sjp.event.processor.utils;
 import static javax.json.Json.createObjectBuilder;
 import static org.apache.commons.lang3.RandomStringUtils.randomAlphanumeric;
 import static org.hamcrest.core.Is.is;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertThat;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static uk.gov.justice.services.messaging.JsonEnvelope.METADATA;
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
 import static uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderFactory.metadataWithRandomUUID;
@@ -16,15 +16,15 @@ import java.util.Optional;
 
 import javax.json.JsonObject;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 public class MetadataHelperTest {
     private JsonObject payload;
     private Metadata metadata;
     private MetadataHelper metadataHelper;
 
-    @Before
+    @BeforeEach
     public void setup() {
         metadata = metadataWithRandomUUID("test-name").build();
         payload = createObjectBuilder()

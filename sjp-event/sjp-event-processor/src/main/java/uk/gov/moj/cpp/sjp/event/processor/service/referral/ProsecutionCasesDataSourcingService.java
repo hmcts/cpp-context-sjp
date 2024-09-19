@@ -33,6 +33,7 @@ import java.util.stream.Collectors;
 import static java.util.Collections.emptyList;
 import static javax.json.Json.createObjectBuilder;
 
+@SuppressWarnings("squid:S107")
 public class ProsecutionCasesDataSourcingService {
 
     @Inject
@@ -119,6 +120,7 @@ public class ProsecutionCasesDataSourcingService {
                 emptyEnvelopeWithReferralEventMetadata);
     }
 
+    @SuppressWarnings({"squid:S6204"})
     private List<Offence> getReferredOffences(
             final List<OffenceDecisionInformation> referredOffencesWithVerdict,
             final CaseDetails caseDetails) {
@@ -132,7 +134,7 @@ public class ProsecutionCasesDataSourcingService {
                 .stream()
                 .filter(offence -> offenceMap.containsKey(offence.getId()))
                 .map(offence -> checkAndAddVerdictInOffence(offence, offenceMap))
-                .collect(Collectors.toList());
+                .toList();
     }
 
     private Set<String> getOffenceCodes(final List<Offence> referredOffences) {

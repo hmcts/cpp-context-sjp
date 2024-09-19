@@ -1,6 +1,6 @@
 package uk.gov.moj.cpp.sjp.domain.aggregate.handler;
 
-import static org.apache.commons.lang.BooleanUtils.isTrue;
+import static org.apache.commons.lang3.BooleanUtils.isTrue;
 import static uk.gov.moj.cpp.sjp.domain.aggregate.handler.HandlerUtils.createRejectionEvents;
 import static uk.gov.moj.cpp.sjp.domain.plea.PleaMethod.ONLINE;
 

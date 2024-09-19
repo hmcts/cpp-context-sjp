@@ -4,7 +4,7 @@ import static java.util.Optional.of;
 import static java.util.UUID.fromString;
 import static java.util.UUID.randomUUID;
 import static org.hamcrest.CoreMatchers.is;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.mockito.Answers.RETURNS_DEEP_STUBS;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -35,27 +35,25 @@ import uk.gov.moj.cpp.sjp.event.CaseApplicationRecorded;
 import uk.gov.moj.cpp.sjp.event.processor.service.SjpService;
 
 import java.time.LocalDate;
-import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Stream;
 
 import javax.json.JsonObject;
 
-import junit.framework.TestCase;
 import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 @SuppressWarnings("squid:S2187")
-public class EnforcementNotificationServiceTest extends TestCase {
+public class EnforcementNotificationServiceTest {
     static final String CASE_APPLICATION_RECORDED_PUBLIC_EVENT = "public.sjp.case-application-recorded";
     static final String ENFORCEMENT_PENDING_APPLICATION_INITIATE_NOTIFICATION_COMMAND = "sjp.command.enforcement-pending-application-check-requires-notification";
     private static final UUID APPLICATION_ID = randomUUID();
@@ -132,26 +130,11 @@ public class EnforcementNotificationServiceTest extends TestCase {
         setField(jsonObjectToObjectConverter, "objectMapper", new ObjectMapperProducer().objectMapper());
 
         when(defendant.getPersonalDetails().getAddress().getPostcode()).thenReturn(POST_CODE);
-        when(defendant.getPersonalDetails().getFirstName()).thenReturn(FIRST_NAME);
-        when(defendant.getPersonalDetails().getLastName()).thenReturn(LAST_NAME);
-        when(defendant.getGobAccountNumber()).thenReturn(GOB_ACCOUNT_NUMBER);
-        when(enforcementAreaEmailHelper.enforcementEmail(privateEvent,caseDetails,POST_CODE)).thenReturn("enforcement@email.com");
-        when(lastDecisionHelper.getLastDecision(caseDetails)).thenReturn(of(lastDecision));
-        when(lastDecision.getFinancialImposition()).thenReturn(queryFinancialImposition);
         when(divisionCodeHelper.divisionCode(privateEvent, caseDetails, POST_CODE)).thenReturn(DIVISION_CODE);
         when(caseDetails.getDefendant()).thenReturn(defendant);
-        when(caseDetails.getCaseApplication().getApplicationType()).thenReturn(ApplicationType.STAT_DEC);
-        when(caseDetails.getCaseApplication().getApplicationId()).thenReturn(APPLICATION_ID);
-        when(caseDetails.getCaseApplication().getDateReceived()).thenReturn(APPLICATION_RECEIVED_DATE);
         when(caseDetails.getCaseDecisions()).thenReturn(caseDecisions);
-        when(caseDetails.getUrn()).thenReturn(URN);
 
         when(sjpService.getCaseDetails(CASE_ID, privateEvent)).thenReturn(caseDetails);
-        when(caseDecisions.get(0)).thenReturn(lastDecision);
-        when(caseDecisions.stream()).thenReturn(streamOfCaseDecisions);
-        when(lastDecision.getSavedAt()).thenReturn(ZonedDateTime.now());
-        when(lastDecision.getFinancialImposition()).thenReturn(queryFinancialImposition);
-        when(jsonObjectToObjectConverter.convert(jsonObject, CaseApplicationRecorded.class)).thenReturn(caseApplicationRecorded);
 
         enforcementNotificationService.checkIfEnforcementToBeNotified(CASE_ID, privateEvent);
         verify(sender).send(captor.capture());

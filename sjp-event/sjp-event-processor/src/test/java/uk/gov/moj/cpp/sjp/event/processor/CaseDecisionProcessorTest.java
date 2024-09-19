@@ -7,7 +7,7 @@ import static javax.json.Json.createObjectBuilder;
 import static org.hamcrest.core.AllOf.allOf;
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.mockito.Matchers.any;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -23,6 +23,7 @@ import uk.gov.justice.services.core.featurecontrol.FeatureControlGuard;
 import uk.gov.justice.services.core.sender.Sender;
 import uk.gov.justice.services.messaging.Envelope;
 import uk.gov.justice.services.messaging.JsonEnvelope;
+import uk.gov.justice.services.messaging.spi.DefaultEnvelope;
 import uk.gov.moj.cpp.sjp.event.processor.results.converter.SjpToHearingConverter;
 import uk.gov.moj.cpp.sjp.event.processor.service.SjpService;
 
@@ -34,16 +35,16 @@ import java.util.function.Function;
 
 import javax.json.JsonValue;
 
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class CaseDecisionProcessorTest {
 
     @Mock
@@ -55,7 +56,7 @@ public class CaseDecisionProcessorTest {
     @Mock
     private SjpService sjpService;
 
-    final JsonEnvelope jsonEnvelope = mock(JsonEnvelope.class);
+    final DefaultEnvelope jsonEnvelope = mock(DefaultEnvelope.class);
 
     @Mock
     protected Function function;
@@ -73,7 +74,7 @@ public class CaseDecisionProcessorTest {
     private CaseDecisionProcessor caseDecisionProcessor;
 
     @Captor
-    private ArgumentCaptor<JsonEnvelope> jsonEnvelopeCaptor;
+    private ArgumentCaptor<DefaultEnvelope> jsonEnvelopeCaptor;
 
     @Captor
     private ArgumentCaptor<Envelope> envelopeCaptor;
@@ -84,13 +85,6 @@ public class CaseDecisionProcessorTest {
     private static final String PUBLIC_EVENTS_HEARING_RESULTED = "public.events.hearing.hearing-resulted";
     private static final String PRIVATE_CASE_DECISION_SAVED_EVENT = "sjp.events.decision-saved";
     public static final String UNDO_RESERVE_CASE_TIMER_COMMAND = "sjp.command.undo-reserve-case";
-
-    @Before
-    public void setUp() {
-        when(sjpService.getCaseDetails(any(), any())).thenReturn(buildCaseDetails());
-        when(enveloper.withMetadataFrom(any(), any())).thenReturn(function);
-        when(function.apply(any())).thenReturn(jsonEnvelope);
-    }
 
     @Test
     public void shouldHandleCaseDecisionSaved() {
@@ -137,7 +131,7 @@ public class CaseDecisionProcessorTest {
 
         verify(sender, times(2)).send(jsonEnvelopeCaptor.capture());
 
-        final List<JsonEnvelope> eventEnvelopes = jsonEnvelopeCaptor.getAllValues();
+        final List<DefaultEnvelope> eventEnvelopes = jsonEnvelopeCaptor.getAllValues();
         final Envelope<JsonValue> decisionSavedPublicEvent = eventEnvelopes.get(0);
 
         assertThat(decisionSavedPublicEvent.metadata(),
@@ -160,7 +154,7 @@ public class CaseDecisionProcessorTest {
                         withJsonPath("offenceDecisions[1].verdict", is(verdict))
                 )));
 
-        final Envelope<JsonValue> hearingResultedPublicEvent = eventEnvelopes.get(1);
+        final Envelope hearingResultedPublicEvent = eventEnvelopes.get(1);
 
         assertThat(hearingResultedPublicEvent.metadata(),
                 withMetadataEnvelopedFrom(privateEvent)
@@ -178,6 +172,9 @@ public class CaseDecisionProcessorTest {
 
     @Test
     public void shouldCallSetPleasWhenCaseDecisionSavedIsSetAside() {
+        when(sjpService.getCaseDetails(any(), any())).thenReturn(buildCaseDetails());
+        when(enveloper.withMetadataFrom(any(), any())).thenReturn(function);
+        when(function.apply(any())).thenReturn(jsonEnvelope);
         final UUID caseId = randomUUID();
         final String urn = "TFL12345567";
         final UUID decisionId = randomUUID();
@@ -254,13 +251,11 @@ public class CaseDecisionProcessorTest {
                                                 .add("verdict", verdict))
                         ).build());
 
-        when(sjpToHearingConverter.convertCaseDecision(privateEvent)).thenReturn(publicHearingResultedPayload);
-
         caseDecisionProcessor.handleCaseDecisionSaved(privateEvent);
 
         verify(sender, times(1)).send(jsonEnvelopeCaptor.capture());
 
-        final List<JsonEnvelope> eventEnvelopes = jsonEnvelopeCaptor.getAllValues();
+        final List<DefaultEnvelope> eventEnvelopes = jsonEnvelopeCaptor.getAllValues();
         final Envelope<JsonValue> decisionSavedPublicEvent = eventEnvelopes.get(0);
 
         assertThat(decisionSavedPublicEvent.metadata(),

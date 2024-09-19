@@ -54,8 +54,8 @@ import javax.json.JsonString;
 import org.hamcrest.CoreMatchers;
 import org.hamcrest.Matcher;
 import org.json.JSONObject;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 @SuppressWarnings({"squid:S1607"})
 public class PressTransparencyReportIT extends BaseIntegrationTest {
@@ -73,7 +73,7 @@ public class PressTransparencyReportIT extends BaseIntegrationTest {
     private PressTransparencyReportHelper pressTransparencyReportHelper = new PressTransparencyReportHelper();
     private final EventListener eventListener = new EventListener();
 
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
         resetAllRequests();
         new SjpDatabaseCleaner().cleanViewStore();

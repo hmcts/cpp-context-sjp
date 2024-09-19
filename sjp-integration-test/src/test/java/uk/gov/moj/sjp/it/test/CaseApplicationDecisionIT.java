@@ -90,8 +90,8 @@ import java.util.UUID;
 
 import com.google.common.collect.Sets;
 import org.hamcrest.Matchers;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 public class CaseApplicationDecisionIT extends BaseIntegrationTest {
 
@@ -123,7 +123,7 @@ public class CaseApplicationDecisionIT extends BaseIntegrationTest {
     private static final String STAT_DEC_TYPE_CODE = "MC80528";
     private static final String APP_STATUS = "DRAFT";
 
-    @Before
+    @BeforeEach
     public void setUp() throws SQLException {
         caseId = randomUUID();
         offenceId = randomUUID();
@@ -205,7 +205,7 @@ public class CaseApplicationDecisionIT extends BaseIntegrationTest {
                 PUBLIC_SJP_APPLICATION_DECISION_SET_ASIDE,
                 PUBLIC_EVENTS_HEARING_HEARING_RESULTED
         ).run(() -> saveApplicationDecision(USER.getUserId(), caseId, appId, sessionId2,
-                        true, false,null, null));
+                true, false, null, null));
 
         final Optional<JsonEnvelope> applicationDecisionSavedEnv = eventListener.popEvent(SJP_EVENT_APPLICATION_DECISION_SAVED);
         assertThat(applicationDecisionSavedEnv.isPresent(), is(true));
@@ -298,7 +298,7 @@ public class CaseApplicationDecisionIT extends BaseIntegrationTest {
                 SJP_EVENTS_CASE_COMPLETED,
                 PUBLIC_EVENTS_HEARING_HEARING_RESULTED
         ).run(() -> saveApplicationDecision(USER.getUserId(), caseId, appId, sessionId2,
-                        false, null,null, "Insufficient evidence"));
+                false, null, null, "Insufficient evidence"));
 
         final Optional<JsonEnvelope> applicationDecisionSavedEnv = eventListener.popEvent(SJP_EVENT_APPLICATION_DECISION_SAVED);
         assertThat(applicationDecisionSavedEnv.isPresent(), is(true));

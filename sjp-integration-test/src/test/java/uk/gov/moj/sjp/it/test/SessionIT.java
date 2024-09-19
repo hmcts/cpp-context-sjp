@@ -27,8 +27,8 @@ import uk.gov.moj.sjp.it.stub.SchedulingStub;
 import java.util.Optional;
 import java.util.UUID;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 
 public class SessionIT extends BaseIntegrationTest {
@@ -40,7 +40,7 @@ public class SessionIT extends BaseIntegrationTest {
     private final String courtHouseName = "Wimbledon Magistrates' Court";
     private final String localJusticeAreaNationalCourtCode = "2577";
 
-    @Before
+    @BeforeEach
     public void init() {
         ReferenceDataServiceStub.stubCourtByCourtHouseOUCodeQuery(courtHouseOUCode, localJusticeAreaNationalCourtCode, courtHouseName);
         SchedulingStub.stubStartSjpSessionCommand();

@@ -18,6 +18,7 @@ import java.util.UUID;
 import static java.lang.String.format;
 import static java.util.Collections.singletonList;
 
+@SuppressWarnings("squid:S107")
 public class HearingRequestsViewHelper {
 
     public List<HearingRequestView> createHearingRequestViews(final CaseDetails caseDetails,

@@ -10,7 +10,7 @@ import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.isIn;
 
 import uk.gov.justice.services.common.util.Clock;
-import uk.gov.justice.services.test.utils.persistence.BaseTransactionalTest;
+import uk.gov.justice.services.test.utils.persistence.BaseTransactionalJunit4Test;
 import uk.gov.moj.cpp.sjp.persistence.entity.CaseDetail;
 import uk.gov.moj.cpp.sjp.persistence.entity.CaseDetailMissingSjpn;
 import uk.gov.moj.cpp.sjp.persistence.entity.CaseDocument;
@@ -30,7 +30,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 @RunWith(CdiTestRunner.class)
-public class CaseRepositorySjpnTest extends BaseTransactionalTest {
+public class CaseRepositorySjpnTest extends BaseTransactionalJunit4Test {
 
     private static final String TFL_PROSECUTOR_FILTER_VALUE = "TFL";
     private static final String COURT_ADMIN_FILTER_VALUE = "%";

@@ -17,10 +17,11 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.core.AllOf.allOf;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.eq;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -39,6 +40,7 @@ import static uk.gov.moj.cpp.sjp.persistence.builder.DefendantDetailBuilder.aDef
 import static uk.gov.moj.cpp.sjp.query.view.SjpQueryView.ERROR_INVALID_DATE_RANGE;
 import static uk.gov.moj.cpp.sjp.query.view.SjpQueryView.ERROR_INVALID_PAGE_NUMBER;
 
+import org.hamcrest.CoreMatchers;
 import uk.gov.justice.core.courts.ProsecutionCase;
 import uk.gov.justice.services.common.converter.LocalDates;
 import uk.gov.justice.services.common.exception.ForbiddenRequestException;
@@ -113,19 +115,17 @@ import javax.json.JsonObject;
 import javax.persistence.NoResultException;
 
 import org.hamcrest.Matchers;
-import org.junit.Assert;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.Spy;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
+import uk.gov.moj.cpp.sjp.query.view.service.defendantcase.DefendantPotentialCaseService;
 
-@SuppressWarnings("squid:S1607")
-@RunWith(MockitoJUnitRunner.class)
+@SuppressWarnings({"squid:S1607", "squid:S5976"})
+@ExtendWith(MockitoExtension.class)
 public class SjpQueryViewTest {
 
     private static final String FIELD_CASE_ID = "caseId";
@@ -146,9 +146,6 @@ public class SjpQueryViewTest {
     private static final String COMPANY_DEFENDANT_ID = randomUUID().toString();
     private static final String PROSECUTOR_DVLA = "DVLA";
     private static final String PROSECUTOR_TVL = "TVL";
-
-    @Rule
-    public ExpectedException exceptionRule = ExpectedException.none();
 
     @Spy
     private Clock clock = new UtcClock();
@@ -227,12 +224,15 @@ public class SjpQueryViewTest {
 
     @Test
     public void shouldFindCase() {
-        setupCaseExpectations();
+        when(payloadObject.getString(FIELD_CASE_ID)).thenReturn(CASE_ID.toString());
+        when(enveloper.withMetadataFrom(eq(envelope), any())).thenReturn(function);
+        when(function.apply(any())).thenReturn(outputEnvelope);
+        when(envelope.payloadAsJsonObject()).thenReturn(payloadObject);
+        when(envelope.metadata()).thenReturn(metadataBuilder().withId(randomUUID()).withName("name").build());
         final String prosecutingAuthorityFilterValue = "TFL";
         final CaseView caseView = Mockito.mock(CaseView.class);
         final DefendantDetailUpdateRequestView defendantDetailUpdateRequestView = Mockito.mock(DefendantDetailUpdateRequestView.class);
         when(caseService.findCase(CASE_ID)).thenReturn(caseView);
-        when(caseView.getId()).thenReturn(CASE_ID.toString());
         when(caseService.findDefendantDetailUpdateRequest(CASE_ID)).thenReturn(defendantDetailUpdateRequestView);
         when(envelope.metadata()).thenReturn(metadata);
         when(metadata.userId()).thenReturn(Optional.of(randomUUID().toString()));
@@ -247,13 +247,14 @@ public class SjpQueryViewTest {
         verify(function).apply(caseView);
     }
 
-    @Test(expected = ForbiddenRequestException.class)
+    @Test
     public void shouldNotFindCaseWhenProsecutionAuthorityHasNoAccess() {
-        setupCaseExpectations();
+        when(payloadObject.getString(FIELD_CASE_ID)).thenReturn(CASE_ID.toString());
+        when(envelope.payloadAsJsonObject()).thenReturn(payloadObject);
+        when(envelope.metadata()).thenReturn(metadataBuilder().withId(randomUUID()).withName("name").build());
         final String prosecutingAuthorityFilterValue = "TFL";
         final CaseView caseView = Mockito.mock(CaseView.class);
         final DefendantDetailUpdateRequestView defendantDetailUpdateRequestView = Mockito.mock(DefendantDetailUpdateRequestView.class);
-        when(caseView.getId()).thenReturn(CASE_ID.toString());
         when(caseService.findDefendantDetailUpdateRequest(CASE_ID)).thenReturn(defendantDetailUpdateRequestView);
         when(caseService.findCase(CASE_ID)).thenReturn(caseView);
         when(envelope.metadata()).thenReturn(metadata);
@@ -261,12 +262,14 @@ public class SjpQueryViewTest {
         when(caseView.getProsecutingAuthority()).thenReturn(prosecutingAuthorityFilterValue);
 
         when(prosecutingAuthorityProvider.userHasProsecutingAuthorityAccess(envelope, prosecutingAuthorityFilterValue)).thenReturn(false);
-        sjpQueryView.findCase(envelope);
+        assertThrows(ForbiddenRequestException.class, () -> sjpQueryView.findCase(envelope));
     }
 
     @Test
     public void shouldFindProsecutionCase() {
-        setupCaseExpectations();
+        when(payloadObject.getString(FIELD_CASE_ID)).thenReturn(CASE_ID.toString());
+        when(envelope.payloadAsJsonObject()).thenReturn(payloadObject);
+        when(envelope.metadata()).thenReturn(metadataBuilder().withId(randomUUID()).withName("name").build());
         final ProsecutionCase prosecutionCaseView = Mockito.mock(ProsecutionCase.class);
         when(prosecutionCaseService.findProsecutionCase(CASE_ID)).thenReturn(prosecutionCaseView);
 
@@ -276,7 +279,9 @@ public class SjpQueryViewTest {
 
     @Test
     public void shouldFindCaseByUrn() {
-        setupExpectations();
+        when(enveloper.withMetadataFrom(eq(envelope), any())).thenReturn(function);
+        when(function.apply(any())).thenReturn(outputEnvelope);
+        when(envelope.payloadAsJsonObject()).thenReturn(payloadObject);
         final CaseView caseView = Mockito.mock(CaseView.class);
         when(payloadObject.getString(FIELD_URN)).thenReturn(URN);
         when(caseService.findCaseByUrn(URN)).thenReturn(caseView);
@@ -290,7 +295,9 @@ public class SjpQueryViewTest {
 
     @Test
     public void shouldFindCaseByCorrelationId() {
-        setupExpectations();
+        when(enveloper.withMetadataFrom(eq(envelope), any())).thenReturn(function);
+        when(function.apply(any())).thenReturn(outputEnvelope);
+        when(envelope.payloadAsJsonObject()).thenReturn(payloadObject);
         final CaseView caseView = Mockito.mock(CaseView.class);
         when(payloadObject.getString(FIELD_CORRELATION_ID)).thenReturn(CORRELATION_ID.toString());
         when(caseService.findCaseByCorrelationId(CORRELATION_ID)).thenReturn(caseView);
@@ -304,7 +311,9 @@ public class SjpQueryViewTest {
 
     @Test
     public void shouldFindCaseByApplicationId() {
-        setupExpectations();
+        when(enveloper.withMetadataFrom(eq(envelope), any())).thenReturn(function);
+        when(function.apply(any())).thenReturn(outputEnvelope);
+        when(envelope.payloadAsJsonObject()).thenReturn(payloadObject);
         final CaseView caseView = Mockito.mock(CaseView.class);
         when(payloadObject.getString(FIELD_APP_ID)).thenReturn(APP_ID.toString());
         when(caseService.findCaseByApplicationId(APP_ID)).thenReturn(caseView);
@@ -460,7 +469,9 @@ public class SjpQueryViewTest {
 
     @Test
     public void shouldFindCaseSearchResults() {
-        setupExpectations();
+        when(enveloper.withMetadataFrom(eq(envelope), any())).thenReturn(function);
+        when(function.apply(any())).thenReturn(outputEnvelope);
+        when(envelope.payloadAsJsonObject()).thenReturn(payloadObject);
         final String query = "query";
 
         when(caseService.searchCases(envelope, query)).thenReturn(caseSearchResultsView);
@@ -475,7 +486,9 @@ public class SjpQueryViewTest {
 
     @Test
     public void shouldSearchCaseByMaterialId() {
-        setupExpectations();
+        when(enveloper.withMetadataFrom(eq(envelope), any())).thenReturn(function);
+        when(function.apply(any())).thenReturn(outputEnvelope);
+        when(envelope.payloadAsJsonObject()).thenReturn(payloadObject);
         final UUID query = UUID.fromString("dc1c7baf-5230-4580-877d-b4ee25bc7188");
         final UUID caseId = randomUUID();
         final SearchCaseByMaterialIdView searchCaseByMaterialIdView = new SearchCaseByMaterialIdView(caseId, null);
@@ -491,7 +504,10 @@ public class SjpQueryViewTest {
 
     @Test
     public void shouldFindCaseDocuments() {
-        setupCaseExpectations();
+        when(payloadObject.getString(FIELD_CASE_ID)).thenReturn(CASE_ID.toString());
+        when(enveloper.withMetadataFrom(eq(envelope), any())).thenReturn(function);
+        when(function.apply(any())).thenReturn(outputEnvelope);
+        when(envelope.payloadAsJsonObject()).thenReturn(payloadObject);
         final CaseDocumentsView caseDocumentsView = new CaseDocumentsView(emptyList());
         when(caseService.findCaseDocuments(CASE_ID)).thenReturn(caseDocumentsView);
 
@@ -602,8 +618,9 @@ public class SjpQueryViewTest {
 
     @Test
     public void shouldGetPendingCases() {
-        setupExpectations();
-        when(envelope.metadata()).thenReturn(metadata);
+        when(enveloper.withMetadataFrom(eq(envelope), any())).thenReturn(function);
+        when(function.apply(any())).thenReturn(outputEnvelope);
+        when(envelope.payloadAsJsonObject()).thenReturn(payloadObject);
         final JsonObject payload = createObjectBuilder().build();
         when(caseService.findPendingCasesToPublish(ExportType.PUBLIC)).thenReturn(payload);
 
@@ -615,7 +632,9 @@ public class SjpQueryViewTest {
 
     @Test
     public void getPendingCasesToPublishShouldExportPublicReportByDefault() {
-        setupExpectations();
+        when(enveloper.withMetadataFrom(eq(envelope), any())).thenReturn(function);
+        when(function.apply(any())).thenReturn(outputEnvelope);
+        when(envelope.payloadAsJsonObject()).thenReturn(payloadObject);
 
         sjpQueryView.getPendingCasesToPublish(envelope);
 
@@ -624,7 +643,9 @@ public class SjpQueryViewTest {
 
     @Test
     public void getPendingCasesToPublishShouldExportPressReport() {
-        setupExpectations();
+        when(enveloper.withMetadataFrom(eq(envelope), any())).thenReturn(function);
+        when(function.apply(any())).thenReturn(outputEnvelope);
+        when(envelope.payloadAsJsonObject()).thenReturn(payloadObject);
         final JsonObject payload = createObjectBuilder().add("export", "press").build();
         when(envelope.payloadAsJsonObject()).thenReturn(payload);
 
@@ -635,7 +656,9 @@ public class SjpQueryViewTest {
 
     @Test
     public void getPendingCasesToPublishShouldExportPressDeltaReport() {
-        setupExpectations();
+        when(enveloper.withMetadataFrom(eq(envelope), any())).thenReturn(function);
+        when(function.apply(any())).thenReturn(outputEnvelope);
+        when(envelope.payloadAsJsonObject()).thenReturn(payloadObject);
         final JsonObject payload = createObjectBuilder().add("export", "press").build();
         when(envelope.payloadAsJsonObject()).thenReturn(payload);
 
@@ -646,7 +669,9 @@ public class SjpQueryViewTest {
 
     @Test
     public void getPendingCasesToPublishShouldExportPublicDeltaReport() {
-        setupExpectations();
+        when(enveloper.withMetadataFrom(eq(envelope), any())).thenReturn(function);
+        when(function.apply(any())).thenReturn(outputEnvelope);
+        when(envelope.payloadAsJsonObject()).thenReturn(payloadObject);
         final JsonObject payload = createObjectBuilder().add("export", "public").build();
         when(envelope.payloadAsJsonObject()).thenReturn(payload);
 
@@ -657,7 +682,9 @@ public class SjpQueryViewTest {
 
     @Test
     public void getPendingCasesToPublishShouldExportPublicReport() {
-        setupExpectations();
+        when(enveloper.withMetadataFrom(eq(envelope), any())).thenReturn(function);
+        when(function.apply(any())).thenReturn(outputEnvelope);
+        when(envelope.payloadAsJsonObject()).thenReturn(payloadObject);
         final JsonObject payload = createObjectBuilder().add("export", "public").build();
         when(envelope.payloadAsJsonObject()).thenReturn(payload);
 
@@ -668,7 +695,9 @@ public class SjpQueryViewTest {
 
     @Test
     public void getPendingCasesToPublishExportParamShouldBeCaseInsensitive() {
-        setupExpectations();
+        when(enveloper.withMetadataFrom(eq(envelope), any())).thenReturn(function);
+        when(function.apply(any())).thenReturn(outputEnvelope);
+        when(envelope.payloadAsJsonObject()).thenReturn(payloadObject);
         final JsonObject payload = createObjectBuilder().add("export", "Public").build();
         when(envelope.payloadAsJsonObject()).thenReturn(payload);
 
@@ -679,7 +708,9 @@ public class SjpQueryViewTest {
 
     @Test
     public void getPendingCasesToPublishShouldUseDefaultIfTypeIsUnknown() {
-        setupExpectations();
+        when(enveloper.withMetadataFrom(eq(envelope), any())).thenReturn(function);
+        when(function.apply(any())).thenReturn(outputEnvelope);
+        when(envelope.payloadAsJsonObject()).thenReturn(payloadObject);
         final JsonObject payload = createObjectBuilder().add("export", "UnknownType").build();
         when(envelope.payloadAsJsonObject()).thenReturn(payload);
 
@@ -986,7 +1017,7 @@ public class SjpQueryViewTest {
 
         final JsonEnvelope result = sjpQueryView.getOutstandingFineRequests(query);
 
-        Assert.assertThat(result.metadata().name(), is("sjp.query.outstanding-fine-requests"));
+        assertThat(result.metadata().name(), is("sjp.query.outstanding-fine-requests"));
         assertTrue(result.payloadAsJsonObject().isEmpty());
     }
 
@@ -1000,7 +1031,7 @@ public class SjpQueryViewTest {
                         .build());
 
         final JsonEnvelope result = sjpQueryView.getOutstandingFineRequests(query);
-        Assert.assertThat(result.metadata().name(), is("sjp.query.outstanding-fine-requests"));
+        assertThat(result.metadata().name(), is("sjp.query.outstanding-fine-requests"));
         assertTrue(result.payloadAsJsonObject().getJsonArray("defendantDetails").size() == 3);
 
     }
@@ -1091,12 +1122,8 @@ public class SjpQueryViewTest {
                 .withPayloadOf(pageNumber, "pageNumber")
                 .build();
 
-        when(caseService.buildCasesForSOCCheckView(userId.toString(), courtHouseCode, ljaCode, LocalDates.from(fromDate),
-                LocalDates.from(toDate), percentage, pageSize, pageNumber, sortField, sortOrder, queryEnvelope)).thenReturn(buildCasesForSOCCheck());
-        exceptionRule.expect(IllegalArgumentException.class);
-        exceptionRule.expectMessage(String.format(ERROR_INVALID_PAGE_NUMBER, pageNumber, pageSize));
-
-        sjpQueryView.getCasesForSOCCheck(queryEnvelope);
+        var e = assertThrows(IllegalArgumentException.class, () -> sjpQueryView.getCasesForSOCCheck(queryEnvelope));
+        assertThat(e.getMessage(), CoreMatchers.is(String.format(ERROR_INVALID_PAGE_NUMBER, pageNumber, pageSize)));
     }
 
     @Test
@@ -1126,12 +1153,8 @@ public class SjpQueryViewTest {
                 .withPayloadOf(pageNumber, "pageNumber")
                 .build();
 
-        when(caseService.buildCasesForSOCCheckView(userId.toString(), courtHouseCode, ljaCode, LocalDates.from(fromDate),
-                LocalDates.from(toDate), percentage, pageSize, pageNumber, sortField, sortOrder, queryEnvelope)).thenReturn(buildCasesForSOCCheck());
-
-        exceptionRule.expect(IllegalArgumentException.class);
-        exceptionRule.expectMessage(String.format(ERROR_INVALID_PAGE_NUMBER, pageNumber, pageSize));
-        sjpQueryView.getCasesForSOCCheck(queryEnvelope);
+        var e = assertThrows(IllegalArgumentException.class, () -> sjpQueryView.getCasesForSOCCheck(queryEnvelope));
+        assertThat(e.getMessage(), CoreMatchers.is(String.format(ERROR_INVALID_PAGE_NUMBER, pageNumber, pageSize)));
     }
 
 
@@ -1162,11 +1185,8 @@ public class SjpQueryViewTest {
                 .withPayloadOf(pageNumber, "pageNumber")
                 .build();
 
-        when(caseService.buildCasesForSOCCheckView(userId.toString(), courtHouseCode, ljaCode, LocalDates.from(fromDate),
-                LocalDates.from(toDate), percentage, pageSize, pageNumber, sortField, sortOrder, queryEnvelope)).thenReturn(buildCasesForSOCCheck());
-        exceptionRule.expect(IllegalArgumentException.class);
-        exceptionRule.expectMessage(String.format(ERROR_INVALID_DATE_RANGE, fromDate, toDate));
-        sjpQueryView.getCasesForSOCCheck(queryEnvelope);
+        var e = assertThrows(IllegalArgumentException.class, () -> sjpQueryView.getCasesForSOCCheck(queryEnvelope));
+        assertThat(e.getMessage(), CoreMatchers.is(String.format(ERROR_INVALID_DATE_RANGE, fromDate, toDate)));
 
     }
 
@@ -1257,17 +1277,8 @@ public class SjpQueryViewTest {
         return aocpOnlinePlea;
     }
 
-    private void setupCaseExpectations() {
-        when(payloadObject.getString(FIELD_CASE_ID)).thenReturn(CASE_ID.toString());
-        setupExpectations();
-    }
-
     private void setupAppExpectations() {
         when(payloadObject.getString(FIELD_APP_ID)).thenReturn(APP_ID.toString());
-        setupExpectations();
-    }
-
-    private void setupExpectations() {
         when(enveloper.withMetadataFrom(eq(envelope), any())).thenReturn(function);
         when(function.apply(any())).thenReturn(outputEnvelope);
         when(envelope.payloadAsJsonObject()).thenReturn(payloadObject);

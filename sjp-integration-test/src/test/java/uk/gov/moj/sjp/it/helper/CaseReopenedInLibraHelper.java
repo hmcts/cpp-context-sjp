@@ -29,7 +29,7 @@ import java.util.UUID;
 import javax.jms.JMSException;
 import javax.jms.MessageConsumer;
 
-import com.jayway.restassured.path.json.JsonPath;
+import io.restassured.path.json.JsonPath;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

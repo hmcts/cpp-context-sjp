@@ -2,7 +2,7 @@ package uk.gov.moj.sjp.it.test.ingestor;
 
 import static java.util.UUID.randomUUID;
 import static org.hamcrest.CoreMatchers.is;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static uk.gov.moj.sjp.it.model.ProsecutingAuthority.TFL;
 import static uk.gov.moj.cpp.sjp.event.CaseReceived.EVENT_NAME;
 import static uk.gov.moj.sjp.it.command.CreateCase.CreateCasePayloadBuilder;
@@ -24,9 +24,9 @@ import java.util.UUID;
 
 import javax.json.JsonObject;
 
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 public class CaseReceivedIngestorIT extends BaseIntegrationTest {
 
@@ -35,12 +35,12 @@ public class CaseReceivedIngestorIT extends BaseIntegrationTest {
     private static final String NATIONAL_COURT_CODE = "1080";
 
 
-    @Before
+    @BeforeEach
     public void setUp() throws IOException {
         new ElasticSearchIndexRemoverUtil().deleteAndCreateCaseIndex();
     }
 
-    @After
+    @AfterEach
     public void cleanDatabase() {
         viewStoreCleaner.cleanDataInViewStore(uuid);
     }

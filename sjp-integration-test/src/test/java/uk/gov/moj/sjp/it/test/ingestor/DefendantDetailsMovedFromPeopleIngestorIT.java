@@ -5,10 +5,11 @@ import static java.util.UUID.randomUUID;
 import static org.hamcrest.CoreMatchers.anyOf;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
-import static org.junit.Assert.assertThat;
-import static uk.gov.moj.sjp.it.model.ProsecutingAuthority.TFL;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static uk.gov.moj.cpp.sjp.event.CaseReceived.EVENT_NAME;
+import static uk.gov.moj.sjp.it.Constants.SJP_EVENT;
 import static uk.gov.moj.sjp.it.command.CreateCase.createCaseForPayloadBuilder;
+import static uk.gov.moj.sjp.it.model.ProsecutingAuthority.TFL;
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubEnforcementAreaByPostcode;
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubRegionByPostcode;
 import static uk.gov.moj.sjp.it.test.ingestor.helper.CasePredicate.casePayloadContains;
@@ -32,15 +33,14 @@ import java.util.UUID;
 import javax.json.JsonArray;
 import javax.json.JsonObject;
 
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 public class DefendantDetailsMovedFromPeopleIngestorIT extends BaseIntegrationTest {
 
     private final static String STUB_DATA_SJP_EVENTS_DEFENDANT_DETAILS_MOVED_FROM_PEOPLE = "stub-data/sjp.events.defendant-details-moved-from-people.json";
     private final static String SJP_EVENTS_DEFENDANT_DETAILS_MOVED_FROM_PEOPLE = "sjp.events.defendant-details-moved-from-people";
-    private static final String SJP_EVENT = "sjp.event";
 
     private final MessageProducerClient privateEventsProducer = new MessageProducerClient();
 
@@ -48,13 +48,13 @@ public class DefendantDetailsMovedFromPeopleIngestorIT extends BaseIntegrationTe
     private final ViewStoreCleaner viewStoreCleaner = new ViewStoreCleaner();
     private static final String NATIONAL_COURT_CODE = "1080";
 
-    @Before
+    @BeforeEach
     public void setUp() throws IOException {
         privateEventsProducer.startProducer(SJP_EVENT);
         new ElasticSearchIndexRemoverUtil().deleteAndCreateCaseIndex();
     }
 
-    @After
+    @AfterEach
     public void tearDown() {
         viewStoreCleaner.cleanDataInViewStore(caseId);
         privateEventsProducer.close();
@@ -139,11 +139,11 @@ public class DefendantDetailsMovedFromPeopleIngestorIT extends BaseIntegrationTe
 
     private void assertAliases(final JsonArray aliases) {
 
-        for(int i=0; i < aliases.size(); i++) {
+        for (int i = 0; i < aliases.size(); i++) {
             final JsonObject alias = (JsonObject) aliases.get(i);
             assertThat(alias.getString("title"), anyOf(equalTo("Mr"), equalTo("Dr")));
             assertThat(alias.getString("firstName"), equalTo("David"));
-            assertThat(alias.getString("lastName"), anyOf(equalTo("LLOYD"),equalTo("SMITH")));
+            assertThat(alias.getString("lastName"), anyOf(equalTo("LLOYD"), equalTo("SMITH")));
         }
     }
 }

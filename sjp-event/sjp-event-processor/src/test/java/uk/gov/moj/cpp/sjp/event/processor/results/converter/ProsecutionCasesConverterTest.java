@@ -1,8 +1,8 @@
 package uk.gov.moj.cpp.sjp.event.processor.results.converter;
 
 import static org.hamcrest.CoreMatchers.is;
-import static org.junit.Assert.assertThat;
-import static org.mockito.Matchers.anyObject;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 import static uk.gov.moj.cpp.sjp.event.processor.results.converter.TestConstants.ID_1;
 import static uk.gov.moj.cpp.sjp.event.processor.results.converter.TestConstants.ID_2;
@@ -20,13 +20,13 @@ import java.util.List;
 
 import javax.json.JsonObject;
 
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class ProsecutionCasesConverterTest {
 
     @InjectMocks
@@ -54,8 +54,8 @@ public class ProsecutionCasesConverterTest {
         final ProsecutionCaseIdentifier prosecutionCaseIdentified = ProsecutionCaseIdentifier.prosecutionCaseIdentifier().build();
         final Defendant defandant = Defendant.defendant().withId(ID_1).build();
 
-        when(pciConverter.getProsecutionCaseIdentifier(anyObject(), anyObject())).thenReturn(prosecutionCaseIdentified);
-        when(defendantsConverter.getDefendants(anyObject(), anyObject(), anyObject(), anyObject())).thenReturn(Arrays.asList(defandant));
+        when(pciConverter.getProsecutionCaseIdentifier(any(), any())).thenReturn(prosecutionCaseIdentified);
+        when(defendantsConverter.getDefendants(any(), any(), any(), any())).thenReturn(Arrays.asList(defandant));
 
         when(caseDetails.getId()).thenReturn(ID_2);
 

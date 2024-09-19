@@ -5,6 +5,9 @@ import static java.math.BigDecimal.TEN;
 import static java.math.BigDecimal.ZERO;
 import static javax.json.Json.createArrayBuilder;
 import static javax.json.Json.createObjectBuilder;
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static uk.gov.moj.cpp.sjp.command.api.validator.decisionvalidator.FinancialImpositionValidator.validateFinancialImposition;
 import static uk.gov.moj.cpp.sjp.domain.decision.DecisionType.DecisionName.DISCHARGE;
 import static uk.gov.moj.cpp.sjp.domain.decision.DecisionType.DecisionName.FINANCIAL_PENALTY;
@@ -19,13 +22,10 @@ import javax.json.JsonArrayBuilder;
 import javax.json.JsonObject;
 
 import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.junit.rules.ExpectedException;
 
 public class FinancialImpositionValidatorTest {
-
-    @Rule
-    public ExpectedException thrown = ExpectedException.none();
 
     @Test
     public void shouldNotRequireFinancialImpositionWhenCostsAreEmpty() {
@@ -78,10 +78,8 @@ public class FinancialImpositionValidatorTest {
                 .add("offenceDecisions", mixOffences)
                 .build();
 
-        thrown.expect(BadRequestException.class);
-        thrown.expectMessage("reasonForNoVictimSurcharge is required");
-
-        validateFinancialImposition(mixDecision, false);
+        var e = assertThrows(BadRequestException.class, () -> validateFinancialImposition(mixDecision, false));
+        assertThat(e.getMessage(), is("reasonForNoVictimSurcharge is required"));
     }
 
     private JsonObject createFinancialImposition() {

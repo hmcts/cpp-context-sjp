@@ -5,9 +5,12 @@ import static javax.json.Json.createArrayBuilder;
 import static javax.json.Json.createObjectBuilder;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
+import org.junit.jupiter.api.BeforeEach;
 import uk.gov.justice.json.schemas.domains.sjp.Gender;
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
 import uk.gov.justice.services.common.converter.LocalDates;
@@ -15,6 +18,7 @@ import uk.gov.justice.services.common.converter.ZonedDateTimes;
 import uk.gov.justice.services.common.converter.jackson.ObjectMapperProducer;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.test.utils.core.enveloper.EnvelopeFactory;
+import uk.gov.justice.services.test.utils.core.reflection.ReflectionUtil;
 import uk.gov.moj.cpp.sjp.event.CaseReceived;
 import uk.gov.moj.cpp.sjp.event.listener.converter.AddressToAddressEntity;
 import uk.gov.moj.cpp.sjp.event.listener.converter.CaseReceivedToCase;
@@ -42,16 +46,16 @@ import javax.json.JsonObject;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.lang3.RandomStringUtils;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Answers;
 import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class CaseReceivedListenerTest {
 
     @InjectMocks
@@ -73,30 +77,22 @@ public class CaseReceivedListenerTest {
     private OffenceToOffenceDetail offenceToOffenceDetailConverter;
 
     @Spy
-    @InjectMocks
     private PersonToPersonalDetailsEntity personToPersonalDetailsEntity = new PersonToPersonalDetailsEntity();
 
     @Spy
     private SpeaksWelshConverter speaksWelshConverter = new SpeaksWelshConverter();
 
     @Spy
-    @InjectMocks
     private DefendantToDefendantDetails defendantToDefendantDetailsConverter = new DefendantToDefendantDetails();
 
     @Spy
-    @InjectMocks
     private CaseReceivedToCase caseReceivedToCaseConverter = new CaseReceivedToCase();
 
     @Spy
-    private ObjectMapper objectMapper = new ObjectMapperProducer().objectMapper();
-
-    @Spy
-    @InjectMocks
     private CaseSearchResultService caseSearchResultService = new CaseSearchResultService();
 
     @Spy
-    @InjectMocks
-    private JsonObjectToObjectConverter converter = new JsonObjectToObjectConverter(objectMapper);
+    private JsonObjectToObjectConverter converter = new JsonObjectToObjectConverter(new ObjectMapperProducer().objectMapper());
 
     private static final UUID caseId = UUID.randomUUID();
     private static final String prosecutingAuthority = "TFL";
@@ -135,6 +131,21 @@ public class CaseReceivedListenerTest {
     private static final BigDecimal compensation = BigDecimal.valueOf(2.34);
     private static final UUID pcqId = UUID.randomUUID();
 
+    @BeforeEach
+    public void setup(){
+        ReflectionUtil.setField(personToPersonalDetailsEntity,"addressToAddressEntityConverter", addressToAddressEntityConverter);
+        ReflectionUtil.setField(personToPersonalDetailsEntity,"contactDetailsToContactDetailsEntity", contactDetailsToContactDetailsEntityConverter);
+
+        ReflectionUtil.setField(defendantToDefendantDetailsConverter,"personToPersonalDetailsEntity", personToPersonalDetailsEntity);
+        ReflectionUtil.setField(defendantToDefendantDetailsConverter,"addressAddressToAddressEntity", addressToAddressEntityConverter);
+        ReflectionUtil.setField(defendantToDefendantDetailsConverter,"contactDetailsToContactDetailsEntity", contactDetailsToContactDetailsEntityConverter);
+        ReflectionUtil.setField(defendantToDefendantDetailsConverter,"offenceToOffenceDetailConverter", offenceToOffenceDetailConverter);
+        ReflectionUtil.setField(defendantToDefendantDetailsConverter,"speaksWelshConverter", speaksWelshConverter);
+
+        ReflectionUtil.setField(caseReceivedToCaseConverter,"defendantToDefendantDetailsConverter", defendantToDefendantDetailsConverter);
+
+        ReflectionUtil.setField(caseSearchResultService,"repository", searchResultRepository);
+    }
     @Test
     public void shouldSaveTheCaseAndSearchResult() {
         JsonEnvelope envelope = givenCaseReceivedEventWasRaised();

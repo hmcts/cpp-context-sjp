@@ -1,18 +1,8 @@
 package uk.gov.moj.sjp.it.test.ingestor;
 
-import static java.util.UUID.randomUUID;
-import static org.hamcrest.CoreMatchers.is;
-import static org.junit.Assert.assertThat;
-import static uk.gov.justice.services.eventstore.management.commands.IndexerCatchupCommand.INDEXER_CATCHUP;
-import static uk.gov.justice.services.jmx.system.command.client.connection.JmxParametersBuilder.jmxParameters;
-import static uk.gov.justice.services.test.utils.common.host.TestHostProvider.getHost;
-import static uk.gov.moj.sjp.it.model.ProsecutingAuthority.TFL;
-import static uk.gov.moj.cpp.sjp.event.CaseReceived.EVENT_NAME;
-import static uk.gov.moj.sjp.it.command.CreateCase.createCaseForPayloadBuilder;
-import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubEnforcementAreaByPostcode;
-import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubRegionByPostcode;
-import static uk.gov.moj.sjp.it.test.ingestor.helper.ElasticSearchQueryHelper.getCaseFromElasticSearch;
-
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import uk.gov.justice.services.jmx.system.command.client.SystemCommanderClient;
 import uk.gov.justice.services.jmx.system.command.client.TestSystemCommanderClientFactory;
 import uk.gov.justice.services.jmx.system.command.client.connection.JmxParameters;
@@ -24,14 +14,22 @@ import uk.gov.moj.sjp.it.framework.util.ViewStoreCleaner;
 import uk.gov.moj.sjp.it.helper.EventListener;
 import uk.gov.moj.sjp.it.test.BaseIntegrationTest;
 
+import javax.json.JsonObject;
 import java.io.IOException;
 import java.util.UUID;
 
-import javax.json.JsonObject;
-
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import static java.util.UUID.randomUUID;
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static uk.gov.justice.services.eventstore.management.commands.IndexerCatchupCommand.INDEXER_CATCHUP;
+import static uk.gov.justice.services.jmx.system.command.client.connection.JmxParametersBuilder.jmxParameters;
+import static uk.gov.justice.services.test.utils.common.host.TestHostProvider.getHost;
+import static uk.gov.moj.cpp.sjp.event.CaseReceived.EVENT_NAME;
+import static uk.gov.moj.sjp.it.command.CreateCase.createCaseForPayloadBuilder;
+import static uk.gov.moj.sjp.it.model.ProsecutingAuthority.TFL;
+import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubEnforcementAreaByPostcode;
+import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubRegionByPostcode;
+import static uk.gov.moj.sjp.it.test.ingestor.helper.ElasticSearchQueryHelper.getCaseFromElasticSearch;
 
 public class IndexerCatchupIT extends BaseIntegrationTest {
     public static final String CASE_ID = "7e2f843e-d639-40b3-8611-8015f3a18958";
@@ -48,7 +46,7 @@ public class IndexerCatchupIT extends BaseIntegrationTest {
     private static final String USERNAME = "admin";
     private static final String PASSWORD = "admin";
 
-    @Before
+    @BeforeEach
     public void before() throws IOException {
         databaseCleaner.cleanEventStoreTables(CONTEXT);
         databaseCleaner.cleanSystemTables(CONTEXT);
@@ -58,7 +56,7 @@ public class IndexerCatchupIT extends BaseIntegrationTest {
     }
 
 
-    @After
+    @AfterEach
     public void tearDown() {
         viewStoreCleaner.cleanDataInViewStore(UUID.fromString(CASE_ID));
         privateEventsProducer.close();

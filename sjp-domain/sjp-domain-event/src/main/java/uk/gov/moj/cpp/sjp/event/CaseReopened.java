@@ -12,7 +12,10 @@ import com.fasterxml.jackson.annotation.JsonUnwrapped;
 public class CaseReopened {
 
     @JsonUnwrapped
-    private final CaseReopenDetails caseReopenDetails;
+    private CaseReopenDetails caseReopenDetails;
+
+    public CaseReopened() {
+    }
 
     public CaseReopened(final CaseReopenDetails caseReopenDetails) {
         this.caseReopenDetails = caseReopenDetails;

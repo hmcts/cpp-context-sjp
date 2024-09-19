@@ -18,7 +18,7 @@ import java.util.UUID;
 
 import org.hamcrest.Matcher;
 import org.hamcrest.Matchers;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /**
  * Tests for {@link CaseAggregate#markCaseReadyForDecision}

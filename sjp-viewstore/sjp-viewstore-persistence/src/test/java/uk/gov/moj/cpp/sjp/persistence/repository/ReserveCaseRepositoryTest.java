@@ -11,7 +11,7 @@ import javax.inject.Inject;
 import org.apache.deltaspike.testcontrol.api.junit.CdiTestRunner;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import uk.gov.justice.services.test.utils.persistence.BaseTransactionalTest;
+import uk.gov.justice.services.test.utils.persistence.BaseTransactionalJunit4Test;
 import uk.gov.moj.cpp.sjp.persistence.builder.CaseDetailBuilder;
 import uk.gov.moj.cpp.sjp.persistence.entity.CaseDetail;
 import uk.gov.moj.cpp.sjp.persistence.entity.DefendantDetail;
@@ -19,7 +19,7 @@ import uk.gov.moj.cpp.sjp.persistence.entity.PersonalDetails;
 import uk.gov.moj.cpp.sjp.persistence.entity.ReserveCase;
 
 @RunWith(CdiTestRunner.class)
-public class ReserveCaseRepositoryTest extends BaseTransactionalTest {
+public class ReserveCaseRepositoryTest extends BaseTransactionalJunit4Test {
 
     @Inject
     private ReserveCaseRepository reserveCaseRepository;

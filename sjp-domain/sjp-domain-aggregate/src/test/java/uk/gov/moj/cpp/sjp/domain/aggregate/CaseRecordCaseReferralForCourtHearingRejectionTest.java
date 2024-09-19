@@ -4,13 +4,13 @@ import static java.util.UUID.randomUUID;
 import static org.apache.commons.lang3.RandomStringUtils.randomAlphanumeric;
 import static uk.gov.moj.cpp.sjp.domain.aggregate.CaseAggregateBaseTest.AggregateTester.when;
 
+import org.junit.jupiter.api.Disabled;
 import uk.gov.moj.cpp.sjp.event.CaseNotFound;
 import uk.gov.moj.cpp.sjp.event.CaseReferralForCourtHearingRejectionRecorded;
 
 import java.util.UUID;
 
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /**
  * Tests for {@link CaseAggregate#recordCaseReferralForCourtHearingRejection}
@@ -35,7 +35,7 @@ public class CaseRecordCaseReferralForCourtHearingRejectionTest extends CaseAggr
     }
 
     @Test
-    @Ignore("functionality not currently implemented")
+    @Disabled("functionality not currently implemented")
     public void shouldRejectRecordCaseReferralForCourtHearingWhenCaseReferredForCourtHearing() {
         // given need to do caseAggregate.markCaseReferredForCourtHearing
 

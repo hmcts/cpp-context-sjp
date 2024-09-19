@@ -1,6 +1,6 @@
 package uk.gov.moj.cpp.sjp.query.view.util;
 
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import java.io.StringReader;
 import java.nio.charset.Charset;

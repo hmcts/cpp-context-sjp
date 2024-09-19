@@ -5,8 +5,8 @@ import static org.hamcrest.CoreMatchers.hasItem;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.hasProperty;
 import static org.hamcrest.Matchers.nullValue;
-import static org.junit.Assert.assertThat;
-import static org.mockito.Matchers.anyObject;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 import static uk.gov.justice.core.courts.CourtCentre.courtCentre;
 import static uk.gov.justice.services.test.utils.core.reflection.ReflectionUtil.setField;
@@ -23,13 +23,13 @@ import java.util.Collections;
 import java.util.Optional;
 
 import org.hamcrest.Matchers;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class AdjournDecisionResultAggregatorTest extends BaseDecisionResultAggregatorTest {
 
     private static final String ADJOURN_REASON = "Not enough documents present for decision, waiting for document";
@@ -40,13 +40,13 @@ public class AdjournDecisionResultAggregatorTest extends BaseDecisionResultAggre
 
     private CourtCentre courtCentre = courtCentre().build();
 
-    @Before
+    @BeforeEach
     public void setUp() {
         super.setUp();
         aggregator = new AdjournDecisionResultAggregator(jCachedReferenceData);
         setField(aggregator, "courtCentreConverter", courtCentreConverter);
 
-        when(courtCentreConverter.convertByOffenceId(anyObject(), anyObject())).thenReturn(Optional.of(courtCentre));
+        when(courtCentreConverter.convertByOffenceId(any(), any())).thenReturn(Optional.of(courtCentre));
 
     }
 

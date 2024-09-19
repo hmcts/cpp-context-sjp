@@ -5,7 +5,7 @@ import static java.util.UUID.randomUUID;
 import static org.exparity.hamcrest.date.ZonedDateTimeMatchers.after;
 import static org.exparity.hamcrest.date.ZonedDateTimeMatchers.within;
 import static org.hamcrest.Matchers.equalTo;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.mockito.Mockito.when;
 import static uk.gov.moj.cpp.sjp.persistence.entity.EnforcementNotification.Status.GENERATED;
 import static uk.gov.moj.cpp.sjp.persistence.entity.EnforcementNotification.Status.REQUIRED;
@@ -26,23 +26,20 @@ import java.time.ZonedDateTime;
 import java.util.UUID;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import junit.framework.TestCase;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Spy;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 @SuppressWarnings("squid:S2187")
-public class EnforcementPendingApplicationNotificationListenerTest extends TestCase {
+public class EnforcementPendingApplicationNotificationListenerTest {
     @Spy
     private ObjectMapper objectMapper = new ObjectMapperProducer().objectMapper();
     @Spy
-    @InjectMocks
     private JsonObjectToObjectConverter jsonObjectToObjectConverter = new JsonObjectToObjectConverter(objectMapper);
     @Spy
-    @InjectMocks
     private ObjectToJsonObjectConverter objectToJsonObjectConverter = new ObjectToJsonObjectConverter(objectMapper);
     @Spy
     private FakeEnforcementPendingApplicationNotificationRepository repository = new FakeEnforcementPendingApplicationNotificationRepository();

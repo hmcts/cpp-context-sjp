@@ -1,7 +1,7 @@
 package uk.gov.moj.cpp.sjp.event.processor.results.converter;
 
 import static org.hamcrest.CoreMatchers.is;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static uk.gov.moj.cpp.sjp.event.processor.results.converter.judicialresult.JCaseResultsConstants.DATE_FORMAT;
 import static uk.gov.moj.cpp.sjp.event.processor.results.converter.TestConstants.APPLICATION_ID;
 import static uk.gov.moj.cpp.sjp.event.processor.results.converter.TestConstants.DATE_TIME;
@@ -13,12 +13,12 @@ import uk.gov.justice.json.schemas.domains.sjp.PleaType;
 import uk.gov.justice.json.schemas.domains.sjp.queries.Offence;
 import uk.gov.justice.json.schemas.domains.sjp.results.Plea;
 
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class PleaConverterTest {
 
     @InjectMocks

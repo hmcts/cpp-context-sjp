@@ -5,6 +5,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
 import static uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderFactory.metadataWithRandomUUID;
 import static uk.gov.moj.sjp.it.Constants.EVENT_SELECTOR_TRIAL_REQUESTED;
+import static uk.gov.moj.sjp.it.Constants.SJP_EVENT;
 import static uk.gov.moj.sjp.it.util.TopicUtil.retrieveMessage;
 
 import uk.gov.justice.services.common.converter.ZonedDateTimes;
@@ -19,7 +20,7 @@ import javax.jms.MessageConsumer;
 import javax.json.Json;
 import javax.json.JsonObject;
 
-import com.jayway.restassured.path.json.JsonPath;
+import io.restassured.path.json.JsonPath;
 
 public class TrialRequestedProducer {
 
@@ -51,7 +52,7 @@ public class TrialRequestedProducer {
                 trialRequestedPayload);
 
         try (final MessageProducerClient producerClient = new MessageProducerClient()) {
-            producerClient.startProducer("sjp.event");
+            producerClient.startProducer(SJP_EVENT);
             producerClient.sendMessage(EVENT_SELECTOR_TRIAL_REQUESTED, trialRequestedEvent);
         }
     }

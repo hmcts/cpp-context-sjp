@@ -12,7 +12,7 @@ import uk.gov.moj.sjp.it.helper.RegionsQueryApiClient;
 
 import javax.json.JsonObject;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 public class SjpQueryApiRegionsIT extends BaseIntegrationTest {
 

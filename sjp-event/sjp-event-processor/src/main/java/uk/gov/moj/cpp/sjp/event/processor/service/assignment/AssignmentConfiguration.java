@@ -2,8 +2,6 @@ package uk.gov.moj.cpp.sjp.event.processor.service.assignment;
 
 import uk.gov.justice.services.common.configuration.Value;
 
-import java.io.IOException;
-
 import javax.annotation.PostConstruct;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
@@ -18,7 +16,7 @@ public class AssignmentConfiguration {
     private int assignmentCandidatesLimit;
 
     @PostConstruct
-    private void readConfiguration() throws IOException {
+    private void readConfiguration() {
         assignmentCandidatesLimit = Integer.parseInt(assignmentCandidatesLimitAsString);
     }
 

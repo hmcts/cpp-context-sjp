@@ -19,6 +19,7 @@ import static uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderF
 import static uk.gov.moj.cpp.sjp.domain.SessionType.MAGISTRATE;
 import static uk.gov.moj.cpp.sjp.query.view.matcher.ZonedDateTimeMatcher.isSameMoment;
 
+import java.time.temporal.ChronoUnit;
 import uk.gov.justice.services.core.annotation.Component;
 import uk.gov.justice.services.core.enveloper.Enveloper;
 import uk.gov.justice.services.messaging.JsonEnvelope;
@@ -33,15 +34,14 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
 
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class SessionQueryViewTest {
 
     private static final String TFL = "TFL";
@@ -90,7 +90,7 @@ public class SessionQueryViewTest {
                         withJsonPath("$.localJusticeAreaNationalCourtCode", is(localJusticeAreaNationalCourtCode)),
                         withJsonPath("$.type", is(MAGISTRATE.name())),
                         withJsonPath("$.magistrate", is(magistrate)),
-                        withJsonPath("$.startedAt", isSameMoment(startedAt))
+                        withJsonPath("$.startedAt", isSameMoment(startedAt.truncatedTo(ChronoUnit.MILLIS)))
                 ))
         ));
     }
@@ -126,7 +126,7 @@ public class SessionQueryViewTest {
                         withJsonPath("$.localJusticeAreaNationalCourtCode", is(localJusticeAreaNationalCourtCode)),
                         withJsonPath("$.type", is(MAGISTRATE.name())),
                         withJsonPath("$.magistrate", is(magistrate)),
-                        withJsonPath("$.startedAt", isSameMoment(startedAt)),
+                        withJsonPath("$.startedAt", isSameMoment(startedAt.truncatedTo(ChronoUnit.MILLIS))),
                         withJsonPath("$.prosecutors[0]", is(TFL)),
                         withJsonPath("$.prosecutors[1]", is(DVL))
                 ))
@@ -135,7 +135,7 @@ public class SessionQueryViewTest {
 
     @Test
     public void shouldHandlesQuery() {
-        Assert.assertThat(SessionQueryView.class, isHandlerClass(Component.QUERY_VIEW)
+        assertThat(SessionQueryView.class, isHandlerClass(Component.QUERY_VIEW)
                 .with(method("findSession").thatHandles("sjp.query.session")));
     }
 
@@ -182,7 +182,7 @@ public class SessionQueryViewTest {
                         withJsonPath("$.localJusticeAreaNationalCourtCode", is(sessionToday.getLocalJusticeAreaNationalCourtCode())),
                         withJsonPath("$.type", is(MAGISTRATE.name())),
                         withJsonPath("$.magistrate", is(sessionToday.getMagistrate().get())),
-                        withJsonPath("$.startedAt", isSameMoment(sessionToday.getStartedAt()))
+                        withJsonPath("$.startedAt", isSameMoment(sessionToday.getStartedAt().truncatedTo(ChronoUnit.MILLIS)))
                 ))
         ));
     }
@@ -230,7 +230,7 @@ public class SessionQueryViewTest {
                         withJsonPath("$.localJusticeAreaNationalCourtCode", is(sessionToday.getLocalJusticeAreaNationalCourtCode())),
                         withJsonPath("$.type", is(MAGISTRATE.name())),
                         withJsonPath("$.magistrate", is(sessionToday.getMagistrate().get())),
-                        withJsonPath("$.startedAt", isSameMoment(sessionToday.getStartedAt())),
+                        withJsonPath("$.startedAt", isSameMoment(sessionToday.getStartedAt().truncatedTo(ChronoUnit.MILLIS))),
                         withJsonPath("$.prosecutors[0]", is(TFL)),
                         withJsonPath("$.prosecutors[1]", is(DVL))
                 ))
@@ -264,7 +264,7 @@ public class SessionQueryViewTest {
                         withJsonPath("$.courtHouseCode", equalTo(courtHouseCode)),
                         withJsonPath("$.courtHouseName", equalTo(courtHouseName)),
                         withJsonPath("$.localJusticeAreaNationalCourtCode", is(localJusticeAreaNationalCourtCode)),
-                        withJsonPath("$.startedAt", isSameMoment(startedAt))
+                        withJsonPath("$.startedAt", isSameMoment(startedAt.truncatedTo(ChronoUnit.MILLIS)))
                 ))
         ));
     }
@@ -296,7 +296,7 @@ public class SessionQueryViewTest {
                         withJsonPath("$.courtHouseCode", equalTo(courtHouseCode)),
                         withJsonPath("$.courtHouseName", equalTo(courtHouseName)),
                         withJsonPath("$.localJusticeAreaNationalCourtCode", is(localJusticeAreaNationalCourtCode)),
-                        withJsonPath("$.startedAt", isSameMoment(startedAt)),
+                        withJsonPath("$.startedAt", isSameMoment(startedAt.truncatedTo(ChronoUnit.MILLIS))),
                         withJsonPath("$.prosecutors[0]", is(TFL)),
                         withJsonPath("$.prosecutors[1]", is(DVL))
                 ))

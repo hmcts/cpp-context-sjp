@@ -5,8 +5,8 @@ import static com.jayway.jsonpath.matchers.JsonPathMatchers.withoutJsonPath;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.is;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.eq;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
@@ -42,18 +42,18 @@ import uk.gov.moj.cpp.sjp.event.CaseStarted;
 import java.util.UUID;
 import java.util.stream.Stream;
 
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class AddCaseDocumentHandlerTest {
 
     private CaseAggregate caseAggregate;
@@ -84,14 +84,14 @@ public class AddCaseDocumentHandlerTest {
     @Captor
     private ArgumentCaptor<Stream<JsonEnvelope>> captor;
 
-    @Before
+    @BeforeEach
     public void setUp() {
         caseAggregate = new CaseAggregate();
         when(eventSource.getStreamById(any(UUID.class))).thenReturn(eventStream);
         when(aggregateService.get(any(EventStream.class), any())).thenReturn(caseAggregate);
     }
 
-    @After
+    @AfterEach
     public void tearDown() {
         verify(eventSource).getStreamById(eq(CASE_ID));
         verify(aggregateService).get(eq(eventStream), eq(CaseAggregate.class));

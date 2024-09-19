@@ -5,9 +5,9 @@ import static java.util.Collections.singletonList;
 import static java.util.Optional.of;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.mockito.Matchers.any;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import static uk.gov.moj.cpp.sjp.query.view.util.JsonHelper.readJsonFromFile;
@@ -34,14 +34,14 @@ import java.util.UUID;
 
 import javax.json.JsonObject;
 
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class ProsecutionCaseServiceTest {
 
     @InjectMocks
@@ -77,7 +77,6 @@ public class ProsecutionCaseServiceTest {
         final JsonObject prosecutor = readJsonFromFile("data/referencedata.query.prosecutor.json");
 
         when(caseRepository.findBy(caseDetail.getId())).thenReturn(caseDetail);
-        when(onlinePleaDetailRepository.findByCaseIdAndDefendantId(caseDetail.getId(), caseDetail.getDefendant().getId())).thenReturn(singletonList(mock(OnlinePleaDetail.class)));
         when(prosecutionCaseFileService.getCaseFileDetails(caseDetail.getId())).thenReturn(of(caseFileDetails));
         when(referenceDataService.getProsecutor(any())).thenReturn(prosecutor);
         when(referenceDataService.getNationality(any())).thenReturn(of(nationality));
@@ -103,7 +102,6 @@ public class ProsecutionCaseServiceTest {
         final JsonObject prosecutor = readJsonFromFile("data/referencedata.query.prosecutor.json");
 
         when(caseRepository.findBy(caseDetail.getId())).thenReturn(caseDetail);
-        when(onlinePleaDetailRepository.findByCaseIdAndDefendantId(caseDetail.getId(), caseDetail.getDefendant().getId())).thenReturn(singletonList(mock(OnlinePleaDetail.class)));
         when(prosecutionCaseFileService.getCaseFileDetails(caseDetail.getId())).thenReturn(of(caseFileDetails));
         when(referenceDataService.getProsecutor(any())).thenReturn(prosecutor);
         when(referenceDataService.getNationality(any())).thenReturn(of(nationality));
@@ -137,7 +135,6 @@ public class ProsecutionCaseServiceTest {
         offenceDefinitionByOffenceCode.put("CA03010", offenceData.getJsonArray("offences").getJsonObject(0));
 
         when(caseRepository.findBy(caseDetail.getId())).thenReturn(caseDetail);
-        when(onlinePleaDetailRepository.findByCaseIdAndDefendantId(caseDetail.getId(), caseDetail.getDefendant().getId())).thenReturn(singletonList(mock(OnlinePleaDetail.class)));
         when(prosecutionCaseFileService.getCaseFileDetails(caseDetail.getId())).thenReturn(of(caseFileDetails));
         when(referenceDataService.getProsecutor(any())).thenReturn(prosecutor);
         when(referenceDataService.getNationality(any())).thenReturn(of(nationality));
@@ -173,7 +170,6 @@ public class ProsecutionCaseServiceTest {
         offenceDefinitionByOffenceCode.put("CA03011", offenceData.getJsonArray("offences").getJsonObject(1));
 
         when(caseRepository.findBy(caseDetail.getId())).thenReturn(caseDetail);
-        when(onlinePleaDetailRepository.findByCaseIdAndDefendantId(caseDetail.getId(), caseDetail.getDefendant().getId())).thenReturn(singletonList(mock(OnlinePleaDetail.class)));
         when(prosecutionCaseFileService.getCaseFileDetails(caseDetail.getId())).thenReturn(of(caseFileDetails));
         when(referenceDataService.getProsecutor(any())).thenReturn(prosecutor);
         when(referenceDataService.getNationality(any())).thenReturn(of(nationality));

@@ -17,7 +17,7 @@ import java.util.List;
 import java.util.UUID;
 
 import org.hamcrest.Matcher;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 public class CaseSearchResultListTest {
 

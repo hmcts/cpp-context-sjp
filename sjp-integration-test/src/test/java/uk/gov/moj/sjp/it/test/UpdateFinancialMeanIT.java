@@ -29,16 +29,16 @@ import javax.json.JsonObject;
 import javax.ws.rs.core.Response;
 
 import org.hamcrest.Matcher;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 public class UpdateFinancialMeanIT extends BaseIntegrationTest {
 
     private FinancialMeansHelper financialMeansHelper;
     private CreateCase.CreateCasePayloadBuilder createCasePayloadBuilder;
 
-    @Before
+    @BeforeEach
     public void setUp() {
         financialMeansHelper = new FinancialMeansHelper();
         this.createCasePayloadBuilder = CreateCase.CreateCasePayloadBuilder.withDefaults();
@@ -50,7 +50,7 @@ public class UpdateFinancialMeanIT extends BaseIntegrationTest {
         stubProsecutorQuery(prosecutingAuthority.name(), prosecutingAuthority.getFullName(), randomUUID());
     }
 
-    @After
+    @AfterEach
     public void tearDown() throws Exception {
         financialMeansHelper.close();
     }

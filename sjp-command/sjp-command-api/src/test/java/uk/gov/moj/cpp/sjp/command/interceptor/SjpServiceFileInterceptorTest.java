@@ -2,6 +2,7 @@ package uk.gov.moj.cpp.sjp.command.interceptor;
 
 import static java.util.Optional.empty;
 import static java.util.Optional.of;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -22,17 +23,16 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
-import junit.framework.TestCase;
 import org.apache.commons.io.IOUtils;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 @SuppressWarnings("squid:S2187")
-@RunWith(MockitoJUnitRunner.class)
-public class SjpServiceFileInterceptorTest extends TestCase {
+@ExtendWith(MockitoExtension.class)
+public class SjpServiceFileInterceptorTest {
 
     @Mock
     private JsonEnvelope value;
@@ -88,29 +88,20 @@ public class SjpServiceFileInterceptorTest extends TestCase {
     @Test
     public void shouldNotPassSjpServiceFileInterceptorValidationAndUpload() throws IOException {
         when(interceptorContext.getInputParameter("fileInputDetailsList")).thenReturn(empty());
-        final InterceptorContext outputInterceptorContext = this.interceptorContext.copyWithInput(inputEnvelope);
-        when(interceptorChain.processNext(outputInterceptorContext)).thenReturn(null);
 
         sjpServiceFileInterceptor.process(interceptorContext, interceptorChain);
         verify(interceptorChain).processNext(interceptorContext);
     }
 
-    @Test(expected = ForbiddenRequestException.class)
+    @Test
     public void shouldFailSjpServiceFileInterceptorValidationAndUpload() throws IOException {
         final String fileName = "fileName.exe";
         final List<FileInputDetails> fileInputDetailsList = getFileInputDetails(fileName);
         final Optional<Object> fileInputDetails = of(fileInputDetailsList);
-        when(multipleFileInputDetailsService.storeFileDetails(fileInputDetailsList)).thenReturn(results);
         when(documentTypeValidator.isValid(fileName)).thenReturn(false);
         when(interceptorContext.getInputParameter("fileInputDetailsList")).thenReturn(fileInputDetails);
-        final InterceptorContext outputInterceptorContext = this.interceptorContext.copyWithInput(inputEnvelope);
 
-        when(interceptorContext.inputEnvelope()).thenReturn(value);
-        when(resultsHandler.addResultsTo(value, results)).thenReturn(inputEnvelope);
-
-        when(interceptorChain.processNext(outputInterceptorContext)).thenReturn(outputInterceptorContext);
-
-        sjpServiceFileInterceptor.process(interceptorContext, interceptorChain);
+        assertThrows(ForbiddenRequestException.class, () -> sjpServiceFileInterceptor.process(interceptorContext, interceptorChain));
     }
     private List<FileInputDetails> getFileInputDetails(final String fileName) throws IOException {
         final String FIELD_NAME = "FieldName";

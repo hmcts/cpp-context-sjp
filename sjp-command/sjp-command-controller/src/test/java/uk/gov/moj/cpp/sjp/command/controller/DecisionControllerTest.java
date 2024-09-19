@@ -12,7 +12,7 @@ import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.collection.IsCollectionWithSize.hasSize;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.mockito.Matchers.anyString;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.justice.services.core.annotation.Component.COMMAND_CONTROLLER;
@@ -22,6 +22,7 @@ import static uk.gov.justice.services.test.utils.core.matchers.HandlerMethodMatc
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMetadataMatcher.withMetadataEnvelopedFrom;
 import static uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderFactory.metadataWithRandomUUID;
 
+import javax.json.Json;
 import uk.gov.justice.services.core.enveloper.Enveloper;
 import uk.gov.justice.services.core.sender.Sender;
 import uk.gov.justice.services.messaging.Envelope;
@@ -42,16 +43,16 @@ import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
 import javax.json.JsonValue;
 
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class DecisionControllerTest {
 
     private static final UUID caseId = randomUUID();
@@ -353,7 +354,7 @@ public class DecisionControllerTest {
     }
 
     private static JsonArray createOffenceDecision() {
-        final JsonArrayBuilder offenceDecisionBuilderArray = createArrayBuilder();
+        final JsonArrayBuilder offenceDecisionBuilderArray = Json.createArrayBuilder();
         final JsonObjectBuilder offenceBuilder1 = createObjectBuilder();
         offenceBuilder1.add("offenceId", randomUUID().toString());
         offenceBuilder1.add("type", "WITHDRAWN");
@@ -370,7 +371,7 @@ public class DecisionControllerTest {
     }
 
     private static JsonArray createReferToCourtOffenceDecision() {
-        final JsonArrayBuilder offenceDecisionBuilderArray = createArrayBuilder();
+        final JsonArrayBuilder offenceDecisionBuilderArray = Json.createArrayBuilder();
         final JsonObjectBuilder offenceBuilder = createObjectBuilder();
         offenceBuilder.add("offenceId", randomUUID().toString());
         offenceBuilder.add("type", "REFER_FOR_COURT_HEARING");

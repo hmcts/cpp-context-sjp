@@ -15,13 +15,13 @@ import java.time.ZonedDateTime;
 import java.util.List;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class CaseAssignmentRestrictionListenerTest {
 
     private static final String PROSECUTING_AUTHORITY = "TFL";

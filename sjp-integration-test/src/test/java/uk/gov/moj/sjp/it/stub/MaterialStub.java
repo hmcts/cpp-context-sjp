@@ -10,7 +10,6 @@ import static com.github.tomakehurst.wiremock.client.WireMock.postRequestedFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlMatching;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlPathEqualTo;
-import static com.jayway.awaitility.Awaitility.await;
 import static java.lang.String.format;
 import static java.util.Optional.empty;
 import static java.util.UUID.randomUUID;
@@ -19,11 +18,12 @@ import static javax.ws.rs.core.HttpHeaders.CONTENT_TYPE;
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
 import static org.apache.http.HttpStatus.SC_ACCEPTED;
 import static org.apache.http.HttpStatus.SC_OK;
+import static org.awaitility.Awaitility.await;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
 import static uk.gov.justice.services.messaging.JsonEnvelope.metadataFrom;
-import static uk.gov.moj.sjp.it.Constants.PUBLIC_ACTIVE_MQ_TOPIC;
+import static uk.gov.moj.sjp.it.Constants.PUBLIC_EVENT;
 
 import uk.gov.justice.service.wiremock.testutil.InternalEndpointMockUtils;
 import uk.gov.justice.services.common.http.HeaderConstants;
@@ -73,7 +73,7 @@ public class MaterialStub {
                 .get();
 
         try (final MessageProducerClient producerClient = new MessageProducerClient()) {
-            producerClient.startProducer(PUBLIC_ACTIVE_MQ_TOPIC);
+            producerClient.startProducer(PUBLIC_EVENT);
             final JsonEnvelope materialAddedEventPayload = envelopeFrom(metadataFrom(addMaterialCommand.metadata())
                             .withName("material.material-added"),
                     createObjectBuilder()

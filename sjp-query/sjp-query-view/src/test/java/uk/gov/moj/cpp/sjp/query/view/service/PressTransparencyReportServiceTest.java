@@ -4,9 +4,9 @@ import static java.time.LocalDate.of;
 import static java.util.Collections.singletonList;
 import static java.util.UUID.fromString;
 import static java.util.UUID.randomUUID;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertThat;
-import static org.mockito.Matchers.any;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 import static uk.gov.moj.cpp.sjp.domain.DocumentFormat.PDF;
 import static uk.gov.moj.cpp.sjp.domain.DocumentRequestType.DELTA;
@@ -20,13 +20,13 @@ import java.time.LocalTime;
 
 import javax.persistence.NoResultException;
 
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class PressTransparencyReportServiceTest {
 
     @Mock
@@ -64,7 +64,7 @@ public class PressTransparencyReportServiceTest {
     @Test
     public void shouldReturnEmptyMetadata() {
 
-        when(pressTransparencyReportMetadataRepository.findLatestPressTransparencyReportMetadata(of(2020, 10, 9).atStartOfDay())).thenThrow(new NoResultException());
+        when(pressTransparencyReportMetadataRepository.findLatestPressTransparencyReportMetadata(any())).thenThrow(new NoResultException());
 
         final PressTransparencyReportMetadataView pressTransparencyReportMetadataView = pressTransparencyReportService.getMetadata();
 

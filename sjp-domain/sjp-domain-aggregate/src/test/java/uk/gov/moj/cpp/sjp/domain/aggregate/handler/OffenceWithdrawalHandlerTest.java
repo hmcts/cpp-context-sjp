@@ -4,7 +4,7 @@ import static com.google.common.collect.Lists.newArrayList;
 import static java.util.UUID.randomUUID;
 import static java.util.stream.Collectors.toList;
 import static org.hamcrest.Matchers.containsInAnyOrder;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static uk.gov.justice.json.schemas.domains.sjp.User.user;
 
 import uk.gov.justice.json.schemas.domains.sjp.User;
@@ -22,8 +22,8 @@ import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 public class OffenceWithdrawalHandlerTest {
 
@@ -36,7 +36,7 @@ public class OffenceWithdrawalHandlerTest {
 
     private CaseAggregateState caseAggregateState;
 
-    @Before
+    @BeforeEach
     public void onceBeforeEachTest() {
         caseAggregateState = new CaseAggregateState();
         caseAggregateState.setCaseId(caseID);

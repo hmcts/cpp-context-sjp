@@ -2,7 +2,7 @@ package uk.gov.moj.sjp.it.test.ingestor;
 
 import static java.util.UUID.randomUUID;
 import static org.hamcrest.CoreMatchers.is;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static uk.gov.moj.cpp.sjp.domain.common.CaseStatus.NO_PLEA_RECEIVED_READY_FOR_DECISION;
 import static uk.gov.moj.cpp.sjp.domain.common.CaseStatus.REOPENED_IN_LIBRA;
 import static uk.gov.moj.sjp.it.helper.DecisionHelper.saveDefaultDecision;
@@ -26,19 +26,19 @@ import java.util.UUID;
 
 import javax.json.JsonObject;
 
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 
-@Ignore("Enable this when merging to master")
+@Disabled("Enable this when merging to master")
 public class CaseStatusChangedIT extends BaseIntegrationTest {
     private final ViewStoreCleaner viewStoreCleaner = new ViewStoreCleaner();
     private CreateCase.CreateCasePayloadBuilder createCasePayloadBuilder = CreateCase.CreateCasePayloadBuilder.withDefaults();
     private static final String NATIONAL_COURT_CODE = "1080";
 
 
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
         final ProsecutingAuthority prosecutingAuthority = createCasePayloadBuilder.getProsecutingAuthority();
         stubProsecutorQuery(prosecutingAuthority.name(), prosecutingAuthority.getFullName(), randomUUID());
@@ -54,7 +54,7 @@ public class CaseStatusChangedIT extends BaseIntegrationTest {
         saveDefaultDecision(createCasePayloadBuilder.getId(), createCasePayloadBuilder.getOffenceIds());
     }
 
-    @After
+    @AfterEach
     public void cleanDatabase() {
         viewStoreCleaner.cleanDataInViewStore(createCasePayloadBuilder.getId());
     }

@@ -1,6 +1,6 @@
 package uk.gov.moj.sjp.it.helper;
 
-import static com.jayway.awaitility.Awaitility.await;
+import static org.awaitility.Awaitility.await;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.isJson;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
 import static java.lang.String.format;
@@ -26,7 +26,7 @@ import javax.json.JsonObject;
 import javax.ws.rs.core.Response;
 
 import com.jayway.jsonpath.ReadContext;
-import org.apache.commons.lang.RandomStringUtils;
+import org.apache.commons.lang3.RandomStringUtils;
 import org.hamcrest.Matcher;
 
 public class EmployerHelper implements AutoCloseable {

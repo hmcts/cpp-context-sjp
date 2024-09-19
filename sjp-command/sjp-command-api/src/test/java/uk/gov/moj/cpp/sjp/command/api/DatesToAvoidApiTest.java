@@ -1,7 +1,8 @@
 package uk.gov.moj.cpp.sjp.command.api;
 
+import static java.util.Collections.singletonMap;
 import static org.hamcrest.CoreMatchers.equalTo;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.verify;
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMetadataMatcher.withMetadataEnvelopedFrom;
@@ -19,20 +20,18 @@ import uk.gov.moj.cpp.accesscontrol.test.utils.BaseDroolsAccessControlTest;
 
 import java.util.Map;
 
-import com.google.common.collect.ImmutableMap;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.kie.api.runtime.ExecutionResults;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class DatesToAvoidApiTest extends BaseDroolsAccessControlTest {
-
 
     private static final String ADD_DATES_TO_AVOID_COMMAND_NAME = "sjp.add-dates-to-avoid";
 
@@ -51,9 +50,13 @@ public class DatesToAvoidApiTest extends BaseDroolsAccessControlTest {
     @Mock
     private UserAndGroupProvider userAndGroupProvider;
 
+    public DatesToAvoidApiTest() {
+        super("COMMAND_API_SESSION");
+    }
+
     @Override
-    protected Map<Class, Object> getProviderMocks() {
-        return ImmutableMap.<Class, Object>builder().put(UserAndGroupProvider.class, userAndGroupProvider).build();
+    protected Map<Class<?>, Object> getProviderMocks() {
+        return singletonMap(UserAndGroupProvider.class, userAndGroupProvider);
     }
 
     @Test

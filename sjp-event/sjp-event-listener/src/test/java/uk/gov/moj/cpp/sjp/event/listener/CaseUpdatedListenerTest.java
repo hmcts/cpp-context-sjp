@@ -7,8 +7,8 @@ import static java.util.UUID.randomUUID;
 import static javax.json.Json.createArrayBuilder;
 import static javax.json.Json.createObjectBuilder;
 import static org.hamcrest.Matchers.equalTo;
-import static org.junit.Assert.assertThat;
-import static org.mockito.Matchers.any;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -41,15 +41,15 @@ import java.util.UUID;
 import javax.json.JsonObject;
 
 import com.google.common.collect.Sets;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 
 @SuppressWarnings("WeakerAccess")
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class CaseUpdatedListenerTest {
 
     private static final String EVENTS_CASE_LISTED_IN_CRIMINAL_COURTS = "sjp.events.case-listed-in-criminal-courts";
@@ -100,7 +100,6 @@ public class CaseUpdatedListenerTest {
 
         when(jsonObjectToObjectConverter.convert(caseCompletedEventPayload, CaseCompleted.class)).thenReturn(new CaseCompleted(caseId, newHashSet(randomUUID())));
         when(readyCaseRepository.findBy(caseId)).thenReturn(readyCase);
-        when(caseRepository.findBy(caseId)).thenReturn(caseDetail);
         listener.caseCompleted(envelopeIn);
 
         verify(caseRepository).completeCase(caseId);
@@ -114,7 +113,6 @@ public class CaseUpdatedListenerTest {
 
         when(jsonObjectToObjectConverter.convert(caseCompletedEventPayload, CaseCompleted.class)).thenReturn(new CaseCompleted(caseId, newHashSet(randomUUID())));
         when(readyCaseRepository.findBy(caseId)).thenReturn(null);
-        when(caseRepository.findBy(caseId)).thenReturn(caseDetail);
 
         listener.caseCompleted(envelopeIn);
 
@@ -127,9 +125,6 @@ public class CaseUpdatedListenerTest {
         when(envelope.payloadAsJsonObject()).thenReturn(payload);
         when(jsonObjectToObjectConverter.convert(payload, CaseDocumentAdded.class)).thenReturn(caseDocumentEvent);
         when(caseDocumentConverter.convert(caseDocumentEvent)).thenReturn(caseDocument);
-        when(caseDocument.getCaseId()).thenReturn(UUID.randomUUID());
-        when(caseDocumentEvent.getCaseId()).thenReturn(caseId);
-        when(caseRepository.findBy(caseId)).thenReturn(caseDetail);
 
         listener.addCaseDocument(envelope);
 
@@ -141,8 +136,6 @@ public class CaseUpdatedListenerTest {
         when(envelope.payloadAsJsonObject()).thenReturn(payload);
         when(jsonObjectToObjectConverter.convert(payload, CaseDocumentAdded.class)).thenReturn(caseDocumentEvent);
         when(caseDocumentConverter.convert(caseDocumentEvent)).thenReturn(caseDocument);
-        when(caseDocumentEvent.getCaseId()).thenReturn(caseId);
-        when(caseRepository.findBy(caseId)).thenReturn(null);
 
         listener.addCaseDocument(envelope);
 

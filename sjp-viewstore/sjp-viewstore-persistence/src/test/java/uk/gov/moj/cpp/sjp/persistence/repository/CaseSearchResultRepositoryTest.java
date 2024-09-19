@@ -8,7 +8,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
 
 import uk.gov.justice.services.common.converter.LocalDates;
-import uk.gov.justice.services.test.utils.persistence.BaseTransactionalTest;
+import uk.gov.justice.services.test.utils.persistence.BaseTransactionalJunit4Test;
 import uk.gov.moj.cpp.sjp.persistence.entity.CaseSearchResult;
 import uk.gov.moj.cpp.sjp.persistence.entity.CaseSummary;
 
@@ -27,7 +27,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 @RunWith(CdiTestRunner.class)
-public class CaseSearchResultRepositoryTest extends BaseTransactionalTest {
+public class CaseSearchResultRepositoryTest extends BaseTransactionalJunit4Test {
 
     private static final boolean IS_CURRENT = false;
     private static final boolean IS_OLD = true;

@@ -11,14 +11,14 @@ import uk.gov.moj.cpp.sjp.event.processor.activiti.TimerExpirationProcess;
 import java.time.LocalDate;
 import java.util.UUID;
 
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class TimerServiceTest {
 
     @Mock
@@ -31,7 +31,7 @@ public class TimerServiceTest {
 
     private Metadata metadata;
 
-    @Before
+    @BeforeEach
     public void setup() {
         this.caseId = randomUUID();
         this.metadata = metadataWithRandomUUIDAndName().build();

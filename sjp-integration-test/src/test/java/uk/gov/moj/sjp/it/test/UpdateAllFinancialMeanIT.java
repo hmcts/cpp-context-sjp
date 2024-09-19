@@ -32,9 +32,9 @@ import java.util.UUID;
 import javax.json.JsonObject;
 
 import org.hamcrest.Matcher;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 public class UpdateAllFinancialMeanIT extends BaseIntegrationTest {
 
@@ -44,7 +44,7 @@ public class UpdateAllFinancialMeanIT extends BaseIntegrationTest {
     private CreateCase.CreateCasePayloadBuilder createCasePayloadBuilder;
     private static final String NATIONAL_COURT_CODE = "1080";
 
-    @Before
+    @BeforeEach
     public void setUp() {
         this.createCasePayloadBuilder = CreateCase.CreateCasePayloadBuilder.withDefaults();
 
@@ -55,7 +55,7 @@ public class UpdateAllFinancialMeanIT extends BaseIntegrationTest {
         stubProsecutorQuery(prosecutingAuthority.name(), prosecutingAuthority.getFullName(), randomUUID());
     }
 
-    @After
+    @AfterEach
     public void tearDown() throws Exception {
         financialMeansHelper.close();
     }

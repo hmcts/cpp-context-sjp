@@ -48,8 +48,8 @@ import java.util.UUID;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Sets;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 public class AddCaseDocumentIT extends BaseIntegrationTest {
 
@@ -62,7 +62,7 @@ public class AddCaseDocumentIT extends BaseIntegrationTest {
     private static final String DEFENDANT_REGION = "croydon";
     private static final String NATIONAL_COURT_CODE = "1080";
 
-    @Before
+    @BeforeEach
     public void setUp() {
         createCasePayloadBuilder = CreateCase
                 .CreateCasePayloadBuilder

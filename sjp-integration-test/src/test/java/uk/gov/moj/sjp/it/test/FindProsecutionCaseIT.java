@@ -26,8 +26,8 @@ import uk.gov.moj.sjp.it.util.SjpDatabaseCleaner;
 import java.util.UUID;
 
 import com.google.common.collect.Sets;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 @SuppressWarnings("squid:S2699")
 public class FindProsecutionCaseIT extends BaseIntegrationTest {
@@ -44,7 +44,7 @@ public class FindProsecutionCaseIT extends BaseIntegrationTest {
     private final UUID prosecutorId = randomUUID();
     private final String LEGAL_ENTITY_NAME = "Legal Entity Name";
 
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
         databaseCleaner.cleanViewStore();
 

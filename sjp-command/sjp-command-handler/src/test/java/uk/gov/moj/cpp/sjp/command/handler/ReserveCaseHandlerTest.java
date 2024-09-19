@@ -5,7 +5,7 @@ import static javax.json.Json.createObjectBuilder;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.mockito.Matchers.any;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 import static uk.gov.justice.services.test.utils.core.enveloper.EnveloperFactory.createEnveloperWithEvents;
 import static uk.gov.justice.services.test.utils.core.matchers.EventStreamMatcher.eventStreamAppendedWith;
@@ -18,12 +18,12 @@ import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeStrea
 import java.time.ZonedDateTime;
 import java.util.UUID;
 import java.util.stream.Stream;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.justice.services.core.aggregate.AggregateService;
 import uk.gov.justice.services.core.enveloper.Enveloper;
 import uk.gov.justice.services.eventsourcing.source.core.EventSource;
@@ -35,7 +35,7 @@ import uk.gov.moj.cpp.sjp.domain.aggregate.CaseAggregate;
 import uk.gov.moj.cpp.sjp.event.CaseReserved;
 import uk.gov.moj.cpp.sjp.event.CaseUnReserved;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class ReserveCaseHandlerTest {
 
     private final UUID caseId = UUID.randomUUID();

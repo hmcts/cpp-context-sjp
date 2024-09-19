@@ -4,8 +4,8 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertThrows;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import static uk.gov.justice.json.schemas.domains.sjp.ApplicationType.REOPENING;
@@ -14,9 +14,11 @@ import static uk.gov.justice.services.test.utils.core.converter.JsonObjectToObje
 import static uk.gov.justice.services.test.utils.core.enveloper.EnveloperFactory.createEnveloper;
 import static uk.gov.moj.cpp.sjp.event.processor.service.systemdocgenerator.TemplateIdentifier.ENFORCEMENT_PENDING_APPLICATION_NOTIFICATION;
 
+import org.hamcrest.CoreMatchers;
 import uk.gov.justice.json.schemas.domains.sjp.ApplicationType;
 import uk.gov.justice.json.schemas.domains.sjp.CaseApplication;
 import uk.gov.justice.json.schemas.domains.sjp.queries.CaseDetails;
+import uk.gov.justice.services.adapter.rest.exception.BadRequestException;
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
 import uk.gov.justice.services.common.converter.ObjectToJsonObjectConverter;
 import uk.gov.justice.services.common.converter.jackson.ObjectMapperProducer;
@@ -39,32 +41,26 @@ import java.time.LocalDate;
 import java.time.ZonedDateTime;
 import java.util.UUID;
 
-import javax.inject.Inject;
 import javax.json.JsonObject;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import junit.framework.TestCase;
 import org.apache.commons.lang3.tuple.Pair;
-import org.junit.Before;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 @SuppressWarnings("squid:S2187")
-public class EnforcementEmailAttachmentServiceTest extends TestCase {
+public class EnforcementEmailAttachmentServiceTest {
     private static final String EVENT_NAME = "sjp.events.enforcement-pending-application-notification-initiated";
     private static final String STAT_DECS_EMAIL_SUBJECT = "Subject: APPLICATION FOR A STATUTORY DECLARATION RECEIVED (COMMISSIONER OF OATHS)";
     private static final String REOPENING_EMAIL_SUBJECT = "Subject: APPLICATION TO REOPEN RECEIVED";
     private static final String INVALID_EMAIL_SUBJECT = "Subject: INVALID EMAIL SENT";
-
-    @Rule
-    public ExpectedException thrown = ExpectedException.none();
 
     @Spy
     private ObjectMapper objectMapper = new ObjectMapperProducer().objectMapper();
@@ -111,7 +107,7 @@ public class EnforcementEmailAttachmentServiceTest extends TestCase {
     private Enveloper envelopers = createEnveloper();
     final String subJect = "APPLICATION FOR A STATUTORY DECLARATION RECEIVED (COMMISSIONER OF OATHS)";;
 
-    @Before
+    @BeforeEach
     public void setUp() {
         initiatedEvent
                 = new EnforcementPendingApplicationNotificationRequired
@@ -192,10 +188,9 @@ public class EnforcementEmailAttachmentServiceTest extends TestCase {
 
     @Test
     public void shouldBuildEmailSubjectWithOtherApplicationType() {
-        thrown.expect(IllegalStateException.class);
         final String errorMessage = String.format("Invalid Application Type, unable to derive email subject for application type: %s", null);
-        thrown.expectMessage(errorMessage);
-        service.getEmailSubject(null);
+        var e = assertThrows(IllegalStateException.class, () -> service.getEmailSubject(null));
+        assertThat(e.getMessage(), CoreMatchers.is(errorMessage));
     }
 
     private EnforcementPendingApplicationNotificationTemplateData getTemplateData(final Pair<JsonObject, InputStream> fileStoreEntry) {

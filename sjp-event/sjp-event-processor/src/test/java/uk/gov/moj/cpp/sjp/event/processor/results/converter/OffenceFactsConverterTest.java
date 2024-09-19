@@ -1,19 +1,19 @@
 package uk.gov.moj.cpp.sjp.event.processor.results.converter;
 
 import static org.hamcrest.CoreMatchers.is;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static uk.gov.moj.cpp.sjp.event.processor.results.converter.TestConstants.VEHICLE_MAKE;
 import static uk.gov.moj.cpp.sjp.event.processor.results.converter.TestConstants.VEHICLE_REGISTRATION_MARK;
 
 import uk.gov.justice.core.courts.OffenceFacts;
 import uk.gov.justice.json.schemas.domains.sjp.queries.Offence;
 
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class OffenceFactsConverterTest {
 
     @InjectMocks

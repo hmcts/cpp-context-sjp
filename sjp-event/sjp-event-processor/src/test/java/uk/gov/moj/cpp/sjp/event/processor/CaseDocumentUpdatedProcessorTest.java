@@ -3,8 +3,8 @@ package uk.gov.moj.cpp.sjp.event.processor;
 import static javax.json.Json.createObjectBuilder;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.Assert.assertFalse;
-import static org.mockito.Matchers.eq;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMetadataMatcher.withMetadataEnvelopedFrom;
@@ -19,7 +19,6 @@ import uk.gov.justice.services.core.enveloper.Enveloper;
 import uk.gov.justice.services.core.sender.Sender;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.test.utils.core.enveloper.EnveloperFactory;
-import uk.gov.moj.cpp.authorisation.client.AuthorisationServiceClient;
 
 import java.util.Optional;
 import java.util.UUID;
@@ -28,16 +27,16 @@ import javax.json.Json;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
 
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class CaseDocumentUpdatedProcessorTest {
     private static final String PUBLIC_CASE_DOCUMENT_ADDED_PUBLIC_EVENT = "public.sjp.case-document-added";
     private static final String PUBLIC_CASE_DOCUMENT_ALREADY_EXISTS_PUBLIC_EVENT = "public.sjp.case-document-already-exists";
@@ -53,9 +52,6 @@ public class CaseDocumentUpdatedProcessorTest {
 
     @Mock
     private Sender sender;
-
-    @Mock
-    private AuthorisationServiceClient authorisationServiceClient;
 
     @Spy
     private Enveloper enveloper = EnveloperFactory.createEnveloperWithEvents(JsonObject.class);

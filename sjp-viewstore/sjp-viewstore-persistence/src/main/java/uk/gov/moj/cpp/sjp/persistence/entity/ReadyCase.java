@@ -17,6 +17,7 @@ import javax.persistence.Enumerated;
 import javax.persistence.Id;
 import javax.persistence.Table;
 
+@SuppressWarnings("squid:S107")
 @Entity
 @Table(name = "ready_cases")
 public class ReadyCase {

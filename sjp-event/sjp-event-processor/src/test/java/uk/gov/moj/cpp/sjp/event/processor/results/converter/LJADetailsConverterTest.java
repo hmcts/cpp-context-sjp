@@ -1,7 +1,7 @@
 package uk.gov.moj.cpp.sjp.event.processor.results.converter;
 
 import static org.hamcrest.CoreMatchers.is;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static uk.gov.moj.cpp.sjp.event.processor.results.converter.TestConstants.LJA_CODE;
 import static uk.gov.moj.cpp.sjp.event.processor.results.converter.TestConstants.LJA_CODE_KEY;
 import static uk.gov.moj.cpp.sjp.event.processor.results.converter.TestConstants.LJA_NAME;
@@ -16,12 +16,12 @@ import java.util.Optional;
 import javax.json.Json;
 import javax.json.JsonObject;
 
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class LJADetailsConverterTest {
 
     @InjectMocks

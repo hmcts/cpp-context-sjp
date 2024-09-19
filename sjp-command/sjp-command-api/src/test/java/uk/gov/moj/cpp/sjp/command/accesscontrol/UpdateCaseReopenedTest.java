@@ -1,5 +1,6 @@
 package uk.gov.moj.cpp.sjp.command.accesscontrol;
 
+import static java.util.Collections.singletonMap;
 import static org.mockito.BDDMockito.given;
 import static uk.gov.moj.cpp.sjp.command.api.accesscontrol.RuleConstants.getCaseReopenedActionGroups;
 
@@ -10,8 +11,7 @@ import uk.gov.moj.cpp.accesscontrol.test.utils.BaseDroolsAccessControlTest;
 import java.util.Map;
 import java.util.UUID;
 
-import com.google.common.collect.ImmutableMap;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.kie.api.runtime.ExecutionResults;
 import org.mockito.Mock;
 
@@ -23,6 +23,10 @@ public class UpdateCaseReopenedTest extends BaseDroolsAccessControlTest {
     private UserAndGroupProvider userAndGroupProvider;
 
     private String unallowedUserGroup = UUID.randomUUID().toString();
+
+    public UpdateCaseReopenedTest() {
+        super("COMMAND_API_SESSION");
+    }
 
     @Test
     public void shouldAllowAuthorisedUserToUpdateCaseAsReopened() {
@@ -43,16 +47,12 @@ public class UpdateCaseReopenedTest extends BaseDroolsAccessControlTest {
 
         final Action action = createActionFor(UPDATE_CASE_REOPENED_COMMAND);
 
-        given(
-                userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups(action, unallowedUserGroup)
-        ).willReturn(false);
-
         final ExecutionResults results = executeRulesWith(action);
         assertFailureOutcome(results);
     }
 
     @Override
-    protected Map<Class, Object> getProviderMocks() {
-        return ImmutableMap.<Class, Object>builder().put(UserAndGroupProvider.class, userAndGroupProvider).build();
+    protected Map<Class<?>, Object> getProviderMocks() {
+        return singletonMap(UserAndGroupProvider.class, userAndGroupProvider);
     }
 }

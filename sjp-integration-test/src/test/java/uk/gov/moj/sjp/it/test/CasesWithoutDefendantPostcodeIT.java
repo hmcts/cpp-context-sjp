@@ -21,9 +21,9 @@ import java.time.LocalDate;
 import java.util.Optional;
 import java.util.UUID;
 
-import org.junit.Before;
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 @SuppressWarnings("squid:S1607")
 public class CasesWithoutDefendantPostcodeIT extends BaseIntegrationTest {
 
@@ -31,7 +31,7 @@ public class CasesWithoutDefendantPostcodeIT extends BaseIntegrationTest {
 
     private static final String NATIONAL_COURT_CODE = "1080";
 
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
         cleaner.cleanViewStore();
         stubQueryForAllProsecutors();
@@ -39,7 +39,7 @@ public class CasesWithoutDefendantPostcodeIT extends BaseIntegrationTest {
     }
 
     @Test
-    @Ignore
+    @Disabled
     public void shouldListAllCasesWithoutDefendantPostcode() {
         final UUID caseId1 = randomUUID();
         final String urn1 = "TFL1";

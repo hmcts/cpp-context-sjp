@@ -7,7 +7,7 @@ import static uk.gov.moj.cpp.sjp.domain.DocumentLanguage.ENGLISH;
 import static uk.gov.moj.cpp.sjp.domain.DocumentRequestType.DELTA;
 import static uk.gov.moj.cpp.sjp.domain.DocumentRequestType.FULL;
 
-import uk.gov.justice.services.test.utils.persistence.BaseTransactionalTest;
+import uk.gov.justice.services.test.utils.persistence.BaseTransactionalJunit4Test;
 import uk.gov.moj.cpp.sjp.persistence.entity.TransparencyReportMetadata;
 
 import java.time.LocalDateTime;
@@ -20,7 +20,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 @RunWith(CdiTestRunner.class)
-public class TransparencyReportMetadataRepositoryTest extends BaseTransactionalTest {
+public class TransparencyReportMetadataRepositoryTest extends BaseTransactionalJunit4Test {
 
     @Inject
     private TransparencyReportMetadataRepository transparencyReportMetadataRepository;

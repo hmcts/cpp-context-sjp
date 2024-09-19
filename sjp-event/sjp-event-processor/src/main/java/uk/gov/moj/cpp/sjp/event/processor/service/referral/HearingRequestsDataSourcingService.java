@@ -17,6 +17,7 @@ import java.util.stream.Collectors;
 import javax.inject.Inject;
 import javax.json.JsonObject;
 
+@SuppressWarnings("squid:S107")
 public class HearingRequestsDataSourcingService {
 
     @Inject

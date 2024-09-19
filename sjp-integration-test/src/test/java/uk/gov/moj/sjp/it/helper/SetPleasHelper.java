@@ -51,7 +51,7 @@ import javax.ws.rs.core.Response;
 
 import com.jayway.jsonpath.ReadContext;
 import com.jayway.jsonpath.matchers.JsonPathMatchers;
-import com.jayway.restassured.path.json.JsonPath;
+import io.restassured.path.json.JsonPath;
 import org.apache.commons.lang3.tuple.Triple;
 import org.hamcrest.Matcher;
 import org.slf4j.Logger;

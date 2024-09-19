@@ -54,9 +54,8 @@ import com.jayway.jsonpath.ReadContext;
 import org.hamcrest.CoreMatchers;
 import org.hamcrest.Matcher;
 import org.hamcrest.MatcherAssert;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 public class DefendantDetailsIT extends BaseIntegrationTest {
 
@@ -67,7 +66,7 @@ public class DefendantDetailsIT extends BaseIntegrationTest {
     private final UUID tvlUserUid = randomUUID();
     private CreateCase.CreateCasePayloadBuilder createCasePayloadBuilder;
 
-    @Before
+    @BeforeEach
     public void setUp() {
 
         createCasePayloadBuilder = withDefaults();
@@ -213,7 +212,7 @@ public class DefendantDetailsIT extends BaseIntegrationTest {
         final Optional<JsonEnvelope> datesToAvoidPublicEvent = eventListener
                 .popEvent(DEFENDANT_DETAILS_UPDATES_ACKNOWLEDGED_PUBLIC_EVENT);
 
-        Assert.assertThat(datesToAvoidPublicEvent.isPresent(), is(true));
+        assertThat(datesToAvoidPublicEvent.isPresent(), is(true));
 
         MatcherAssert.assertThat(datesToAvoidPublicEvent.get(),
                 jsonEnvelope(

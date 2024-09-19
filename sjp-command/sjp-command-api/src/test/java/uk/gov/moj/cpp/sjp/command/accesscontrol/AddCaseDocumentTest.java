@@ -1,8 +1,7 @@
 package uk.gov.moj.cpp.sjp.command.accesscontrol;
 
+import static java.util.Collections.singletonMap;
 import static org.mockito.BDDMockito.given;
-import static org.mockito.Matchers.anyListOf;
-import static org.mockito.Matchers.eq;
 import static uk.gov.moj.cpp.sjp.command.api.accesscontrol.RuleConstants.getAddCaseDocumentActionGroups;
 
 import uk.gov.moj.cpp.accesscontrol.common.providers.UserAndGroupProvider;
@@ -11,8 +10,7 @@ import uk.gov.moj.cpp.accesscontrol.test.utils.BaseDroolsAccessControlTest;
 
 import java.util.Map;
 
-import com.google.common.collect.ImmutableMap;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.kie.api.runtime.ExecutionResults;
 import org.mockito.Mock;
 
@@ -22,6 +20,10 @@ public class AddCaseDocumentTest extends BaseDroolsAccessControlTest {
 
     @Mock
     private UserAndGroupProvider userAndGroupProvider;
+
+    public AddCaseDocumentTest() {
+        super("COMMAND_API_SESSION");
+    }
 
     @Test
     public void shouldAllowAuthorisedUserToAddCaseDocument() {
@@ -35,15 +37,13 @@ public class AddCaseDocumentTest extends BaseDroolsAccessControlTest {
     @Test
     public void shouldNotAllowUnauthorisedUserToAddCaseDocument() {
         final Action action = createActionFor(SJP_COMMAND_ADD_CASE_DOCUMENT);
-        given(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups(action, eq(anyListOf(String.class))))
-                .willReturn(false);
         final ExecutionResults results = executeRulesWith(action);
         assertFailureOutcome(results);
     }
 
     @Override
-    protected Map<Class, Object> getProviderMocks() {
-        return ImmutableMap.<Class, Object>builder().put(UserAndGroupProvider.class, userAndGroupProvider).build();
+    protected Map<Class<?>, Object> getProviderMocks() {
+        return singletonMap(UserAndGroupProvider.class, userAndGroupProvider);
     }
 
 }

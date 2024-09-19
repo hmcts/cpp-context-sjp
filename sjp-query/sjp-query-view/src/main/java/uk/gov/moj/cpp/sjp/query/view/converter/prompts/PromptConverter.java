@@ -2,7 +2,6 @@ package uk.gov.moj.cpp.sjp.query.view.converter.prompts;
 
 import static java.util.Optional.ofNullable;
 import static javax.json.Json.createObjectBuilder;
-import static jdk.nashorn.internal.runtime.PropertyDescriptor.VALUE;
 import static uk.gov.moj.cpp.sjp.query.view.util.CaseResultsConstants.PROMPT_DEFINITION_ID;
 
 import uk.gov.moj.cpp.sjp.query.view.converter.Prompt;
@@ -15,6 +14,8 @@ import javax.json.JsonArrayBuilder;
 import javax.json.JsonObject;
 
 public class PromptConverter {
+
+    protected static final String VALUE = "value";
 
     //The unused property offenceData supplier is used in one of the subclasses
     @SuppressWarnings("squid:S1172")

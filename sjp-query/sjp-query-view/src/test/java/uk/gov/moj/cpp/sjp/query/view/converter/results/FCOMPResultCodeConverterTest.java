@@ -6,15 +6,21 @@ import static javax.json.Json.createObjectBuilder;
 import javax.json.JsonArray;
 import javax.json.JsonObject;
 
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.junit.jupiter.MockitoExtension;
+import java.util.Optional;
 
-@RunWith(MockitoJUnitRunner.class)
+import static org.mockito.Mockito.when;
+import static uk.gov.moj.cpp.sjp.query.view.util.JsonHelper.readJsonFromFile;
+
+@ExtendWith(MockitoExtension.class)
 public class FCOMPResultCodeConverterTest extends ResultCodeConverterTest {
 
     @Test
     public void shouldConvertCompensationResult() {
+        when(referenceDataService.getAllFixedList(sourceEnvelope)).thenReturn(Optional.of(readJsonFromFile("data/referencedata.get-all-fixed-list.json")));
+
         super.testResultCode();
     }
 

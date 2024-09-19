@@ -10,9 +10,9 @@ import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.fail;
-import static org.mockito.Matchers.any;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.jupiter.api.Assertions.fail;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
 import static uk.gov.justice.services.messaging.JsonEnvelope.metadataFrom;
@@ -57,15 +57,15 @@ import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
 
 import org.hamcrest.Matchers;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class OffenceHelperTest {
 
     private static final UUID caseId = randomUUID();
@@ -79,7 +79,7 @@ public class OffenceHelperTest {
     private CaseView caseView;
     private Employer employer;
 
-    @Before
+    @BeforeEach
     public void init() {
         offenceHelper = new OffenceHelper(referenceDataService);
         final OffenceDetail offenceDetail1 = OffenceDetail.builder()
@@ -139,7 +139,6 @@ public class OffenceHelperTest {
         employer = new Employer(defendantId, "McDonald's", "12345", "020 7998 9300",
                 new Address("14 Tottenham Court Road", "London", "England", "UK", "Greater London", "W1T 1JY"));
 
-        when(referenceDataService.getAllFixedList(any())).thenReturn(Optional.of(readJsonFromFile("data/referencedata.get-all-fixed-list.json")));
     }
 
     @Test
@@ -171,6 +170,7 @@ public class OffenceHelperTest {
 
     @Test
     public void shouldPopulateOffencesCorrectly() {
+        when(referenceDataService.getAllFixedList(any())).thenReturn(Optional.of(readJsonFromFile("data/referencedata.get-all-fixed-list.json")));
         final JsonObjectBuilder eventPayloadBuilder = createObjectBuilder().add(CASE_ID, caseId.toString());
         final JsonObject decision = readJsonFromFile("data/resulting.events.referenced-decisions-saved.json");
 
@@ -197,6 +197,7 @@ public class OffenceHelperTest {
 
     @Test
     public void shouldPopulateOffencesCorrectlyWithBackDutyAndExcisePenalty() {
+        when(referenceDataService.getAllFixedList(any())).thenReturn(Optional.of(readJsonFromFile("data/referencedata.get-all-fixed-list.json")));
         final JsonObjectBuilder eventPayloadBuilder = createObjectBuilder().add(CASE_ID, caseId.toString());
         final JsonObject decision = readJsonFromFile("data/resulting.events.referenced-decisions-saved-back-duty-and-excise-penalty.json");
 

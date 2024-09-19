@@ -8,8 +8,8 @@ import uk.gov.moj.cpp.sjp.event.DefendantsNationalInsuranceNumberUpdated;
 
 import java.util.UUID;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 /**
  * Tests for {@link CaseAggregate#updateDefendantNationalInsuranceNumber}
@@ -20,7 +20,7 @@ public class UpdateDefendantNationalInsuranceNumberTest extends CaseAggregateBas
 
     private UUID userId;
 
-    @Before
+    @BeforeEach
     public void init() {
         userId = randomUUID();
     }

@@ -17,7 +17,7 @@ import org.apache.commons.lang3.builder.ToStringStyle;
  *
  * @deprecated
  */
-@Deprecated
+@Deprecated(forRemoval = true)
 @Event(PressTransparencyReportRequested.EVENT_NAME)
 @SuppressWarnings("squid:S1133")
 public class PressTransparencyReportRequested {

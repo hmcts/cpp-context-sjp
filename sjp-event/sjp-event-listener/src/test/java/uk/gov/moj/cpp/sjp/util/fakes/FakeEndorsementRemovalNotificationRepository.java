@@ -6,11 +6,12 @@ import uk.gov.moj.cpp.sjp.persistence.repository.EndorsementRemovalNotificationR
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 
 import javax.persistence.metamodel.SingularAttribute;
 
-public class FakeEndorsementRemovalNotificationRepository implements EndorsementRemovalNotificationRepository {
+public abstract class FakeEndorsementRemovalNotificationRepository implements EndorsementRemovalNotificationRepository {
 
 
     private Map<UUID, NotificationOfEndorsementStatus> inMemoryStorage = new HashMap<>();
@@ -58,6 +59,11 @@ public class FakeEndorsementRemovalNotificationRepository implements Endorsement
     @Override
     public NotificationOfEndorsementStatus findBy(final UUID uuid) {
         return this.inMemoryStorage.get(uuid);
+    }
+
+    @Override
+    public Optional<NotificationOfEndorsementStatus> findOptionalBy(final UUID uuid) {
+        throw new UnsupportedOperationException();
     }
 
     @Override

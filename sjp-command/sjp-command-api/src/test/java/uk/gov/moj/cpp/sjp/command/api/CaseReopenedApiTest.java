@@ -1,7 +1,9 @@
 package uk.gov.moj.cpp.sjp.command.api;
 
 import static org.hamcrest.CoreMatchers.equalTo;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.verify;
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMetadataMatcher.withMetadataEnvelopedFrom;
 
@@ -18,18 +20,16 @@ import java.util.function.Consumer;
 
 import javax.json.Json;
 
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class CaseReopenedApiTest {
 
     private static final String COMMAND_MARK = "sjp.mark-case-reopened-in-libra";
@@ -44,9 +44,6 @@ public class CaseReopenedApiTest {
 
     @Mock
     private Sender sender;
-
-    @Rule
-    public final ExpectedException exception = ExpectedException.none();
 
     @InjectMocks
     private CaseReopenedApi caseReopenedApi;
@@ -91,26 +88,18 @@ public class CaseReopenedApiTest {
 
     @Test
     public void shouldNotMarkAndThrowExceptionForInvalidReOpenedDate() {
-        shouldThrowExceptionForInvalidReOpenedDate(
-                caseReopenedApi::markCaseReopenedInLibra,
-                COMMAND_MARK
-        );
+        final JsonEnvelope envelope = getEnvelope(LocalDate.now().plusDays(2).toString(), COMMAND_MARK);
+
+        var e = assertThrows(BadRequestException.class, () -> ((Consumer<JsonEnvelope>) caseReopenedApi::markCaseReopenedInLibra).accept(envelope));
+        assertThat(e.getMessage(), is("invalid_reopened_date"));
     }
 
     @Test
     public void shouldNotUpdateAndThrowExceptionForInvalidReOpenedDate() {
-        shouldThrowExceptionForInvalidReOpenedDate(
-                caseReopenedApi::updateCaseReopenedInLibra,
-                COMMAND_UPDATE
-        );
-    }
+        final JsonEnvelope envelope = getEnvelope(LocalDate.now().plusDays(2).toString(), COMMAND_UPDATE);
 
-    private void shouldThrowExceptionForInvalidReOpenedDate(final Consumer<JsonEnvelope> f, final String command) {
-        final JsonEnvelope envelope = getEnvelope(LocalDate.now().plusDays(2).toString(), command);
-        exception.expect(BadRequestException.class);
-        exception.expectMessage("invalid_reopened_date");
-
-        f.accept(envelope);
+        var e = assertThrows(BadRequestException.class, () -> ((Consumer<JsonEnvelope>) caseReopenedApi::updateCaseReopenedInLibra).accept(envelope));
+        assertThat(e.getMessage(), is("invalid_reopened_date"));
     }
 
     private void shouldPropagateCommandWhenValidDates(final Consumer<JsonEnvelope> f, final String commandName, final String newCommandName) {

@@ -35,8 +35,8 @@ import java.util.UUID;
 import javax.json.JsonObject;
 import javax.ws.rs.core.Response;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 public class GetCaseDocumentIT extends BaseIntegrationTest {
 
@@ -55,7 +55,7 @@ public class GetCaseDocumentIT extends BaseIntegrationTest {
     private static final String NATIONAL_COURT_CODE = "1080";
     private final StringToJsonObjectConverter stringToJsonObjectConverter = new StringToJsonObjectConverter();
 
-    @Before
+    @BeforeEach
     public void init() {
         UsersGroupsStub.stubForUserDetails(tflUser, TFL);
         UsersGroupsStub.stubForUserDetails(tvlUser, ProsecutingAuthority.TVL);

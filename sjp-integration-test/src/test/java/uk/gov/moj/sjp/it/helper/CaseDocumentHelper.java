@@ -26,6 +26,7 @@ import static uk.gov.moj.sjp.it.Constants.PUBLIC_EVENT_SELECTOR_CASE_DOCUMENT_AD
 import static uk.gov.moj.sjp.it.Constants.PUBLIC_EVENT_SELECTOR_CASE_DOCUMENT_ALREADY_EXISTS;
 import static uk.gov.moj.sjp.it.Constants.PUBLIC_EVENT_SELECTOR_CASE_DOCUMENT_UPLOADED;
 import static uk.gov.moj.sjp.it.Constants.PUBLIC_EVENT_SELECTOR_CASE_DOCUMENT_UPLOAD_REJECTED;
+import static uk.gov.moj.sjp.it.Constants.PUBLIC_ACTIVE_MQ_TOPIC;
 import static uk.gov.moj.sjp.it.stub.MaterialStub.stubMaterialMetadata;
 import static uk.gov.moj.sjp.it.test.BaseIntegrationTest.USER_ID;
 import static uk.gov.moj.sjp.it.util.DefaultRequests.getCaseById;
@@ -43,11 +44,11 @@ import uk.gov.justice.services.common.converter.ZonedDateTimes;
 import uk.gov.justice.services.common.util.UtcClock;
 import uk.gov.justice.services.test.utils.core.http.ResponseData;
 import uk.gov.justice.services.test.utils.core.messaging.MessageConsumerClient;
-import uk.gov.moj.sjp.it.Constants;
 import uk.gov.moj.sjp.it.util.HttpClientUtil;
 import uk.gov.moj.sjp.it.util.JsonHelper;
 
 import java.time.ZonedDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.Map;
 import java.util.UUID;
 
@@ -56,7 +57,7 @@ import javax.json.JsonObject;
 import javax.ws.rs.core.Response;
 
 import com.jayway.jsonpath.Filter;
-import com.jayway.restassured.path.json.JsonPath;
+import io.restassured.path.json.JsonPath;
 import org.hamcrest.Matchers;
 import org.json.JSONObject;
 import org.slf4j.Logger;
@@ -110,11 +111,11 @@ public class CaseDocumentHelper implements AutoCloseable {
 
         privateEventsConsumerForRejectedCaseUpload = privateEvents.createConsumer(EVENT_SELECTOR_CASE_DOCUMENT_UPLOAD_REJECTED);
 
-        publicConsumer.startConsumer(PUBLIC_EVENT_SELECTOR_CASE_DOCUMENT_ADDED, Constants.PUBLIC_ACTIVE_MQ_TOPIC);
-        publicConsumerForRejected.startConsumer(PUBLIC_EVENT_SELECTOR_CASE_DOCUMENT_UPLOAD_REJECTED, Constants.PUBLIC_ACTIVE_MQ_TOPIC);
+        publicConsumer.startConsumer(PUBLIC_EVENT_SELECTOR_CASE_DOCUMENT_ADDED, PUBLIC_ACTIVE_MQ_TOPIC);
+        publicConsumerForRejected.startConsumer(PUBLIC_EVENT_SELECTOR_CASE_DOCUMENT_UPLOAD_REJECTED, PUBLIC_ACTIVE_MQ_TOPIC);
 
-        publicCaseDocumentAlreadyExistsConsumer.startConsumer(PUBLIC_EVENT_SELECTOR_CASE_DOCUMENT_ALREADY_EXISTS, Constants.PUBLIC_ACTIVE_MQ_TOPIC);
-        publicCaseDocumentUploaded.startConsumer(PUBLIC_EVENT_SELECTOR_CASE_DOCUMENT_UPLOADED, Constants.PUBLIC_ACTIVE_MQ_TOPIC);
+        publicCaseDocumentAlreadyExistsConsumer.startConsumer(PUBLIC_EVENT_SELECTOR_CASE_DOCUMENT_ALREADY_EXISTS, PUBLIC_ACTIVE_MQ_TOPIC);
+        publicCaseDocumentUploaded.startConsumer(PUBLIC_EVENT_SELECTOR_CASE_DOCUMENT_UPLOADED, PUBLIC_ACTIVE_MQ_TOPIC);
     }
 
     private void addCaseDocument(UUID userId, String payload, String documentType) {
@@ -215,7 +216,7 @@ public class CaseDocumentHelper implements AutoCloseable {
 
     public void stubGetMetadata() {
         if (uploadTime == null) {
-            uploadTime = new UtcClock().now();
+            uploadTime = new UtcClock().now().truncatedTo(ChronoUnit.MILLIS);
         }
 
         stubMaterialMetadata(fromString(materialId), FILE_NAME_PLEA, "application/pdf", uploadTime);

@@ -4,7 +4,7 @@ import static javax.json.Json.createArrayBuilder;
 import static javax.json.Json.createObjectBuilder;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
-import static org.mockito.Matchers.any;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -17,13 +17,13 @@ import java.util.Optional;
 import javax.json.JsonArray;
 import javax.json.JsonObject;
 
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class OffenceFineLevelsTest {
 
     final int fineLevel1 = 3;
@@ -43,7 +43,7 @@ public class OffenceFineLevelsTest {
     @Mock
     private JsonEnvelope jsonEnvelope;
 
-    @Before
+    @BeforeEach
     public void init() {
         when(referenceDataService.getOffenceFineLevels(jsonEnvelope)).thenReturn(offenceFineLevels.getValuesAs(JsonObject.class));
     }

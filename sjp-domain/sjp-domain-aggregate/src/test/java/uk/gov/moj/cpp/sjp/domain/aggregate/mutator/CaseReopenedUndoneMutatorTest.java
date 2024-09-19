@@ -1,14 +1,14 @@
 package uk.gov.moj.cpp.sjp.domain.aggregate.mutator;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import uk.gov.moj.cpp.sjp.domain.aggregate.state.CaseAggregateState;
 import uk.gov.moj.cpp.sjp.event.CaseReopenedUndone;
 
 import java.time.LocalDate;
 import java.util.UUID;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNull;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 public class CaseReopenedUndoneMutatorTest {
 

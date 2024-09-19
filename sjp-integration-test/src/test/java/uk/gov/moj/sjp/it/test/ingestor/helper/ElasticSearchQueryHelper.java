@@ -2,8 +2,8 @@ package uk.gov.moj.sjp.it.test.ingestor.helper;
 
 import static java.util.Optional.empty;
 import static java.util.Optional.of;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 import static uk.gov.justice.services.test.utils.core.messaging.JsonObjects.getJsonArray;
 import static uk.gov.moj.sjp.it.test.ingestor.helper.IngesterHelper.jsonFromString;
 
@@ -61,7 +61,7 @@ public class ElasticSearchQueryHelper {
             log.info("Final ElasticSearch response is : {}", findByCaseIds(caseIds));
         }
 
-        assertTrue("No data found in crime_case_index data ", outcome.isPresent());
+        assertTrue(outcome.isPresent(), "No data found in crime_case_index data ");
         return outcome;
     }
 

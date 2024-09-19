@@ -17,7 +17,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
  *
  * @deprecated
  */
-@Deprecated
+@Deprecated(forRemoval = true)
 @Event(TransparencyReportGenerationStarted.EVENT_NAME)
 @SuppressWarnings("squid:S1133")
 public class TransparencyReportGenerationStarted {

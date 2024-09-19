@@ -8,10 +8,10 @@ import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.hasProperty;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.nullValue;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertThat;
-import static org.mockito.Matchers.any;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 import static uk.gov.justice.services.test.utils.core.messaging.JsonEnvelopeBuilder.envelope;
 import static uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderFactory.metadataWithRandomUUID;
@@ -35,13 +35,13 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
 
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class DatesToAvoidServiceTest {
 
     private static final UUID LONDON_REGION_ID = UUID.randomUUID();
@@ -71,19 +71,6 @@ public class DatesToAvoidServiceTest {
 
     private List<PendingDatesToAvoid> pendingCases;
 
-    public void setUpForPersonalDetails() {
-        pendingCases = Arrays.asList(
-                new PendingDatesToAvoid(createCaseDetailsWithRegionAndPersonalDetails("London")),
-                new PendingDatesToAvoid(createCaseDetailsWithRegionAndPersonalDetails("Oxford")),
-                new PendingDatesToAvoid(createCaseDetailsWithRegionAndPersonalDetails("")),
-                new PendingDatesToAvoid(createCaseDetailsWithRegionAndPersonalDetails(" ")),
-                new PendingDatesToAvoid(createCaseDetailsWithRegionAndPersonalDetails("  ")),
-                new PendingDatesToAvoid(createCaseDetailsWithRegionAndPersonalDetails(null))
-        );
-        when(pendingDatesToAvoidRepository.findCasesPendingDatesToAvoid(any())).thenReturn(pendingCases);
-        when(referenceDataService.getRegionalOrganisations(any())).thenReturn(REGIONS);
-    }
-
     public void setUpForLegalEntityDetails() {
         pendingCases = Arrays.asList(
                 new PendingDatesToAvoid(createCaseDetailsWithRegionAndLegalEntityDetails("London")),
@@ -98,7 +85,15 @@ public class DatesToAvoidServiceTest {
     }
     @Test
     public void shouldReturnFinancialMeansIfExists() {
-        setUpForPersonalDetails();
+        pendingCases = Arrays.asList(
+                new PendingDatesToAvoid(createCaseDetailsWithRegionAndPersonalDetails("London")),
+                new PendingDatesToAvoid(createCaseDetailsWithRegionAndPersonalDetails("Oxford")),
+                new PendingDatesToAvoid(createCaseDetailsWithRegionAndPersonalDetails("")),
+                new PendingDatesToAvoid(createCaseDetailsWithRegionAndPersonalDetails(" ")),
+                new PendingDatesToAvoid(createCaseDetailsWithRegionAndPersonalDetails("  ")),
+                new PendingDatesToAvoid(createCaseDetailsWithRegionAndPersonalDetails(null))
+        );
+        when(pendingDatesToAvoidRepository.findCasesPendingDatesToAvoid(any())).thenReturn(pendingCases);
         final JsonEnvelope envelope = createEnvelope();
         final ProsecutingAuthorityAccess prosecutingAuthorityAccess = ProsecutingAuthorityAccess.of("TFL");
         final String prosecutingAuthorityFilterValue = "TFL";
@@ -109,7 +104,6 @@ public class DatesToAvoidServiceTest {
         when(prosecutingAuthorityProvider.getCurrentUsersProsecutingAuthorityAccess(envelope)).thenReturn(prosecutingAuthorityAccess);
         when(prosecutingAuthorityAccessFilterConverter.convertToProsecutingAuthorityAccessFilter(prosecutingAuthorityAccess)).thenReturn(prosecutingAuthorityFilterValue);
         when(pendingDatesToAvoidRepository.findCasesPendingDatesToAvoid(prosecutingAuthorityFilterValue)).thenReturn(pendingDatesToAvoidList);
-        when(referenceDataService.getRegionalOrganisations(any())).thenReturn(REGIONS);
 
         final CasesPendingDatesToAvoidView datesToAvoidsView = datesToAvoidService.findCasesPendingDatesToAvoid(envelope);
 
@@ -120,7 +114,16 @@ public class DatesToAvoidServiceTest {
 
     @Test
     public void shouldFilterPendingCasesByRegionId() {
-        setUpForPersonalDetails();
+        pendingCases = Arrays.asList(
+                new PendingDatesToAvoid(createCaseDetailsWithRegionAndPersonalDetails("London")),
+                new PendingDatesToAvoid(createCaseDetailsWithRegionAndPersonalDetails("Oxford")),
+                new PendingDatesToAvoid(createCaseDetailsWithRegionAndPersonalDetails("")),
+                new PendingDatesToAvoid(createCaseDetailsWithRegionAndPersonalDetails(" ")),
+                new PendingDatesToAvoid(createCaseDetailsWithRegionAndPersonalDetails("  ")),
+                new PendingDatesToAvoid(createCaseDetailsWithRegionAndPersonalDetails(null))
+        );
+        when(pendingDatesToAvoidRepository.findCasesPendingDatesToAvoid(any())).thenReturn(pendingCases);
+        when(referenceDataService.getRegionalOrganisations(any())).thenReturn(REGIONS);
         final JsonEnvelope envelope = createEnvelope(LONDON_REGION_ID);
 
         final CasesPendingDatesToAvoidView datesToAvoidsView = datesToAvoidService.findCasesPendingDatesToAvoid(envelope);
@@ -149,7 +152,15 @@ public class DatesToAvoidServiceTest {
 
     @Test
     public void shouldReturnAllPendingCasesWhenFilterCriteriaIsNotProvided() {
-        setUpForPersonalDetails();
+        pendingCases = Arrays.asList(
+                new PendingDatesToAvoid(createCaseDetailsWithRegionAndPersonalDetails("London")),
+                new PendingDatesToAvoid(createCaseDetailsWithRegionAndPersonalDetails("Oxford")),
+                new PendingDatesToAvoid(createCaseDetailsWithRegionAndPersonalDetails("")),
+                new PendingDatesToAvoid(createCaseDetailsWithRegionAndPersonalDetails(" ")),
+                new PendingDatesToAvoid(createCaseDetailsWithRegionAndPersonalDetails("  ")),
+                new PendingDatesToAvoid(createCaseDetailsWithRegionAndPersonalDetails(null))
+        );
+        when(pendingDatesToAvoidRepository.findCasesPendingDatesToAvoid(any())).thenReturn(pendingCases);
         final JsonEnvelope envelope = createEnvelope();
 
         final CasesPendingDatesToAvoidView datesToAvoidsView = datesToAvoidService.findCasesPendingDatesToAvoid(envelope);
@@ -167,7 +178,15 @@ public class DatesToAvoidServiceTest {
 
     @Test
     public void shouldReturnPendingCasesWithEmptyRegionWhenFilterCriteriaIsUnknown() {
-        setUpForPersonalDetails();
+        pendingCases = Arrays.asList(
+                new PendingDatesToAvoid(createCaseDetailsWithRegionAndPersonalDetails("London")),
+                new PendingDatesToAvoid(createCaseDetailsWithRegionAndPersonalDetails("Oxford")),
+                new PendingDatesToAvoid(createCaseDetailsWithRegionAndPersonalDetails("")),
+                new PendingDatesToAvoid(createCaseDetailsWithRegionAndPersonalDetails(" ")),
+                new PendingDatesToAvoid(createCaseDetailsWithRegionAndPersonalDetails("  ")),
+                new PendingDatesToAvoid(createCaseDetailsWithRegionAndPersonalDetails(null))
+        );
+        when(pendingDatesToAvoidRepository.findCasesPendingDatesToAvoid(any())).thenReturn(pendingCases);
         final JsonEnvelope envelope = createEnvelope("UNKNOWN");
 
         final CasesPendingDatesToAvoidView datesToAvoidsView = datesToAvoidService.findCasesPendingDatesToAvoid(envelope);

@@ -4,7 +4,7 @@ import static java.util.UUID.randomUUID;
 import static java.util.stream.Collectors.toList;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static uk.gov.moj.cpp.sjp.event.CaseAdjournedToLaterSjpHearingRecorded.caseAdjournedToLaterSjpHearingRecorded;
 import static uk.gov.moj.cpp.sjp.event.CaseAdjournmentToLaterSjpHearingElapsed.caseAdjournmentToLaterSjpHearingElapsed;
 
@@ -17,15 +17,15 @@ import java.time.ZonedDateTime;
 import java.util.UUID;
 import java.util.stream.Stream;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 public class CaseAdjournmentHandlerTest {
 
     private UUID existingCaseId;
     private CaseAggregateState caseAggregateState;
 
-    @Before
+    @BeforeEach
     public void init() {
         existingCaseId = randomUUID();
         caseAggregateState = new CaseAggregateState();

@@ -8,8 +8,8 @@ import static javax.json.Json.createObjectBuilder;
 import static javax.ws.rs.core.Response.Status.ACCEPTED;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.oneOf;
-import static org.junit.Assert.assertTrue;
+import static org.hamcrest.collection.IsIn.isOneOf;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static uk.gov.moj.cpp.sjp.domain.common.CaseManagementStatus.DONE;
 import static uk.gov.moj.cpp.sjp.domain.common.CaseManagementStatus.IN_PROGRESS;
 import static uk.gov.moj.sjp.it.Constants.NOTICE_PERIOD_IN_DAYS;
@@ -28,8 +28,8 @@ import java.time.LocalDate;
 import java.util.Optional;
 import java.util.UUID;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 public class CaseManagementStatusIT extends BaseIntegrationTest {
 
@@ -46,7 +46,7 @@ public class CaseManagementStatusIT extends BaseIntegrationTest {
     private final User user = new User("John", "Smith", USER_ID);
     private final static String PUBLIC_EVENT_CASE_MANAGEMENT_STATUS_UPDATED = "public.sjp.cases-management-status-updated";
 
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
         stubForUserDetails(user, "ALL");
         new SjpDatabaseCleaner().cleanViewStore();
@@ -75,8 +75,8 @@ public class CaseManagementStatusIT extends BaseIntegrationTest {
     }
 
     private void verifyCaseManagementStatusChanged(final CaseManagementStatusChanged caseManagementStatusChanged) {
-        assertThat(caseManagementStatusChanged.getCaseId(), oneOf(case1Id, case2Id));
-        assertThat(caseManagementStatusChanged.getCaseManagementStatus(), oneOf(DONE, IN_PROGRESS));
+        assertThat(caseManagementStatusChanged.getCaseId(), isOneOf(case1Id, case2Id));
+        assertThat(caseManagementStatusChanged.getCaseManagementStatus(), isOneOf(DONE, IN_PROGRESS));
     }
 
     private void verifyCaseManagementStatusUpdate(final UpdateCasesManagementStatus updateCasesManagementStatus) {

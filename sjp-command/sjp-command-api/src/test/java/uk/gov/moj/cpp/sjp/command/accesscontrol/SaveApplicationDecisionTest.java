@@ -1,6 +1,6 @@
 package uk.gov.moj.cpp.sjp.command.accesscontrol;
 
-import static java.util.Arrays.asList;
+import static java.util.Collections.singletonMap;
 import static org.mockito.BDDMockito.given;
 import static uk.gov.moj.cpp.sjp.command.api.accesscontrol.RuleConstants.getSaveDecisionActionGroups;
 
@@ -10,14 +10,17 @@ import uk.gov.moj.cpp.accesscontrol.test.utils.BaseDroolsAccessControlTest;
 
 import java.util.Map;
 
-import com.google.common.collect.ImmutableMap;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.kie.api.runtime.ExecutionResults;
 import org.mockito.Mock;
 
 public class SaveApplicationDecisionTest extends BaseDroolsAccessControlTest {
 
     private static final String SJP_SAVE_APPLICATION_DECISION = "sjp.save-application-decision";
+
+    public SaveApplicationDecisionTest() {
+        super("COMMAND_API_SESSION");
+    }
 
     @Mock
     private UserAndGroupProvider userAndGroupProvider;
@@ -34,14 +37,12 @@ public class SaveApplicationDecisionTest extends BaseDroolsAccessControlTest {
     @Test
     public void shouldNotAllowOtherRoles() {
         final Action action = createActionFor(SJP_SAVE_APPLICATION_DECISION);
-        given(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups(action, asList("prosecutor group")))
-                .willReturn(false);
         final ExecutionResults results = executeRulesWith(action);
         assertFailureOutcome(results);
     }
 
     @Override
-    protected Map<Class, Object> getProviderMocks() {
-        return ImmutableMap.<Class, Object>builder().put(UserAndGroupProvider.class, userAndGroupProvider).build();
+    protected Map<Class<?>, Object> getProviderMocks() {
+        return singletonMap(UserAndGroupProvider.class, userAndGroupProvider);
     }
 }

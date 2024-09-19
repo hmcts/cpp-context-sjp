@@ -4,44 +4,40 @@ import static javax.json.Json.createArrayBuilder;
 import static javax.json.Json.createObjectBuilder;
 import static org.mockito.MockitoAnnotations.initMocks;
 
-import java.util.Arrays;
-import java.util.Collection;
-
+import java.util.stream.Stream;
 import javax.json.JsonArray;
 import javax.json.JsonObject;
 
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 
-@RunWith(Parameterized.class)
 public class CDResultCodeConverterTest extends ResultCodeConverterTest {
 
-    @Parameterized.Parameter
-    public String durationTerminalEntry;
+    private String durationTerminalEntry;
+    private String periodTerminalEntry;
+    private String expectedPrompt;
 
-    @Parameterized.Parameter(1)
-    public String periodTerminalEntry;
-
-    @Parameterized.Parameter(2)
-    public String expectedPrompt;
-
-
-    @Parameterized.Parameters(name = "Terminal entries with values {0} {1} should be converted to prompt {2}")
-    public static Collection<Object[]> data() {
-        return Arrays.asList(new Object[][]{
-                {"1", "Year(s)", "1 Years"}, {"2", "Month(s)", "2 Months"}, {"3", "Week(s)", "3 Weeks"}
-        });
+    static Stream<Arguments> data() {
+        return Stream.of(
+                Arguments.of("1", "Year(s)", "1 Years"), 
+                Arguments.of("2", "Month(s)", "2 Months"), 
+                Arguments.of("3", "Week(s)", "3 Weeks")
+        );
     }
 
-    @Before
+    @BeforeEach
     public void setUp() {
         initMocks(this);
     }
 
-    @Test
-    public void shouldConvertConditionalDischargeResult() {
+    @ParameterizedTest
+    @MethodSource("data")
+    public void shouldConvertConditionalDischargeResult(String durationTerminalEntry, String periodTerminalEntry, String expectedPrompt) {
+        this.durationTerminalEntry = durationTerminalEntry;
+        this.periodTerminalEntry = periodTerminalEntry;
+        this.expectedPrompt = expectedPrompt;
         super.testResultCode();
     }
 

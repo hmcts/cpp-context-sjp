@@ -1,9 +1,9 @@
 package uk.gov.moj.sjp.it.stub;
 
 
-import static com.jayway.awaitility.Awaitility.waitAtMost;
-import static com.jayway.awaitility.Duration.TEN_SECONDS;
 import static javax.ws.rs.client.Entity.entity;
+import static org.awaitility.Awaitility.waitAtMost;
+import static org.awaitility.Durations.TEN_SECONDS;
 import static uk.gov.justice.services.test.utils.core.rest.ResteasyClientBuilderFactory.clientBuilder;
 
 import uk.gov.justice.services.test.utils.core.rest.RestClient;

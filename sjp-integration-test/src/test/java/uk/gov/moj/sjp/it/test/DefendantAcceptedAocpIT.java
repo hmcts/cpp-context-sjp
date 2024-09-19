@@ -69,15 +69,14 @@ import javax.json.JsonObject;
 import javax.ws.rs.core.Response;
 
 import com.google.common.collect.Sets;
-import com.jayway.awaitility.Awaitility;
+import org.awaitility.Awaitility;
 import com.jayway.jsonpath.matchers.JsonPathMatchers;
-import com.jayway.restassured.path.json.JsonPath;
-import org.hamcrest.CoreMatchers;
+import io.restassured.path.json.JsonPath;
 import org.hamcrest.Matcher;
 import org.hamcrest.Matchers;
 import org.json.JSONObject;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 public class DefendantAcceptedAocpIT extends BaseIntegrationTest {
     private static final String TEMPLATE_PLEA_AOCP_ONLINE_PAYLOAD = "raml/json/sjp.command-plead-aocp-online.json";
@@ -96,7 +95,7 @@ public class DefendantAcceptedAocpIT extends BaseIntegrationTest {
             .withLastName("Smith")
             .build();
 
-    @Before
+    @BeforeEach
     @SuppressWarnings("squid:S2925")
     public void setUp() throws Exception {
         stubNotifications();

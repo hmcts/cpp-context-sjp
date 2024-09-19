@@ -3,6 +3,8 @@ package uk.gov.moj.sjp.it.util;
 import static java.util.Optional.ofNullable;
 import static java.util.stream.Collectors.joining;
 import static org.apache.commons.lang3.StringUtils.wrap;
+import static uk.gov.moj.sjp.it.Constants.PRIVATE_ACTIVE_MQ_TOPIC;
+import static uk.gov.moj.sjp.it.Constants.PUBLIC_ACTIVE_MQ_TOPIC;
 import static uk.gov.moj.sjp.it.util.OptionalPresent.ifPresent;
 
 
@@ -24,7 +26,7 @@ import javax.jms.Topic;
 import javax.json.Json;
 import javax.json.JsonObject;
 
-import com.jayway.restassured.path.json.JsonPath;
+import io.restassured.path.json.JsonPath;
 import org.apache.activemq.artemis.jms.client.ActiveMQConnectionFactory;
 import org.apache.activemq.artemis.jms.client.ActiveMQTopic;
 import org.slf4j.Logger;
@@ -47,8 +49,9 @@ public class TopicUtil implements AutoCloseable {
 
     private Topic topic;
 
-    public static final TopicUtil privateEvents = new TopicUtil("sjp.event");
-    public static final TopicUtil publicEvents = new TopicUtil("public.event");
+    public static final TopicUtil privateEvents = new TopicUtil(PRIVATE_ACTIVE_MQ_TOPIC);
+
+    public static final TopicUtil publicEvents = new TopicUtil(PUBLIC_ACTIVE_MQ_TOPIC);
 
     private TopicUtil(final String topicName) {
         try {

@@ -6,13 +6,13 @@ import static com.github.tomakehurst.wiremock.client.WireMock.post;
 import static com.github.tomakehurst.wiremock.client.WireMock.postRequestedFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlPathMatching;
-import static com.jayway.awaitility.Awaitility.await;
 import static java.util.Collections.emptyList;
 import static java.util.stream.Collectors.toList;
 import static javax.ws.rs.core.HttpHeaders.CONTENT_TYPE;
 import static javax.ws.rs.core.MediaType.APPLICATION_OCTET_STREAM;
 import static org.apache.commons.io.FileUtils.readFileToByteArray;
 import static org.apache.http.HttpStatus.SC_OK;
+import static org.awaitility.Awaitility.await;
 import static uk.gov.justice.service.wiremock.testutil.InternalEndpointMockUtils.stubPingFor;
 
 import java.io.File;
@@ -21,7 +21,7 @@ import java.util.Collection;
 import java.util.List;
 
 import com.github.tomakehurst.wiremock.verification.LoggedRequest;
-import com.jayway.awaitility.core.ConditionTimeoutException;
+import org.awaitility.core.ConditionTimeoutException;
 import org.hamcrest.Matcher;
 import org.json.JSONObject;
 import org.slf4j.Logger;

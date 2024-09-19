@@ -1,8 +1,8 @@
 package uk.gov.moj.cpp.indexer.jolt;
 
 import static com.jayway.jsonpath.JsonPath.parse;
-import static junit.framework.TestCase.assertNotNull;
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static uk.gov.moj.cpp.indexer.jolt.helper.AddressVerificationHelper.assertAddressDetails;
 import static uk.gov.moj.cpp.indexer.jolt.helper.JoltInstanceHelper.initializeJolt;
 import static uk.gov.moj.cpp.indexer.jolt.helper.JsonHelper.readJson;
@@ -16,15 +16,15 @@ import javax.json.JsonObject;
 import javax.json.JsonString;
 
 import com.jayway.jsonpath.DocumentContext;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 public class OnlinePleaReceivedTransformationTest {
 
 
     private final JoltTransformer joltTransformer = new JoltTransformer();
 
-    @Before
+    @BeforeEach
     public void setUp() {
         initializeJolt(joltTransformer);
     }

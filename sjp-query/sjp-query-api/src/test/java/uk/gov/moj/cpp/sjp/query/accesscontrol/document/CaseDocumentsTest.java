@@ -1,18 +1,18 @@
 package uk.gov.moj.cpp.sjp.query.accesscontrol.document;
 
-import static org.mockito.Matchers.any;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static uk.gov.moj.cpp.sjp.query.api.RuleConstants.getQueryCaseDocumentsActionGroups;
 
 import uk.gov.moj.cpp.sjp.query.accesscontrol.SjpDroolsAccessControlTest;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 public class CaseDocumentsTest extends SjpDroolsAccessControlTest {
 
     public CaseDocumentsTest() {
-        super("sjp.query.case-documents", getQueryCaseDocumentsActionGroups());
+        super("QUERY_API_SESSION", "sjp.query.case-documents", getQueryCaseDocumentsActionGroups());
     }
 
     @Test

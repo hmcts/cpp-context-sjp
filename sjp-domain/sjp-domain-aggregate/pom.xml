@@ -5,14 +5,10 @@
     <parent>
         <groupId>uk.gov.moj.cpp.sjp</groupId>
         <artifactId>sjp-domain</artifactId>
-        <version>8.0.93-SNAPSHOT</version>
+        <version>17.0.4-FRAMEWORK-SNAPSHOT</version>
     </parent>
 
     <artifactId>sjp-domain-aggregate</artifactId>
-
-    <properties>
-        <maven.cucumber.reporting.plugin.version>2.0.0</maven.cucumber.reporting.plugin.version>
-    </properties>
 
     <profiles>
         <profile>
@@ -36,7 +32,7 @@
                     <plugin>
                         <groupId>net.masterthought</groupId>
                         <artifactId>maven-cucumber-reporting</artifactId>
-                        <version>${maven.cucumber.reporting.plugin.version}</version>
+                        <version>${maven.cucumber.reporting.version}</version>
                         <executions>
                             <execution>
                                 <id>execution</id>
@@ -88,18 +84,38 @@
             <version>${javax.el-api.version}</version>
         </dependency>
         <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter-api</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter-params</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
             <groupId>uk.gov.justice.services</groupId>
             <artifactId>test-utils-core</artifactId>
             <scope>test</scope>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.hamcrest</groupId>
+                    <artifactId>hamcrest</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>ch.qos.logback</groupId>
+                    <artifactId>logback-classic</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>org.hamcrest</groupId>
-            <artifactId>hamcrest-library</artifactId>
+            <artifactId>hamcrest</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>commons-lang</groupId>
-            <artifactId>commons-lang</artifactId>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-lang3</artifactId>
         </dependency>
         <dependency>
             <groupId>uk.gov.moj.cpp.sjp</groupId>

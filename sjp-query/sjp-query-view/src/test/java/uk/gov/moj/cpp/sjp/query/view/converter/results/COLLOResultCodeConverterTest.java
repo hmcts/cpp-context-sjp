@@ -4,44 +4,41 @@ import static javax.json.Json.createArrayBuilder;
 import static javax.json.Json.createObjectBuilder;
 import static org.mockito.MockitoAnnotations.initMocks;
 
-import java.util.Arrays;
-import java.util.Collection;
-
+import java.util.stream.Stream;
 import javax.json.JsonArray;
 import javax.json.JsonObject;
 
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 
-@RunWith(Parameterized.class)
 public class COLLOResultCodeConverterTest extends ResultCodeConverterTest {
 
-    @Parameterized.Parameter
     public String paymentMethodTerminalEntry;
 
-    @Parameterized.Parameter(1)
     public String reason;
 
-    @Parameterized.Parameter(2)
     public String paymentMethodPrompt;
 
-    @Parameterized.Parameters(name ="Terminal entries with value {0} should be converted to prompt {2}, {1} should stay the same")
-    public static Collection<Object[]> data() {
-        return Arrays.asList(new Object[][] {
-                { "Pay directly to court", "No information from defendant", "Make payments as ordered"},
-                { "Deduct from benefits", "Defendant on benefits", "Deductions from benefit" },
-                { "Attach to earnings", "Defendant employed", "Attachment of earnings" }
-        });
+    static Stream<Arguments> data() {
+        return Stream.of(
+                Arguments.of( "Pay directly to court", "No information from defendant", "Make payments as ordered"),
+                Arguments.of( "Deduct from benefits", "Defendant on benefits", "Deductions from benefit" ),
+                Arguments.of( "Attach to earnings", "Defendant employed", "Attachment of earnings" )
+        );
     }
 
-    @Before
+    @BeforeEach
     public void setup() {
         initMocks(this);
     }
-    @Test
-    public void shouldConvertCollectionOrderMadeResult() {
+    @ParameterizedTest
+    @MethodSource("data")
+    public void shouldConvertCollectionOrderMadeResult(String paymentMethodTerminalEntry, String reason, String paymentMethodPrompt) {
+        this.paymentMethodTerminalEntry = paymentMethodTerminalEntry;
+        this.reason = reason;
+        this.paymentMethodPrompt = paymentMethodPrompt;
         super.testResultCode();
     }
 

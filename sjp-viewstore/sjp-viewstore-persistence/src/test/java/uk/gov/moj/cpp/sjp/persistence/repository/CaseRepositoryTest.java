@@ -14,13 +14,13 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
-import static org.mockito.Matchers.any;
+import static org.mockito.ArgumentMatchers.any;
 import static uk.gov.moj.cpp.sjp.domain.SessionType.DELEGATED_POWERS;
 import static uk.gov.moj.cpp.sjp.domain.SessionType.MAGISTRATE;
 
 import uk.gov.justice.services.common.util.Clock;
 import uk.gov.justice.services.test.utils.core.random.RandomGenerator;
-import uk.gov.justice.services.test.utils.persistence.BaseTransactionalTest;
+import uk.gov.justice.services.test.utils.persistence.BaseTransactionalJunit4Test;
 import uk.gov.moj.cpp.sjp.domain.CaseReadinessReason;
 import uk.gov.moj.cpp.sjp.persistence.builder.CaseDetailBuilder;
 import uk.gov.moj.cpp.sjp.persistence.builder.DefendantDetailBuilder;
@@ -51,7 +51,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 @RunWith(CdiTestRunner.class)
-public class CaseRepositoryTest extends BaseTransactionalTest {
+public class CaseRepositoryTest extends BaseTransactionalJunit4Test {
 
     private static final Map<UUID, CaseDetail> CASES = new HashMap<>();
 

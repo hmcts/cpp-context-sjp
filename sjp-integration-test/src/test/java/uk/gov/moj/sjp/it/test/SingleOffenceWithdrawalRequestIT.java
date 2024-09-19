@@ -41,11 +41,11 @@ import java.util.UUID;
 
 import com.google.common.collect.ImmutableMap;
 import org.hamcrest.Matcher;
-import org.junit.Before;
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 
-@Ignore("Enable this when merging to master")
+@Disabled("Enable this when merging to master")
 public class SingleOffenceWithdrawalRequestIT extends BaseIntegrationTest {
 
     private final UUID withdrawalRequestReasonId1 = randomUUID();
@@ -56,7 +56,7 @@ public class SingleOffenceWithdrawalRequestIT extends BaseIntegrationTest {
     private final UUID offenceId = randomUUID();
     private static final String NATIONAL_COURT_CODE = "1080";
 
-    @Before
+    @BeforeEach
     public void setUp() {
         final CreateCase.CreateCasePayloadBuilder casePayloadBuilder = defaultCaseBuilder().withId(caseId).withOffenceBuilder(defaultOffenceBuilder().withId(offenceId));
         final ProsecutingAuthority prosecutingAuthority = casePayloadBuilder.getProsecutingAuthority();

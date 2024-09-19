@@ -11,10 +11,11 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.argThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.mockito.hamcrest.MockitoHamcrest.argThat;
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMatcher.jsonEnvelope;
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMetadataMatcher.withMetadataEnvelopedFrom;
@@ -43,17 +44,15 @@ import javax.json.JsonObjectBuilder;
 import javax.json.JsonValue;
 
 import org.hamcrest.Matcher;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class ReferenceDataServiceTest {
 
     private final static String TFL = "TFL";
@@ -86,8 +85,7 @@ public class ReferenceDataServiceTest {
 
     @Spy
     private final Enveloper enveloper = EnveloperFactory.createEnveloper();
-    @Rule
-    public ExpectedException thrown = ExpectedException.none();
+
     @Mock
     private Requester requester;
     @InjectMocks
@@ -248,10 +246,8 @@ public class ReferenceDataServiceTest {
         final JsonEnvelope referenceDataResponse = envelopeFrom(metadataWithRandomUUIDAndName(), JsonValue.NULL);
         when(requester.requestAsAdmin(any())).thenReturn(referenceDataResponse);
 
-        thrown.expect(EnforcementAreaNotFoundException.class);
-        thrown.expectMessage(equalTo("Could not find Local Justice Area by code: localJusticeAreaNationalCourtCode"));
-
-        referenceDataService.getLocalJusticeAreaByCode(envelope, "localJusticeAreaNationalCourtCode");
+        var e = assertThrows(EnforcementAreaNotFoundException.class, () -> referenceDataService.getLocalJusticeAreaByCode(envelope, "localJusticeAreaNationalCourtCode"));
+        assertThat(e.getMessage(), is("Could not find Local Justice Area by code: localJusticeAreaNationalCourtCode"));
     }
 
     @Test

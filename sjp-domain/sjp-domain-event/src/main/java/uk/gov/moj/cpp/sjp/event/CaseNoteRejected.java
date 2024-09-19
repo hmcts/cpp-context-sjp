@@ -4,6 +4,8 @@ import uk.gov.justice.domain.annotation.Event;
 
 import java.util.UUID;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+
 @Event(CaseNoteRejected.EVENT_NAME)
 public class CaseNoteRejected {
 
@@ -12,6 +14,7 @@ public class CaseNoteRejected {
     private final UUID caseId;
     private final String rejectionReason;
 
+    @JsonCreator
     public CaseNoteRejected(final UUID caseId, final String rejectionReason) {
         this.caseId = caseId;
         this.rejectionReason = rejectionReason;

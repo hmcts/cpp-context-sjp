@@ -2,12 +2,12 @@ package uk.gov.moj.cpp.sjp.query.accesscontrol;
 
 import static uk.gov.moj.cpp.sjp.query.api.RuleConstants.getQueryCaseActionGroups;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 public class CaseQueryByIdWithDocumentMetadataTest extends SjpDroolsAccessControlTest {
 
     public CaseQueryByIdWithDocumentMetadataTest() {
-        super("sjp.query.case-with-document-metadata", getQueryCaseActionGroups());
+        super("QUERY_API_SESSION", "sjp.query.case-with-document-metadata", getQueryCaseActionGroups());
     }
 
     @Test

@@ -1,5 +1,6 @@
 package uk.gov.moj.cpp.sjp.command.accesscontrol;
 
+import static java.util.Collections.singletonMap;
 import static org.mockito.BDDMockito.given;
 import static uk.gov.moj.cpp.sjp.command.api.accesscontrol.RuleConstants.getAddFinancialImpositionCorrelationIdGroups;
 
@@ -9,8 +10,7 @@ import uk.gov.moj.cpp.accesscontrol.test.utils.BaseDroolsAccessControlTest;
 
 import java.util.Map;
 
-import com.google.common.collect.ImmutableMap;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.kie.api.runtime.ExecutionResults;
 import org.mockito.Mock;
 
@@ -20,6 +20,11 @@ public class AddFinancialImpositionCorrelationIdTest extends BaseDroolsAccessCon
 
     @Mock
     private UserAndGroupProvider userAndGroupProvider;
+
+    public AddFinancialImpositionCorrelationIdTest() {
+        super("COMMAND_API_SESSION");
+    }
+
 
     @Test
     public void shouldAcceptAddFinancialImpositionCorrelationId() {
@@ -42,7 +47,7 @@ public class AddFinancialImpositionCorrelationIdTest extends BaseDroolsAccessCon
     }
 
     @Override
-    protected Map<Class, Object> getProviderMocks() {
-        return ImmutableMap.<Class, Object>builder().put(UserAndGroupProvider.class, userAndGroupProvider).build();
+    protected Map<Class<?>, Object> getProviderMocks() {
+        return singletonMap(UserAndGroupProvider.class, userAndGroupProvider);
     }
 }

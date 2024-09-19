@@ -11,7 +11,7 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.is;
-import static org.mockito.Matchers.any;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 import static uk.gov.justice.services.core.annotation.Component.COMMAND_HANDLER;
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
@@ -27,6 +27,7 @@ import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeStrea
 import static uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderFactory.metadataWithRandomUUID;
 
 
+import java.time.temporal.ChronoUnit;
 import java.util.Arrays;
 import uk.gov.justice.core.courts.DelegatedPowers;
 import uk.gov.justice.domain.annotation.Event;
@@ -58,16 +59,16 @@ import java.util.stream.Stream;
 import javax.json.JsonObject;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.mockito.Spy;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class SessionHandlerTest {
 
     private static final String START_SESSION_COMMAND = "sjp.command.start-session";
@@ -112,7 +113,7 @@ public class SessionHandlerTest {
     private ZonedDateTime endedAt;
     private Optional<DelegatedPowers> legalAdviser;
 
-    @Before
+    @BeforeEach
     public void init() {
         MockitoAnnotations.initMocks(this);
         sessionId = randomUUID();
@@ -244,7 +245,7 @@ public class SessionHandlerTest {
                         jsonEnvelope(
                                 metadata().envelopedWith(envelope.metadata()).withName(ResetAocpSession.class.getAnnotation(Event.class).value()),
                                 payloadIsJson(
-                                        withJsonPath("$.resetAt", is(clock.now().toString())))))));
+                                        withJsonPath("$.resetAt", is(clock.now().truncatedTo(ChronoUnit.MILLIS).toString())))))));
 
     }
 

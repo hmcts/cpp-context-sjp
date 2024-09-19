@@ -2,12 +2,12 @@ package uk.gov.moj.cpp.sjp.query.accesscontrol;
 
 import static uk.gov.moj.cpp.sjp.query.api.RuleConstants.getQueryCaseByUrnActionGroups;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 public class QueryCaseByUrnTest extends SjpDroolsAccessControlTest {
 
     public QueryCaseByUrnTest() {
-        super("sjp.query.case-by-urn", getQueryCaseByUrnActionGroups());
+        super("QUERY_API_SESSION", "sjp.query.case-by-urn", getQueryCaseByUrnActionGroups());
     }
 
     @Test

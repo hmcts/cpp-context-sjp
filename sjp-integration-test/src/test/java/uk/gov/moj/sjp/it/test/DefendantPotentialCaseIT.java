@@ -1,9 +1,10 @@
 package uk.gov.moj.sjp.it.test;
 
 import static java.util.UUID.randomUUID;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static uk.gov.moj.sjp.it.Constants.SJP_EVENT;
 import static uk.gov.moj.sjp.it.command.CreateCase.CreateCasePayloadBuilder.defaultCaseBuilder;
 import static uk.gov.moj.sjp.it.model.ProsecutingAuthority.TFL;
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubProsecutorQuery;
@@ -26,20 +27,19 @@ import javax.json.Json;
 import javax.json.JsonArray;
 import javax.json.JsonObject;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 /**
  * Integration test to find if defendant has potential cases using unified search query
  */
 public class DefendantPotentialCaseIT extends BaseIntegrationTest {
 
-    private static final String SJP_EVENT = "sjp.event";
     private static final String CASE_REF = "Potential case reference";
     private final MessageProducerClient privateEventsProducer = new MessageProducerClient();
     private UUID randomCaseId;
 
-    @Before
+    @BeforeEach
     public void before() {
         randomCaseId = UUID.randomUUID();
         stubUnifiedSearchQueryForCases(randomCaseId, CASE_REF);
@@ -47,8 +47,8 @@ public class DefendantPotentialCaseIT extends BaseIntegrationTest {
 
     @Test
     public void shouldReturnFalseForPotentialCases() {
-        UUID caseId =  UUID.randomUUID();
-        UUID defendantId =  UUID.randomUUID();
+        UUID caseId = UUID.randomUUID();
+        UUID defendantId = UUID.randomUUID();
         privateEventsProducer.startProducer(SJP_EVENT);
         final ProsecutingAuthority prosecutingAuthority = TFL;
         stubProsecutorQuery(prosecutingAuthority.name(), prosecutingAuthority.getFullName(), randomUUID());
@@ -67,9 +67,9 @@ public class DefendantPotentialCaseIT extends BaseIntegrationTest {
     }
 
     @Test
-    public void shouldFindPotentialCases()  {
+    public void shouldFindPotentialCases() {
         UUID caseId = randomCaseId;
-        UUID defendantId =  UUID.randomUUID();
+        UUID defendantId = UUID.randomUUID();
         privateEventsProducer.startProducer(SJP_EVENT);
 
         final ProsecutingAuthority prosecutingAuthority = TFL;

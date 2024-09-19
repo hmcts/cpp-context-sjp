@@ -1,12 +1,12 @@
 package uk.gov.moj.sjp.it.helper;
 
-import static com.jayway.awaitility.Awaitility.await;
+import static org.awaitility.Awaitility.await;
 import static java.lang.String.format;
 import static java.util.UUID.randomUUID;
 import static javax.ws.rs.core.Response.Status.OK;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.fail;
 import static uk.gov.moj.sjp.it.helper.PleadOnlineHelper.getOnlinePlea;
 import static uk.gov.moj.sjp.it.util.TopicUtil.retrieveMessageAsJsonObject;
 

@@ -12,14 +12,14 @@ import static java.util.Optional.of;
 import static javax.json.Json.createObjectBuilder;
 import static org.apache.commons.lang3.RandomStringUtils.randomAlphanumeric;
 import static org.hamcrest.CoreMatchers.notNullValue;
-import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.core.AllOf.allOf;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.nullValue;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.eq;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.justice.core.courts.CourtApplication.courtApplication;
@@ -82,19 +82,19 @@ import java.util.UUID;
 import java.util.stream.Stream;
 
 import org.hamcrest.CoreMatchers;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 import javax.json.JsonObject;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class CreateCaseApplicationHandlerTest {
 
     private static final String CONTACT_EMAIL_ADDRESS_PREFIX = STRING.next();
@@ -151,11 +151,9 @@ public class CreateCaseApplicationHandlerTest {
             .withId(randomUUID())
             .build();
 
-    @Before
+    @BeforeEach
     public void setup() {
         setField(this.jsonObjectToObjectConverter, "objectMapper", new ObjectMapperProducer().objectMapper());
-        when(eventSource.getStreamById(CASE_ID)).thenReturn(eventStream);
-        when(aggregateService.get(eventStream, CaseAggregate.class)).thenReturn(caseAggregate);
         caseAggregate.getState().markCaseCompleted();
         caseAggregate.getState().setCaseId(randomUUID());
         caseAggregate.getState().setManagedByAtcm(true);
@@ -174,7 +172,8 @@ public class CreateCaseApplicationHandlerTest {
 
     @Test
     public void shouldProcessCommand() throws Exception {
-
+        when(eventSource.getStreamById(CASE_ID)).thenReturn(eventStream);
+        when(aggregateService.get(eventStream, CaseAggregate.class)).thenReturn(caseAggregate);
         when(referenceDataService.getProsecutor(any(JsonEnvelope.class), any(UUID.class))).thenReturn(empty());
         createCaseApplicationHandler.createCaseApplication(envelopeFrom(metadata, createCaseApplication(false)));
 
@@ -245,7 +244,8 @@ public class CreateCaseApplicationHandlerTest {
                 .withCaseId(CASE_ID)
                 .withApplicationIdExists(false)
                 .build();
-
+        when(eventSource.getStreamById(CASE_ID)).thenReturn(eventStream);
+        when(aggregateService.get(eventStream, CaseAggregate.class)).thenReturn(caseAggregate);
         when(referenceDataService.getProsecutor(any(JsonEnvelope.class), eq(prosecutor1))).thenReturn(of(buildProsecutorQueryResult(prosecutor1, "prosecutor1")));
         when(referenceDataService.getProsecutor(any(JsonEnvelope.class), eq(prosecutor2))).thenReturn(of(buildProsecutorQueryResult(prosecutor2, "prosecutor2")));
         when(referenceDataService.getProsecutor(any(JsonEnvelope.class), eq(subject))).thenReturn(of(buildProsecutorQueryResult(subject, "subject")));
@@ -348,7 +348,8 @@ public class CreateCaseApplicationHandlerTest {
                 .withCaseId(CASE_ID)
                 .withApplicationIdExists(false)
                 .build();
-
+        when(eventSource.getStreamById(CASE_ID)).thenReturn(eventStream);
+        when(aggregateService.get(eventStream, CaseAggregate.class)).thenReturn(caseAggregate);
         when(referenceDataService.getProsecutor(any(JsonEnvelope.class), eq(prosecutor1))).thenReturn(of(buildProsecutorQueryResult(prosecutor1, "prosecutor1")));
         when(referenceDataService.getProsecutor(any(JsonEnvelope.class), eq(prosecutor2))).thenReturn(of(buildProsecutorQueryResult(prosecutor2, "prosecutor2")));
         when(referenceDataService.getProsecutor(any(JsonEnvelope.class), eq(prosecutor3))).thenReturn(of(buildProsecutorQueryResult(prosecutor3, "prosecutor3")));
@@ -445,7 +446,8 @@ public class CreateCaseApplicationHandlerTest {
                 .withCaseId(CASE_ID)
                 .withApplicationIdExists(false)
                 .build();
-
+        when(eventSource.getStreamById(CASE_ID)).thenReturn(eventStream);
+        when(aggregateService.get(eventStream, CaseAggregate.class)).thenReturn(caseAggregate);
         when(referenceDataService.getProsecutor(any(JsonEnvelope.class), eq(prosecutor1))).thenReturn(of(buildProsecutorQueryResult(prosecutor1, "prosecutor1")));
         when(referenceDataService.getProsecutor(any(JsonEnvelope.class), eq(prosecutor2))).thenReturn(of(buildProsecutorQueryResult(prosecutor2, "prosecutor2")));
         when(referenceDataService.getProsecutor(any(JsonEnvelope.class), eq(subject))).thenReturn(of(buildProsecutorQueryResult(subject, "subject")));
@@ -528,7 +530,8 @@ public class CreateCaseApplicationHandlerTest {
                 .withApplicationIdExists(false)
                 .build();
 
-
+        when(eventSource.getStreamById(CASE_ID)).thenReturn(eventStream);
+        when(aggregateService.get(eventStream, CaseAggregate.class)).thenReturn(caseAggregate);
         when(referenceDataService.getProsecutor(any(JsonEnvelope.class), eq(prosecutor2))).thenReturn(of(buildProsecutorQueryResult(prosecutor2, "prosecutor2")));
         when(referenceDataService.getProsecutor(any(JsonEnvelope.class), eq(prosecutor1))).thenReturn(of(buildProsecutorQueryResult(prosecutor1, "prosecutor1")));
         when(referenceDataService.getProsecutor(any(JsonEnvelope.class), eq(subject))).thenReturn(of(buildProsecutorQueryResult(subject, "subject")));
@@ -611,7 +614,8 @@ public class CreateCaseApplicationHandlerTest {
                 .withApplicationIdExists(false)
                 .build();
 
-
+        when(eventSource.getStreamById(CASE_ID)).thenReturn(eventStream);
+        when(aggregateService.get(eventStream, CaseAggregate.class)).thenReturn(caseAggregate);
         when(referenceDataService.getProsecutor(any(JsonEnvelope.class), eq(prosecutor1))).thenReturn(of(buildProsecutorQueryResult(prosecutor1, "prosecutor1")));
         when(referenceDataService.getProsecutor(any(JsonEnvelope.class), eq(prosecutor2))).thenReturn(of(buildProsecutorQueryResult(prosecutor2, "prosecutor2")));
         when(referenceDataService.getProsecutor(any(JsonEnvelope.class), eq(prosecutor3))).thenReturn(of(buildProsecutorQueryResult(prosecutor3, "prosecutor3")));
@@ -697,9 +701,9 @@ public class CreateCaseApplicationHandlerTest {
                 .withCaseId(CASE_ID)
                 .withApplicationIdExists(false)
                 .build();
-
+        when(eventSource.getStreamById(CASE_ID)).thenReturn(eventStream);
+        when(aggregateService.get(eventStream, CaseAggregate.class)).thenReturn(caseAggregate);
         when(referenceDataService.getProsecutor(any(JsonEnvelope.class), eq(prosecutor1))).thenReturn(of(buildProsecutorQueryResult(prosecutor1, "prosecutor1")));
-        when(referenceDataService.getProsecutor(any(JsonEnvelope.class), eq(prosecutor2))).thenReturn(of(buildProsecutorQueryResult(prosecutor2, "prosecutor2")));
         when(referenceDataService.getProsecutor(any(JsonEnvelope.class), eq(prosecutor3))).thenReturn(of(buildProsecutorQueryResult(prosecutor3, "prosecutor3")));
         when(referenceDataService.getProsecutor(any(JsonEnvelope.class), eq(subject))).thenReturn(of(buildProsecutorQueryResult(subject, "subject")));
         when(referenceDataService.getProsecutor(any(JsonEnvelope.class), eq(respondent))).thenReturn(of(buildProsecutorQueryResult(respondent, "respondent")));
@@ -784,7 +788,8 @@ public class CreateCaseApplicationHandlerTest {
                 .withCaseId(CASE_ID)
                 .withApplicationIdExists(false)
                 .build();
-
+        when(eventSource.getStreamById(CASE_ID)).thenReturn(eventStream);
+        when(aggregateService.get(eventStream, CaseAggregate.class)).thenReturn(caseAggregate);
         when(referenceDataService.getProsecutor(any(JsonEnvelope.class), eq(prosecutor1))).thenReturn(of(buildProsecutorQueryResult(prosecutor1, "prosecutor1")));
         when(referenceDataService.getProsecutor(any(JsonEnvelope.class), eq(prosecutor2))).thenReturn(of(buildProsecutorQueryResult(prosecutor2, "prosecutor2")));
         when(referenceDataService.getProsecutor(any(JsonEnvelope.class), eq(subject))).thenReturn(of(buildProsecutorQueryResult(subject, "subject")));
@@ -872,7 +877,8 @@ public class CreateCaseApplicationHandlerTest {
                 .withCaseId(CASE_ID)
                 .withApplicationIdExists(false)
                 .build();
-
+        when(eventSource.getStreamById(CASE_ID)).thenReturn(eventStream);
+        when(aggregateService.get(eventStream, CaseAggregate.class)).thenReturn(caseAggregate);
         when(referenceDataService.getProsecutor(any(JsonEnvelope.class), eq(prosecutor1))).thenReturn(of(buildProsecutorQueryResult(prosecutor1, "prosecutor1")));
         when(referenceDataService.getProsecutor(any(JsonEnvelope.class), eq(prosecutor2))).thenReturn(of(buildProsecutorQueryResult(prosecutor2, "prosecutor2")));
         when(referenceDataService.getProsecutor(any(JsonEnvelope.class), eq(prosecutor3))).thenReturn(of(buildProsecutorQueryResult(prosecutor3, "prosecutor3")));
@@ -1011,7 +1017,8 @@ public class CreateCaseApplicationHandlerTest {
                 .withCaseId(CASE_ID)
                 .withApplicationIdExists(false)
                 .build();
-
+        when(eventSource.getStreamById(CASE_ID)).thenReturn(eventStream);
+        when(aggregateService.get(eventStream, CaseAggregate.class)).thenReturn(caseAggregate);
         when(referenceDataService.getProsecutor(any(JsonEnvelope.class), eq(prosecutor1))).thenReturn(of(buildProsecutorQueryResult(prosecutor1, "prosecutor1")));
         when(referenceDataService.getProsecutor(any(JsonEnvelope.class), eq(prosecutor2))).thenReturn(of(buildProsecutorQueryResult(prosecutor2, "prosecutor2")));
         when(referenceDataService.getProsecutor(any(JsonEnvelope.class), eq(prosecutor3))).thenReturn(of(buildProsecutorQueryResult(prosecutor3, "prosecutor3")));
@@ -1094,7 +1101,8 @@ public class CreateCaseApplicationHandlerTest {
                 .withCaseId(CASE_ID)
                 .withApplicationIdExists(false)
                 .build();
-
+        when(eventSource.getStreamById(CASE_ID)).thenReturn(eventStream);
+        when(aggregateService.get(eventStream, CaseAggregate.class)).thenReturn(caseAggregate);
         when(referenceDataService.getProsecutor(any(JsonEnvelope.class), eq(prosecutor1))).thenReturn(of(buildProsecutorQueryResult(prosecutor1, "prosecutor1")));
         when(referenceDataService.getProsecutor(any(JsonEnvelope.class), eq(prosecutor2))).thenReturn(of(buildProsecutorQueryResult(prosecutor2, "prosecutor2")));
         when(referenceDataService.getProsecutor(any(JsonEnvelope.class), eq(prosecutor3))).thenReturn(of(buildProsecutorQueryResult(prosecutor3, "prosecutor3")));
@@ -1164,11 +1172,15 @@ public class CreateCaseApplicationHandlerTest {
 
     @Test
     public void shouldUpdateOffenceWordingWhenCourtOrderIsNotSuspendedSentence() throws EventStreamException {
+        when(eventSource.getStreamById(CASE_ID)).thenReturn(eventStream);
+        when(aggregateService.get(eventStream, CaseAggregate.class)).thenReturn(caseAggregate);
         offenceWordingTestForCourtOrder(randomUUID());
     }
 
     @Test
     public void shouldUpdateOffenceWordingWhenCourtOrderIsSuspendedSentence() throws EventStreamException {
+        when(eventSource.getStreamById(CASE_ID)).thenReturn(eventStream);
+        when(aggregateService.get(eventStream, CaseAggregate.class)).thenReturn(caseAggregate);
         offenceWordingTestForCourtOrder(TYPE_ID_FOR_SUSPENDED_SENTENCE_ORDER);
     }
 
@@ -1322,6 +1334,8 @@ public class CreateCaseApplicationHandlerTest {
         CreateCaseApplication createCaseApplication = buildFirstHearingApplicationCourtProceedings();
 
 
+        when(eventSource.getStreamById(CASE_ID)).thenReturn(eventStream);
+        when(aggregateService.get(eventStream, CaseAggregate.class)).thenReturn(caseAggregate);
         when(referenceDataService.getProsecutor(any(JsonEnvelope.class), any(UUID.class))).thenReturn(empty());
 
         createCaseApplicationHandler.createCaseApplication(envelopeFrom(metadata, createCaseApplication));
@@ -1368,7 +1382,8 @@ public class CreateCaseApplicationHandlerTest {
     @Test
     public void shouldUpdateOffenceWordingWhenCourtOrderNotExist() throws EventStreamException {
         CreateCaseApplication createCaseApplication = buildCreateCaseApplication(randomUUID(), false, true);
-
+        when(eventSource.getStreamById(CASE_ID)).thenReturn(eventStream);
+        when(aggregateService.get(eventStream, CaseAggregate.class)).thenReturn(caseAggregate);
         when(referenceDataService.getProsecutor(any(JsonEnvelope.class), any(UUID.class))).thenReturn(empty());
         createCaseApplicationHandler.createCaseApplication(envelopeFrom(metadata, createCaseApplication));
 
@@ -1415,7 +1430,8 @@ public class CreateCaseApplicationHandlerTest {
     @Test
     public void shouldNotUpdateFutureSummonsHearingWhenCourtHearingIsNotAvailable() throws EventStreamException {
         CreateCaseApplication createCaseApplication = buildCreateCaseApplication(randomUUID(), false, true, true, false);
-
+        when(eventSource.getStreamById(CASE_ID)).thenReturn(eventStream);
+        when(aggregateService.get(eventStream, CaseAggregate.class)).thenReturn(caseAggregate);
         when(referenceDataService.getProsecutor(any(JsonEnvelope.class), any(UUID.class))).thenReturn(empty());
         createCaseApplicationHandler.createCaseApplication(envelopeFrom(metadata, createCaseApplication));
 
@@ -1452,7 +1468,8 @@ public class CreateCaseApplicationHandlerTest {
     @Test
     public void shouldUpdateOffenceWordingWhenCourtApplicationCasesNotExist() throws EventStreamException {
         CreateCaseApplication createCaseApplication = buildCreateCaseApplication(randomUUID(), true, false);
-
+        when(eventSource.getStreamById(CASE_ID)).thenReturn(eventStream);
+        when(aggregateService.get(eventStream, CaseAggregate.class)).thenReturn(caseAggregate);
         when(referenceDataService.getProsecutor(any(JsonEnvelope.class), any(UUID.class))).thenReturn(empty());
         createCaseApplicationHandler.createCaseApplication(envelopeFrom(metadata, createCaseApplication));
 
@@ -1537,6 +1554,8 @@ public class CreateCaseApplicationHandlerTest {
                 .withApplicationIdExists(false)
                 .build();
 
+        when(eventSource.getStreamById(CASE_ID)).thenReturn(eventStream);
+        when(aggregateService.get(eventStream, CaseAggregate.class)).thenReturn(caseAggregate);
         when(referenceDataService.getProsecutor(any(JsonEnvelope.class), eq(prosecutor1))).thenReturn(of(buildProsecutorQueryResult(prosecutor1, "prosecutor1")));
         when(referenceDataService.getProsecutor(any(JsonEnvelope.class), eq(prosecutor2))).thenReturn(of(buildProsecutorQueryResult(prosecutor2, "prosecutor2")));
         when(referenceDataService.getProsecutor(any(JsonEnvelope.class), eq(subject))).thenReturn(of(buildProsecutorQueryResult(subject, "subject")));
@@ -1623,7 +1642,8 @@ public class CreateCaseApplicationHandlerTest {
                 .withCaseId(CASE_ID)
                 .withApplicationIdExists(false)
                 .build();
-
+        when(eventSource.getStreamById(CASE_ID)).thenReturn(eventStream);
+        when(aggregateService.get(eventStream, CaseAggregate.class)).thenReturn(caseAggregate);
         when(referenceDataService.getProsecutor(any(JsonEnvelope.class), eq(prosecutor1))).thenReturn(of(buildProsecutorQueryResult(prosecutor1, "prosecutor1")));
         when(referenceDataService.getProsecutor(any(JsonEnvelope.class), eq(prosecutor2))).thenReturn(of(buildProsecutorQueryResult(prosecutor2, "prosecutor2")));
         when(referenceDataService.getProsecutor(any(JsonEnvelope.class), eq(subject))).thenReturn(of(buildProsecutorQueryResult(subject, "subject")));
@@ -1652,7 +1672,7 @@ public class CreateCaseApplicationHandlerTest {
 
                                 withJsonPath("$.courtApplication.respondents.length()", is(1)),
                                 withJsonPath("$.courtApplication.respondents[0].id", is(APPLICANT_ID.toString())),
-                                withoutJsonPath("$.courtApplication.respondents[0].prosecutingAuthority")
+                                        withoutJsonPath("$.courtApplication.respondents[0].prosecutingAuthority")
 
                                 ))),
                 jsonEnvelope(metadata().withName(CASE_STAT_DECS),

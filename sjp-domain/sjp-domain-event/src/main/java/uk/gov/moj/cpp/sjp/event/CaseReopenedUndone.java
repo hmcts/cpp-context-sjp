@@ -6,6 +6,9 @@ import java.io.Serializable;
 import java.time.LocalDate;
 import java.util.UUID;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 /**
  * Event for case reopened undone
  */
@@ -18,7 +21,8 @@ public class CaseReopenedUndone implements Serializable {
 
     private final LocalDate oldReopenedDate;
 
-    public CaseReopenedUndone(final UUID caseId, final LocalDate oldReopenedDate) {
+    @JsonCreator
+    public CaseReopenedUndone(final @JsonProperty("caseId") UUID caseId, final @JsonProperty("oldReopenedDate") LocalDate oldReopenedDate) {
         this.caseId = caseId;
         this.oldReopenedDate = oldReopenedDate;
     }

@@ -2,12 +2,12 @@ package uk.gov.moj.cpp.sjp.query.accesscontrol;
 
 import static uk.gov.moj.cpp.sjp.query.api.RuleConstants.getQueryCaseByUrnPostcodeActionGroups;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 public class QueryCaseByUrnPostCodeTest extends SjpDroolsAccessControlTest {
 
     public QueryCaseByUrnPostCodeTest() {
-        super("sjp.query.case-by-urn-postcode", getQueryCaseByUrnPostcodeActionGroups());
+        super("QUERY_API_SESSION", "sjp.query.case-by-urn-postcode", getQueryCaseByUrnPostcodeActionGroups());
     }
 
     @Test

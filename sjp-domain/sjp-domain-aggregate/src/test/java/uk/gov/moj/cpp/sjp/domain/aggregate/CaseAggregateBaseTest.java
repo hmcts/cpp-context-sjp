@@ -6,7 +6,7 @@ import static java.lang.System.lineSeparator;
 import static java.util.Optional.ofNullable;
 import static java.util.stream.Collectors.toList;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.Mockito.*;
 import static uk.gov.moj.cpp.sjp.domain.DomainConstants.NUMBER_DAYS_WAITING_FOR_PLEA;
 
@@ -25,7 +25,7 @@ import java.util.UUID;
 import java.util.stream.Stream;
 
 import org.hamcrest.Matcher;
-import org.junit.Before;
+import org.junit.jupiter.api.BeforeEach;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.internal.matchers.apachecommons.ReflectionEquals;
@@ -43,7 +43,7 @@ public abstract class CaseAggregateBaseTest {
 
     protected Session session;
 
-    @Before
+    @BeforeEach
     public void setUp() {
         caseAggregate = new CaseAggregate();
         aCase = buildCaseReceived();

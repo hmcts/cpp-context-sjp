@@ -3,7 +3,7 @@ package uk.gov.moj.cpp.sjp.event.processor.results.converter.judicialresult.aggr
 import static java.util.Collections.singletonList;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.nullValue;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static uk.gov.moj.cpp.sjp.domain.decision.OffenceDecisionInformation.createOffenceDecisionInformation;
 import static uk.gov.moj.cpp.sjp.domain.verdict.VerdictType.FOUND_GUILTY;
 import static uk.gov.moj.cpp.sjp.event.processor.results.converter.judicialresult.JCaseResultsConstants.DATE_FORMAT;
@@ -11,17 +11,17 @@ import static uk.gov.moj.cpp.sjp.event.processor.results.converter.judicialresul
 import uk.gov.justice.core.courts.JudicialResult;
 import uk.gov.moj.cpp.sjp.domain.decision.SetAside;
 
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class SetAsideDecisionResultAggregatorTest extends  BaseDecisionResultAggregatorTest {
 
     private SetAsideDecisionResultAggregator aggregator;
 
-    @Before
+    @BeforeEach
     public void setUp() {
        super.setUp();
         aggregator = new SetAsideDecisionResultAggregator(jCachedReferenceData);

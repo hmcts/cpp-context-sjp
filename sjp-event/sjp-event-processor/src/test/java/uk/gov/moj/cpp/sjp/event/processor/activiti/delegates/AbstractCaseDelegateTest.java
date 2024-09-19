@@ -15,7 +15,7 @@ import java.time.ZonedDateTime;
 import java.util.UUID;
 
 import org.activiti.engine.delegate.DelegateExecution;
-import org.junit.Before;
+import org.junit.jupiter.api.BeforeEach;
 import org.mockito.Mock;
 import org.mockito.Spy;
 
@@ -33,15 +33,5 @@ public abstract class AbstractCaseDelegateTest {
 
     @Spy
     protected Clock clock = new StoppedClock(ZonedDateTime.now(UTC));
-
-    @Before
-    public void init() {
-        caseId = UUID.randomUUID();
-        metadata = metadataWithRandomUUIDAndName().build();
-
-        when(delegateExecution.getProcessBusinessKey()).thenReturn(caseId.toString());
-        when(delegateExecution.getVariable(METADATA_VARIABLE, String.class))
-                .thenReturn(metadataToString(metadata));
-    }
 
 }

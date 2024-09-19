@@ -1,7 +1,7 @@
 package uk.gov.moj.cpp.sjp.query.view.response.courtextract;
 
 import java.util.Arrays;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import uk.gov.moj.cpp.sjp.domain.common.CaseStatus;
 import uk.gov.moj.cpp.sjp.domain.decision.DecisionType;
 import uk.gov.moj.cpp.sjp.domain.decision.discharge.DischargeType;
@@ -54,8 +54,8 @@ import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.notNullValue;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static uk.gov.moj.cpp.sjp.domain.decision.DecisionType.ADJOURN;
 import static uk.gov.moj.cpp.sjp.domain.decision.DecisionType.DISCHARGE;
 import static uk.gov.moj.cpp.sjp.domain.decision.DecisionType.DISMISS;

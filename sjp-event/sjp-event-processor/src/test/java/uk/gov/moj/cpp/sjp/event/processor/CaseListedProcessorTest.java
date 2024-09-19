@@ -4,19 +4,14 @@ import static java.util.UUID.randomUUID;
 import static javax.json.Json.createArrayBuilder;
 import static javax.json.Json.createObjectBuilder;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.justice.services.test.utils.core.enveloper.EnvelopeFactory.createEnvelope;
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMetadataMatcher.withMetadataEnvelopedFrom;
-
 import static uk.gov.moj.cpp.sjp.event.processor.EventProcessorConstants.CASE_ID;
-import static uk.gov.moj.cpp.sjp.event.processor.results.converter.ResultingToResultsConverterHelper.buildCaseDetails;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import org.mockito.Spy;
 import uk.gov.justice.json.schemas.domains.sjp.results.PublicHearingResulted;
 import uk.gov.justice.services.common.converter.ObjectToJsonObjectConverter;
 import uk.gov.justice.services.common.converter.jackson.ObjectMapperProducer;
@@ -25,9 +20,9 @@ import uk.gov.justice.services.core.featurecontrol.FeatureControlGuard;
 import uk.gov.justice.services.core.sender.Sender;
 import uk.gov.justice.services.messaging.Envelope;
 import uk.gov.justice.services.messaging.JsonEnvelope;
+import uk.gov.justice.services.messaging.spi.DefaultEnvelope;
 import uk.gov.moj.cpp.sjp.event.processor.results.converter.SjpToHearingConverter;
 import uk.gov.moj.cpp.sjp.event.processor.service.SjpService;
-
 
 import java.time.ZonedDateTime;
 import java.util.List;
@@ -36,19 +31,19 @@ import java.util.function.Function;
 
 import javax.json.Json;
 import javax.json.JsonArray;
-
 import javax.json.JsonValue;
 
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.Spy;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class CaseListedProcessorTest {
 
     @Mock
@@ -78,7 +73,7 @@ public class CaseListedProcessorTest {
     private CaseListedProcessor caseListedProcessor;
 
     @Captor
-    private ArgumentCaptor<JsonEnvelope> jsonEnvelopeCaptor;
+    private ArgumentCaptor<DefaultEnvelope> jsonEnvelopeCaptor;
 
     @Spy
     private ObjectMapper objectMapper = new ObjectMapperProducer().objectMapper();
@@ -90,13 +85,6 @@ public class CaseListedProcessorTest {
 
     private static final String PUBLIC_EVENTS_HEARING_RESULTED = "public.events.hearing.hearing-resulted";
     private static final String PRIVATE_CASE_LISTED_IN_REFER_TO_COURT_EVENT = "sjp.events.case-listed-in-cc-for-refer-to-court";
-
-    @Before
-    public void setUp() {
-        when(sjpService.getCaseDetails(any(), any())).thenReturn(buildCaseDetails());
-        when(enveloper.withMetadataFrom(any(), any())).thenReturn(function);
-        when(function.apply(any())).thenReturn(jsonEnvelope);
-    }
 
     @Test
     public void shouldHandleCaseListedInCCReferToCourt() {
@@ -124,7 +112,7 @@ public class CaseListedProcessorTest {
 
         verify(sender, times(1)).send(jsonEnvelopeCaptor.capture());
 
-        final List<JsonEnvelope> eventEnvelopes = jsonEnvelopeCaptor.getAllValues();
+        final List<DefaultEnvelope> eventEnvelopes = jsonEnvelopeCaptor.getAllValues();
         final Envelope<JsonValue> publicHearingResultedEvent = eventEnvelopes.get(0);
 
         assertThat(publicHearingResultedEvent.metadata(),
@@ -159,7 +147,7 @@ public class CaseListedProcessorTest {
 
         verify(sender, times(1)).send(jsonEnvelopeCaptor.capture());
 
-        final List<JsonEnvelope> eventEnvelopes = jsonEnvelopeCaptor.getAllValues();
+        final List<DefaultEnvelope> eventEnvelopes = jsonEnvelopeCaptor.getAllValues();
         final Envelope<JsonValue> decisionSavedPublicEvent = eventEnvelopes.get(0);
 
         assertThat(decisionSavedPublicEvent.metadata(),
@@ -172,7 +160,7 @@ public class CaseListedProcessorTest {
                 .add(createObjectBuilder()
                         .add("listedDurationMinutes", 1531791578)
                         .add("listingSequence", 810249414))
-                        .build();
+                .build();
     }
 
 }

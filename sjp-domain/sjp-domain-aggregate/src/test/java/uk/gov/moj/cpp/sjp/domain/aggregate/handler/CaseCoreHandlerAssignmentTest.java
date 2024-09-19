@@ -1,8 +1,8 @@
 package uk.gov.moj.cpp.sjp.domain.aggregate.handler;
 
 import org.hamcrest.Matchers;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.Spy;
 import uk.gov.justice.services.common.util.Clock;
 import uk.gov.justice.services.test.utils.common.helper.StoppedClock;
@@ -24,7 +24,7 @@ import static java.util.stream.Collectors.toList;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static uk.gov.moj.cpp.sjp.domain.CaseAssignmentType.MAGISTRATE_DECISION;
 import static uk.gov.moj.cpp.sjp.domain.CaseReadinessReason.APPLICATION_PENDING;
 import static uk.gov.moj.cpp.sjp.domain.CaseReadinessReason.PIA;
@@ -43,7 +43,7 @@ public class CaseCoreHandlerAssignmentTest {
 
     private CaseAggregateState caseAggregateState;
 
-    @Before
+    @BeforeEach
     public void onceBeforeEachTest() {
         caseAggregateState = new CaseAggregateState();
         caseAggregateState.setCaseId(caseId);

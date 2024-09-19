@@ -7,8 +7,8 @@ import static java.util.stream.Collectors.toList;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.hasSize;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyInt;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -26,14 +26,14 @@ import java.util.List;
 import java.util.Optional;
 
 import org.apache.deltaspike.data.api.QueryResult;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class CaseServiceFindCasesMissingSjpnTest {
 
     private static final LocalDate NOW = LocalDate.now();
@@ -55,10 +55,9 @@ public class CaseServiceFindCasesMissingSjpnTest {
     @InjectMocks
     private CaseService service;
 
-    @Before
+    @BeforeEach
     public void init() {
         caseDetails = asList(createCaseDetails(), createCaseDetails(), createCaseDetails());
-        when(queryResult.getResultList()).thenReturn(caseDetails);
 
         mockProsecutingAuthorityAccess();
     }
@@ -66,6 +65,7 @@ public class CaseServiceFindCasesMissingSjpnTest {
     @Test
     public void shouldFindAllCasesMissingSjpn() {
 
+        when(queryResult.getResultList()).thenReturn(caseDetails);
         when(caseRepository.findCasesMissingSjpn(TVL_FILTER_VALUE)).thenReturn(queryResult);
         when(caseRepository.countCasesMissingSjpn(TVL_FILTER_VALUE)).thenReturn(COUNT);
 
@@ -80,6 +80,7 @@ public class CaseServiceFindCasesMissingSjpnTest {
     @Test
     public void shouldFindCasesMissingSjpnLimitedByPostingDate() {
 
+        when(queryResult.getResultList()).thenReturn(caseDetails);
         when(caseRepository.findCasesMissingSjpn(TVL_FILTER_VALUE, NOW)).thenReturn(queryResult);
         when(caseRepository.countCasesMissingSjpn(TVL_FILTER_VALUE, NOW)).thenReturn(COUNT);
 
@@ -111,6 +112,7 @@ public class CaseServiceFindCasesMissingSjpnTest {
     public void shouldFindCasesMissingSjpnWhenLimitIsPositive() {
         final int limit = 2;
 
+        when(queryResult.getResultList()).thenReturn(caseDetails);
         when(queryResult.maxResults(anyInt())).thenReturn(queryResult);
         when(caseRepository.findCasesMissingSjpn(TVL_FILTER_VALUE)).thenReturn(queryResult);
         when(caseRepository.countCasesMissingSjpn(TVL_FILTER_VALUE)).thenReturn(COUNT);
@@ -128,6 +130,7 @@ public class CaseServiceFindCasesMissingSjpnTest {
     public void shouldFindCasesMissingSjpnWithCountAndPostingDateLimits() {
         final int limit = 2;
 
+        when(queryResult.getResultList()).thenReturn(caseDetails);
         when(queryResult.maxResults(anyInt())).thenReturn(queryResult);
         when(caseRepository.findCasesMissingSjpn(TVL_FILTER_VALUE, NOW)).thenReturn(queryResult);
         when(caseRepository.countCasesMissingSjpn(TVL_FILTER_VALUE, NOW)).thenReturn(COUNT);

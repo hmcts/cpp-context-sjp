@@ -9,7 +9,7 @@ import static org.hamcrest.Matchers.hasProperty;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.isA;
 import static org.hamcrest.Matchers.notNullValue;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static uk.gov.justice.json.schemas.domains.sjp.ApplicationStatus.REOPENING_PENDING;
 import static uk.gov.justice.json.schemas.domains.sjp.ApplicationStatus.STATUTORY_DECLARATION_PENDING;
 import static uk.gov.justice.json.schemas.domains.sjp.ApplicationType.STAT_DEC;
@@ -37,12 +37,12 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class CaseApplicationHandlerTest {
 
     private CaseAggregateState state;
@@ -220,7 +220,7 @@ public class CaseApplicationHandlerTest {
             .withApplicationIdExists(true)
             .withCaseId(CASE_ID).build();
 
-    @Before
+    @BeforeEach
     public void beforeEachTest() {
         state = new CaseAggregateState();
         state.setCaseId(randomUUID());

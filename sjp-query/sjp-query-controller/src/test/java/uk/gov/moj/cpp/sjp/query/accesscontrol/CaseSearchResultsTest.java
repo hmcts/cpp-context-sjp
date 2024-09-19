@@ -6,8 +6,8 @@ import uk.gov.moj.cpp.accesscontrol.test.utils.BaseDroolsAccessControlTest;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 public class CaseSearchResultsTest extends BaseDroolsAccessControlTest {
 
@@ -15,12 +15,16 @@ public class CaseSearchResultsTest extends BaseDroolsAccessControlTest {
 
     private Action action;
 
+    public CaseSearchResultsTest() {
+        super("QUERY_CONTROLLER_SESSION");
+    }
+
     @Override
-    protected Map<Class, Object> getProviderMocks() {
+    protected Map<Class<?>, Object> getProviderMocks() {
         return new HashMap<>();
     }
 
-    @Before
+    @BeforeEach
     public void setUp() {
         action = createActionFor(CONTENT_TYPE);
     }

@@ -4,8 +4,8 @@ import static java.util.Collections.singletonList;
 import static java.util.UUID.randomUUID;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.jgroups.util.Util.assertTrue;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.fail;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.jupiter.api.Assertions.fail;
 import static uk.gov.moj.sjp.it.model.ProsecutingAuthority.DVLA;
 import static uk.gov.moj.sjp.it.model.ProsecutingAuthority.TFL;
 import static uk.gov.moj.sjp.it.model.ProsecutingAuthority.TVL;
@@ -41,8 +41,8 @@ import javax.jms.JMSException;
 import javax.json.JsonObject;
 
 import com.google.common.collect.Sets;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 public class CaseUpdateRejectedIT extends BaseIntegrationTest {
 
@@ -50,7 +50,7 @@ public class CaseUpdateRejectedIT extends BaseIntegrationTest {
     private UUID offenceId;
     private CreateCase.CreateCasePayloadBuilder createCasePayloadBuilder;
 
-    @Before
+    @BeforeEach
     public void init() throws SQLException {
 
         new SjpDatabaseCleaner().cleanViewStore();

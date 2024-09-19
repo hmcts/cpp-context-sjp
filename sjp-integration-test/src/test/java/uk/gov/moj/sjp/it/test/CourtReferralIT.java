@@ -1,6 +1,6 @@
 package uk.gov.moj.sjp.it.test;
 
-import static com.jayway.awaitility.Awaitility.await;
+import static org.awaitility.Awaitility.await;
 import static java.time.ZoneOffset.UTC;
 import static java.time.ZonedDateTime.now;
 import static java.util.Arrays.asList;
@@ -107,8 +107,9 @@ import javax.ws.rs.core.Response;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Sets;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 
 public class CourtReferralIT extends BaseIntegrationTest {
 
@@ -157,7 +158,7 @@ public class CourtReferralIT extends BaseIntegrationTest {
     private static final DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
 
 
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
         sessionId = randomUUID();
         caseId = randomUUID();

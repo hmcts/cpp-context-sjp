@@ -1,12 +1,12 @@
 package uk.gov.moj.cpp.sjp.event.processor.results.converter;
 
 import static org.hamcrest.CoreMatchers.is;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertThat;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static java.util.UUID.randomUUID;
-import static org.junit.Assert.assertTrue;
-import static org.mockito.Matchers.anyObject;
-import static org.mockito.Matchers.any;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 import static uk.gov.moj.cpp.sjp.event.processor.results.converter.TestConstants.ADDRESS_LINE_1;
 import static uk.gov.moj.cpp.sjp.event.processor.results.converter.TestConstants.COURT_CENTRE_CODE;
@@ -30,14 +30,14 @@ import java.util.UUID;
 import javax.json.Json;
 import javax.json.JsonObject;
 
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
-import org.mockito.Matchers;
+import org.mockito.ArgumentMatchers;
 import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class CourtCentreConverterTest {
 
     @InjectMocks
@@ -89,11 +89,11 @@ public class CourtCentreConverterTest {
                 .build());
 
         when(sourceMetadata.asJsonObject()).thenReturn(jsonObject);
-        when(sjpService.getConvictingCourtSessionDetails(anyObject(), anyObject())).thenReturn(Optional.of(sjpSessionPayload));
-        when(referenceDataService.getCourtByCourtHouseOUCode(anyObject(), anyObject())).thenReturn(courtOptional);
-        when(addressConverter.convertWelsh(anyObject())).thenReturn(welshAddress);
-        when(addressConverter.convert(anyObject())).thenReturn(address);
-        when(ljaDetailsConverter.convert(any(JsonObject.class), anyObject())).thenReturn(ljaDetails);
+        when(sjpService.getConvictingCourtSessionDetails(any(), any())).thenReturn(Optional.of(sjpSessionPayload));
+        when(referenceDataService.getCourtByCourtHouseOUCode(any(), any())).thenReturn(courtOptional);
+        when(addressConverter.convertWelsh(any())).thenReturn(welshAddress);
+        when(addressConverter.convert(any())).thenReturn(address);
+        when(ljaDetailsConverter.convert(any(JsonObject.class), any())).thenReturn(ljaDetails);
         when(ljaDetails.getLjaCode()).thenReturn(LJA_CODE);
 
 
@@ -138,11 +138,11 @@ public class CourtCentreConverterTest {
                 .build());
 
         when(sourceMetadata.asJsonObject()).thenReturn(jsonObject);
-        when(sjpService.getSessionDetails(anyObject(), anyObject())).thenReturn(sjpSessionPayload);
-        when(referenceDataService.getCourtByCourtHouseOUCode(anyObject(), anyObject())).thenReturn(courtOptional);
-        when(addressConverter.convertWelsh(anyObject())).thenReturn(welshAddress);
-        when(addressConverter.convert(anyObject())).thenReturn(address);
-        when(ljaDetailsConverter.convert(any(JsonObject.class), anyObject())).thenReturn(ljaDetails);
+        when(sjpService.getSessionDetails(any(), any())).thenReturn(sjpSessionPayload);
+        when(referenceDataService.getCourtByCourtHouseOUCode(any(), any())).thenReturn(courtOptional);
+        when(addressConverter.convertWelsh(any())).thenReturn(welshAddress);
+        when(addressConverter.convert(any())).thenReturn(address);
+        when(ljaDetailsConverter.convert(any(JsonObject.class), any())).thenReturn(ljaDetails);
         when(ljaDetails.getLjaCode()).thenReturn(LJA_CODE);
 
 

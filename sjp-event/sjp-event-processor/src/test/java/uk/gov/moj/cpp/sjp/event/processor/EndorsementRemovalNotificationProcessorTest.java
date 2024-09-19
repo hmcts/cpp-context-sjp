@@ -6,12 +6,14 @@ import static java.util.UUID.randomUUID;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMetadataMatcher.metadata;
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopePayloadMatcher.payloadIsJson;
 
+import org.hamcrest.CoreMatchers;
 import uk.gov.justice.json.schemas.domains.sjp.Address;
 import uk.gov.justice.json.schemas.domains.sjp.ApplicationType;
 import uk.gov.justice.json.schemas.domains.sjp.LegalEntityDetails;
@@ -21,6 +23,7 @@ import uk.gov.justice.json.schemas.domains.sjp.queries.CaseDetails;
 import uk.gov.justice.json.schemas.domains.sjp.queries.Defendant;
 import uk.gov.justice.json.schemas.domains.sjp.queries.QueryApplicationDecision;
 import uk.gov.justice.json.schemas.domains.sjp.queries.Session;
+import uk.gov.justice.services.adapter.rest.exception.BadRequestException;
 import uk.gov.justice.services.core.sender.Sender;
 import uk.gov.justice.services.messaging.Envelope;
 import uk.gov.justice.services.messaging.JsonEnvelope;
@@ -42,27 +45,23 @@ import java.util.UUID;
 import javax.json.JsonValue;
 
 import org.apache.commons.lang3.reflect.FieldUtils;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class EndorsementRemovalNotificationProcessorTest {
 
     private static final String LJA_CODE = "LJA_CODE";
     private static final String LJA_NAME = "LJA Name";
     private static final LocalDate DEFENDANT_DATE_OF_BIRTH = LocalDate.of(1980, 11, 5);
 
-    @Rule
-    public ExpectedException thrown = ExpectedException.none();
     @Mock
     private SjpService sjpService;
     @Mock
@@ -84,7 +83,7 @@ public class EndorsementRemovalNotificationProcessorTest {
     private String replyToAddress = "noreply@cjscp.org.uk";
     private CaseDetailsDecorator caseDetails;
 
-    @Before
+    @BeforeEach
     public void setUp() throws IllegalAccessException {
         FieldUtils.writeField(processor, "templateId", templateId.toString(), true);
         FieldUtils.writeField(processor, "replyToAddress", replyToAddress, true);
@@ -166,10 +165,8 @@ public class EndorsementRemovalNotificationProcessorTest {
         final JsonEnvelope envelope = envelope(event);
         when(referenceDataService.getDvlaPenaltyPointNotificationEmailAddress(envelope)).thenReturn(Optional.empty());
 
-        thrown.expect(IllegalStateException.class);
-        thrown.expectMessage("Unable to find DVLA email address in reference data");
-
-        processor.sendEmailToNotificationNotify(envelope);
+        var e = assertThrows(IllegalStateException.class, () -> processor.sendEmailToNotificationNotify(envelope));
+        assertThat(e.getMessage(), CoreMatchers.is("Unable to find DVLA email address in reference data"));
     }
 
     @Test
@@ -182,10 +179,8 @@ public class EndorsementRemovalNotificationProcessorTest {
         givenDvlaEmailAddressIsPresentInReferenceData(envelope);
         when(sjpService.getCaseDetailsByApplicationDecisionId(applicationDecisionId, envelope)).thenReturn(Optional.empty());
 
-        thrown.expect(IllegalStateException.class);
-        thrown.expectMessage("Could not find case for application decision id: " + applicationDecisionId);
-
-        processor.sendEmailToNotificationNotify(envelope);
+        var e = assertThrows(IllegalStateException.class, () -> processor.sendEmailToNotificationNotify(envelope));
+        assertThat(e.getMessage(), CoreMatchers.is("Could not find case for application decision id: " + applicationDecisionId));
     }
 
     private JsonEnvelope envelope(final NotificationToRemoveEndorsementsGenerated event) {

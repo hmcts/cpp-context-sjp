@@ -7,7 +7,7 @@ import static com.github.tomakehurst.wiremock.client.WireMock.post;
 import static com.github.tomakehurst.wiremock.client.WireMock.postRequestedFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlPathMatching;
-import static com.jayway.awaitility.Awaitility.await;
+import static org.awaitility.Awaitility.await;
 import static java.util.Collections.emptyList;
 import static java.util.UUID.randomUUID;
 import static java.util.concurrent.TimeUnit.SECONDS;
@@ -22,7 +22,7 @@ import java.util.Collection;
 import java.util.List;
 
 import com.github.tomakehurst.wiremock.verification.LoggedRequest;
-import com.jayway.awaitility.core.ConditionTimeoutException;
+import org.awaitility.core.ConditionTimeoutException;
 import org.hamcrest.Matcher;
 import org.json.JSONObject;
 import org.slf4j.Logger;

@@ -7,7 +7,7 @@ import static java.util.Collections.singletonList;
 import static java.util.UUID.randomUUID;
 import static javax.json.Json.createObjectBuilder;
 import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -44,17 +44,17 @@ import java.util.UUID;
 
 import javax.json.JsonObject;
 
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class ApplicationSetAsideProcessorTest {
 
     private static final String OFFENCE_CODE = "OFFENCE_CODE";
@@ -85,7 +85,7 @@ public class ApplicationSetAsideProcessorTest {
     private ZonedDateTime applicationSavedAt;
     private CaseDetails caseDetails;
 
-    @Before
+    @BeforeEach
     public void setUp() {
         caseId = randomUUID();
         sessionId = randomUUID();

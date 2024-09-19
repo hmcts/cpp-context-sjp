@@ -3,10 +3,11 @@ package uk.gov.moj.cpp.sjp.event.listener.converter;
 import static java.util.Arrays.asList;
 import static java.util.stream.Collectors.toList;
 import static org.apache.commons.lang3.builder.EqualsBuilder.reflectionEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import org.junit.jupiter.api.Disabled;
 import uk.gov.justice.json.schemas.domains.sjp.Gender;
 import uk.gov.justice.json.schemas.domains.sjp.Language;
 import uk.gov.moj.cpp.sjp.domain.Defendant;
@@ -21,16 +22,15 @@ import java.util.List;
 import java.util.UUID;
 
 import org.apache.commons.lang3.RandomStringUtils;
-import org.junit.Ignore;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 @SuppressWarnings("squid:S1607")
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class DefendantToDefendantDetailsTest {
 
     @Mock
@@ -46,7 +46,7 @@ public class DefendantToDefendantDetailsTest {
     private DefendantToDefendantDetails converterUnderTest = new DefendantToDefendantDetails();
 
     @Test
-    @Ignore
+    @Disabled
     public void shouldConvertDefendantToDefendantDetails() {
         // GIVEN
         final Defendant inputDefendant = new Defendant(UUID.randomUUID(), "title", "firstName", "lastName",

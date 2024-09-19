@@ -2,9 +2,9 @@ package uk.gov.moj.cpp.sjp.event.processor.results.converter;
 
 
 import static org.hamcrest.CoreMatchers.is;
-import static org.junit.Assert.assertThat;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyString;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
 import static uk.gov.moj.cpp.sjp.event.processor.results.converter.TestConstants.FIRSTNAME;
 
@@ -14,13 +14,13 @@ import uk.gov.justice.json.schemas.domains.sjp.PersonalDetails;
 
 import java.util.List;
 
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class AssociatedPersonDetailsConverterTest {
 
     @Mock
@@ -35,7 +35,7 @@ public class AssociatedPersonDetailsConverterTest {
     @Test
     public void shouldConvertAssociatedPersonDetailsWithMandatoryField() {
 
-        when(personDetailsConverter.getPersonDetails(any(), anyString())).thenReturn(person);
+        when(personDetailsConverter.getPersonDetails(any(), any())).thenReturn(person);
         when(person.getFirstName()).thenReturn(FIRSTNAME);
         final PersonalDetails personalDetails = PersonalDetails.personalDetails().build();
         List<AssociatedPerson> associatedPersonList = associatedPersonDetailsConverter.getAssociatedPersons(personalDetails);
@@ -46,7 +46,6 @@ public class AssociatedPersonDetailsConverterTest {
     @Test
     public void shouldConvertAssociatedPersonDetailsWithoutMandatoryField() {
 
-        when(personDetailsConverter.getPersonDetails(any(), anyString())).thenReturn(person);
         List<AssociatedPerson> associatedPersonList = associatedPersonDetailsConverter.getAssociatedPersons(null);
         assertThat(associatedPersonList.size(), is(0));
     }

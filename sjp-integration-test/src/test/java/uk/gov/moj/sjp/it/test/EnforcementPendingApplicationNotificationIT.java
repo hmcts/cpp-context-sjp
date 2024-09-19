@@ -90,12 +90,12 @@ import javax.json.JsonObject;
 import javax.ws.rs.core.Response;
 
 import com.google.common.collect.Sets;
-import com.jayway.awaitility.Awaitility;
+import org.awaitility.Awaitility;
 import org.hamcrest.Matcher;
 import org.json.JSONObject;
-import org.junit.Before;
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 
 public class EnforcementPendingApplicationNotificationIT extends BaseIntegrationTest {
 
@@ -122,7 +122,7 @@ public class EnforcementPendingApplicationNotificationIT extends BaseIntegration
     private CreateCase.CreateCasePayloadBuilder createCasePayloadBuilder;
     private static final String STAT_DECS_EMAIL_SUBJECT = "Subject: APPLICATION FOR A STATUTORY DECLARATION RECEIVED (COMMISSIONER OF OATHS)";
 
-    @Before
+    @BeforeEach
     public void setUp() {
         stubForIdMapperSuccess(Response.Status.OK);
         stubNotifications();
@@ -153,7 +153,7 @@ public class EnforcementPendingApplicationNotificationIT extends BaseIntegration
     }
 
     @Test
-    @Ignore("Enable after atcm-7161")
+    @Disabled("Enable after atcm-7161")
     public void shouldUpdateViewstoreWhenSystemDocGeneratorGeneratedPublicEventIsReceived() throws SQLException {
         createCase();
         completeCaseWithEndorsementsApplied();

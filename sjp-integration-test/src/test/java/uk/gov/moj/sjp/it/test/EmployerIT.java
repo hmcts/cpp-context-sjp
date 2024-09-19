@@ -26,9 +26,9 @@ import javax.json.JsonObject;
 import javax.ws.rs.core.Response;
 
 import org.hamcrest.Matcher;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 public class EmployerIT extends BaseIntegrationTest {
 
@@ -37,7 +37,7 @@ public class EmployerIT extends BaseIntegrationTest {
     private static final String NATIONAL_COURT_CODE = "1080";
     private final CreateCase.CreateCasePayloadBuilder createCasePayloadBuilder = CreateCase.CreateCasePayloadBuilder.withDefaults();
 
-    @Before
+    @BeforeEach
     public void setUp() {
         employerHelper = new EmployerHelper();
         financialMeansHelper = new FinancialMeansHelper();
@@ -45,7 +45,7 @@ public class EmployerIT extends BaseIntegrationTest {
         stubRegionByPostcode(NATIONAL_COURT_CODE, "TestRegion");
     }
 
-    @After
+    @AfterEach
     public void tearDown() throws Exception {
         employerHelper.close();
         financialMeansHelper.close();

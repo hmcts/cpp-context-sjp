@@ -66,6 +66,7 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 
+//TODO FIXME!!! junit5 not yet supported by activiti engine //https://github.com/Activiti/Activiti/issues/3267
 public class CaseStateProcessTest {
 
     private static final String PROCESS_PATH = "processes/case-state.bpmn20.xml";

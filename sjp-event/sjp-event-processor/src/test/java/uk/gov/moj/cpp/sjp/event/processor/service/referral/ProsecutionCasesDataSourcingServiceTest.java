@@ -5,7 +5,7 @@ import static java.util.Optional.ofNullable;
 import static java.util.UUID.randomUUID;
 import static javax.json.Json.createArrayBuilder;
 import static javax.json.Json.createObjectBuilder;
-import static org.mockito.Matchers.any;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -45,14 +45,14 @@ import javax.json.JsonValue;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Sets;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class ProsecutionCasesDataSourcingServiceTest {
 
     private static final UUID CASE_ID = randomUUID();
@@ -107,18 +107,15 @@ public class ProsecutionCasesDataSourcingServiceTest {
     @InjectMocks
     private ProsecutionCasesDataSourcingService prosecutionCasesDataSourcingService;
 
-    @Before
-    public void setUp() {
+    @Test
+    public void shouldCreateProsecutionCaseViewsDecision() {
         when(referenceDataService.getProsecutors(TFL, EMPTY_ENVELOPE)).thenReturn(PROSECUTOR);
         when(referenceDataOffencesService.getOffenceDefinitionByOffenceCode(mockOffenceCodes(), DECISION_DATE.toLocalDate(), EMPTY_ENVELOPE)).thenReturn(mockCJSOffenceCodeToOffenceDefinition());
         when(sjpService.getEmployerDetails(CASE_DETAILS.getDefendant().getId(), EMPTY_ENVELOPE)).thenReturn(EMPLOYER);
         when(referenceDataService.getEthnicity(DEFENDANT_ETHNICITY_CODE, EMPTY_ENVELOPE)).thenReturn(ofNullable(ETHNICITY));
         when(referenceDataService.getNationality(DEFENDANT_NATIONALITY_CODE, EMPTY_ENVELOPE))
                 .thenReturn(Optional.of(createObjectBuilder().add("id", DEFENDANT_NATIONALITY_ID).build()));
-    }
 
-    @Test
-    public void shouldCreateProsecutionCaseViewsDecision() {
         final DefendantsOnlinePlea defendantPlea = DefendantsOnlinePlea.defendantsOnlinePlea()
                 .withPleaDetails(PleaDetails.pleaDetails()
                         .build())
@@ -158,6 +155,13 @@ public class ProsecutionCasesDataSourcingServiceTest {
 
     @Test
     public void shouldUseNullForMitigationIfPleaNotPresent() {
+        when(referenceDataService.getProsecutors(TFL, EMPTY_ENVELOPE)).thenReturn(PROSECUTOR);
+        when(referenceDataOffencesService.getOffenceDefinitionByOffenceCode(mockOffenceCodes(), DECISION_DATE.toLocalDate(), EMPTY_ENVELOPE)).thenReturn(mockCJSOffenceCodeToOffenceDefinition());
+        when(sjpService.getEmployerDetails(CASE_DETAILS.getDefendant().getId(), EMPTY_ENVELOPE)).thenReturn(EMPLOYER);
+        when(referenceDataService.getEthnicity(DEFENDANT_ETHNICITY_CODE, EMPTY_ENVELOPE)).thenReturn(ofNullable(ETHNICITY));
+        when(referenceDataService.getNationality(DEFENDANT_NATIONALITY_CODE, EMPTY_ENVELOPE))
+                .thenReturn(Optional.of(createObjectBuilder().add("id", DEFENDANT_NATIONALITY_ID).build()));
+
         prosecutionCasesDataSourcingService.createProsecutionCaseViews(
                 CASE_DETAILS,
                 CASE_DECISION,
@@ -191,6 +195,10 @@ public class ProsecutionCasesDataSourcingServiceTest {
 
     @Test
     public void shouldNotGetEthnicityAndNationalityWhenCaseFileDetailsNotPresent() {
+        when(referenceDataService.getProsecutors(TFL, EMPTY_ENVELOPE)).thenReturn(PROSECUTOR);
+        when(referenceDataOffencesService.getOffenceDefinitionByOffenceCode(mockOffenceCodes(), DECISION_DATE.toLocalDate(), EMPTY_ENVELOPE)).thenReturn(mockCJSOffenceCodeToOffenceDefinition());
+        when(sjpService.getEmployerDetails(CASE_DETAILS.getDefendant().getId(), EMPTY_ENVELOPE)).thenReturn(EMPLOYER);
+
         prosecutionCasesDataSourcingService.createProsecutionCaseViews(
                 CASE_DETAILS,
                 CASE_DECISION,

@@ -5,9 +5,10 @@ import static java.lang.Boolean.TRUE;
 import static java.util.UUID.randomUUID;
 import static javax.json.Json.createArrayBuilder;
 import static javax.json.Json.createObjectBuilder;
+import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.CoreMatchers.is;
-import static org.junit.Assert.assertThat;
-import static org.mockito.Matchers.any;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -29,14 +30,14 @@ import java.util.UUID;
 
 import javax.json.JsonArrayBuilder;
 
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class TransparencyReportListenerTest {
 
     @InjectMocks
@@ -48,7 +49,7 @@ public class TransparencyReportListenerTest {
     @Mock
     private TransparencyReportMetadataRepository transparencyReportMetadataRepository;
 
-    //    @Test
+    @Test
     public void shouldCreateReportMetadataAndIncrementCasePublishedCounters() {
         final UUID transparencyReportId = randomUUID();
         final List<UUID> caseIds = newArrayList(randomUUID(), randomUUID());
@@ -75,7 +76,7 @@ public class TransparencyReportListenerTest {
         verify(transparencyReportMetadataRepository).save(transparencyReportMetadataArgument.capture());
         final TransparencyReportMetadata reportMetadata = transparencyReportMetadataArgument.getValue();
         assertThat(reportMetadata.getId(), is(transparencyReportId));
-        assertThat(reportMetadata.getGeneratedAt(), is(LocalDateTime.class));
+        assertThat(reportMetadata.getGeneratedAt(), is(instanceOf(LocalDateTime.class)));
     }
 
     @Test
@@ -143,7 +144,6 @@ public class TransparencyReportListenerTest {
                         .build());
 
         final List<CasePublishStatus> publishedCases = createPublishedCases();
-        when(casePublishStatusRepository.findByCaseIds(caseIds)).thenReturn(publishedCases);
         transparencyReportListener.handleTransparencyPDFReportGenerationFailed(eventEnvelope);
         verify(casePublishStatusRepository, never()).save(any(CasePublishStatus.class));
     }

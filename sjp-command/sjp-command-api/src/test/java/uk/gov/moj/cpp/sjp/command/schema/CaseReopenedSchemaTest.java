@@ -1,35 +1,36 @@
 package uk.gov.moj.cpp.sjp.command.schema;
 
+import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assume.assumeThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMatcher.jsonEnvelope;
 import static uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderFactory.metadataWithRandomUUID;
 
+import java.util.stream.Stream;
+import org.hamcrest.CoreMatchers;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
+import uk.gov.justice.services.adapter.rest.exception.BadRequestException;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 
 import javax.json.Json;
 import javax.json.JsonValue;
 
-import org.junit.BeforeClass;
-import org.junit.Ignore;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
-import org.junit.runners.Parameterized.Parameter;
-import org.junit.runners.Parameterized.Parameters;
+import org.junit.jupiter.api.BeforeAll;
+import uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMatcher;
 
-@RunWith(Parameterized.class)
 public class CaseReopenedSchemaTest {
 
     /**
      * Issue with remote refs, reported to Techpod: https://github.com/CJSCommonPlatform/microservice_framework/issues/648"
      * ============ TODO: delete this block of code once the framework gets updated: ==============
      */
-    @BeforeClass
+    @BeforeAll
     public static void init() {
         // programmatically ignore all the below test if the framework fails to validate $ref schemas
         assumeThat(haveTechpodFixedReferencesThatMatchesSchema(), is(true));
@@ -48,21 +49,16 @@ public class CaseReopenedSchemaTest {
     // =============================================================================================
 
 
-    @Parameters
-    public static Object[] data() {
-        return new Object[]{
-                "sjp.mark-case-reopened-in-libra",
-                "sjp.update-case-reopened-in-libra"};
+    static Stream<Arguments> data() {
+        return Stream.of(
+                Arguments.of("sjp.mark-case-reopened-in-libra"),
+                Arguments.of("sjp.update-case-reopened-in-libra")
+        );
     }
 
-    @Rule
-    public ExpectedException expectedException = ExpectedException.none();
-
-    @Parameter
-    public String schema;
-
-    @Test
-    public void validEnvelope() {
+    @ParameterizedTest
+    @MethodSource("data")
+    public void validEnvelope(String schema) {
         //given
         JsonEnvelope envelope = envelopeFrom(metadataWithRandomUUID(schema),
                 Json.createObjectBuilder()
@@ -74,8 +70,9 @@ public class CaseReopenedSchemaTest {
         assertThat(envelope, jsonEnvelope().thatMatchesSchema());
     }
 
-    @Test
-    public void invalidEnvelope_reason_notFound() {
+    @ParameterizedTest
+    @MethodSource("data")
+    public void invalidEnvelope_reason_notFound(String schema) {
         //given
         JsonEnvelope envelope = envelopeFrom(metadataWithRandomUUID(schema),
                 Json.createObjectBuilder()
@@ -83,12 +80,14 @@ public class CaseReopenedSchemaTest {
                         .add("reopenedDate", "2017-01-01").build());
 
         //then
-        expectedException.expectMessage("[reason] not found");
-        assertThat(envelope, jsonEnvelope().thatMatchesSchema());
+        JsonEnvelopeMatcher matcher = jsonEnvelope().thatMatchesSchema();
+        var e = assertThrows(AssertionError.class, () -> assertThat(envelope, matcher));
+        assertThat(e.getMessage(), containsString("[reason] not found"));
     }
 
-    @Test
-    public void invalidEnvelope_reason_empty() {
+    @ParameterizedTest
+    @MethodSource("data")
+    public void invalidEnvelope_reason_empty(String schema) {
         //given
         JsonEnvelope envelope = envelopeFrom(metadataWithRandomUUID(schema),
                 Json.createObjectBuilder()
@@ -97,12 +96,14 @@ public class CaseReopenedSchemaTest {
                         .add("reopenedDate", "2017-01-01").build());
 
         //then
-        expectedException.expectMessage("/reason: expected minLength: 1, actual: 0");
-        assertThat(envelope, jsonEnvelope().thatMatchesSchema());
+        JsonEnvelopeMatcher matcher = jsonEnvelope().thatMatchesSchema();
+        var e = assertThrows(AssertionError.class, () -> assertThat(envelope, matcher));
+        assertThat(e.getMessage(), CoreMatchers.containsString("/reason: expected minLength: 1, actual: 0"));
     }
 
-    @Test
-    public void invalidEnvelope_reason_foundNull() {
+    @ParameterizedTest
+    @MethodSource("data")
+    public void invalidEnvelope_reason_foundNull(String schema) {
         //given
         JsonEnvelope envelope = envelopeFrom(metadataWithRandomUUID(schema),
                 Json.createObjectBuilder()
@@ -111,12 +112,14 @@ public class CaseReopenedSchemaTest {
                         .add("reopenedDate", "2017-01-01").build());
 
         //then
-        expectedException.expectMessage("/reason: expected type: String, found: Null");
-        assertThat(envelope, jsonEnvelope().thatMatchesSchema());
+        JsonEnvelopeMatcher matcher = jsonEnvelope().thatMatchesSchema();
+        var e = assertThrows(AssertionError.class, () -> assertThat(envelope, matcher));
+        assertThat(e.getMessage(), CoreMatchers.containsString("/reason: expected type: String, found: Null"));
     }
 
-    @Test
-    public void invalidEnvelope_libraCaseNumber_notFound() {
+    @ParameterizedTest
+    @MethodSource("data")
+    public void invalidEnvelope_libraCaseNumber_notFound(String schema) {
         //given
         JsonEnvelope envelope = envelopeFrom(metadataWithRandomUUID(schema),
                 Json.createObjectBuilder()
@@ -124,12 +127,14 @@ public class CaseReopenedSchemaTest {
                         .add("reopenedDate", "2017-01-01").build());
 
         //then
-        expectedException.expectMessage("[libraCaseNumber] not found");
-        assertThat(envelope, jsonEnvelope().thatMatchesSchema());
+        JsonEnvelopeMatcher matcher = jsonEnvelope().thatMatchesSchema();
+        var e = assertThrows(AssertionError.class, () -> assertThat(envelope, matcher));
+        assertThat(e.getMessage(), containsString("[libraCaseNumber] not found"));
     }
 
-    @Test
-    public void invalidEnvelope_libraCaseNumber_reason_empty() {
+    @ParameterizedTest
+    @MethodSource("data")
+    public void invalidEnvelope_libraCaseNumber_reason_empty(String schema) {
         //given
         JsonEnvelope envelope = envelopeFrom(metadataWithRandomUUID(schema),
                 Json.createObjectBuilder()
@@ -138,12 +143,14 @@ public class CaseReopenedSchemaTest {
                         .add("reopenedDate", "2017-01-01").build());
 
         //then
-        expectedException.expectMessage("/libraCaseNumber: expected minLength: 1, actual: 0");
-        assertThat(envelope, jsonEnvelope().thatMatchesSchema());
+        JsonEnvelopeMatcher matcher = jsonEnvelope().thatMatchesSchema();
+        var e = assertThrows(AssertionError.class, () -> assertThat(envelope, matcher));
+        assertThat(e.getMessage(), CoreMatchers.containsString("/libraCaseNumber: expected minLength: 1, actual: 0"));
     }
 
-    @Test
-    public void invalidEnvelope_libraCaseNumber_foundNull() {
+    @ParameterizedTest
+    @MethodSource("data")
+    public void invalidEnvelope_libraCaseNumber_foundNull(String schema) {
         //given
         JsonEnvelope envelope = envelopeFrom(metadataWithRandomUUID(schema),
                 Json.createObjectBuilder()
@@ -153,12 +160,14 @@ public class CaseReopenedSchemaTest {
                         .build());
 
         //then
-        expectedException.expectMessage("/libraCaseNumber: expected type: String, found: Null");
-        assertThat(envelope, jsonEnvelope().thatMatchesSchema());
+        JsonEnvelopeMatcher matcher = jsonEnvelope().thatMatchesSchema();
+        var e = assertThrows(AssertionError.class, () -> assertThat(envelope, matcher));
+        assertThat(e.getMessage(), CoreMatchers.containsString("/libraCaseNumber: expected type: String, found: Null"));
     }
 
-    @Test
-    public void invalidEnvelope_reopenedDate_notFound() {
+    @ParameterizedTest
+    @MethodSource("data")
+    public void invalidEnvelope_reopenedDate_notFound(String schema) {
         //given
         JsonEnvelope envelope = envelopeFrom(metadataWithRandomUUID(schema),
                 Json.createObjectBuilder()
@@ -167,13 +176,15 @@ public class CaseReopenedSchemaTest {
                         .build());
 
         //then
-        expectedException.expectMessage("[reopenedDate] not found");
-        assertThat(envelope, jsonEnvelope().thatMatchesSchema());
+        JsonEnvelopeMatcher matcher = jsonEnvelope().thatMatchesSchema();
+        var e = assertThrows(AssertionError.class, () -> assertThat(envelope, matcher));
+        assertThat(e.getMessage(), CoreMatchers.containsString("[reopenedDate] not found"));
     }
 
-    @Test
-    @Ignore("Looks like format date is supportin 13 as a month..")
-    public void invalidEnvelope_reopenedDate_invalidDate() {
+    @ParameterizedTest
+    @MethodSource("data")
+    @Disabled("Looks like format date is supportin 13 as a month..")
+    public void invalidEnvelope_reopenedDate_invalidDate(String schema) {
         //given
         JsonEnvelope envelope = envelopeFrom(metadataWithRandomUUID(schema),
                 Json.createObjectBuilder()
@@ -183,7 +194,8 @@ public class CaseReopenedSchemaTest {
                         .build());
 
         //then
-        expectedException.expectMessage("/reopenedDate: string [2017-13-01] does not match pattern");
-        assertThat(envelope, jsonEnvelope().thatMatchesSchema());
+        JsonEnvelopeMatcher matcher = jsonEnvelope().thatMatchesSchema();
+        var e = assertThrows(AssertionError.class, () -> assertThat(envelope, matcher));
+        assertThat(e.getMessage(), CoreMatchers.containsString("/reopenedDate: string [2017-13-01] does not match pattern"));
     }
 }

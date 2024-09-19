@@ -2,14 +2,14 @@ package uk.gov.moj.cpp.sjp.persistence.entity.view;
 
 import static java.time.ZoneOffset.UTC;
 import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
 
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
 import java.util.Optional;
 import java.util.UUID;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 public class UpdatedDefendantDetailsTest {
 

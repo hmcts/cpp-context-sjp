@@ -1,8 +1,9 @@
 package uk.gov.moj.cpp.sjp.command.api;
 
+import static java.util.Collections.singletonMap;
 import static javax.json.Json.createObjectBuilder;
 import static org.hamcrest.CoreMatchers.equalTo;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.verify;
 import static uk.gov.justice.services.core.annotation.Component.COMMAND_API;
@@ -27,18 +28,17 @@ import java.util.UUID;
 
 import javax.json.JsonObject;
 
-import com.google.common.collect.ImmutableMap;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.kie.api.runtime.ExecutionResults;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class DefendantDetailsApiTest extends BaseDroolsAccessControlTest {
 
     private static final String UPDATE_DEFENDANT_COMMAND_NAME = "sjp.update-defendant-details";
@@ -68,9 +68,13 @@ public class DefendantDetailsApiTest extends BaseDroolsAccessControlTest {
     @Mock
     private UserAndGroupProvider userAndGroupProvider;
 
+    public DefendantDetailsApiTest() {
+        super("COMMAND_API_SESSION");
+    }
+
     @Override
-    protected Map<Class, Object> getProviderMocks() {
-        return ImmutableMap.<Class, Object>builder().put(UserAndGroupProvider.class, userAndGroupProvider).build();
+    protected Map<Class<?>, Object> getProviderMocks() {
+        return singletonMap(UserAndGroupProvider.class, userAndGroupProvider);
     }
 
     @Test
@@ -170,6 +174,7 @@ public class DefendantDetailsApiTest extends BaseDroolsAccessControlTest {
         assertThat(newCommand.metadata(), withMetadataEnvelopedFrom(command).withName(UPDATE_DEFENDANT_NEW_COMMAND_NAME));
         assertThat(newCommand.payloadAsJsonObject(), equalTo(expectedPayload));
     }
+
     @Test
     public void shouldAcceptPendingDefendantChangesCommand() {
         final JsonEnvelope command = envelopeFrom(metadataWithRandomUUID(ACCEPT_PENDING_DEFENDANT_CHANGES_COMMAND_NAME), createObjectBuilder()

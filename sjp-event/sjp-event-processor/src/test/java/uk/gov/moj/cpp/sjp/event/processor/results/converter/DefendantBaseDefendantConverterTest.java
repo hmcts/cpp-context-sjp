@@ -4,7 +4,7 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.mockito.Matchers.anyObject;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 import static uk.gov.moj.cpp.sjp.event.processor.results.converter.TestConstants.BAIL_STATUS;
 import static uk.gov.moj.cpp.sjp.event.processor.results.converter.TestConstants.CJS_CODE;
@@ -18,13 +18,13 @@ import uk.gov.justice.json.schemas.domains.sjp.queries.Defendant;
 import uk.gov.justice.services.messaging.Metadata;
 import uk.gov.moj.cpp.sjp.event.processor.results.converter.judicialresult.JCachedReferenceData;
 
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class DefendantBaseDefendantConverterTest {
 
     @InjectMocks
@@ -53,9 +53,8 @@ public class DefendantBaseDefendantConverterTest {
                         .withFirstName("name")
                         .build())
                 .build();
-        when(jCachedReferenceData.getBailStatus(anyObject(), anyObject())).thenReturn(bailStatus);
-        when(bailStatus.getCode()).thenReturn(BAIL_STATUS);
-        when(personDetailsConverter.getPersonDetails(anyObject(), anyObject())).thenReturn(person);
+        when(jCachedReferenceData.getBailStatus(any(), any())).thenReturn(bailStatus);
+        when(personDetailsConverter.getPersonDetails(any(), any())).thenReturn(person);
         when(person.getFirstName()).thenReturn(FIRSTNAME);
 
         final PersonDefendant personDefendant = personDefendantConverter.getPersonDefendant(defendant, CJS_CODE, metadata);

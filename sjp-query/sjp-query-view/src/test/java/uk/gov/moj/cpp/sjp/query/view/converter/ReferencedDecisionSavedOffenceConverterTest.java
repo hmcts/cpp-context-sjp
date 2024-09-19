@@ -1,47 +1,40 @@
 package uk.gov.moj.cpp.sjp.query.view.converter;
 
+import com.google.common.collect.ImmutableMap;
+import org.json.JSONException;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Spy;
+import org.mockito.junit.jupiter.MockitoExtension;
+import uk.gov.justice.services.messaging.JsonEnvelope;
+import uk.gov.moj.cpp.sjp.query.view.util.fakes.FakeReferenceDataService;
+
+import javax.json.*;
+import java.math.BigDecimal;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.UUID;
+import java.util.stream.Collectors;
+
 import static java.time.format.DateTimeFormatter.ofPattern;
 import static java.util.UUID.fromString;
 import static java.util.UUID.randomUUID;
 import static org.hamcrest.CoreMatchers.not;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.hasItem;
-import static org.junit.Assert.assertThat;
-import static org.hamcrest.CoreMatchers.not;
-import static org.hamcrest.Matchers.hasItem;
-import static org.junit.Assert.assertThat;
-import static org.mockito.Matchers.any;
-import static org.mockito.Mockito.when;
-import static org.skyscreamer.jsonassert.JSONCompareMode.STRICT;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
 import static uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderFactory.metadataWithRandomUUID;
-import static uk.gov.moj.cpp.sjp.query.view.matcher.IsEqualJSON.equalToJSON;
 import static uk.gov.moj.cpp.sjp.query.view.matcher.ResultMatchers.FO;
 import static uk.gov.moj.cpp.sjp.query.view.util.FileUtil.getFileContentAsJson;
 import static uk.gov.moj.cpp.sjp.query.view.util.FileUtil.getFileContentAsJsonArray;
 
-import uk.gov.justice.services.messaging.JsonEnvelope;
-import uk.gov.moj.cpp.sjp.query.view.util.fakes.FakeReferenceDataService;
-
-import java.math.BigDecimal;
-import java.time.ZonedDateTime;
-import java.time.format.DateTimeFormatter;
-import java.util.Optional;
-import java.util.UUID;
-
-import javax.json.JsonArray;
-import javax.json.JsonObject;
-
-import com.google.common.collect.ImmutableMap;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.InjectMocks;
-import org.mockito.Spy;
-import org.mockito.runners.MockitoJUnitRunner;
-import org.skyscreamer.jsonassert.Customization;
-import org.skyscreamer.jsonassert.comparator.CustomComparator;
-
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class ReferencedDecisionSavedOffenceConverterTest {
 
     private static final UUID CASE_ID = randomUUID();
@@ -60,28 +53,30 @@ public class ReferencedDecisionSavedOffenceConverterTest {
     @Spy
     private FakeReferenceDataService referenceDataService = new FakeReferenceDataService();
 
-    @Before
+    @BeforeEach
     public void setup() {
         referenceDataService.addWithdrawalReason(fromString("1dbf0960-51e3-4d90-803d-d54cd8ea7d3e"), "Reason");
     }
-
     @Test
-    public void shouldConvertFinancialPenalty() {
+    public void shouldConvertFinancialPenalty() throws JSONException {
+        String path = "converter/decision-saved-event.fine.input.json";
+        ImmutableMap<String, Object> decisionObject = ImmutableMap.<String, Object>builder()
+                .put("caseId", CASE_ID)
+                .put("sessionId", SESSION_ID)
+                .put("decisionId", DECISION1_ID)
+                .put("resultedOn", DATE_FORMAT.format(ZonedDateTime.now()))
+                .put("offence1Id", OFFENCE1_ID)
+                .put("offence2Id", OFFENCE2_ID)
+                .build();
         final JsonEnvelope decisionSavedEvent = envelopeFrom(metadataWithRandomUUID("sjp.events.case-completed"),
-                getFileContentAsJson("converter/decision-saved-event.fine.input.json",
-                        ImmutableMap.<String, Object>builder()
-                                .put("caseId", CASE_ID)
-                                .put("sessionId", SESSION_ID)
-                                .put("decisionId", DECISION1_ID)
-                                .put("resultedOn", DATE_FORMAT.format(ZonedDateTime.now()))
-                                .put("offence1Id", OFFENCE1_ID)
-                                .put("offence2Id", OFFENCE2_ID)
-                                .build()));
+                getFileContentAsJson(path,
+                        decisionObject));
 
         final JsonArray actualPayload = referencedDecisionSavedOffenceConverter.convertOffenceDecisions(decisionSavedEvent);
 
-        final JsonArray expected = getFileContentAsJsonArray("converter/decision-saved-event.fine.output.json");
-        assertThat(expected.toString(), equalToJSON(actualPayload.toString(), getCustomComparator()));
+        String expectedFilePath = "converter/decision-saved-event.fine.output.json";
+        final JsonArray expected = getFileContentAsJsonArray(expectedFilePath);
+        assertJsonArraysEqualIgnoringIDs(expected, actualPayload);
     }
 
     @Test
@@ -154,9 +149,10 @@ public class ReferencedDecisionSavedOffenceConverterTest {
     }
 
     @Test
-    public void shouldConvertFinancialPenaltyWithEndorsement() {
+    public void shouldConvertFinancialPenaltyWithEndorsement() throws JSONException {
+        String path = "converter/decision-saved-event.fine.endorsement.input.json";
         final JsonEnvelope decisionSavedEvent = envelopeFrom(metadataWithRandomUUID("sjp.events.case-completed"),
-                getFileContentAsJson("converter/decision-saved-event.fine.endorsement.input.json",
+                getFileContentAsJson(path,
                         ImmutableMap.<String, Object>builder()
                                 .put("caseId", CASE_ID)
                                 .put("sessionId", SESSION_ID)
@@ -169,13 +165,14 @@ public class ReferencedDecisionSavedOffenceConverterTest {
         final JsonArray actualPayload = referencedDecisionSavedOffenceConverter.convertOffenceDecisions(decisionSavedEvent);
 
         final JsonArray expected = getFileContentAsJsonArray("converter/decision-saved-event.fine.endorsement.output.json");
-        assertThat(expected.toString(), equalToJSON(actualPayload.toString(), getCustomComparator()));
+        assertJsonArraysEqualIgnoringIDs(expected, actualPayload);
     }
 
     @Test
-    public void shouldConvertFinancialPenaltyWithDisqualification() {
+    public void shouldConvertFinancialPenaltyWithDisqualification() throws JSONException {
+        String path = "converter/decision-saved-event.fine.disqualification.input.json";
         final JsonEnvelope decisionSavedEvent = envelopeFrom(metadataWithRandomUUID("sjp.events.case-completed"),
-                getFileContentAsJson("converter/decision-saved-event.fine.disqualification.input.json",
+                getFileContentAsJson(path,
                         ImmutableMap.<String, Object>builder()
                                 .put("caseId", CASE_ID)
                                 .put("sessionId", SESSION_ID)
@@ -188,13 +185,14 @@ public class ReferencedDecisionSavedOffenceConverterTest {
         final JsonArray actualPayload = referencedDecisionSavedOffenceConverter.convertOffenceDecisions(decisionSavedEvent);
 
         final JsonArray expected = getFileContentAsJsonArray("converter/decision-saved-event.fine.disqualification.output.json");
-        assertThat(expected.toString(), equalToJSON(actualPayload.toString(), getCustomComparator()));
+        assertJsonArraysEqualIgnoringIDs(expected, actualPayload);
     }
 
     @Test
-    public void shouldConvertAbsoluteDischargeDVLA() {
+    public void shouldConvertAbsoluteDischargeDVLA() throws JSONException {
+        String path = "converter/decision-saved-event.discharge.input.json";
         final JsonEnvelope decisionSavedEvent = envelopeFrom(metadataWithRandomUUID("sjp.events.case-completed"),
-                getFileContentAsJson("converter/decision-saved-event.discharge.input.json",
+                getFileContentAsJson(path,
                         ImmutableMap.<String, Object>builder()
                                 .put("caseId", CASE_ID)
                                 .put("sessionId", SESSION_ID)
@@ -206,14 +204,16 @@ public class ReferencedDecisionSavedOffenceConverterTest {
 
         final JsonArray actualPayload = referencedDecisionSavedOffenceConverter.convertOffenceDecisions(decisionSavedEvent);
 
-        final JsonArray expected = getFileContentAsJsonArray("converter/decision-saved-event.discharge.output.json");
-        assertThat(expected.toString(), equalToJSON(actualPayload.toString(), getCustomComparator()));
+        String expectedFilePath = "converter/decision-saved-event.discharge.output.json";
+        final JsonArray expected = getFileContentAsJsonArray(expectedFilePath);
+        assertJsonArraysEqualIgnoringIDs(expected, actualPayload);
     }
 
     @Test
-    public void shouldConvertFinancialPenaltyForDVLAWithNoVictimSurcharge() {
+    public void shouldConvertFinancialPenaltyForDVLAWithNoVictimSurcharge() throws JSONException {
+        String path = "converter/decision-saved-event.novictimsurcharge.input.json";
         final JsonEnvelope decisionSavedEvent = envelopeFrom(metadataWithRandomUUID("sjp.events.case-completed"),
-                getFileContentAsJson("converter/decision-saved-event.novictimsurcharge.input.json",
+                getFileContentAsJson(path,
                         ImmutableMap.<String, Object>builder()
                                 .put("caseId", CASE_ID)
                                 .put("sessionId", SESSION_ID)
@@ -225,12 +225,13 @@ public class ReferencedDecisionSavedOffenceConverterTest {
 
         final JsonArray actualPayload = referencedDecisionSavedOffenceConverter.convertOffenceDecisions(decisionSavedEvent);
 
-        final JsonArray expected = getFileContentAsJsonArray("converter/decision-saved-event.novictimsurcharge.output.json");
-        assertThat(expected.toString(), equalToJSON(actualPayload.toString(), getCustomComparator()));
+        String expectedFilePath = "converter/decision-saved-event.novictimsurcharge.output.json";
+        final JsonArray expected = getFileContentAsJsonArray(expectedFilePath);
+        assertJsonArraysEqualIgnoringIDs(expected, actualPayload);
     }
 
     @Test
-    public void shouldConvertFinancialPenaltyWithZeroCostsAndReasonForNoCosts() {
+    public void shouldConvertFinancialPenaltyWithZeroCostsAndReasonForNoCosts() throws JSONException {
         final JsonEnvelope decisionSavedEvent = envelopeFrom(metadataWithRandomUUID("sjp.events.case-completed"),
                 getFileContentAsJson("converter/decision-saved-event.withreasonfornocosts.input.json",
                         ImmutableMap.<String, Object>builder()
@@ -245,11 +246,11 @@ public class ReferencedDecisionSavedOffenceConverterTest {
         final JsonArray actualPayload = referencedDecisionSavedOffenceConverter.convertOffenceDecisions(decisionSavedEvent);
 
         final JsonArray expected = getFileContentAsJsonArray("converter/decision-saved-event.withreasonfornocosts.output.json");
-        assertThat(expected.toString(), equalToJSON(actualPayload.toString(), getCustomComparator()));
+        assertJsonArraysEqualIgnoringIDs(expected, actualPayload);
     }
 
     @Test
-    public void shouldConvertReferForCourtHearing() {
+    public void shouldConvertReferForCourtHearing() throws JSONException {
         final JsonEnvelope decisionSavedEvent = envelopeFrom(metadataWithRandomUUID("sjp.events.case-completed"),
                 getFileContentAsJson("converter/decision-saved-event.referforcourthearing.input.json",
                         ImmutableMap.<String, Object>builder()
@@ -264,11 +265,11 @@ public class ReferencedDecisionSavedOffenceConverterTest {
         final JsonArray actualPayload = referencedDecisionSavedOffenceConverter.convertOffenceDecisions(decisionSavedEvent);
 
         final JsonArray expected = getFileContentAsJsonArray("converter/decision-saved-event.referforcourthearing.output.json");
-        assertThat(expected.toString(), equalToJSON(actualPayload.toString(), getCustomComparator()));
+        assertJsonArraysEqualIgnoringIDs(expected, actualPayload);
     }
 
     @Test
-    public void shouldConvertNoSeparatePenalty() {
+    public void shouldConvertNoSeparatePenalty() throws JSONException {
         final JsonEnvelope decisionSavedEvent = envelopeFrom(metadataWithRandomUUID("sjp.events.case-completed"),
                 getFileContentAsJson("converter/decision-saved-event.no-separate-penalty.input.json",
                         ImmutableMap.<String, Object>builder()
@@ -282,11 +283,11 @@ public class ReferencedDecisionSavedOffenceConverterTest {
         final JsonArray result = referencedDecisionSavedOffenceConverter.convertOffenceDecisions(decisionSavedEvent);
 
         final JsonArray expected = getFileContentAsJsonArray("converter/decision-saved-event.no-separate-penalty.output.json");
-        assertThat(expected.toString(), equalToJSON(result.toString(), getCustomComparator()));
+        assertJsonArraysEqualIgnoringIDs(expected, result);
     }
 
     @Test
-    public void shouldConvertNoSeparatePenaltyWithLicenceEndorsementTrue() {
+    public void shouldConvertNoSeparatePenaltyWithLicenceEndorsementTrue() throws JSONException {
         final JsonEnvelope decisionSavedEvent = envelopeFrom(metadataWithRandomUUID("sjp.events.case-completed"),
                 getFileContentAsJson("converter/decision-saved-event.no-separate-penalty-LEN.input.json",
                         ImmutableMap.<String, Object>builder()
@@ -300,11 +301,11 @@ public class ReferencedDecisionSavedOffenceConverterTest {
         final JsonArray result = referencedDecisionSavedOffenceConverter.convertOffenceDecisions(decisionSavedEvent);
 
         final JsonArray expected = getFileContentAsJsonArray("converter/decision-saved-event.no-separate-penalty-LEN.output.json");
-        assertThat(expected.toString(), equalToJSON(result.toString(), getCustomComparator()));
+        assertJsonArraysEqualIgnoringIDs(expected, result);
     }
 
     @Test
-    public void shouldConvertPressRestrictionForAllOffences() {
+    public void shouldConvertPressRestrictionForAllOffences() throws JSONException {
         final JsonEnvelope decisionSavedEvent = envelopeFrom(metadataWithRandomUUID("sjp.events.case-completed"),
                 getFileContentAsJson("converter/decision-saved-event.press-restriction.input.json",
                         ImmutableMap.<String, Object>builder()
@@ -323,11 +324,11 @@ public class ReferencedDecisionSavedOffenceConverterTest {
         final JsonArray results = referencedDecisionSavedOffenceConverter.convertOffenceDecisions(decisionSavedEvent);
 
         final JsonArray expected = getFileContentAsJsonArray("converter/decision-saved-event.press-restriction.output.json");
-        assertThat(expected.toString(), equalToJSON(results.toString(), getCustomComparator()));
+        assertJsonArraysEqualIgnoringIDs(expected, results);
     }
 
     @Test
-    public void shouldConvertPressRestrictionRevokedForAllOffences() {
+    public void shouldConvertPressRestrictionRevokedForAllOffences() throws JSONException {
         final String resultedOn = DATE_FORMAT.format(ZonedDateTime.now());
         final JsonEnvelope decisionSavedEvent = envelopeFrom(metadataWithRandomUUID("sjp.events.case-completed"),
                 getFileContentAsJson("converter/decision-saved-event.press-restriction-revoked.input.json",
@@ -350,11 +351,11 @@ public class ReferencedDecisionSavedOffenceConverterTest {
                 ImmutableMap.<String, Object>builder()
                         .put("revokedOn", resultedOn)
                         .build());
-        assertThat(expected.toString(), equalToJSON(results.toString(), getCustomComparator()));
+        assertJsonArraysEqualIgnoringIDs(expected, results);
     }
 
     @Test
-    public void shouldConvertPressRestrictionDecisionForReferForCourtHearingOffences() {
+    public void shouldConvertPressRestrictionDecisionForReferForCourtHearingOffences() throws JSONException {
         final JsonEnvelope decisionSavedEvent = envelopeFrom(metadataWithRandomUUID("sjp.events.case-completed"),
                 getFileContentAsJson("converter/decision-saved-event.press-restriction-referforcourthearing.input.json",
                         ImmutableMap.<String, Object>builder()
@@ -372,20 +373,44 @@ public class ReferencedDecisionSavedOffenceConverterTest {
                 ImmutableMap.<String, Object>builder()
                         .put("resultedOn", DATE_FORMAT.format(ZonedDateTime.now()))
                         .build());
-        assertThat(expected.toString(), equalToJSON(results.toString(), getCustomComparator()));
+        assertJsonArraysEqualIgnoringIDs(expected, results);
     }
 
-    private CustomComparator getCustomComparator() {
-        return new CustomComparator(STRICT,
-                // Ignore randomly generated IDs during the validation
-                new Customization("[0].id", (o1, o2) -> true),
-                new Customization("[1].id", (o1, o2) -> true),
-                new Customization("[2].id", (o1, o2) -> true),
-                new Customization("[3].id", (o1, o2) -> true),
-                new Customization("[4].id", (o1, o2) -> true),
-                new Customization("[5].id", (o1, o2) -> true)
-        );
+    private void assertJsonArraysEqualIgnoringIDs(JsonArray expectedArray, JsonArray actualArray) throws JSONException {
+        JsonArray expectedArrayModified = removeIdFromJsonObjects(expectedArray);
+        JsonArray actualArrayModified = removeIdFromJsonObjects(actualArray);
+
+        assertEquals(toMap(expectedArrayModified), toMap(actualArrayModified));
+
     }
+    private Map<String, String> toMap(JsonObject jsonObject) {
+        return jsonObject.entrySet().stream()
+                .collect(Collectors.toMap(Map.Entry::getKey, e -> e.getValue().toString().replaceAll("\"", "")));
+    }
+    private List<Map<String, String>> toMap(JsonArray jsonArray) {
+        return jsonArray.getValuesAs(JsonObject.class).stream()
+                .map(this::toMap)
+                .collect(Collectors.toList());
+    }
+    private JsonArray removeIdFromJsonObjects(JsonArray jsonArray) {
+        JsonArrayBuilder arrayBuilder = Json.createArrayBuilder();
+
+        for (int i = 0; i < jsonArray.size(); i++) {
+            JsonObject originalObject = jsonArray.getJsonObject(i);
+            JsonObjectBuilder objectBuilder = Json.createObjectBuilder();
+
+            for (String key : originalObject.keySet()) {
+                if (!"id".equals(key)) {
+                    objectBuilder.add(key, originalObject.get(key));
+                }
+            }
+
+            arrayBuilder.add(objectBuilder.build());
+        }
+
+        return arrayBuilder.build();
+    }
+
 
     private JsonObject getOffenceDecisionByOffenceId(final JsonArray json, final UUID offenceId) {
         final Optional<JsonObject> offenceDecision = json.getValuesAs(JsonObject.class)

@@ -7,6 +7,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 @Event("sjp.events.financial-means-deleted")
@@ -15,6 +16,7 @@ public class FinancialMeansDeleted {
     private UUID defendantId;
     private List<UUID> materialIds;
 
+    @JsonCreator
     public FinancialMeansDeleted(final UUID defendantId, final List<UUID> materialIds) {
         this.defendantId = defendantId;
         this.materialIds = Collections.unmodifiableList(new ArrayList<>(materialIds));

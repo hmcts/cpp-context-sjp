@@ -74,11 +74,11 @@ import java.util.UUID;
 import com.google.common.collect.Sets;
 import org.apache.commons.lang3.tuple.Triple;
 import org.hamcrest.CoreMatchers;
-import org.junit.Before;
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 
-@Ignore("Enable this when merging to master")
+@Disabled("Enable this when merging to master")
 public class SetPleasIT extends BaseIntegrationTest {
 
     private final UUID sessionId = randomUUID();
@@ -97,7 +97,7 @@ public class SetPleasIT extends BaseIntegrationTest {
     private CreateCase.CreateCasePayloadBuilder aCase;
     private static final String DISABILITY_NEEDS = "Hearing aid";
 
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
         stubStartSjpSessionCommand();
         stubEndSjpSessionCommand();

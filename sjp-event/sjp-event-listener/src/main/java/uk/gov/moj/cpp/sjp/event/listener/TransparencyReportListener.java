@@ -54,7 +54,7 @@ public class TransparencyReportListener {
      *
      * @deprecated
      */
-    @Deprecated
+    @Deprecated(forRemoval = true)
     @Transactional
     @Handles(TransparencyReportGenerationStarted.EVENT_NAME)
     @SuppressWarnings("squid:S1133")
@@ -70,7 +70,7 @@ public class TransparencyReportListener {
      *
      * @deprecated
      */
-    @Deprecated
+    @Deprecated(forRemoval = true)
     @Transactional
     @Handles(TransparencyReportMetadataAdded.EVENT_NAME)
     @SuppressWarnings("squid:S1133")
@@ -85,7 +85,7 @@ public class TransparencyReportListener {
      *
      * @deprecated
      */
-    @Deprecated
+    @Deprecated(forRemoval = true)
     @Transactional
     @Handles(TransparencyReportGenerationFailed.EVENT_NAME)
     @SuppressWarnings("squid:S1133")

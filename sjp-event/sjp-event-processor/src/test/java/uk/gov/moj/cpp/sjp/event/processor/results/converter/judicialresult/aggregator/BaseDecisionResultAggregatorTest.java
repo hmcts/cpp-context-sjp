@@ -2,7 +2,7 @@ package uk.gov.moj.cpp.sjp.event.processor.results.converter.judicialresult.aggr
 
 import static java.util.UUID.randomUUID;
 import static javax.json.Json.createObjectBuilder;
-import static org.mockito.Matchers.any;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import static uk.gov.moj.cpp.sjp.event.processor.results.converter.judicialresult.JudicialResultHelper.SESSION_ID;
@@ -20,7 +20,7 @@ import java.util.HashMap;
 import java.util.Optional;
 import java.util.UUID;
 
-import org.junit.Before;
+import org.junit.jupiter.api.BeforeEach;
 
 public abstract class BaseDecisionResultAggregatorTest {
 
@@ -33,7 +33,7 @@ public abstract class BaseDecisionResultAggregatorTest {
     protected  JCachedReferenceData jCachedReferenceData;
     protected ReferenceDataService referenceDataService;
 
-    @Before
+    @BeforeEach
     public void setUp() {
         when(sjpSessionEnvelope.payloadAsJsonObject()).thenReturn(
                 createObjectBuilder()
@@ -47,11 +47,11 @@ public abstract class BaseDecisionResultAggregatorTest {
                         (getFileContentAsJson("resultsconverter/referencedata.all-result-definitions.json", new HashMap<>())
                                 .getJsonArray("resultDefinitions")));
 
-        when(referenceDataService.getFixedList(any(JsonEnvelope.class)))
-                .thenReturn((getFileContentAsJson("resultsconverter/referencedata.fixedlist.json", new HashMap<>())));
+       // when(referenceDataService.getFixedList(any(JsonEnvelope.class)))
+       //         .thenReturn((getFileContentAsJson("resultsconverter/referencedata.fixedlist.json", new HashMap<>())));
 
-        when(referenceDataService.getProsecutor(any(String.class), any(JsonEnvelope.class)))
-                .thenReturn((Optional.of(getFileContentAsJson("resultsconverter/prosecutor.json", new HashMap<>()))));
+        //when(referenceDataService.getProsecutor(any(String.class), any(JsonEnvelope.class)))
+        //        .thenReturn((Optional.of(getFileContentAsJson("resultsconverter/prosecutor.json", new HashMap<>()))));
 
         this.jCachedReferenceData = new JCachedReferenceData(referenceDataService);
     }

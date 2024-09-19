@@ -4,7 +4,7 @@ import static java.util.Arrays.asList;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.instanceOf;
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static uk.gov.moj.cpp.sjp.domain.common.CaseStatus.REOPENED_IN_LIBRA;
 
 import uk.gov.justice.services.common.converter.LocalDates;
@@ -21,8 +21,8 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.hamcrest.Matchers;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 public class CaseReopenedTest extends CaseAggregateBaseTest {
 
@@ -32,7 +32,7 @@ public class CaseReopenedTest extends CaseAggregateBaseTest {
 
     private CaseReopenDetails caseReopenDetails;
 
-    @Before
+    @BeforeEach
     public void setupCaseReopenDetails() {
         super.setUp();
         caseReopenDetails = new CaseReopenDetails(

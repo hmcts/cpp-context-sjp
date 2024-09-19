@@ -3,45 +3,37 @@ package uk.gov.moj.cpp.sjp.query.view.converter;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
 
+import java.util.stream.Stream;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 import uk.gov.moj.cpp.accesscontrol.sjp.providers.ProsecutingAuthorityAccess;
 
-import java.util.Arrays;
-import java.util.Collection;
 
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
+import org.junit.jupiter.api.BeforeEach;
 
-@RunWith(value = Parameterized.class)
 public class ProsecutingAuthorityAccessFilterConverterTest {
 
     private static final String PROSECUTING_AUTHORITY = "PROC1";
 
-    @Parameterized.Parameter(0)
-    public ProsecutingAuthorityAccess prosecutingAuthorityAccess;
-
-    @Parameterized.Parameter(1)
-    public String expectedFilterValue;
-
     private ProsecutingAuthorityAccessFilterConverter prosecutingAuthorityAccessFilterConverter;
 
-    @Parameterized.Parameters(name = "{index}: prosecutingAuthorityAccess={0}, expectedFilterValue={1}")
-    public static Collection<Object[]> data() {
-        return Arrays.asList(new Object[][]{
-                {ProsecutingAuthorityAccess.NONE, null},
-                {ProsecutingAuthorityAccess.of(PROSECUTING_AUTHORITY), PROSECUTING_AUTHORITY},
-                {ProsecutingAuthorityAccess.ALL, "%"}
-        });
+    static Stream<Arguments> data() {
+        return Stream.of(
+                Arguments.of(ProsecutingAuthorityAccess.NONE, null),
+                Arguments.of(ProsecutingAuthorityAccess.of(PROSECUTING_AUTHORITY), PROSECUTING_AUTHORITY),
+                Arguments.of(ProsecutingAuthorityAccess.ALL, "%")
+        );
     }
 
-    @Before
+    @BeforeEach
     public void init() {
         prosecutingAuthorityAccessFilterConverter = new ProsecutingAuthorityAccessFilterConverter();
     }
 
-    @Test
-    public void shouldConvertToProsecutingAuthorityAccessFilterValue() {
+    @ParameterizedTest
+    @MethodSource("data")
+    public void shouldConvertToProsecutingAuthorityAccessFilterValue(ProsecutingAuthorityAccess prosecutingAuthorityAccess, String expectedFilterValue) {
         assertThat(prosecutingAuthorityAccessFilterConverter.convertToProsecutingAuthorityAccessFilter(prosecutingAuthorityAccess),
                 equalTo(expectedFilterValue));
     }

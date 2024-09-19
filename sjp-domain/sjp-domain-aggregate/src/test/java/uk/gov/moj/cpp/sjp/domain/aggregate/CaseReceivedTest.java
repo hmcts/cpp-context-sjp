@@ -1,10 +1,10 @@
 package uk.gov.moj.cpp.sjp.domain.aggregate;
 
 import static java.util.Collections.singleton;
-import static org.apache.commons.lang.builder.EqualsBuilder.reflectionEquals;
+import static org.apache.commons.lang3.builder.EqualsBuilder.reflectionEquals;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static uk.gov.moj.cpp.sjp.domain.aggregate.CaseAggregateBaseTest.AggregateTester.when;
 
 import uk.gov.moj.cpp.sjp.domain.Case;
@@ -12,7 +12,7 @@ import uk.gov.moj.cpp.sjp.event.CaseCreationFailedBecauseCaseAlreadyExisted;
 import uk.gov.moj.cpp.sjp.event.CaseReceived;
 import uk.gov.moj.cpp.sjp.event.SjpCaseCreated;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 public class CaseReceivedTest extends CaseAggregateBaseTest {
 

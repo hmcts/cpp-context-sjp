@@ -3,7 +3,7 @@ package uk.gov.moj.cpp.sjp.query.view.service;
 import static java.util.Collections.singletonList;
 import static java.util.UUID.randomUUID;
 import static org.hamcrest.Matchers.contains;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.mockito.Mockito.when;
 
 import com.google.common.collect.Sets;
@@ -16,16 +16,16 @@ import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.moj.cpp.sjp.persistence.repository.CaseAssignmentRestrictionRepository;
 
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class AssignmentServiceTest {
 
     private final int QUERY_LIMIT = 10;
@@ -49,7 +49,7 @@ public class AssignmentServiceTest {
     private final String localJusticeAreaNationalCourtCode = "2577";
 
 
-    @Before
+    @BeforeEach
     public void init() {
         assigneeId = UUID.randomUUID();
         expectedAssignmentCandidates = singletonList(new AssignmentCandidate(randomUUID(), CASE_STREAM_VERSION));
@@ -59,7 +59,6 @@ public class AssignmentServiceTest {
     public void shouldGetAssignmentCandidatesForMagistrateSession() {
         final SessionType sessionType = SessionType.MAGISTRATE;
 
-        when(caseAssignmentRestrictionRepository.findProsecutingAuthoritiesByLja(localJusticeAreaNationalCourtCode)).thenReturn(prosecutingAuthorityList);
         when(assignmentRepository.getAssignmentCandidatesForMagistrateSession(assigneeId, prosecutingAuthorities, QUERY_LIMIT)).thenReturn(expectedAssignmentCandidates);
 
         final List<AssignmentCandidate> actualAssignmentCandidates = assignmentService.getAssignmentCandidates(assigneeId, sessionType, prosecutingAuthorities, QUERY_LIMIT);
@@ -71,8 +70,7 @@ public class AssignmentServiceTest {
     public void shouldGetAssignmentCandidatesForDelegatedPowersSession() {
         final SessionType sessionType = SessionType.DELEGATED_POWERS;
 
-        when(caseAssignmentRestrictionRepository.findProsecutingAuthoritiesByLja(localJusticeAreaNationalCourtCode)).thenReturn(prosecutingAuthorityList);
-        when(assignmentRepository.getAssignmentCandidatesForDelegatedPowersSession(assigneeId, prosecutingAuthorities, QUERY_LIMIT)).thenReturn(expectedAssignmentCandidates);
+       when(assignmentRepository.getAssignmentCandidatesForDelegatedPowersSession(assigneeId, prosecutingAuthorities, QUERY_LIMIT)).thenReturn(expectedAssignmentCandidates);
 
         final List<AssignmentCandidate> actualAssignmentCandidates = assignmentService.getAssignmentCandidates(assigneeId, sessionType, prosecutingAuthorities, QUERY_LIMIT);
 

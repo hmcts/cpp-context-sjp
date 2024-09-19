@@ -1,4 +1,5 @@
-package rules;
+package uk.gov.moj.cpp.sjp.command.api.accesscontrol;
+
 import uk.gov.moj.cpp.accesscontrol.drools.Outcome;
 import uk.gov.moj.cpp.accesscontrol.drools.Action;
 import uk.gov.moj.cpp.sjp.command.api.accesscontrol.RuleConstants;

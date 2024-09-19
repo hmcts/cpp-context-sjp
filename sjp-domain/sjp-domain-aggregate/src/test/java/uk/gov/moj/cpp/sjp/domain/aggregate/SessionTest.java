@@ -26,8 +26,8 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Stream;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 public class SessionTest {
 
@@ -39,7 +39,7 @@ public class SessionTest {
     private Session session;
     private Optional<DelegatedPowers> legalAdviser;
 
-    @Before
+    @BeforeEach
     public void init() {
         sessionId = randomUUID();
         userId = randomUUID();

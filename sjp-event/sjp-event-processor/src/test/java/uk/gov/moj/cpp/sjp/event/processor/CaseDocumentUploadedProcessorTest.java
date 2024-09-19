@@ -10,8 +10,8 @@ import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.argThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.hamcrest.MockitoHamcrest.argThat;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -38,17 +38,17 @@ import java.util.UUID;
 
 import javax.json.JsonObject;
 
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class CaseDocumentUploadedProcessorTest {
 
     private static final String DOCUMENT_TYPE = "PLEA";
@@ -76,7 +76,7 @@ public class CaseDocumentUploadedProcessorTest {
     @InjectMocks
     private CaseDocumentProcessor caseDocumentProcessor = new CaseDocumentProcessor();
 
-    @Before
+    @BeforeEach
     public void setup() {
         materialAddedMetadata = metadataWithRandomUUID("material.material-added").build();
         materialAddedPayload = createObjectBuilder().add("materialId", materialId.toString()).build();

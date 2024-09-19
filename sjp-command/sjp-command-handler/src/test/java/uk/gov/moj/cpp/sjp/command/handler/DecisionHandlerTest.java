@@ -8,7 +8,7 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.collection.IsCollectionWithSize.hasSize;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.justice.json.schemas.domains.sjp.ApplicationDecision.applicationDecision;
@@ -31,6 +31,7 @@ import uk.gov.justice.json.schemas.domains.sjp.User;
 import uk.gov.justice.json.schemas.domains.sjp.commands.SaveApplicationDecision;
 import uk.gov.justice.json.schemas.domains.sjp.events.ApplicationDecisionRejected;
 import uk.gov.justice.json.schemas.domains.sjp.events.ApplicationDecisionSaved;
+import uk.gov.justice.services.common.util.UtcClock;
 import uk.gov.justice.services.core.aggregate.AggregateService;
 import uk.gov.justice.services.core.enveloper.Enveloper;
 import uk.gov.justice.services.eventsourcing.source.core.EventSource;
@@ -56,16 +57,16 @@ import java.util.List;
 import java.util.UUID;
 import java.util.stream.Stream;
 
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class DecisionHandlerTest {
 
     @Mock
@@ -95,10 +96,11 @@ public class DecisionHandlerTest {
     @InjectMocks
     private DecisionHandler decisionHandler;
 
+    private final UtcClock clock = new UtcClock();
+
     private void mockCalls(final UUID caseId, final UUID sessionId) {
         when(eventSource.getStreamById(sessionId)).thenReturn(eventStream);
         when(aggregateService.get(eventStream, Session.class)).thenReturn(session);
-        when(session.getSessionType()).thenReturn(SessionType.MAGISTRATE);
         when(eventSource.getStreamById(caseId)).thenReturn(eventStream);
         when(aggregateService.get(eventStream, CaseAggregate.class)).thenReturn(caseAggregate);
     }
@@ -116,7 +118,7 @@ public class DecisionHandlerTest {
         final UUID withdrawalReasonId1 = randomUUID();
         final UUID withdrawalReasonId2 = randomUUID();
 
-        final ZonedDateTime savedAt = ZonedDateTime.now();
+        final ZonedDateTime savedAt = clock.now();
         final User savedBy = new User("John", "Smith", userId);
 
         final List<OffenceDecision> offenceDecisions = new ArrayList<>();
@@ -131,11 +133,9 @@ public class DecisionHandlerTest {
 
         when(eventSource.getStreamById(sessionId)).thenReturn(eventStream);
         when(aggregateService.get(eventStream, Session.class)).thenReturn(session);
-        when(session.getSessionType()).thenReturn(SessionType.MAGISTRATE);
         when(eventSource.getStreamById(caseId)).thenReturn(eventStream);
         when(aggregateService.get(eventStream, CaseAggregate.class)).thenReturn(caseAggregate);
 
-        when(session.getSessionType()).thenReturn(SessionType.MAGISTRATE);
         when(caseAggregate.saveDecision(decision, session)).thenReturn(Stream.of(decisionSaved));
         final Envelope<Decision> decisionEnvelope = envelopeFrom(metadataWithRandomUUID("sjp.command.save-decision"), decision);
 
@@ -175,7 +175,7 @@ public class DecisionHandlerTest {
         final UUID offenceId1 = randomUUID();
         final UUID offenceId2 = randomUUID();
 
-        final ZonedDateTime savedAt = ZonedDateTime.now();
+        final ZonedDateTime savedAt = clock.now();
         final User savedBy = new User("John", "Smith", userId);
 
         final List<OffenceDecision> offenceDecisions = new ArrayList<>();
@@ -190,10 +190,8 @@ public class DecisionHandlerTest {
 
         when(eventSource.getStreamById(sessionId)).thenReturn(eventStream);
         when(aggregateService.get(eventStream, Session.class)).thenReturn(session);
-        when(session.getSessionType()).thenReturn(SessionType.MAGISTRATE);
         when(eventSource.getStreamById(caseId)).thenReturn(eventStream);
         when(aggregateService.get(eventStream, CaseAggregate.class)).thenReturn(caseAggregate);
-        when(session.getSessionType()).thenReturn(SessionType.MAGISTRATE);
         when(caseAggregate.saveDecision(decision, session)).thenReturn(Stream.of(decisionSaved));
         final Envelope<Decision> decisionEnvelope = envelopeFrom(metadataWithRandomUUID("sjp.command.save-decision"), decision);
 
@@ -231,7 +229,7 @@ public class DecisionHandlerTest {
         final UUID offenceId1 = randomUUID();
         final UUID offenceId2 = randomUUID();
 
-        final ZonedDateTime savedAt = ZonedDateTime.now();
+        final ZonedDateTime savedAt = clock.now();
         final User savedBy = new User("Ruve", "Vem", userId);
 
         final List<OffenceDecision> offenceDecisions = new ArrayList<>();
@@ -298,7 +296,7 @@ public class DecisionHandlerTest {
                 .withApplicationId(applicationId)
                 .withSessionId(sessionId)
                 .withDecisionId(randomUUID())
-                .withSavedAt(ZonedDateTime.now())
+                .withSavedAt(clock.now())
                 .withApplicationDecision(applicationDecision()
                         .withGranted(true)
                         .withOutOfTime(false)

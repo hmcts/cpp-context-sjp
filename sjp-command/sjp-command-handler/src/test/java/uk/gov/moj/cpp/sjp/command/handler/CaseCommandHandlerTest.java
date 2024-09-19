@@ -24,8 +24,8 @@ import java.util.stream.Stream;
 
 import javax.json.JsonObject;
 
-import org.junit.After;
-import org.junit.Before;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import uk.gov.moj.cpp.sjp.domain.plea.PleaType;
@@ -33,7 +33,7 @@ import uk.gov.moj.cpp.sjp.domain.plea.PleaType;
 public abstract class CaseCommandHandlerTest {
 
     protected static final UUID CASE_ID = randomUUID();
-    private static final String ACTION_NAME = "actionName";
+    protected static final String ACTION_NAME = "actionName";
 
     @Mock
     protected EventSource eventSource;
@@ -78,22 +78,13 @@ public abstract class CaseCommandHandlerTest {
 
     protected UUID userId = randomUUID();
 
-    @Before
+    @BeforeEach
     @SuppressWarnings("unchecked")
     public void setupMocks() {
         initMocks(this);
-        when(jsonEnvelope.payloadAsJsonObject()).thenReturn(jsonObject);
-        when(jsonEnvelope.metadata()).thenReturn(metadata);
-        when(metadata.userId()).thenReturn(Optional.of(userId.toString()));
-        when(metadata.name()).thenReturn(ACTION_NAME);
-        when(jsonObject.getString(CaseCommandHandler.STREAM_ID)).thenReturn(CASE_ID.toString());
-        when(eventSource.getStreamById(CASE_ID)).thenReturn(eventStream);
-        when(aggregateService.get(eventStream, CaseAggregate.class)).thenReturn(caseAggregate);
-        when(enveloper.withMetadataFrom(jsonEnvelope)).thenReturn(function);
-        when(events.map(function)).thenReturn(jsonEvents);
     }
 
-    @After
+    @AfterEach
     @SuppressWarnings("unchecked")
     public void verifyMocks() throws EventStreamException {
         verify(jsonEnvelope, atLeast(1)).payloadAsJsonObject();

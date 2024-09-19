@@ -91,10 +91,10 @@ import java.util.concurrent.TimeUnit;
 import javax.json.JsonObject;
 
 import com.google.common.collect.Sets;
-import com.jayway.awaitility.Awaitility;
+import org.awaitility.Awaitility;
 import org.hamcrest.Matcher;
 import org.json.JSONObject;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 public class NotificationToDvlaToRemoveEndorsementsIT extends BaseIntegrationTest {
 

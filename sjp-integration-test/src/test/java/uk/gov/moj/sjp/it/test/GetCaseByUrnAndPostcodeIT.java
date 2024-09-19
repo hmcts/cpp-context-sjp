@@ -15,8 +15,8 @@ import java.util.UUID;
 import javax.json.Json;
 import javax.json.JsonObject;
 
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 
 public class GetCaseByUrnAndPostcodeIT extends BaseIntegrationTest {
 
@@ -27,7 +27,7 @@ public class GetCaseByUrnAndPostcodeIT extends BaseIntegrationTest {
     private CitizenHelper citizenHelper = new CitizenHelper();
     private static final String NATIONAL_COURT_CODE = "1080";
 
-    @BeforeClass
+    @BeforeAll
     public static void init() {
         CreateCase.CreateCasePayloadBuilder createCasePayloadBuilder = CreateCase.CreateCasePayloadBuilder.withDefaults().withOffenceCode(OFFENCE_CODE);
         stubEnforcementAreaByPostcode(createCasePayloadBuilder.getDefendantBuilder().getAddressBuilder().getPostcode(), NATIONAL_COURT_CODE, "Bedfordshire Magistrates' Court");

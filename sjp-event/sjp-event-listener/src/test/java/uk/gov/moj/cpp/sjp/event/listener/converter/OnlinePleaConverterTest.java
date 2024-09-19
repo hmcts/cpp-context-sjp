@@ -2,9 +2,11 @@ package uk.gov.moj.cpp.sjp.event.listener.converter;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.Assert.assertNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static uk.gov.moj.cpp.sjp.domain.IncomeFrequency.FORTNIGHTLY;
 
+import uk.gov.justice.services.adapter.rest.exception.BadRequestException;
 import uk.gov.justice.services.common.util.Clock;
 import uk.gov.justice.services.common.util.UtcClock;
 import uk.gov.moj.cpp.sjp.domain.Benefits;
@@ -22,13 +24,13 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class OnlinePleaConverterTest {
 
     @InjectMocks
@@ -42,7 +44,7 @@ public class OnlinePleaConverterTest {
     private Clock clock = new UtcClock();
     private ZonedDateTime now = clock.now();
 
-    @Before
+    @BeforeEach
     public void setup() {
         final CaseDetail caseDetail = new CaseDetail();
         caseDetail.setId(UUID.randomUUID());
@@ -173,7 +175,7 @@ public class OnlinePleaConverterTest {
         assertNull(onlinePlea.getEmployment().getEmploymentStatusDetails());
     }
 
-    @Test(expected = IllegalStateException.class)
+    @Test
     public void shouldThrowExceptionWhenMoreThanOneUnknownOutgoingIsSubmitted() {
         final BigDecimal accommodationAmount = BigDecimal.valueOf(2344.55);
         final BigDecimal councilTaxAmount = BigDecimal.valueOf(245.85);
@@ -189,6 +191,7 @@ public class OnlinePleaConverterTest {
         final FinancialMeansUpdated financialMeansUpdated = FinancialMeansUpdated.createEventForOnlinePlea(defendantId,
                 income, benefits, OnlinePleaConverter.OnlinePleaEmploymentStatus.UNEMPLOYED.name(), outgoings, now, null, null, null, null);
 
-        onlinePleaConverter.convertToOnlinePleaEntity(defendantDetail.getCaseDetail().getId(), financialMeansUpdated);
+        UUID caseId = defendantDetail.getCaseDetail().getId();
+        assertThrows(IllegalStateException.class, () -> onlinePleaConverter.convertToOnlinePleaEntity(caseId, financialMeansUpdated));
     }
 }

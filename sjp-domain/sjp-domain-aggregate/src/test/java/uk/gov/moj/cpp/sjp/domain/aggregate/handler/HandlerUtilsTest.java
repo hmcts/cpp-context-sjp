@@ -5,8 +5,8 @@ import static com.google.common.collect.Sets.newHashSet;
 import static java.util.Collections.singletonList;
 import static java.util.UUID.randomUUID;
 import static java.util.stream.Collectors.toList;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static uk.gov.moj.cpp.sjp.domain.verdict.VerdictType.NO_VERDICT;
 import static uk.gov.moj.cpp.sjp.domain.verdict.VerdictType.PROVED_SJP;
 
@@ -29,8 +29,8 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Stream;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 public class HandlerUtilsTest {
 
@@ -42,7 +42,7 @@ public class HandlerUtilsTest {
     private static final UUID OFFENCE_ID_3 = randomUUID();
     private final CaseAggregateState caseAggregateState = new CaseAggregateState();
 
-    @Before
+    @BeforeEach
     public void onceBeforeEachTest() {
         caseAggregateState.setCaseId(CASE_ID);
         caseAggregateState.addOffenceIdsForDefendant(DEFENDANT_ID, newHashSet(OFFENCE_ID_1, OFFENCE_ID_2, OFFENCE_ID_3));

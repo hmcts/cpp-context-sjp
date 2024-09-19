@@ -2,10 +2,10 @@ package uk.gov.moj.sjp.it.test;
 
 import com.google.common.collect.ImmutableList;
 import com.jayway.jsonpath.ReadContext;
-import com.jayway.restassured.path.json.JsonPath;
+import io.restassured.path.json.JsonPath;
 import org.hamcrest.Matcher;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import uk.gov.justice.services.common.http.HeaderConstants;
 import uk.gov.justice.services.test.utils.core.http.RequestParams;
 import uk.gov.justice.services.test.utils.core.http.RequestParamsBuilder;
@@ -16,6 +16,7 @@ import uk.gov.moj.sjp.it.pollingquery.CasePoller;
 import uk.gov.moj.sjp.it.stub.DefendantOutstandingFinesStub;
 
 import javax.ws.rs.core.Response;
+import java.io.IOException;
 import java.util.UUID;
 
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
@@ -23,7 +24,7 @@ import static java.util.UUID.randomUUID;
 import static javax.ws.rs.core.Response.Status.OK;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.equalTo;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static uk.gov.justice.services.test.utils.core.http.RequestParamsBuilder.requestParams;
 import static uk.gov.justice.services.test.utils.core.matchers.ResponsePayloadMatcher.payload;
 import static uk.gov.justice.services.test.utils.core.matchers.ResponseStatusMatcher.status;
@@ -43,7 +44,7 @@ public class DefendantOutstandingFinesIT extends BaseIntegrationTest {
     private final UUID caseIdOne = randomUUID();
     private final UUID defendantIdOne = randomUUID();
 
-    @Before
+    @BeforeEach
     public void setUp() {
         stubProsecutorQuery(TFL.name(), TFL.getFullName(), randomUUID());
         new EventListener()
@@ -52,7 +53,7 @@ public class DefendantOutstandingFinesIT extends BaseIntegrationTest {
     }
 
     @Test
-    public void shouldQueryOutstandingFines() {
+    public void shouldQueryOutstandingFines() throws IOException {
         final JsonPath jsonPath = CasePoller.pollUntilCaseByIdIsOk(caseIdOne);
         final UUID defendantId = UUID.fromString(jsonPath.getString("defendant.id"));
         final String firstName = jsonPath.getString("defendant.personalDetails.firstName");

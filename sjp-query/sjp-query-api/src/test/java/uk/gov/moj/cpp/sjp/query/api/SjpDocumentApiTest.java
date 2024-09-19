@@ -6,9 +6,9 @@ import static java.util.UUID.randomUUID;
 import static org.apache.commons.lang3.RandomStringUtils.random;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.Matchers.allOf;
-import static org.junit.Assert.assertThat;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.argThat;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.hamcrest.MockitoHamcrest.argThat;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -32,19 +32,20 @@ import uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMatcher;
 import uk.gov.moj.cpp.sjp.query.api.service.DocumentMetadataService;
 
 import java.time.ZonedDateTime;
+import java.util.Optional;
 import java.util.UUID;
 
 import javax.json.Json;
 import javax.json.JsonObject;
 
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class SjpDocumentApiTest {
 
     @Mock
@@ -53,8 +54,8 @@ public class SjpDocumentApiTest {
     @Spy
     private Enveloper enveloper = EnveloperFactory.createEnveloper();
 
-    @InjectMocks
-    @Spy
+
+    @Mock
     private DocumentMetadataService documentMetadataService = new DocumentMetadataService();
 
     @InjectMocks
@@ -75,22 +76,21 @@ public class SjpDocumentApiTest {
         final JsonEnvelope materialMetadata = materialMetadata(materialId, fileName, mimeType, addedAt);
 
         when(requester.request(argThat(documentRequest(documentMetadataQuery, caseId, documentId)))).thenReturn(documentDetails);
-        when(requester.requestAsAdmin(argThat(materialMetadataRequest(documentDetails, materialId)))).thenReturn(materialMetadata);
+        when(documentMetadataService.getMaterialMetadata(materialId, documentDetails)).thenReturn(Optional.of(materialMetadata.asJsonObject()));
 
         final JsonEnvelope documentMetadata = sjpDocumentApi.getCaseDocumentMetadata(documentMetadataQuery);
 
         assertThat(documentMetadata, jsonEnvelope(
                 withMetadataEnvelopedFrom(documentDetails).withName("sjp.query.case-document-metadata"),
                 payloadIsJson(allOf(
-                        withJsonPath("$.caseDocumentMetadata.fileName", equalTo(fileName)),
-                        withJsonPath("$.caseDocumentMetadata.mimeType", equalTo(mimeType)),
-                        withJsonPath("$.caseDocumentMetadata.addedAt", equalTo(addedAt.toString())),
+                        withJsonPath("$.fileName", equalTo(fileName)),
+                        withJsonPath("$.mimeType", equalTo(mimeType)),
+                        withJsonPath("$.materialAddedDate", equalTo(addedAt.toString())),
                         withoutJsonPath("$.caseDocumentMetadata.materialId"),
                         withoutJsonPath("$.caseDocumentMetadata.alfrescoAssetId"),
                         withoutJsonPath("$.caseDocumentMetadata.externalLink")
                 ))));
 
-        verifyMaterialCall(documentDetails, materialId);
     }
 
     @Test
@@ -118,7 +118,6 @@ public class SjpDocumentApiTest {
         final JsonEnvelope materialMetadata = missingMaterialMetadata();
 
         when(requester.request(argThat(documentRequest(documentMetadataQuery, caseId, documentId)))).thenReturn(documentDetails);
-        when(requester.requestAsAdmin(argThat(materialMetadataRequest(documentDetails, materialId)))).thenReturn(materialMetadata);
 
         final JsonEnvelope documentMetadata = sjpDocumentApi.getCaseDocumentMetadata(documentMetadataQuery);
 
@@ -126,7 +125,6 @@ public class SjpDocumentApiTest {
                 withMetadataEnvelopedFrom(documentDetails).withName("sjp.query.case-document-metadata"),
                 payload().isJsonValue(isJsonValueNull())));
 
-        verifyMaterialCall(documentDetails, materialId);
     }
 
     @Test
@@ -188,9 +186,4 @@ public class SjpDocumentApiTest {
     }
 
 
-    private void verifyMaterialCall(final JsonEnvelope sourceEnvelope, final UUID materialId) {
-        verify(requester).requestAsAdmin(argThat(jsonEnvelope(
-                withMetadataEnvelopedFrom(sourceEnvelope).withName("material.query.material-metadata"),
-                payloadIsJson(withJsonPath("$.materialId", equalTo(materialId.toString()))))));
-    }
 }

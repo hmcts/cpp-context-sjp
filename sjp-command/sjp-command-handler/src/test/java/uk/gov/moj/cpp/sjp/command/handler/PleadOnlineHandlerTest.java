@@ -4,9 +4,9 @@ import static java.lang.Boolean.FALSE;
 import static java.lang.Boolean.TRUE;
 import static java.time.ZoneOffset.UTC;
 import static java.util.Collections.emptyList;
+import static java.util.UUID.randomUUID;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static java.util.UUID.randomUUID;
 
 import uk.gov.justice.services.common.util.Clock;
 import uk.gov.justice.services.eventsourcing.source.core.exception.EventStreamException;
@@ -18,21 +18,24 @@ import uk.gov.moj.cpp.sjp.domain.Employer;
 import uk.gov.moj.cpp.sjp.domain.FinancialMeans;
 import uk.gov.moj.cpp.sjp.domain.Income;
 import uk.gov.moj.cpp.sjp.domain.IncomeFrequency;
+import uk.gov.moj.cpp.sjp.domain.aggregate.CaseAggregate;
 import uk.gov.moj.cpp.sjp.domain.onlineplea.PersonalDetails;
 import uk.gov.moj.cpp.sjp.domain.onlineplea.PleadOnline;
 import uk.gov.moj.cpp.sjp.domain.onlineplea.PleadOnlinePcqVisited;
 
 import java.math.BigDecimal;
 import java.time.ZonedDateTime;
+import java.util.Optional;
 import java.util.UUID;
 
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Spy;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class PleadOnlineHandlerTest extends CaseCommandHandlerTest {
 
     @InjectMocks
@@ -40,6 +43,17 @@ public class PleadOnlineHandlerTest extends CaseCommandHandlerTest {
 
     @Spy
     private Clock clock = new StoppedClock(ZonedDateTime.now(UTC));
+
+    @BeforeEach
+    public void setUp() {
+        super.setupMocks();
+        when(jsonEnvelope.payloadAsJsonObject()).thenReturn(jsonObject);
+        when(jsonObject.getString(CaseCommandHandler.STREAM_ID)).thenReturn(CASE_ID.toString());
+        when(eventSource.getStreamById(CASE_ID)).thenReturn(eventStream);
+        when(aggregateService.get(eventStream, CaseAggregate.class)).thenReturn(caseAggregate);
+        when(enveloper.withMetadataFrom(jsonEnvelope)).thenReturn(function);
+        when(events.map(function)).thenReturn(jsonEvents);
+    }
 
     @Test
     public void shouldPleadOnline() throws EventStreamException {
@@ -51,7 +65,7 @@ public class PleadOnlineHandlerTest extends CaseCommandHandlerTest {
                 defendantId, emptyList(), "unavailability", "French", TRUE, "witnessDetails", "witnessDispute", outstandingFines,
                 new PersonalDetails("firstName", "lastName", address,
                         new ContactDetails("homeTelephone", "mobile", "business", "email1@aaa.bbb", "email2@aaa.bbb"),
-                        null, "nationalInsuranceNumber", "region","TESTY708166G99KZ", null,null),
+                        null, "nationalInsuranceNumber", "region", "TESTY708166G99KZ", null, null),
                 new FinancialMeans(
                         defendantId,
                         new Income(IncomeFrequency.WEEKLY, BigDecimal.valueOf(2000.22)),
@@ -65,6 +79,10 @@ public class PleadOnlineHandlerTest extends CaseCommandHandlerTest {
                 null,
                 null
         );
+
+        when(jsonEnvelope.payloadAsJsonObject()).thenReturn(jsonObject);
+        when(jsonEnvelope.metadata()).thenReturn(metadata);
+        when(metadata.userId()).thenReturn(Optional.of(userId.toString()));
 
         when(converter.convert(jsonObject, PleadOnline.class)).thenReturn(pleadOnline);
         when(caseAggregate.pleadOnline(CASE_ID, pleadOnline, clock.now(), userId)).thenReturn(events);
@@ -80,7 +98,7 @@ public class PleadOnlineHandlerTest extends CaseCommandHandlerTest {
         final UUID defendantId = randomUUID();
 
         final PleadOnlinePcqVisited pleadOnlinePcqVisited = new PleadOnlinePcqVisited(
-                defendantId,CASE_ID , "case_run" ,"type", randomUUID());
+                defendantId, CASE_ID, "case_run", "type", randomUUID());
 
         when(converter.convert(jsonObject, PleadOnlinePcqVisited.class)).thenReturn(pleadOnlinePcqVisited);
         when(caseAggregate.pleadOnlinePcqVisited(CASE_ID, pleadOnlinePcqVisited, clock.now())).thenReturn(events);

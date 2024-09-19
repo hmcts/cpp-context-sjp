@@ -27,15 +27,17 @@ import static uk.gov.moj.sjp.it.Constants.PUBLIC_EVENT_SET_PLEAS;
 import static uk.gov.moj.sjp.it.command.AddDatesToAvoid.addDatesToAvoid;
 import static uk.gov.moj.sjp.it.helper.AssignmentHelper.pollUntilCaseAssignedToUser;
 import static uk.gov.moj.sjp.it.helper.SessionHelper.startSessionAsync;
-import static uk.gov.moj.sjp.it.model.ProsecutingAuthority.*;
+import static uk.gov.moj.sjp.it.model.ProsecutingAuthority.DVLA;
+import static uk.gov.moj.sjp.it.model.ProsecutingAuthority.TFL;
+import static uk.gov.moj.sjp.it.model.ProsecutingAuthority.TVL;
 import static uk.gov.moj.sjp.it.stub.AssignmentStub.stubGetEmptyAssignmentsByDomainObjectId;
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubDefaultCourtByCourtHouseOUCodeQuery;
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubEnforcementAreaByPostcode;
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubProsecutorQuery;
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubRegionByPostcode;
-import static uk.gov.moj.sjp.it.util.Defaults.*;
+import static uk.gov.moj.sjp.it.util.Defaults.DEFAULT_LONDON_COURT_HOUSE_OU_CODE;
+import static uk.gov.moj.sjp.it.util.Defaults.DEFAULT_NON_LONDON_COURT_HOUSE_OU_CODE;
 
-import com.google.common.collect.Sets;
 import uk.gov.justice.json.schemas.fragments.sjp.WithdrawalRequestsStatus;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.sjp.domain.SessionType;
@@ -53,19 +55,27 @@ import uk.gov.moj.sjp.it.util.CaseAssignmentRestrictionHelper;
 import uk.gov.moj.sjp.it.util.SjpDatabaseCleaner;
 
 import java.time.LocalDate;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.UUID;
 import java.util.stream.Stream;
 
+import com.google.common.collect.Sets;
 import org.apache.commons.lang3.tuple.Triple;
 import org.hamcrest.Matcher;
 import org.hamcrest.Matchers;
-import org.junit.Before;
-import org.junit.Ignore;
-import org.junit.Test;
-import org.mortbay.log.Log;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-@Ignore("Enable this when merging to master")
+@Disabled("Enable this when merging to master")
 public class AssignmentRulesIT extends BaseIntegrationTest {
+
+    private static final Logger log = LoggerFactory.getLogger(AssignmentRulesIT.class);
 
     private static final String DATE_TO_AVOID = "a-date-to-avoid";
 
@@ -79,7 +89,7 @@ public class AssignmentRulesIT extends BaseIntegrationTest {
 
     private UUID userId;
 
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
         final SjpDatabaseCleaner databaseCleaner = new SjpDatabaseCleaner();
         databaseCleaner.cleanViewStore();
@@ -200,7 +210,6 @@ public class AssignmentRulesIT extends BaseIntegrationTest {
                 PUBLIC_EVENT_SET_PLEAS);
 
 
-
         userId = randomUUID();
 
         OffencesWithdrawalRequestHelper offencesWithdrawalRequestHelper = new OffencesWithdrawalRequestHelper(userId, EVENT_OFFENCES_WITHDRAWAL_STATUS_SET);
@@ -221,7 +230,6 @@ public class AssignmentRulesIT extends BaseIntegrationTest {
 
         addDatesToAvoid(tflPleadedNotGuiltyCasePayloadBuilder.getId(), DATE_TO_AVOID);
         addDatesToAvoid(dvlaPleadedNotGuiltyCasePayloadBuilder.getId(), DATE_TO_AVOID);
-
 
 
     }
@@ -331,7 +339,7 @@ public class AssignmentRulesIT extends BaseIntegrationTest {
         SessionHelper.startSession(sessionId, userId, courtHouseOUCode, sessionType);
 
         AssignNextCaseClient assignCase = AssignNextCaseClient.builder().sessionId(sessionId).build();
-        assignCase.notAssignedHandler = (envelope) -> Log.info("Case Not Assigned");
+        assignCase.notAssignedHandler = (envelope) -> log.info("Case Not Assigned");
         assignCase.getExecutor().setExecutingUserId(userId).executeSync();
     }
 

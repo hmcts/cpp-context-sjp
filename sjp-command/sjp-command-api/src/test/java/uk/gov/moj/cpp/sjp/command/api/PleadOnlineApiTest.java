@@ -3,8 +3,9 @@ package uk.gov.moj.cpp.sjp.command.api;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyZeroInteractions;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 import static uk.gov.justice.json.schemas.domains.sjp.command.FinancialMeans.financialMeans;
 import static uk.gov.justice.json.schemas.domains.sjp.command.Plea.GUILTY;
@@ -19,6 +20,7 @@ import static uk.gov.moj.cpp.sjp.command.utils.CommonObjectBuilderUtil.buildPlea
 import static uk.gov.moj.cpp.sjp.command.utils.CommonObjectBuilderUtil.buildPleadAocpOnline;
 import static uk.gov.moj.cpp.sjp.domain.common.CaseStatus.NO_PLEA_RECEIVED_READY_FOR_DECISION;
 
+import org.hamcrest.CoreMatchers;
 import uk.gov.justice.json.schemas.domains.sjp.command.Benefits;
 import uk.gov.justice.json.schemas.domains.sjp.command.FinancialMeans;
 import uk.gov.justice.json.schemas.domains.sjp.command.Frequency;
@@ -29,14 +31,15 @@ import uk.gov.justice.json.schemas.domains.sjp.command.PleadOnline;
 import uk.gov.justice.services.adapter.rest.exception.BadRequestException;
 import uk.gov.justice.services.common.converter.ObjectToJsonObjectConverter;
 import uk.gov.justice.services.common.converter.ObjectToJsonValueConverter;
-import uk.gov.justice.services.common.converter.jackson.ObjectMapperProducer;
 import uk.gov.justice.services.core.requester.Requester;
 import uk.gov.justice.services.core.sender.Sender;
 import uk.gov.justice.services.messaging.Envelope;
 import uk.gov.justice.services.messaging.JsonEnvelope;
+import uk.gov.justice.services.test.utils.framework.api.JsonObjectConvertersFactory;
 import uk.gov.moj.cpp.sjp.command.api.validator.PleadOnlineValidator;
 
 import java.math.BigDecimal;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -46,19 +49,16 @@ import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
 import javax.json.JsonValue;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class PleadOnlineApiTest {
 
     private static final String PLEAD_ONLINE_COMMAND_NAME = "sjp.plead-online";
@@ -87,27 +87,18 @@ public class PleadOnlineApiTest {
     @Spy
     @SuppressWarnings("unused")
     private ObjectToJsonValueConverter objectToJsonValueConverter =
-            new ObjectToJsonValueConverter(new ObjectMapperProducer().objectMapper());
+            new JsonObjectConvertersFactory().objectToJsonValueConverter();
     @Spy
     @SuppressWarnings("unused")
-    private ObjectMapper objectMapper = new ObjectMapperProducer().objectMapper();
+    private ObjectToJsonObjectConverter objectToJsonObjectConverter =
+            new JsonObjectConvertersFactory().objectToJsonObjectConverter();
 
     @Spy
-    @InjectMocks
-    @SuppressWarnings("unused")
-    private ObjectToJsonObjectConverter objectToJsonObjectConverter = new ObjectToJsonObjectConverter(objectMapper);
-
-
-    @Spy
-    @InjectMocks
     @SuppressWarnings("unused")
     private PleadOnlineValidator pleadOnlineValidator = new PleadOnlineValidator();
 
     @InjectMocks
     private PleadOnlineApi pleadOnline;
-
-    @Rule
-    public final ExpectedException exception = ExpectedException.none();
 
     private final UUID caseId = UUID.randomUUID();
     private final UUID defendantId = UUID.randomUUID();
@@ -121,9 +112,21 @@ public class PleadOnlineApiTest {
                 buildPersonalDetailsWithAddress(buildAddressObjectWithPostcode("se11pj")),
                 buildEmployerWithAddress(buildAddressObjectWithPostcode(" w1t1jy ")));
 
-        pleadOnlineWith(pleadOnline, getValidCaseDetail());
+        final Envelope envelope = envelopeFrom(
+                metadataWithRandomUUID(PLEAD_ONLINE_COMMAND_NAME),
+                pleadOnline);
 
-        final Envelope<PleadOnline> newCommand = envelopeCaptor.getValue();
+        final JsonEnvelope caseDetailResponseEnvelope = getCaseDetailResponseEnvelope(getValidCaseDetail());
+
+        when(requester.requestAsAdmin(queryEnvelopeCaptor.capture())).thenReturn(caseDetailResponseEnvelope);
+
+        this.pleadOnline.pleadOnline(envelope);
+
+        verify(sender).send(envelopeCaptor.capture());
+
+        verifyNoInteractions(objectToJsonValueConverter);
+
+        final Envelope newCommand = envelopeCaptor.getValue();
         assertThat(newCommand.metadata().name(), equalTo(CONTROLLER_PLEAD_ONLINE_COMMAND_NAME));
 
         assertThat(newCommand.payload(), is(objectToJsonObjectConverter.convert(buildPleadOnline(
@@ -141,13 +144,25 @@ public class PleadOnlineApiTest {
                 caseId,
                 null);
 
-        pleadOnlineWith(pleadOnline, getValidCaseDetail());
+        final Envelope<PleadOnline> envelope = envelopeFrom(
+                metadataWithRandomUUID(PLEAD_ONLINE_COMMAND_NAME),
+                pleadOnline);
 
-        final Envelope<PleadOnline> newCommand = envelopeCaptor.getValue();
+        final JsonEnvelope caseDetailResponseEnvelope = getCaseDetailResponseEnvelope(getValidCaseDetail());
+
+        when(requester.requestAsAdmin(queryEnvelopeCaptor.capture())).thenReturn(caseDetailResponseEnvelope);
+
+        this.pleadOnline.pleadOnline(envelope);
+
+        verify(sender).send(envelopeCaptor.capture());
+
+        verifyNoInteractions(objectToJsonValueConverter);
+
+        final Envelope newCommand = envelopeCaptor.getValue();
         assertThat(newCommand.metadata().name(), equalTo(CONTROLLER_PLEAD_ONLINE_COMMAND_NAME));
         assertThat(newCommand.payload(), is(objectToJsonObjectConverter.convert(pleadOnline)));
 
-        verifyZeroInteractions(objectToJsonValueConverter);
+        verifyNoInteractions(objectToJsonValueConverter);
     }
 
     @Test
@@ -157,9 +172,21 @@ public class PleadOnlineApiTest {
                 caseId,
                 financialMeans().build());
 
-        pleadOnlineWith(pleadOnline, getValidCaseDetail());
+        final Envelope<PleadOnline> envelope = envelopeFrom(
+                metadataWithRandomUUID(PLEAD_ONLINE_COMMAND_NAME),
+                pleadOnline);
 
-        final Envelope<PleadOnline> newCommand = envelopeCaptor.getValue();
+        final JsonEnvelope caseDetailResponseEnvelope = getCaseDetailResponseEnvelope(getValidCaseDetail());
+
+        when(requester.requestAsAdmin(queryEnvelopeCaptor.capture())).thenReturn(caseDetailResponseEnvelope);
+
+        this.pleadOnline.pleadOnline(envelope);
+
+        verify(sender).send(envelopeCaptor.capture());
+
+        verifyNoInteractions(objectToJsonValueConverter);
+
+        final Envelope newCommand = envelopeCaptor.getValue();
         assertThat(newCommand.metadata().name(), equalTo(CONTROLLER_PLEAD_ONLINE_COMMAND_NAME));
         assertThat(newCommand.payload(), is(objectToJsonValueConverter.convert(pleadOnline)));
     }
@@ -181,10 +208,9 @@ public class PleadOnlineApiTest {
                 caseId,
                 financialMeans().build());
 
-        exception.expect(BadRequestException.class);
-        exception.expectMessage(PLEA_ALREADY_SUBMITTED_EXCEPTION_MESSAGE);
-
-        pleadOnlineWith(pleadOnline, getCaseDetail(NOT_GUILTY, JsonValue.FALSE));
+        JsonObject caseDetail = getCaseDetail(NOT_GUILTY, JsonValue.FALSE);
+        var e = assertThrows(BadRequestException.class, () -> invokePleadOnlineAndVerify(pleadOnline, caseDetail));
+        assertThat(e.getMessage(), CoreMatchers.is(PLEA_ALREADY_SUBMITTED_EXCEPTION_MESSAGE));
     }
 
     @Test
@@ -193,11 +219,10 @@ public class PleadOnlineApiTest {
                 NOT_GUILTY,
                 caseId,
                 financialMeans().build());
+        JsonObject caseDetail = getCaseDetail(GUILTY, JsonValue.TRUE);
 
-        exception.expect(BadRequestException.class);
-        exception.expectMessage(CASE_HAS_BEEN_REVIEWED_EXCEPTION_MESSAGE);
-
-        pleadOnlineWith(pleadOnline, getCaseDetail(GUILTY, JsonValue.TRUE));
+        var e = assertThrows(BadRequestException.class, () -> invokePleadOnlineAndVerify(pleadOnline, caseDetail));
+        assertThat(e.getMessage(), CoreMatchers.is(CASE_HAS_BEEN_REVIEWED_EXCEPTION_MESSAGE));
     }
     @Test
     public void shouldNotPleadOnlineWhenCasePostAdjourned() {
@@ -206,36 +231,34 @@ public class PleadOnlineApiTest {
                 caseId,
                 financialMeans().build());
 
-        exception.expect(BadRequestException.class);
-        exception.expectMessage(PLEA_IS_ADJOURNED_POST_CONVENTION_EXCEPTION_MESSAGE);
-
-        pleadOnlineWith(pleadOnline, getCaseDetailPostConvention(  "2019-08-11","FOUND_GUILTY", "2019-08-11"));
-    }
-
-
-    private void shouldPleadOnlineGuilty(final FinancialMeans financialMeans) {
-        final PleadOnline pleadOnline = buildPleadOnline(
-                GUILTY,
-                caseId,
-                financialMeans);
-
-        exception.expect(BadRequestException.class);
-        exception.expectMessage("{\"FinancialMeansRequiredWhenPleadingGuilty\":[\"Financial Means are required when you are pleading GUILTY\"]}");
-
-        pleadOnlineWith(pleadOnline, getValidCaseDetail());
+        JsonObject postConventionCaseDetail = getCaseDetailPostConvention("2019-08-11", "FOUND_GUILTY", "2019-08-11");
+        var e = assertThrows(BadRequestException.class, () -> invokePleadOnlineAndVerify(pleadOnline, postConventionCaseDetail));
+        assertThat(e.getMessage(), CoreMatchers.is(PLEA_IS_ADJOURNED_POST_CONVENTION_EXCEPTION_MESSAGE));
     }
 
     @Test
     public void shouldPleadOnlineGuiltyAndWithFinances() {
         final PleadOnline pleadOnline = getPleadOnlineGuiltyAndWithFinances();
 
-        pleadOnlineWith(pleadOnline, getValidCaseDetail());
+        final Envelope<PleadOnline> envelope = envelopeFrom(
+                metadataWithRandomUUID(PLEAD_ONLINE_COMMAND_NAME),
+                pleadOnline);
 
-        final Envelope<PleadOnline> newCommand = envelopeCaptor.getValue();
+        final JsonEnvelope caseDetailResponseEnvelope = getCaseDetailResponseEnvelope(getValidCaseDetail());
+
+        when(requester.requestAsAdmin(queryEnvelopeCaptor.capture())).thenReturn(caseDetailResponseEnvelope);
+
+        this.pleadOnline.pleadOnline(envelope);
+
+        verify(sender).send(envelopeCaptor.capture());
+
+        verifyNoInteractions(objectToJsonValueConverter);
+
+        final Envelope newCommand = envelopeCaptor.getValue();
         assertThat(newCommand.metadata().name(), equalTo(CONTROLLER_PLEAD_ONLINE_COMMAND_NAME));
         assertThat(newCommand.payload(), is(objectToJsonObjectConverter.convert(pleadOnline)));
 
-        verifyZeroInteractions(objectToJsonValueConverter);
+        verifyNoInteractions(objectToJsonValueConverter);
     }
 
 
@@ -251,13 +274,11 @@ public class PleadOnlineApiTest {
                 metadataWithRandomUUID(PLEAD_ONLINE_COMMAND_NAME),
                 pleadAocpOnline);
 
-        final JsonEnvelope caseDetailResponseEnvelope = getCaseDetailResponseEnvelope(getValidCaseDetail());
-
         pleadOnline.pleadAocpOnline(envelope);
 
         verify(sender).send(aocpEnvelopeCaptor.capture());
 
-        final Envelope<PleadAocpOnline> newCommand = aocpEnvelopeCaptor.getValue();
+        final Envelope newCommand = aocpEnvelopeCaptor.getValue();
 
         assertThat(newCommand.metadata().name(), equalTo(CONTROLLER_PLEAD_ONLINE_COMMAND_AOCP_NAME));
 
@@ -266,6 +287,36 @@ public class PleadOnlineApiTest {
                 caseId,
                 defendantId,
                 buildPersonalDetailsWithAddress(buildAddressObjectWithPostcode("SE1 1PJ"))))));
+    }
+
+    private void invokePleadOnlineAndVerify(PleadOnline pleadOnline, JsonObject caseDetail) {
+        final Envelope<PleadOnline> envelope = envelopeFrom(
+                metadataWithRandomUUID(PLEAD_ONLINE_COMMAND_NAME),
+                pleadOnline);
+
+        if(caseDetail != null) {
+            final JsonEnvelope caseDetailResponseEnvelope = getCaseDetailResponseEnvelope(caseDetail);
+            when(requester.requestAsAdmin(queryEnvelopeCaptor.capture())).thenReturn(caseDetailResponseEnvelope);
+        }
+
+        this.pleadOnline.pleadOnline(envelope);
+
+        verify(sender).send(envelopeCaptor.capture());
+
+        verifyNoInteractions(objectToJsonValueConverter);
+    }
+
+
+    private void shouldPleadOnlineGuilty(final FinancialMeans financialMeans) {
+        final PleadOnline pleadOnline = buildPleadOnline(
+                GUILTY,
+                caseId,
+                financialMeans);
+
+        var e = assertThrows(BadRequestException.class, () -> {
+            invokePleadOnlineAndVerify(pleadOnline, null);
+        });
+        assertThat(e.getMessage(), CoreMatchers.is("{\"FinancialMeansRequiredWhenPleadingGuilty\":[\"Financial Means are required when you are pleading GUILTY\"]}"));
     }
 
     private PleadOnline getPleadOnlineGuiltyAndWithFinances() {
@@ -277,22 +328,6 @@ public class PleadOnlineApiTest {
                         .withEmploymentStatus("EMPLOYED")
                         .withIncome(new Income(BigDecimal.TEN, Frequency.FORTNIGHTLY))
                         .build());
-    }
-
-    private void pleadOnlineWith(final PleadOnline envelopePayload, final JsonObject caseDetail) {
-        final Envelope<PleadOnline> envelope = envelopeFrom(
-                metadataWithRandomUUID(PLEAD_ONLINE_COMMAND_NAME),
-                envelopePayload);
-
-        final JsonEnvelope caseDetailResponseEnvelope = getCaseDetailResponseEnvelope(caseDetail);
-
-        when(requester.requestAsAdmin(queryEnvelopeCaptor.capture())).thenReturn(caseDetailResponseEnvelope);
-
-        pleadOnline.pleadOnline(envelope);
-
-        verify(sender).send(envelopeCaptor.capture());
-
-        verifyZeroInteractions(objectToJsonValueConverter);
     }
 
     private JsonObject getValidCaseDetail() {

@@ -14,12 +14,16 @@ import java.util.Map;
 
 import javax.json.JsonObject;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 public class UpdateCaseReopenedTest extends BaseDroolsAccessControlTest {
 
+    public UpdateCaseReopenedTest() {
+        super("COMMAND_CONTROLLER_SESSION");
+    }
+
     @Override
-    protected Map<Class, Object> getProviderMocks() {
+    protected Map<Class<?>, Object> getProviderMocks() {
         return new HashMap<>();
     }
 

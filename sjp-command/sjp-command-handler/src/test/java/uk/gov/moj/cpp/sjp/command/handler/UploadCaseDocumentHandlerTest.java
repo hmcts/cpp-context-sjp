@@ -6,7 +6,7 @@ import static javax.json.Json.createObjectBuilder;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.allOf;
-import static org.mockito.Matchers.any;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
@@ -34,15 +34,15 @@ import java.util.stream.Stream;
 
 import javax.json.JsonObjectBuilder;
 
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class UploadCaseDocumentHandlerTest {
 
     private static final String CASE_ID_PROPERTY = "caseId";
@@ -79,7 +79,7 @@ public class UploadCaseDocumentHandlerTest {
     private static final String DOCUMENT_TYPE = "PLEA";
 
 
-    @Before
+    @BeforeEach
     public void setUp() {
         when(aggregateService.get(any(), any())).thenReturn(caseAggregate);
         caseAggregate.getState().setManagedByAtcm(true);

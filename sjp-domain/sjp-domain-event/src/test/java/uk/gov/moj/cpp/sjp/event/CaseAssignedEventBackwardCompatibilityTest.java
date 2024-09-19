@@ -3,8 +3,8 @@ package uk.gov.moj.cpp.sjp.event;
 import static java.util.UUID.randomUUID;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.fail;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.jupiter.api.Assertions.fail;
 import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilderWithFilter;
 
 import uk.gov.justice.domain.annotation.Event;
@@ -19,7 +19,7 @@ import javax.json.JsonObject;
 
 import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.mockito.internal.matchers.apachecommons.ReflectionEquals;
 
 public class CaseAssignedEventBackwardCompatibilityTest {

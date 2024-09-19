@@ -6,6 +6,7 @@ import uk.gov.justice.domain.annotation.Event;
 
 import java.util.UUID;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 
 @Event(DefendantNotFound.EVENT_NAME)
@@ -16,6 +17,7 @@ public class DefendantNotFound {
     private final UUID defendantId;
     private final String description;
 
+    @JsonCreator
     public DefendantNotFound(final UUID defendantId, final String description) {
         this.defendantId = defendantId;
         this.description = description;

@@ -24,6 +24,7 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+@SuppressWarnings("squid:S107")
 @Event(DecisionSaved.EVENT_NAME)
 public class DecisionSaved implements Serializable {
 

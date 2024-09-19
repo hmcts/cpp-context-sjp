@@ -23,8 +23,8 @@ import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.UUID;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 public class UpdateDefendantDetailsTest extends CaseAggregateBaseTest {
     private static final String ADDRESS_1_UPDATED = "15 Tottenham Court Road";
@@ -35,7 +35,7 @@ public class UpdateDefendantDetailsTest extends CaseAggregateBaseTest {
     private Person person;
     private UUID userId;
 
-    @Before
+    @BeforeEach
     @Override
     public void setUp() {
         userId = randomUUID();

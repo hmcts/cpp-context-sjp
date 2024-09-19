@@ -15,6 +15,7 @@ import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 
+//TODO FIXME!!! junit5 not yet supported by activiti engine //https://github.com/Activiti/Activiti/issues/3267
 public class CaseAssignmentTimeoutProcessTest {
 
     private static final String TIMEOUT_PROCESS_PATH = "processes/caseAssignmentTimeout.bpmn20.xml";

@@ -12,7 +12,7 @@ import uk.gov.moj.cpp.sjp.event.EmployerUpdated;
 import java.util.UUID;
 import java.util.stream.Stream;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 public class DeleteEmployerTest extends CaseAggregateBaseTest {
 

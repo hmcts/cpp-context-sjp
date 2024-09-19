@@ -5,7 +5,7 @@ import static org.hamcrest.Matchers.comparesEqualTo;
 import static org.hamcrest.Matchers.greaterThan;
 import static uk.gov.moj.cpp.sjp.persistence.entity.OffenceDetail.builder;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 public class OffenceDetailsComparableTest {
 

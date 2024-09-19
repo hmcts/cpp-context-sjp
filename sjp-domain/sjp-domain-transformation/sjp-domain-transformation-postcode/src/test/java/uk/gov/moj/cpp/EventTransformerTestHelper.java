@@ -1,6 +1,4 @@
 package uk.gov.moj.cpp;
-
-import static org.apache.activemq.artemis.utils.JsonLoader.createReader;
 import static org.hamcrest.CoreMatchers.everyItem;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
@@ -13,9 +11,11 @@ import static uk.gov.justice.tools.eventsourcing.transformation.api.Action.TRANS
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.sjp.BaseEventTransformer;
 
+import java.io.StringReader;
 import java.util.Map;
 import java.util.stream.Stream;
 
+import javax.json.Json;
 import javax.json.JsonObject;
 
 public class EventTransformerTestHelper {
@@ -41,10 +41,8 @@ public class EventTransformerTestHelper {
 
 
     private JsonEnvelope buildEnvelopeFromJsonResource(final String fileName) {
-        final JsonObject payload = createReader(CaseReceivedEventTransformerTest.class
-                .getResourceAsStream("/events/" + fileName))
-                .readObject();
-
+        final JsonObject payload = Json.createReader(CaseReceivedEventTransformerTest.class
+                .getResourceAsStream("/events/" + fileName)).readObject();
         return envelopeFrom(metadataWithRandomUUID(eventTransformer.getEventName()), payload);
     }
 

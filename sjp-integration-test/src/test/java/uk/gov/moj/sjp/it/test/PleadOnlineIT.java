@@ -23,11 +23,10 @@ import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.collection.IsEmptyCollection.empty;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 import static org.junit.Assume.assumeThat;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 import static uk.gov.justice.json.schemas.domains.sjp.User.user;
 import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilderWithFilter;
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMatcher.jsonEnvelope;
@@ -70,6 +69,7 @@ import static uk.gov.moj.sjp.it.stub.UsersGroupsStub.stubForUserDetails;
 import static uk.gov.moj.sjp.it.util.Defaults.DEFAULT_LONDON_COURT_HOUSE_OU_CODE;
 import static uk.gov.moj.sjp.it.util.FileUtil.getPayload;
 
+import org.skyscreamer.jsonassert.JSONAssert;
 import uk.gov.justice.json.schemas.domains.sjp.Gender;
 import uk.gov.justice.json.schemas.domains.sjp.User;
 import uk.gov.justice.services.messaging.JsonEnvelope;
@@ -122,21 +122,21 @@ import javax.ws.rs.core.Response;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Sets;
-import com.jayway.awaitility.Awaitility;
 import com.jayway.jsonpath.ReadContext;
-import com.jayway.restassured.path.json.JsonPath;
-import org.apache.commons.lang.text.StrSubstitutor;
+import io.restassured.path.json.JsonPath;
+import org.apache.commons.lang3.text.StrSubstitutor;
+import org.awaitility.Awaitility;
 import org.hamcrest.Matcher;
 import org.hamcrest.Matchers;
 import org.json.JSONObject;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 @SuppressWarnings({"squid:S1607"})
 public class PleadOnlineIT extends BaseIntegrationTest {
     private static final String TEMPLATE_PLEA_NOT_GUILTY_PAYLOAD = "raml/json/sjp.command.plead-online__not-guilty.json";
-    private static final String TEMPLATE_PLEA_NOT_GUILTY_PAYLOAD_ORGANISATION= "raml/json/sjp.command.plead-online__not-guilty_legal_entity.json";
+    private static final String TEMPLATE_PLEA_NOT_GUILTY_PAYLOAD_ORGANISATION = "raml/json/sjp.command.plead-online__not-guilty_legal_entity.json";
     private static final String TEMPLATE_PLEA_MULTI_OFFENCE_PAYLOAD = "raml/json/sjp.command.plead-online__multi_offence.json";
     private static final String TEMPLATE_PLEA_MULTI_OFFENCE_CUSTOM_V2 = "raml/json/sjp.command.plead-online__multi_offence_v2.json";
     private static final String TEMPLATE_PLEA_PCQ_VISITED = "raml/json/sjp.command.plead-online-pcq-visited.json";
@@ -176,7 +176,7 @@ public class PleadOnlineIT extends BaseIntegrationTest {
             .withLastName("Smith")
             .build();
 
-    @Before
+    @BeforeEach
     @SuppressWarnings("squid:S2925")
     public void setUp() throws Exception {
         stubNotifications();
@@ -204,7 +204,7 @@ public class PleadOnlineIT extends BaseIntegrationTest {
         stubAllReferenceData();
     }
 
-    @After
+    @AfterEach
     public void tearDown() throws Exception {
         if (null != employerHelper) {
             employerHelper.close();
@@ -281,7 +281,7 @@ public class PleadOnlineIT extends BaseIntegrationTest {
 
 
     private void pleadOnlineAndConfirmSuccessLegalEntity(final PleaType pleaType, final PleadOnlineHelper pleadOnlineHelper, final CaseSearchResultHelper caseSearchResultHelper,
-                                              final Collection<UUID> userIds, final boolean expectToHaveFinances) {
+                                                         final Collection<UUID> userIds, final boolean expectToHaveFinances) {
         assumeThat(userIds, not(empty()));
         //checks person-info before plead-online
         personInfoVerifier.verifyPersonInfo();
@@ -815,7 +815,7 @@ public class PleadOnlineIT extends BaseIntegrationTest {
         params.put("offenceId", offenceId);
         params.put("onlinePleaDetailId", onlinePleaDetailId);
         final JsonPath expectedResponse = fillTemplate(nameFile, params);
-        assertEquals(expectedResponse.prettify(), response.prettify());
+        JSONAssert.assertEquals(expectedResponse.prettify(), response.prettify(), false);
     }
 
     @Test
@@ -855,7 +855,7 @@ public class PleadOnlineIT extends BaseIntegrationTest {
         expectedParams.put("speakWelsh", "false");
         expectedParams.put("pcqId", response.getString("defendant.pcqId"));
         final JsonPath expectedResponse = fillTemplate(templatePath, expectedParams);
-        assertEquals(expectedResponse.prettify(), response.prettify());
+        JSONAssert.assertEquals(expectedResponse.prettify(), response.prettify(), false);
     }
 
     private JsonPath fillTemplate(final String nameFile, final Map<String, String> values) {

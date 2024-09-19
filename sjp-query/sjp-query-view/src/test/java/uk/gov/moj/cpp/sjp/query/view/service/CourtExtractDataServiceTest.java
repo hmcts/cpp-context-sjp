@@ -12,14 +12,14 @@ import static java.util.Objects.nonNull;
 import static java.util.UUID.randomUUID;
 import static javax.json.Json.createObjectBuilder;
 import static javax.json.Json.createReader;
-import static org.apache.commons.lang.math.RandomUtils.nextInt;
+import static org.apache.commons.lang3.RandomUtils.nextInt;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyString;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
 import static uk.gov.moj.cpp.sjp.domain.decision.DecisionType.ADJOURN;
 import static uk.gov.moj.cpp.sjp.domain.decision.DecisionType.DISMISS;
@@ -75,14 +75,14 @@ import java.util.UUID;
 import javax.json.JsonArray;
 import javax.json.JsonObject;
 
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class CourtExtractDataServiceTest {
 
     private static final DateTimeFormatter DATE_FORMAT = ofPattern("dd MMMM yyyy");
@@ -111,16 +111,11 @@ public class CourtExtractDataServiceTest {
         return String.format("%s\n%s (%s)", decisionDate, userName, userType);
     }
 
-    @Before
-    public void setUp() {
-        when(referenceDataService.getProsecutorsByProsecutorCode(anyString())).thenReturn(referenceProsecutorDataResponse());
-        when(referenceDataService.getOffenceData(anyString())).thenReturn(referenceOffenceResponse());
-        when(referenceDataService.getReferralReasonByReferralReasonId(any())).thenReturn(generateReferralReasonsJson(caseId.toString()));
-        when(userAndGroupsService.getUserDetails(any())).thenReturn("Legal adviser name");
-    }
-
     @Test
     public void shouldGetCaseData() {
+        when(referenceDataService.getProsecutorsByProsecutorCode(anyString())).thenReturn(referenceProsecutorDataResponse());
+        when(referenceDataService.getOffenceData(anyString())).thenReturn(referenceOffenceResponse());
+
         final CaseDetail caseDetail = buildCaseWithSingleDecisionAndSingleOffence(caseId, DISMISS, decisionSavedAt, null, true);
 
         when(caseService.getCase(caseId)).thenReturn(Optional.of(caseDetail));
@@ -140,6 +135,8 @@ public class CourtExtractDataServiceTest {
 
     @Test
     public void shouldGetCaseDataForCompany() {
+        when(referenceDataService.getProsecutorsByProsecutorCode(anyString())).thenReturn(referenceProsecutorDataResponse());
+        when(referenceDataService.getOffenceData(anyString())).thenReturn(referenceOffenceResponse());
         final CaseDetail caseDetail = buildCaseWithSingleDecisionAndSingleOffenceForCompany(caseId, DISMISS, decisionSavedAt, null, true);
 
         when(caseService.getCase(caseId)).thenReturn(Optional.of(caseDetail));
@@ -158,6 +155,8 @@ public class CourtExtractDataServiceTest {
 
     @Test
     public void shouldVerifyDismissCaseWithMagistrateSession() {
+        when(referenceDataService.getProsecutorsByProsecutorCode(anyString())).thenReturn(referenceProsecutorDataResponse());
+        when(referenceDataService.getOffenceData(anyString())).thenReturn(referenceOffenceResponse());
         final CaseDetail caseDetail = buildCaseWithSingleDecisionAndSingleOffence(caseId, DISMISS, decisionSavedAt, null, true);
 
         when(caseService.getCase(caseId)).thenReturn(Optional.of(caseDetail));
@@ -179,6 +178,8 @@ public class CourtExtractDataServiceTest {
 
     @Test
     public void shouldVerifyDismissCaseWithApplicationWithMagistrateSession() {
+        when(referenceDataService.getProsecutorsByProsecutorCode(anyString())).thenReturn(referenceProsecutorDataResponse());
+        when(referenceDataService.getOffenceData(anyString())).thenReturn(referenceOffenceResponse());
         final CaseDetail caseDetail = buildCaseWithSingleDecisionAndSingleOffenceAndApplication(caseId, applicationId, decisionSavedAt);
 
         when(caseService.getCase(caseId)).thenReturn(Optional.of(caseDetail));
@@ -198,6 +199,8 @@ public class CourtExtractDataServiceTest {
 
     @Test
     public void shouldVerifyDismissGuiltyCaseWithMagistrateSession() {
+        when(referenceDataService.getProsecutorsByProsecutorCode(anyString())).thenReturn(referenceProsecutorDataResponse());
+        when(referenceDataService.getOffenceData(anyString())).thenReturn(referenceOffenceResponse());
         final ZonedDateTime pleaDate = now().minusDays(1);
 
         final CaseDetail caseDetail = buildCaseWithSingleDecisionAndSingleOffence(caseId, DISMISS, decisionSavedAt, plea(GUILTY, pleaDate), true);
@@ -222,6 +225,9 @@ public class CourtExtractDataServiceTest {
 
     @Test
     public void shouldVerifyWithdrawCaseWithDelegatedPowers() {
+        when(referenceDataService.getProsecutorsByProsecutorCode(anyString())).thenReturn(referenceProsecutorDataResponse());
+        when(referenceDataService.getOffenceData(anyString())).thenReturn(referenceOffenceResponse());
+        when(userAndGroupsService.getUserDetails(any())).thenReturn("Legal adviser name");
         final CaseDetail caseDetail = buildCaseWithSingleDecisionAndSingleOffence(caseId, WITHDRAW, decisionSavedAt, null, false);
 
         when(caseService.getCase(caseId)).thenReturn(Optional.of(caseDetail));
@@ -241,6 +247,8 @@ public class CourtExtractDataServiceTest {
 
     @Test
     public void shouldVerifyAdjournCaseWithMagistrateSession() {
+        when(referenceDataService.getProsecutorsByProsecutorCode(anyString())).thenReturn(referenceProsecutorDataResponse());
+        when(referenceDataService.getOffenceData(anyString())).thenReturn(referenceOffenceResponse());
         final CaseDetail caseDetail = buildCaseWithSingleDecisionAndSingleOffence(caseId, ADJOURN, decisionSavedAt, null, true);
 
         final CaseDecision caseDecision = caseDetail.getCaseDecisions().get(0);
@@ -262,6 +270,10 @@ public class CourtExtractDataServiceTest {
 
     @Test
     public void shouldVerifyReferForHearingCaseWithDelegatedPowers() {
+        when(referenceDataService.getProsecutorsByProsecutorCode(anyString())).thenReturn(referenceProsecutorDataResponse());
+        when(referenceDataService.getOffenceData(anyString())).thenReturn(referenceOffenceResponse());
+        when(referenceDataService.getReferralReasonByReferralReasonId(any())).thenReturn(generateReferralReasonsJson(caseId.toString()));
+        when(userAndGroupsService.getUserDetails(any())).thenReturn("Legal adviser name");
         final CaseDetail caseDetail = buildCaseWithSingleDecisionAndSingleOffence(caseId, REFER_FOR_COURT_HEARING, decisionSavedAt, null, false);
 
         when(caseService.getCase(any(UUID.class))).thenReturn(Optional.of(caseDetail));
@@ -281,6 +293,9 @@ public class CourtExtractDataServiceTest {
 
     @Test
     public void shouldVerifyReopenedInLibraCaseWithDelegatedPowers() {
+        when(referenceDataService.getProsecutorsByProsecutorCode(anyString())).thenReturn(referenceProsecutorDataResponse());
+        when(referenceDataService.getOffenceData(anyString())).thenReturn(referenceOffenceResponse());
+        when(userAndGroupsService.getUserDetails(any())).thenReturn("Legal adviser name");
         final CaseDetail caseDetail = buildCaseWithSingleDecisionAndSingleOffence(caseId, WITHDRAW, decisionSavedAt, null, false);
         caseDetail.setCaseStatus(CaseStatus.REOPENED_IN_LIBRA);
         caseDetail.setLibraCaseNumber("12345");
@@ -306,6 +321,9 @@ public class CourtExtractDataServiceTest {
 
     @Test
     public void shouldVerifySingleCaseDecisionWithMultipleOffenceDecisions() {
+        when(referenceDataService.getProsecutorsByProsecutorCode(anyString())).thenReturn(referenceProsecutorDataResponse());
+        when(referenceDataService.getOffenceData(anyString())).thenReturn(referenceOffenceResponse());
+        when(userAndGroupsService.getUserDetails(any())).thenReturn("Legal adviser name");
         final CaseDetail caseDetail = aCase()
                 .withCaseId(caseId)
                 .withProsecutingAuthority("TFL")
@@ -352,6 +370,9 @@ public class CourtExtractDataServiceTest {
 
     @Test
     public void shouldVerifyMultipleCaseDecisionsWithSingleOffenceDecision() {
+        when(referenceDataService.getProsecutorsByProsecutorCode(anyString())).thenReturn(referenceProsecutorDataResponse());
+        when(referenceDataService.getOffenceData(anyString())).thenReturn(referenceOffenceResponse());
+        when(userAndGroupsService.getUserDetails(any())).thenReturn("Legal adviser name");
         final CaseDetail caseDetail = aCase()
                 .withCaseId(caseId)
                 .withProsecutingAuthority("TFL")
@@ -396,6 +417,9 @@ public class CourtExtractDataServiceTest {
 
     @Test
     public void shouldVerifyForDischargeOffenceDecisions() {
+        when(referenceDataService.getProsecutorsByProsecutorCode(anyString())).thenReturn(referenceProsecutorDataResponse());
+        when(referenceDataService.getOffenceData(anyString())).thenReturn(referenceOffenceResponse());
+        when(userAndGroupsService.getUserDetails(any())).thenReturn("Legal adviser name");
         final CaseDetail caseDetail = buildCaseDetailWithOneOffence();
 
         final CaseDecision dischargeDecision1 = buildCaseDecisionEntity(caseDetail.getId(), false, now());
@@ -433,6 +457,9 @@ public class CourtExtractDataServiceTest {
 
     @Test
     public void shouldVerifyForDischargeOffenceDecisionsConditionallyCharged() {
+        when(referenceDataService.getProsecutorsByProsecutorCode(anyString())).thenReturn(referenceProsecutorDataResponse());
+        when(referenceDataService.getOffenceData(anyString())).thenReturn(referenceOffenceResponse());
+        when(userAndGroupsService.getUserDetails(any())).thenReturn("Legal adviser name");
         final CaseDetail caseDetail = buildCaseDetailWithOneOffence();
 
         final CaseDecision dischargeDecision = buildCaseDecisionEntity(caseDetail.getId(), false, now());
@@ -472,6 +499,9 @@ public class CourtExtractDataServiceTest {
 
     @Test
     public void shouldVerifyForFinancialPenaltyOffenceDecisionsConditionallyCharged() {
+        when(referenceDataService.getProsecutorsByProsecutorCode(anyString())).thenReturn(referenceProsecutorDataResponse());
+        when(referenceDataService.getOffenceData(anyString())).thenReturn(referenceOffenceResponse());
+        when(userAndGroupsService.getUserDetails(any())).thenReturn("Legal adviser name");
         final CaseDetail caseDetail = buildCaseDetailWithOneOffence();
 
         final CaseDecision financialDecision = buildCaseDecisionEntity(caseDetail.getId(), false, now());
@@ -509,6 +539,9 @@ public class CourtExtractDataServiceTest {
 
     @Test
     public void shouldVerifyForExcisePenaltyAndBackDutyOffenceDecisionsConditionallyCharged() {
+        when(referenceDataService.getProsecutorsByProsecutorCode(anyString())).thenReturn(referenceProsecutorDataResponse());
+        when(referenceDataService.getOffenceData(anyString())).thenReturn(referenceOffenceResponse());
+        when(userAndGroupsService.getUserDetails(any())).thenReturn("Legal adviser name");
         final CaseDetail caseDetail = buildCaseDetailWithOneOffence();
 
         final CaseDecision financialDecision = buildCaseDecisionEntity(caseDetail.getId(), false, now());
@@ -679,7 +712,7 @@ public class CourtExtractDataServiceTest {
                 setCode("CA03013").
                 setWording("offence wording").
                 setSequenceNumber(sequenceNumber).
-                setPlea(PleaType.values()[nextInt(PleaType.values().length)]).
+                setPlea(PleaType.values()[nextInt(0,PleaType.values().length)]).
                 setPleaDate(now().minusDays(3));
 
         return offenceDetailBuilder.build();

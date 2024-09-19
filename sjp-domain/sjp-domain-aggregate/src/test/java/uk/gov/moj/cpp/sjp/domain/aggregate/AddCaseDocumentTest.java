@@ -7,8 +7,8 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.isA;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import uk.gov.moj.cpp.sjp.domain.CaseDocument;
 import uk.gov.moj.cpp.sjp.domain.testutils.CaseDocumentBuilder;
@@ -20,7 +20,7 @@ import java.util.UUID;
 import java.util.stream.Stream;
 
 import org.hamcrest.CoreMatchers;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 public class AddCaseDocumentTest extends CaseAggregateBaseTest {
 
@@ -95,7 +95,7 @@ public class AddCaseDocumentTest extends CaseAggregateBaseTest {
 
         final CaseDocumentAdded caseDocumentAddedEvent = (CaseDocumentAdded) eventStream.findFirst().get();
 
-        assertTrue("CaseDocumentAdded event created", nonNull(caseDocumentAddedEvent));
+        assertTrue(nonNull(caseDocumentAddedEvent), "CaseDocumentAdded event created");
         assertThat(caseDocumentAddedEvent.getCaseId(), is(aCase.getId()));
         assertThat(caseDocumentAddedEvent.getCaseDocument(), is(caseDocument));
         assertThat(caseDocumentAddedEvent.getIndexWithinDocumentType(), is(1));

@@ -7,7 +7,7 @@ import static uk.gov.moj.cpp.sjp.domain.decision.discharge.DischargeType.CONDITI
 import static uk.gov.moj.cpp.sjp.domain.decision.discharge.PeriodUnit.*;
 import static uk.gov.moj.cpp.sjp.domain.plea.PleaType.*;
 
-import uk.gov.justice.services.test.utils.persistence.BaseTransactionalTest;
+import uk.gov.justice.services.test.utils.persistence.BaseTransactionalJunit4Test;
 import uk.gov.moj.cpp.sjp.domain.decision.imposition.InstallmentPeriod;
 import uk.gov.moj.cpp.sjp.domain.decision.imposition.PaymentType;
 import uk.gov.moj.cpp.sjp.persistence.entity.CaseDecision;
@@ -36,7 +36,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 @RunWith(CdiTestRunner.class)
-public class CaseDecisionRepositoryTest extends BaseTransactionalTest {
+public class CaseDecisionRepositoryTest extends BaseTransactionalJunit4Test {
 
     @Inject
     private EntityManager entityManager;

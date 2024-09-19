@@ -41,7 +41,7 @@ public class CaseCreatedListener {
      * @deprecated required just for legacy events, replaced by
      * {@link #caseReceived(JsonEnvelope)} which contains {@link DefendantDetail} as the part of the event
      */
-    @Deprecated
+    @Deprecated( forRemoval = true)
     @Transactional
     @Handles("sjp.events.sjp-case-created")
     public void sjpCaseCreated(final JsonEnvelope envelope) {

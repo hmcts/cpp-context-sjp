@@ -3,7 +3,7 @@ package uk.gov.moj.cpp.sjp.command.api.validator;
 import static java.util.Collections.emptyMap;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.equalTo;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static uk.gov.moj.cpp.sjp.command.api.validator.PleaType.GUILTY;
 import static uk.gov.moj.cpp.sjp.command.api.validator.PleaType.GUILTY_REQUEST_HEARING;
 import static uk.gov.moj.cpp.sjp.command.api.validator.PleaType.NOT_GUILTY;
@@ -19,14 +19,14 @@ import static uk.gov.moj.cpp.sjp.command.api.validator.UpdatePleaValidationError
 import java.util.List;
 import java.util.Map;
 
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 /**
  * Unit test for UpdatePleaValidator.
  */
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class UpdatePleaValidatorTest {
 
     private final UpdatePleaValidator service = new UpdatePleaValidator();

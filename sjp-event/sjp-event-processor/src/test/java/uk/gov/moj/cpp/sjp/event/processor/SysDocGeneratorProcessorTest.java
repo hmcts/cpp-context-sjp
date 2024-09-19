@@ -12,13 +12,13 @@ import java.util.Arrays;
 
 import javax.enterprise.inject.Instance;
 
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class SysDocGeneratorProcessorTest {
 
     @Mock
@@ -34,7 +34,6 @@ public class SysDocGeneratorProcessorTest {
     public void shouldCallStrategyThatCanProcessThePayloadForDocumentAvailableEvent() {
         final JsonEnvelope envelope = SystemDocGeneratorEnvelopes.documentAvailablePublicEvent().envelope();
         when(strategy1.canProcess(envelope)).thenReturn(true);
-        when(strategy2.canProcess(envelope)).thenReturn(false);
         when(strategies.iterator()).thenReturn(Arrays.asList(strategy1, strategy2).iterator());
 
         processor.handleDocumentAvailableEvent(envelope);
@@ -46,7 +45,6 @@ public class SysDocGeneratorProcessorTest {
     @Test
     public void shouldCallStrategyThatCanProcessThePayloadForGenerationFailedEvent() {
         final JsonEnvelope envelope = SystemDocGeneratorEnvelopes.generationFailedEvent().envelope();
-        when(strategy1.canProcess(envelope)).thenReturn(false);
         when(strategy2.canProcess(envelope)).thenReturn(true);
         when(strategies.iterator()).thenReturn(Arrays.asList(strategy2, strategy1).iterator());
 

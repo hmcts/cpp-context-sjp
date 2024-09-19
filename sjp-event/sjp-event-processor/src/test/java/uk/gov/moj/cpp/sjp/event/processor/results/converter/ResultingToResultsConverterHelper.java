@@ -8,7 +8,7 @@ import static javax.json.Json.createArrayBuilder;
 import static javax.json.Json.createObjectBuilder;
 import static org.apache.commons.lang3.RandomStringUtils.randomAlphanumeric;
 import static org.apache.commons.lang3.RandomUtils.nextInt;
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static uk.gov.justice.json.schemas.domains.sjp.Gender.NOT_SPECIFIED;
 import static uk.gov.justice.json.schemas.domains.sjp.queries.CaseDetails.caseDetails;
 import static uk.gov.justice.services.core.enveloper.Enveloper.envelop;

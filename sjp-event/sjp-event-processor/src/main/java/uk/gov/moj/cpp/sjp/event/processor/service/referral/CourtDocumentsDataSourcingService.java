@@ -130,14 +130,14 @@ public class CourtDocumentsDataSourcingService {
         final UUID defendantId = caseDetails.getDefendant().getId();
 
         if (APPLICATION_DOCUMENT_TYPE.equals(documentType)) {
-            return new DocumentCategoryView(new ApplicationDocumentView(
+            return new DocumentCategoryView(null, new ApplicationDocumentView(
                     caseDetails.getCaseApplication().getApplicationId(),
                     defendantId,
                     caseId
             ));
         }
 
-        return new DocumentCategoryView(new DefendantDocumentView(caseId, defendantId));
+        return new DocumentCategoryView(new DefendantDocumentView(caseId, singletonList(defendantId)), null);
     }
 
     private Boolean isFinancialMeans(final String documentType) {

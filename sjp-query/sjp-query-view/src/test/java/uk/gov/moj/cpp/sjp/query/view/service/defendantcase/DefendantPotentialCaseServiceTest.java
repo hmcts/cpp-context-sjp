@@ -5,14 +5,14 @@ import static java.util.UUID.randomUUID;
 import static javax.json.Json.createArrayBuilder;
 import static javax.json.Json.createObjectBuilder;
 import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.Matchers.isEmptyString;
-import static org.hamcrest.Matchers.not;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.eq;
+import static org.hamcrest.CoreMatchers.not;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.emptyString;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 import static uk.gov.justice.services.messaging.JsonEnvelope.metadataBuilder;
 import static uk.gov.justice.services.test.utils.core.reflection.ReflectionUtil.setField;
@@ -76,17 +76,17 @@ import javax.json.JsonObject;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.fasterxml.jackson.module.paramnames.ParameterNamesModule;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class DefendantPotentialCaseServiceTest {
 
     public static final UUID CASE_ID = UUID.randomUUID();
@@ -142,7 +142,7 @@ public class DefendantPotentialCaseServiceTest {
             "1980-01-05",
             "2 Abc Street", "EC1 1NN", "ASN-1");
 
-    @Before
+    @BeforeEach
     public void setup() {
         ObjectMapper objectMapper = new ObjectMapper()
                 .registerModule(new ParameterNamesModule(PROPERTIES))
@@ -151,30 +151,18 @@ public class DefendantPotentialCaseServiceTest {
                 .registerModule(new AdditionalPropertiesModule());
         setField(this.jsonObjectConverter, "objectMapper", objectMapper);
         setField(this.defendantCaseService, "defendantCaseSearcher", defendantCaseSearcher);
-
-        final MetadataBuilder metadataBuilder = metadataBuilder()
-                .withId(UUID.randomUUID())
-                .withName(CASES_QUERY_NAME);
-        when(envelope.metadata()).thenReturn(metadataBuilder.build());
-        when(defendantService.findDefendantDetailById(defendant.getId())).thenReturn(defendant);
-
-        final CaseDetail caseDetail = new CaseDetail();
-        caseDetail.setPostingDate(LocalDate.now().minusDays(10));
-        caseDetail.setDefendant(defendant);
-        caseDetail.setProsecutingAuthority("TFL");
-        when(caseRepository.findBy(CASE_ID)).thenReturn(caseDetail);
-
-        JsonObject progCaseSearchResult = createProgressionCaseSearchJsonObject(CASE_ID, "ACTIVE");
-        when(progressionService.findCaseById(CASE_ID)).thenReturn(Optional.of(progCaseSearchResult));
-        when(progressionService.findDefendantOffences(CASE_ID, defendant)).thenReturn(
-                defendant.getOffences().
-                        stream().
-                        map(OffenceDetail::getWording).
-                        collect(Collectors.toList()));
     }
 
     @Test
     public void shouldDefendantQueryDetailsSubmittedToUnifiedSearch() {
+        final MetadataBuilder metadataBuilder = metadataBuilder()
+                .withId(UUID.randomUUID())
+                .withName(CASES_QUERY_NAME);
+        when(envelope.metadata()).thenReturn(metadataBuilder.build());
+
+        JsonObject progCaseSearchResult = createProgressionCaseSearchJsonObject(CASE_ID, "ACTIVE");
+        when(progressionService.findCaseById(CASE_ID)).thenReturn(Optional.of(progCaseSearchResult));
+
         JsonObject searchResult = createSingleCaseUnifiedSearchResult(CASE_ID,
                 CASE_REF,
                 true,
@@ -200,6 +188,20 @@ public class DefendantPotentialCaseServiceTest {
 
     @Test
     public void shouldDefendantHasPotentialCase_WhenCaseSjpOpen() {
+        final MetadataBuilder metadataBuilder = metadataBuilder()
+                .withId(UUID.randomUUID())
+                .withName(CASES_QUERY_NAME);
+        when(envelope.metadata()).thenReturn(metadataBuilder.build());
+        when(defendantService.findDefendantDetailById(defendant.getId())).thenReturn(defendant);
+
+        final CaseDetail caseDetail = new CaseDetail();
+        caseDetail.setPostingDate(LocalDate.now().minusDays(10));
+        caseDetail.setDefendant(defendant);
+        caseDetail.setProsecutingAuthority("TFL");
+        when(caseRepository.findBy(CASE_ID)).thenReturn(caseDetail);
+        JsonObject progCaseSearchResult = createProgressionCaseSearchJsonObject(CASE_ID, "ACTIVE");
+        when(progressionService.findCaseById(CASE_ID)).thenReturn(Optional.of(progCaseSearchResult));
+
         JsonObject searchResult = createSingleCaseUnifiedSearchResult(CASE_ID,
                 CASE_REF,
                 true,
@@ -238,6 +240,20 @@ public class DefendantPotentialCaseServiceTest {
 
     @Test
     public void shouldDefendantHasPotentialCase_WhenCaseSjpClosedWithin28Days() {
+        final MetadataBuilder metadataBuilder = metadataBuilder()
+                .withId(UUID.randomUUID())
+                .withName(CASES_QUERY_NAME);
+        when(envelope.metadata()).thenReturn(metadataBuilder.build());
+        when(defendantService.findDefendantDetailById(defendant.getId())).thenReturn(defendant);
+
+        final CaseDetail caseDetail = new CaseDetail();
+        caseDetail.setPostingDate(LocalDate.now().minusDays(10));
+        caseDetail.setDefendant(defendant);
+        caseDetail.setProsecutingAuthority("TFL");
+        when(caseRepository.findBy(CASE_ID)).thenReturn(caseDetail);
+        JsonObject progCaseSearchResult = createProgressionCaseSearchJsonObject(CASE_ID, "ACTIVE");
+        when(progressionService.findCaseById(CASE_ID)).thenReturn(Optional.of(progCaseSearchResult));
+
         JsonObject searchResult = createSingleCaseUnifiedSearchResult(CASE_ID,
                 CASE_REF,
                 true,
@@ -284,6 +300,14 @@ public class DefendantPotentialCaseServiceTest {
 
     @Test
     public void shouldDefendantHasNoPotentialCase_WhenSjpClosedBeyond28Days() {
+        final MetadataBuilder metadataBuilder = metadataBuilder()
+                .withId(UUID.randomUUID())
+                .withName(CASES_QUERY_NAME);
+        when(envelope.metadata()).thenReturn(metadataBuilder.build());
+        when(defendantService.findDefendantDetailById(defendant.getId())).thenReturn(defendant);
+        JsonObject progCaseSearchResult = createProgressionCaseSearchJsonObject(CASE_ID, "ACTIVE");
+        when(progressionService.findCaseById(CASE_ID)).thenReturn(Optional.of(progCaseSearchResult));
+
         JsonObject searchResult = createSingleCaseUnifiedSearchResult(CASE_ID,
                 CASE_REF,
                 true,
@@ -322,6 +346,18 @@ public class DefendantPotentialCaseServiceTest {
 
     @Test
     public void shouldDefendantHasPotentialCase_WhenCourtCaseOpen() {
+        final MetadataBuilder metadataBuilder = metadataBuilder()
+                .withId(UUID.randomUUID())
+                .withName(CASES_QUERY_NAME);
+        when(envelope.metadata()).thenReturn(metadataBuilder.build());
+        when(defendantService.findDefendantDetailById(defendant.getId())).thenReturn(defendant);
+
+        when(progressionService.findDefendantOffences(CASE_ID, defendant)).thenReturn(
+                defendant.getOffences().
+                        stream().
+                        map(OffenceDetail::getWording).
+                        collect(Collectors.toList()));
+
         JsonObject searchResult = createSingleCaseUnifiedSearchResult(CASE_ID,
                 CASE_REF,
                 false,
@@ -353,6 +389,20 @@ public class DefendantPotentialCaseServiceTest {
 
     @Test
     public void shouldDefendantHasPotentialCase_WhenSjpReferredAndCourtCaseOpen() {
+        final MetadataBuilder metadataBuilder = metadataBuilder()
+                .withId(UUID.randomUUID())
+                .withName(CASES_QUERY_NAME);
+        when(envelope.metadata()).thenReturn(metadataBuilder.build());
+        when(defendantService.findDefendantDetailById(defendant.getId())).thenReturn(defendant);
+
+        JsonObject progCaseSearchResult = createProgressionCaseSearchJsonObject(CASE_ID, "ACTIVE");
+        when(progressionService.findCaseById(CASE_ID)).thenReturn(Optional.of(progCaseSearchResult));
+        when(progressionService.findDefendantOffences(CASE_ID, defendant)).thenReturn(
+                defendant.getOffences().
+                        stream().
+                        map(OffenceDetail::getWording).
+                        collect(Collectors.toList()));
+
         JsonObject searchResult = createSingleCaseUnifiedSearchResult(CASE_ID,
                 CASE_REF,
                 true,
@@ -385,6 +435,17 @@ public class DefendantPotentialCaseServiceTest {
 
     @Test
     public void shouldDefendantHasPotentialCase_WhenCourtCaseClosedWithin28Days() {
+        final MetadataBuilder metadataBuilder = metadataBuilder()
+                .withId(UUID.randomUUID())
+                .withName(CASES_QUERY_NAME);
+        when(envelope.metadata()).thenReturn(metadataBuilder.build());
+        when(defendantService.findDefendantDetailById(defendant.getId())).thenReturn(defendant);
+        when(progressionService.findDefendantOffences(CASE_ID, defendant)).thenReturn(
+                defendant.getOffences().
+                        stream().
+                        map(OffenceDetail::getWording).
+                        collect(Collectors.toList()));
+
         JsonObject sjpOpenCase = createSingleCaseUnifiedSearchResult(CASE_ID,
                 CASE_REF,
                 false,
@@ -417,6 +478,20 @@ public class DefendantPotentialCaseServiceTest {
 
     @Test
     public void shouldDefendantHasPotentialCase_WhenSjpReferredAndCourtCaseClosedWithin28Days() {
+        final MetadataBuilder metadataBuilder = metadataBuilder()
+                .withId(UUID.randomUUID())
+                .withName(CASES_QUERY_NAME);
+        when(envelope.metadata()).thenReturn(metadataBuilder.build());
+        when(defendantService.findDefendantDetailById(defendant.getId())).thenReturn(defendant);
+
+        when(progressionService.findDefendantOffences(CASE_ID, defendant)).thenReturn(
+                defendant.getOffences().
+                        stream().
+                        map(OffenceDetail::getWording).
+                        collect(Collectors.toList()));
+        JsonObject progCaseSearchResult = createProgressionCaseSearchJsonObject(CASE_ID, "ACTIVE");
+        when(progressionService.findCaseById(CASE_ID)).thenReturn(Optional.of(progCaseSearchResult));
+
         JsonObject sjpOpenCase = createSingleCaseUnifiedSearchResult(CASE_ID,
                 CASE_REF,
                 true,
@@ -427,7 +502,7 @@ public class DefendantPotentialCaseServiceTest {
                 convert(sjpOpenCase, DefendantCaseQueryResult.class);
 
         when(potentialCaseSearchResponse.payload()).thenReturn(result);
-        JsonObject progCaseSearchResult = createProgressionCaseSearchJsonObject(CASE_ID, "INACTIVE");
+        progCaseSearchResult = createProgressionCaseSearchJsonObject(CASE_ID, "INACTIVE");
         when(progressionService.findCaseById(CASE_ID)).thenReturn(Optional.of(progCaseSearchResult));
         when(requester.requestAsAdmin(unifiedSearchQueryParamCapture.capture(),
                 eq(DefendantCaseQueryResult.class))).thenReturn(potentialCaseSearchResponse);
@@ -452,6 +527,14 @@ public class DefendantPotentialCaseServiceTest {
 
     @Test
     public void shouldDefendantHasNoPotentialCase_WhenSjpReferredAndCourtCaseClosedBeyond28Days() {
+        final MetadataBuilder metadataBuilder = metadataBuilder()
+                .withId(UUID.randomUUID())
+                .withName(CASES_QUERY_NAME);
+        when(envelope.metadata()).thenReturn(metadataBuilder.build());
+        when(defendantService.findDefendantDetailById(defendant.getId())).thenReturn(defendant);
+        JsonObject progCaseSearchResult = createProgressionCaseSearchJsonObject(CASE_ID, "ACTIVE");
+        when(progressionService.findCaseById(CASE_ID)).thenReturn(Optional.of(progCaseSearchResult));
+
         JsonObject sjpOpenCase = createSingleCaseUnifiedSearchResult(CASE_ID,
                 CASE_REF,
                 true,
@@ -461,7 +544,7 @@ public class DefendantPotentialCaseServiceTest {
         DefendantCaseQueryResult result = jsonObjectConverter.
                 convert(sjpOpenCase, DefendantCaseQueryResult.class);
         when(potentialCaseSearchResponse.payload()).thenReturn(result);
-        JsonObject progCaseSearchResult = createProgressionCaseSearchJsonObject(CASE_ID, "INACTIVE");
+        progCaseSearchResult = createProgressionCaseSearchJsonObject(CASE_ID, "INACTIVE");
         when(progressionService.findCaseById(CASE_ID)).thenReturn(Optional.of(progCaseSearchResult));
         when(requester.requestAsAdmin(unifiedSearchQueryParamCapture.capture(),
                 eq(DefendantCaseQueryResult.class))).thenReturn(potentialCaseSearchResponse);
@@ -484,6 +567,12 @@ public class DefendantPotentialCaseServiceTest {
 
     @Test
     public void shouldDefendantHasMultiplePotentialCasesAndSorted() {
+        final MetadataBuilder metadataBuilder = metadataBuilder()
+                .withId(UUID.randomUUID())
+                .withName(CASES_QUERY_NAME);
+        when(envelope.metadata()).thenReturn(metadataBuilder.build());
+        when(defendantService.findDefendantDetailById(defendant.getId())).thenReturn(defendant);
+
         final List<String> allCases = new LinkedList<>();
         final UUID sjoOpenCaseId = randomUUID();
         final String sjpOpenCase =
@@ -493,7 +582,7 @@ public class DefendantPotentialCaseServiceTest {
                         CaseStatus.NO_PLEA_RECEIVED.toString(),
                         defendant,
                         5);
-        final CaseDetail caseDetail = new CaseDetail();
+        var caseDetail = new CaseDetail();
         caseDetail.setPostingDate(LocalDate.now().minusDays(10));
         caseDetail.setDefendant(defendant);
         when(caseRepository.findBy(sjoOpenCaseId)).thenReturn(caseDetail);
@@ -536,8 +625,6 @@ public class DefendantPotentialCaseServiceTest {
                         defendant,
                         15);
         allCases.add(courCaseOpen);
-        JsonObject progCaseSearchResult = createProgressionCaseSearchJsonObject(courtCaseOpenId, "ACTIVE");
-        when(progressionService.findCaseById(courtCaseOpenId)).thenReturn(Optional.of(progCaseSearchResult));
         when(progressionService.findDefendantOffences(courtCaseOpenId, defendant)).thenReturn(
                 defendant.getOffences().
                         stream().
@@ -554,7 +641,7 @@ public class DefendantPotentialCaseServiceTest {
                         5);
         allCases.add(courCaseOpen2);
         JsonObject progCaseSearchResult2 = createProgressionCaseSearchJsonObject(courtCaseOpenId2, "ACTIVE");
-        when(progressionService.findCaseById(courtCaseOpenId2)).thenReturn(Optional.of(progCaseSearchResult2));
+//        when(progressionService.findCaseById(courtCaseOpenId2)).thenReturn(Optional.of(progCaseSearchResult2));
         when(progressionService.findDefendantOffences(courtCaseOpenId2, defendant)).thenReturn(
                 defendant.getOffences().
                         stream().
@@ -609,6 +696,21 @@ public class DefendantPotentialCaseServiceTest {
 
     @Test
     public void shouldHaveExpiryDate_WhenSJPOpenCaseIsNotReady() {
+        final MetadataBuilder metadataBuilder = metadataBuilder()
+                .withId(UUID.randomUUID())
+                .withName(CASES_QUERY_NAME);
+        when(envelope.metadata()).thenReturn(metadataBuilder.build());
+        when(defendantService.findDefendantDetailById(defendant.getId())).thenReturn(defendant);
+
+        final CaseDetail caseDetail = new CaseDetail();
+        caseDetail.setPostingDate(LocalDate.now().minusDays(10));
+        caseDetail.setDefendant(defendant);
+        caseDetail.setProsecutingAuthority("TFL");
+        when(caseRepository.findBy(CASE_ID)).thenReturn(caseDetail);
+
+        JsonObject progCaseSearchResult = createProgressionCaseSearchJsonObject(CASE_ID, "ACTIVE");
+        when(progressionService.findCaseById(CASE_ID)).thenReturn(Optional.of(progCaseSearchResult));
+
         JsonObject searchResult = createSingleCaseUnifiedSearchResult(CASE_ID,
                 CASE_REF,
                 true,
@@ -638,7 +740,7 @@ public class DefendantPotentialCaseServiceTest {
         assertCaseOffenceDetails(CASE_ID, CASE_REF, DATE_OFFSET_WITHIN_28_DAYS, caseOffenceDetails);
 
         assertThat(caseOffenceDetails.getProsecutorName(), is("TFL"));
-        assertThat(caseOffenceDetails.getExpiryDate(), not(isEmptyString()));
+        assertThat(caseOffenceDetails.getExpiryDate(), not(emptyString()));
         assertTrue(potentialCases.getSjpClosedCases().isEmpty());
         assertTrue(potentialCases.getCourtOpenCases().isEmpty());
         assertTrue(potentialCases.getCourtClosedCases().isEmpty());

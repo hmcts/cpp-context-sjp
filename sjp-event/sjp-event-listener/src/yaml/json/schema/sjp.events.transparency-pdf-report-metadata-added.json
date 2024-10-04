@@ -1,6 +1,6 @@
 {
   "$schema": "http://json-schema.org/draft-04/schema#",
-  "id": "http://justice.gov.uk/json/schemas/domains/sjp/events/sjp.transparency-pdf-report-metadata-added.json",
+  "id": "http://justice.gov.uk/json/schemas/domains/sjp/command/sjp.transparency-report-metadata-added.json",
   "type": "object",
   "properties": {
     "metadata": {

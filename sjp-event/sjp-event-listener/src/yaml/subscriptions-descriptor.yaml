@@ -186,10 +186,10 @@ subscriptions_descriptor:
                 schema_uri: http://justice.gov.uk/json/schemas/domains/sjp/command/sjp.transparency-report-metadata-added.json
 
               - name: sjp.events.transparency-pdf-report-generation-started
-                schema_uri: http://justice.gov.uk/json/schemas/domains/sjp/events/sjp.transparency-pdf-report-generation-started.json
+                schema_uri: http://justice.gov.uk/json/schemas/domains/sjp/command/sjp.transparency-pdf-report-generation-started.json
 
               - name: sjp.events.transparency-pdf-report-metadata-added
-                schema_uri: http://justice.gov.uk/json/schemas/domains/sjp/events/sjp.transparency-pdf-report-metadata-added.json
+                schema_uri: http://justice.gov.uk/json/schemas/domains/sjp/command/sjp.transparency-pdf-report-metadata-added.json
 
               - name: sjp.events.case-note-added
                 schema_uri: http://cpp.moj.gov.uk/sjp/event/case-note-added.json

@@ -160,7 +160,7 @@ public class CaseDecisionHandlerTest {
                 new Withdraw(randomUUID(), createOffenceDecisionInformation(offenceId1, NO_VERDICT), withdrawalReasonId1),
                 new Withdraw(randomUUID(), createOffenceDecisionInformation(offenceId2, NO_VERDICT), withdrawalReasonId2));
 
-        final Decision decision = new Decision(decisionId, sessionId, caseId, note, savedAt, legalAdviser, offenceDecisions, null);
+        final Decision decision = new Decision(decisionId, sessionId, caseId, note, savedAt, legalAdviser, offenceDecisions, null,null);
 
         final Stream<Object> eventStream = CaseDecisionHandler.INSTANCE.saveDecision(decision, caseAggregateState, session);
         final List<Object> eventList = eventStream.collect(toList());
@@ -179,7 +179,7 @@ public class CaseDecisionHandlerTest {
         adjourn.setConvictionCourt(new SessionCourt("B01OK", "2572"));
         final List<OffenceDecision> offenceDecisions = newArrayList(adjourn);
 
-        final Decision decision = new Decision(decisionId, sessionId, caseId, note, savedAt, legalAdviser, offenceDecisions, null);
+        final Decision decision = new Decision(decisionId, sessionId, caseId, note, savedAt, legalAdviser, offenceDecisions, null,null);
 
         final Stream<Object> eventStream = CaseDecisionHandler.INSTANCE.saveDecision(decision, caseAggregateState, session);
 
@@ -198,7 +198,7 @@ public class CaseDecisionHandlerTest {
                         createOffenceDecisionInformation(offenceId2, PROVED_SJP)),
                         adjournmentReason, adjournedTo));
 
-        final Decision decision = new Decision(decisionId, sessionId, caseId, note, savedAt, legalAdviser, offenceDecisions, null);
+        final Decision decision = new Decision(decisionId, sessionId, caseId, note, savedAt, legalAdviser, offenceDecisions, null,null);
 
         final Stream<Object> eventStream = CaseDecisionHandler.INSTANCE.saveDecision(decision, caseAggregateState, session);
 
@@ -216,7 +216,7 @@ public class CaseDecisionHandlerTest {
                         createOffenceDecisionInformation(offenceId1, FOUND_GUILTY),
                         createOffenceDecisionInformation(offenceId2, PROVED_SJP)),
                         adjournmentReason, adjournedTo));
-        final Decision decision = new Decision(decisionId, sessionId, caseId, note, savedAt, legalAdviser, offenceDecisions, null);
+        final Decision decision = new Decision(decisionId, sessionId, caseId, note, savedAt, legalAdviser, offenceDecisions, null,null);
 
         final Stream<Object> eventStream = CaseDecisionHandler.INSTANCE.saveDecision(decision, caseAggregateState, session);
 
@@ -235,7 +235,7 @@ public class CaseDecisionHandlerTest {
                         createOffenceDecisionInformation(offenceId2, NO_VERDICT)),
                         adjournmentReason, adjournedTo));
 
-        final Decision decision = new Decision(decisionId, sessionId, caseId, note, savedAt, legalAdviser, offenceDecisions, null);
+        final Decision decision = new Decision(decisionId, sessionId, caseId, note, savedAt, legalAdviser, offenceDecisions, null,null);
 
         final Stream<Object> eventStream = CaseDecisionHandler.INSTANCE.saveDecision(decision, caseAggregateState, session);
         final List<Object> eventList = eventStream.collect(toList());
@@ -253,7 +253,7 @@ public class CaseDecisionHandlerTest {
                         createOffenceDecisionInformation(offenceId2, FOUND_GUILTY)),
                         adjournmentReason, adjournedTo));
 
-        final Decision decision = new Decision(decisionId, sessionId, caseId, note, savedAt, legalAdviser, offenceDecisions, null);
+        final Decision decision = new Decision(decisionId, sessionId, caseId, note, savedAt, legalAdviser, offenceDecisions, null,null);
 
         final Stream<Object> eventStream = CaseDecisionHandler.INSTANCE.saveDecision(decision, caseAggregateState, session);
         final List<Object> eventList = eventStream.collect(toList());
@@ -271,7 +271,7 @@ public class CaseDecisionHandlerTest {
                         createOffenceDecisionInformation(offenceId2, FOUND_GUILTY)),
                         adjournmentReason, adjournedTo));
 
-        final Decision decision = new Decision(decisionId, sessionId, caseId, note, savedAt, legalAdviser, offenceDecisions, null);
+        final Decision decision = new Decision(decisionId, sessionId, caseId, note, savedAt, legalAdviser, offenceDecisions, null,null);
         CaseDecisionHandler.INSTANCE.saveDecision(decision, caseAggregateState, session);
 
         caseAggregateState.updateOffenceDecisions(offenceDecisions, sessionId);
@@ -283,7 +283,7 @@ public class CaseDecisionHandlerTest {
                         createOffenceDecisionInformation(offenceId2, null)),
                         adjournmentReason, adjournedTo));
 
-        final Decision decision2 = new Decision(decisionId2, sessionId2, caseId, note, savedAt, legalAdviser, offenceDecisions2, null);
+        final Decision decision2 = new Decision(decisionId2, sessionId2, caseId, note, savedAt, legalAdviser, offenceDecisions2, null,null);
         final Stream<Object> eventStream = CaseDecisionHandler.INSTANCE.saveDecision(decision2, caseAggregateState, session);
         final List<Object> eventList = eventStream.collect(toList());
         thenTheDecisionIsAcceptedAlongWithCaseAdjournedRecordedEvent(decisionId2, sessionId2, offenceDecisions2, eventList, adjournedTo, true);
@@ -306,7 +306,7 @@ public class CaseDecisionHandlerTest {
                         createOffenceDecisionInformation(offenceId2, FOUND_GUILTY)),
                         adjournmentReason, adjournedTo));
 
-        final Decision decision = new Decision(decisionId, sessionId, caseId, note, savedAt, legalAdviser, offenceDecisions, null);
+        final Decision decision = new Decision(decisionId, sessionId, caseId, note, savedAt, legalAdviser, offenceDecisions, null,null);
         CaseDecisionHandler.INSTANCE.saveDecision(decision, caseAggregateState, session);
 
         caseAggregateState.updateOffenceDecisions(offenceDecisions, sessionId);
@@ -324,7 +324,7 @@ public class CaseDecisionHandlerTest {
                         createOffenceDecisionInformation(offenceId2, null)),
                         referralReasonId, "note", 0, courtOptions, null));
 
-        final Decision decision2 = new Decision(decisionId2, sessionId2, caseId, note, savedAt, legalAdviser, offenceDecisions2, null);
+        final Decision decision2 = new Decision(decisionId2, sessionId2, caseId, note, savedAt, legalAdviser, offenceDecisions2, null,null);
         final Stream<Object> eventStream = CaseDecisionHandler.INSTANCE.saveDecision(decision2, caseAggregateState, session);
         final List<Object> eventList = eventStream.collect(toList());
         thenTheDecisionIsAcceptedAlongWithCaseReferForCourtHearingRecordedEvent(decisionId2, sessionId2, offenceDecisions2, eventList);
@@ -342,7 +342,7 @@ public class CaseDecisionHandlerTest {
                         createOffenceDecisionInformation(offenceId2, FOUND_GUILTY)),
                         adjournmentReason, adjournedTo));
 
-        final Decision decision = new Decision(decisionId, sessionId, caseId, note, savedAt, legalAdviser, offenceDecisions, null);
+        final Decision decision = new Decision(decisionId, sessionId, caseId, note, savedAt, legalAdviser, offenceDecisions, null,null);
         CaseDecisionHandler.INSTANCE.saveDecision(decision, caseAggregateState, session);
 
         caseAggregateState.updateOffenceDecisions(offenceDecisions, sessionId);
@@ -353,7 +353,7 @@ public class CaseDecisionHandlerTest {
                 new Dismiss(randomUUID(), createOffenceDecisionInformation(offenceId2, FOUND_NOT_GUILTY), null)
         );
 
-        final Decision decision2 = new Decision(decisionId2, sessionId2, caseId, note, savedAt, legalAdviser, offenceDecisions2, null);
+        final Decision decision2 = new Decision(decisionId2, sessionId2, caseId, note, savedAt, legalAdviser, offenceDecisions2, null,null);
         final Stream<Object> eventStream = CaseDecisionHandler.INSTANCE.saveDecision(decision2, caseAggregateState, session);
 
         final List<String> expectedRejectionReasons = asList(
@@ -378,7 +378,7 @@ public class CaseDecisionHandlerTest {
                         createOffenceDecisionInformation(offenceId2, null)),
                         referralReasonId, "note", 0, courtOptions, null));
 
-        final Decision decision = new Decision(decisionId, sessionId, caseId, note, savedAt, legalAdviser, offenceDecisions, null);
+        final Decision decision = new Decision(decisionId, sessionId, caseId, note, savedAt, legalAdviser, offenceDecisions, null,null);
         final Stream<Object> eventStream = CaseDecisionHandler.INSTANCE.saveDecision(decision, caseAggregateState, session);
 
         final List<String> expectedRejectionReasons = asList(
@@ -396,7 +396,7 @@ public class CaseDecisionHandlerTest {
                 new Dismiss(randomUUID(), createOffenceDecisionInformation(offenceId1, FOUND_NOT_GUILTY), null),
                 new Dismiss(randomUUID(), createOffenceDecisionInformation(offenceId2, FOUND_NOT_GUILTY), null));
 
-        final Decision decision = new Decision(decisionId, sessionId, caseId, note, savedAt, legalAdviser, offenceDecisions, null);
+        final Decision decision = new Decision(decisionId, sessionId, caseId, note, savedAt, legalAdviser, offenceDecisions, null,null);
 
         final Stream<Object> eventStream = CaseDecisionHandler.INSTANCE.saveDecision(decision, caseAggregateState, session);
         final List<Object> eventList = eventStream.collect(toList());
@@ -413,7 +413,7 @@ public class CaseDecisionHandlerTest {
         caseAggregateState.updateOffenceDecisions(previousOffenceDecisions, sessionId);
 
         final ArrayList<OffenceDecision> currentOffenceDecisions = newArrayList(new Withdraw(randomUUID(), createOffenceDecisionInformation(offenceId1, NO_VERDICT), withdrawalReasonId1));
-        final Decision decision = new Decision(decisionId, sessionId, caseId, note, savedAt, legalAdviser, currentOffenceDecisions, null);
+        final Decision decision = new Decision(decisionId, sessionId, caseId, note, savedAt, legalAdviser, currentOffenceDecisions, null,null);
         final Stream<Object> eventStream = CaseDecisionHandler.INSTANCE.saveDecision(decision, caseAggregateState, session);
         final List<Object> eventList = eventStream.collect(toList());
         thenTheDecisionIsAccepted(decision, eventList);
@@ -430,7 +430,7 @@ public class CaseDecisionHandlerTest {
                 new Withdraw(randomUUID(), createOffenceDecisionInformation(offenceId1, NO_VERDICT), withdrawalReasonId1),
                 new Adjourn(randomUUID(), createOffenceDecisionInformationList(offenceId2, NO_VERDICT), adjournmentReason, adjournedTo));
 
-        final Decision decision = new Decision(decisionId, sessionId, caseId, note, savedAt, legalAdviser, offenceDecisions, null);
+        final Decision decision = new Decision(decisionId, sessionId, caseId, note, savedAt, legalAdviser, offenceDecisions, null,null);
 
         final Stream<Object> eventStream = CaseDecisionHandler.INSTANCE.saveDecision(decision, caseAggregateState, session);
         final List<Object> eventList = eventStream.collect(toList());
@@ -449,7 +449,7 @@ public class CaseDecisionHandlerTest {
                 new Adjourn(randomUUID(), createOffenceDecisionInformationList(offenceId2, NO_VERDICT), adjournmentReason, adjournedTo),
                 new Dismiss(randomUUID(), createOffenceDecisionInformation(offenceId3, FOUND_NOT_GUILTY), null));
 
-        final Decision decision = new Decision(decisionId, sessionId, caseId, note, savedAt, legalAdviser, offenceDecisions, null);
+        final Decision decision = new Decision(decisionId, sessionId, caseId, note, savedAt, legalAdviser, offenceDecisions, null,null);
 
         final Stream<Object> eventStream = CaseDecisionHandler.INSTANCE.saveDecision(decision, caseAggregateState, session);
         final List<Object> eventList = eventStream.collect(toList());
@@ -472,7 +472,7 @@ public class CaseDecisionHandlerTest {
                 new ReferForCourtHearing(randomUUID(), createOffenceDecisionInformationList(offenceId2, PROVED_SJP),
                         referralReasonId, "note", 0, courtOptions, null));
 
-        final Decision decision = new Decision(decisionId, sessionId, caseId, note, savedAt, legalAdviser, offenceDecisions, null);
+        final Decision decision = new Decision(decisionId, sessionId, caseId, note, savedAt, legalAdviser, offenceDecisions, null,null);
 
         final Stream<Object> eventStream = CaseDecisionHandler.INSTANCE.saveDecision(decision, caseAggregateState, session);
         final List<Object> eventList = eventStream.collect(toList());
@@ -497,7 +497,7 @@ public class CaseDecisionHandlerTest {
                         null
                 ), null)
         );
-        final Decision decision = new Decision(decisionId, sessionId, caseId, note, savedAt, legalAdviser, offenceDecisions, financialImposition, defendant);
+        final Decision decision = new Decision(decisionId, sessionId, caseId, note, savedAt, legalAdviser, offenceDecisions, financialImposition, defendant, null);
 
         final Stream<Object> eventStream = CaseDecisionHandler.INSTANCE.saveDecision(decision, caseAggregateState, session);
         final List<Object> eventList = eventStream.collect(toList());
@@ -521,28 +521,11 @@ public class CaseDecisionHandlerTest {
                         referralReasonId, "note", 0, courtOptions, null),
                 new Dismiss(randomUUID(), createOffenceDecisionInformation(offenceId3, FOUND_NOT_GUILTY), null));
 
-        final Decision decision = new Decision(decisionId, sessionId, caseId, note, savedAt, legalAdviser, offenceDecisions, null);
+        final Decision decision = new Decision(decisionId, sessionId, caseId, note, savedAt, legalAdviser, offenceDecisions, null, null);
 
         final Stream<Object> eventStream = CaseDecisionHandler.INSTANCE.saveDecision(decision, caseAggregateState, session);
         final List<Object> eventList = eventStream.collect(toList());
         thenTheDecisionIsAcceptedAlongWithCaseReferForCourtHearingRecordedEvent(offenceDecisions, eventList);
-    }
-
-    @Test
-    public void shouldRaiseRejectedEventWhenPreviousAdjournedOffenceWasNotSubmitted() {
-
-        givenCaseExistsWithMultipleOffences(newHashSet(offenceId1, offenceId2, offenceId3), legalAdviserId);
-        final LocalDate adjournedTo = LocalDate.now().plusDays(10);
-        final List<OffenceDecision> previousOffenceDecisions = newArrayList(
-                new Adjourn(randomUUID(), newArrayList(createOffenceDecisionInformation(offenceId1, NO_VERDICT), createOffenceDecisionInformation(offenceId3, NO_VERDICT)), adjournmentReason, adjournedTo),
-                new Withdraw(randomUUID(), createOffenceDecisionInformation(offenceId2, NO_VERDICT), withdrawalReasonId1));
-        caseAggregateState.updateOffenceDecisions(previousOffenceDecisions, sessionId);
-
-        final ArrayList<OffenceDecision> currentOffenceDecisions = newArrayList(new Withdraw(randomUUID(), createOffenceDecisionInformation(offenceId1, NO_VERDICT), withdrawalReasonId1));
-        final Decision decision = new Decision(decisionId, sessionId, caseId, note, savedAt, legalAdviser, currentOffenceDecisions, null);
-        final Stream<Object> eventStream = CaseDecisionHandler.INSTANCE.saveDecision(decision, caseAggregateState, session);
-        final List<String> rejectionReason = newArrayList(format("Offence with id %s must have a decision", offenceId3));
-        thenTheDecisionIsRejected(decision, rejectionReason, eventStream);
     }
 
     @Test
@@ -555,7 +538,7 @@ public class CaseDecisionHandlerTest {
         caseAggregateState.updateOffenceDecisions(previousOffenceDecisions, sessionId);
 
         final ArrayList<OffenceDecision> currentOffenceDecisions = newArrayList(new Withdraw(randomUUID(), createOffenceDecisionInformation(offenceId3, NO_VERDICT), withdrawalReasonId1));
-        final Decision decision = new Decision(decisionId, sessionId, caseId, note, savedAt, legalAdviser, currentOffenceDecisions, null);
+        final Decision decision = new Decision(decisionId, sessionId, caseId, note, savedAt, legalAdviser, currentOffenceDecisions, null,null);
         final Stream<Object> eventStream = CaseDecisionHandler.INSTANCE.saveDecision(decision, caseAggregateState, session);
         final List<String> rejectionReason = newArrayList(format("Offence with id %s does not belong to this case", offenceId3));
         thenTheDecisionIsRejected(decision, rejectionReason, eventStream);
@@ -569,7 +552,7 @@ public class CaseDecisionHandlerTest {
         final List<OffenceDecision> offenceDecisions = newArrayList(new Withdraw(randomUUID(), createOffenceDecisionInformation(offenceId1, NO_VERDICT), withdrawalReasonId1),
                 new Withdraw(randomUUID(), createOffenceDecisionInformation(offenceId2, NO_VERDICT), withdrawalReasonId1));
 
-        final Decision decision = new Decision(decisionId, sessionId, caseId, note, savedAt, legalAdviser, offenceDecisions, null);
+        final Decision decision = new Decision(decisionId, sessionId, caseId, note, savedAt, legalAdviser, offenceDecisions, null,null);
 
         final Stream<Object> eventStream = CaseDecisionHandler.INSTANCE.saveDecision(decision, caseAggregateState, session);
         final List<String> rejectionReason = newArrayList("The case is already completed");
@@ -584,7 +567,7 @@ public class CaseDecisionHandlerTest {
                 new Withdraw(randomUUID(), createOffenceDecisionInformation(offenceId1, NO_VERDICT), withdrawalReasonId1),
                 new Withdraw(randomUUID(), createOffenceDecisionInformation(offenceId2, NO_VERDICT), withdrawalReasonId1));
 
-        final Decision decision = new Decision(decisionId, sessionId, caseId, note, savedAt, legalAdviser, offenceDecisions, null);
+        final Decision decision = new Decision(decisionId, sessionId, caseId, note, savedAt, legalAdviser, offenceDecisions, null,null);
         final Stream<Object> eventStream = CaseDecisionHandler.INSTANCE.saveDecision(decision, caseAggregateState, session);
 
         final List<String> rejectionReason = newArrayList("The case must be assigned to the caller");
@@ -604,7 +587,7 @@ public class CaseDecisionHandlerTest {
                 offenceDecisions, new FinancialImposition(
                 new CostsAndSurcharge(new BigDecimal(40), null, new BigDecimal(10), null, null, true),
                 new Payment(new BigDecimal(70), ATTACH_TO_EARNINGS, null, null, null, null)
-        ), null);
+        ), null,null);
 
         final Stream<Object> eventStream = CaseDecisionHandler.INSTANCE.saveDecision(decision, caseAggregateState, session);
 
@@ -624,7 +607,7 @@ public class CaseDecisionHandlerTest {
                 offenceDecisions, new FinancialImposition(
                 new CostsAndSurcharge(BigDecimal.ZERO, null, new BigDecimal(10), null, null, true),
                 new Payment(new BigDecimal(70), PAY_TO_COURT, null, null, null, null)
-        ), null);
+        ), null, null);
 
         final Stream<Object> eventStream = CaseDecisionHandler.INSTANCE.saveDecision(decision, caseAggregateState, session);
 
@@ -645,7 +628,7 @@ public class CaseDecisionHandlerTest {
                 offenceDecisions, new FinancialImposition(
                 new CostsAndSurcharge(BigDecimal.ZERO, null, new BigDecimal(10), null, null, true),
                 new Payment(new BigDecimal(70), PAY_TO_COURT, null, null, null, null)
-        ), null);
+        ), null,null);
 
         final Stream<Object> eventStream = CaseDecisionHandler.INSTANCE.saveDecision(decision, caseAggregateState, session);
 
@@ -661,21 +644,8 @@ public class CaseDecisionHandlerTest {
                 new Withdraw(randomUUID(), createOffenceDecisionInformation(offenceId1, NO_VERDICT), withdrawalReasonId1),
                 new Withdraw(randomUUID(), createOffenceDecisionInformation(offenceId1, NO_VERDICT), withdrawalReasonId2));
 
-        final Decision decision = new Decision(decisionId, sessionId, caseId, note, savedAt, legalAdviser, offenceDecisions, null);
+        final Decision decision = new Decision(decisionId, sessionId, caseId, note, savedAt, legalAdviser, offenceDecisions, null, null);
         final List<String> rejectionReason = newArrayList(format("Offence with id %s has more than 1 decision", offenceId1));
-
-        final Stream<Object> eventStream = CaseDecisionHandler.INSTANCE.saveDecision(decision, caseAggregateState, session);
-        thenTheDecisionIsRejected(decision, rejectionReason, eventStream);
-    }
-
-    @Test
-    public void shouldRaiseDecisionRejectedEventNotAllOffenceHaveDecision() {
-        givenCaseExistsWithMultipleOffences(newHashSet(offenceId1, offenceId2), legalAdviserId);
-        final List<OffenceDecision> offenceDecisions = newArrayList(
-                new Withdraw(randomUUID(), createOffenceDecisionInformation(offenceId1, NO_VERDICT), withdrawalReasonId1));
-
-        final Decision decision = new Decision(decisionId, sessionId, caseId, note, savedAt, legalAdviser, offenceDecisions, null);
-        final List<String> rejectionReason = newArrayList(format("Offence with id %s must have a decision", offenceId2));
 
         final Stream<Object> eventStream = CaseDecisionHandler.INSTANCE.saveDecision(decision, caseAggregateState, session);
         thenTheDecisionIsRejected(decision, rejectionReason, eventStream);
@@ -688,7 +658,7 @@ public class CaseDecisionHandlerTest {
         final List<OffenceDecision> offenceDecisions = newArrayList(new Withdraw(randomUUID(), createOffenceDecisionInformation(offenceId1, NO_VERDICT), withdrawalReasonId1));
         caseAggregateState.updateOffenceDecisions(offenceDecisions, sessionId);
 
-        final Decision decision = new Decision(decisionId, sessionId, caseId, note, savedAt, legalAdviser, offenceDecisions, null);
+        final Decision decision = new Decision(decisionId, sessionId, caseId, note, savedAt, legalAdviser, offenceDecisions, null,null);
         final List<String> rejectionReason = newArrayList(format("Offence %s already has a final decision", offenceId1));
 
         final Stream<Object> eventStream = CaseDecisionHandler.INSTANCE.saveDecision(decision, caseAggregateState, session);
@@ -714,7 +684,7 @@ public class CaseDecisionHandlerTest {
 
         final List<OffenceDecision> offenceDecisions = newArrayList(referForCourtHearing, adjourn);
 
-        final Decision decision = new Decision(decisionId, sessionId, caseId, this.note, savedAt, legalAdviser, offenceDecisions, null);
+        final Decision decision = new Decision(decisionId, sessionId, caseId, this.note, savedAt, legalAdviser, offenceDecisions, null,null);
         final List<String> expectedRejectionReasons = newArrayList("REFER_FOR_COURT_HEARING decision can not be saved with decision(s) ADJOURN");
 
         final Stream<Object> eventStream = CaseDecisionHandler.INSTANCE.saveDecision(decision, caseAggregateState, session);
@@ -742,7 +712,7 @@ public class CaseDecisionHandlerTest {
                 offenceDecisions, new FinancialImposition(
                 new CostsAndSurcharge(new BigDecimal(40), null, new BigDecimal(10), null, null, true),
                 new Payment(new BigDecimal(70), PAY_TO_COURT, null, null, null, null)
-        ), null);
+        ), null,null);
         final List<String> expectedRejectionReasons = newArrayList("REFER_FOR_COURT_HEARING decision can not be saved with decision(s) DISCHARGE");
 
         final Stream<Object> eventStream = CaseDecisionHandler.INSTANCE.saveDecision(decision, caseAggregateState, session);
@@ -763,7 +733,7 @@ public class CaseDecisionHandlerTest {
                 offenceDecisions, new FinancialImposition(
                 new CostsAndSurcharge(new BigDecimal(40), null, new BigDecimal(10), null, null, true),
                 new Payment(new BigDecimal(70), PAY_TO_COURT, null, null, null, null)
-        ), null);
+        ), null,null);
         final List<String> expectedRejectionReasons = newArrayList("ADJOURN decision can not be saved with decision(s) FINANCIAL_PENALTY");
 
         final Stream<Object> eventStream = CaseDecisionHandler.INSTANCE.saveDecision(decision, caseAggregateState, session);
@@ -777,7 +747,7 @@ public class CaseDecisionHandlerTest {
         final Adjourn adjourn = new Adjourn(randomUUID(), createOffenceDecisionInformationList(offenceId1, NO_VERDICT), adjournmentReason, LocalDate.now().plusDays(14));
         final FinancialPenalty financialPenalty = createFinancialPenalty(randomUUID(), createOffenceDecisionInformation(offenceId2, FOUND_GUILTY), new BigDecimal(200), new BigDecimal(40), null, true, null, null, null);
         final List<OffenceDecision> offenceDecisions = newArrayList(adjourn, financialPenalty);
-        final Decision decision = new Decision(decisionId, sessionId, caseId, this.note, savedAt, legalAdviser, offenceDecisions, null);
+        final Decision decision = new Decision(decisionId, sessionId, caseId, this.note, savedAt, legalAdviser, offenceDecisions, null,null);
 
         final Stream<Object> eventStream = CaseDecisionHandler.INSTANCE.saveDecision(decision, caseAggregateState, session);
 
@@ -796,7 +766,7 @@ public class CaseDecisionHandlerTest {
                         createOffenceDecisionInformation(offenceId2, FOUND_GUILTY),
                         createOffenceDecisionInformation(offenceId3, PROVED_SJP)),
                         adjournmentReason, adjournedTo));
-        final Decision decision = new Decision(decisionId, sessionId, caseId, note, savedAt, legalAdviser, offenceDecisions, null);
+        final Decision decision = new Decision(decisionId, sessionId, caseId, note, savedAt, legalAdviser, offenceDecisions, null,null);
 
         final Stream<Object> eventStream = CaseDecisionHandler.INSTANCE.saveDecision(decision, caseAggregateState, session);
 
@@ -814,7 +784,7 @@ public class CaseDecisionHandlerTest {
 
         final List<OffenceDecision> offenceDecisions = newArrayList(financialPenalty1, discharge);
 
-        final Decision decision = new Decision(decisionId, sessionId, caseId, this.note, savedAt, legalAdviser, offenceDecisions, null);
+        final Decision decision = new Decision(decisionId, sessionId, caseId, this.note, savedAt, legalAdviser, offenceDecisions, null,null);
         final List<String> expectedRejectionReasons = newArrayList("Decisions of type Financial Penalty and Discharge's verdict type can only be either FOUND_GUILTY or PROVED_SJP");
 
         final Stream<Object> eventStream = CaseDecisionHandler.INSTANCE.saveDecision(decision, caseAggregateState, session);
@@ -831,7 +801,7 @@ public class CaseDecisionHandlerTest {
 
         final List<OffenceDecision> offenceDecisions = newArrayList(withdraw1, withdraw2);
 
-        final Decision decision = new Decision(decisionId, sessionId, caseId, this.note, savedAt, legalAdviser, offenceDecisions, null);
+        final Decision decision = new Decision(decisionId, sessionId, caseId, this.note, savedAt, legalAdviser, offenceDecisions, null,null);
         final List<String> expectedRejectionReasons = newArrayList("Decisions of type Withdraw's verdict type can only be NO_VERDICT");
 
         final Stream<Object> eventStream = CaseDecisionHandler.INSTANCE.saveDecision(decision, caseAggregateState, session);
@@ -848,7 +818,7 @@ public class CaseDecisionHandlerTest {
 
         final List<OffenceDecision> offenceDecisions = newArrayList(dismiss1, dismiss2);
 
-        final Decision decision = new Decision(decisionId, sessionId, caseId, this.note, savedAt, legalAdviser, offenceDecisions, null);
+        final Decision decision = new Decision(decisionId, sessionId, caseId, this.note, savedAt, legalAdviser, offenceDecisions, null,null);
         final List<String> expectedRejectionReasons = newArrayList("Decisions of type Dismiss's verdict type can only be FOUND_NOT_GUILTY");
 
         final Stream<Object> eventStream = CaseDecisionHandler.INSTANCE.saveDecision(decision, caseAggregateState, session);
@@ -861,7 +831,7 @@ public class CaseDecisionHandlerTest {
         final Dismiss dismiss = DismissBuilder.withDefaults().pressRestriction("A Name").build();
         givenCaseExistsWithMultipleOffences(newHashSet(financialPenalty.getId(), dismiss.getId()), legalAdviserId);
         final List<OffenceDecision> offenceDecisions = newArrayList(financialPenalty, dismiss);
-        final Decision decision = new Decision(decisionId, sessionId, caseId, this.note, savedAt, legalAdviser, offenceDecisions, null);
+        final Decision decision = new Decision(decisionId, sessionId, caseId, this.note, savedAt, legalAdviser, offenceDecisions, null,null);
 
         final Stream<Object> eventStream = CaseDecisionHandler.INSTANCE.saveDecision(decision, caseAggregateState, session);
 
@@ -880,7 +850,7 @@ public class CaseDecisionHandlerTest {
         final FinancialPenalty financialPenalty = financialPenaltyBuilder.build();
         final Dismiss dismiss = dismissBuilder.build();
         final List<OffenceDecision> offenceDecisions = newArrayList(financialPenalty, dismiss, withdraw);
-        final Decision decision = new Decision(decisionId, sessionId, caseId, note, savedAt, legalAdviser, offenceDecisions, null);
+        final Decision decision = new Decision(decisionId, sessionId, caseId, note, savedAt, legalAdviser, offenceDecisions, null,null);
         givenCaseExistsWithMultipleOffences(newHashSet(financialPenalty.getId(), dismiss.getId(), withdraw.getId()), legalAdviserId);
         caseAggregateState.markOffenceAsPressRestrictable(financialPenalty.getId());
         caseAggregateState.markOffenceAsPressRestrictable(dismiss.getId());
@@ -914,7 +884,7 @@ public class CaseDecisionHandlerTest {
         final Withdraw withdraw = WithdrawBuilder.withDefaults().id(offenceId3).build();
         final List<OffenceDecision> offenceDecisions = newArrayList(financialPenalty, dismiss, withdraw);
 
-        final Decision decision = new Decision(decisionId, sessionId, caseId, note, savedAt, legalAdviser, offenceDecisions, null);
+        final Decision decision = new Decision(decisionId, sessionId, caseId, note, savedAt, legalAdviser, offenceDecisions, null,null);
         givenCaseExistsWithMultipleOffences(newHashSet(offenceId1, offenceId2), legalAdviserId);
 
         // When
@@ -950,7 +920,7 @@ public class CaseDecisionHandlerTest {
                 .pressRestrictionRevoked()
                 .build();
 
-        final Decision decision = new Decision(decisionId, sessionId, caseId, note, savedAt, legalAdviser, newArrayList(adjourn2), null);
+        final Decision decision = new Decision(decisionId, sessionId, caseId, note, savedAt, legalAdviser, newArrayList(adjourn2), null,null);
         givenCaseExistsWithMultipleOffences(newHashSet(offenceId1, offenceId2, offenceId3), legalAdviserId);
 
         // When
@@ -971,7 +941,7 @@ public class CaseDecisionHandlerTest {
         givenCaseExistsWithMultipleOffences(newHashSet(adjourn.getOffenceIds()), legalAdviserId);
         caseAggregateState.markOffenceAsPressRestrictable(adjourn.getOffenceIds().get(0));
         final List<OffenceDecision> offenceDecisions = newArrayList(adjourn);
-        final Decision decision = new Decision(decisionId, sessionId, caseId, note, savedAt, legalAdviser, offenceDecisions, null);
+        final Decision decision = new Decision(decisionId, sessionId, caseId, note, savedAt, legalAdviser, offenceDecisions, null,null);
 
         final Stream<Object> eventStream = CaseDecisionHandler.INSTANCE.saveDecision(decision, caseAggregateState, session);
 
@@ -989,7 +959,7 @@ public class CaseDecisionHandlerTest {
 
         givenCaseExistsWithMultipleOffences(newHashSet(referForCourtHearing.getOffenceIds()), legalAdviserId);
         final List<OffenceDecision> offenceDecisions = newArrayList(referForCourtHearing);
-        final Decision decision = new Decision(decisionId, sessionId, caseId, note, savedAt, legalAdviser, offenceDecisions, null);
+        final Decision decision = new Decision(decisionId, sessionId, caseId, note, savedAt, legalAdviser, offenceDecisions, null,null);
         caseAggregateState.markOffenceAsPressRestrictable(referForCourtHearing.getOffenceIds().get(0));
 
         final Stream<Object> eventStream = CaseDecisionHandler.INSTANCE.saveDecision(decision, caseAggregateState, session);
@@ -1020,7 +990,7 @@ public class CaseDecisionHandlerTest {
                         createOffenceDecisionInformation(offenceId1, null),
                         createOffenceDecisionInformation(offenceId2, null))));
 
-        final Decision decision = new Decision(decisionId, sessionId, caseId, this.note, savedAt, legalAdviser, offenceDecisions, null);
+        final Decision decision = new Decision(decisionId, sessionId, caseId, this.note, savedAt, legalAdviser, offenceDecisions, null,null);
 
         // when
         final Stream<Object> eventStream = CaseDecisionHandler.INSTANCE.saveDecision(decision, caseAggregateState, session);
@@ -1049,7 +1019,7 @@ public class CaseDecisionHandlerTest {
                         createOffenceDecisionInformation(offenceId1, null),
                         createOffenceDecisionInformation(offenceId2, null))));
 
-        final Decision decision = new Decision(decisionId, sessionId, caseId, this.note, savedAt, legalAdviser, offenceDecisions, null);
+        final Decision decision = new Decision(decisionId, sessionId, caseId, this.note, savedAt, legalAdviser, offenceDecisions, null,null);
 
         // when
         final Stream<Object> eventStream = CaseDecisionHandler.INSTANCE.saveDecision(decision, caseAggregateState, session);
@@ -1073,7 +1043,7 @@ public class CaseDecisionHandlerTest {
                         createOffenceDecisionInformation(offenceId2, FOUND_GUILTY)),
                         "adjourn reason ", adjournedTo));
 
-        final Decision decision = new Decision(decisionId, sessionId, caseId, this.note, savedAt, legalAdviser, offenceDecisions, null);
+        final Decision decision = new Decision(decisionId, sessionId, caseId, this.note, savedAt, legalAdviser, offenceDecisions, null,null);
 
         // when
         final Stream<Object> eventStream = CaseDecisionHandler.INSTANCE.saveDecision(decision, caseAggregateState, session);
@@ -1094,7 +1064,7 @@ public class CaseDecisionHandlerTest {
                 new Adjourn(randomUUID(), asList(createOffenceDecisionInformation(offenceId2, FOUND_GUILTY)),
                         "adjourn reason ", adjournedTo), dismiss);
 
-        final Decision decision1 = new Decision(decisionId, sessionId, caseId, this.note, savedAt, legalAdviser, offenceDecisions, null);
+        final Decision decision1 = new Decision(decisionId, sessionId, caseId, this.note, savedAt, legalAdviser, offenceDecisions, null,null);
         Stream<Object> eventStream = CaseDecisionHandler.INSTANCE.saveDecision(decision1, caseAggregateState, session);
 
         caseAggregateState.updateOffenceConvictionDetails(zonedDateTime, offenceDecisions, null);
@@ -1104,7 +1074,7 @@ public class CaseDecisionHandlerTest {
                 new SetAside(randomUUID(), asList(
                         createOffenceDecisionInformation(offenceId1, null),
                         createOffenceDecisionInformation(offenceId2, null))));
-        final Decision decision = new Decision(decisionId, sessionId, caseId, this.note, savedAt, legalAdviser, offenceDecisions, null);
+        final Decision decision = new Decision(decisionId, sessionId, caseId, this.note, savedAt, legalAdviser, offenceDecisions, null,null);
 
         caseAggregateState.updateOffenceConvictionDetails(zonedDateTime, offenceDecisions, null);
         caseAggregateState.updateOffenceDecisions(offenceDecisions, sessionId);
@@ -1141,7 +1111,7 @@ public class CaseDecisionHandlerTest {
                 new SetAside(randomUUID(), asList(
                         createOffenceDecisionInformation(offenceId1, null),
                         createOffenceDecisionInformation(offenceId2, null))));
-        final Decision decision = new Decision(decisionId, sessionId, caseId, this.note, savedAt, legalAdviser, offenceDecisions, null);
+        final Decision decision = new Decision(decisionId, sessionId, caseId, this.note, savedAt, legalAdviser, offenceDecisions, null,null);
 
         // when
         final Stream eventStream = CaseDecisionHandler.INSTANCE.saveDecision(decision, caseAggregateState, session);
@@ -1165,7 +1135,7 @@ public class CaseDecisionHandlerTest {
         final List<OffenceDecision> offenceDecisions = newArrayList(new SetAside(randomUUID(), asList(
                         createOffenceDecisionInformation(offenceId1, null))),
                 new SetAside(randomUUID(), asList(createOffenceDecisionInformation(offenceId2, null))));
-        final Decision decision = new Decision(decisionId, sessionId, caseId, this.note, savedAt, legalAdviser, offenceDecisions, null);
+        final Decision decision = new Decision(decisionId, sessionId, caseId, this.note, savedAt, legalAdviser, offenceDecisions, null,null);
 
         // when
         final Stream eventStream = CaseDecisionHandler.INSTANCE.saveDecision(decision, caseAggregateState, session);
@@ -1190,7 +1160,7 @@ public class CaseDecisionHandlerTest {
                 new Adjourn(randomUUID(), asList(createOffenceDecisionInformation(offenceId2, FOUND_GUILTY)),
                         "adjourn reason ", adjournedTo), dismiss);
 
-        final Decision decision1 = new Decision(decisionId, sessionId, caseId, this.note, savedAt, legalAdviser, offenceDecisions, null);
+        final Decision decision1 = new Decision(decisionId, sessionId, caseId, this.note, savedAt, legalAdviser, offenceDecisions, null,null);
         Stream<Object> eventStream = CaseDecisionHandler.INSTANCE.saveDecision(decision1, caseAggregateState, session);
 
         caseAggregateState.updateOffenceConvictionDetails(zonedDateTime, offenceDecisions, null);
@@ -1200,7 +1170,7 @@ public class CaseDecisionHandlerTest {
                 new SetAside(randomUUID(), asList(
                         createOffenceDecisionInformation(offenceId1, null),
                         createOffenceDecisionInformation(offenceId2, FOUND_GUILTY))));
-        final Decision decision = new Decision(decisionId, sessionId, caseId, this.note, savedAt, legalAdviser, offenceDecisions, null);
+        final Decision decision = new Decision(decisionId, sessionId, caseId, this.note, savedAt, legalAdviser, offenceDecisions, null,null);
 
         caseAggregateState.updateOffenceConvictionDetails(zonedDateTime, offenceDecisions, null);
         caseAggregateState.updateOffenceDecisions(offenceDecisions, sessionId);

@@ -166,6 +166,15 @@ public class CaseAggregateState implements AggregateState {
     private DecisionSaved latestReferToCourtDecision;
     private boolean caseListed;
     private boolean caseReserved;
+    private LocalDate savedAt;
+
+    public LocalDate getSavedAt() {
+        return savedAt;
+    }
+
+    public void setSavedAt(final LocalDate savedAt) {
+        this.savedAt = savedAt;
+    }
 
     public UUID getCaseId() {
         return caseId;

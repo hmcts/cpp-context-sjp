@@ -45,6 +45,9 @@
     },
     "savedBy": {
       "$ref": "http://justice.gov.uk/json/schemas/domains/sjp/user.json"
+    },
+    "isApplicationFlow": {
+      "type": "boolean"
     }
   },
   "required": [

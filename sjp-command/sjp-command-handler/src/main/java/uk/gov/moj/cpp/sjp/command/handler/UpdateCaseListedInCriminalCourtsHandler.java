@@ -1,5 +1,7 @@
 package uk.gov.moj.cpp.sjp.command.handler;
 
+import static java.util.UUID.fromString;
+
 import uk.gov.justice.core.courts.CourtCentre;
 import uk.gov.justice.core.courts.HearingDay;
 import uk.gov.justice.core.courts.HearingType;
@@ -28,6 +30,7 @@ public class UpdateCaseListedInCriminalCourtsHandler extends CaseCommandHandler 
     public static final String COURT_CENTRE = "courtCentre";
     public static final String HEARING_DAYS = "hearingDays";
     public static final String HEARING_TYPE = "hearingType";
+    public static final String CASE_ID = "caseId";
 
     private final JsonObjectToObjectConverter jsonObjectToObjectConverter = new JsonObjectToObjectConverter(new ObjectMapperProducer().objectMapper());
 
@@ -66,6 +69,16 @@ public class UpdateCaseListedInCriminalCourtsHandler extends CaseCommandHandler 
                         courtCentre,
                         hearingDays,
                         hearingType));
+    }
+
+    @Handles("sjp.command.update-case-listed-in-cc")
+    public void updateCaseApplicationListedInCC(final JsonEnvelope command) throws EventStreamException {
+
+        final JsonObject payload = command.payloadAsJsonObject();
+        final UUID caseId = fromString(payload.getString(CASE_ID));
+        final boolean listedInCriminalCourts = payload.getBoolean("listedInCriminalCourts");
+        applyToCaseAggregate(command, caseAggregate -> caseAggregate.updateCaseListedInCriminalCourts(caseId,listedInCriminalCourts));
+
     }
 
 }

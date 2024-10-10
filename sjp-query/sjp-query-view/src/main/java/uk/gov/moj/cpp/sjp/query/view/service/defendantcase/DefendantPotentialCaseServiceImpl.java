@@ -141,7 +141,7 @@ public class DefendantPotentialCaseServiceImpl implements DefendantPotentialCase
             final List<String> offences = caseDetail.getDefendant().getOffences()
                     .stream()
                     .map(OffenceDetail::getWording)
-                    .toList();
+                    .collect(Collectors.toList());
 
             builder.withPostingOrHearingDate(caseDetail.getPostingDate())
                     .withProsecutorName(getProsecutingAuthority(caseDetail))

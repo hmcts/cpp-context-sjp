@@ -157,7 +157,7 @@ public class CaseDecisionHandlerInValidVerdictPleaCasesTest {
                         disabilityNeedsOf("disability needs"));
 
         final List<OffenceDecision> offenceDecisions = createOffenceDecisions(decisionType, verdictType, courtOptions);
-        final Decision decision = new Decision(decisionId, sessionId, caseId, note, savedAt, legalAdviser, offenceDecisions, null);
+        final Decision decision = new Decision(decisionId, sessionId, caseId, note, savedAt, legalAdviser, offenceDecisions, null, null);
         caseAggregateState.setPleas(Arrays.asList(new Plea(null, offenceId1, pleaType)));
 
         final Stream<Object> eventStream = CaseDecisionHandler.INSTANCE.saveDecision(decision, caseAggregateState, session);

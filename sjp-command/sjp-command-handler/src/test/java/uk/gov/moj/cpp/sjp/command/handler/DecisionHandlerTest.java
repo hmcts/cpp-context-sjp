@@ -127,7 +127,7 @@ public class DecisionHandlerTest {
         offenceDecisions.add(offenceDecision1);
         offenceDecisions.add(offenceDecision2);
 
-        final Decision decision = new Decision(decisionId, sessionId, caseId, "duplicate conviction", savedAt, savedBy, offenceDecisions, null);
+        final Decision decision = new Decision(decisionId, sessionId, caseId, "duplicate conviction", savedAt, savedBy, offenceDecisions, null,null);
 
         final DecisionSaved decisionSaved = new DecisionSaved(decisionId, sessionId, caseId, urn, decision.getSavedAt(), offenceDecisions);
 
@@ -184,7 +184,7 @@ public class DecisionHandlerTest {
         offenceDecisions.add(offenceDecision1);
         offenceDecisions.add(offenceDecision2);
 
-        final Decision decision = new Decision(decisionId, sessionId, caseId, "duplicate conviction", savedAt, savedBy, offenceDecisions, null);
+        final Decision decision = new Decision(decisionId, sessionId, caseId, "duplicate conviction", savedAt, savedBy, offenceDecisions, null,null);
 
         final DecisionSaved decisionSaved = new DecisionSaved(decisionId, sessionId, caseId, urn, decision.getSavedAt(), offenceDecisions);
 
@@ -241,7 +241,7 @@ public class DecisionHandlerTest {
         offenceDecisions.add(offenceDecision1);
         offenceDecisions.add(offenceDecision2);
 
-        final Decision decision = new Decision(decisionId, sessionId, caseId, "duplicate conviction", savedAt, savedBy, offenceDecisions, null);
+        final Decision decision = new Decision(decisionId, sessionId, caseId, "duplicate conviction", savedAt, savedBy, offenceDecisions, null,null);
 
         final DecisionSaved decisionSaved = new DecisionSaved(decisionId, sessionId, caseId, urn, decision.getSavedAt(), offenceDecisions);
 

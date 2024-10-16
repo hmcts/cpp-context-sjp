@@ -17,7 +17,7 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-@SuppressWarnings({"squid:S00107", "PMD:BeanMembersShouldSerialize", "squid:S2384", "ALL"})
+@SuppressWarnings({"squid:S00107", "pmd:BeanMembersShouldSerialize"})
 public class Decision implements Serializable {
 
     private UUID decisionId;
@@ -29,7 +29,6 @@ public class Decision implements Serializable {
     private List<OffenceDecision> offenceDecisions;
     private FinancialImposition financialImposition;
     private Defendant defendant;
-    private Boolean isApplicationFlow;
 
     @JsonCreator
     public Decision(@JsonProperty("decisionId") final UUID decisionId,
@@ -40,8 +39,7 @@ public class Decision implements Serializable {
                     @JsonProperty("savedBy") final User savedBy,
                     @JsonProperty("offenceDecisions") final List<OffenceDecision> offenceDecisions,
                     @JsonProperty("financialImposition") final FinancialImposition financialImposition,
-                    @JsonProperty("defendant") final Defendant defendant,
-                    @JsonProperty("isApplicationFlow") final Boolean isApplicationFlow) {
+                    @JsonProperty("defendant") final Defendant defendant) {
         this.decisionId = decisionId;
         this.sessionId = sessionId;
         this.caseId = caseId;
@@ -51,7 +49,6 @@ public class Decision implements Serializable {
         this.offenceDecisions = offenceDecisions;
         this.financialImposition = financialImposition;
         this.defendant = defendant;
-        this.isApplicationFlow = isApplicationFlow;
     }
 
     @SuppressWarnings("pmd:NullAssignment")
@@ -62,8 +59,7 @@ public class Decision implements Serializable {
                     final ZonedDateTime savedAt,
                     final User savedBy,
                     final List<OffenceDecision> offenceDecisions,
-                    final Defendant defendant,
-                    final Boolean isApplicationFlow) {
+                    final Defendant defendant) {
         this.decisionId = decisionId;
         this.sessionId = sessionId;
         this.caseId = caseId;
@@ -72,7 +68,6 @@ public class Decision implements Serializable {
         this.savedBy = savedBy;
         this.offenceDecisions = offenceDecisions;
         this.defendant = defendant;
-        this.isApplicationFlow = isApplicationFlow;
     }
 
     public UUID getDecisionId() {
@@ -110,8 +105,6 @@ public class Decision implements Serializable {
     public Defendant getDefendant() {
         return defendant;
     }
-
-    public Boolean isApplicationFlow() {return isApplicationFlow;}
 
     @JsonIgnore
     public Set<UUID> getOffenceIds() {

@@ -62,7 +62,6 @@ import uk.gov.moj.cpp.sjp.domain.onlineplea.PleadOnlinePcqVisited;
 import uk.gov.moj.cpp.sjp.domain.plea.PleaMethod;
 import uk.gov.moj.cpp.sjp.domain.plea.SetPleas;
 import uk.gov.moj.cpp.sjp.event.CCApplicationStatusCreated;
-import uk.gov.moj.cpp.sjp.event.CaseListedInCriminalCourtsUpdated;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -402,11 +401,6 @@ public class CaseAggregate implements Aggregate {
             return applyAndResolveCaseReadiness(() -> CaseCoreHandler.INSTANCE.updateCaseStatusOnCCApplicationResult(state, caseId, applicationId, applicationStatus));
         }
 
-    }
-
-    public Stream<Object> updateCaseListedInCriminalCourts(final UUID caseId, final boolean listedInCriminalCourts) {
-        final Stream.Builder<Object> streamBuilder = Stream.builder();
-        return apply(streamBuilder.add(new CaseListedInCriminalCourtsUpdated(caseId,listedInCriminalCourts)).build());
     }
 
     public Stream<Object> deleteDocs() {

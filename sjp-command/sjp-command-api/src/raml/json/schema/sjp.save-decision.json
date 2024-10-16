@@ -13,9 +13,6 @@
     },
     "financialImposition": {
       "$ref": "http://cpp.moj.gov.uk/core/sjp/decision/financial-imposition/financialImposition.json"
-    },
-    "isApplicationFlow": {
-      "type": "boolean"
     }
   },
   "required": [

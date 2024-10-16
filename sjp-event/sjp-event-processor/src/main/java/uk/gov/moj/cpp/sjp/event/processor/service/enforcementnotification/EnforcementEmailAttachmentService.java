@@ -1,16 +1,13 @@
 package uk.gov.moj.cpp.sjp.event.processor.service.enforcementnotification;
 
 import static java.lang.String.format;
-import static java.util.Objects.nonNull;
 import static javax.json.Json.createObjectBuilder;
-import static org.apache.commons.collections.CollectionUtils.isNotEmpty;
 import static uk.gov.justice.json.schemas.domains.sjp.ApplicationType.REOPENING;
 import static uk.gov.justice.json.schemas.domains.sjp.ApplicationType.STAT_DEC;
 import static uk.gov.moj.cpp.sjp.event.processor.helper.JsonObjectConversionHelper.jsonObjectAsByteArray;
 
 import uk.gov.justice.json.schemas.domains.sjp.ApplicationType;
 import uk.gov.justice.json.schemas.domains.sjp.queries.CaseDetails;
-import uk.gov.justice.json.schemas.domains.sjp.queries.Session;
 import uk.gov.justice.services.common.converter.ObjectToJsonObjectConverter;
 import uk.gov.justice.services.fileservice.api.FileServiceException;
 import uk.gov.justice.services.fileservice.api.FileStorer;
@@ -97,13 +94,6 @@ public class EnforcementEmailAttachmentService {
 
     private EnforcementPendingApplicationNotificationTemplateData createTemplatePayload(final EnforcementPendingApplicationNotificationRequired initiated, JsonEnvelope envelope) {
         final CaseDetails caseDetails = sjpService.getCaseDetailsByApplicationId(initiated.getApplicationId(), envelope);
-        String courtCentreName = "";
-        if(isNotEmpty(caseDetails.getCaseDecisions())){
-            final Session session = caseDetails.getCaseDecisions().get(0).getSession();
-            if (nonNull(session)) {
-                courtCentreName = session.getCourtHouseName();
-            }
-        }
         final String title = getEmailTitle(caseDetails.getCaseApplication().getApplicationType());
         return new EnforcementPendingApplicationNotificationTemplateDataBuilder()
                 .withCaseReference(initiated.getUrn())
@@ -111,14 +101,7 @@ public class EnforcementEmailAttachmentService {
                 .withGobAccountNumber(initiated.getGobAccountNumber())
                 .withDateApplicationIsListed(initiated.getDateApplicationIsListed())
                 .withDivisionCode(initiated.getDivisionCode())
-                .withTitle(title)
-                .withDefendantAddress(initiated.getDefendantAddress())
-                .withDefendantEmail(initiated.getDefendantEmail())
-                .withDefendantContactNumber(initiated.getDefendantContactNumber())
-                .withDefendantDateOfBirth(initiated.getDefendantDateOfBirth())
-                .withOriginalDateOfSentence(initiated.getOriginalDateOfSentence())
-                .withCourtCentreName(courtCentreName)
-                .build();
+                .withTitle(title).build();
     }
 
     private UUID storeEmailAttachmentTemplatePayload(final UUID applicationId,

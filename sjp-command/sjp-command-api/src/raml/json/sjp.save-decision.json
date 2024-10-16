@@ -13,8 +13,5 @@
       "reason": "Not enough documents",
       "adjournTo": "2019-01-01"
     }
-  ],
-  "isApplicationFlow": {
-    "type": "boolean"
-  }
+  ]
 }

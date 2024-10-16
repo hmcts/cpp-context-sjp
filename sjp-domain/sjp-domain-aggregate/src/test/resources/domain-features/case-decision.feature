@@ -95,6 +95,15 @@ Feature: Case Decision
     When you saveDecision to a CaseAggregate using a offence with more than one decision
     Then decision is rejected with offence has more than one decision
 
+
+  Scenario: Decision is rejected when offence does not have decision
+
+    Given case is created with multiple offences
+    And case is assigned
+    When you saveDecision to a CaseAggregate using a offence with no decision
+    Then decision is rejected with offence must have a decision
+
+
   Scenario: Decision is rejected when offence already have decision
 
     Given case is created with multiple offences

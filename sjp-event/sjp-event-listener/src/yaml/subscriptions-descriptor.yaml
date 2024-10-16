@@ -353,7 +353,4 @@ subscriptions_descriptor:
               - name: sjp.events.defendant-detail-update-requested
                 schema_uri: http://justice.gov.uk/json/schemas/domains/sjp/events/defendant-detail-update-requested.json
 
-              - name: sjp.events.case-listed-in-criminal-courts-updated
-                schema_uri: http://cpp.moj.gov.uk/sjp/event/case-listed-in-criminal-courts-updated.json
-
           event_source_name: sjp

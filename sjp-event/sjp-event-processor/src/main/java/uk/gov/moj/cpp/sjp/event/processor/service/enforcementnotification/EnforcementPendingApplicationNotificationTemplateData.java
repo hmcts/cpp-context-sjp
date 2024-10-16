@@ -15,37 +15,19 @@ public class EnforcementPendingApplicationNotificationTemplateData implements Se
     private final LocalDate dateApplicationIsListed;
     private final String defendantName;
     private final String title;
-    private final String defendantAddress;
-    private final String defendantDateOfBirth;
-    private final String defendantEmail;
-    private final String originalDateOfSentence;
-    private final String defendantContactNumber;
-    private final String courtCentreName;
 
     public EnforcementPendingApplicationNotificationTemplateData(final String gobAccountNumber,
                                                                  final int divisionCode,
                                                                  final String caseReference,
                                                                  final LocalDate dateApplicationIsListed,
                                                                  final String defendantName,
-                                                                 final String title,
-                                                                 final String defendantAddress,
-                                                                 final String defendantDateOfBirth,
-                                                                 final String defendantEmail,
-                                                                 final String originalDateOfSentence,
-                                                                 final String defendantContactNumber,
-                                                                 final String courtCentreName) {
+                                                                 final String title) {
         this.gobAccountNumber = gobAccountNumber;
         this.divisionCode = divisionCode;
         this.caseReference = caseReference;
         this.dateApplicationIsListed = dateApplicationIsListed;
         this.defendantName = defendantName;
         this.title = title;
-        this.defendantAddress = defendantAddress;
-        this.defendantDateOfBirth = defendantDateOfBirth;
-        this.defendantEmail = defendantEmail;
-        this.originalDateOfSentence = originalDateOfSentence;
-        this.defendantContactNumber = defendantContactNumber;
-        this.courtCentreName = courtCentreName;
     }
 
     public String getGobAccountNumber() {
@@ -69,18 +51,6 @@ public class EnforcementPendingApplicationNotificationTemplateData implements Se
     }
 
     public String getTitle() { return title; }
-
-    public String getDefendantAddress() {return defendantAddress;}
-
-    public String getDefendantDateOfBirth() {return defendantDateOfBirth;}
-
-    public String getDefendantEmail() {return defendantEmail;}
-
-    public String getOriginalDateOfSentence() {return originalDateOfSentence;}
-
-    public String getDefendantContactNumber() {return defendantContactNumber;}
-
-    public String getCourtCentreName() {return courtCentreName;}
 
     @Override
     public boolean equals(final Object o) {

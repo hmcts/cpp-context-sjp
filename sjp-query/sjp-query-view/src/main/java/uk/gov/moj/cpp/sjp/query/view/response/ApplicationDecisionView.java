@@ -31,8 +31,6 @@ public class ApplicationDecisionView {
 
     private SessionView session;
 
-    private UUID applicationId;
-
     public ApplicationDecisionView(final CaseApplicationDecision caseApplicationDecision) {
         this.granted = caseApplicationDecision.isGranted();
         this.outOfTime = caseApplicationDecision.getOutOfTime();
@@ -43,9 +41,6 @@ public class ApplicationDecisionView {
                 .orElse(null);
         this.session = convertSessionEntity(caseApplicationDecision.getSession());
         this.decisionId = caseApplicationDecision.getDecisionId();
-        this.applicationId = ofNullable(caseApplicationDecision.getCaseApplication())
-                .map(CaseApplication::getApplicationId)
-                .orElse(null);
     }
 
     public boolean isGranted() {
@@ -88,8 +83,6 @@ public class ApplicationDecisionView {
     public UUID getDecisionId() {
         return decisionId;
     }
-
-    public UUID getApplicationId() {return applicationId;}
 
     private SessionView convertSessionEntity(final Session entity) {
         final SessionView view = new SessionView();

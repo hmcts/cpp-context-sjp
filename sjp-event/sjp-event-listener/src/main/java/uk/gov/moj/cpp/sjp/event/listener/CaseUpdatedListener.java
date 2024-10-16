@@ -46,7 +46,6 @@ import javax.transaction.Transactional;
 public class CaseUpdatedListener {
 
     private static final String CASE_ID = "caseId";
-    public static final String LISTED_IN_CRIMINAL_COURTS = "listedInCriminalCourts";
 
     @Inject
     private JsonObjectToObjectConverter jsonObjectToObjectConverter;
@@ -199,16 +198,6 @@ public class CaseUpdatedListener {
             final CaseDetail caseDetail = findCaseById(caseByManagementStatus.getCaseId());
             caseDetail.setCaseManagementStatus(caseByManagementStatus.getCaseManagementStatus());
         });
-    }
-
-    @Handles("sjp.events.case-listed-in-criminal-courts-updated")
-    @Transactional
-    public void updateCCListedInCriminalCourts(final JsonEnvelope envelope) {
-        final CaseDetail caseDetail = caseRepository.findBy(fromString(envelope.payloadAsJsonObject().getString(CASE_ID)));
-        if(null!=caseDetail) {
-            caseDetail.setListedInCriminalCourts(envelope.payloadAsJsonObject().getBoolean(LISTED_IN_CRIMINAL_COURTS));
-            caseRepository.save(caseDetail);
-        }
     }
 
     private void handleCaseReopened(final JsonEnvelope envelope) {

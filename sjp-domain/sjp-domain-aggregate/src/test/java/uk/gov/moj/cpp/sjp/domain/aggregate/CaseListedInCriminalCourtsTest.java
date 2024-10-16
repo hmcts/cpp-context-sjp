@@ -83,7 +83,7 @@ public class CaseListedInCriminalCourtsTest extends CaseAggregateBaseTest {
                         courtOptions, null);
         offenceDecisions.add(offenceDecision);
 
-        final Decision decision = new Decision(decisionId, sessionId, caseId, "duplicate conviction", savedAt, savedBy, offenceDecisions, null,null);
+        final Decision decision = new Decision(decisionId, sessionId, caseId, "duplicate conviction", savedAt, savedBy, offenceDecisions, null);
         caseAggregate.assignCase(savedBy.getUserId(), ZonedDateTime.now(), CaseAssignmentType.MAGISTRATE_DECISION);
 
         caseAggregate.saveDecision(decision, session);

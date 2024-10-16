@@ -1,6 +1,5 @@
 package uk.gov.moj.cpp.sjp.domain.aggregate.mutator;
 
-import static java.util.Objects.nonNull;
 import static java.util.Optional.ofNullable;
 import static uk.gov.justice.json.schemas.domains.sjp.ApplicationType.REOPENING;
 import static uk.gov.justice.json.schemas.domains.sjp.ApplicationType.STAT_DEC;
@@ -87,7 +86,6 @@ import uk.gov.moj.cpp.sjp.event.session.CaseAssigned;
 import uk.gov.moj.cpp.sjp.event.session.CaseUnassigned;
 
 import java.time.LocalDate;
-import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Map;
@@ -221,10 +219,6 @@ final class CompositeCaseAggregateStateMutator implements AggregateStateMutator<
                         .filter(e -> e instanceof ReferForCourtHearing)
                         .count() > 0) {
                     state.setLatestReferToCourtDecision(event);
-                }
-                final ZonedDateTime savedAtDate = event.getSavedAt();
-                if(nonNull(savedAtDate)) {
-                    state.setSavedAt(event.getSavedAt().toLocalDate());
                 }
             });
 

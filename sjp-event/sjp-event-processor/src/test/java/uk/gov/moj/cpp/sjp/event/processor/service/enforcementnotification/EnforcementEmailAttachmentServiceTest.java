@@ -102,11 +102,6 @@ public class EnforcementEmailAttachmentServiceTest {
     final int DIV_CODE = 99;
     final LocalDate LISTED_DATE = LocalDate.now().minusDays(10);
     final String SEND_TO_ADDRESS = "enforcement@email.com";
-    final String DEFENDANT_DATE_OF_BIRTH = "26-01-1967";
-    final String DEFENDANT_ADDRESS = "Flat 2 9 Russell St Reading RG1 9CD";
-    final String DEFENDANT_EMAIL = "test@hotmail.com";
-    final String DEFENDANT_CONTACT_NUM = "02033827384";
-    final String ORIGINAL_DATE_OF_SENTENCE = "27-08-2023";
 
     @Spy
     private Enveloper envelopers = createEnveloper();
@@ -116,8 +111,7 @@ public class EnforcementEmailAttachmentServiceTest {
     public void setUp() {
         initiatedEvent
                 = new EnforcementPendingApplicationNotificationRequired
-                (CASE_ID, APP_ID, INITIATED_TIME, GOB_ACCOUNT_NUMBER, DEF_NAME, URN, DIV_CODE, LISTED_DATE, DEFENDANT_ADDRESS,
-                        DEFENDANT_DATE_OF_BIRTH, DEFENDANT_EMAIL, ORIGINAL_DATE_OF_SENTENCE, DEFENDANT_CONTACT_NUM);
+                (CASE_ID, APP_ID, INITIATED_TIME, GOB_ACCOUNT_NUMBER, DEF_NAME, URN, DIV_CODE, LISTED_DATE);
     }
 
     @Test

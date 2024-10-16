@@ -27,21 +27,6 @@
     "dateApplicationIsListed": {
       "type": "string",
       "format": "date"
-    },
-    "defendantAddress": {
-      "type": "string"
-    },
-    "defendantDateOfBirth": {
-      "type": "string"
-    },
-    "defendantEmail": {
-      "type": "string"
-    },
-    "originalDateOfSentence": {
-      "type": "string"
-    },
-    "defendantContactNumber": {
-      "type": "string"
     }
   },
   "required": [

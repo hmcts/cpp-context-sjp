@@ -93,18 +93,15 @@ public class CourtApplicationCreatedProcessorTest {
 
         processor.courtApplicationCreated(event);
 
-        verify(this.sender, times(2)).send(this.envelopeArgumentCaptor.capture());
+        verify(this.sender).send(this.envelopeArgumentCaptor.capture());
 
-        assertThat(envelopeArgumentCaptor.getAllValues().get(0),
+        assertThat(envelopeArgumentCaptor.getValue(),
                 jsonEnvelope(metadata().withName("sjp.command.update-cc-case-application-status"), payloadIsJson(allOf(
                         withJsonPath("$.caseId", is(sjpCaseId.toString())),
                         withJsonPath("$.applicationId", is(applicationId.toString())),
                         withJsonPath("$.applicationStatus", is(ApplicationStatus.STATUTORY_DECLARATION_PENDING.name()))))));
-        assertThat(envelopeArgumentCaptor.getAllValues().get(1),
-                jsonEnvelope(metadata().withName("sjp.command.update-case-listed-in-cc"), payloadIsJson(allOf(
-                        withJsonPath("$.caseId", is(sjpCaseId.toString())),
-                        withJsonPath("$.listedInCriminalCourts", is(true))
-                        ))));
+
+
     }
 
     @Test
@@ -133,16 +130,15 @@ public class CourtApplicationCreatedProcessorTest {
 
         processor.courtApplicationCreated(event);
 
-        verify(this.sender, times(2)).send(this.envelopeArgumentCaptor.capture());
+        verify(this.sender).send(this.envelopeArgumentCaptor.capture());
 
-        assertThat(envelopeArgumentCaptor.getAllValues().get(0),
+        assertThat(envelopeArgumentCaptor.getValue(),
                 jsonEnvelope(metadata().withName("sjp.command.update-cc-case-application-status"), payloadIsJson(allOf(
                         withJsonPath("$.caseId", is(sjpCaseId.toString())),
                         withJsonPath("$.applicationId", is(applicationId.toString())),
                         withJsonPath("$.applicationStatus", is(ApplicationStatus.REOPENING_PENDING.name()))))));
-        assertThat(envelopeArgumentCaptor.getAllValues().get(1),
-                jsonEnvelope(metadata().withName("sjp.command.update-case-listed-in-cc"), payloadIsJson(allOf(
-                        withJsonPath("$.caseId", is(sjpCaseId.toString()))))));
+
+
     }
 
     @Test
@@ -170,16 +166,15 @@ public class CourtApplicationCreatedProcessorTest {
 
         processor.courtApplicationCreated(event);
 
-        verify(this.sender, times(2)).send(this.envelopeArgumentCaptor.capture());
+        verify(this.sender).send(this.envelopeArgumentCaptor.capture());
 
-        assertThat(envelopeArgumentCaptor.getAllValues().get(0),
+        assertThat(envelopeArgumentCaptor.getValue(),
                 jsonEnvelope(metadata().withName("sjp.command.update-cc-case-application-status"), payloadIsJson(allOf(
                         withJsonPath("$.caseId", is(sjpCaseId.toString())),
                         withJsonPath("$.applicationId", is(applicationId.toString())),
                         withJsonPath("$.applicationStatus", is(ApplicationStatus.APPEAL_PENDING.name()))))));
-        assertThat(envelopeArgumentCaptor.getAllValues().get(1),
-                jsonEnvelope(metadata().withName("sjp.command.update-case-listed-in-cc"), payloadIsJson(allOf(
-                        withJsonPath("$.caseId", is(sjpCaseId.toString()))))));
+
+
     }
 
     @Test
@@ -207,10 +202,7 @@ public class CourtApplicationCreatedProcessorTest {
 
         processor.courtApplicationCreated(event);
 
-        verify(sender, times(1)).send(envelopeArgumentCaptor.capture());
-        assertThat(envelopeArgumentCaptor.getValue(),
-                jsonEnvelope(metadata().withName("sjp.command.update-case-listed-in-cc"), payloadIsJson(allOf(
-                        withJsonPath("$.caseId", is(sjpCaseId.toString()))))));
+        verify(sender, times(0)).send(envelopeArgumentCaptor.capture());
 
     }
 

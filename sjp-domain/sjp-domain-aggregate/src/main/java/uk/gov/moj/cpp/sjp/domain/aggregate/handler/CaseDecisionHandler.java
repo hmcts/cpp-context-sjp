@@ -39,6 +39,7 @@ import static uk.gov.moj.cpp.sjp.domain.verdict.VerdictType.FOUND_GUILTY;
 import static uk.gov.moj.cpp.sjp.domain.verdict.VerdictType.FOUND_NOT_GUILTY;
 import static uk.gov.moj.cpp.sjp.domain.verdict.VerdictType.NO_VERDICT;
 import static uk.gov.moj.cpp.sjp.domain.verdict.VerdictType.PROVED_SJP;
+import static uk.gov.moj.cpp.sjp.event.CaseReferredForCourtHearing.caseReferredForCourtHearing;
 import static uk.gov.moj.cpp.sjp.event.CaseReferredForCourtHearingV2.caseReferredForCourtHearingV2;
 
 import uk.gov.justice.json.schemas.domains.sjp.Note;
@@ -293,6 +294,16 @@ public class CaseDecisionHandler {
         }
     }
 
+    private static void validateOffencesHaveDecision(final Decision decision, final CaseAggregateState state, final List<String> rejectionReason) {
+        final Set<UUID> offenceIds = decision.getOffenceIds();
+
+        getOffencesRequiringDecision(state)
+                .stream()
+                .filter(offenceId -> !offenceIds.contains(offenceId))
+                .map(offenceId -> format("Offence with id %s must have a decision", offenceId))
+                .forEach(rejectionReason::add);
+    }
+
     private static void validateOffencesHasOnlyOneDecision(final Decision decision, final List<String> rejectionReason) {
         final Map<UUID, Long> offenceIdWithCount = getOffenceIds(decision.getOffenceDecisions()).collect(groupingBy(Function.identity(), counting()));
         offenceIdWithCount.forEach((offenceId, count) -> {
@@ -378,6 +389,12 @@ public class CaseDecisionHandler {
         return CaseLanguageHandler.INSTANCE.updateHearingRequirements(user.getUserId(), state.getDefendantId(), interpreterLanguage, courtOptions.getWelshHearing(), state, PleaMethod.POSTAL, null);
     }
 
+    private static Collection<UUID> getOffencesRequiringDecision(final CaseAggregateState state) {
+        return state.getOffenceDecisions().isEmpty() ?
+                state.getOffences() :
+                getOffenceIds(state.getOffenceDecisions(), OffenceDecision::isNotFinalDecision);
+    }
+
     private static Stream<UUID> getOffenceIds(final Collection<OffenceDecision> offencesDecisions) {
         return offencesDecisions.stream()
                 .flatMap(offencesDecision -> offencesDecision.getOffenceIds().stream());
@@ -397,6 +414,7 @@ public class CaseDecisionHandler {
     }
 
     public Stream saveDecision(final Decision decision, final CaseAggregateState state, final Session session) {
+
         final List<String> validationErrors = validateDecision(decision, state, session.getSessionType());
         if (!validationErrors.isEmpty()) {
             return Stream.of(new DecisionRejected(decision, validationErrors));
@@ -410,21 +428,10 @@ public class CaseDecisionHandler {
         handleSetAside(decision, streamBuilder, state);
         handleAdjournDecision(decision, streamBuilder);
         handleReferToCriminalCourtDecision(decision, state, streamBuilder);
-        if(isNull(decision.isApplicationFlow()) || !decision.isApplicationFlow()) {
-            addCaseCompletedEventIfAllOffencesHasFinalDecision(decision, streamBuilder, state);
-        }else{
-            addCaseCompletedEventIfAnyOffencesHasFinalDecision(decision, streamBuilder, state);
-        }
+
+        addCaseCompletedEventIfAllOffencesHasFinalDecision(decision, streamBuilder, state);
 
         return streamBuilder.build();
-    }
-
-    private void addCaseCompletedEventIfAnyOffencesHasFinalDecision(final Decision decision, final Stream.Builder<Object> streamBuilder, final CaseAggregateState state) {
-        final Set<UUID> incomingOffencesWithFinalDecision = getOffenceIds(decision.getOffenceDecisions(), OffenceDecision::isFinalDecision);
-        if (nonNull(state.getOffences()) && !state.getOffences().isEmpty() &&
-                !incomingOffencesWithFinalDecision.isEmpty() && state.getOffences().containsAll(incomingOffencesWithFinalDecision)) {
-            streamBuilder.add(new CaseCompleted(decision.getCaseId(), state.getSessionIds()));
-        }
     }
 
 
@@ -434,6 +441,7 @@ public class CaseDecisionHandler {
         validateCaseIsNotCompleted(state, rejectionReason);
         validateCaseIsAssignedToTheCaller(decision, state, rejectionReason);
         validateOffencesBelongToTheCase(decision, state, rejectionReason);
+        validateOffencesHaveDecision(decision, state, rejectionReason);
         validateOffencesHasOnlyOneDecision(decision, rejectionReason);
         validateDecisionsCombinations(decision, rejectionReason);
         validateOffencesDoNotHavePreviousFinalDecision(decision, state, rejectionReason);
@@ -889,7 +897,7 @@ public class CaseDecisionHandler {
             pleas.add(new Plea(defendant.getId(), offence.getId(), GUILTY));
         });
 
-        final Decision decision = new Decision(aocpDecision.getDecisionId(), aocpDecision.getSessionId(),  state.getCaseId(), null, savedAt, aocpDecision.getSavedBy(), offenceDecisions, financialImposition, aocpDecision.getDefendant(), null);
+        final Decision decision = new Decision(aocpDecision.getDecisionId(), aocpDecision.getSessionId(),  state.getCaseId(), null, savedAt, aocpDecision.getSavedBy(), offenceDecisions, financialImposition, aocpDecision.getDefendant());
 
         addSetAocpPleaEvent(state.getCaseId(), pleas, state.getAocpAcceptedPleaDate(), streamBuilder);
         addDecisionSavedEvent(session, decision, state, streamBuilder, true);

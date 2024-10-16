@@ -36,8 +36,8 @@ public class CourtApplicationCreatedProcessor {
     @Inject
     private JsonObjectToObjectConverter jsonObjectConverter;
 
-    private static final String APPEARANCE_TO_MAKE_STATUTORY_DECLARATION_CODE = "MC80528";
-    private static final String APPLICATION_TO_REOPEN_CASE_CODE = "MC80524";
+    private static String APPEARANCE_TO_MAKE_STATUTORY_DECLARATION_CODE = "MC80528";
+    private static String APPLICATION_TO_REOPEN_CASE_CODE = "MC80524";
 
     @Handles("public.progression.court-application-created")
     public void courtApplicationCreated(final JsonEnvelope jsonEnvelope) {
@@ -76,15 +76,7 @@ public class CourtApplicationCreatedProcessor {
                     sender.send(envelopeToSend);
 
                 }
-                LOGGER.info("Command Raised to update listedInCriminalCourts for Criminal Court Application with CaseId {} and applicationId {} for sjp case", sjpCaseId, applicationId);
-                final JsonObject listedInCCPayload = Json.createObjectBuilder()
-                        .add("caseId", sjpCaseId)
-                        .add("listedInCriminalCourts",true)
-                        .build();
-                final JsonEnvelope envelopeToSend = envelopeFrom(
-                        metadataFrom(jsonEnvelope.metadata()).withName("sjp.command.update-case-listed-in-cc"),
-                        listedInCCPayload);
-                sender.send(envelopeToSend);
+
             });
         }
 

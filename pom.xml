@@ -40,20 +40,20 @@
 
         <assignment.version>6.0.0</assignment.version>
         <access-control-sjp-providers.version>4.1.4-ATCM</access-control-sjp-providers.version>
-        <material.version>17.0.19</material.version>
+        <material.version>17.0.22</material.version>
         <notification.notify.version>17.0.1</notification.notify.version>
-        <referencedata.version>17.0.22</referencedata.version>
+        <referencedata.version>17.0.26</referencedata.version>
         <referencedata.offences.version>17.0.17</referencedata.offences.version>
         <scheduling.version>17.0.11</scheduling.version>
         <authorisation.service.version>0.1.49</authorisation.service.version>
-        <usersgroups.version>17.0.19</usersgroups.version>
-        <progression.version>17.0.11</progression.version>
-        <prosecutioncasefile.version>17.0.8</prosecutioncasefile.version>
+        <usersgroups.version>17.0.21</usersgroups.version>
+        <progression.version>17.0.12</progression.version>
+        <prosecutioncasefile.version>17.0.11</prosecutioncasefile.version>
         <access-control-sjp-providers.version>4.1.4-ATCM</access-control-sjp-providers.version>
         <cpp.framework.action.mapping.enabled>true</cpp.framework.action.mapping.enabled>
         <mvn.site.url>file://${project.build.directory}/site</mvn.site.url>
         <file.alfresco.version>2.3.0</file.alfresco.version>
-        <coredomain.version>17.21.12</coredomain.version>
+        <coredomain.version>17.21.13</coredomain.version>
         <criminal-court-public-model.version>${coredomain.version}</criminal-court-public-model.version>
         <javax.el-api.version>3.0.0</javax.el-api.version>
         <joda-time.version>2.10</joda-time.version>
@@ -65,7 +65,7 @@
         <argLine>-Djava.locale.providers=CLDR</argLine>
         <elasticsearch-maven-plugin.version>6.13</elasticsearch-maven-plugin.version>
         <elasticsearch.embedded.version>7.16.2</elasticsearch.embedded.version>
-        <stagingenforcement.version>17.0.12</stagingenforcement.version>
+        <stagingenforcement.version>17.0.14</stagingenforcement.version>
         <unifiedsearch.version>17.0.12</unifiedsearch.version>
         <jsonassert.version>1.5.0</jsonassert.version>
         <junit4.version>4.13.1</junit4.version>

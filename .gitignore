@@ -6,6 +6,7 @@
 *.war
 *.ear
 *.rar
+*.puml
 
 # Thumbnails
 Thumbs.db
@@ -55,8 +56,6 @@ target/
 deployWars.sh
 buildContexts.sh
 
+
 lightning-jenkins.properties
-
-# Mac
-.DS_Store
-
+**/.DS_Store

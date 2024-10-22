@@ -70,6 +70,8 @@
         <jsonassert.version>1.5.0</jsonassert.version>
         <junit4.version>4.13.1</junit4.version>
         <maven.cucumber.reporting.version>2.0.0</maven.cucumber.reporting.version>
+        <jgitflow-maven-plugin.version>1.0-m5.1</jgitflow-maven-plugin.version>
+        <jgitflow.maven.developBranchName>main</jgitflow.maven.developBranchName>
     </properties>
 
     <modules>
@@ -104,6 +106,24 @@
                 <artifactId>maven-surefire-plugin</artifactId>
                 <configuration>
                     <argLine>${jvm.options}</argLine>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>external.atlassian.jgitflow</groupId>
+                <artifactId>jgitflow-maven-plugin</artifactId>
+                <version>${jgitflow-maven-plugin.version}</version>
+                <configuration>
+                    <flowInitContext>
+                        <masterBranchName>dev/release</masterBranchName>
+                        <developBranchName>main</developBranchName>
+                        <featureBranchPrefix>dev/feature-</featureBranchPrefix>
+                        <releaseBranchPrefix>dev/release-</releaseBranchPrefix>
+                        <hotfixBranchPrefix>dev/hotfix-</hotfixBranchPrefix>
+                        <versionTagPrefix>v</versionTagPrefix>
+                    </flowInitContext>
+                    <autoVersionSubmodules>true</autoVersionSubmodules>
+                    <enableSshAgent>true</enableSshAgent>
+                    <pushReleases>true</pushReleases>
                 </configuration>
             </plugin>
         </plugins>

@@ -65,6 +65,7 @@ import uk.gov.justice.core.courts.RotaSlot;
 import uk.gov.justice.domain.annotation.Event;
 import uk.gov.justice.json.schemas.domains.sjp.Language;
 import uk.gov.justice.json.schemas.domains.sjp.User;
+import uk.gov.justice.services.common.util.UtcClock;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.sjp.domain.DefendantCourtInterpreter;
 import uk.gov.moj.cpp.sjp.domain.DefendantCourtOptions;
@@ -97,6 +98,7 @@ import uk.gov.moj.sjp.it.util.builders.DismissBuilder;
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeFormatterBuilder;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
@@ -131,7 +133,7 @@ public class CourtReferralIT extends BaseIntegrationTest {
     private static final UUID DOCUMENT_ID = randomUUID();
     private static final String FILE_NAME = "Bank Statement";
     private static final String MIME_TYPE = "pdf";
-    private static final ZonedDateTime ADDED_AT = now(UTC);
+    private static final ZonedDateTime ADDED_AT = new UtcClock().now();
     private static final String REFERENCE_DATA_DOCUMENT_TYPE = "Case Summary";
 
     private static final String NATIONAL_INSURANCE_NUMBER = "BB333333B";
@@ -167,7 +169,7 @@ public class CourtReferralIT extends BaseIntegrationTest {
         offenceId3 = randomUUID();
         defendantId = randomUUID();
         roomId = randomUUID();
-        listedStartDateTime = now().plusHours(2);
+        listedStartDateTime = new UtcClock().now().plusHours(2);
 
         nextHearing = NextHearing.nextHearing()
                 .withType(HearingType.hearingType().withId(fromString("bf8155e1-90b9-4080-b133-bfbad895d6e4")).withDescription("Trial").build())

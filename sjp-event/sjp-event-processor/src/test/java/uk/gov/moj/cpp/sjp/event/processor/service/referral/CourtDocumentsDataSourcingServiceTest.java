@@ -27,6 +27,7 @@ import uk.gov.moj.cpp.sjp.event.processor.service.MaterialService;
 import uk.gov.moj.cpp.sjp.event.processor.service.ReferenceDataService;
 
 import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -60,6 +61,8 @@ public class CourtDocumentsDataSourcingServiceTest {
     private static final String SJP_APPLICATION_DOCUMENT_TYPE = "APPLICATION";
     private static final String RESULT_ORDER = "RESULT_ORDER";
     private static final String EMPLOYER_ATTACHMENT_TO_EARNINGS = "EMPLOYER_ATTACHMENT_TO_EARNINGS";
+    private static final String ELECTRONIC_NOTIFICATIONS = "ELECTRONIC_NOTIFICATIONS";
+    private static final DateTimeFormatter TIMESTAMP_FORMATTER = DateTimeFormatter.ofPattern("yyyyMMddHHmmss");
 
     @Mock
     private MaterialService materialService;
@@ -180,6 +183,11 @@ public class CourtDocumentsDataSourcingServiceTest {
                 .withDocumentType(RESULT_ORDER)
                 .withMaterialId(MATERIAL_ID)
                 .build());
+        caseDocuments.add(Document.document()
+                .withId(randomUUID())
+                .withDocumentType(ELECTRONIC_NOTIFICATIONS)
+                .withMaterialId(MATERIAL_ID)
+                .build());
 
         final CaseDetails caseDetails = caseDetails().withCaseDocuments(caseDocuments).build();
 
@@ -189,6 +197,94 @@ public class CourtDocumentsDataSourcingServiceTest {
 
     }
 
+    @Test
+    public void shouldFilterOutExcludedDocumentTypesWhenDVLADocumentTypeWithExtension() {
+        final JsonObject materialDataMock = createObjectBuilder()
+                .add("fileName", MATERIAL_FILE_NAME)
+                .add("materialAddedDate", MATERIAL_ADDED_DATE.toString())
+                .add("mimeType", MIME_TYPE)
+                .build();
+        mockDocumentTypeAccessService();
+
+        final CaseReferredForCourtHearing caseReferral = caseReferredForCourtHearing()
+                .withCaseId(CASE_ID)
+                .withReferredAt(REFERRED_AT)
+                .build();
+
+        final List<Document> caseDocuments = new ArrayList<>();
+        caseDocuments.add(Document.document()
+                .withId(randomUUID())
+                .withDocumentType(EMPLOYER_ATTACHMENT_TO_EARNINGS)
+                .withMaterialId(MATERIAL_ID)
+                .build());
+        caseDocuments.add(Document.document()
+                .withId(randomUUID())
+                .withDocumentType(RESULT_ORDER)
+                .withMaterialId(MATERIAL_ID)
+                .build());
+        caseDocuments.add(Document.document()
+                .withId(randomUUID())
+                .withDocumentType(ELECTRONIC_NOTIFICATIONS)
+                .withMaterialId(MATERIAL_ID)
+                .build());
+        caseDocuments.add(Document.document()
+                .withId(randomUUID())
+                .withDocumentType(ELECTRONIC_NOTIFICATIONS + "_" + ZonedDateTime.now().format(TIMESTAMP_FORMATTER) + ".pdf")
+                .withMaterialId(MATERIAL_ID)
+                .build());
+
+        final CaseDetails caseDetails = caseDetails().withCaseDocuments(caseDocuments).build();
+
+        final List<CourtDocumentView> courtDocuments = courtDocumentsDataSourcingService.createCourtDocumentViews(caseReferral.getReferredAt(), caseDetails, envelope);
+
+        assertThat(courtDocuments, hasSize(0));
+
+    }
+
+    @Test
+    public void shouldFilterOutExcludedDocumentTypesDocumentShouldNotGetFilteredOut() {
+        final JsonObject materialDataMock = createObjectBuilder()
+                .add("fileName", MATERIAL_FILE_NAME)
+                .add("materialAddedDate", MATERIAL_ADDED_DATE.toString())
+                .add("mimeType", MIME_TYPE)
+                .build();
+        when(materialService.getMaterialMetadata(MATERIAL_ID, envelope)).thenReturn(materialDataMock);
+        mockDocumentTypeAccessService();
+
+        final CaseReferredForCourtHearing caseReferral = caseReferredForCourtHearing()
+                .withCaseId(CASE_ID)
+                .withReferredAt(REFERRED_AT)
+                .build();
+
+        final List<Document> caseDocuments = new ArrayList<>();
+        caseDocuments.add(Document.document()
+                .withId(randomUUID())
+                .withDocumentType(EMPLOYER_ATTACHMENT_TO_EARNINGS)
+                .withMaterialId(MATERIAL_ID)
+                .build());
+        caseDocuments.add(Document.document()
+                .withId(randomUUID())
+                .withDocumentType(RESULT_ORDER)
+                .withMaterialId(MATERIAL_ID)
+                .build());
+        caseDocuments.add(Document.document()
+                .withId(randomUUID())
+                .withDocumentType(ELECTRONIC_NOTIFICATIONS)
+                .withMaterialId(MATERIAL_ID)
+                .build());
+        caseDocuments.add(Document.document()
+                .withId(randomUUID())
+                .withDocumentType("ELECTRONIC" + "_" + ZonedDateTime.now().format(TIMESTAMP_FORMATTER) + ".pdf")
+                .withMaterialId(MATERIAL_ID)
+                .build());
+
+        final CaseDetails caseDetails = caseDetails().withCaseDocuments(caseDocuments).build();
+
+        final List<CourtDocumentView> courtDocuments = courtDocumentsDataSourcingService.createCourtDocumentViews(caseReferral.getReferredAt(), caseDetails, envelope);
+
+        assertThat(courtDocuments, hasSize(1));
+
+    }
     @Test
     public void shouldFilterOutApplicationDocumentTypeIfNoCurrentApplication() {
         final JsonObject materialDataMock = createObjectBuilder()

@@ -22,6 +22,7 @@ public class CaseDocumentTypeHelper {
         DOCUMENT_MAPPING_TYPES.put("DISQUALIFICATION_REPLY_SLIP", DOCUMENT_MAPPING_TYPES_SENTENCE);
         DOCUMENT_MAPPING_TYPES.put("OTHER", "General correspondence");
         DOCUMENT_MAPPING_TYPES.put("APPLICATION", "Applications");
+        DOCUMENT_MAPPING_TYPES.put("ELECTRONIC_NOTIFICATIONS", "Electronic Notifications");
     }
 
     private CaseDocumentTypeHelper() {

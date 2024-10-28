@@ -12,6 +12,7 @@ public class CaseDocumentTypeHelperTest {
 
     private static final String SJP_DOCUMENT_TYPE = "SJPN";
     private static final String SJP_OTHER_TYPE = "OTHER";
+    private static final String SJP_ELECTRONIC_NOTIFICATIONS = "ELECTRONIC_NOTIFICATIONS";
     private static final String SJP_FINANCIAL_MEANS = "FINANCIAL_MEANS";
     private static final String SJP_CITN = "CITN";
     private static final String SJP_PLEA_DOCUMENT_TYPE = "PLEA";
@@ -26,6 +27,7 @@ public class CaseDocumentTypeHelperTest {
     private static final String CC_DOCUMENT_TYPE = "Case Summary";
     private static final String CC_GENERAL_CORRESPONDENCE = "General correspondence";
     private static final String CC_APPLICATION = "Applications";
+    private static final String CC_ELECTRONIC_NOTIFICATIONS = "Electronic Notifications";
 
     @Test
     public void shouldFindMatchingCriminalCourtDocumentType() {
@@ -37,5 +39,6 @@ public class CaseDocumentTypeHelperTest {
         assertThat(CaseDocumentTypeHelper.getDocumentType(SJP_DISQUALIFICATION_NOTICE), is(CC_DISQUALIFICATION_SENTENCE));
         assertThat(CaseDocumentTypeHelper.getDocumentType(SJP_OTHER_TYPE), is(CC_GENERAL_CORRESPONDENCE));
         assertThat(CaseDocumentTypeHelper.getDocumentType(SJP_APPLICATION), is(CC_APPLICATION));
+        assertThat(CaseDocumentTypeHelper.getDocumentType(SJP_ELECTRONIC_NOTIFICATIONS), is(CC_ELECTRONIC_NOTIFICATIONS));
     }
 }

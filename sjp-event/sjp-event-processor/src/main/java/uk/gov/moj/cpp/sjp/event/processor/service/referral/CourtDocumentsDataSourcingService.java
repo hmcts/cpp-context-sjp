@@ -39,8 +39,8 @@ public class CourtDocumentsDataSourcingService {
     static {
         EXCLUDED_DOCUMENT_TYPES.add("RESULT_ORDER");
         EXCLUDED_DOCUMENT_TYPES.add("EMPLOYER_ATTACHMENT_TO_EARNINGS");
+        EXCLUDED_DOCUMENT_TYPES.add("ELECTRONIC_NOTIFICATIONS");
     }
-
 
     @Inject
     private MaterialService materialService;
@@ -155,8 +155,13 @@ public class CourtDocumentsDataSourcingService {
 
         return caseDetails.getCaseDocuments()
                 .stream()
-                .filter(caseDoc -> !EXCLUDED_DOCUMENT_TYPES.contains(caseDoc.getDocumentType()))
+                .filter(caseDoc -> ! checkIfInExcludedSet(caseDoc))
                 .filter(caseDoc -> !(caseDetails.getCaseApplication() == null && APPLICATION_DOCUMENT_TYPE.equals(caseDoc.getDocumentType())))
                 .collect(Collectors.toList());
+    }
+
+    private boolean checkIfInExcludedSet(Document caseDoc) {
+        return EXCLUDED_DOCUMENT_TYPES.contains(caseDoc.getDocumentType()) ||
+                EXCLUDED_DOCUMENT_TYPES.stream().anyMatch(e -> caseDoc.getDocumentType().contains(e));
     }
 }

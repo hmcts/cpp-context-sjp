@@ -1,0 +1,18 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://cpp.moj.gov.uk/sjp/event/case-listed-in-criminal-courts-updated.json",
+  "type": "object",
+  "properties": {
+    "caseId": {
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+    },
+    "listedInCriminalCourts": {
+      "type": "boolean"
+    }
+  },
+  "required": [
+    "caseId",
+    "listedInCriminalCourts"
+  ],
+  "additionalProperties": false
+}

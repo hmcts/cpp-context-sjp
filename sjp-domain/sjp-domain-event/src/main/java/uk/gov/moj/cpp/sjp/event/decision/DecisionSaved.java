@@ -42,6 +42,7 @@ public class DecisionSaved implements Serializable {
     private Boolean resultedThroughAOCP;
     private String defendantName;
     private UUID defendantId;
+    private Boolean applicationFlow;
 
     @JsonCreator
     public DecisionSaved(@JsonProperty("decisionId") final UUID decisionId,
@@ -53,7 +54,8 @@ public class DecisionSaved implements Serializable {
                          @JsonProperty("financialImposition") final FinancialImposition financialImposition,
                          @JsonProperty("defendantId") final UUID defendantId,
                          @JsonProperty("defendantName") final String defendantName,
-                         @JsonProperty("resultedThroughAOCP") final Boolean resultedThroughAOCP) {
+                         @JsonProperty("resultedThroughAOCP") final Boolean resultedThroughAOCP,
+                         @JsonProperty("applicationFlow") final Boolean applicationFlow) {
         this.decisionId = decisionId;
         this.sessionId = sessionId;
         this.caseId = caseId;
@@ -66,6 +68,7 @@ public class DecisionSaved implements Serializable {
         this.defendantId = defendantId;
         this.defendantName = defendantName;
         this.resultedThroughAOCP = resultedThroughAOCP;
+        this.applicationFlow = applicationFlow;
     }
 
     public DecisionSaved(final UUID decisionId,
@@ -143,6 +146,8 @@ public class DecisionSaved implements Serializable {
     public String getUrn() {
         return urn;
     }
+
+    public Boolean getApplicationFlow() {return applicationFlow;}
 
     @JsonIgnore
     public Optional<ReferForCourtHearing> getReferForCourtHearing() {

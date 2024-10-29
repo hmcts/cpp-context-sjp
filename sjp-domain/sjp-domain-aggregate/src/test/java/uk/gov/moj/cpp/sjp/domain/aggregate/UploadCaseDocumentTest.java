@@ -135,7 +135,7 @@ public class UploadCaseDocumentTest extends CaseAggregateBaseTest {
                         courtOptions, null);
         offenceDecisions.add(offenceDecision);
 
-        final Decision decision = new Decision(decisionId, sessionId, caseId, "duplicate conviction", savedAt, savedBy, offenceDecisions, null);
+        final Decision decision = new Decision(decisionId, sessionId, caseId, "duplicate conviction", savedAt, savedBy, offenceDecisions, null, null);
 
         caseAggregate.assignCase(savedBy.getUserId(), ZonedDateTime.now(), CaseAssignmentType.MAGISTRATE_DECISION);
         when(session.getSessionType()).thenReturn(SessionType.MAGISTRATE);

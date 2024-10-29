@@ -1,16 +1,22 @@
 package uk.gov.moj.cpp.sjp.domain.aggregate;
 
+import static java.util.Objects.nonNull;
 import static uk.gov.moj.cpp.sjp.domain.aggregate.handler.EnforcementCheckIfNotificationRequired.INSTANCE;
 
 import uk.gov.justice.core.courts.CourtCentre;
+import uk.gov.justice.core.courts.DefendantJudicialResult;
+import uk.gov.justice.core.courts.Hearing;
 import uk.gov.justice.core.courts.HearingDay;
 import uk.gov.justice.core.courts.HearingType;
+import uk.gov.justice.core.courts.JudicialResult;
+import uk.gov.justice.core.courts.Offence;
 import uk.gov.justice.domain.aggregate.Aggregate;
 import uk.gov.justice.json.schemas.domains.sjp.ApplicationStatus;
 import uk.gov.justice.json.schemas.domains.sjp.Note;
 import uk.gov.justice.json.schemas.domains.sjp.User;
 import uk.gov.justice.json.schemas.domains.sjp.commands.CreateCaseApplication;
 import uk.gov.justice.json.schemas.domains.sjp.commands.SaveApplicationDecision;
+import uk.gov.moj.cpp.sjp.domain.ApplicationOffencesResults;
 import uk.gov.moj.cpp.sjp.domain.Benefits;
 import uk.gov.moj.cpp.sjp.domain.Case;
 import uk.gov.moj.cpp.sjp.domain.CaseAssignmentType;
@@ -22,6 +28,7 @@ import uk.gov.moj.cpp.sjp.domain.EnforcementPendingApplicationRequiredNotificati
 import uk.gov.moj.cpp.sjp.domain.FinancialMeans;
 import uk.gov.moj.cpp.sjp.domain.Income;
 import uk.gov.moj.cpp.sjp.domain.Person;
+import uk.gov.moj.cpp.sjp.domain.GrantedApplicationResults;
 import uk.gov.moj.cpp.sjp.domain.aggregate.casestatus.CaseStatusResolver;
 import uk.gov.moj.cpp.sjp.domain.aggregate.handler.ApplicationDecisionHandler;
 import uk.gov.moj.cpp.sjp.domain.aggregate.handler.CaseAdjournmentHandler;
@@ -61,7 +68,9 @@ import uk.gov.moj.cpp.sjp.domain.onlineplea.PleadOnline;
 import uk.gov.moj.cpp.sjp.domain.onlineplea.PleadOnlinePcqVisited;
 import uk.gov.moj.cpp.sjp.domain.plea.PleaMethod;
 import uk.gov.moj.cpp.sjp.domain.plea.SetPleas;
+import uk.gov.moj.cpp.sjp.event.ApplicationResultsRecorded;
 import uk.gov.moj.cpp.sjp.event.CCApplicationStatusCreated;
+import uk.gov.moj.cpp.sjp.event.CaseListedInCriminalCourtsUpdated;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -71,6 +80,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import javax.json.JsonObject;
@@ -272,10 +282,10 @@ public class CaseAggregate implements Aggregate {
     }
 
     public Stream<Object> acceptPendingDefendantChanges(final UUID userId,
-                                                 final UUID caseId,
-                                                 final UUID defendantId,
-                                                 final Person person,
-                                                 final ZonedDateTime updatedDate) {
+                                                        final UUID caseId,
+                                                        final UUID defendantId,
+                                                        final Person person,
+                                                        final ZonedDateTime updatedDate) {
 
         return apply(CaseDefendantHandler.INSTANCE.acceptPendingDefendantChanges(userId, caseId, defendantId, person, updatedDate, state));
     }
@@ -352,7 +362,7 @@ public class CaseAggregate implements Aggregate {
     }
 
     public Stream<Object> expireAocpResponseTimerAndSaveDecision(final AocpDecision aocpDecision, final Session session) {
-        return applyAndResolveCaseReadiness(() -> CaseDecisionHandler.INSTANCE.expireAocpResponseTimerAndSaveDecision(aocpDecision, state , session));
+        return applyAndResolveCaseReadiness(() -> CaseDecisionHandler.INSTANCE.expireAocpResponseTimerAndSaveDecision(aocpDecision, state, session));
     }
 
     public Stream<Object> resolveConvictionCourt(final UUID caseId, final Map<UUID, Session> sessions) {
@@ -363,6 +373,11 @@ public class CaseAggregate implements Aggregate {
                                                   final Session session) {
         return applyAndResolveCaseReadiness(() ->
                 ApplicationDecisionHandler.INSTANCE.saveApplicationDecision(applicationDecision, state, session));
+    }
+
+    public Stream<Object> recordGrantedApplicationResults(final GrantedApplicationResults payload) {
+        return applyAndResolveCaseReadiness(() ->
+                ApplicationDecisionHandler.INSTANCE.recordGrantedApplicationResults(payload));
     }
 
     public Stream<Object> setDatesToAvoidRequired() {
@@ -403,6 +418,11 @@ public class CaseAggregate implements Aggregate {
 
     }
 
+    public Stream<Object> updateCaseListedInCriminalCourts(final UUID caseId, final boolean listedInCriminalCourts) {
+        final Stream.Builder<Object> streamBuilder = Stream.builder();
+        return apply(streamBuilder.add(new CaseListedInCriminalCourtsUpdated(caseId, listedInCriminalCourts)).build());
+    }
+
     public Stream<Object> deleteDocs() {
         return apply(DeleteDocsHandler.INSTANCE.deleteDocs(state));
     }
@@ -423,7 +443,7 @@ public class CaseAggregate implements Aggregate {
         return applyAndResolveCaseReadiness(() -> CaseApplicationHandler.INSTANCE.createCaseApplication(state, createCaseApplication));
     }
 
-    public Stream<Object> checkIfPendingApplicationToNotified(final EnforcementPendingApplicationRequiredNotification notification) { //
+    public Stream<Object> checkIfPendingApplicationToNotified(final EnforcementPendingApplicationRequiredNotification notification) {
         return apply(INSTANCE.checkIfPendingApplicationToNotified(state, notification));
     }
 
@@ -447,5 +467,63 @@ public class CaseAggregate implements Aggregate {
     public Object apply(final Object event) {
         AGGREGATE_STATE_MUTATOR.apply(event, state);
         return event;
+    }
+
+    public Stream<Object> saveApplicationOffencesResults(final ApplicationOffencesResults payload) {
+        final ApplicationOffencesResults enrichedApplicationOffencesWithResults = enrichApplicationAggregateResultsWithApplicationOffencesResults(state, payload);
+        if (nonNull(enrichedApplicationOffencesWithResults)) {
+            return applyAndResolveCaseReadiness(() ->
+                    ApplicationDecisionHandler.INSTANCE.saveApplicationOffencesResults(enrichedApplicationOffencesWithResults));
+        } else {
+            return Stream.empty();
+        }
+    }
+
+    private ApplicationOffencesResults enrichApplicationAggregateResultsWithApplicationOffencesResults(final CaseAggregateState state, final ApplicationOffencesResults payload) {
+        final ApplicationResultsRecorded applicationResultsFromAggregate = state.getApplicationResults();
+        if (nonNull(applicationResultsFromAggregate)) {
+            final Map<UUID, List<JudicialResult>> applicationOffenceResultsMap = payload.getHearing().getProsecutionCases().stream()
+                    .flatMap(prosecutionCase -> prosecutionCase.getDefendants().stream())
+                    .flatMap(defendant -> defendant.getOffences().stream())
+                    .filter(offence -> nonNull(offence.getJudicialResults()))
+                    .collect(Collectors.toMap(
+                            Offence::getId,
+                            Offence::getJudicialResults
+                    ));
+            final List<DefendantJudicialResult> defendantJudicialResults = payload.getHearing().getDefendantJudicialResults();
+            if (nonNull(defendantJudicialResults) && !applicationOffenceResultsMap.keySet().isEmpty()) {
+                mergeDefendantJudicialResultsWithOffenceResults(applicationOffenceResultsMap, defendantJudicialResults);
+            }
+            applicationResultsFromAggregate.getHearing().getCourtApplications()
+                    .forEach(courtApplication -> courtApplication.getCourtApplicationCases()
+                            .forEach(courtApplicationCase -> courtApplicationCase.getOffences()
+                                    .replaceAll(offence -> {
+                                        if (!applicationOffenceResultsMap.keySet().isEmpty() && applicationOffenceResultsMap.containsKey(offence.getId())) {
+                                            return Offence.offence()
+                                                    .withValuesFrom(offence)
+                                                    .withJudicialResults(applicationOffenceResultsMap.get(offence.getId())).build();
+                                        } else {
+                                            return offence;
+                                        }
+                                    })
+                            ));
+            return new ApplicationOffencesResults(applicationResultsFromAggregate.getHearing(),
+                    applicationResultsFromAggregate.getHearingDay(), applicationResultsFromAggregate.getIsReshare(),
+                    applicationResultsFromAggregate.getShadowListedOffences(), applicationResultsFromAggregate.getSharedTime());
+        } else {
+            return null;
+        }
+    }
+
+    private static void mergeDefendantJudicialResultsWithOffenceResults(final Map<UUID, List<JudicialResult>> applicationOffenceResultsMap, final List<DefendantJudicialResult> defendantJudicialResults) {
+        applicationOffenceResultsMap.forEach((offenceId, judicialResultsList) -> {
+            if (!defendantJudicialResults.isEmpty() && offenceId.equals(defendantJudicialResults.get(0).getJudicialResult().getOffenceId()) && !judicialResultsList.isEmpty()) {
+                final JudicialResult finalJudicialResult = judicialResultsList.get(judicialResultsList.size() - 1);
+                final String mergedResultText = finalJudicialResult.getResultText() + "\n" + defendantJudicialResults.stream()
+                        .map(obj -> obj.getJudicialResult().getResultText())
+                        .collect(Collectors.joining("\n"));
+                judicialResultsList.set(judicialResultsList.size() - 1, JudicialResult.judicialResult().withValuesFrom(finalJudicialResult).withResultText(mergedResultText).build());
+            }
+        });
     }
 }

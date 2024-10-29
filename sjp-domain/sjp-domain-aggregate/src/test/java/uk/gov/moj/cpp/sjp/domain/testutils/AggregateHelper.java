@@ -28,6 +28,6 @@ public class AggregateHelper {
                 .map(offenceDecisionInformation -> new Dismiss(randomUUID(), offenceDecisionInformation, null))
                 .collect(Collectors.toList());
 
-        caseAggregate.saveDecision(new Decision(randomUUID(), randomUUID(), aCase.getId(), "", now(), user, offenceDecisions, null), session);
+        caseAggregate.saveDecision(new Decision(randomUUID(), randomUUID(), aCase.getId(), "", now(), user, offenceDecisions, null, null), session);
     }
 }

@@ -3,11 +3,14 @@
   "id": "http://justice.gov.uk/json/schemas/domains/sjp/events/application-decision-set-aside.json",
   "type": "object",
   "properties": {
-    "applicationId" : {
-      "$ref" : "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+    "applicationId": {
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
     },
-    "caseId" : {
-      "$ref" : "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+    "caseId": {
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+    },
+    "caseUrn": {
+      "type": "string"
     }
   },
   "required": [

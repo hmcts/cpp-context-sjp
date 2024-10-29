@@ -110,7 +110,7 @@ public class CaseListedProcessorTest {
 
         caseListedProcessor.handleCaseListedInCCReferToCourt(privateEvent);
 
-        verify(sender, times(1)).send(jsonEnvelopeCaptor.capture());
+        verify(sender, times(2)).send(jsonEnvelopeCaptor.capture());
 
         final List<DefaultEnvelope> eventEnvelopes = jsonEnvelopeCaptor.getAllValues();
         final Envelope<JsonValue> publicHearingResultedEvent = eventEnvelopes.get(0);
@@ -145,7 +145,7 @@ public class CaseListedProcessorTest {
 
         caseListedProcessor.handleCaseListedInCCReferToCourt(privateEvent);
 
-        verify(sender, times(1)).send(jsonEnvelopeCaptor.capture());
+        verify(sender, times(2)).send(jsonEnvelopeCaptor.capture());
 
         final List<DefaultEnvelope> eventEnvelopes = jsonEnvelopeCaptor.getAllValues();
         final Envelope<JsonValue> decisionSavedPublicEvent = eventEnvelopes.get(0);

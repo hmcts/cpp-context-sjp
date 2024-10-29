@@ -83,6 +83,7 @@ public class EndorsementRemovalNotificationServiceTest {
     private static final int POINTS_DISQUALIFICATION = 0;
     private static final int DISCRETIONARY_DISQUALIFICATION = 1;
     private static final LocalJusticeArea LOCAL_JUSTICE_AREA = new LocalJusticeArea("LJA Code", "LJA Name");
+    public static final String CASE_URN = "TVLXYZ01";
 
     @Spy
     private ObjectMapper objectMapper = new ObjectMapperProducer().objectMapper();
@@ -121,7 +122,7 @@ public class EndorsementRemovalNotificationServiceTest {
         applicationId = randomUUID();
         applicationSavedAt = ZonedDateTime.of(LocalDate.of(2020, 11, 20), LocalTime.now(), ZoneId.systemDefault());
         applicationDecisionId = randomUUID();
-        applicationDecisionSetAside = new ApplicationDecisionSetAside(applicationId, caseId);
+        applicationDecisionSetAside = new ApplicationDecisionSetAside(applicationId, caseId, CASE_URN);
         envelope = ApplicationDecisionSetAsideEnvelope.of(applicationDecisionSetAside);
     }
 

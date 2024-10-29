@@ -228,11 +228,11 @@ public class CaseDecisionListenerTest {
         caseDetails.setId(caseId);
         caseDetails.setDefendant(defendantDetails);
 
-        final OffenceDecision offenceDecision1 = new DischargeOffenceDecision(offence1Id, decisionId, FOUND_GUILTY, new DischargePeriod(MONTH, 2), false, new BigDecimal(20), null, ABSOLUTE, null,null);
+        final OffenceDecision offenceDecision1 = new DischargeOffenceDecision(offence1Id, decisionId, FOUND_GUILTY, new DischargePeriod(MONTH, 2), false, new BigDecimal(20), null, ABSOLUTE, null, null);
         offenceDecision1.setPressRestriction(new PressRestriction("Person 1", true));
-        final OffenceDecision offenceDecision2 = new DischargeOffenceDecision(offence2Id, decisionId, FOUND_GUILTY, new DischargePeriod(MONTH, 2), false, new BigDecimal(20), null, ABSOLUTE, null,null);
+        final OffenceDecision offenceDecision2 = new DischargeOffenceDecision(offence2Id, decisionId, FOUND_GUILTY, new DischargePeriod(MONTH, 2), false, new BigDecimal(20), null, ABSOLUTE, null, null);
         offenceDecision2.setPressRestriction(new PressRestriction("Person 2", true));
-        final OffenceDecision offenceDecision3 = new DischargeOffenceDecision(offence3Id, decisionId, FOUND_GUILTY, new DischargePeriod(MONTH, 2), false, new BigDecimal(20), null, ABSOLUTE, null,null);
+        final OffenceDecision offenceDecision3 = new DischargeOffenceDecision(offence3Id, decisionId, FOUND_GUILTY, new DischargePeriod(MONTH, 2), false, new BigDecimal(20), null, ABSOLUTE, null, null);
         offenceDecision3.setPressRestriction(new PressRestriction("Person 3", false));
 
         final CaseDecision caseDecision = new CaseDecision();
@@ -297,7 +297,7 @@ public class CaseDecisionListenerTest {
         caseDecision.setOffenceDecisions(asList(offenceDecision1));
         caseDecision.setResultedThroughAOCP(true);
 
-        final DecisionSaved decisionSaved = new DecisionSaved(decisionId, randomUUID(), caseId, null, null, null, null, null, null, true);
+        final DecisionSaved decisionSaved = new DecisionSaved(decisionId, randomUUID(), caseId, null, null, null, null, null, null, true, null);
         final Envelope<DecisionSaved> decisionSavedEnvelope = envelopeFrom(metadataWithRandomUUID("sjp.events.case-note-added"), decisionSaved);
 
         when(eventConverter.convert(any())).thenReturn(caseDecision);

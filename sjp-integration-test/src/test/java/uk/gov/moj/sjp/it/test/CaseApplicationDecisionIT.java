@@ -217,9 +217,6 @@ public class CaseApplicationDecisionIT extends BaseIntegrationTest {
         final Optional<JsonEnvelope> publicApplicationSetAside = eventListener.popEvent(PUBLIC_SJP_APPLICATION_DECISION_SET_ASIDE);
         assertThat(publicApplicationSetAside.isPresent(), is(true));
 
-        final Optional<JsonEnvelope> caseResulted = eventListener.popEvent(PUBLIC_EVENTS_HEARING_HEARING_RESULTED);
-        verifyPublicHearingResultedForApplication(caseResulted);
-
         pollUntilCaseByIdIsOk(caseId, allOf(
                 withJsonPath("$.caseDecisions[1].applicationDecision.granted", is(true)),
                 withJsonPath("$.caseDecisions[1].applicationDecision.outOfTime", is(false)),
@@ -308,9 +305,6 @@ public class CaseApplicationDecisionIT extends BaseIntegrationTest {
         assertThat(caseUnassignedEv.isPresent(), is(true));
         final Optional<JsonEnvelope> caseCompletedEvent = eventListener.popEvent(SJP_EVENTS_CASE_COMPLETED);
         assertThat(caseCompletedEvent.isPresent(), is(true));
-
-        final Optional<JsonEnvelope> caseResulted = eventListener.popEvent(PUBLIC_EVENTS_HEARING_HEARING_RESULTED);
-        verifyPublicHearingResultedForApplication(caseResulted);
 
         final Optional<JsonEnvelope> applicationSetAside = eventListener.popEvent(SJP_EVENT_APPLICATION_DECISION_SET_ASIDE);
         assertThat(applicationSetAside.isPresent(), is(false));

@@ -585,10 +585,11 @@ public class CompositeCaseAggregateStateMutatorTest {
         caseAggregateState.setSetAside(false);
         caseAggregateState.markCaseCompleted();
 
-        final ApplicationDecisionSetAside applicationSetAside = new ApplicationDecisionSetAside(randomUUID(), caseId);
+        final ApplicationDecisionSetAside applicationSetAside = new ApplicationDecisionSetAside(randomUUID(), caseId, "TVLXYZ01");
         compositeCaseAggregateStateMutator.apply(applicationSetAside, caseAggregateState);
         assertThat(caseAggregateState.isSetAside(), is(true));
         assertThat(caseAggregateState.isCaseCompleted(), is(false));
+        assertThat(caseAggregateState.isCorrelationIdAllreadyGenerated(), is(false));
     }
 
     @Test

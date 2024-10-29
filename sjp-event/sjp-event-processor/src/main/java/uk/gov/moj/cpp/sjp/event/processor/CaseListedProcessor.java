@@ -36,6 +36,8 @@ public class CaseListedProcessor {
 
     private static final String PUBLIC_EVENTS_HEARING_RESULTED = "public.events.hearing.hearing-resulted";
 
+    public static final String SJP_COMMAND_SAVE_APPLICATION_OFFENCES_RESULTS = "sjp.command.save-application-offences-results";
+
     @Handles(CaseListedInCriminalCourtsV2.EVENT_NAME)
     public void handleCaseListedInCCReferToCourt(final JsonEnvelope caseListedInCcForReferToCourtEnvelope) {
 
@@ -54,6 +56,17 @@ public class CaseListedProcessor {
                 .withName(PUBLIC_EVENTS_HEARING_RESULTED)
                 .withMetadataFrom(caseListedInCcForReferToCourtEnvelope);
         sender.send(publicHearingResultedEnvelope);
+
+        final Envelope<HearingResulted> hearingResultedEnvelope = envelop(HearingResulted
+                .hearingResulted()
+                .withHearing(publicHearingResulted.getHearing())
+                .withHearingDay(publicHearingResulted.getSharedTime().format(DATE_FORMAT))
+                .withSharedTime(publicHearingResulted.getSharedTime())
+                .withIsReshare(false)
+                .build())
+                .withName(SJP_COMMAND_SAVE_APPLICATION_OFFENCES_RESULTS)
+                .withMetadataFrom(caseListedInCcForReferToCourtEnvelope);
+        sender.send(hearingResultedEnvelope);
     }
 
 }

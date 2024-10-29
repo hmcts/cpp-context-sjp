@@ -39,7 +39,6 @@ import static uk.gov.moj.cpp.sjp.domain.verdict.VerdictType.FOUND_GUILTY;
 import static uk.gov.moj.cpp.sjp.domain.verdict.VerdictType.FOUND_NOT_GUILTY;
 import static uk.gov.moj.cpp.sjp.domain.verdict.VerdictType.NO_VERDICT;
 import static uk.gov.moj.cpp.sjp.domain.verdict.VerdictType.PROVED_SJP;
-import static uk.gov.moj.cpp.sjp.event.CaseReferredForCourtHearing.caseReferredForCourtHearing;
 import static uk.gov.moj.cpp.sjp.event.CaseReferredForCourtHearingV2.caseReferredForCourtHearingV2;
 
 import uk.gov.justice.json.schemas.domains.sjp.Note;
@@ -123,7 +122,7 @@ public class CaseDecisionHandler {
     private CaseDecisionHandler() {
     }
 
-    private static void addDecisionSavedEvent(final Session session, Decision decision, final CaseAggregateState state, final Stream.Builder<Object> streamBuilder, final Boolean resultedThroughAocp ) {
+    private static void addDecisionSavedEvent(final Session session, Decision decision, final CaseAggregateState state, final Stream.Builder<Object> streamBuilder, final Boolean resultedThroughAocp) {
 
         final Optional<SessionCourt> convictingCourt =
                 ofNullable(session.getCourtHouseCode()).map(chc ->
@@ -154,8 +153,9 @@ public class CaseDecisionHandler {
                 decision.getFinancialImposition(),
                 defendantId,
                 defendantName,
-                resultedThroughAocp));
+                resultedThroughAocp, decision.isApplicationFlow()));
     }
+
     private static void addOffencesPressRestrictable(final Decision decision, final CaseAggregateState state) {
         final PressRestrictableOffenceDecisionVistor pressRestrictableOffenceDecisionVistor = new PressRestrictableOffenceDecisionVistor(state);
         decision.getOffenceDecisions().forEach(offenceDecision -> offenceDecision.accept(pressRestrictableOffenceDecisionVistor));
@@ -294,16 +294,6 @@ public class CaseDecisionHandler {
         }
     }
 
-    private static void validateOffencesHaveDecision(final Decision decision, final CaseAggregateState state, final List<String> rejectionReason) {
-        final Set<UUID> offenceIds = decision.getOffenceIds();
-
-        getOffencesRequiringDecision(state)
-                .stream()
-                .filter(offenceId -> !offenceIds.contains(offenceId))
-                .map(offenceId -> format("Offence with id %s must have a decision", offenceId))
-                .forEach(rejectionReason::add);
-    }
-
     private static void validateOffencesHasOnlyOneDecision(final Decision decision, final List<String> rejectionReason) {
         final Map<UUID, Long> offenceIdWithCount = getOffenceIds(decision.getOffenceDecisions()).collect(groupingBy(Function.identity(), counting()));
         offenceIdWithCount.forEach((offenceId, count) -> {
@@ -389,12 +379,6 @@ public class CaseDecisionHandler {
         return CaseLanguageHandler.INSTANCE.updateHearingRequirements(user.getUserId(), state.getDefendantId(), interpreterLanguage, courtOptions.getWelshHearing(), state, PleaMethod.POSTAL, null);
     }
 
-    private static Collection<UUID> getOffencesRequiringDecision(final CaseAggregateState state) {
-        return state.getOffenceDecisions().isEmpty() ?
-                state.getOffences() :
-                getOffenceIds(state.getOffenceDecisions(), OffenceDecision::isNotFinalDecision);
-    }
-
     private static Stream<UUID> getOffenceIds(final Collection<OffenceDecision> offencesDecisions) {
         return offencesDecisions.stream()
                 .flatMap(offencesDecision -> offencesDecision.getOffenceIds().stream());
@@ -414,7 +398,6 @@ public class CaseDecisionHandler {
     }
 
     public Stream saveDecision(final Decision decision, final CaseAggregateState state, final Session session) {
-
         final List<String> validationErrors = validateDecision(decision, state, session.getSessionType());
         if (!validationErrors.isEmpty()) {
             return Stream.of(new DecisionRejected(decision, validationErrors));
@@ -428,10 +411,21 @@ public class CaseDecisionHandler {
         handleSetAside(decision, streamBuilder, state);
         handleAdjournDecision(decision, streamBuilder);
         handleReferToCriminalCourtDecision(decision, state, streamBuilder);
-
-        addCaseCompletedEventIfAllOffencesHasFinalDecision(decision, streamBuilder, state);
+        if (isNull(decision.isApplicationFlow()) || !decision.isApplicationFlow()) {
+            addCaseCompletedEventIfAllOffencesHasFinalDecision(decision, streamBuilder, state);
+        } else {
+            addCaseCompletedEventIfAnyOffencesHasFinalDecision(decision, streamBuilder, state);
+        }
 
         return streamBuilder.build();
+    }
+
+    private void addCaseCompletedEventIfAnyOffencesHasFinalDecision(final Decision decision, final Stream.Builder<Object> streamBuilder, final CaseAggregateState state) {
+        final Set<UUID> incomingOffencesWithFinalDecision = getOffenceIds(decision.getOffenceDecisions(), OffenceDecision::isFinalDecision);
+        if (nonNull(state.getOffences()) && !state.getOffences().isEmpty() &&
+                !incomingOffencesWithFinalDecision.isEmpty() && state.getOffences().containsAll(incomingOffencesWithFinalDecision)) {
+            streamBuilder.add(new CaseCompleted(decision.getCaseId(), state.getSessionIds()));
+        }
     }
 
 
@@ -441,7 +435,6 @@ public class CaseDecisionHandler {
         validateCaseIsNotCompleted(state, rejectionReason);
         validateCaseIsAssignedToTheCaller(decision, state, rejectionReason);
         validateOffencesBelongToTheCase(decision, state, rejectionReason);
-        validateOffencesHaveDecision(decision, state, rejectionReason);
         validateOffencesHasOnlyOneDecision(decision, rejectionReason);
         validateDecisionsCombinations(decision, rejectionReason);
         validateOffencesDoNotHavePreviousFinalDecision(decision, state, rejectionReason);
@@ -863,7 +856,7 @@ public class CaseDecisionHandler {
         }
     }
 
-    public Stream<Object> expireAocpResponseTimerAndSaveDecision( final AocpDecision aocpDecision, final CaseAggregateState state, final Session session) {
+    public Stream<Object> expireAocpResponseTimerAndSaveDecision(final AocpDecision aocpDecision, final CaseAggregateState state, final Session session) {
 
         final Stream.Builder<Object> streamBuilder = Stream.builder();
         final ZonedDateTime savedAt = now();
@@ -875,12 +868,12 @@ public class CaseDecisionHandler {
         final List<OffenceDecision> offenceDecisions = new ArrayList<>();
         final List<Plea> pleas = new ArrayList<>();
         final AOCPCost aocpCost = state.getAOCPCost().get(state.getCaseId());
-        final AOCPCostDefendant defendant= aocpCost.getDefendant();
+        final AOCPCostDefendant defendant = aocpCost.getDefendant();
         final List<AOCPCostOffence> aocpCostOffences = defendant.getOffences();
 
-        final BigDecimal aocpTotalCost =  state.getAocpTotalCost().setScale(2, ROUND_DOWN);
+        final BigDecimal aocpTotalCost = state.getAocpTotalCost().setScale(2, ROUND_DOWN);
 
-        final LumpSum lumpSum = new LumpSum(aocpTotalCost, 28, null );
+        final LumpSum lumpSum = new LumpSum(aocpTotalCost, 28, null);
         final PaymentTerms paymentTerms = new PaymentTerms(false, lumpSum, null);
         final CourtDetails courtDetails = new CourtDetails(aocpDecision.getDefendant().getCourt().getNationalCourtCode(), aocpDecision.getDefendant().getCourt().getNationalCourtName());
         final Payment payment = new Payment(aocpTotalCost, PaymentType.PAY_TO_COURT, "No information from defendant", null, paymentTerms, courtDetails);
@@ -889,15 +882,15 @@ public class CaseDecisionHandler {
         final FinancialImposition financialImposition = new FinancialImposition(costsAndSurcharge, payment);
         final SessionCourt sessionCourt = new SessionCourt(session.getCourtHouseCode(), session.getLocalJusticeAreaNationalCourtCode());
 
-        aocpCostOffences.forEach(offence->{
-            final FinancialPenalty financialPenalty = createFinancialPenalty(randomUUID(), new OffenceDecisionInformation(offence.getId(), FOUND_GUILTY, false), offence.getAocpStandardPenaltyAmount(),offence.getCompensation(), null, true, null, null, null);
+        aocpCostOffences.forEach(offence -> {
+            final FinancialPenalty financialPenalty = createFinancialPenalty(randomUUID(), new OffenceDecisionInformation(offence.getId(), FOUND_GUILTY, false), offence.getAocpStandardPenaltyAmount(), offence.getCompensation(), null, true, null, null, null);
             financialPenalty.setConvictingCourt(sessionCourt);
             financialPenalty.setConvictionDate(savedAt.toLocalDate());
             offenceDecisions.add(financialPenalty);
             pleas.add(new Plea(defendant.getId(), offence.getId(), GUILTY));
         });
 
-        final Decision decision = new Decision(aocpDecision.getDecisionId(), aocpDecision.getSessionId(),  state.getCaseId(), null, savedAt, aocpDecision.getSavedBy(), offenceDecisions, financialImposition, aocpDecision.getDefendant());
+        final Decision decision = new Decision(aocpDecision.getDecisionId(), aocpDecision.getSessionId(), state.getCaseId(), null, savedAt, aocpDecision.getSavedBy(), offenceDecisions, financialImposition, aocpDecision.getDefendant(), null);
 
         addSetAocpPleaEvent(state.getCaseId(), pleas, state.getAocpAcceptedPleaDate(), streamBuilder);
         addDecisionSavedEvent(session, decision, state, streamBuilder, true);
@@ -909,11 +902,11 @@ public class CaseDecisionHandler {
     private void addSetAocpPleaEvent(final UUID caseId,
                                      final List<Plea> pleas,
                                      final ZonedDateTime pleaDate,
-                                     final Stream.Builder<Object> streamBuilder){
+                                     final Stream.Builder<Object> streamBuilder) {
         streamBuilder.add(new AocpPleasSet(caseId, pleas, pleaDate, PleaMethod.ONLINE));
     }
 
-    private void addAocpAcceptanceResponseTimerExpiredEvent(final UUID caseId, final Stream.Builder<Object> streamBuilder){
+    private void addAocpAcceptanceResponseTimerExpiredEvent(final UUID caseId, final Stream.Builder<Object> streamBuilder) {
         streamBuilder.add(new DefendantAocpResponseTimerExpired(caseId));
     }
 

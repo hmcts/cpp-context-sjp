@@ -121,7 +121,7 @@ public class CaseDecisionHandlerValidVerdictPleaCasesTest {
 
         final List<OffenceDecision> offenceDecisions = newArrayList(new ReferForCourtHearing(randomUUID(), newArrayList(OffenceDecisionInformation.createOffenceDecisionInformation(offenceId1, verdictType)), referralReasonId, "note", 0, courtOptions, null));
 
-        final Decision decision = new Decision(decisionId, sessionId, caseId, note, savedAt, legalAdviser, offenceDecisions, null);
+        final Decision decision = new Decision(decisionId, sessionId, caseId, note, savedAt, legalAdviser, offenceDecisions, null, null);
 
         caseAggregateState.setPleas(asList(new Plea(null, offenceId1, pleaType)));
 

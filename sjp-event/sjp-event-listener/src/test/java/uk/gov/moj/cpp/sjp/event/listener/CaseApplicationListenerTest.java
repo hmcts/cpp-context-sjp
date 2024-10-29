@@ -248,7 +248,7 @@ public class CaseApplicationListenerTest {
 
         when(caseService.findById(CASE_ID)).thenReturn(caseDetail);
 
-        final ApplicationDecisionSetAside applicationSetAside = new ApplicationDecisionSetAside(APPLICATION_ID, CASE_ID);
+        final ApplicationDecisionSetAside applicationSetAside = new ApplicationDecisionSetAside(APPLICATION_ID, CASE_ID, caseDetail.getUrn());
         final Envelope<ApplicationDecisionSetAside> envelope = envelopeFrom(
                 metadataWithRandomUUID(ApplicationDecisionSetAside.EVENT_NAME),
                 applicationSetAside

@@ -32,6 +32,9 @@
     },
     "resultedThroughAOCP": {
       "type": "boolean"
+    },
+    "applicationFlow": {
+      "type": "boolean"
     }
   },
   "required": [

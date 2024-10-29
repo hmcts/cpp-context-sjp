@@ -10,7 +10,13 @@ import static uk.gov.justice.json.schemas.domains.sjp.ApplicationStatus.STATUTOR
 import static uk.gov.justice.json.schemas.domains.sjp.ApplicationType.STAT_DEC;
 import static uk.gov.moj.cpp.sjp.domain.aggregate.handler.EnforcementCheckIfNotificationRequired.INSTANCE;
 
+import uk.gov.justice.core.courts.Address;
+import uk.gov.justice.core.courts.ContactNumber;
 import uk.gov.justice.core.courts.CourtApplication;
+import uk.gov.justice.core.courts.CourtApplicationParty;
+import uk.gov.justice.core.courts.MasterDefendant;
+import uk.gov.justice.core.courts.Person;
+import uk.gov.justice.core.courts.PersonDefendant;
 import uk.gov.justice.json.schemas.domains.sjp.ApplicationStatus;
 import uk.gov.moj.cpp.sjp.domain.EnforcementPendingApplicationRequiredNotification;
 import uk.gov.moj.cpp.sjp.domain.aggregate.state.Application;
@@ -72,10 +78,23 @@ public class EnforcementCheckIfNotificationRequiredTest {
 
         when(courtApplication.getApplicationReceivedDate()).thenReturn(LocalDate.now().toString());
         when(courtApplication.getId()).thenReturn(applicationId);
-
+        when(courtApplication.getSubject()).thenReturn(CourtApplicationParty.courtApplicationParty()
+                .withMasterDefendant(MasterDefendant.masterDefendant()
+                        .withMasterDefendantId(randomUUID())
+                        .withPersonDefendant(PersonDefendant.personDefendant()
+                                .withPersonDetails(Person.person()
+                                        .withAddress(Address.address()
+                                                .withAddress1("Test address one")
+                                                .withAddress2("Test address two")
+                                                .withPostcode("RG1 9DS").build())
+                                        .withDateOfBirth("26/03/1967")
+                                        .withContact(ContactNumber.contactNumber()
+                                                .withMobile("02032389928")
+                                                .withPrimaryEmail("test@hotmail.com").build()).build()).build()).build()).build());
         application.setStatus(STATUTORY_DECLARATION_PENDING);
         application.setType(STAT_DEC);
         caseAggregateState.setCurrentApplication(application);
+        caseAggregateState.setSavedAt(LocalDate.now());
         final List<Object> eventStream = INSTANCE.checkIfPendingApplicationToNotified(caseAggregateState, checkNotificationRequired).collect(toList());
 
         // then
@@ -86,6 +105,10 @@ public class EnforcementCheckIfNotificationRequiredTest {
         assertThat(notificationRequired.getUrn(), is(urn));
         assertThat(notificationRequired.getDivisionCode(), is(divisionCode));
         assertThat(notificationRequired.getInitiatedTime(), is(notNullValue()));
+        assertThat(notificationRequired.getDefendantAddress(), is("Test address one Test address two RG1 9DS"));
+        assertThat(notificationRequired.getDefendantDateOfBirth(), is("26/03/1967"));
+        assertThat(notificationRequired.getDefendantContactNumber(), is("02032389928"));
+        assertThat(notificationRequired.getDefendantEmail(), is("test@hotmail.com"));
     }
 
     @Test

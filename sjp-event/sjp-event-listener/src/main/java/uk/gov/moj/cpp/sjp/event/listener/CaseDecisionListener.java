@@ -79,7 +79,7 @@ public class CaseDecisionListener {
         updateOffencePressRestriction(caseDetails, caseDecision);
         updateOffenceCompleted(caseDetails, caseDecision);
 
-        if(nonNull(decisionSaved.getResultedThroughAOCP()) && Boolean.TRUE.equals(decisionSaved.getResultedThroughAOCP())){
+        if (nonNull(decisionSaved.getResultedThroughAOCP()) && Boolean.TRUE.equals(decisionSaved.getResultedThroughAOCP())) {
             caseDetails.setResultedThroughAOCP(true);
             saveAccountNotes(decisionSaved.getCaseId(), caseDetails.getUrn(), "Case resulted with AOCP");
             updateOnlinePleaDetails(caseDecision.getCaseId(), caseDetails.getDefendant().getId());
@@ -99,6 +99,7 @@ public class CaseDecisionListener {
                 decisionSavedWithPaymentTermsChanged.getDecisionSaved().getSavedAt(),
                 decisionSavedWithPaymentTermsChanged.getDecisionSaved().getOffenceDecisions(),
                 decisionSavedWithPaymentTermsChanged.getDecisionSaved().getFinancialImposition(),
+                null,
                 null,
                 null,
                 null);
@@ -144,7 +145,7 @@ public class CaseDecisionListener {
                         .ifPresent(offenceDetail -> offenceDetail.setPressRestriction(offenceDecision.getPressRestriction())));
     }
 
-    private void updateOffenceConvictionInformation(final CaseDetail caseDetails,  CaseDecision caseDecision) {
+    private void updateOffenceConvictionInformation(final CaseDetail caseDetails, CaseDecision caseDecision) {
         caseDecision.getOffenceDecisions().stream()
                 .filter(offenceDecision -> nonNull(offenceDecision.getVerdictType()))
                 .filter(offenceDecision -> CONVICTION_VERDICTS.contains(offenceDecision.getVerdictType()))
@@ -194,8 +195,8 @@ public class CaseDecisionListener {
         offenceDecision.setPleaDate(offence.getPleaDate());
     }
 
-    private void updateOnlinePleaDetails(final UUID caseId, final UUID defendantId){
-        final List<OnlinePleaDetail> onlinePleaDetails  = onlinePleaDetailRepository.findByCaseIdAndDefendantId(caseId, defendantId);
+    private void updateOnlinePleaDetails(final UUID caseId, final UUID defendantId) {
+        final List<OnlinePleaDetail> onlinePleaDetails = onlinePleaDetailRepository.findByCaseIdAndDefendantId(caseId, defendantId);
         onlinePleaDetails.forEach(onlinePleaDetail -> {
             onlinePleaDetail.setPlea(PleaType.GUILTY);
             onlinePleaDetailRepository.save(onlinePleaDetail);

@@ -367,7 +367,8 @@ public class ApplicationDecisionHandlerTest {
         assertThat(eventList, hasItem(allOf(
                 instanceOf(ApplicationDecisionSetAside.class),
                 hasProperty("applicationId", equalTo(saveApplicationDecision.getApplicationId())),
-                hasProperty("caseId", equalTo(caseAggregateState.getCaseId()))
+                hasProperty("caseId", equalTo(caseAggregateState.getCaseId())),
+                hasProperty("caseUrn", equalTo(caseAggregateState.getUrn()))
         )));
     }
 

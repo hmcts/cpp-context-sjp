@@ -20,7 +20,7 @@ import java.util.stream.Stream;
 
 import javax.json.JsonObject;
 
-@SuppressWarnings({"squid:S1698","squid:S2259"})
+@SuppressWarnings({"squid:S1698", "squid:S2259"})
 public class ResubmitResultsHandler {
 
     public static final ResubmitResultsHandler INSTANCE = new ResubmitResultsHandler();
@@ -32,7 +32,7 @@ public class ResubmitResultsHandler {
     private ResubmitResultsHandler() {
     }
 
-    public Stream<Object> resubmitResults(final JsonObject  payload,
+    public Stream<Object> resubmitResults(final JsonObject payload,
                                           final CaseAggregateState state) {
 
         final Integer numberOfDaysToPostponeBy = getDaysToPostponeBy(payload);
@@ -54,7 +54,7 @@ public class ResubmitResultsHandler {
                 newPayment = extendInstallmentStartDate(numberOfDaysToPostponeBy, financialImposition.getPayment());
             }
 
-            if(payload.getJsonObject(PAYMENT_TERMS_INFO) != null) {
+            if (payload.getJsonObject(PAYMENT_TERMS_INFO) != null) {
                 paymentTermsInfo = new PaymentTermsInfo(numberOfDaysToPostponeBy, isResetPayByDate(payload));
             }
 
@@ -66,7 +66,7 @@ public class ResubmitResultsHandler {
                     decisionSaved.getOffenceDecisions(),
                     new FinancialImposition(financialImposition.getCostsAndSurcharge(), newPayment),
                     state.getDefendantId(),
-                    state.getDefendantFirstName() + " " + state.getDefendantLastName(), null
+                    state.getDefendantFirstName() + " " + state.getDefendantLastName(), null, null
             ), ZonedDateTime.now(), paymentTermsInfo, accountNote, state.getUrn()));
 
             if (newPayment != financialImposition.getPayment()) {

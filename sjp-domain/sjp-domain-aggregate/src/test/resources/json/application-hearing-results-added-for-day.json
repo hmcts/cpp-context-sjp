@@ -1,0 +1,459 @@
+{
+  "hearing": {
+    "courtApplications": [
+      {
+        "applicant": {
+          "id": "a72d1cab-aeba-4701-bfd9-e4d8d3b4be75",
+          "masterDefendant": {
+            "defendantCase": [
+              {
+                "caseId": "5c923db8-63b1-4eab-996c-083fc00ed7f8",
+                "caseReference": "SJ9192157479",
+                "defendantId": "e671b0c5-23b2-4c2e-8b47-652633d4ff7a"
+              }
+            ],
+            "masterDefendantId": "e671b0c5-23b2-4c2e-8b47-652633d4ff7a",
+            "personDefendant": {
+              "arrestSummonsNumber": "ASN1152506",
+              "personDetails": {
+                "address": {
+                  "address1": "FLAT - 25A",
+                  "address2": "Constable Street",
+                  "address3": "Bristol",
+                  "address4": "England",
+                  "address5": "UK",
+                  "postcode": "IG1 1YY"
+                },
+                "contact": {
+                  "home": "01231231230",
+                  "mobile": "78231231230",
+                  "primaryEmail": "FlmXSK4cSmith1icdO@email.com"
+                },
+                "dateOfBirth": "1959-09-26",
+                "documentationLanguageNeeds": "ENGLISH",
+                "firstName": "FlmXSK4c",
+                "gender": "MALE",
+                "lastName": "Smith1icdO",
+                "nationalInsuranceNumber": "AB123456C",
+                "occupation": "TA",
+                "occupationCode": "666",
+                "specificRequirements": "no special needs",
+                "title": "MR"
+              }
+            }
+          },
+          "notificationRequired": true,
+          "summonsRequired": false
+        },
+        "applicationReceivedDate": "2024-09-26",
+        "applicationReference": "BUYDLZGAZS",
+        "applicationStatus": "FINALISED",
+        "courtApplicationCases": [
+          {
+            "caseStatus": "INACTIVE",
+            "isSJP": true,
+            "offences": [
+              {
+                "chargeDate": "2024-09-11",
+                "convictionDate": "2024-09-26",
+                "count": 0,
+                "dvlaOffenceCode": "DR20",
+                "id": "66ab677a-722d-418a-a670-507512e2b88d",
+                "notifiedPlea": {
+                  "notifiedPleaDate": "2024-09-26",
+                  "notifiedPleaValue": "NOTIFIED_GUILTY",
+                  "offenceId": "5efa9452-ae8b-4754-a523-5f652a2513dc"
+                },
+                "offenceCode": "RT88339",
+                "offenceDateCode": 1,
+                "offenceDefinitionId": "932537a8-2ae7-308e-9786-b11fa5f69d52",
+                "offenceLegislation": "Contrary to section 4(1) of the Road Traffic Act 1988 and Schedule 2 to the Road Traffic Offenders Act 1988.",
+                "offenceTitle": "Drive whilst unfit through drink",
+                "orderIndex": 0,
+                "startDate": "2024-09-11",
+                "wording": "Wording: Drive whilst unfit through drink",
+                "wordingWelsh": "offenceWordingWelsh"
+              }
+            ],
+            "prosecutionCaseId": "5c923db8-63b1-4eab-996c-083fc00ed7f8",
+            "prosecutionCaseIdentifier": {
+              "prosecutionAuthorityCode": "BTP",
+              "prosecutionAuthorityId": "433ab45d-bfb6-3c38-a6a5-a30e114c9a5f",
+              "caseURN": "SJ9192157479"
+            }
+          }
+        ],
+        "id": "e5196fed-2c68-498b-8e29-6a400a95bbb2",
+        "judicialResults": [
+          {
+            "alwaysPublished": false,
+            "canBeSubjectOfBreach": false,
+            "canBeSubjectOfVariation": false,
+            "category": "FINAL",
+            "cjsCode": "3049",
+            "d20": false,
+            "excludedFromResults": false,
+            "isAdjournmentResult": false,
+            "isAvailableForCourtExtract": true,
+            "isConvictedResult": false,
+            "isFinancialResult": false,
+            "isUnscheduled": false,
+            "judicialResultId": "e2f6e11b-c3a2-4e76-8d29-fbede4174988",
+            "judicialResultPrompts": [
+              {
+                "courtExtract": "Y",
+                "durationSequence": 0,
+                "isFinancialImposition": false,
+                "judicialResultPromptTypeId": "7b6ef0ac-2d0b-44e5-a68e-4720b96cc679",
+                "label": "Statutory declaration made under",
+                "promptReference": "statutoryDeclarationMadeUnder",
+                "promptSequence": 100,
+                "type": "FIXL",
+                "usergroups": [],
+                "value": "Section 14 of the Magistrates' Courts Act 1980"
+              },
+              {
+                "courtExtract": "N",
+                "durationSequence": 0,
+                "isFinancialImposition": false,
+                "judicialResultPromptTypeId": "36e32c50-dbec-41c4-904b-25eb20c9c54a",
+                "label": "Financial penalties to be written off",
+                "promptReference": "financialPenaltiesToBeWrittenOff",
+                "promptSequence": 300,
+                "type": "BOOLEAN",
+                "usergroups": [
+                  "CPS",
+                  "Defence",
+                  "Judiciary",
+                  "NCES",
+                  "Prosecuting Authorities",
+                  "Probation",
+                  "YOTs"
+                ],
+                "value": "true"
+              },
+              {
+                "courtExtract": "N",
+                "durationSequence": 0,
+                "isFinancialImposition": false,
+                "judicialResultPromptTypeId": "0a7dd6aa-f7cc-43d7-ba03-c9621f3e4471",
+                "label": "Prosecutor to be notified organisation name",
+                "promptReference": "prosecutortobenotifiedOrganisationName",
+                "promptSequence": 500,
+                "type": "NAMEADDRESS",
+                "usergroups": [
+                  "CPS",
+                  "Defence",
+                  "Judiciary",
+                  "NCES",
+                  "Probation",
+                  "Prosecuting Authorities",
+                  "YOTs"
+                ],
+                "value": "British Transport Police"
+              },
+              {
+                "courtExtract": "N",
+                "durationSequence": 0,
+                "isFinancialImposition": false,
+                "judicialResultPromptTypeId": "0a7dd6aa-f7cc-43d7-ba03-c9621f3e4471",
+                "label": "Prosecutor to be notified organisation name",
+                "promptReference": "prosecutortobenotifiedOrganisationName",
+                "promptSequence": 500,
+                "type": "NAMEADDRESS",
+                "usergroups": [
+                  "CPS",
+                  "Defence",
+                  "Judiciary",
+                  "NCES",
+                  "Probation",
+                  "Prosecuting Authorities",
+                  "YOTs"
+                ],
+                "value": "Central London Police Station"
+              },
+              {
+                "courtExtract": "N",
+                "durationSequence": 0,
+                "isFinancialImposition": false,
+                "judicialResultPromptTypeId": "0a7dd6aa-f7cc-43d7-ba03-c9621f3e4471",
+                "label": "Prosecutor to be notified organisation name",
+                "promptReference": "prosecutortobenotifiedOrganisationName",
+                "promptSequence": 500,
+                "type": "NAMEADDRESS",
+                "usergroups": [
+                  "CPS",
+                  "Defence",
+                  "Judiciary",
+                  "NCES",
+                  "Probation",
+                  "Prosecuting Authorities",
+                  "YOTs"
+                ],
+                "value": "16-24 Whitfield Street"
+              },
+              {
+                "courtExtract": "N",
+                "durationSequence": 0,
+                "isFinancialImposition": false,
+                "judicialResultPromptTypeId": "0a7dd6aa-f7cc-43d7-ba03-c9621f3e4471",
+                "label": "Prosecutor to be notified organisation name",
+                "promptReference": "prosecutortobenotifiedOrganisationName",
+                "promptSequence": 500,
+                "type": "NAMEADDRESS",
+                "usergroups": [
+                  "CPS",
+                  "Defence",
+                  "Judiciary",
+                  "NCES",
+                  "Probation",
+                  "Prosecuting Authorities",
+                  "YOTs"
+                ],
+                "value": "London"
+              },
+              {
+                "courtExtract": "N",
+                "durationSequence": 0,
+                "isFinancialImposition": false,
+                "judicialResultPromptTypeId": "0a7dd6aa-f7cc-43d7-ba03-c9621f3e4471",
+                "label": "Prosecutor to be notified organisation name",
+                "promptReference": "prosecutortobenotifiedOrganisationName",
+                "promptSequence": 500,
+                "type": "NAMEADDRESS",
+                "usergroups": [
+                  "CPS",
+                  "Defence",
+                  "Judiciary",
+                  "NCES",
+                  "Probation",
+                  "Prosecuting Authorities",
+                  "YOTs"
+                ],
+                "value": "W1T 2RA"
+              }
+            ],
+            "judicialResultTypeId": "e2f6e11b-c3a2-4e76-8d29-fbede4174988",
+            "label": "Statutory Declaration",
+            "level": "O",
+            "lifeDuration": false,
+            "orderedDate": "2024-09-26",
+            "orderedHearingId": "7d8c8d6a-15a8-4c0f-8aea-a75e6443e95e",
+            "postHearingCustodyStatus": "A",
+            "publishedAsAPrompt": false,
+            "publishedForNows": false,
+            "rank": 140000,
+            "resultDefinitionGroup": "Enforcement",
+            "resultText": "Statutory Declaration\nStatutory declaration made under Section 14 of the Magistrates' Courts Act 1980\nFinancial penalties to be written off true\nProsecutor to be notified organisation name British Transport Police\nProsecutor to be notified organisation name Central London Police Station\nProsecutor to be notified organisation name 16-24 Whitfield Street\nProsecutor to be notified organisation name London\nProsecutor to be notified organisation name W1T 2RA",
+            "rollUpPrompts": true,
+            "terminatesOffenceProceedings": false,
+            "urgent": false
+          },
+          {
+            "alwaysPublished": false,
+            "canBeSubjectOfBreach": false,
+            "canBeSubjectOfVariation": false,
+            "category": "ANCILLARY",
+            "d20": false,
+            "excludedFromResults": false,
+            "isAdjournmentResult": false,
+            "isAvailableForCourtExtract": false,
+            "isConvictedResult": false,
+            "isFinancialResult": false,
+            "isUnscheduled": false,
+            "judicialResultId": "f42fa098-0f7b-4269-ac4f-b10c9b6832d7",
+            "judicialResultPrompts": [
+              {
+                "courtExtract": "N",
+                "durationSequence": 0,
+                "isFinancialImposition": false,
+                "judicialResultPromptTypeId": "b49bf4fa-0b1e-4079-b85a-c0113a46b91b",
+                "label": "Original court code",
+                "promptReference": "originalCourtCode",
+                "promptSequence": 100,
+                "type": "INTC",
+                "usergroups": [],
+                "value": "2577"
+              },
+              {
+                "courtExtract": "N",
+                "durationSequence": 0,
+                "isFinancialImposition": false,
+                "judicialResultPromptTypeId": "0cd86af5-10d8-4fd1-a78a-8a0e80179034",
+                "label": "Original conviction date",
+                "promptReference": "originalConvictionDate",
+                "promptSequence": 200,
+                "type": "DATE",
+                "usergroups": [],
+                "value": "2024-09-26"
+              },
+              {
+                "courtExtract": "N",
+                "durationSequence": 0,
+                "isFinancialImposition": false,
+                "judicialResultPromptTypeId": "37ee2b08-1950-4b04-bea5-f6f66b768bb0",
+                "label": "Original offence date",
+                "promptReference": "originalOffenceDate",
+                "promptSequence": 400,
+                "type": "DATE",
+                "usergroups": [],
+                "value": "2024-09-11"
+              },
+              {
+                "courtExtract": "N",
+                "durationSequence": 0,
+                "isFinancialImposition": false,
+                "judicialResultPromptTypeId": "1a2a23ea-c70d-4a5c-afa7-09dc514f84cc",
+                "label": "DVLA endorsement code",
+                "promptReference": "dVLAEndorsementCode",
+                "promptSequence": 300,
+                "type": "TXT",
+                "usergroups": [],
+                "value": "DR20"
+              }
+            ],
+            "judicialResultTypeId": "f42fa098-0f7b-4269-ac4f-b10c9b6832d7",
+            "label": "Driving endorsement to be removed",
+            "level": "O",
+            "lifeDuration": false,
+            "orderedDate": "2024-09-26",
+            "orderedHearingId": "7d8c8d6a-15a8-4c0f-8aea-a75e6443e95e",
+            "postHearingCustodyStatus": "A",
+            "publishedAsAPrompt": true,
+            "publishedForNows": false,
+            "rank": 40100,
+            "resultText": "Driving endorsement to be removed\nOriginal court code 2577\nOriginal conviction date 2024-09-26\nOriginal offence date 2024-09-11\nDVLA endorsement code DR20",
+            "rollUpPrompts": false,
+            "terminatesOffenceProceedings": false,
+            "urgent": false
+          }
+        ],
+        "respondents": [
+          {
+            "id": "c9e9ddf8-86e5-4886-a867-ae88b9c8f1b3",
+            "notificationRequired": true,
+            "prosecutingAuthority": {
+              "address": {
+                "address1": "Central London Police Station",
+                "address2": "16-24 Whitfield Street",
+                "address3": "London",
+                "postcode": "W1T 2RA"
+              },
+              "contact": {
+                "primaryEmail": "BTP-JUSTICE-UNIT@BTP.POLICE.UK"
+              },
+              "majorCreditorCode": "BTPO",
+              "name": "British Transport Police",
+              "prosecutionAuthorityCode": "BTP",
+              "prosecutionAuthorityId": "433ab45d-bfb6-3c38-a6a5-a30e114c9a5f",
+              "prosecutionAuthorityOUCode": "0930000",
+              "welshName": "Heddlu Trafnidiaeth Prydeinig"
+            },
+            "summonsRequired": false
+          }
+        ],
+        "subject": {
+          "id": "a72d1cab-aeba-4701-bfd9-e4d8d3b4be75",
+          "masterDefendant": {
+            "defendantCase": [
+              {
+                "caseId": "5c923db8-63b1-4eab-996c-083fc00ed7f8",
+                "caseReference": "SJ9192157479",
+                "defendantId": "e671b0c5-23b2-4c2e-8b47-652633d4ff7a"
+              }
+            ],
+            "masterDefendantId": "e671b0c5-23b2-4c2e-8b47-652633d4ff7a",
+            "personDefendant": {
+              "arrestSummonsNumber": "ASN1152506",
+              "personDetails": {
+                "address": {
+                  "address1": "FLAT - 25A",
+                  "address2": "Constable Street",
+                  "address3": "Bristol",
+                  "address4": "England",
+                  "address5": "UK",
+                  "postcode": "IG1 1YY"
+                },
+                "contact": {
+                  "home": "01231231230",
+                  "mobile": "78231231230",
+                  "primaryEmail": "FlmXSK4cSmith1icdO@email.com"
+                },
+                "dateOfBirth": "1959-09-26",
+                "documentationLanguageNeeds": "ENGLISH",
+                "firstName": "FlmXSK4c",
+                "gender": "MALE",
+                "lastName": "Smith1icdO",
+                "nationalInsuranceNumber": "AB123456C",
+                "occupation": "TA",
+                "occupationCode": "666",
+                "specificRequirements": "no special needs",
+                "title": "MR"
+              }
+            }
+          },
+          "notificationRequired": true,
+          "summonsRequired": false
+        },
+        "type": {
+          "appealFlag": false,
+          "applicantAppellantFlag": false,
+          "boxworkNotifTemplate": "NOT_APPLICABLE",
+          "breachType": "NOT_APPLICABLE",
+          "categoryCode": "CR",
+          "code": "MC80528",
+          "commrOfOathFlag": true,
+          "contestedFeeApplicable": false,
+          "courtExtractAvlFlag": true,
+          "courtOfAppealFlag": false,
+          "exParte": false,
+          "hearingCode": "APN",
+          "id": "7375727f-30fc-3f55-99f3-36adc4f0e70e",
+          "initialFeeApplicable": false,
+          "jurisdiction": "MAGISTRATES",
+          "lastModified": "2022-03-15T15:16:58.722Z",
+          "legislation": "In accordance with section 16E of the Magistrates' Courts Act 1980.",
+          "legislationWelsh": "Yn unol ag adran 16E Deddf Llysoedd Ynadon 1980.",
+          "linkType": "SJP",
+          "listingNotifTemplate": "POSTAL_NOTIFICATION",
+          "offenceActiveOrder": "OFFENCE",
+          "pleaApplicableFlag": false,
+          "prosecutorThirdPartyFlag": true,
+          "spiOutApplicableFlag": true,
+          "summonsTemplateType": "NOT_APPLICABLE",
+          "type": "Appearance to make statutory declaration (SJP case)",
+          "typeWelsh": "Ymddangos i wneud datganiad statudol (achos gweithdrefn un ynad - SJP)"
+        }
+      }
+    ],
+    "courtCentre": {
+      "address": {
+        "address1": "176A Lavender Hill",
+        "address2": "London",
+        "postcode": "SW11 1JU"
+      },
+      "code": "B01LY00",
+      "id": "f8254db1-1683-483e-afb3-b87fde5a0a26",
+      "lja": {
+        "ljaCode": "2577",
+        "ljaName": "Lavender Hill Magistrates' Court",
+        "welshLjaName": "Llys Ynadon Lavender Hill"
+      },
+      "name": "Lavender Hill Magistrates' Court"
+    },
+    "hasSharedResults": false,
+    "hearingDays": [
+      {
+        "listedDurationMinutes": 360,
+        "sittingDay": "2024-09-26T10:35:32.153Z"
+      }
+    ],
+    "hearingLanguage": "ENGLISH",
+    "id": "7d8c8d6a-15a8-4c0f-8aea-a75e6443e95e",
+    "isBoxHearing": false,
+    "isSJPHearing": true,
+    "jurisdictionType": "MAGISTRATES"
+  },
+  "hearingDay": "2024-09-26",
+  "sharedTime": "2024-09-26T10:35:45.391Z"
+}

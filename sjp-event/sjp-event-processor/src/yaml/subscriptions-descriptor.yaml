@@ -236,6 +236,9 @@ subscriptions_descriptor:
         - name: sjp.events.application-address-changed
           schema_uri: http://justice.gov.uk/json/schemas/domains/sjp/events/sjp.events.application-address-changed.json
 
+        - name: sjp.events.application-offence-results-saved
+          schema_uri: http://justice.gov.uk/hearing/courts/sjp.events.application-offence-results-saved.json
+
 
       event_source_name: sjp
 

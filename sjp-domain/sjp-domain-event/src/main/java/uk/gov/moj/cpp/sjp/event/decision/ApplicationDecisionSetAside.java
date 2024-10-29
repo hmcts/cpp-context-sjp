@@ -22,12 +22,15 @@ public class ApplicationDecisionSetAside {
     private UUID applicationId;
 
     private UUID caseId;
+    private final String caseUrn;
 
     @JsonCreator
     public ApplicationDecisionSetAside(@JsonProperty("applicationId") final UUID applicationId,
-                                       @JsonProperty("caseId") UUID caseId) {
+                                       @JsonProperty("caseId") UUID caseId,
+                                       @JsonProperty("caseUrn") String caseUrn) {
         this.applicationId = applicationId;
         this.caseId = caseId;
+        this.caseUrn = caseUrn;
     }
 
     public UUID getApplicationId() {
@@ -36,6 +39,10 @@ public class ApplicationDecisionSetAside {
 
     public UUID getCaseId() {
         return caseId;
+    }
+
+    public String getCaseUrn() {
+        return this.caseUrn;
     }
 
     @Override
@@ -48,12 +55,13 @@ public class ApplicationDecisionSetAside {
         }
         final ApplicationDecisionSetAside that = (ApplicationDecisionSetAside) o;
         return applicationId.equals(that.applicationId) &&
-                caseId.equals(that.caseId);
+                caseId.equals(that.caseId) &&
+                caseUrn.equals(that.caseUrn);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(applicationId, caseId);
+        return Objects.hash(applicationId, caseId, caseUrn);
     }
 
     @Override
@@ -61,6 +69,7 @@ public class ApplicationDecisionSetAside {
         final StringBuilder sb = new StringBuilder("ApplicationDecisionSetAside{");
         sb.append("applicationId=").append(applicationId);
         sb.append(", caseId=").append(caseId);
+        sb.append(", caseUrn=").append(caseUrn);
         sb.append('}');
         return sb.toString();
     }

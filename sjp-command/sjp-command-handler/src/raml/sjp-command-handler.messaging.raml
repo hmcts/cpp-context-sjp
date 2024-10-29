@@ -219,6 +219,14 @@ version: v1
           example: !include json/sjp.command.handler.save-application-decision.json
           schema: !include json/schema/sjp.command.handler.save-application-decision.json
 
+      application/vnd.sjp.command.record-granted-application-results+json:
+        example: !include json/sjp.command.record-granted-application-results.json
+        schema: !include json/schema/sjp.command.record-granted-application-results.json
+
+      application/vnd.sjp.command.save-application-offences-results+json:
+        example: !include json/sjp.command.save-application-offences-results.json
+        schema: !include json/schema/sjp.command.save-application-offences-results.json
+
       application/vnd.sjp.command.add-financial-imposition-correlation-id+json:
           example: !include json/sjp.command.add-financial-imposition-correlation-id.json
           schema: !include json/schema/sjp.command.add-financial-imposition-correlation-id.json
@@ -307,3 +315,7 @@ version: v1
       application/vnd.sjp.command.reject-pending-defendant-changes+json:
         example: !include json/sjp.command.reject-pending-defendant-changes.json
         schema: !include json/schema/sjp.command.reject-pending-defendant-changes.json
+
+      application/vnd.sjp.command.update-case-listed-in-cc+json:
+        schema: !include json/schema/sjp.command.update-case-listed-in-cc.json
+        example: !include json/sjp.command.update-case-listed-in-cc.json

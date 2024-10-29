@@ -1,5 +1,6 @@
 package uk.gov.moj.cpp.sjp.domain.aggregate.mutator;
 
+import static java.util.Objects.nonNull;
 import static java.util.Optional.ofNullable;
 import static uk.gov.justice.json.schemas.domains.sjp.ApplicationType.REOPENING;
 import static uk.gov.justice.json.schemas.domains.sjp.ApplicationType.STAT_DEC;
@@ -15,6 +16,7 @@ import uk.gov.moj.cpp.sjp.domain.disability.DisabilityNeeds;
 import uk.gov.moj.cpp.sjp.domain.plea.Plea;
 import uk.gov.moj.cpp.sjp.event.AllOffencesWithdrawalRequestCancelled;
 import uk.gov.moj.cpp.sjp.event.AllOffencesWithdrawalRequested;
+import uk.gov.moj.cpp.sjp.event.ApplicationResultsRecorded;
 import uk.gov.moj.cpp.sjp.event.CaseReferredForCourtHearingV2;
 import uk.gov.moj.cpp.sjp.event.CaseReserved;
 import uk.gov.moj.cpp.sjp.event.CaseUnReserved;
@@ -86,6 +88,7 @@ import uk.gov.moj.cpp.sjp.event.session.CaseAssigned;
 import uk.gov.moj.cpp.sjp.event.session.CaseUnassigned;
 
 import java.time.LocalDate;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Map;
@@ -220,6 +223,21 @@ final class CompositeCaseAggregateStateMutator implements AggregateStateMutator<
                         .count() > 0) {
                     state.setLatestReferToCourtDecision(event);
                 }
+                final ZonedDateTime savedAtDate = event.getSavedAt();
+                if(nonNull(savedAtDate)) {
+                    state.setSavedAt(event.getSavedAt().toLocalDate());
+                }
+            });
+
+    private static final AggregateStateMutator<ApplicationResultsRecorded, CaseAggregateState> APPLICATION_RESULTS_RECORDED =
+            ((event, state) -> {
+                final ApplicationResultsRecorded applicationResultsRecorded = ApplicationResultsRecorded.applicationResultsRecorded()
+                        .withHearing(event.getHearing())
+                        .withIsReshare(event.getIsReshare())
+                        .withSharedTime(event.getSharedTime())
+                        .withShadowListedOffences(event.getShadowListedOffences())
+                        .withHearingDay(event.getHearingDay()).build();
+                state.setApplicationResults(applicationResultsRecorded);
             });
 
     private static final AggregateStateMutator<ConvictionCourtResolved, CaseAggregateState> RESOLVE_CONVICTION_COURT_DETAILS_MUTATOR =
@@ -303,6 +321,7 @@ final class CompositeCaseAggregateStateMutator implements AggregateStateMutator<
                 state.unMarkCaseCompleted();
                 state.clearOffenceDecisions();
                 state.clearOffenceConvictionDates();
+                state.setFinancialImpositionCorelationId(false);
             });
 
     private static final AggregateStateMutator<FinancialImpositionCorrelationIdAdded, CaseAggregateState> FINANCIAL_IMPOSITION_CORRELATION_ID_ADDED_MUTATOR =
@@ -313,7 +332,6 @@ final class CompositeCaseAggregateStateMutator implements AggregateStateMutator<
                 fiExportDetails.setCorrelationId(event.getCorrelationId());
                 state.addFinancialImpositionExportDetails(defendantId, fiExportDetails);
                 state.setFinancialImpositionCorelationId(true);
-
             });
 
     private static final AggregateStateMutator<FinancialImpositionAccountNumberAdded, CaseAggregateState> FINANCIAL_IMPOSITION_ACCOUNT_NUMBER_ADDED_MUTATOR =
@@ -406,6 +424,7 @@ final class CompositeCaseAggregateStateMutator implements AggregateStateMutator<
                 .put(PleadedGuiltyCourtHearingRequested.class, PLEADED_GUILTY_COURT_HEARING_REQUESTED_MUTATOR)
                 .put(PleadedNotGuilty.class, PLEADED_NOT_GUILTY_MUTATOR)
                 .put(DecisionSaved.class, DECISION_MUTATOR)
+                .put(ApplicationResultsRecorded.class,APPLICATION_RESULTS_RECORDED)
                 .put(PleasSet.class, PLEAS_SET_MUTATOR)
                 .put(DatesToAvoidTimerExpired.class, DATES_TO_AVOID_TIMER_EXPIRED_MUTATOR)
                 .put(DefendantResponseTimerExpired.class, DEFENDANT_RESPONSE_TIMER_EXPIRED)

@@ -22,6 +22,11 @@ public class EnforcementPendingApplicationNotificationRequired {
     private final String urn;
     private final int divisionCode;
     private final LocalDate dateApplicationIsListed;
+    private final String defendantAddress;
+    private final String defendantDateOfBirth;
+    private final String defendantEmail;
+    private final String originalDateOfSentence;
+    private final String defendantContactNumber;
 
     @JsonCreator
     public EnforcementPendingApplicationNotificationRequired(@JsonProperty("caseId") final UUID caseId,
@@ -31,7 +36,12 @@ public class EnforcementPendingApplicationNotificationRequired {
                                                              @JsonProperty("defendantName") final String defendantName,
                                                              @JsonProperty("urn") final String urn,
                                                              @JsonProperty("divisionCode") final int divisionCode,
-                                                             @JsonProperty("dateApplicationIsListed") final LocalDate dateApplicationIsListed) {
+                                                             @JsonProperty("dateApplicationIsListed") final LocalDate dateApplicationIsListed,
+                                                             @JsonProperty("defendantAddress") final String defendantAddress,
+                                                             @JsonProperty("defendantDateOfBirth") final String defendantDateOfBirth,
+                                                             @JsonProperty("defendantEmail") final String defendantEmail,
+                                                             @JsonProperty("originalDateOfSentence") final String originalDateOfSentence,
+                                                             @JsonProperty("defendantContactNumber") final String defendantContactNumber) {
         this.caseId = caseId;
         this.applicationId = applicationId;
         this.initiatedTime = initiatedTime;
@@ -40,6 +50,11 @@ public class EnforcementPendingApplicationNotificationRequired {
         this.urn = urn;
         this.divisionCode = divisionCode;
         this.dateApplicationIsListed = dateApplicationIsListed;
+        this.defendantEmail = defendantEmail;
+        this.defendantAddress = defendantAddress;
+        this.defendantDateOfBirth = defendantDateOfBirth;
+        this.originalDateOfSentence = originalDateOfSentence;
+        this.defendantContactNumber = defendantContactNumber;
     }
 
     public UUID getCaseId() {
@@ -73,6 +88,16 @@ public class EnforcementPendingApplicationNotificationRequired {
     public LocalDate getDateApplicationIsListed() {
         return dateApplicationIsListed;
     }
+
+    public String getDefendantAddress() {return defendantAddress;}
+
+    public String getDefendantDateOfBirth() {return defendantDateOfBirth;}
+
+    public String getDefendantEmail() {return defendantEmail;}
+
+    public String getOriginalDateOfSentence() {return originalDateOfSentence;}
+
+    public String getDefendantContactNumber() {return defendantContactNumber;}
 
     @Override
     public boolean equals(Object o) {

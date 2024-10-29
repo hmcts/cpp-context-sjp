@@ -92,7 +92,7 @@ public class ApplicationSetAsideProcessorTest {
         applicationId = randomUUID();
         applicationSavedAt = ZonedDateTime.of(LocalDate.of(2020, 11, 20), LocalTime.now(), ZoneId.systemDefault());
         applicationDecisionId = randomUUID();
-        final ApplicationDecisionSetAside applicationDecisionSetAside = new ApplicationDecisionSetAside(applicationId, caseId);
+        final ApplicationDecisionSetAside applicationDecisionSetAside = new ApplicationDecisionSetAside(applicationId, caseId, "TVLXYZ01");
         envelope = ApplicationDecisionSetAsideEnvelope.of(applicationDecisionSetAside);
     }
 
@@ -101,6 +101,7 @@ public class ApplicationSetAsideProcessorTest {
         final JsonObject payload = createObjectBuilder()
                 .add("caseId", caseId.toString())
                 .add("applicationID", applicationDecisionId.toString())
+                .add("caseUrn", "TVLXYZ01")
                 .build();
         envelope = ApplicationDecisionSetAsideEnvelope.of(payload);
         givenCaseWithoutEndorsementsToBeRemoved();
@@ -110,6 +111,7 @@ public class ApplicationSetAsideProcessorTest {
         verify(sender).send(envelopeCaptor.capture());
         assertThat(envelopeCaptor.getValue().metadata().name(), is("public.sjp.application-decision-set-aside"));
         assertThat(envelopeCaptor.getValue().payloadAsJsonObject(), is(payload));
+        assertThat(envelopeCaptor.getValue().payloadAsJsonObject().getString("caseUrn"), is("TVLXYZ01"));
     }
 
     @Test

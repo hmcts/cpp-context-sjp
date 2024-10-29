@@ -2,6 +2,7 @@ package uk.gov.moj.cpp.sjp.event.processor;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 import uk.gov.justice.core.courts.DefendantJudicialResult;
 import uk.gov.justice.core.courts.JudicialResult;
 import uk.gov.justice.core.courts.JudicialResultPrompt;
@@ -24,20 +25,24 @@ import uk.gov.moj.cpp.sjp.event.processor.results.converter.SjpToHearingConverte
 import uk.gov.moj.cpp.sjp.event.processor.service.SjpService;
 
 import javax.inject.Inject;
+import javax.json.Json;
 import javax.json.JsonArrayBuilder;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
 import javax.json.JsonValue;
+
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
 import static java.time.temporal.ChronoUnit.DAYS;
+import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
 import static java.util.Optional.ofNullable;
 import static javax.json.Json.createArrayBuilder;
@@ -58,6 +63,8 @@ public class CaseDecisionProcessor {
     public static final String PAYMENT_TERMS_INFO = "paymentTermsInfo";
     public static final String DECISION_SAVED = "decisionSaved";
     public static final String RESET_PAY_BY_DATE = "resetPayByDate";
+    public static final String SJP_COMMAND_SAVE_APPLICATION_OFFENCES_RESULTS = "sjp.command.save-application-offences-results";
+    public static final String APPLICATION_FLOW = "applicationFlow";
 
     @Inject
     private Sender sender;
@@ -88,8 +95,10 @@ public class CaseDecisionProcessor {
 
     @Handles(DecisionSaved.EVENT_NAME)
     public void handleCaseDecisionSaved(final JsonEnvelope caseDecisionSavedEnvelope) {
-        final JsonObject savedDecision = caseDecisionSavedEnvelope.payloadAsJsonObject();
+        JsonObject savedDecision = caseDecisionSavedEnvelope.payloadAsJsonObject();
+        final Boolean isApplicationFlow = savedDecision.containsKey(APPLICATION_FLOW) ? savedDecision.getBoolean(APPLICATION_FLOW) : null;
         final String caseId = savedDecision.getString(EventProcessorConstants.CASE_ID);
+        savedDecision = removeProperty(savedDecision, APPLICATION_FLOW);
         setAside(caseDecisionSavedEnvelope, savedDecision, caseId);
 
         sender.sendAsAdmin(envelop(createObjectBuilder().add(CASE_ID, caseId).build())
@@ -102,12 +111,12 @@ public class CaseDecisionProcessor {
                 .getJsonArray(OFFENCE_DECISIONS)
                 .stream()
                 .anyMatch(e -> ((JsonObject) e).getString("type").equals(DecisionType.REFER_FOR_COURT_HEARING.toString()));
-
         if (isDecisionReferredToCourt) {
             sender.send(envelop(savedDecision)
                     .withName(PUBLIC_CASE_DECISION_REFERRED_TO_COURT)
                     .withMetadataFrom(caseDecisionSavedEnvelope));
         } else {
+            final PublicHearingResulted publicHearingResulted = sjpToHearingConverter.convertCaseDecision(caseDecisionSavedEnvelope);
             final JsonObjectBuilder decisionSaved = createObjectBuilder()
                     .add("decisionId", savedDecision.getString("decisionId"))
                     .add("sessionId", savedDecision.getString("sessionId"))
@@ -117,14 +126,23 @@ public class CaseDecisionProcessor {
             if (savedDecision.containsKey(FINANCIAL_IMPOSITION)) {
                 decisionSaved.add(FINANCIAL_IMPOSITION, savedDecision.getJsonObject(FINANCIAL_IMPOSITION));
             }
-
             sender.send(envelop(decisionSaved.build())
                     .withName(PUBLIC_CASE_DECISION_SAVED_EVENT)
                     .withMetadataFrom(caseDecisionSavedEnvelope));
-
-            final PublicHearingResulted publicHearingResulted = sjpToHearingConverter.convertCaseDecision(caseDecisionSavedEnvelope);
-
-            publishHearingEvent(caseDecisionSavedEnvelope, publicHearingResulted);
+            if (isNull(isApplicationFlow) || !isApplicationFlow) {
+                publishHearingEvent(caseDecisionSavedEnvelope, publicHearingResulted);
+            } else {
+                final Envelope<HearingResulted> hearingResultedEnvelope = envelop(HearingResulted
+                        .hearingResulted()
+                        .withHearing(publicHearingResulted.getHearing())
+                        .withHearingDay(publicHearingResulted.getSharedTime().format(DATE_FORMAT))
+                        .withSharedTime(publicHearingResulted.getSharedTime())
+                        .withIsReshare(false)
+                        .build())
+                        .withName(SJP_COMMAND_SAVE_APPLICATION_OFFENCES_RESULTS)
+                        .withMetadataFrom(caseDecisionSavedEnvelope);
+                sender.send(hearingResultedEnvelope);
+            }
         }
     }
 
@@ -284,5 +302,20 @@ public class CaseDecisionProcessor {
         } catch (DateTimeParseException parseException) {
             throw new RuntimeException(String.format("invalid format for incoming date prompt value: %s", value), parseException);
         }
+    }
+
+    private static JsonObject removeProperty(JsonObject origin, String key) {
+        final JsonObjectBuilder builder = Json.createObjectBuilder();
+
+        for (final Map.Entry<String, JsonValue> entry : origin.entrySet()) {
+            if (!entry.getKey().equals(key)) {
+                if (entry.getValue().getValueType() == JsonValue.ValueType.OBJECT) {
+                    builder.add(entry.getKey(), removeProperty(origin.getJsonObject(entry.getKey()), key));
+                } else {
+                    builder.add(entry.getKey(), entry.getValue());
+                }
+            }
+        }
+        return builder.build();
     }
 }

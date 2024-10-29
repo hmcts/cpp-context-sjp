@@ -36,6 +36,7 @@ import uk.gov.moj.cpp.sjp.domain.legalentity.LegalEntityDefendant;
 import uk.gov.moj.cpp.sjp.domain.onlineplea.PersonalDetails;
 import uk.gov.moj.cpp.sjp.domain.plea.Plea;
 import uk.gov.moj.cpp.sjp.domain.plea.PleaType;
+import uk.gov.moj.cpp.sjp.event.ApplicationResultsRecorded;
 import uk.gov.moj.cpp.sjp.event.CaseOffenceListedInCriminalCourts;
 import uk.gov.moj.cpp.sjp.event.DefendantDetailsUpdated;
 import uk.gov.moj.cpp.sjp.event.decision.DecisionSaved;
@@ -166,6 +167,20 @@ public class CaseAggregateState implements AggregateState {
     private DecisionSaved latestReferToCourtDecision;
     private boolean caseListed;
     private boolean caseReserved;
+    private LocalDate savedAt;
+    private ApplicationResultsRecorded applicationResults;
+
+    public ApplicationResultsRecorded getApplicationResults() {return applicationResults;}
+
+    public void setApplicationResults(final ApplicationResultsRecorded applicationResults) {this.applicationResults = applicationResults;}
+
+    public LocalDate getSavedAt() {
+        return savedAt;
+    }
+
+    public void setSavedAt(final LocalDate savedAt) {
+        this.savedAt = savedAt;
+    }
 
     public UUID getCaseId() {
         return caseId;

@@ -1,6 +1,9 @@
 package uk.gov.moj.cpp.sjp.command.handler;
 
+import static com.google.common.io.Resources.getResource;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
+import static java.nio.charset.Charset.defaultCharset;
+import static java.util.UUID.fromString;
 import static java.util.UUID.randomUUID;
 import static javax.json.JsonValue.NULL;
 import static org.hamcrest.CoreMatchers.allOf;
@@ -31,6 +34,9 @@ import uk.gov.justice.json.schemas.domains.sjp.User;
 import uk.gov.justice.json.schemas.domains.sjp.commands.SaveApplicationDecision;
 import uk.gov.justice.json.schemas.domains.sjp.events.ApplicationDecisionRejected;
 import uk.gov.justice.json.schemas.domains.sjp.events.ApplicationDecisionSaved;
+import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
+import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
+import uk.gov.justice.services.common.converter.jackson.ObjectMapperProducer;
 import uk.gov.justice.services.common.util.UtcClock;
 import uk.gov.justice.services.core.aggregate.AggregateService;
 import uk.gov.justice.services.core.enveloper.Enveloper;
@@ -39,6 +45,7 @@ import uk.gov.justice.services.eventsourcing.source.core.EventStream;
 import uk.gov.justice.services.eventsourcing.source.core.exception.EventStreamException;
 import uk.gov.justice.services.messaging.Envelope;
 import uk.gov.justice.services.messaging.JsonEnvelope;
+import uk.gov.moj.cpp.sjp.domain.ApplicationOffencesResults;
 import uk.gov.moj.cpp.sjp.domain.SessionType;
 import uk.gov.moj.cpp.sjp.domain.aggregate.CaseAggregate;
 import uk.gov.moj.cpp.sjp.domain.aggregate.Session;
@@ -47,6 +54,7 @@ import uk.gov.moj.cpp.sjp.domain.decision.Dismiss;
 import uk.gov.moj.cpp.sjp.domain.decision.OffenceDecision;
 import uk.gov.moj.cpp.sjp.domain.decision.Withdraw;
 import uk.gov.moj.cpp.sjp.domain.verdict.VerdictType;
+import uk.gov.moj.cpp.sjp.event.ApplicationOffenceResultsSaved;
 import uk.gov.moj.cpp.sjp.event.decision.DecisionSaved;
 
 import java.math.BigDecimal;
@@ -57,6 +65,10 @@ import java.util.List;
 import java.util.UUID;
 import java.util.stream.Stream;
 
+import javax.json.JsonObject;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.io.Resources;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
@@ -86,12 +98,15 @@ public class DecisionHandlerTest {
 
     @Captor
     private ArgumentCaptor<Stream<JsonEnvelope>> argumentCaptor;
+    private final ObjectMapper objectMapper = new ObjectMapperProducer().objectMapper();
+    private final JsonObjectToObjectConverter jsonToObjectConverter = new JsonObjectToObjectConverter(objectMapper);
 
     @Spy
     private final Enveloper enveloper = createEnveloperWithEvents(
             DecisionSaved.class,
             ApplicationDecisionSaved.class,
-            ApplicationDecisionRejected.class);
+            ApplicationDecisionRejected.class,
+            ApplicationOffenceResultsSaved.class);
 
     @InjectMocks
     private DecisionHandler decisionHandler;
@@ -99,8 +114,6 @@ public class DecisionHandlerTest {
     private final UtcClock clock = new UtcClock();
 
     private void mockCalls(final UUID caseId, final UUID sessionId) {
-        when(eventSource.getStreamById(sessionId)).thenReturn(eventStream);
-        when(aggregateService.get(eventStream, Session.class)).thenReturn(session);
         when(eventSource.getStreamById(caseId)).thenReturn(eventStream);
         when(aggregateService.get(eventStream, CaseAggregate.class)).thenReturn(caseAggregate);
     }
@@ -127,7 +140,7 @@ public class DecisionHandlerTest {
         offenceDecisions.add(offenceDecision1);
         offenceDecisions.add(offenceDecision2);
 
-        final Decision decision = new Decision(decisionId, sessionId, caseId, "duplicate conviction", savedAt, savedBy, offenceDecisions, null);
+        final Decision decision = new Decision(decisionId, sessionId, caseId, "duplicate conviction", savedAt, savedBy, offenceDecisions, null,null);
 
         final DecisionSaved decisionSaved = new DecisionSaved(decisionId, sessionId, caseId, urn, decision.getSavedAt(), offenceDecisions);
 
@@ -184,7 +197,7 @@ public class DecisionHandlerTest {
         offenceDecisions.add(offenceDecision1);
         offenceDecisions.add(offenceDecision2);
 
-        final Decision decision = new Decision(decisionId, sessionId, caseId, "duplicate conviction", savedAt, savedBy, offenceDecisions, null);
+        final Decision decision = new Decision(decisionId, sessionId, caseId, "duplicate conviction", savedAt, savedBy, offenceDecisions, null,null);
 
         final DecisionSaved decisionSaved = new DecisionSaved(decisionId, sessionId, caseId, urn, decision.getSavedAt(), offenceDecisions);
 
@@ -241,11 +254,13 @@ public class DecisionHandlerTest {
         offenceDecisions.add(offenceDecision1);
         offenceDecisions.add(offenceDecision2);
 
-        final Decision decision = new Decision(decisionId, sessionId, caseId, "duplicate conviction", savedAt, savedBy, offenceDecisions, null);
+        final Decision decision = new Decision(decisionId, sessionId, caseId, "duplicate conviction", savedAt, savedBy, offenceDecisions, null,null);
 
         final DecisionSaved decisionSaved = new DecisionSaved(decisionId, sessionId, caseId, urn, decision.getSavedAt(), offenceDecisions);
 
         mockCalls(caseId, sessionId);
+        when(eventSource.getStreamById(sessionId)).thenReturn(eventStream);
+        when(aggregateService.get(eventStream, Session.class)).thenReturn(session);
         when(caseAggregate.saveDecision(decision, session)).thenReturn(Stream.of(decisionSaved));
         final Envelope<Decision> decisionEnvelope = envelopeFrom(metadataWithRandomUUID("sjp.command.save-decision"), decision);
 
@@ -305,6 +320,8 @@ public class DecisionHandlerTest {
                 .build();
 
         mockCalls(caseId, sessionId);
+        when(eventSource.getStreamById(sessionId)).thenReturn(eventStream);
+        when(aggregateService.get(eventStream, Session.class)).thenReturn(session);
         when(caseAggregate.saveApplicationDecision(applicationDecision, session))
                 .thenReturn(Stream.of(applicationDecisionSaved));
 
@@ -332,5 +349,57 @@ public class DecisionHandlerTest {
                                 withJsonPath("$.applicationDecision.granted", equalTo(true)),
                                 withJsonPath("$.applicationDecision.outOfTime", equalTo(false))
                         ))))));
+    }
+
+    @Test
+    public void shouldSaveApplicationOffencesResults() throws EventStreamException {
+        final UUID sessionId = randomUUID();
+        final UUID caseId = fromString("d9e3f714-62a5-47f3-b7b9-be0248810f7d");
+
+        mockCalls(caseId, sessionId);
+        final JsonObject requestPayload = getJsonPayload("application-offence-results.json");
+        final ApplicationOffencesResults applicationOffencesResults = jsonToObjectConverter.convert(requestPayload, ApplicationOffencesResults.class);
+
+        final JsonObject streamPayload = getJsonPayload("public-application-hearing-resulted-with-offence-results.json");
+        final ApplicationOffenceResultsSaved publicHearingResulted = jsonToObjectConverter.convert(streamPayload, ApplicationOffenceResultsSaved.class);
+
+        when(caseAggregate.saveApplicationOffencesResults(applicationOffencesResults))
+                .thenReturn(Stream.of(publicHearingResulted));
+
+        final Envelope<ApplicationOffencesResults> envelope = envelopeFrom(
+                metadataWithRandomUUID("sjp.command.save-application-offences-results"),
+                applicationOffencesResults);
+
+        decisionHandler.saveApplicationOffencesResults(envelope);
+
+        verify(eventStream).append(argumentCaptor.capture());
+
+        assertThat(argumentCaptor.getValue(), is(streamContaining(
+                jsonEnvelope(
+                        withMetadataEnvelopedFrom(JsonEnvelope.envelopeFrom(envelope.metadata(), NULL))
+                                .withName("sjp.events.application-offence-results-saved"),
+                        payloadIsJson(allOf(
+                                withJsonPath("$.hearing", notNullValue()),
+                                withJsonPath("$.hearing.courtApplications",notNullValue())
+                                ))))));
+
+    }
+
+    private static JsonObject getJsonPayload(final String fileName) {
+        return new StringToJsonObjectConverter().convert(getFileContent(fileName));
+    }
+
+    private static String getFileContent(final String fileName) {
+        String response = null;
+        try {
+            response = Resources.toString(
+                    getResource(fileName),
+                    defaultCharset()
+            );
+        } catch (final Exception e) {
+            e.printStackTrace();
+        }
+
+        return response;
     }
 }

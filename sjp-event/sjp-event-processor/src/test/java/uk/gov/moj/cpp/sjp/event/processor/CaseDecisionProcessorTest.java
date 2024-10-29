@@ -4,9 +4,9 @@ import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
 import static java.util.UUID.randomUUID;
 import static javax.json.Json.createArrayBuilder;
 import static javax.json.Json.createObjectBuilder;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.AllOf.allOf;
 import static org.hamcrest.core.Is.is;
-import static org.hamcrest.MatcherAssert.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
@@ -35,7 +35,6 @@ import java.util.function.Function;
 
 import javax.json.JsonValue;
 
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
@@ -83,6 +82,7 @@ public class CaseDecisionProcessorTest {
     private static final String PUBLIC_CASE_DECISION_REFERRED_TO_COURT_EVENT = "public.events.sjp.case-referred-to-court";
     private static final String PUBLIC_HEARING_RESULTED_EVENT = "public.hearing.resulted";
     private static final String PUBLIC_EVENTS_HEARING_RESULTED = "public.events.hearing.hearing-resulted";
+    public static final String SJP_COMMAND_SAVE_APPLICATION_OFFENCES_RESULTS = "sjp.command.save-application-offences-results";
     private static final String PRIVATE_CASE_DECISION_SAVED_EVENT = "sjp.events.decision-saved";
     public static final String UNDO_RESERVE_CASE_TIMER_COMMAND = "sjp.command.undo-reserve-case";
 
@@ -279,6 +279,91 @@ public class CaseDecisionProcessorTest {
                         withJsonPath("offenceDecisions[1].offenceId", is(offence2Id.toString())),
                         withJsonPath("offenceDecisions[1].withdrawalReasonId", is(withdrawalReasonId.toString())),
                         withJsonPath("offenceDecisions[1].verdict", is(verdict))
+                )));
+    }
+
+    @Test
+    public void shouldHandleCaseDecisionSavedForApplicationFlow() {
+        final UUID caseId = randomUUID();
+        final UUID decisionId = randomUUID();
+        final UUID sessionId = randomUUID();
+        final UUID defendantId = randomUUID();
+        final String urn = "TFL12345567";
+        final String defendantName = "James Smith";
+        final LocalDate savedAt = LocalDate.now();
+        final UUID offence1Id = randomUUID();
+        final UUID offence2Id = randomUUID();
+        final UUID withdrawalReasonId = randomUUID();
+        final String type = "WITHDRAW";
+        final String verdict = "NO_VERDICT";
+
+        final JsonEnvelope privateEvent = createEnvelope(PRIVATE_CASE_DECISION_SAVED_EVENT,
+                createObjectBuilder()
+                        .add("caseId", caseId.toString())
+                        .add("urn", urn)
+                        .add("decisionId", decisionId.toString())
+                        .add("sessionId", sessionId.toString())
+                        .add("savedAt", savedAt.toString())
+                        .add("defendantId", defendantId.toString())
+                        .add("defendantName", defendantName)
+                        .add("applicationFlow",true)
+                        .add("offenceDecisions",
+                                createArrayBuilder()
+                                        .add(createObjectBuilder()
+                                                .add("type", type)
+                                                .add("offenceId", offence1Id.toString())
+                                                .add("withdrawalReasonId", withdrawalReasonId.toString())
+                                                .add("verdict", verdict))
+                                        .add(createObjectBuilder()
+                                                .add("type", type)
+                                                .add("offenceId", offence2Id.toString())
+                                                .add("withdrawalReasonId", withdrawalReasonId.toString())
+                                                .add("verdict", verdict))
+                        ).build());
+
+        when(sjpToHearingConverter.convertCaseDecision(privateEvent)).thenReturn(publicHearingResultedPayload);
+        when(publicHearingResultedPayload.getSharedTime()).thenReturn(ZonedDateTime.now());
+
+        caseDecisionProcessor.handleCaseDecisionSaved(privateEvent);
+
+        verify(sender, times(2)).send(jsonEnvelopeCaptor.capture());
+
+        final List<DefaultEnvelope> eventEnvelopes = jsonEnvelopeCaptor.getAllValues();
+        final Envelope<JsonValue> decisionSavedPublicEvent = eventEnvelopes.get(0);
+
+        assertThat(decisionSavedPublicEvent.metadata(),
+                withMetadataEnvelopedFrom(privateEvent)
+                        .withName(PUBLIC_CASE_DECISION_SAVED_EVENT));
+
+        assertThat(decisionSavedPublicEvent.payload(),
+                payloadIsJson(allOf(
+                        withJsonPath("caseId", is(caseId.toString())),
+                        withJsonPath("decisionId", is(decisionId.toString())),
+                        withJsonPath("sessionId", is(sessionId.toString())),
+                        withJsonPath("savedAt", is(savedAt.toString())),
+                        withJsonPath("offenceDecisions[0].type", is(type)),
+                        withJsonPath("offenceDecisions[0].offenceId", is(offence1Id.toString())),
+                        withJsonPath("offenceDecisions[0].withdrawalReasonId", is(withdrawalReasonId.toString())),
+                        withJsonPath("offenceDecisions[0].verdict", is(verdict)),
+                        withJsonPath("offenceDecisions[1].type", is(type)),
+                        withJsonPath("offenceDecisions[1].offenceId", is(offence2Id.toString())),
+                        withJsonPath("offenceDecisions[1].withdrawalReasonId", is(withdrawalReasonId.toString())),
+                        withJsonPath("offenceDecisions[1].verdict", is(verdict))
+                )));
+
+        final Envelope<JsonValue> hearingResultedCommandSaveApplicationOffenceResults = eventEnvelopes.get(1);
+
+        assertThat(hearingResultedCommandSaveApplicationOffenceResults.metadata(),
+                withMetadataEnvelopedFrom(privateEvent)
+                        .withName(SJP_COMMAND_SAVE_APPLICATION_OFFENCES_RESULTS));
+
+        verify(sender, times(1)).sendAsAdmin(envelopeCaptor.capture());
+
+        final Envelope<JsonValue> reserveCaseCommand = envelopeCaptor.getValue();
+        assertThat(reserveCaseCommand.metadata().name(), is(UNDO_RESERVE_CASE_TIMER_COMMAND));
+        assertThat(reserveCaseCommand.payload(),
+                payloadIsJson(allOf(
+                        withJsonPath("caseId", is(caseId.toString()))
                 )));
     }
 

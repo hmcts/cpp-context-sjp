@@ -13,12 +13,16 @@ import static uk.gov.justice.json.schemas.domains.sjp.ApplicationType.REOPENING;
 import static uk.gov.justice.json.schemas.domains.sjp.ApplicationType.STAT_DEC;
 import static uk.gov.justice.json.schemas.domains.sjp.events.ApplicationDecisionRejected.applicationDecisionRejected;
 import static uk.gov.justice.json.schemas.domains.sjp.events.ApplicationDecisionSaved.applicationDecisionSaved;
+import static uk.gov.moj.cpp.sjp.event.ApplicationOffenceResultsSaved.applicationOffenceResultsSaved;
+import static uk.gov.moj.cpp.sjp.event.ApplicationResultsRecorded.applicationResultsRecorded;
 
 import uk.gov.justice.json.schemas.domains.sjp.ApplicationDecision;
 import uk.gov.justice.json.schemas.domains.sjp.ApplicationStatus;
 import uk.gov.justice.json.schemas.domains.sjp.ApplicationType;
 import uk.gov.justice.json.schemas.domains.sjp.commands.SaveApplicationDecision;
 import uk.gov.justice.json.schemas.domains.sjp.events.ApplicationDecisionSaved;
+import uk.gov.moj.cpp.sjp.domain.ApplicationOffencesResults;
+import uk.gov.moj.cpp.sjp.domain.GrantedApplicationResults;
 import uk.gov.moj.cpp.sjp.domain.aggregate.Session;
 import uk.gov.moj.cpp.sjp.domain.aggregate.state.Application;
 import uk.gov.moj.cpp.sjp.domain.aggregate.state.CaseAggregateState;
@@ -62,7 +66,7 @@ public class ApplicationDecisionHandler {
             if(applicationDecisionCommand.getGranted()) {
                 addPleaCancelledEvents(state, streamBuilder);
                 addVerdictCancelledEvents(state, streamBuilder);
-                addApplicationDecisionSetAside(state.getCaseId(), applicationDecisionCommand.getApplicationId(), streamBuilder);
+                addApplicationDecisionSetAside(state.getCaseId(), applicationDecisionCommand.getApplicationId(), state.getUrn(), streamBuilder);
             } else {
                 addCaseUnassignedEvent(state, streamBuilder);
                 addCaseCompletedEvent(state, streamBuilder);
@@ -83,8 +87,8 @@ public class ApplicationDecisionHandler {
         streamBuilder.add(buildApplicationDecisionSavedEvent(applicationDecisionCommand, session));
     }
 
-    private void addApplicationDecisionSetAside(final UUID caseId, final UUID applicationId, final Stream.Builder streamBuilder) {
-        streamBuilder.add(new ApplicationDecisionSetAside(applicationId, caseId));
+    private void addApplicationDecisionSetAside(final UUID caseId, final UUID applicationId, final String caseUrn, final Stream.Builder streamBuilder) {
+        streamBuilder.add(new ApplicationDecisionSetAside(applicationId, caseId, caseUrn));
     }
 
     private void addApplicationStatusChangedEvent(final boolean granted, final CaseAggregateState state, final Stream.Builder streamBuilder) {
@@ -178,5 +182,26 @@ public class ApplicationDecisionHandler {
         if(!state.hasPendingApplication()){
             rejectionReasons.add("The case doesn't have any pending application");
         }
+    }
+
+    public Stream<Object> recordGrantedApplicationResults(final GrantedApplicationResults payload) {
+        return Stream.of(applicationResultsRecorded()
+                .withHearing(payload.getHearing())
+                .withHearingDay(payload.getHearingDay())
+                .withIsReshare(payload.getReshare())
+                .withSharedTime(payload.getSharedTime())
+                .withShadowListedOffences(payload.getShadowListedOffences())
+                .build()
+        );
+    }
+
+    public Stream<Object> saveApplicationOffencesResults(final ApplicationOffencesResults payload) {
+        return Stream.of(applicationOffenceResultsSaved()
+                .withHearing(payload.getHearing())
+                .withHearingDay(payload.getHearingDay())
+                .withIsReshare(payload.getReshare())
+                .withSharedTime(payload.getSharedTime())
+                .withShadowListedOffences(payload.getShadowListedOffences())
+                .build());
     }
 }

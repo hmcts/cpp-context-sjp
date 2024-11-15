@@ -48,8 +48,6 @@ import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubReferralReason
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubRegionByPostcode;
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubResultDefinitionByResultCode;
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubResultIds;
-import static uk.gov.moj.sjp.it.stub.SchedulingStub.stubEndSjpSessionCommand;
-import static uk.gov.moj.sjp.it.stub.SchedulingStub.stubStartSjpSessionCommand;
 import static uk.gov.moj.sjp.it.stub.UsersGroupsStub.stubForUserDetails;
 import static uk.gov.moj.sjp.it.util.CaseAssignmentRestrictionHelper.provisionCaseAssignmentRestrictions;
 import static uk.gov.moj.sjp.it.util.DateUtils.CPP_ZONED_DATE_TIME_FORMATTER;
@@ -180,8 +178,6 @@ public class CourtReferralIT extends BaseIntegrationTest {
                         .withName("Basingstoke Magistrates' Court").withRoomId(roomId).build())
                 .build();
 
-        stubStartSjpSessionCommand();
-        stubEndSjpSessionCommand();
         stubDefaultCourtByCourtHouseOUCodeQuery();
         stubQueryOffencesByCode(LIBRA_OFFENCE_CODE2);
         stubReferralReasonsQuery(REFERRAL_REASON_ID, HEARING_CODE, REFERRAL_REASON);

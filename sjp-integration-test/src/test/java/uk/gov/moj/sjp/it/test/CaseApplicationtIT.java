@@ -51,7 +51,6 @@ import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubQueryForVerdic
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubRegionByPostcode;
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubResultDefinitions;
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubResultIds;
-import static uk.gov.moj.sjp.it.stub.SchedulingStub.stubEndSjpSessionCommand;
 import static uk.gov.moj.sjp.it.stub.UsersGroupsStub.stubForUserDetails;
 import static uk.gov.moj.sjp.it.stub.UsersGroupsStub.stubGroupForUser;
 import static uk.gov.moj.sjp.it.util.CaseAssignmentRestrictionHelper.provisionCaseAssignmentRestrictions;
@@ -80,7 +79,6 @@ import uk.gov.moj.sjp.it.model.DecisionCommand;
 import uk.gov.moj.sjp.it.model.ProsecutingAuthority;
 import uk.gov.moj.sjp.it.stub.AssignmentStub;
 import uk.gov.moj.sjp.it.stub.NotificationNotifyStub;
-import uk.gov.moj.sjp.it.stub.SchedulingStub;
 import uk.gov.moj.sjp.it.util.SjpDatabaseCleaner;
 
 import java.math.BigDecimal;
@@ -133,8 +131,6 @@ public class CaseApplicationtIT extends BaseIntegrationTest {
         databaseCleaner.cleanViewStore();
 
         provisionCaseAssignmentRestrictions(Sets.newHashSet(TFL, TVL, DVLA));
-        SchedulingStub.stubStartSjpSessionCommand();
-        stubEndSjpSessionCommand();
         stubDefaultCourtByCourtHouseOUCodeQuery();
         stubForUserDetails(USER, "ALL");
         stubGroupForUser(USER.getUserId(), "Legal Advisers");

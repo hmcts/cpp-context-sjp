@@ -1,8 +1,8 @@
 package uk.gov.moj.cpp.sjp.event.processor;
 
-import static uk.gov.justice.services.core.annotation.Component.EVENT_PROCESSOR;
 import static java.util.Objects.nonNull;
 import static java.util.UUID.randomUUID;
+import static uk.gov.justice.services.core.annotation.Component.EVENT_PROCESSOR;
 import static uk.gov.justice.services.messaging.Envelope.envelopeFrom;
 import static uk.gov.justice.services.messaging.JsonEnvelope.metadataFrom;
 
@@ -13,13 +13,10 @@ import uk.gov.justice.services.core.sender.Sender;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.messaging.Metadata;
 import uk.gov.moj.cpp.sjp.domain.SessionType;
-import uk.gov.moj.cpp.sjp.event.processor.service.SchedulingService;
 import uk.gov.moj.cpp.sjp.event.processor.service.SjpService;
-import uk.gov.moj.cpp.sjp.event.session.ResetAocpSession;
-import uk.gov.moj.cpp.sjp.event.session.DelegatedPowersSessionEnded;
 import uk.gov.moj.cpp.sjp.event.session.DelegatedPowersSessionStarted;
-import uk.gov.moj.cpp.sjp.event.session.MagistrateSessionEnded;
 import uk.gov.moj.cpp.sjp.event.session.MagistrateSessionStarted;
+import uk.gov.moj.cpp.sjp.event.session.ResetAocpSession;
 
 import java.util.Optional;
 import java.util.UUID;
@@ -48,26 +45,16 @@ public class SessionProcessor {
     private Enveloper enveloper;
 
     @Inject
-    private SchedulingService schedulingService;
-
-    @Inject
     private SjpService sjpService;
 
     @Handles(MagistrateSessionStarted.EVENT_NAME)
     public void magistrateSessionStarted(final JsonEnvelope magistrateSessionStartedEvent) {
         final JsonObject magistrateSessionStarted = magistrateSessionStartedEvent.payloadAsJsonObject();
         final UUID sessionId = UUID.fromString(magistrateSessionStarted.getString(SESSION_ID));
-        final Optional<JsonObject> schedulingSession = schedulingService.getSession(sessionId, magistrateSessionStartedEvent);
-        if (schedulingSession.isPresent()) {
-            return;
-        }
-
-        final String magistrate = magistrateSessionStarted.getString("magistrate");
         final String courtHouseCode = magistrateSessionStarted.getString(COURT_HOUSE_CODE);
         final String courtHouseName = magistrateSessionStarted.getString(COURT_HOUSE_NAME);
         final String localJusticeAreaNationalCourtCode = magistrateSessionStarted.getString(LOCAL_JUSTICE_AREA_NATIONAL_COURT_CODE);
 
-        schedulingService.startMagistrateSession(magistrate, sessionId, courtHouseCode, courtHouseName, localJusticeAreaNationalCourtCode, magistrateSessionStartedEvent);
         emitPublicSessionStartedEvent(sessionId, courtHouseCode, courtHouseName, localJusticeAreaNationalCourtCode, SessionType.MAGISTRATE, magistrateSessionStartedEvent);
     }
 
@@ -75,29 +62,11 @@ public class SessionProcessor {
     public void delegatedPowersSessionStarted(final JsonEnvelope delegatedPowersSessionStartedEvent) {
         final JsonObject delegatedPowersSessionStarted = delegatedPowersSessionStartedEvent.payloadAsJsonObject();
         final UUID sessionId = UUID.fromString(delegatedPowersSessionStarted.getString(SESSION_ID));
-        final Optional<JsonObject> schedulingSession = schedulingService.getSession(sessionId, delegatedPowersSessionStartedEvent);
-        if (schedulingSession.isPresent()) {
-            return;
-        }
-
         final String courtHouseCode = delegatedPowersSessionStarted.getString(COURT_HOUSE_CODE);
         final String courtHouseName = delegatedPowersSessionStarted.getString(COURT_HOUSE_NAME);
         final String localJusticeAreaNationalCourtCode = delegatedPowersSessionStarted.getString(LOCAL_JUSTICE_AREA_NATIONAL_COURT_CODE);
 
-        schedulingService.startDelegatedPowersSession(sessionId, courtHouseCode, courtHouseName, localJusticeAreaNationalCourtCode, delegatedPowersSessionStartedEvent);
         emitPublicSessionStartedEvent(sessionId, courtHouseCode, courtHouseName, localJusticeAreaNationalCourtCode, SessionType.DELEGATED_POWERS, delegatedPowersSessionStartedEvent);
-    }
-
-    @Handles(DelegatedPowersSessionEnded.EVENT_NAME)
-    public void delegatedPowersSessionEnded(final JsonEnvelope delegatedPowersSessionEnded) {
-        final UUID sessionId = UUID.fromString(delegatedPowersSessionEnded.payloadAsJsonObject().getString(SESSION_ID));
-        schedulingService.endSession(sessionId, delegatedPowersSessionEnded);
-    }
-
-    @Handles(MagistrateSessionEnded.EVENT_NAME)
-    public void magistrateSessionEnded(final JsonEnvelope magistrateSessionEnded) {
-        final UUID sessionId = UUID.fromString(magistrateSessionEnded.payloadAsJsonObject().getString(SESSION_ID));
-        schedulingService.endSession(sessionId, magistrateSessionEnded);
     }
 
     @Handles(ResetAocpSession.EVENT_NAME)

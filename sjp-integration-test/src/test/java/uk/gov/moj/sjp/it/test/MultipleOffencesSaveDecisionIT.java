@@ -62,8 +62,6 @@ import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubReferralReason
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubReferralReasonsQuery;
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubResultIds;
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubWithdrawalReasonsQuery;
-import static uk.gov.moj.sjp.it.stub.SchedulingStub.stubEndSjpSessionCommand;
-import static uk.gov.moj.sjp.it.stub.SchedulingStub.stubStartSjpSessionCommand;
 import static uk.gov.moj.sjp.it.stub.UsersGroupsStub.stubForUserDetails;
 import static uk.gov.moj.sjp.it.util.ActivitiHelper.executeTimerJobs;
 import static uk.gov.moj.sjp.it.util.ActivitiHelper.pollUntilProcessExists;
@@ -163,8 +161,6 @@ public class MultipleOffencesSaveDecisionIT extends BaseIntegrationTest {
     public void setUp() throws Exception {
         new SjpDatabaseCleaner().cleanViewStore();
 
-        stubStartSjpSessionCommand();
-        stubEndSjpSessionCommand();
         stubDefaultCourtByCourtHouseOUCodeQuery();
         stubForUserDetails(user, "ALL");
 

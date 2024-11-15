@@ -34,8 +34,6 @@ import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubQueryForAllPro
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubQueryForVerdictTypes;
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubRegionByPostcode;
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubResultIds;
-import static uk.gov.moj.sjp.it.stub.SchedulingStub.stubEndSjpSessionCommand;
-import static uk.gov.moj.sjp.it.stub.SchedulingStub.stubStartSjpSessionCommand;
 import static uk.gov.moj.sjp.it.stub.UsersGroupsStub.stubForUserDetails;
 import static uk.gov.moj.sjp.it.util.Defaults.DEFAULT_LONDON_COURT_HOUSE_OU_CODE;
 import static uk.gov.moj.sjp.it.util.UrnProvider.generate;
@@ -97,9 +95,7 @@ public class CompleteCaseIT extends BaseIntegrationTest {
     public void setUp() throws SQLException {
         databaseCleaner.cleanViewStore();
 
-        stubStartSjpSessionCommand();
         stubForUserDetails(user, prosecutingAuthority.name());
-        stubEndSjpSessionCommand();
         stubDefaultCourtByCourtHouseOUCodeQuery();
         stubAllResultDefinitions();
         stubQueryForAllProsecutors();

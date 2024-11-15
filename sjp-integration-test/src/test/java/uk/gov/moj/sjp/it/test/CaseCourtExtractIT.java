@@ -57,8 +57,6 @@ import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubQueryForVerdic
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubRegionByPostcode;
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubResultDefinitions;
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubResultIds;
-import static uk.gov.moj.sjp.it.stub.SchedulingStub.stubEndSjpSessionCommand;
-import static uk.gov.moj.sjp.it.stub.SchedulingStub.stubStartSjpSessionCommand;
 import static uk.gov.moj.sjp.it.stub.SystemDocumentGeneratorStub.pollDocumentGenerationRequests;
 import static uk.gov.moj.sjp.it.stub.SystemDocumentGeneratorStub.stubDocumentGeneratorEndPoint;
 import static uk.gov.moj.sjp.it.stub.UsersGroupsStub.stubForUserDetails;
@@ -157,8 +155,6 @@ public class CaseCourtExtractIT extends BaseIntegrationTest {
         stubQueryForVerdictTypes();
         stubQueryForAllProsecutors();
         provisionCaseAssignmentRestrictions(Sets.newHashSet(TFL, TVL, DVLA));
-        stubStartSjpSessionCommand();
-        stubEndSjpSessionCommand();
         stubDefaultCourtByCourtHouseOUCodeQuery();
         stubDocumentGeneratorEndPoint(courtExtract.getBytes());
         stubProsecutorQuery(prosecutingAuthority.name(), prosecutingAuthority.getFullName(), randomUUID());

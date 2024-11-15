@@ -23,8 +23,6 @@ import static uk.gov.moj.sjp.it.Constants.PUBLIC_EVENT_CASE_ASSIGNMENT_REJECTED;
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubCourtByCourtHouseOUCodeQuery;
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubEnforcementAreaByPostcode;
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubRegionByPostcode;
-import static uk.gov.moj.sjp.it.stub.SchedulingStub.stubEndSjpSessionCommand;
-import static uk.gov.moj.sjp.it.stub.SchedulingStub.stubStartSjpSessionCommand;
 import static uk.gov.moj.sjp.it.util.QueueUtil.sendToQueue;
 
 import uk.gov.justice.services.messaging.JsonEnvelope;
@@ -54,9 +52,6 @@ public class AssignmentRejectionIT extends BaseIntegrationTest {
     public void init() {
         sessionId = randomUUID();
         userId = randomUUID();
-
-        stubStartSjpSessionCommand();
-        stubEndSjpSessionCommand();
 
         stubCourtByCourtHouseOUCodeQuery(LONDON_COURT_HOUSE_OU_CODE, LONDON_LJA_NATIONAL_COURT_CODE);
     }

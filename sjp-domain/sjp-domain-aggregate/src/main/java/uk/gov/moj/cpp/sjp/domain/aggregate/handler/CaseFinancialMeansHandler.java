@@ -14,6 +14,7 @@ import uk.gov.moj.cpp.sjp.event.AllFinancialMeansUpdated;
 import uk.gov.moj.cpp.sjp.event.FinancialMeansDeleted;
 import uk.gov.moj.cpp.sjp.event.FinancialMeansUpdated;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -22,6 +23,8 @@ import java.util.stream.Stream;
 public class CaseFinancialMeansHandler {
 
     public static final CaseFinancialMeansHandler INSTANCE = new CaseFinancialMeansHandler();
+
+    private static final BigDecimal MAX_VALUE = BigDecimal.valueOf(999999999.99);
 
     private CaseFinancialMeansHandler() {
     }
@@ -41,7 +44,7 @@ public class CaseFinancialMeansHandler {
     public Stream<Object> getFinancialMeansEventStream(FinancialMeans financialMeans) {
         return of(FinancialMeansUpdated.createEvent(
                 financialMeans.getDefendantId(),
-                financialMeans.getIncome(),
+                getRevisedIncome(financialMeans),
                 financialMeans.getBenefits(),
                 financialMeans.getEmploymentStatus(),
                 financialMeans.getGrossTurnover(),
@@ -68,4 +71,15 @@ public class CaseFinancialMeansHandler {
 
         return of(FinancialMeansDeleted.createEvent(defendantId, materialIds));
     }
+
+    private static Income getRevisedIncome(final FinancialMeans financialMeans) {
+        if (financialMeans.getIncome() != null
+                && financialMeans.getIncome().getAmount() != null
+                && financialMeans.getIncome().getAmount().compareTo(MAX_VALUE) > 0) {
+            final BigDecimal incomeAmount = new BigDecimal("0");
+            return new Income(financialMeans.getIncome().getFrequency(), incomeAmount);
+        }
+        return financialMeans.getIncome();
+    }
+
 }

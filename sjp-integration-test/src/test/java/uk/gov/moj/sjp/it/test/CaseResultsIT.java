@@ -24,8 +24,6 @@ import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubQueryForAllPro
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubQueryForVerdictTypes;
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubRegionByPostcode;
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubResultIds;
-import static uk.gov.moj.sjp.it.stub.SchedulingStub.stubEndSjpSessionCommand;
-import static uk.gov.moj.sjp.it.stub.SchedulingStub.stubStartSjpSessionCommand;
 import static uk.gov.moj.sjp.it.stub.UsersGroupsStub.stubForUserDetails;
 import static uk.gov.moj.sjp.it.util.Defaults.DEFAULT_LONDON_COURT_HOUSE_OU_CODE;
 import static uk.gov.moj.sjp.it.util.Defaults.DEFAULT_USER_ID;
@@ -60,7 +58,6 @@ import javax.json.JsonArray;
 import javax.json.JsonObject;
 
 import com.google.common.collect.Sets;
-import org.hamcrest.Matchers;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -87,8 +84,6 @@ public class CaseResultsIT extends BaseIntegrationTest {
     public void beforeEveryTest() throws SQLException {
         databaseCleaner.cleanViewStore();
 
-        stubStartSjpSessionCommand();
-        stubEndSjpSessionCommand();
         stubDefaultCourtByCourtHouseOUCodeQuery();
         stubResultIds();
         stubFixedLists();

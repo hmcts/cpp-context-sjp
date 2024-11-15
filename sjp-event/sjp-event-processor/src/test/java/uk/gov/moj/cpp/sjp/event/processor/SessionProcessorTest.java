@@ -3,17 +3,15 @@ package uk.gov.moj.cpp.sjp.event.processor;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
 import static javax.json.Json.createObjectBuilder;
 import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.hamcrest.MockitoHamcrest.argThat;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.mockito.hamcrest.MockitoHamcrest.argThat;
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMatcher.jsonEnvelope;
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMetadataMatcher.withMetadataEnvelopedFrom;
@@ -27,26 +25,19 @@ import uk.gov.justice.services.core.sender.Sender;
 import uk.gov.justice.services.messaging.Envelope;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.test.utils.core.enveloper.EnveloperFactory;
-import uk.gov.moj.cpp.sjp.event.processor.service.SchedulingService;
 import uk.gov.moj.cpp.sjp.event.processor.service.SjpService;
-import uk.gov.moj.cpp.sjp.event.session.DelegatedPowersSessionEnded;
 import uk.gov.moj.cpp.sjp.event.session.DelegatedPowersSessionStarted;
-import uk.gov.moj.cpp.sjp.event.session.MagistrateSessionEnded;
 import uk.gov.moj.cpp.sjp.event.session.MagistrateSessionStarted;
 import uk.gov.moj.cpp.sjp.event.session.ResetAocpSession;
 
 import java.time.ZonedDateTime;
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 
-import javax.json.Json;
 import javax.json.JsonObject;
 
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.AdditionalMatchers;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.InjectMocks;
@@ -59,9 +50,6 @@ public class SessionProcessorTest {
 
     @Mock
     private Sender sender;
-
-    @Mock
-    private SchedulingService schedulingService;
 
     @Mock
     SjpService sjpService;
@@ -85,17 +73,12 @@ public class SessionProcessorTest {
     private static final String AOCP_COURT_HOUSE_NAME = "Bristol Magistrates' Court";
     private static final String AOCP_COURT_LJA = "1450";
 
-
     @Test
-    public void shouldStartMagistrateSessionInSchedulingAndEmitPublicSessionStartedEventWhenNewSessionIsCreated() {
-        when(schedulingService.getSession(AdditionalMatchers.not(eq(existingSessionId)), any())).thenReturn(Optional.empty());
+    public void shouldStartMagistrateSessionAndEmitPublicSessionStartedEventWhenNewSessionIsCreated() {
 
         final JsonEnvelope magistrateSessionStartedEvent = envelopeFrom(metadataWithRandomUUID(MagistrateSessionStarted.EVENT_NAME), magistrateSessionStartedEventPayload(newSessionId));
 
         sessionProcessor.magistrateSessionStarted(magistrateSessionStartedEvent);
-
-        verify(schedulingService).startMagistrateSession(magistrate, newSessionId, courtHouseCode,
-                courtHouseName, localJusticeAreaNationalCourtCode, magistrateSessionStartedEvent);
 
         verify(sender).send(argThat(jsonEnvelope(
                 withMetadataEnvelopedFrom(magistrateSessionStartedEvent).withName("public.sjp.session-started"),
@@ -109,8 +92,7 @@ public class SessionProcessorTest {
     }
 
     @Test
-    public void shouldStartDelegatedPowersSessionInSchedulingAndEmitPublicSessionStartedEventWhenNewSessionIsCreated() {
-        when(schedulingService.getSession(AdditionalMatchers.not(eq(existingSessionId)), any())).thenReturn(Optional.empty());
+    public void shouldStartDelegatedPowersSessionEmitPublicSessionStartedEventWhenNewSessionIsCreated() {
 
         final JsonEnvelope delegatedPowersSessionStartedEvent = envelopeFrom(metadataWithRandomUUID(DelegatedPowersSessionStarted.EVENT_NAME),
                 createObjectBuilder()
@@ -121,9 +103,6 @@ public class SessionProcessorTest {
                         .build());
 
         sessionProcessor.delegatedPowersSessionStarted(delegatedPowersSessionStartedEvent);
-
-        verify(schedulingService).startDelegatedPowersSession(newSessionId, courtHouseCode,
-                courtHouseName, localJusticeAreaNationalCourtCode, delegatedPowersSessionStartedEvent);
 
         verify(sender).send(argThat(jsonEnvelope(
                 withMetadataEnvelopedFrom(delegatedPowersSessionStartedEvent).withName("public.sjp.session-started"),
@@ -137,65 +116,8 @@ public class SessionProcessorTest {
     }
 
     @Test
-    public void shouldNotDoAnythingWhenExistingDelegatedPowersSessionIsMigrated() {
-        when(schedulingService.getSession(eq(existingSessionId), any())).thenReturn(Optional.of(Json.createObjectBuilder().build()));
-        final JsonEnvelope delegatedPowersSessionStartedEvent = envelopeFrom(metadataWithRandomUUID(DelegatedPowersSessionStarted.EVENT_NAME),
-                createObjectBuilder()
-                        .add("sessionId", existingSessionId.toString())
-                        .add("courtHouseCode", courtHouseCode)
-                        .add("courtHouseName", courtHouseName)
-                        .add("localJusticeAreaNationalCourtCode", localJusticeAreaNationalCourtCode)
-                        .build());
-
-        sessionProcessor.delegatedPowersSessionStarted(delegatedPowersSessionStartedEvent);
-
-        verify(schedulingService, never()).startDelegatedPowersSession(any(), any(), any(), any(), any());
-        verify(sender, never()).send(any());
-    }
-
-    @Test
-    public void shouldNotDoAnythingWhenExistingMagistrateSessionIsMigrated() {
-        when(schedulingService.getSession(eq(existingSessionId), any())).thenReturn(Optional.of(Json.createObjectBuilder().build()));
-        final JsonEnvelope magistrateSessionStartedEvent = envelopeFrom(metadataWithRandomUUID(MagistrateSessionStarted.EVENT_NAME), magistrateSessionStartedEventPayload(existingSessionId));
-
-        sessionProcessor.magistrateSessionStarted(magistrateSessionStartedEvent);
-
-        verify(schedulingService, never()).startMagistrateSession(any(), any(), any(), any(), any(), any());
-        verify(sender, never()).send(any());
-    }
-
-    @Test
-    public void shouldEndMagistrateSessionInScheduling() {
-        final JsonEnvelope magistrateSessionEndedEvent = envelopeFrom(metadataWithRandomUUID(MagistrateSessionEnded.EVENT_NAME),
-                createObjectBuilder().add("sessionId", existingSessionId.toString()).build());
-
-        sessionProcessor.magistrateSessionEnded(magistrateSessionEndedEvent);
-
-        verify(schedulingService).endSession(existingSessionId, magistrateSessionEndedEvent);
-    }
-
-    @Test
-    public void shouldEndDelegatedPowersSessionInScheduling() {
-        final JsonEnvelope delegatedPowersSessionEndedEvent = envelopeFrom(metadataWithRandomUUID(DelegatedPowersSessionEnded.EVENT_NAME),
-                createObjectBuilder().add("sessionId", existingSessionId.toString()).build());
-
-        sessionProcessor.magistrateSessionEnded(delegatedPowersSessionEndedEvent);
-
-        verify(schedulingService).endSession(existingSessionId, delegatedPowersSessionEndedEvent);
-    }
-
-    @Test
-    public void delegatedPowersSessionEndedTest() {
-        final JsonEnvelope sessionEndedEvent = envelopeFrom(metadataWithRandomUUID(DelegatedPowersSessionEnded.EVENT_NAME),
-                createObjectBuilder().add("sessionId", existingSessionId.toString()).build());
-
-        sessionProcessor.delegatedPowersSessionEnded(sessionEndedEvent);
-
-        verify(schedulingService).endSession(existingSessionId, sessionEndedEvent);
-    }
-
-    @Test
     public void shouldHandleAocpSessionResetRequestedForActiveSession() {
+
         final String sessionId = UUID.randomUUID().toString();
 
         final JsonEnvelope resetAocpSessionEnvelope = envelopeFrom(metadataWithRandomUUID(ResetAocpSession.EVENT_NAME),

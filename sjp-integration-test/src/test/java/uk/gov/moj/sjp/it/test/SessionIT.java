@@ -5,7 +5,6 @@ import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withoutJsonPath;
 import static org.hamcrest.CoreMatchers.allOf;
 import static org.hamcrest.CoreMatchers.anyOf;
-import static org.hamcrest.CoreMatchers.either;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
@@ -17,12 +16,10 @@ import static uk.gov.moj.cpp.sjp.domain.SessionType.DELEGATED_POWERS;
 import static uk.gov.moj.cpp.sjp.domain.SessionType.MAGISTRATE;
 import static uk.gov.moj.sjp.it.helper.SessionHelper.startMagistrateSessionAndWaitForEvent;
 
-
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.sjp.event.processor.SessionProcessor;
 import uk.gov.moj.sjp.it.helper.SessionHelper;
 import uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub;
-import uk.gov.moj.sjp.it.stub.SchedulingStub;
 
 import java.util.Optional;
 import java.util.UUID;
@@ -43,14 +40,10 @@ public class SessionIT extends BaseIntegrationTest {
     @BeforeEach
     public void init() {
         ReferenceDataServiceStub.stubCourtByCourtHouseOUCodeQuery(courtHouseOUCode, localJusticeAreaNationalCourtCode, courtHouseName);
-        SchedulingStub.stubStartSjpSessionCommand();
-        SchedulingStub.stubEndSjpSessionCommand();
-        SchedulingStub.stubSessionQuery(existingSessionId);
-        SchedulingStub.stubSessionQueryNotFound(sessionId);
     }
 
     @Test
-    public void shouldStartAndEndDelegatedPowersSessionAndCreatePublicEventAndReplicateSessionInSchedulingContext() {
+    public void shouldStartAndEndDelegatedPowersSessionAndCreatePublicEvent() {
         final Optional<JsonEnvelope> sessionStartedEvent = SessionHelper.startDelegatedPowersSessionAndWaitForEvent(sessionId, userId, courtHouseOUCode, SessionProcessor.PUBLIC_SJP_SESSION_STARTED);
 
         assertThat(sessionStartedEvent.isPresent(), is(true));
@@ -81,15 +74,13 @@ public class SessionIT extends BaseIntegrationTest {
 
         )));
 
-        SchedulingStub.verifyDelegatedPowersSessionStarted(sessionId, courtHouseOUCode, courtHouseName, localJusticeAreaNationalCourtCode);
 
         SessionHelper.endSession(sessionId, userId);
         SessionHelper.getSession(sessionId, userId, withJsonPath("$.endedAt", notNullValue()));
-        SchedulingStub.verifySessionEnded(sessionId);
     }
 
     @Test
-    public void shouldStartAndEndMagistrateSessionAndCreatePublicEventAndReplicateSessionInSchedulingContext() {
+    public void shouldStartAndEndMagistrateSessionAndCreatePublicEvent() {
         final String magistrate = "John Smith";
 
         final Optional<JsonEnvelope> sessionStartedEvent = startMagistrateSessionAndWaitForEvent(sessionId, userId, courtHouseOUCode, magistrate, SessionProcessor.PUBLIC_SJP_SESSION_STARTED);
@@ -120,10 +111,8 @@ public class SessionIT extends BaseIntegrationTest {
                                 withJsonPath("$.prosecutors[0]", equalTo("DVL"))))
         )));
 
-        SchedulingStub.verifyMagistrateSessionStarted(sessionId, courtHouseOUCode, courtHouseName, localJusticeAreaNationalCourtCode, magistrate);
 
         SessionHelper.endSession(sessionId, userId);
         SessionHelper.getSession(sessionId, userId, withJsonPath("$.endedAt", notNullValue()));
-        SchedulingStub.verifySessionEnded(sessionId);
     }
 }

@@ -35,7 +35,6 @@ import uk.gov.moj.sjp.it.commandclient.AssignNextCaseClient;
 import uk.gov.moj.sjp.it.helper.EventListener;
 import uk.gov.moj.sjp.it.helper.SessionHelper;
 import uk.gov.moj.sjp.it.helper.SetPleasHelper;
-import uk.gov.moj.sjp.it.stub.SchedulingStub;
 import uk.gov.moj.sjp.it.util.CaseAssignmentRestrictionHelper;
 import uk.gov.moj.sjp.it.util.SjpDatabaseCleaner;
 
@@ -51,7 +50,6 @@ public class FilterSessionByProsecutorIT extends BaseIntegrationTest{
         databaseCleaner.cleanAll();
 
         stubDefaultCourtByCourtHouseOUCodeQuery();
-        SchedulingStub.stubStartSjpSessionCommand();
 
         stubProsecutorQuery(TFL.name(), TFL.getFullName(), randomUUID());
         stubProsecutorQuery(TVL.name(), TVL.getFullName(), randomUUID());

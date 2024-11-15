@@ -22,9 +22,9 @@ import static uk.gov.moj.sjp.it.helper.AssignmentHelper.requestCaseAssignment;
 import static uk.gov.moj.sjp.it.helper.SessionHelper.startSession;
 import static uk.gov.moj.sjp.it.helper.SetPleasHelper.createCase;
 import static uk.gov.moj.sjp.it.helper.SetPleasHelper.requestSetPleas;
+import static uk.gov.moj.sjp.it.helper.SetPleasHelper.verifyCaseDefendantUpdated;
 import static uk.gov.moj.sjp.it.helper.SetPleasHelper.verifyCaseStatus;
 import static uk.gov.moj.sjp.it.helper.SetPleasHelper.verifyEventEmittedForSetPleas;
-import static uk.gov.moj.sjp.it.helper.SetPleasHelper.verifyCaseDefendantUpdated;
 import static uk.gov.moj.sjp.it.model.ProsecutingAuthority.DVLA;
 import static uk.gov.moj.sjp.it.model.ProsecutingAuthority.TFL;
 import static uk.gov.moj.sjp.it.model.ProsecutingAuthority.TVL;
@@ -32,8 +32,6 @@ import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubDefaultCourtBy
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubEnforcementAreaByPostcode;
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubProsecutorQuery;
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubRegionByPostcode;
-import static uk.gov.moj.sjp.it.stub.SchedulingStub.stubEndSjpSessionCommand;
-import static uk.gov.moj.sjp.it.stub.SchedulingStub.stubStartSjpSessionCommand;
 import static uk.gov.moj.sjp.it.util.Defaults.DEFAULT_LONDON_COURT_HOUSE_OU_CODE;
 
 import uk.gov.justice.json.schemas.domains.sjp.User;
@@ -99,8 +97,6 @@ public class SetPleasIT extends BaseIntegrationTest {
 
     @BeforeEach
     public void setUp() throws Exception {
-        stubStartSjpSessionCommand();
-        stubEndSjpSessionCommand();
         stubDefaultCourtByCourtHouseOUCodeQuery();
 
         databaseCleaner.cleanViewStore();

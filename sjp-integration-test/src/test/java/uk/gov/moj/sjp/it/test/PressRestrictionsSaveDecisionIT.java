@@ -43,8 +43,6 @@ import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubQueryForVerdic
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubRegionByPostcode;
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubResultIds;
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubWithdrawalReasonsQuery;
-import static uk.gov.moj.sjp.it.stub.SchedulingStub.stubEndSjpSessionCommand;
-import static uk.gov.moj.sjp.it.stub.SchedulingStub.stubStartSjpSessionCommand;
 import static uk.gov.moj.sjp.it.stub.UsersGroupsStub.stubForUserDetails;
 import static uk.gov.moj.sjp.it.stub.UsersGroupsStub.stubGroupForUser;
 import static uk.gov.moj.sjp.it.util.ActivitiHelper.executeTimerJobs;
@@ -128,10 +126,8 @@ public class PressRestrictionsSaveDecisionIT extends BaseIntegrationTest {
     @BeforeEach
     public void setUp() throws Exception {
         new SjpDatabaseCleaner().cleanViewStore();
-        stubStartSjpSessionCommand();
         stubGroupForUser(systemUserId, "System Users");
         stubProsecutorQuery(ProsecutingAuthority.TFL.name(), ProsecutingAuthority.TFL.getFullName(), randomUUID());
-        stubEndSjpSessionCommand();
         stubAllResultDefinitions();
         stubFixedLists();
         stubQueryForVerdictTypes();

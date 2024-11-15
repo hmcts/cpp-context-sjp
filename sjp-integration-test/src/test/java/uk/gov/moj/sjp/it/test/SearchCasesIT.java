@@ -19,7 +19,6 @@ import static uk.gov.moj.sjp.it.model.ProsecutingAuthority.TVL;
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubEnforcementAreaByPostcode;
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubProsecutorQuery;
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubRegionByPostcode;
-import static uk.gov.moj.sjp.it.stub.SchedulingStub.stubStartSjpSessionCommand;
 import static uk.gov.moj.sjp.it.stub.UsersGroupsStub.stubForUserDetails;
 import static uk.gov.moj.sjp.it.util.DefaultRequests.getCaseById;
 import static uk.gov.moj.sjp.it.util.DefaultRequests.searchCases;
@@ -149,8 +148,6 @@ public class SearchCasesIT extends BaseIntegrationTest {
 
     @Test
     public void verifyCaseAssignmentIsReflected() throws Exception {
-        stubStartSjpSessionCommand();
-
         //given case is created
         final CreateCase.CreateCasePayloadBuilder createCasePayloadBuilder = withDefaults().withDefendantBuilder(defendantBuilder);
         createCaseForPayloadBuilder(createCasePayloadBuilder);

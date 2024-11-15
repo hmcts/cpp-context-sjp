@@ -38,8 +38,6 @@ import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubReferralDocume
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubReferralReason;
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubReferralReasonsQuery;
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubResultIds;
-import static uk.gov.moj.sjp.it.stub.SchedulingStub.stubEndSjpSessionCommand;
-import static uk.gov.moj.sjp.it.stub.SchedulingStub.stubStartSjpSessionCommand;
 import static uk.gov.moj.sjp.it.stub.UsersGroupsStub.stubForUserDetails;
 import static uk.gov.moj.sjp.it.util.Defaults.DEFAULT_LONDON_COURT_HOUSE_OU_CODE;
 import static uk.gov.moj.sjp.it.util.FileUtil.getFileContentAsJson;
@@ -104,8 +102,6 @@ public class CaseListedInCriminalCourtsIT extends BaseIntegrationTest {
     public void setUp() throws Exception {
         eventListener = new EventListener();
         new SjpDatabaseCleaner().cleanViewStore();
-        stubStartSjpSessionCommand();
-        stubEndSjpSessionCommand();
         stubDefaultCourtByCourtHouseOUCodeQuery();
         stubForUserDetails(user, "ALL");
         stubAllResultDefinitions();

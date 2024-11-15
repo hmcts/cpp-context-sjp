@@ -61,7 +61,6 @@ import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubProsecutorQuer
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubReferralReason;
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubReferralReasonsQuery;
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubRegionByPostcode;
-import static uk.gov.moj.sjp.it.stub.SchedulingStub.stubStartSjpSessionCommand;
 import static uk.gov.moj.sjp.it.stub.UsersGroupsStub.COURT_ADMINISTRATORS_GROUP;
 import static uk.gov.moj.sjp.it.stub.UsersGroupsStub.LEGAL_ADVISERS_GROUP;
 import static uk.gov.moj.sjp.it.stub.UsersGroupsStub.SJP_PROSECUTORS_GROUP;
@@ -703,7 +702,6 @@ public class PleadOnlineIT extends BaseIntegrationTest {
         final UUID referralReasonId = randomUUID();
         final Integer estimatedHearingDuration = nextInt(1, 999);
         final String listingNotes = randomAlphanumeric(100);
-        stubStartSjpSessionCommand();
         stubDefaultCourtByCourtHouseOUCodeQuery();
         stubReferralReasonsQuery(REFERRAL_REASON_ID, HEARING_CODE, REFERRAL_REASON);
         stubReferralReason(referralReasonId.toString(), "stub-data/referencedata.referral-reason.json");

@@ -47,7 +47,6 @@ import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubFixedLists;
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubProsecutorQuery;
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubRegionByPostcode;
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubResultIds;
-import static uk.gov.moj.sjp.it.stub.SchedulingStub.stubEndSjpSessionCommand;
 import static uk.gov.moj.sjp.it.stub.SysDocGeneratorStub.stubGenerateDocumentEndPoint;
 import static uk.gov.moj.sjp.it.stub.UsersGroupsStub.stubForUserDetails;
 import static uk.gov.moj.sjp.it.stub.UsersGroupsStub.stubGroupForUser;
@@ -70,7 +69,6 @@ import uk.gov.moj.sjp.it.helper.EventListener;
 import uk.gov.moj.sjp.it.model.DecisionCommand;
 import uk.gov.moj.sjp.it.model.ProsecutingAuthority;
 import uk.gov.moj.sjp.it.stub.NotificationNotifyStub;
-import uk.gov.moj.sjp.it.stub.SchedulingStub;
 import uk.gov.moj.sjp.it.util.SjpDatabaseCleaner;
 import uk.gov.moj.sjp.it.util.SjpViewstore;
 import uk.gov.moj.sjp.it.util.SysDocGeneratorHelper;
@@ -285,8 +283,6 @@ public class EnforcementPendingApplicationNotificationIT extends BaseIntegration
         databaseCleaner.cleanViewStore();
 
         provisionCaseAssignmentRestrictions(Sets.newHashSet(TFL, TVL, DVLA));
-        SchedulingStub.stubStartSjpSessionCommand();
-        stubEndSjpSessionCommand();
         stubDefaultCourtByCourtHouseOUCodeQuery();
         stubForUserDetails(USER, "ALL");
         stubGroupForUser(USER.getUserId(), "Legal Advisers");

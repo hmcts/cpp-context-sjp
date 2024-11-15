@@ -39,14 +39,12 @@ import uk.gov.moj.sjp.it.model.ProsecutingAuthority;
 import uk.gov.moj.sjp.it.stub.MaterialStub;
 import uk.gov.moj.sjp.it.stub.ProgressionServiceStub;
 import uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub;
-import uk.gov.moj.sjp.it.stub.SchedulingStub;
 import uk.gov.moj.sjp.it.stub.UsersGroupsStub;
 import uk.gov.moj.sjp.it.util.CaseAssignmentRestrictionHelper;
 import uk.gov.moj.sjp.it.util.SjpDatabaseCleaner;
 
 import java.util.UUID;
 
-import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Sets;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -203,7 +201,7 @@ public class AddCaseDocumentIT extends BaseIntegrationTest {
         ReferenceDataServiceStub.stubProsecutorQuery(prosecutingAuthority.name(), prosecutingAuthority.getFullName(), prosecutorId);
         ReferenceDataServiceStub.stubQueryOffencesByCode(createCasePayloadBuilder.getOffenceBuilder().getLibraOffenceCode());
         ReferenceDataServiceStub.stubReferralDocumentMetadataQuery(randomUUID().toString(), "SJPN");
-        SchedulingStub.stubStartSjpSessionCommand();
+
         ProgressionServiceStub.stubReferCaseToCourtCommand();
 
         CaseAssignmentRestrictionHelper.provisionCaseAssignmentRestrictions(Sets.newHashSet(TFL, TVL, DVLA));

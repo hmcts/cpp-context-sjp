@@ -89,12 +89,6 @@ subscriptions_descriptor:
         - name: sjp.events.delegated-powers-session-started
           schema_uri: http://justice.gov.uk/json/schemas/domains/sjp/event/delegated-powers-session-started.json
 
-        - name: sjp.events.magistrate-session-ended
-          schema_uri: http://justice.gov.uk/json/schemas/domains/sjp/event/magistrate-session-ended.json
-
-        - name: sjp.events.delegated-powers-session-ended
-          schema_uri: http://justice.gov.uk/json/schemas/domains/sjp/event/delegated-powers-session-ended.json
-
         - name: sjp.events.case-assignment-requested
           schema_uri: http://justice.gov.uk/json/schemas/domains/sjp/event/case-assignment-requested.json
 

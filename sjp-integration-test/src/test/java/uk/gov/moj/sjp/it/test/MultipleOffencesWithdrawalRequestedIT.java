@@ -40,8 +40,6 @@ import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubEnforcementAre
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubProsecutorQuery;
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubRegionByPostcode;
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubWithdrawalReasonsQuery;
-import static uk.gov.moj.sjp.it.stub.SchedulingStub.stubEndSjpSessionCommand;
-import static uk.gov.moj.sjp.it.stub.SchedulingStub.stubStartSjpSessionCommand;
 import static uk.gov.moj.sjp.it.stub.UsersGroupsStub.stubForUserDetails;
 import static uk.gov.moj.sjp.it.util.Defaults.DEFAULT_LONDON_COURT_HOUSE_OU_CODE;
 import static uk.gov.moj.sjp.it.util.EventUtil.eventsByName;
@@ -188,8 +186,6 @@ public class MultipleOffencesWithdrawalRequestedIT extends BaseIntegrationTest {
     @Test
     @Disabled("DD-17905:Commented as part of 21.25.01 as it is failing on Jenkins at random, but works locally")
     public void offenceWithdrawalForSomeOffencesOnAPartiallyDecidedCaseMakesCaseReady() throws Exception {
-        stubStartSjpSessionCommand();
-        stubEndSjpSessionCommand();
         stubDefaultCourtByCourtHouseOUCodeQuery();
         stubForUserDetails(user, "ALL");
         stubEnforcementAreaByPostcode(aCase.getDefendantBuilder().getAddressBuilder().getPostcode(), "1080", "Bedfordshire Magistrates' Court");

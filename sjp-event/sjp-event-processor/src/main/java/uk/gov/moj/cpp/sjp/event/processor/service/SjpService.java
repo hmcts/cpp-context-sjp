@@ -31,6 +31,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 import javax.inject.Inject;
+import javax.json.Json;
 import javax.json.JsonObject;
 import javax.json.JsonValue;
 
@@ -216,4 +217,5 @@ public class SjpService {
 
         return Optional.ofNullable(caseDetailsEnvelope.payload()).map(CaseDetailsDecorator::new);
     }
+
 }

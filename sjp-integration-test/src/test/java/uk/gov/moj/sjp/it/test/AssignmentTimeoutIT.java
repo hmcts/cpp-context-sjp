@@ -15,7 +15,6 @@ import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubDefaultCourtBy
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubEnforcementAreaByPostcode;
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubProsecutorQuery;
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubRegionByPostcode;
-import static uk.gov.moj.sjp.it.stub.SchedulingStub.stubStartSjpSessionCommand;
 import static uk.gov.moj.sjp.it.util.ActivitiHelper.pollUntilProcessDeleted;
 import static uk.gov.moj.sjp.it.util.ActivitiHelper.pollUntilProcessExists;
 import static uk.gov.moj.sjp.it.util.Defaults.DEFAULT_LONDON_COURT_HOUSE_OU_CODE;
@@ -55,7 +54,7 @@ public class AssignmentTimeoutIT extends BaseIntegrationTest {
 
         stubDefaultCourtByCourtHouseOUCodeQuery();
         stubGetEmptyAssignmentsByDomainObjectId(CASE_ID);
-        stubStartSjpSessionCommand();
+
         final ProsecutingAuthority prosecutingAuthority = createCasePayloadBuilder.getProsecutingAuthority();
         stubProsecutorQuery(prosecutingAuthority.name(), prosecutingAuthority.getFullName(), randomUUID());
 

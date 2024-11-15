@@ -10,8 +10,6 @@ import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubCourtByCourtHo
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubEnforcementAreaByPostcode;
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubProsecutorQuery;
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubRegionByPostcode;
-import static uk.gov.moj.sjp.it.stub.SchedulingStub.stubEndSjpSessionCommand;
-import static uk.gov.moj.sjp.it.stub.SchedulingStub.stubStartSjpSessionCommand;
 
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.sjp.it.commandclient.AssignNextCaseClient;
@@ -53,8 +51,6 @@ public class CaseUnassignmentIT extends BaseIntegrationTest {
 
     @BeforeEach
     public void setUp() throws SQLException {
-        stubStartSjpSessionCommand();
-        stubEndSjpSessionCommand();
         stubCourtByCourtHouseOUCodeQuery(COURT_HOUSE_OU_CODE, "2572");
         cleaner.cleanViewStore();
 

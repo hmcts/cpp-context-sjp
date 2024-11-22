@@ -1,0 +1,82 @@
+package uk.gov.moj.sjp.it.helper;
+
+import io.restassured.path.json.JsonPath;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import uk.gov.moj.sjp.it.util.TopicUtil;
+
+import javax.jms.MessageConsumer;
+import javax.ws.rs.core.Response;
+import java.util.UUID;
+
+import static javax.json.Json.createObjectBuilder;
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static uk.gov.moj.sjp.it.Constants.EVENT_SELECTOR_CASE_DOCUMENT_DELETED;
+import static uk.gov.moj.sjp.it.Constants.EVENT_SELECTOR_DELETE_CASE_DOCUMENT_REQUEST_REJECTED;
+import static uk.gov.moj.sjp.it.Constants.PUBLIC_EVENT_SELECTOR_DELETE_CASE_DOCUMENT_REQUEST_ACCEPTED;
+import static uk.gov.moj.sjp.it.Constants.PUBLIC_EVENT_SELECTOR_DELETE_CASE_DOCUMENT_REQUEST_REJECTED;
+import static uk.gov.moj.sjp.it.util.HttpClientUtil.makePostCall;
+import static uk.gov.moj.sjp.it.util.TopicUtil.privateEvents;
+import static uk.gov.moj.sjp.it.util.TopicUtil.retrieveMessage;
+
+public class DeleteCaseDocumentHelper {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(DeleteCaseDocumentHelper.class);
+    private static final String CASE_ID_PROPERTY = "caseId";
+    private static final String ID_PROPERTY = "id";
+    private static final String DOCUMENT_ID_PROPERTY = "documentId";
+    private static final String MATERIAL_ID_PROPERTY = "materialId";
+    private static final String REASON_PROPERTY = "reason";
+
+    private MessageConsumer privateEventsConsumer;
+    private MessageConsumer publicEventsConsumer;
+
+    public DeleteCaseDocumentHelper() {
+        privateEventsConsumer = privateEvents.createConsumerForMultipleSelectors(EVENT_SELECTOR_CASE_DOCUMENT_DELETED, EVENT_SELECTOR_DELETE_CASE_DOCUMENT_REQUEST_REJECTED);
+        publicEventsConsumer = TopicUtil.publicEvents.createConsumerForMultipleSelectors(PUBLIC_EVENT_SELECTOR_DELETE_CASE_DOCUMENT_REQUEST_ACCEPTED, PUBLIC_EVENT_SELECTOR_DELETE_CASE_DOCUMENT_REQUEST_REJECTED);
+    }
+
+    public void deleteCaseDocument(final UUID caseId, final UUID documentId, final UUID userId, final Response.Status expectedStatus) {
+        final String url = String.format("/cases/%s/documents/%s/delete", caseId, documentId);
+        makePostCall(userId, url, "application/vnd.sjp.delete-case-document+json", createObjectBuilder().build().toString(), expectedStatus);
+    }
+
+
+    public void pollUntilDeleteCaseDocumentRequestAcceptedEvent(final UUID caseId, final UUID documentId, final UUID materialId) {
+        final JsonPath jsonResponse = retrieveMessage(privateEventsConsumer);
+
+        LOGGER.info("deleteCaseDocumentRequestAccepted response: {}", jsonResponse.prettify());
+        assertThat(jsonResponse.get(CASE_ID_PROPERTY), is(caseId.toString()));
+        assertThat(jsonResponse.getMap("caseDocument").get(ID_PROPERTY).toString(), is(documentId.toString()));
+        assertThat(jsonResponse.getMap("caseDocument").get(MATERIAL_ID_PROPERTY).toString(), is(materialId.toString()));
+    }
+
+    public void pollUntilPublicDeleteCaseDocumentRequestAcceptedEvent(final UUID caseId, final UUID documentId) {
+        final JsonPath message = retrieveMessage(publicEventsConsumer);
+
+        LOGGER.info("public deleteCaseDocumentRequestAccepted response: {}", message.prettify());
+        assertThat(message.get(CASE_ID_PROPERTY), is(caseId.toString()));
+        assertThat(message.get(DOCUMENT_ID_PROPERTY), is(documentId.toString()));
+    }
+
+    public void pollUntilDeleteCaseDocumentRequestRejectedEvent(final UUID caseId, final UUID documentId) {
+        final JsonPath jsonResponse = retrieveMessage(privateEventsConsumer);
+
+        LOGGER.info("deleteCaseDocumentRequestRejected response: {}", jsonResponse.prettify());
+        assertThat(jsonResponse.get(CASE_ID_PROPERTY), is(caseId.toString()));
+        assertThat(jsonResponse.get(DOCUMENT_ID_PROPERTY), is(documentId.toString()));
+        assertThat(jsonResponse.get(REASON_PROPERTY), is("CASE_IN_SESSION"));
+    }
+
+    public void pollUntilPublicDeleteCaseDocumentRequestRejectedEvent(final UUID caseId, final UUID documentId) {
+        final JsonPath message = retrieveMessage(publicEventsConsumer);
+
+        LOGGER.info("public deleteCaseDocumentRequestRejected response: {}", message.prettify());
+        assertThat(message.get(CASE_ID_PROPERTY), is(caseId.toString()));
+        assertThat(message.get(DOCUMENT_ID_PROPERTY), is(documentId.toString()));
+        assertThat(message.get(REASON_PROPERTY), is("CASE_IN_SESSION"));
+    }
+
+
+}

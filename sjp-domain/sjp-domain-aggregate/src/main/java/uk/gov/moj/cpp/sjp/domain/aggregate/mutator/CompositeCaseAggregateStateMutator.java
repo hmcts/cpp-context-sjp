@@ -18,6 +18,7 @@ import uk.gov.moj.cpp.sjp.event.AllOffencesWithdrawalRequestCancelled;
 import uk.gov.moj.cpp.sjp.event.AllOffencesWithdrawalRequested;
 import uk.gov.moj.cpp.sjp.event.ApplicationResultsRecorded;
 import uk.gov.moj.cpp.sjp.event.CaseReferredForCourtHearingV2;
+import uk.gov.moj.cpp.sjp.event.CaseDocumentDeleted;
 import uk.gov.moj.cpp.sjp.event.CaseReserved;
 import uk.gov.moj.cpp.sjp.event.CaseUnReserved;
 import uk.gov.moj.cpp.sjp.event.DefendantAocpResponseTimerExpired;
@@ -392,6 +393,7 @@ final class CompositeCaseAggregateStateMutator implements AggregateStateMutator<
                 .put(CaseReopenedUpdated.class, CASE_REOPENED_UPDATED_MUTATOR)
                 .put(CaseReceived.class, CaseReceivedMutator.INSTANCE)
                 .put(CaseDocumentAdded.class, CaseDocumentAddedMutator.INSTANCE)
+                .put(CaseDocumentDeleted.class, CaseDocumentDeletedMutator.INSTANCE)
                 .put(CaseReferredForCourtHearing.class, CASE_REFERRED_FOR_COURT_HEARING_MUTATOR)
                 .put(CaseReferredForCourtHearingV2.class, CASE_REFERRED_FOR_COURT_HEARING_MUTATOR_V2)
                 .put(CaseReferralForCourtHearingRejectionRecorded.class, CASE_REFERRED_FOR_COURT_HEARING_REJECTION_MUTATOR)

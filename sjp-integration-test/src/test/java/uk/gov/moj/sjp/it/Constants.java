@@ -13,6 +13,10 @@ public class Constants {
     public static final String PUBLIC_EVENT_SELECTOR_CASE_CREATED = "public.sjp-case-created";
     public static final String EVENT_SELECTOR_CASE_COMPLETED = "sjp.events.case-completed";
     public static final String EVENT_SELECTOR_CASE_DOCUMENT_ADDED = "sjp.events.case-document-added";
+    public static final String EVENT_SELECTOR_CASE_DOCUMENT_DELETED = "sjp.events.case-document-deleted";
+    public static final String EVENT_SELECTOR_DELETE_CASE_DOCUMENT_REQUEST_REJECTED = "sjp.events.delete-case-document-request-rejected";
+    public static final String PUBLIC_EVENT_SELECTOR_DELETE_CASE_DOCUMENT_REQUEST_ACCEPTED = "public.sjp.delete-case-document-request-accepted";
+    public static final String PUBLIC_EVENT_SELECTOR_DELETE_CASE_DOCUMENT_REQUEST_REJECTED = "public.sjp.delete-case-document-request-rejected";
     public static final String PUBLIC_EVENT_SELECTOR_CASE_DOCUMENT_ALREADY_EXISTS = "public.sjp.case-document-already-exists";
     public static final String PUBLIC_EVENT_SELECTOR_CASE_DOCUMENT_UPLOADED = "public.sjp.case-document-uploaded";
     public static final String EVENT_SELECTOR_CASE_DOCUMENT_UPLOAD_REJECTED = "sjp.events.case-document-upload-rejected";

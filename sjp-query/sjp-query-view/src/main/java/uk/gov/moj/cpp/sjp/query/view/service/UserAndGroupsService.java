@@ -39,6 +39,7 @@ public class UserAndGroupsService {
     private static final String LAST_NAME ="lastName";
 
     private static final String USER_ID = "userId";
+    private static final String GROUP_SECOND_LINE_SUPPORT = "Second Line Support";
 
     @Inject
     private UserAndGroupProvider userAndGroupProvider;
@@ -56,6 +57,10 @@ public class UserAndGroupsService {
 
     public boolean isUserProsecutor(final JsonEnvelope originalEnvelope) {
         return userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups(new Action(originalEnvelope), GROUP_SJP_PROSECUTORS);
+    }
+
+    public boolean isUserSecondLineSupport(final JsonEnvelope originalEnvelope) {
+        return userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups(new Action(originalEnvelope), GROUP_SECOND_LINE_SUPPORT);
     }
 
     public String getUserDetails(final UUID userId) {

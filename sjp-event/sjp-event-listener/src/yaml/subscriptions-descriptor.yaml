@@ -8,6 +8,9 @@ subscriptions_descriptor:
               - name: sjp.events.case-document-added
                 schema_uri: http://justice.gov.uk/json/schemas/domains/sjp/event/sjp.events.case-document-added.json
 
+              - name: sjp.events.case-document-deleted
+                schema_uri: http://justice.gov.uk/json/schemas/domains/sjp/event/sjp.events.case-document-deleted.json
+
               - name: sjp.events.case-received
                 schema_uri: http://justice.gov.uk/json/schemas/domains/sjp/event/sjp.events.case-received.json
 

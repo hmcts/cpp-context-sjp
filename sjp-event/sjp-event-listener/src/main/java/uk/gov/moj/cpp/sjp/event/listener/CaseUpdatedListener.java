@@ -18,6 +18,7 @@ import uk.gov.moj.cpp.sjp.event.AllOffencesWithdrawalRequestCancelled;
 import uk.gov.moj.cpp.sjp.event.AllOffencesWithdrawalRequested;
 import uk.gov.moj.cpp.sjp.event.CaseCompleted;
 import uk.gov.moj.cpp.sjp.event.CaseDocumentAdded;
+import uk.gov.moj.cpp.sjp.event.CaseDocumentDeleted;
 import uk.gov.moj.cpp.sjp.event.CaseListedInCriminalCourts;
 import uk.gov.moj.cpp.sjp.event.CaseListedInCriminalCourtsV2;
 import uk.gov.moj.cpp.sjp.event.CaseOffenceListedInCriminalCourts;
@@ -110,6 +111,15 @@ public class CaseUpdatedListener {
 
         final CaseDocument caseDocument = caseDocumentAddedConverter.convert(caseDocumentAdded);
         caseDocumentRepository.save(caseDocument);
+    }
+
+    @Handles(CaseDocumentDeleted.EVENT_NAME)
+    @Transactional
+    public void deleteCaseDocument(final JsonEnvelope envelope) {
+        final CaseDocumentDeleted caseDocumentDeleted = jsonObjectToObjectConverter.convert(envelope.payloadAsJsonObject(), CaseDocumentDeleted.class);
+
+        final CaseDocument caseDocumentFromRepository = caseDocumentRepository.findBy(caseDocumentDeleted.getCaseDocument().getId());
+        caseDocumentRepository.remove(caseDocumentFromRepository);
     }
 
     private CaseDetail findCaseById(final UUID caseId) {

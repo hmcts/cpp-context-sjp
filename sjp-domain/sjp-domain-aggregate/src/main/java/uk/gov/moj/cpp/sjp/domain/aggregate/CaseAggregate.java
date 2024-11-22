@@ -72,6 +72,7 @@ import uk.gov.moj.cpp.sjp.event.ApplicationResultsRecorded;
 import uk.gov.moj.cpp.sjp.event.CCApplicationStatusCreated;
 import uk.gov.moj.cpp.sjp.event.CaseListedInCriminalCourtsUpdated;
 
+import javax.json.JsonObject;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
@@ -461,6 +462,10 @@ public class CaseAggregate implements Aggregate {
 
     public Stream<Object> resubmitResults(final JsonObject payload) {
         return apply(ResubmitResultsHandler.INSTANCE.resubmitResults(payload, state));
+    }
+
+    public Stream<Object> deleteCaseDocument(final UUID documentId) {
+        return apply(CaseDocumentHandler.INSTANCE.deleteCaseDocument(state, documentId));
     }
 
     @Override

@@ -167,4 +167,10 @@ subscriptions_descriptor:
         - name: public.sjp.events.defendant-pending-changes-rejected
           schema_uri: http://cpp.moj.gov.uk/sjp/json/schema/event/public.sjp.events.defendant-pending-changes-rejected.json
 
+        - name: public.sjp.delete-case-document-request-accepted
+          schema_uri: http://cpp.moj.gov.uk/sjp/json/schema/event/public.sjp.delete-case-document-request-accepted.json
+
+        - name: public.sjp.delete-case-document-request-rejected
+          schema_uri: http://cpp.moj.gov.uk/sjp/json/schema/event/public.sjp.delete-case-document-request-rejected.json
+
       event_source_name: public.event.source

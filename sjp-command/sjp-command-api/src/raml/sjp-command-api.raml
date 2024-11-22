@@ -948,3 +948,31 @@ baseUri: http://localhost:8080/sjp-command-api/command/api/rest/sjp
         description: Request failed validation
       202:
         description: Accepted
+
+/cases/{caseId}/documents/{documentId}/delete:
+  uriParameters:
+      caseId:
+        description: The ID of the case to resolve
+        type: string
+      documentId:
+        description: The ID of the document to resolve
+        type: string
+  post:
+    description: |
+      requests deletion of case documents.
+      ...
+      (mapping):
+        requestType: application/vnd.sjp.delete-case-document+json
+        name: sjp.delete-case-document
+      ...
+    body:
+        application/vnd.sjp.delete-case-document+json:
+          example:
+            !include json/sjp.delete-case-document.json
+          schema:
+            !include json/schema/sjp.delete-case-document.json
+    responses:
+        202:
+          description: Accepted
+        500:
+          description: Internal Server Error

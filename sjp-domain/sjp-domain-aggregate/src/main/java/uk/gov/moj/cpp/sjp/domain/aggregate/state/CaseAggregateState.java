@@ -545,6 +545,10 @@ public class CaseAggregateState implements AggregateState {
         caseDocuments.put(id, caseDocument);
     }
 
+    public void removeCaseDocument(final UUID id, final CaseDocument caseDocument) {
+        caseDocuments.remove(id, caseDocument);
+    }
+
     public void addAOCPCost(final UUID caseId, final AOCPCost aocpCost) {
         aocpCostMap.put(caseId, aocpCost);
     }

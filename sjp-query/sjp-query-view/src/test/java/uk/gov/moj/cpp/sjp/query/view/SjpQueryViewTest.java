@@ -248,6 +248,31 @@ public class SjpQueryViewTest {
     }
 
     @Test
+    public void shouldFindCaseWhenUserSecondLineSupport() {
+        when(payloadObject.getString(FIELD_CASE_ID)).thenReturn(CASE_ID.toString());
+        when(enveloper.withMetadataFrom(eq(envelope), any())).thenReturn(function);
+        when(function.apply(any())).thenReturn(outputEnvelope);
+        when(envelope.payloadAsJsonObject()).thenReturn(payloadObject);
+        when(envelope.metadata()).thenReturn(metadataBuilder().withId(randomUUID()).withName("name").build());
+
+        final CaseView caseView = Mockito.mock(CaseView.class);
+        final DefendantDetailUpdateRequestView defendantDetailUpdateRequestView = Mockito.mock(DefendantDetailUpdateRequestView.class);
+        when(caseService.findCase(CASE_ID)).thenReturn(caseView);
+        when(caseService.findDefendantDetailUpdateRequest(CASE_ID)).thenReturn(defendantDetailUpdateRequestView);
+        when(envelope.metadata()).thenReturn(metadata);
+        when(metadata.userId()).thenReturn(Optional.of(randomUUID().toString()));
+
+        when(prosecutingAuthorityProvider.userHasProsecutingAuthorityAccess(eq(envelope), any())).thenReturn(false);
+        when(userAndGroupsService.isUserSecondLineSupport(eq(envelope))).thenReturn(true);
+
+        final JsonEnvelope result = sjpQueryView.findCase(envelope);
+
+        assertEquals(result, outputEnvelope);
+        verify(caseService).findCase(CASE_ID);
+        verify(function).apply(caseView);
+    }
+
+    @Test
     public void shouldNotFindCaseWhenProsecutionAuthorityHasNoAccess() {
         when(payloadObject.getString(FIELD_CASE_ID)).thenReturn(CASE_ID.toString());
         when(envelope.payloadAsJsonObject()).thenReturn(payloadObject);

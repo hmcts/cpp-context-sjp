@@ -231,7 +231,7 @@ public class SjpQueryView {
             caseView.setHasPotentialCase(hasPotentialCase);
             if (userId.isPresent()) {
                 final boolean userHasProsecutingAuthorityAccess = prosecutingAuthorityProvider.userHasProsecutingAuthorityAccess(envelope, prosecutingAuthority);
-                if (userHasProsecutingAuthorityAccess) {
+                if (userHasProsecutingAuthorityAccess || userAndGroupsService.isUserSecondLineSupport(envelope)) {
                     return enveloper.withMetadataFrom(envelope, NAME_RESPONSE_CASE).apply(caseView);
                 } else {
                     throw new ForbiddenRequestException("User is not authorize to view this case");

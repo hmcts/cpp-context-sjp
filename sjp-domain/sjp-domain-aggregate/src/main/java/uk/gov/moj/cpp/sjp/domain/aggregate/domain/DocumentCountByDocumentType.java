@@ -4,6 +4,8 @@ import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 
+import static java.util.Objects.nonNull;
+
 public class DocumentCountByDocumentType implements Serializable {
 
     private static final long serialVersionUID = 6085387207075980216L;
@@ -15,6 +17,16 @@ public class DocumentCountByDocumentType implements Serializable {
             return;
         }
         documentCountByDocumentType.put(normalise(documentType), getCount(documentType) + 1);
+    }
+
+    public void decreaseCount(String documentType) {
+        if (documentType == null) {
+            return;
+        }
+        final Integer currentCount = documentCountByDocumentType.get(normalise(documentType));
+        if (nonNull(currentCount) && currentCount >= 1){
+            documentCountByDocumentType.put(normalise(documentType), currentCount - 1);
+        }
     }
 
     public Integer getCount(String documentType) {

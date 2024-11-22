@@ -13,7 +13,7 @@ public final class RuleConstants {
     private static final String GROUP_LEGAL_ADVISERS = "Legal Advisers";
     private static final String GROUP_COURT_ADMINISTRATORS = "Court Administrators";
     private static final String GROUP_MAGISTRATES = "Magistrates";
-
+    private static final String SECOND_LINE_SUPPORT = "Second Line Support";
 
     private RuleConstants() {
         throw new IllegalAccessError("Utility class");
@@ -171,4 +171,7 @@ public final class RuleConstants {
         return asList(GROUP_LEGAL_ADVISERS, GROUP_MAGISTRATES);
     }
 
+    public static List<String> getDeleteCaseDocumentActionGroups() {
+        return asList(SECOND_LINE_SUPPORT);
+    }
 }

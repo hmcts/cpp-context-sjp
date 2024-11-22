@@ -14,12 +14,14 @@ public final class RuleConstants {
     private static final String GROUP_COURT_ADMINISTRATORS = "Court Administrators";
     private static final String GROUP_MAGISTRATES = "Magistrates";
 
+    private static final String SECOND_LINE_SUPPORT = "Second Line Support";
+
     private RuleConstants() {
         throw new IllegalAccessError("Utility class");
     }
 
     public static List<String> getQueryCaseActionGroups() {
-        return asList(GROUP_SYSTEM_USERS, GROUP_SJP_PROSECUTORS, GROUP_LEGAL_ADVISERS, GROUP_COURT_ADMINISTRATORS, GROUP_MAGISTRATES);
+        return asList(GROUP_SYSTEM_USERS, GROUP_SJP_PROSECUTORS, GROUP_LEGAL_ADVISERS, GROUP_COURT_ADMINISTRATORS, GROUP_MAGISTRATES, SECOND_LINE_SUPPORT);
     }
 
     public static List<String> getQueryCaseByUrnActionGroups() {
@@ -35,7 +37,7 @@ public final class RuleConstants {
     }
 
     public static List<String> getQueryFinancialMeansActionGroups() {
-        return asList(GROUP_COURT_ADMINISTRATORS, GROUP_LEGAL_ADVISERS, GROUP_SYSTEM_USERS, GROUP_MAGISTRATES, GROUP_SJP_PROSECUTORS);
+        return asList(GROUP_COURT_ADMINISTRATORS, GROUP_LEGAL_ADVISERS, GROUP_SYSTEM_USERS, GROUP_MAGISTRATES, GROUP_SJP_PROSECUTORS, SECOND_LINE_SUPPORT);
     }
 
     public static List<String> getQueryDefendantPotentialCases() {
@@ -95,7 +97,7 @@ public final class RuleConstants {
     }
 
     public static List<String> getCaseNotesGroups() {
-        return asList(GROUP_COURT_ADMINISTRATORS, GROUP_LEGAL_ADVISERS, GROUP_SJP_PROSECUTORS, GROUP_MAGISTRATES);
+        return asList(GROUP_COURT_ADMINISTRATORS, GROUP_LEGAL_ADVISERS, GROUP_SJP_PROSECUTORS, GROUP_MAGISTRATES, SECOND_LINE_SUPPORT);
     }
 
     public static List<String> getAccountNotesGroups() {

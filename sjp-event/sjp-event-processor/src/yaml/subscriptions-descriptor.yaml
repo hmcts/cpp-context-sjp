@@ -29,6 +29,12 @@ subscriptions_descriptor:
         - name: sjp.events.case-document-upload-rejected
           schema_uri: http://justice.gov.uk/json/schemas/domains/sjp/event/case-document-upload-rejected.json
 
+        - name: sjp.events.case-document-deleted
+          schema_uri: http://justice.gov.uk/json/schemas/domains/sjp/event/sjp.events.case-document-deleted.json
+
+        - name: sjp.events.delete-case-document-request-rejected
+          schema_uri: http://justice.gov.uk/json/schemas/domains/sjp/event/sjp.events.delete-case-document-request-rejected.json
+
         - name: sjp.events.case-update-rejected
           schema_uri: http://justice.gov.uk/json/schemas/domains/sjp/public/events/case-update-rejected.json
 

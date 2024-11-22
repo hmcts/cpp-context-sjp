@@ -25,6 +25,7 @@ import uk.gov.justice.services.core.annotation.Handles;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.sjp.event.CaseCompleted;
 import uk.gov.moj.cpp.sjp.event.CaseDocumentAdded;
+import uk.gov.moj.cpp.sjp.event.CaseDocumentDeleted;
 import uk.gov.moj.cpp.sjp.event.casemanagement.UpdateCasesManagementStatus;
 import uk.gov.moj.cpp.sjp.event.listener.converter.CaseDocumentAddedToCaseDocument;
 import uk.gov.moj.cpp.sjp.persistence.entity.CaseDetail;
@@ -79,12 +80,18 @@ public class CaseUpdatedListenerTest {
     private CaseDocumentAdded caseDocumentEvent;
 
     @Mock
+    private CaseDocumentDeleted caseDocumentDeletedEvent;
+
+    @Mock
     private CaseDetail caseDetail;
     @Mock
     private CaseDetail caseDetail2;
 
     @Mock
     private CaseDocument caseDocument;
+
+    @Mock
+    private uk.gov.moj.cpp.sjp.domain.CaseDocument caseDocumentPayload;
 
     @Mock
     private CaseDocumentRepository caseDocumentRepository;
@@ -140,6 +147,20 @@ public class CaseUpdatedListenerTest {
         listener.addCaseDocument(envelope);
 
         verify(caseDocumentRepository).save(caseDocument);
+    }
+
+    @Test
+    public void shouldDeleteDocument() {
+        final UUID documentId = randomUUID();
+        when(envelope.payloadAsJsonObject()).thenReturn(payload);
+        when(jsonObjectToObjectConverter.convert(payload, CaseDocumentDeleted.class)).thenReturn(caseDocumentDeletedEvent);
+        when(caseDocumentDeletedEvent.getCaseDocument()).thenReturn(caseDocumentPayload);
+        when(caseDocumentPayload.getId()).thenReturn(documentId);
+        when(caseDocumentRepository.findBy(documentId)).thenReturn(caseDocument);
+
+        listener.deleteCaseDocument(envelope);
+
+        verify(caseDocumentRepository).remove(caseDocument);
     }
 
     @Test

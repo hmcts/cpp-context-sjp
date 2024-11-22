@@ -201,6 +201,11 @@ public class NoActionController {
     @Handles("sjp.command.reject-pending-defendant-changes")
     public void rejectPendingDefendantChanges(final JsonEnvelope envelope) { send(envelope); }
 
+    @Handles("sjp.command.delete-case-document")
+    public void deleteCaseDocument(final JsonEnvelope envelope) {
+        send(envelope);
+    }
+
     private void send(final Envelope<?> envelope) {
         sender.send(envelope);
     }

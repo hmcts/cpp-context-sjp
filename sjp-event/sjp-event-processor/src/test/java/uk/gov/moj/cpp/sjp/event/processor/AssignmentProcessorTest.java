@@ -239,6 +239,7 @@ public class AssignmentProcessorTest {
         verify(sender).send(argThat(jsonEnvelope(
                 withMetadataEnvelopedFrom(caseAssignedEvent).withName(AssignmentProcessor.PUBLIC_SJP_CASE_UNASSIGNED),
                 payloadIsJson(withJsonPath(CASE_ID, equalTo(caseId.toString()))))));
+        
     }
 
     @Test

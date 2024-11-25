@@ -38,6 +38,7 @@ public class CaseReadinessHandler {
         // singleton object
     }
 
+    @SuppressWarnings("squid:S2629")
     public Stream<Object> resolveCaseReadiness(final CaseAggregateState aggregateState,
                                                final CaseState previousCaseState,
                                                final CaseState currentCaseState) {
@@ -56,6 +57,18 @@ public class CaseReadinessHandler {
 
             raiseCaseStatusChangedWhenTheStatusIsDifferent(aggregateState, streamBuilder, previousCaseStatus,
                     currentCaseStatus);
+        }else {
+            //Below section gets triggered for un reserved case (from reserve to un-reserve scenario)
+            // which are not in ready status, and it has marked ready for decision set
+            if (!aggregateState.getCaseReserved() && !isAReadyStatus(currentCaseStatus) && aggregateState.getReadinessReason() != null) {
+                LOGGER.info(String.format("Case got unreserved, hence un marking the case --->> %s", aggregateState.getCaseId()));
+                streamBuilder.add(new CaseUnmarkedReadyForDecision(aggregateState.getCaseId(),
+                        expectedDateReadyCalculator.calculateExpectedDateReady(aggregateState)));
+            } else if (!aggregateState.getCaseReserved() && isAReadyStatus(currentCaseStatus) && aggregateState.getReadinessReason() == CaseReadinessReason.UNKNOWN
+                    && !isTerminalStatus(currentCaseStatus)) {
+                LOGGER.info(String.format("Case got unreserved, hence marking the case --->> %s", aggregateState.getCaseId()));
+                raiseCaseMarkedOrUnmarkedEvent(aggregateState, currentCaseState, previousCaseStatus, streamBuilder);
+            }
         }
         return streamBuilder.build();
     }

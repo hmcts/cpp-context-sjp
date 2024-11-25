@@ -2,6 +2,7 @@ package uk.gov.moj.cpp.sjp.domain.aggregate.handler;
 
 import uk.gov.justice.json.schemas.domains.sjp.ApplicationStatus;
 import uk.gov.justice.json.schemas.domains.sjp.ApplicationType;
+import uk.gov.moj.cpp.sjp.domain.CaseReadinessReason;
 import uk.gov.moj.cpp.sjp.domain.aggregate.state.Application;
 
 import java.time.LocalDate;
@@ -13,17 +14,21 @@ public class CaseAggregateConfig {
     private boolean isNotGuiltyPleaPresent;
     private boolean isGuiltyPleaPresent;
     private Application application;
+    private final Boolean isCaseReserved;
+    private final CaseReadinessReason caseReadinessReason;
 
     private CaseAggregateConfig(final LocalDate postingDateExpirationDate, final LocalDate adjournedTo,
                                 final LocalDate datesToAvoidExpirationDate,
                                 final boolean isNotGuiltyPleaPresent, final boolean isGuiltyPleaPresent,
-                                final Application application) {
+                                final Application application, final Boolean isCaseReserved, final CaseReadinessReason caseReadinessReason) {
         this.postingDateExpirationDate = postingDateExpirationDate;
         this.adjournedTo = adjournedTo;
         this.datesToAvoidExpirationDate = datesToAvoidExpirationDate;
         this.isNotGuiltyPleaPresent = isNotGuiltyPleaPresent;
         this.isGuiltyPleaPresent = isGuiltyPleaPresent;
         this.application = application;
+        this.isCaseReserved = isCaseReserved;
+        this.caseReadinessReason = caseReadinessReason;
     }
 
     LocalDate getAdjournedTo() {
@@ -50,6 +55,13 @@ public class CaseAggregateConfig {
         return application;
     }
 
+    public Boolean getCaseReserved() {
+        return isCaseReserved;
+    }
+    public CaseReadinessReason getCaseReadinessReason() {
+        return caseReadinessReason;
+    }
+
     static class Builder {
         private LocalDate postingDateExpirationDate;
         private LocalDate adjournedTo;
@@ -57,6 +69,18 @@ public class CaseAggregateConfig {
         private boolean isNotGuiltyPleaPresent = false;
         private boolean isGuiltyPleaPresent = false;
         private Application application;
+        private boolean isCaseReserved;
+        private CaseReadinessReason caseReadinessReason = null;
+
+        Builder withCaseReadinessReason(final CaseReadinessReason caseReadinessReason) {
+            this.caseReadinessReason = caseReadinessReason;
+            return this;
+        }
+
+        Builder withCaseReserved(final Boolean caseReserved) {
+            this.isCaseReserved = caseReserved;
+            return this;
+        }
 
         static Builder caseAggregateConfigBuilder() {
             return new Builder();
@@ -98,11 +122,11 @@ public class CaseAggregateConfig {
                     postingDateExpirationDate, adjournedTo,
                     datesToAvoidExpirationDate, isNotGuiltyPleaPresent,
                     isGuiltyPleaPresent,
-                    application
+                    application,
+                    isCaseReserved,
+                    caseReadinessReason
             );
         }
-
-
     }
 
     static class ApplicationBuilder {

@@ -31,10 +31,12 @@ import static uk.gov.moj.cpp.sjp.domain.common.CaseStatus.WITHDRAWAL_REQUEST_REA
 import static uk.gov.moj.cpp.sjp.domain.plea.PleaType.GUILTY;
 import static uk.gov.moj.cpp.sjp.domain.plea.PleaType.NOT_GUILTY;
 
+import java.time.ZonedDateTime;
 import java.util.stream.Stream;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
+import uk.gov.moj.cpp.sjp.domain.CaseReadinessReason;
 import uk.gov.moj.cpp.sjp.domain.aggregate.state.CaseAggregateState;
 import uk.gov.moj.cpp.sjp.domain.common.CaseState;
 import uk.gov.moj.cpp.sjp.domain.common.CaseStatus;
@@ -470,7 +472,19 @@ public class CaseReadinessHandlerTest {
 
                 Arguments.of(UNKNOWN, UNKNOWN,
                         caseAggregateConfigBuilder().withPostingDateExpirationDate(DAYS_AGO_2).withNotGuiltyPlea().build(),
-                        false, NONE, null)
+                        false, NONE, null),
+
+                Arguments.of(NO_PLEA_RECEIVED_READY_FOR_DECISION,
+                        NO_PLEA_RECEIVED_READY_FOR_DECISION,
+                        caseAggregateConfigBuilder().withPostingDateExpirationDate(IN_28_DAYS)
+                                .withCaseReserved(false).withCaseReadinessReason(CaseReadinessReason.UNKNOWN).build(),
+                        false, CASE_MARKED_READY_FOR_DECISION_RAISED, null),
+
+                Arguments.of(NO_PLEA_RECEIVED,
+                        NO_PLEA_RECEIVED,
+                        caseAggregateConfigBuilder().withPostingDateExpirationDate(IN_28_DAYS)
+                                .withCaseReserved(false).withCaseReadinessReason(CaseReadinessReason.UNKNOWN).build(),
+                        false, CASE_UNMARKED_READY_FOR_DECISION_RAISED, IN_28_DAYS)
         );
     }
 
@@ -510,7 +524,12 @@ public class CaseReadinessHandlerTest {
             state.markCaseCompleted();
         }
         state.setCurrentApplication(aggregateConfig.getApplication());
-
+        if(CaseReadinessReason.UNKNOWN.equals(aggregateConfig.getCaseReadinessReason())){
+            state.markReady(ZonedDateTime.now(), CaseReadinessReason.UNKNOWN);
+        }
+        if(aggregateConfig.getCaseReserved()){
+            state.markCaseReserved();
+        }
         int eventsRaised = 0;
         final List<Object> events = whenStatusChangedTo(previousStatus, currentStatus, state);
 

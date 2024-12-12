@@ -155,7 +155,6 @@ public abstract class CaseRepository extends AbstractEntityRepository<CaseDetail
             "LEFT OUTER JOIN cd.defendant d " +
             "LEFT OUTER JOIN d.offences o " +
             "WHERE cd.id IN (SELECT rc.id FROM ReadyCase rc WHERE rc.markedAt BETWEEN :fromDate AND :toDate) " +
-            "AND cd.id IN (SELECT cps.caseId FROM CasePublishStatus cps WHERE cps.numberOfPublishes < 5)" +
             "ORDER BY cd.postingDate")
     public abstract List<PendingCaseToPublishPerOffence> findPublicTransparencyDeltaReportPendingCases(@QueryParam("fromDate") final LocalDate fromDate, @QueryParam("toDate") final LocalDate toDate);
 
@@ -170,6 +169,7 @@ public abstract class CaseRepository extends AbstractEntityRepository<CaseDetail
             "LEFT OUTER JOIN cd.defendant d " +
             "LEFT OUTER JOIN d.offences o " +
             "WHERE cd.id IN (SELECT rc.id FROM ReadyCase rc) " +
+            "AND cd.id IN (SELECT cps.caseId FROM CasePublishStatus cps WHERE cps.numberOfPublishes < 5)" +
             "ORDER BY cd.postingDate")
     public abstract List<PendingCaseToPublishPerOffence> findPressTransparencyReportPendingCases();
 

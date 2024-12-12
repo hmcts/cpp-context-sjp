@@ -50,7 +50,7 @@ public class TransparencyReportListenerTest {
     private TransparencyReportMetadataRepository transparencyReportMetadataRepository;
 
     @Test
-    public void shouldCreateReportMetadataAndIncrementCasePublishedCounters() {
+    public void shouldCreateReportMetadata() {
         final UUID transparencyReportId = randomUUID();
         final List<UUID> caseIds = newArrayList(randomUUID(), randomUUID());
         final JsonEnvelope eventEnvelope = envelopeFrom(metadataWithRandomUUID("sjp.events.transparency-report-generation-started"),
@@ -63,14 +63,7 @@ public class TransparencyReportListenerTest {
                         .add("title", "Pending Cases")
                         .build());
 
-        final List<CasePublishStatus> publishedCases = createPublishedCases();
-        when(casePublishStatusRepository.findByCaseIds(caseIds)).thenReturn(createPublishedCases());
-
         transparencyReportListener.handleCasesArePublishedPDF(eventEnvelope);
-
-        final ArgumentCaptor<CasePublishStatus> argument = ArgumentCaptor.forClass(CasePublishStatus.class);
-        verify(casePublishStatusRepository, times(2)).save(argument.capture());
-        publishedCases.forEach(e -> assertThatIncremented(e, argument.getAllValues()));
 
         final ArgumentCaptor<TransparencyReportMetadata> transparencyReportMetadataArgument = ArgumentCaptor.forClass(TransparencyReportMetadata.class);
         verify(transparencyReportMetadataRepository).save(transparencyReportMetadataArgument.capture());
@@ -109,7 +102,7 @@ public class TransparencyReportListenerTest {
     public void shouldDecrementCasePublishCountersWhenGenerationFailed() {
         final UUID transparencyReportId = randomUUID();
         final List<UUID> caseIds = newArrayList(randomUUID(), randomUUID());
-        final JsonEnvelope eventEnvelope = envelopeFrom(metadataWithRandomUUID("sjp.events.transparency-pdf-report-generation-failed"),
+        final JsonEnvelope eventEnvelope = envelopeFrom(metadataWithRandomUUID("sjp.events.transparency-json-report-generation-failed"),
                 createObjectBuilder()
                         .add("transparencyReportId", transparencyReportId.toString())
                         .add("templateIdentifier", "PendingCasesEnglish")
@@ -122,7 +115,7 @@ public class TransparencyReportListenerTest {
 
         final List<CasePublishStatus> publishedCases = createPublishedCases();
         when(casePublishStatusRepository.findByCaseIds(caseIds)).thenReturn(publishedCases);
-        transparencyReportListener.handleTransparencyPDFReportGenerationFailed(eventEnvelope);
+        transparencyReportListener.handleTransparencyJSONReportGenerationFailed(eventEnvelope);
         final ArgumentCaptor<CasePublishStatus> argument = ArgumentCaptor.forClass(CasePublishStatus.class);
         verify(casePublishStatusRepository, times(2)).save(argument.capture());
         publishedCases.forEach(e -> assertThatDecremented(e, argument.getAllValues()));
@@ -132,7 +125,7 @@ public class TransparencyReportListenerTest {
     public void shouldNotDecrementCasePublishCountersWhenGenerationFailedPrevioulsy() {
         final UUID transparencyReportId = randomUUID();
         final List<UUID> caseIds = newArrayList(randomUUID(), randomUUID());
-        final JsonEnvelope eventEnvelope = envelopeFrom(metadataWithRandomUUID("sjp.events.transparency-pdf-report-generation-failed"),
+        final JsonEnvelope eventEnvelope = envelopeFrom(metadataWithRandomUUID("sjp.events.transparency-json-report-generation-failed"),
                 createObjectBuilder()
                         .add("transparencyReportId", transparencyReportId.toString())
                         .add("templateIdentifier", "PendingCasesWelsh")
@@ -144,7 +137,7 @@ public class TransparencyReportListenerTest {
                         .build());
 
         final List<CasePublishStatus> publishedCases = createPublishedCases();
-        transparencyReportListener.handleTransparencyPDFReportGenerationFailed(eventEnvelope);
+        transparencyReportListener.handleTransparencyJSONReportGenerationFailed(eventEnvelope);
         verify(casePublishStatusRepository, never()).save(any(CasePublishStatus.class));
     }
 

@@ -20,12 +20,20 @@ public class TransparencyJSONReportGenerationStarted {
 
     private final List<UUID> caseIds;
 
+    private final String requestType;
+
+    private final String language;
+
     @JsonCreator
     public TransparencyJSONReportGenerationStarted(
             @JsonProperty("transparencyReportId") final UUID transparencyReportId,
-            @JsonProperty("caseIds") final List<UUID> caseIds) {
+            @JsonProperty("caseIds") final List<UUID> caseIds,
+            @JsonProperty("language") final String language,
+            @JsonProperty("requestType") final String requestType) {
         this.transparencyReportId = transparencyReportId;
         this.caseIds = new LinkedList<>(caseIds);
+        this.requestType = requestType;
+        this.language = language;
     }
 
     public List<UUID> getCaseIds() {
@@ -34,5 +42,13 @@ public class TransparencyJSONReportGenerationStarted {
 
     public UUID getTransparencyReportId() {
         return transparencyReportId;
+    }
+
+    public String getLanguage() {
+        return language;
+    }
+
+    public String getRequestType() {
+        return requestType;
     }
 }

@@ -7,10 +7,10 @@ import static uk.gov.justice.services.core.annotation.Component.EVENT_LISTENER;
 import uk.gov.justice.services.core.annotation.Handles;
 import uk.gov.justice.services.core.annotation.ServiceComponent;
 import uk.gov.justice.services.messaging.JsonEnvelope;
-import uk.gov.moj.cpp.sjp.event.transparency.TransparencyPDFReportGenerationFailed;
+import uk.gov.moj.cpp.sjp.event.transparency.TransparencyJSONReportGenerationFailed;
+import uk.gov.moj.cpp.sjp.event.transparency.TransparencyJSONReportGenerationStarted;
 import uk.gov.moj.cpp.sjp.event.transparency.TransparencyPDFReportGenerationStarted;
 import uk.gov.moj.cpp.sjp.event.transparency.TransparencyPDFReportMetadataAdded;
-import uk.gov.moj.cpp.sjp.event.transparency.TransparencyReportGenerationFailed;
 import uk.gov.moj.cpp.sjp.event.transparency.TransparencyReportGenerationStarted;
 import uk.gov.moj.cpp.sjp.event.transparency.TransparencyReportMetadataAdded;
 import uk.gov.moj.cpp.sjp.persistence.entity.CasePublishStatus;
@@ -61,7 +61,6 @@ public class TransparencyReportListener {
     public void handleCasesArePublished(final JsonEnvelope transparencyReportGeneratedEnvelope) {
         final JsonObject transparencyReportGeneratedPayload = transparencyReportGeneratedEnvelope.payloadAsJsonObject();
         persistReportMetadata(transparencyReportGeneratedPayload);
-        incrementCountersForTheExportedCases(transparencyReportGeneratedPayload);
     }
 
     /**
@@ -79,27 +78,11 @@ public class TransparencyReportListener {
         updateReportMetadata(metadataAddedPayload);
     }
 
-    /**
-     * Handles the event when the generation of a transparency report has failed.
-     * Use either the JSON or PDF report generation failed events instead.
-     *
-     * @deprecated
-     */
-    @Deprecated(forRemoval = true)
-    @Transactional
-    @Handles(TransparencyReportGenerationFailed.EVENT_NAME)
-    @SuppressWarnings("squid:S1133")
-    public void handleTransparencyReportGenerationFailed(final JsonEnvelope transparencyReportGenerationFailed) {
-        final JsonObject transparencyReportGenerationFailedPayload = transparencyReportGenerationFailed.payloadAsJsonObject();
-        decrementCountersForTheExportedCases(transparencyReportGenerationFailedPayload);
-    }
-
     @Transactional
     @Handles(TransparencyPDFReportGenerationStarted.EVENT_NAME)
     public void handleCasesArePublishedPDF(final JsonEnvelope envelope) {
         final JsonObject transparencyReportGeneratedPayload = envelope.payloadAsJsonObject();
         persistReportMetadata(transparencyReportGeneratedPayload);
-        incrementCountersForTheExportedCases(transparencyReportGeneratedPayload);
     }
 
     @Transactional
@@ -110,10 +93,21 @@ public class TransparencyReportListener {
     }
 
     @Transactional
-    @Handles(TransparencyPDFReportGenerationFailed.EVENT_NAME)
-    public void handleTransparencyPDFReportGenerationFailed(final JsonEnvelope envelope) {
+    @Handles(TransparencyJSONReportGenerationFailed.EVENT_NAME)
+    public void handleTransparencyJSONReportGenerationFailed(final JsonEnvelope envelope) {
         final JsonObject transparencyReportGenerationFailedPayload = envelope.payloadAsJsonObject();
         decrementCountersForTheExportedCases(transparencyReportGenerationFailedPayload);
+    }
+
+    @Transactional
+    @Handles(TransparencyJSONReportGenerationStarted.EVENT_NAME)
+    public void handleCasesArePublishedJSON(final JsonEnvelope envelope) {
+        final JsonObject transparencyReportGeneratedPayload = envelope.payloadAsJsonObject();
+        String requestType = transparencyReportGeneratedPayload.getString("requestType");
+        String language = transparencyReportGeneratedPayload.getString(LANGUAGE);
+        if ("WELSH".equalsIgnoreCase(language) && "FULL".equalsIgnoreCase(requestType)) {
+            incrementCountersForTheExportedCases(transparencyReportGeneratedPayload);
+        }
     }
 
     private void updateReportMetadata(final JsonObject metadataAddedPayload) {

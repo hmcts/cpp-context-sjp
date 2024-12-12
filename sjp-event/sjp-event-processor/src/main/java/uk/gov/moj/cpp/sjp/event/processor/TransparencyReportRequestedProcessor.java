@@ -139,6 +139,7 @@ public class TransparencyReportRequestedProcessor {
         LOGGER.info("generating public transparency JSON report {}", transparencyReportId);
         final List<JsonObject> filteredCases = getFilteredCases(allPendingCasesFromViewStore);
         sendPublicEvent(envelope, buildPayload(filteredCases, isWelsh, true, envelope));
+        storeReportMetadata(envelope, transparencyReportId, filteredCases);
     }
 
     /**

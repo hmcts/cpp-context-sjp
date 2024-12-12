@@ -73,7 +73,7 @@ public class TransparencyReportAggregate implements Aggregate {
             if (PDF.equals(documentFormat)) {
                 sb.add(new TransparencyPDFReportGenerationStarted(this.transparencyReportId, documentFormat, type, title, language, caseIds));
             } else {
-                sb.add(new TransparencyJSONReportGenerationStarted(this.transparencyReportId, caseIds));
+                sb.add(new TransparencyJSONReportGenerationStarted(this.transparencyReportId, caseIds, language, type));
             }
         }
         return apply(sb.build());

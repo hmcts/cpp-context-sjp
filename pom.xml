@@ -4,7 +4,7 @@
     <parent>
         <groupId>uk.gov.moj.cpp.common</groupId>
         <artifactId>service-parent-pom</artifactId>
-        <version>17.100.1</version>
+        <version>17.100.0.1</version>
     </parent>
 
     <groupId>uk.gov.moj.cpp.sjp</groupId>
@@ -47,7 +47,7 @@
         <scheduling.version>17.0.11</scheduling.version>
         <authorisation.service.version>0.1.49</authorisation.service.version>
         <usersgroups.version>17.0.21</usersgroups.version>
-        <progression.version>17.0.42</progression.version>
+        <progression.version>17.0.51</progression.version>
         <prosecutioncasefile.version>17.0.11</prosecutioncasefile.version>
         <access-control-sjp-providers.version>4.1.4-ATCM</access-control-sjp-providers.version>
         <cpp.framework.action.mapping.enabled>true</cpp.framework.action.mapping.enabled>

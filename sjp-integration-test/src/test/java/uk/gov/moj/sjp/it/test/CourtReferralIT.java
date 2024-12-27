@@ -20,6 +20,7 @@ import static uk.gov.moj.cpp.sjp.domain.SessionType.MAGISTRATE;
 import static uk.gov.moj.cpp.sjp.domain.decision.OffenceDecisionInformation.createOffenceDecisionInformation;
 import static uk.gov.moj.cpp.sjp.domain.disability.DisabilityNeeds.NO_DISABILITY_NEEDS;
 import static uk.gov.moj.cpp.sjp.domain.disability.DisabilityNeeds.disabilityNeedsOf;
+import static uk.gov.moj.sjp.it.Constants.PUBLIC_EVENT;
 import static uk.gov.moj.sjp.it.helper.AssignmentHelper.requestCaseAssignment;
 import static uk.gov.moj.sjp.it.helper.CaseReferralHelper.findReferralStatusForCase;
 import static uk.gov.moj.sjp.it.helper.PleadOnlineHelper.verifyOnlinePleaReceivedAndUpdatedCaseDetailsFlag;
@@ -34,6 +35,7 @@ import static uk.gov.moj.sjp.it.stub.ProgressionServiceStub.stubReferCaseToCourt
 import static uk.gov.moj.sjp.it.stub.ProgressionServiceStub.verifyReferToCourtCommandSent;
 import static uk.gov.moj.sjp.it.stub.ProgressionServiceStub.verifyReferToCourtCommandSentStrictMode;
 import static uk.gov.moj.sjp.it.stub.ProsecutionCaseFileServiceStub.stubCaseDetails;
+import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubAllResultDefinitions;
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubCountryByPostcodeQuery;
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubCountryNationalities;
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubDefaultCourtByCourtHouseOUCodeQuery;
@@ -53,9 +55,11 @@ import static uk.gov.moj.sjp.it.util.CaseAssignmentRestrictionHelper.provisionCa
 import static uk.gov.moj.sjp.it.util.DateUtils.CPP_ZONED_DATE_TIME_FORMATTER;
 import static uk.gov.moj.sjp.it.util.Defaults.DEFAULT_LONDON_COURT_HOUSE_OU_CODE;
 import static uk.gov.moj.sjp.it.util.Defaults.DEFAULT_NON_LONDON_COURT_HOUSE_OU_CODE;
+import static uk.gov.moj.sjp.it.util.FileUtil.getFileContentAsJson;
 import static uk.gov.moj.sjp.it.util.FileUtil.getPayload;
 import static uk.gov.moj.sjp.it.util.UrnProvider.generate;
 
+import org.hamcrest.Matchers;
 import uk.gov.justice.core.courts.CourtCentre;
 import uk.gov.justice.core.courts.HearingType;
 import uk.gov.justice.core.courts.NextHearing;
@@ -63,8 +67,11 @@ import uk.gov.justice.core.courts.RotaSlot;
 import uk.gov.justice.domain.annotation.Event;
 import uk.gov.justice.json.schemas.domains.sjp.Language;
 import uk.gov.justice.json.schemas.domains.sjp.User;
+import uk.gov.justice.services.common.converter.ZonedDateTimes;
 import uk.gov.justice.services.common.util.UtcClock;
 import uk.gov.justice.services.messaging.JsonEnvelope;
+import uk.gov.justice.services.test.utils.core.messaging.MessageProducerClient;
+import uk.gov.justice.services.test.utils.core.messaging.MessageProducerClientBuilder;
 import uk.gov.moj.cpp.sjp.domain.DefendantCourtInterpreter;
 import uk.gov.moj.cpp.sjp.domain.DefendantCourtOptions;
 import uk.gov.moj.cpp.sjp.domain.SessionType;
@@ -156,10 +163,12 @@ public class CourtReferralIT extends BaseIntegrationTest {
     private UUID roomId;
     private ZonedDateTime listedStartDateTime;
     private static final DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
+    private EventListener eventListener;
 
 
     @BeforeEach
     public void setUp() throws Exception {
+        eventListener = new EventListener();
         sessionId = randomUUID();
         caseId = randomUUID();
         offenceId1 = randomUUID();
@@ -198,6 +207,7 @@ public class CourtReferralIT extends BaseIntegrationTest {
 
         new SjpDatabaseCleaner().cleanAll();
         provisionCaseAssignmentRestrictions(Sets.newHashSet(TFL, TVL, DVLA));
+        stubAllResultDefinitions();
 
     }
 
@@ -366,6 +376,51 @@ public class CourtReferralIT extends BaseIntegrationTest {
         verifyReferToCourtCommandSent(expectedCommandPayload);
     }
 
+    @Test
+    public void shouldReferOrganisationCaseSuccessfully(){
+        stubCaseDetails(caseId, "stub-data/prosecutioncasefile.query.case-details-welsh.json");
+        createLegalEntityCaseWithSingleOffence();
+
+        final ReferForCourtHearing referForCourtHearingDecision = buildReferForCourtHearingDecision(W,
+                PressRestriction.requested("a name"),
+                offenceId1);
+
+        startSessionAndRequestAssignment(sessionId, MAGISTRATE, DEFAULT_LONDON_COURT_HOUSE_OU_CODE);
+
+        final List<OffenceDecision> offencesDecisions = asList(referForCourtHearingDecision);
+        final DecisionCommand decision = new DecisionCommand(sessionId, caseId, null, user, offencesDecisions, null);
+
+        new EventListener()
+                .subscribe(CaseReferredForCourtHearingV2.EVENT_NAME)
+                .run(() -> DecisionHelper.saveDecision(decision));
+        final String hearingCourtName = "Leamington Spa Magistrates' Court";
+        final JsonObject payload1 = getFileContentAsJson("CourtReferralIT/case-listed-in-criminal-courts1.json",
+                ImmutableMap.<String, Object>builder()
+                        .put("prosecutionCaseId", caseId)
+                        .put("offence1Id", offenceId1)
+                        .put("name", hearingCourtName)
+                        .put("welshName", hearingCourtName)
+                        .put("sittingDay", ZonedDateTimes.toString(ZonedDateTime.now()))
+                        .build());
+
+        // first hearing
+        eventListener = new EventListener();
+        eventListener
+                .subscribe("sjp.events.case-offence-listed-in-criminal-courts")
+                .run(() -> raisePublicReferredToCourtEvent(payload1));
+
+        Optional<JsonEnvelope> jsonEnvelope = eventListener.popEvent("sjp.events.case-offence-listed-in-criminal-courts");
+        assertThat(jsonEnvelope.isPresent(), Matchers.is(true));
+    }
+
+
+    private void raisePublicReferredToCourtEvent(final JsonObject payload) {
+        try (final MessageProducerClient producerClient = new MessageProducerClient()) {
+            producerClient.startProducer(PUBLIC_EVENT);
+            producerClient.sendMessage(CaseListedInCriminalCourtsIT.PUBLIC_PROGRESSION_PROSECUTION_CASES_REFERRED_TO_COURT, payload);
+        }
+    }
+
     private void referCaseToCourtAndVerifyCommandSendToProgressionMatchesExpected(final String expectedCommandPayloadFile, final NextHearing nextHearing, final Language language) {
         final ReferForCourtHearing referForCourtHearingDecision = buildReferForCourtHearingDecision(language, nextHearing, offenceId1);
         final DecisionCommand decision = new DecisionCommand(sessionId, caseId, null, user, asList(referForCourtHearingDecision), null);
@@ -481,6 +536,36 @@ public class CourtReferralIT extends BaseIntegrationTest {
                         .withId(defendantId)
                         .withNationalInsuranceNumber(NATIONAL_INSURANCE_NUMBER)
                         .withHearingLanguage(language))
+                .withId(caseId)
+                .withUrn(caseUrn);
+
+        stubRegionByPostcode(NATIONAL_COURT_CODE, "DEFENDANT_REGION");
+        stubEnforcementAreaByPostcode(createCasePayloadBuilder.getDefendantBuilder().getAddressBuilder().getPostcode(), NATIONAL_COURT_CODE, "Bedfordshire Magistrates' Court");
+
+        new EventListener()
+                .subscribe(CaseMarkedReadyForDecision.EVENT_NAME)
+                .run(() -> CreateCase.createCaseForPayloadBuilder(createCasePayloadBuilder))
+                .popEvent(CaseMarkedReadyForDecision.EVENT_NAME);
+    }
+
+
+    private void createLegalEntityCaseWithSingleOffence() {
+        prosecutingAuthority = ProsecutingAuthority.TFL;
+        caseUrn = generate(prosecutingAuthority);
+        stubProsecutorQuery(prosecutingAuthority.name(), prosecutingAuthority.getFullName(), PROSECUTOR_ID, false);
+        stubForUserDetails(user, prosecutingAuthority.name());
+
+        createCasePayloadBuilder = CreateCase.CreateCasePayloadBuilder.withDefaults()
+                .withProsecutingAuthority(prosecutingAuthority)
+                .withOffenceBuilder(CreateCase.OffenceBuilder.withDefaults()
+                        .withId(offenceId1)
+                        .withLibraOffenceCode(LIBRA_OFFENCE_CODE1)
+                        .withPressRestrictable(false)
+                )
+                .withDefendantBuilder(CreateCase.DefendantBuilder
+                        .defaultLegalEntityDefendant()
+                        .withHearingLanguage(W)
+                )
                 .withId(caseId)
                 .withUrn(caseUrn);
 

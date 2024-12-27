@@ -375,6 +375,17 @@ public class CreateCase {
             return withDefaults();
         }
 
+        public static DefendantBuilder defaultLegalEntityDefendant(){
+            final DefendantBuilder builder = new DefendantBuilder();
+            builder.id = randomUUID();
+            builder.legalEntityName = "Kellogs and Co";
+            builder.addressBuilder = AddressBuilder.withDefaults();
+            builder.contactDetailsBuilder = ContactDetailsBuilder.withDefaults();
+            builder.asn = "asn";
+            builder.pncIdentifier = "pncId";
+            return builder;
+        }
+
         public static DefendantBuilder withDefaults() {
             final DefendantBuilder builder = new DefendantBuilder();
 

@@ -58,12 +58,14 @@ public class EnforcementCheckIfNotificationRequired {
         final String defendantAddress;
         final String defendantEmail;
         final String defendantContactNumber;
+        final String defendantName;
         if (isOrganisationDefendant(state.getCurrentApplication().getCourtApplication())) {
             final Organisation org = state.getCurrentApplication().getCourtApplication().getSubject().getMasterDefendant()
                     .getLegalEntityDefendant().getOrganisation();
             defendantAddress = getFullAddressAsString(org.getAddress());
             defendantEmail = getDefendantEmail(org.getContact());
             defendantContactNumber = getDefendantContactNumber(org.getContact());
+            defendantName = org.getName();
         } else {
             final Person person = state.getCurrentApplication().getCourtApplication().getSubject().getMasterDefendant()
                     .getPersonDefendant().getPersonDetails();
@@ -71,9 +73,10 @@ public class EnforcementCheckIfNotificationRequired {
             dateOfBirth = person.getDateOfBirth();
             defendantEmail = getDefendantEmail(person.getContact());
             defendantContactNumber = getDefendantContactNumber(person.getContact());
+            defendantName = state.getDefendantFirstName() + " " + state.getDefendantLastName();
         }
         final LocalDate dateApplicationIsListed = LocalDate.parse(state.getCurrentApplication().getCourtApplication().getApplicationReceivedDate());
-        final String defendantName = state.getDefendantFirstName() + " " + state.getDefendantLastName();
+
         return new EnforcementPendingApplicationNotificationRequired(
                 state.getCaseId(),
                 state.getCurrentApplication().getApplicationId(), now(),

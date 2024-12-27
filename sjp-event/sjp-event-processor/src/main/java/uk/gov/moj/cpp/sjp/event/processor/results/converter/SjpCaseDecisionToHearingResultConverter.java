@@ -121,7 +121,7 @@ public class SjpCaseDecisionToHearingResultConverter {
         final JsonEnvelope sjpSessionEnvelope = sjpService.getSessionInformation(fromString(decisionSaved.getSessionId().toString()), envelopeFrom(metadataFrom(sourceMetadata), NULL));
         final CaseDetails caseDetails = sjpService.getCaseDetails(caseId, envelopeFrom(metadataFrom(caseListedInCcForReferToCourtEnvelope.metadata()), NULL));
         final UUID defendantId = caseDetails.getDefendant().getId();
-        final String driverNumber = caseDetails.getDefendant().getPersonalDetails().getDriverNumber();
+        final String driverNumber = caseDetails.getDefendant().getPersonalDetails() != null ? caseDetails.getDefendant().getPersonalDetails().getDriverNumber() : null;
         final String prosecutingAuthority = caseDetails.getProsecutingAuthority();
 
         final DecisionAggregate resultsAggregate =

@@ -25,12 +25,15 @@ import uk.gov.justice.json.schemas.domains.sjp.results.PublicHearingResulted;
 import uk.gov.justice.services.messaging.Envelope;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.messaging.Metadata;
+import uk.gov.moj.cpp.sjp.event.CaseListedInCriminalCourtsV2;
 import uk.gov.moj.cpp.sjp.event.decision.DecisionSaved;
 import uk.gov.moj.cpp.sjp.event.processor.results.converter.judicialresult.DecisionAggregate;
 import uk.gov.moj.cpp.sjp.event.processor.results.converter.judicialresult.DecisionSavedToJudicialResultsConverter;
 import uk.gov.moj.cpp.sjp.event.processor.service.SjpService;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.UUID;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -72,6 +75,12 @@ public class SjpCaseDecisionToHearingResultConverterTest {
     uk.gov.justice.json.schemas.domains.sjp.queries.Defendant defendant;
     @Mock
     PersonalDetails personalDetails;
+
+    @Mock
+    private Envelope<CaseListedInCriminalCourtsV2> caseListedInCriminalCourtsV2Envelope;
+
+    @Mock
+    private CaseListedInCriminalCourtsV2 caseListedInCriminalCourtsV2;
 
     DecisionAggregate resultsAggregate;
 
@@ -168,6 +177,35 @@ public class SjpCaseDecisionToHearingResultConverterTest {
         assertThat(publicHearingResulted.getHearing().getHasSharedResults(), is(false));
         assertThat(publicHearingResulted.getHearing().getHearingCaseNotes(), is(nullValue()));
         assertThat(publicHearingResulted.getHearing().getIsBoxHearing(), is(false));
+    }
+
+    @Test
+    public void shouldConvertSjpCaseDecisionToHearingResultWithMandatoryFieldWhenPersonalDetailsIsNullForLegalEntity() {
+        Metadata sourceMetadata = metadataWithRandomUUID(RANDOM_TEXT).build();
+        final UUID caseId = UUID.randomUUID();
+        when(caseListedInCriminalCourtsV2.getCaseId()).thenReturn(caseId);
+        when(caseListedInCriminalCourtsV2Envelope.payload()).thenReturn(caseListedInCriminalCourtsV2);
+        when(caseListedInCriminalCourtsV2Envelope.payload().getDecisionSaved()).thenReturn(decisionSaved);
+
+        when(sjpService.getSessionInformation(any(), any())).thenReturn(sjpSessionEnvelope);
+        when(decisionSaved.getSessionId()).thenReturn(ID_2);
+        when(caseListedInCriminalCourtsV2Envelope.metadata()).thenReturn(sourceMetadata);
+        when(sjpService.getCaseDetails(any(), any())).thenReturn(caseDetails);
+        when(caseDetails.getDefendant()).thenReturn(defendant);
+        when(defendant.getId()).thenReturn(ID_1);
+        when(defendant.getPersonalDetails()).thenReturn(null);
+        resultsAggregate.putResults(caseId, new ArrayList<>());
+        when(referencedDecisionSavedOffenceConverter.convertOffenceDecisions(any(), any(), any(), any(), any(), any(), any(CaseListedInCriminalCourtsV2.class))).thenReturn(resultsAggregate);
+        when(hearingDaysConverter.convert(any())).thenReturn(singletonList(hearingDay));
+        when(courtCenterConverter.convert(any(), any())).thenReturn(courtCentre);
+
+        final PublicHearingResulted publicHearingResulted = sjpCaseDecisionToHearingResultConverter.convertCaseDecisionInCcForReferToCourt(caseListedInCriminalCourtsV2Envelope);
+
+        assertThat(publicHearingResulted, is(notNullValue()));
+        assertThat(publicHearingResulted.getHearing(), is(notNullValue()));
+        assertThat(publicHearingResulted.getHearing().getId(), is(ID_2));
+        assertThat(publicHearingResulted.getHearing().getCourtCentre(), is(courtCentre));
+        assertThat(publicHearingResulted.getHearing().getJurisdictionType(), is(MAGISTRATES));
     }
 
 }

@@ -14,7 +14,9 @@ import uk.gov.justice.core.courts.Address;
 import uk.gov.justice.core.courts.ContactNumber;
 import uk.gov.justice.core.courts.CourtApplication;
 import uk.gov.justice.core.courts.CourtApplicationParty;
+import uk.gov.justice.core.courts.LegalEntityDefendant;
 import uk.gov.justice.core.courts.MasterDefendant;
+import uk.gov.justice.core.courts.Organisation;
 import uk.gov.justice.core.courts.Person;
 import uk.gov.justice.core.courts.PersonDefendant;
 import uk.gov.justice.json.schemas.domains.sjp.ApplicationStatus;
@@ -120,6 +122,41 @@ public class EnforcementCheckIfNotificationRequiredTest {
 
         // then
         assertThat(eventStream.isEmpty(),is(true));
+    }
 
+    @Test
+    public void shouldCreateEnforcementPendingApplicationNotificationRequiredEventForOrganisationDefendant(){
+        final EnforcementPendingApplicationRequiredNotification checkNotificationRequired = new EnforcementPendingApplicationRequiredNotification(caseId, divisionCode);
+        final Application application = new Application(courtApplication);
+
+        when(courtApplication.getApplicationReceivedDate()).thenReturn(LocalDate.now().toString());
+        when(courtApplication.getId()).thenReturn(applicationId);
+        when(courtApplication.getSubject()).thenReturn(CourtApplicationParty.courtApplicationParty()
+                .withMasterDefendant(MasterDefendant.masterDefendant()
+                        .withMasterDefendantId(randomUUID())
+                        .withLegalEntityDefendant(LegalEntityDefendant
+                                .legalEntityDefendant()
+                                .withOrganisation(Organisation
+                                        .organisation()
+                                        .withName("Kellogs and Co")
+                                        .build())
+                                .build())
+                        .withPersonDefendant(PersonDefendant.personDefendant()
+                                .withPersonDetails(Person.person()
+                                        .withAddress(Address.address()
+                                                .withAddress1("Test address one")
+                                                .withAddress2("Test address two")
+                                                .withPostcode("RG1 9DS").build())
+                                        .withDateOfBirth("26/03/1967")
+                                        .withContact(ContactNumber.contactNumber()
+                                                .withMobile("02032389928")
+                                                .withPrimaryEmail("test@hotmail.com").build()).build()).build()).build()).build());
+        application.setStatus(STATUTORY_DECLARATION_PENDING);
+        application.setType(STAT_DEC);
+        caseAggregateState.setCurrentApplication(application);
+        caseAggregateState.setSavedAt(LocalDate.now());
+        final List<Object> eventStream = INSTANCE.checkIfPendingApplicationToNotified(caseAggregateState, checkNotificationRequired).collect(toList());
+        final EnforcementPendingApplicationNotificationRequired notificationRequired = (EnforcementPendingApplicationNotificationRequired) (eventStream.get(0));
+        assertThat(notificationRequired.getDefendantName(), is("Kellogs and Co"));
     }
 }

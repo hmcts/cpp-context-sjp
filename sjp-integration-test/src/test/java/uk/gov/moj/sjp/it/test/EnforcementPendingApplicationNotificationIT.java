@@ -61,6 +61,7 @@ import uk.gov.moj.cpp.sjp.domain.decision.disqualification.DisqualificationType;
 import uk.gov.moj.cpp.sjp.event.CaseCompleted;
 import uk.gov.moj.cpp.sjp.event.EnforcementPendingApplicationNotificationFailed;
 import uk.gov.moj.cpp.sjp.event.EnforcementPendingApplicationNotificationGenerationFailed;
+import uk.gov.moj.cpp.sjp.event.EnforcementPendingApplicationNotificationRequired;
 import uk.gov.moj.cpp.sjp.event.EnforcementPendingApplicationNotificationSent;
 import uk.gov.moj.cpp.sjp.event.decision.DecisionSaved;
 import uk.gov.moj.cpp.sjp.persistence.entity.EnforcementNotification;
@@ -104,6 +105,7 @@ public class EnforcementPendingApplicationNotificationIT extends BaseIntegration
     private static final String NATIONAL_COURT_NAME = "Bedfordshire Magistrates' Court";
     private static final String DEFENDANT_REGION = "croydon";
     private static final String CREATE_CASE_APPLICATION_FILE = "CaseApplicationIT/sjp.command.create-case-application.json";
+    private static final String CREATE_CASE_APPLICATION_FILE_FOR_ORGANISATION = "CaseApplicationIT/sjp.command.create-case-application-for-organisation.json";
     private static final UUID STAT_DEC_TYPE_ID = fromString("7375727f-30fc-3f55-99f3-36adc4f0e70e");
     private static final String STAT_DEC_TYPE_CODE = "MC80528";
     private static final String APP_STATUS = "DRAFT";
@@ -213,6 +215,31 @@ public class EnforcementPendingApplicationNotificationIT extends BaseIntegration
         assertStatusUpdatedInViewstore(notificationId, SENT);
     }
 
+    @Test
+    public void  shouldRequestPdfEmailAttachmentGenerationViaSystemDocGeneratorAndSendToNotificationNotifyForOrganisation() throws SQLException, InterruptedException {
+        createCase();
+        completeCaseWithEndorsementsApplied();
+        eventListener.subscribe(EnforcementPendingApplicationNotificationRequired.EVENT_NAME);
+        createCaseApplicationStatDecsForOrganisation();
+
+        stubGetFromIdMapper(ENFORCEMENT_PENDING_APPLICATION_NOTIFICATION.name(), applicationId.toString(),
+                "CASE_ID", "1ac91935-4f82-4a4f-bd17-fb50397e42dd");
+        stubAddMapping();
+
+        final UUID documentFileServiceId = randomUUID();
+        final UUID sourceCorrelationId = applicationId;
+        final JsonObject actual = sendSysDocGeneratorDocumentAvailablePublicEventAndWaitFor(
+                sourceCorrelationId, documentFileServiceId, EVENT_NAME
+        );
+        assertThat(actual.getString("applicationId"), equalTo(applicationId.toString()));
+
+        final JsonObject notification = verifyNotification(sourceCorrelationId, "LCCCCollectionUnit@hmcts.gsi.gov.uk");
+        assertEmailSubject(notification);
+        assertStatusUpdatedInViewstore(sourceCorrelationId, documentFileServiceId, QUEUED);
+        final EnforcementPendingApplicationNotificationRequired eventPayload = eventListener.popEventPayload(EnforcementPendingApplicationNotificationRequired.class);
+        assertThat(eventPayload.getDefendantName(), equalTo("Kellogs and Co"));
+    }
+
     private UUID givenNotificationOfEndorsementStatusIsPresentInViewstore() {
         final UUID applicationDecisionId = randomUUID();
         sjpViewstore.insertNotificationOfEnforcementPendingStatus(applicationDecisionId, null, QUEUED, ZonedDateTime.now());
@@ -240,6 +267,15 @@ public class EnforcementPendingApplicationNotificationIT extends BaseIntegration
                 .run(() -> createCaseApplication(USER.getUserId(), caseId, applicationId,
                         STAT_DEC_TYPE_ID, STAT_DEC_TYPE_CODE, "A", DATE_RECEIVED, APP_STATUS,
                         CREATE_CASE_APPLICATION_FILE));
+
+        pollUntilCaseReady(caseId);
+    }
+
+    private void createCaseApplicationStatDecsForOrganisation() {
+        eventListener.subscribe(SJP_EVENT_CASE_APP_RECORDED, SJP_EVENT_CASE_APP_STAT_DEC)
+                .run(() -> createCaseApplication(USER.getUserId(), caseId, applicationId,
+                        STAT_DEC_TYPE_ID, STAT_DEC_TYPE_CODE, "A", DATE_RECEIVED, APP_STATUS,
+                        CREATE_CASE_APPLICATION_FILE_FOR_ORGANISATION));
 
         pollUntilCaseReady(caseId);
     }

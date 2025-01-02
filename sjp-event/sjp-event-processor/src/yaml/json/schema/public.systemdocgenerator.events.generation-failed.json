@@ -12,9 +12,6 @@
     "conversionFormat": {
       "type": "string"
     },
-    "originatingSource": {
-      "type": "string"
-    },
     "requestedTime": {
       "type": "string",
       "format": "date-time"
@@ -26,8 +23,31 @@
     "sourceCorrelationId": {
       "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
     },
+    "originatingSource": {
+      "type": "string"
+    },
     "reason": {
       "type": "string"
+    },
+    "additionalInformation": {
+      "type": "array",
+      "minItems": 0,
+      "items": {
+        "type": "object",
+        "properties": {
+          "propertyName": {
+            "type": "string"
+          },
+          "propertyValue": {
+            "type": "string"
+          }
+        },
+        "additionalProperties": false,
+        "required": [
+          "propertyName",
+          "propertyValue"
+        ]
+      }
     }
   },
   "additionalProperties": false,
@@ -37,7 +57,6 @@
     "requestedTime",
     "templateIdentifier",
     "conversionFormat",
-    "reason",
-    "originatingSource"
+    "reason"
   ]
 }

@@ -22,7 +22,9 @@ import static java.util.UUID.randomUUID;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static uk.gov.justice.services.eventstore.management.commands.IndexerCatchupCommand.INDEXER_CATCHUP;
+import static uk.gov.justice.services.jmx.api.mbean.CommandRunMode.FORCED;
 import static uk.gov.justice.services.jmx.system.command.client.connection.JmxParametersBuilder.jmxParameters;
+import static uk.gov.justice.services.management.ping.commands.PingCommand.PING;
 import static uk.gov.justice.services.test.utils.common.host.TestHostProvider.getHost;
 import static uk.gov.moj.cpp.sjp.event.CaseReceived.EVENT_NAME;
 import static uk.gov.moj.sjp.it.command.CreateCase.createCaseForPayloadBuilder;
@@ -45,6 +47,8 @@ public class IndexerCatchupIT extends BaseIntegrationTest {
     private static final String CONTEXT = "sjp";
     private static final String USERNAME = "admin";
     private static final String PASSWORD = "admin";
+    private static final UUID NULL_COMMAND_RUNTIME_ID = null;
+    private static final String NULL_COMMAND_RUNTIME_STRING = null;
 
     @BeforeEach
     public void before() throws IOException {
@@ -88,7 +92,10 @@ public class IndexerCatchupIT extends BaseIntegrationTest {
                 .build();
         try (final SystemCommanderClient systemCommanderClient = systemCommanderClientFactory.create(jmxParameters)) {
 
-            systemCommanderClient.getRemote(CONTEXT).call(INDEXER_CATCHUP);
+            systemCommanderClient.getRemote(CONTEXT).call(PING,
+                    NULL_COMMAND_RUNTIME_ID,
+                    NULL_COMMAND_RUNTIME_STRING,
+                    FORCED.isGuarded());
         }
     }
 

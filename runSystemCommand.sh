@@ -17,7 +17,7 @@
 #
 ##################################################################################################
 
-FRAMEWORK_VERSION=17.5.5
+FRAMEWORK_VERSION=17.100.4
 CONTEXT_NAME="sjp"
 USER_NAME="admin"
 PASSWORD="admin"

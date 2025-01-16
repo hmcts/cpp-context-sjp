@@ -1,5 +1,6 @@
 package uk.gov.moj.sjp.it.test;
 
+import static com.google.common.collect.Sets.newHashSet;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
 import static java.time.LocalDate.now;
 import static java.util.Arrays.asList;
@@ -9,6 +10,7 @@ import static java.util.stream.Collectors.toList;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
@@ -24,33 +26,32 @@ import static uk.gov.moj.sjp.it.Constants.NOTICE_PERIOD_IN_DAYS;
 import static uk.gov.moj.sjp.it.command.CreateCase.CreateCasePayloadBuilder;
 import static uk.gov.moj.sjp.it.command.CreateCase.OffenceBuilder;
 import static uk.gov.moj.sjp.it.command.CreateCase.createCaseForPayloadBuilder;
-import static uk.gov.moj.sjp.it.helper.AssignmentHelper.requestCaseAssignment;
+import static uk.gov.moj.sjp.it.helper.AssignmentHelper.requestCaseAssignmentAndConfirm;
 import static uk.gov.moj.sjp.it.helper.CaseAccountHelper.pollForCaseAccountNote;
 import static uk.gov.moj.sjp.it.helper.CaseHelper.pollUntilCaseReady;
+import static uk.gov.moj.sjp.it.helper.DecisionHelper.saveDecision;
 import static uk.gov.moj.sjp.it.helper.DecisionHelper.verifyCaseNotReadyInViewStore;
 import static uk.gov.moj.sjp.it.helper.DecisionHelper.verifyCaseUnassigned;
 import static uk.gov.moj.sjp.it.helper.DecisionHelper.verifyDecisionSaved;
-import static uk.gov.moj.sjp.it.helper.SessionHelper.startSession;
+import static uk.gov.moj.sjp.it.helper.SessionHelper.startSessionAndConfirm;
 import static uk.gov.moj.sjp.it.model.ProsecutingAuthority.DVLA;
 import static uk.gov.moj.sjp.it.model.ProsecutingAuthority.TFL;
 import static uk.gov.moj.sjp.it.model.ProsecutingAuthority.TVL;
-import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubAllResultDefinitions;
+import static uk.gov.moj.sjp.it.pollingquery.CasePoller.pollForCase;
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubDefaultCourtByCourtHouseOUCodeQuery;
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubEnforcementAreaByPostcode;
-import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubFixedLists;
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubProsecutorQuery;
-import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubQueryForVerdictTypes;
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubRegionByPostcode;
-import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubResultIds;
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubWithdrawalReasonsQuery;
 import static uk.gov.moj.sjp.it.stub.UsersGroupsStub.stubForUserDetails;
 import static uk.gov.moj.sjp.it.stub.UsersGroupsStub.stubGroupForUser;
 import static uk.gov.moj.sjp.it.util.ActivitiHelper.executeTimerJobs;
 import static uk.gov.moj.sjp.it.util.ActivitiHelper.pollUntilProcessExists;
+import static uk.gov.moj.sjp.it.util.CaseAssignmentRestrictionHelper.provisionCaseAssignmentRestrictions;
 import static uk.gov.moj.sjp.it.util.Defaults.DEFAULT_LONDON_COURT_HOUSE_OU_CODE;
+import static uk.gov.moj.sjp.it.util.SjpDatabaseCleaner.cleanViewStore;
 import static uk.gov.moj.sjp.it.util.builders.FinancialImpositionBuilder.costsAndSurcharge;
 import static uk.gov.moj.sjp.it.util.builders.FinancialImpositionBuilder.withDefaults;
-import static uk.gov.moj.sjp.it.util.matchers.OffenceDecisionMatcher.adjourn;
 import static uk.gov.moj.sjp.it.util.matchers.OffenceDecisionMatcher.offenceDecisionHaving;
 import static uk.gov.moj.sjp.it.util.matchers.OffenceDecisionMatcher.pressRestriction;
 
@@ -71,7 +72,6 @@ import uk.gov.moj.cpp.sjp.domain.decision.imposition.LumpSum;
 import uk.gov.moj.cpp.sjp.domain.decision.imposition.Payment;
 import uk.gov.moj.cpp.sjp.domain.decision.imposition.PaymentTerms;
 import uk.gov.moj.cpp.sjp.event.PaymentTermsChanged;
-import uk.gov.moj.cpp.sjp.event.decision.DecisionRejected;
 import uk.gov.moj.cpp.sjp.event.decision.DecisionResubmitted;
 import uk.gov.moj.cpp.sjp.event.decision.DecisionSaved;
 import uk.gov.moj.cpp.sjp.event.session.CaseUnassigned;
@@ -79,8 +79,6 @@ import uk.gov.moj.sjp.it.helper.DecisionHelper;
 import uk.gov.moj.sjp.it.helper.EventListener;
 import uk.gov.moj.sjp.it.model.DecisionCommand;
 import uk.gov.moj.sjp.it.model.ProsecutingAuthority;
-import uk.gov.moj.sjp.it.util.CaseAssignmentRestrictionHelper;
-import uk.gov.moj.sjp.it.util.SjpDatabaseCleaner;
 import uk.gov.moj.sjp.it.util.builders.AdjournBuilder;
 import uk.gov.moj.sjp.it.util.builders.DischargeBuilder;
 import uk.gov.moj.sjp.it.util.builders.DismissBuilder;
@@ -96,7 +94,7 @@ import java.util.UUID;
 
 import javax.json.JsonObject;
 
-import com.google.common.collect.Sets;
+import org.hamcrest.Matcher;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
@@ -113,28 +111,17 @@ public class PressRestrictionsSaveDecisionIT extends BaseIntegrationTest {
     private UUID caseId = randomUUID();
     private UUID systemUserId = randomUUID();
     private LocalDate postingDate = now().minusDays(NOTICE_PERIOD_IN_DAYS + 1);
-    protected static final String SJP = "sjp";
     public static final String PUBLIC_EVENTS_HEARING_HEARING_RESULTED = "public.events.hearing.hearing-resulted";
     public static final String PUBLIC_CASE_DECISION_RE_SUBMITTED = "public.sjp.events.case-decision-resubmitted";
 
-    private static JsonObject startSessionAndRequestAssignment(final UUID sessionId, final SessionType sessionType) {
-        final JsonEnvelope session = startSession(sessionId, USER_ID, DEFAULT_LONDON_COURT_HOUSE_OU_CODE, sessionType).get();
-        requestCaseAssignment(sessionId, USER_ID);
-        return session.payloadAsJsonObject();
-    }
-
     @BeforeEach
     public void setUp() throws Exception {
-        new SjpDatabaseCleaner().cleanViewStore();
+        cleanViewStore();
         stubGroupForUser(systemUserId, "System Users");
-        stubProsecutorQuery(ProsecutingAuthority.TFL.name(), ProsecutingAuthority.TFL.getFullName(), randomUUID());
-        stubAllResultDefinitions();
-        stubFixedLists();
-        stubQueryForVerdictTypes();
+        stubProsecutorQuery(TFL.name(), TFL.getFullName(), randomUUID());
         stubDefaultCourtByCourtHouseOUCodeQuery();
         stubForUserDetails(user, "ALL");
-        CaseAssignmentRestrictionHelper.provisionCaseAssignmentRestrictions(Sets.newHashSet(TFL, TVL, DVLA));
-        stubResultIds();
+        provisionCaseAssignmentRestrictions(newHashSet(TFL, TVL, DVLA));
     }
 
     @Test
@@ -150,16 +137,14 @@ public class PressRestrictionsSaveDecisionIT extends BaseIntegrationTest {
         final FinancialImposition financialImposition = withDefaults();
         final DecisionCommand decision = new DecisionCommand(sessionId, caseId, null, user, offenceDecisions, financialImposition);
         createCase(offenceDecisions);
-        stubWithdrawalReasonsQuery(withdraw.getWithdrawalReasonId(), WITHDRAWAL_REASON);
         startSessionAndRequestAssignment(sessionId, MAGISTRATE);
 
         // When
         eventListener
                 .subscribe(DecisionSaved.EVENT_NAME)
                 .subscribe(CaseUnassigned.EVENT_NAME)
-                .run(() -> DecisionHelper.saveDecision(decision));
+                .run(() -> saveDecision(decision));
 
-        // Then
         final DecisionSaved decisionSaved = eventListener.popEventPayload(DecisionSaved.class);
         final CaseUnassigned caseUnassigned = eventListener.popEventPayload(CaseUnassigned.class);
 
@@ -187,37 +172,13 @@ public class PressRestrictionsSaveDecisionIT extends BaseIntegrationTest {
         startSessionAndRequestAssignment(sessionId, MAGISTRATE);
 
         // When
-        eventListener.subscribe(DecisionSaved.EVENT_NAME)
-                .run(() -> DecisionHelper.saveDecision(decision));
+        saveDecision(decision);
 
-        // Then
-        final DecisionSaved decisionSaved = eventListener.popEventPayload(DecisionSaved.class);
-
-        assertThat(decisionSaved.getOffenceDecisions(), containsInAnyOrder(
-                offenceDecisionHaving(FINANCIAL_PENALTY, pressRestriction(financialPenalty.getPressRestriction())),
-                offenceDecisionHaving(DISMISS, pressRestriction(dismiss.getPressRestriction()))
-        ));
-    }
-
-    @Test
-    public void shouldRaiseDecisionRejectedWheApplyingPressRestrictionToNonPressRestrictableOffences() {
-        // Given
-        final FinancialPenalty financialPenalty = FinancialPenaltyBuilder.withDefaults().build();
-        final Dismiss dismiss = DismissBuilder.withDefaults().pressRestriction(CHILDS_NAME).build();
-        final List<OffenceDecision> offenceDecisions = asList(financialPenalty, dismiss);
-        final FinancialImposition financialImposition = withDefaults();
-        final DecisionCommand decision = new DecisionCommand(sessionId, caseId, null, user, offenceDecisions, financialImposition);
-        final CreateCasePayloadBuilder theCase = createCasePayload(asList(financialPenalty.getId(), dismiss.getId())).setOffencesPressRestrictable(false);
-        createCase(theCase);
-        startSessionAndRequestAssignment(sessionId, MAGISTRATE);
-
-        // When
-        eventListener.subscribe(DecisionRejected.EVENT_NAME)
-                .run(() -> DecisionHelper.saveDecision(decision));
-
-        // Then
-        final DecisionRejected decisionRejected = eventListener.popEventPayload(DecisionRejected.class);
-        assertThat(decisionRejected.getRejectionReasons(), containsInAnyOrder("Press restriction cannot be applied to non-press-restrictable offence: " + dismiss.getId()));
+        pollForCase(caseId, new Matcher[]{
+                withJsonPath("$.caseDecisions[0].offenceDecisions", hasSize(2)),
+                withJsonPath("$.caseDecisions[0].offenceDecisions[?(@.decisionType == '" + dismiss.getType().toString() + "')].pressRestriction.name", hasItem(CHILDS_NAME)),
+                withJsonPath("$.caseDecisions[0].offenceDecisions[?(@.decisionType == '" + dismiss.getType().toString() + "')].pressRestriction.requested", hasItem(true)),
+        });
     }
 
     @Test
@@ -230,21 +191,19 @@ public class PressRestrictionsSaveDecisionIT extends BaseIntegrationTest {
         final List<OffenceDecision> offenceDecisions = singletonList(adjourn);
         final DecisionCommand decision = new DecisionCommand(sessionId, caseId, null, user, offenceDecisions, null);
         final CreateCasePayloadBuilder casePayload = createCasePayload(adjourn.getOffenceIds());
-        casePayload.getOffenceBuilders().get(0).withPressRestrictable(true);
+        final OffenceBuilder offenceWithPressRestrictions = casePayload.getOffenceBuilders().get(0);
+        offenceWithPressRestrictions.withPressRestrictable(true);
         casePayload.getOffenceBuilders().get(1).withPressRestrictable(false);
         createCase(casePayload);
         startSessionAndRequestAssignment(sessionId, MAGISTRATE);
 
-        // When
-        eventListener.subscribe(DecisionSaved.EVENT_NAME)
-                .run(() -> DecisionHelper.saveDecision(decision));
+        saveDecision(decision);
 
-        // Then
-        final DecisionSaved decisionSaved = eventListener.popEventPayload(DecisionSaved.class);
-
-        assertThat(decisionSaved.getOffenceDecisions(), containsInAnyOrder(
-                offenceDecisionHaving(ADJOURN, pressRestriction(adjourn.getPressRestriction()))
-        ));
+        pollForCase(caseId, new Matcher[]{
+                withJsonPath("$.caseDecisions[0].offenceDecisions", hasSize(2)),
+                withJsonPath("$.caseDecisions[0].offenceDecisions[?(@.offenceId == '" + offenceWithPressRestrictions.getId().toString() + "')].pressRestriction.name", hasItem(CHILDS_NAME)),
+                withJsonPath("$.caseDecisions[0].offenceDecisions[?(@.offenceId == '" + offenceWithPressRestrictions.getId().toString() + "')].pressRestriction.requested", hasItem(true)),
+        });
     }
 
     @Test
@@ -260,7 +219,7 @@ public class PressRestrictionsSaveDecisionIT extends BaseIntegrationTest {
 
         // When
         eventListener.subscribe(DecisionSaved.EVENT_NAME)
-                .run(() -> DecisionHelper.saveDecision(decision));
+                .run(() -> saveDecision(decision));
 
         // Then
         final DecisionSaved decisionSaved = eventListener.popEventPayload(DecisionSaved.class);
@@ -281,7 +240,7 @@ public class PressRestrictionsSaveDecisionIT extends BaseIntegrationTest {
 
         // When saving a second decision
         eventListener.subscribe(DecisionSaved.EVENT_NAME)
-                .run(() -> DecisionHelper.saveDecision(secondDecision));
+                .run(() -> saveDecision(secondDecision));
 
         // Then press restriction is saved
         final DecisionSaved secondDecisionSaved = eventListener.popEventPayload(DecisionSaved.class);
@@ -304,15 +263,15 @@ public class PressRestrictionsSaveDecisionIT extends BaseIntegrationTest {
         createCase(createCasePayload(adjourn.getOffenceIds()));
         startSessionAndRequestAssignment(sessionId, MAGISTRATE);
 
-        // When
-        eventListener.subscribe(DecisionSaved.EVENT_NAME)
-                .run(() -> DecisionHelper.saveDecision(decision));
+        saveDecision(decision);
 
-        // Then
-        final DecisionSaved decisionSaved = eventListener.popEventPayload(DecisionSaved.class);
-        assertThat(decisionSaved.getOffenceDecisions(), containsInAnyOrder(
-                adjourn(pressRestriction(adjourn.getPressRestriction())))
-        );
+        pollForCase(caseId, new Matcher[]{
+                withJsonPath("$.caseDecisions[0].offenceDecisions", hasSize(2)),
+                withJsonPath("$.caseDecisions[0].offenceDecisions[0].pressRestriction.name", is(CHILDS_NAME)),
+                withJsonPath("$.caseDecisions[0].offenceDecisions[0].pressRestriction.requested", is(true)),
+                withJsonPath("$.caseDecisions[0].offenceDecisions[1].pressRestriction.name", is(CHILDS_NAME)),
+                withJsonPath("$.caseDecisions[0].offenceDecisions[1].pressRestriction.requested", is(true)),
+        });
 
         // Given a second session after adjournment
         final Withdraw withdraw = WithdrawBuilder.withDefaults()
@@ -328,7 +287,7 @@ public class PressRestrictionsSaveDecisionIT extends BaseIntegrationTest {
 
         // When saving a second decision
         eventListener.subscribe(DecisionSaved.EVENT_NAME)
-                .run(() -> DecisionHelper.saveDecision(secondDecision));
+                .run(() -> saveDecision(secondDecision));
 
         // Then press restriction is saved
         final DecisionSaved secondDecisionSaved = eventListener.popEventPayload(DecisionSaved.class);
@@ -353,7 +312,7 @@ public class PressRestrictionsSaveDecisionIT extends BaseIntegrationTest {
 
         // When
         eventListener.subscribe(DecisionSaved.EVENT_NAME)
-                .run(() -> DecisionHelper.saveDecision(decision));
+                .run(() -> saveDecision(decision));
 
         // Then
         final DecisionSaved decisionSaved = eventListener.popEventPayload(DecisionSaved.class);
@@ -375,7 +334,7 @@ public class PressRestrictionsSaveDecisionIT extends BaseIntegrationTest {
 
         // When saving a second decision
         eventListener.subscribe(DecisionSaved.EVENT_NAME)
-                .run(() -> DecisionHelper.saveDecision(secondDecision));
+                .run(() -> saveDecision(secondDecision));
 
         // Then press restriction is saved
         final DecisionSaved secondDecisionSaved = eventListener.popEventPayload(DecisionSaved.class);
@@ -418,7 +377,7 @@ public class PressRestrictionsSaveDecisionIT extends BaseIntegrationTest {
                 .withMaxWaitTime(10000)
                 .subscribe(DecisionSaved.EVENT_NAME)
                 .subscribe(PUBLIC_EVENTS_HEARING_HEARING_RESULTED)
-                .run(() -> DecisionHelper.saveDecision(decision));
+                .run(() -> saveDecision(decision));
 
         // Then
         final DecisionSaved decisionSaved = eventListener.popEventPayload(DecisionSaved.class);
@@ -498,5 +457,10 @@ public class PressRestrictionsSaveDecisionIT extends BaseIntegrationTest {
         final UUID sessionId = randomUUID();
         startSessionAndRequestAssignment(sessionId, MAGISTRATE);
         return sessionId;
+    }
+
+    private void startSessionAndRequestAssignment(final UUID sessionId, final SessionType sessionType) {
+        startSessionAndConfirm(sessionId, USER_ID, DEFAULT_LONDON_COURT_HOUSE_OU_CODE, sessionType);
+        requestCaseAssignmentAndConfirm(sessionId, USER_ID, caseId);
     }
 }

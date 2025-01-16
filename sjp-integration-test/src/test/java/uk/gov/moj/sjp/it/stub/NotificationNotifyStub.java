@@ -16,6 +16,7 @@ import static org.awaitility.Awaitility.waitAtMost;
 import static org.hamcrest.Matchers.hasSize;
 import static uk.gov.moj.sjp.it.Constants.PUBLIC_EVENT;
 import static uk.gov.moj.sjp.it.stub.StubHelper.waitForPostStubToBeReady;
+import static uk.gov.moj.sjp.it.util.RestPollerWithDefaults.TIMEOUT_IN_SECONDS;
 
 import uk.gov.justice.service.wiremock.testutil.InternalEndpointMockUtils;
 import uk.gov.justice.services.test.utils.core.messaging.MessageProducerClient;
@@ -57,23 +58,23 @@ public class NotificationNotifyStub {
                 && commandPayload.getJSONObject("personalisation").getString("urn").equals(urn)
                 && commandPayload.getString("templateId").equals(templateId);
 
-        waitAtMost(Duration.ofSeconds(10)).until(() ->
+        waitAtMost(Duration.ofSeconds(TIMEOUT_IN_SECONDS)).until(() ->
                 findAll(postRequestedFor(urlPathMatching(COMMAND_URL + ".*"))
                         .withHeader(CONTENT_TYPE, equalTo(COMMAND_MEDIA_TYPE)))
                         .stream()
                         .map(LoggedRequest::getBodyAsString)
-                        .filter(str -> !str.equals(""))
+                        .filter(str -> !str.isEmpty())
                         .map(JSONObject::new)
                         .anyMatch(commandPayloadPredicate));
     }
 
     public static JsonObject verifyNotification(final UUID notificationId, final String email) {
-        final List<JsonObject> notifications = waitAtMost(Duration.ofSeconds(10))
+        final List<JsonObject> notifications = waitAtMost(Duration.ofSeconds(TIMEOUT_IN_SECONDS))
                 .until(() -> findAll(postRequestedFor(urlPathMatching(COMMAND_URL + notificationId.toString()))
                                 .withHeader(CONTENT_TYPE, equalTo(COMMAND_MEDIA_TYPE)))
                                 .stream()
                                 .map(LoggedRequest::getBodyAsString)
-                                .filter(str -> !str.equals(""))
+                                .filter(str -> !str.isEmpty())
                                 .map(JsonHelper::getJsonObject)
                                 .filter(commandPayload -> commandPayload.getString("sendToAddress").equals(email))
                                 .collect(Collectors.toList())

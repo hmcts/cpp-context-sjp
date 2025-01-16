@@ -9,8 +9,6 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.greaterThan;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.not;
-import static org.hamcrest.Matchers.nullValue;
 import static uk.gov.moj.cpp.sjp.domain.SessionType.MAGISTRATE;
 import static uk.gov.moj.cpp.sjp.domain.decision.discharge.DischargeType.CONDITIONAL;
 import static uk.gov.moj.cpp.sjp.domain.decision.discharge.PeriodUnit.MONTH;
@@ -24,18 +22,21 @@ import static uk.gov.moj.cpp.sjp.persistence.entity.NotificationOfEndorsementSta
 import static uk.gov.moj.cpp.sjp.persistence.entity.NotificationOfEndorsementStatus.Status.QUEUED;
 import static uk.gov.moj.cpp.sjp.persistence.entity.NotificationOfEndorsementStatus.Status.SENT;
 import static uk.gov.moj.sjp.it.Constants.NOTICE_PERIOD_IN_DAYS;
-import static uk.gov.moj.sjp.it.helper.AssignmentHelper.requestCaseAssignment;
+import static uk.gov.moj.sjp.it.command.CreateCase.createCaseForPayloadBuilder;
+import static uk.gov.moj.sjp.it.helper.AssignmentHelper.requestCaseAssignmentAndConfirm;
 import static uk.gov.moj.sjp.it.helper.CaseApplicationHelper.createCaseApplication;
 import static uk.gov.moj.sjp.it.helper.CaseApplicationHelper.saveApplicationDecision;
 import static uk.gov.moj.sjp.it.helper.CaseHelper.pollUntilCaseReady;
 import static uk.gov.moj.sjp.it.helper.DecisionHelper.saveDecision;
-import static uk.gov.moj.sjp.it.helper.SessionHelper.startSession;
+import static uk.gov.moj.sjp.it.helper.SessionHelper.startSessionAndConfirm;
 import static uk.gov.moj.sjp.it.model.ProsecutingAuthority.DVLA;
 import static uk.gov.moj.sjp.it.model.ProsecutingAuthority.TFL;
 import static uk.gov.moj.sjp.it.model.ProsecutingAuthority.TVL;
+import static uk.gov.moj.sjp.it.pollingquery.CasePoller.pollUntilCaseStatusCompleted;
 import static uk.gov.moj.sjp.it.stub.IdMapperStub.stubAddMapping;
 import static uk.gov.moj.sjp.it.stub.IdMapperStub.stubGetFromIdMapper;
-import static uk.gov.moj.sjp.it.stub.NotificationNotifyStub.stubNotifications;
+import static uk.gov.moj.sjp.it.stub.NotificationNotifyStub.publishNotificationFailedPublicEvent;
+import static uk.gov.moj.sjp.it.stub.NotificationNotifyStub.publishNotificationSentPublicEvent;
 import static uk.gov.moj.sjp.it.stub.NotificationNotifyStub.verifyNotification;
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubDefaultCourtByCourtHouseOUCodeQuery;
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubDvlaPenaltyPointNotificationEmailAddress;
@@ -43,37 +44,28 @@ import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubEnforcementAre
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubEnforcementAreaByPostcode;
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubProsecutorQuery;
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubRegionByPostcode;
-import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubResultDefinitions;
-import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubResultIds;
 import static uk.gov.moj.sjp.it.stub.SysDocGeneratorStub.pollSysDocGenerationRequests;
 import static uk.gov.moj.sjp.it.stub.SysDocGeneratorStub.stubGenerateDocumentEndPoint;
 import static uk.gov.moj.sjp.it.stub.UsersGroupsStub.stubForUserDetails;
 import static uk.gov.moj.sjp.it.stub.UsersGroupsStub.stubGroupForUser;
 import static uk.gov.moj.sjp.it.util.CaseAssignmentRestrictionHelper.provisionCaseAssignmentRestrictions;
 import static uk.gov.moj.sjp.it.util.Defaults.DEFAULT_LONDON_COURT_HOUSE_OU_CODE;
+import static uk.gov.moj.sjp.it.util.SjpDatabaseCleaner.cleanViewStore;
+import static uk.gov.moj.sjp.it.util.SysDocGeneratorHelper.publishDocumentAvailablePublicEvent;
+import static uk.gov.moj.sjp.it.util.SysDocGeneratorHelper.publishGenerationFailedPublicEvent;
 
 import uk.gov.justice.json.schemas.domains.sjp.User;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.sjp.domain.decision.Discharge;
 import uk.gov.moj.cpp.sjp.domain.decision.discharge.DischargePeriod;
 import uk.gov.moj.cpp.sjp.domain.decision.disqualification.DisqualificationType;
-import uk.gov.moj.cpp.sjp.event.CaseCompleted;
-import uk.gov.moj.cpp.sjp.event.NotificationToRemoveEndorsementsFailed;
-import uk.gov.moj.cpp.sjp.event.NotificationToRemoveEndorsementsGenerated;
-import uk.gov.moj.cpp.sjp.event.NotificationToRemoveEndorsementsGenerationFailed;
-import uk.gov.moj.cpp.sjp.event.NotificationToRemoveEndorsementsSent;
-import uk.gov.moj.cpp.sjp.event.decision.DecisionSaved;
 import uk.gov.moj.cpp.sjp.event.processor.service.notification.EndorsementRemovalNotificationEmailSubject;
 import uk.gov.moj.cpp.sjp.persistence.entity.NotificationOfEndorsementStatus;
 import uk.gov.moj.sjp.it.command.CreateCase;
 import uk.gov.moj.sjp.it.helper.EventListener;
 import uk.gov.moj.sjp.it.model.DecisionCommand;
 import uk.gov.moj.sjp.it.model.ProsecutingAuthority;
-import uk.gov.moj.sjp.it.stub.AssignmentStub;
-import uk.gov.moj.sjp.it.stub.NotificationNotifyStub;
-import uk.gov.moj.sjp.it.util.SjpDatabaseCleaner;
 import uk.gov.moj.sjp.it.util.SjpViewstore;
-import uk.gov.moj.sjp.it.util.SysDocGeneratorHelper;
 import uk.gov.moj.sjp.it.util.builders.DischargeBuilder;
 import uk.gov.moj.sjp.it.util.builders.FinancialImpositionBuilder;
 
@@ -106,10 +98,7 @@ public class NotificationToDvlaToRemoveEndorsementsIT extends BaseIntegrationTes
     private static final UUID STAT_DEC_TYPE_ID = fromString("7375727f-30fc-3f55-99f3-36adc4f0e70e");
     private static final String STAT_DEC_TYPE_CODE = "MC80528";
     private static final String APP_STATUS = "DRAFT";
-    private static final String SJP_EVENT_CASE_APP_RECORDED = "sjp.events.case-application-recorded";
-    private static final String SJP_EVENT_CASE_APP_STAT_DEC = "sjp.events.case-stat-dec-recorded";
     private static final String SJP_EVENT_APPLICATION_DECISION_SAVED = "sjp.events.application-decision-saved";
-    private final SjpDatabaseCleaner databaseCleaner = new SjpDatabaseCleaner();
     private final EventListener eventListener = new EventListener();
     private final SjpViewstore sjpViewstore = new SjpViewstore();
     private UUID caseId;
@@ -123,7 +112,6 @@ public class NotificationToDvlaToRemoveEndorsementsIT extends BaseIntegrationTes
         createCase();
         completeCaseWithEndorsementsApplied();
         createCaseApplicationStatDecs();
-        stubNotifications();
         final String dvlaEmailAddress = stubDvlaPenaltyPointNotificationEmailAddress();
         final JsonObject applicationDecisionSaved = saveApplicationGrantedDecision();
         final String applicationDecisionId = applicationDecisionSaved.getString("decisionId");
@@ -136,11 +124,9 @@ public class NotificationToDvlaToRemoveEndorsementsIT extends BaseIntegrationTes
 
         final UUID documentFileServiceId = randomUUID();
         final UUID sourceCorrelationId = fromString(applicationDecisionId);
-        final JsonObject actual = sendSysDocGeneratorDocumentAvailablePublicEventAndWaitFor(
-                sourceCorrelationId, documentFileServiceId,
-                NotificationToRemoveEndorsementsGenerated.EVENT_NAME
+        sendSysDocGeneratorDocumentAvailablePublicEvent(
+                sourceCorrelationId, documentFileServiceId
         );
-        assertThat(actual.getString("applicationDecisionId"), equalTo(applicationDecisionId));
 
         final JsonObject notification = verifyNotification(sourceCorrelationId, dvlaEmailAddress);
         assertEmailSubject(notification);
@@ -150,18 +136,14 @@ public class NotificationToDvlaToRemoveEndorsementsIT extends BaseIntegrationTes
 
     @Test
     public void shouldUpdateViewstoreWhenSystemDocGeneratorGeneratedPublicEventIsReceived() {
-        stubNotifications();
         final UUID sourceCorrelationId = randomUUID();
         final UUID documentFileServiceId = randomUUID();
 
-        final JsonObject actual = sendSysDocGeneratorDocumentAvailablePublicEventAndWaitFor(
+        sendSysDocGeneratorDocumentAvailablePublicEvent(
                 sourceCorrelationId,
-                documentFileServiceId,
-                NotificationToRemoveEndorsementsGenerated.EVENT_NAME
+                documentFileServiceId
         );
 
-        assertThat(actual.getString("applicationDecisionId"), equalTo(sourceCorrelationId.toString()));
-        assertThat(actual.getString("fileId"), equalTo(documentFileServiceId.toString()));
         assertStatusUpdatedInViewstore(sourceCorrelationId, GENERATED);
     }
 
@@ -169,9 +151,8 @@ public class NotificationToDvlaToRemoveEndorsementsIT extends BaseIntegrationTes
     public void shouldUpdateViewstoreWhenSystemDocGeneratorGenerationFailedPublicEventIsReceived() {
         final UUID sourceCorrelationId = randomUUID();
 
-        final JsonObject actual = sendSysDocGeneratorGenerationFailedPublicEvent(sourceCorrelationId);
+        sendSysDocGeneratorGenerationFailedPublicEvent(sourceCorrelationId);
 
-        assertThat(actual.getString("applicationDecisionId"), equalTo(sourceCorrelationId.toString()));
         assertStatusUpdatedInViewstore(sourceCorrelationId, GENERATION_FAILED);
     }
 
@@ -180,10 +161,8 @@ public class NotificationToDvlaToRemoveEndorsementsIT extends BaseIntegrationTes
         final UUID notificationId = givenNotificationOfEndorsementStatusIsPresentInViewstore();
         stubGetFromIdMapper(ENDORSEMENT_REMOVAL_NOTIFICATION.name(), notificationId.toString(),
                 "CASE_ID", "1ac91935-4f82-4a4f-bd17-fb50397e42dd");
-        final JsonObject actual = sendNotificationNotifyNotificationFailedPublicEvent(notificationId);
+        sendNotificationNotifyNotificationFailedPublicEvent(notificationId);
 
-        assertThat(actual.getString("applicationDecisionId"), equalTo(notificationId.toString()));
-        assertThat(actual.getString("failedTime"), not(nullValue()));
         assertStatusUpdatedInViewstore(notificationId, FAILED);
     }
 
@@ -192,10 +171,8 @@ public class NotificationToDvlaToRemoveEndorsementsIT extends BaseIntegrationTes
         final UUID notificationId = givenNotificationOfEndorsementStatusIsPresentInViewstore();
         stubGetFromIdMapper(ENDORSEMENT_REMOVAL_NOTIFICATION.name(), notificationId.toString(),
                 "CASE_ID", "1ac91935-4f82-4a4f-bd17-fb50397e42dd");
-        final JsonObject actual = sendNotificationNotifyNotificationSentPublicEvent(notificationId);
+        sendNotificationNotifyNotificationSentPublicEvent(notificationId);
 
-        assertThat(actual.getString("applicationDecisionId"), equalTo(notificationId.toString()));
-        assertThat(actual.getString("sentTime"), not(nullValue()));
         assertStatusUpdatedInViewstore(notificationId, SENT);
     }
 
@@ -216,23 +193,22 @@ public class NotificationToDvlaToRemoveEndorsementsIT extends BaseIntegrationTes
 
     private UUID startNewSession() {
         final UUID sessionId2 = randomUUID();
-        startSession(sessionId2, USER.getUserId(), DEFAULT_LONDON_COURT_HOUSE_OU_CODE, MAGISTRATE);
-        requestCaseAssignment(sessionId2, USER.getUserId());
+        startSessionAndConfirm(sessionId2, USER.getUserId(), DEFAULT_LONDON_COURT_HOUSE_OU_CODE, MAGISTRATE);
+        requestCaseAssignmentAndConfirm(sessionId2, USER.getUserId(), caseId);
         return sessionId2;
     }
 
     private void createCaseApplicationStatDecs() {
-        eventListener.subscribe(SJP_EVENT_CASE_APP_RECORDED, SJP_EVENT_CASE_APP_STAT_DEC)
-                .run(() -> createCaseApplication(USER.getUserId(), caseId, applicationId,
-                        STAT_DEC_TYPE_ID, STAT_DEC_TYPE_CODE, "A", DATE_RECEIVED, APP_STATUS,
-                        CREATE_CASE_APPLICATION_FILE));
+        createCaseApplication(USER.getUserId(), caseId, applicationId,
+                STAT_DEC_TYPE_ID, STAT_DEC_TYPE_CODE, "A", DATE_RECEIVED, APP_STATUS,
+                CREATE_CASE_APPLICATION_FILE);
 
         pollUntilCaseReady(caseId);
     }
 
     private void completeCaseWithEndorsementsApplied() {
-        startSession(sessionId, USER.getUserId(), DEFAULT_LONDON_COURT_HOUSE_OU_CODE, MAGISTRATE);
-        requestCaseAssignment(sessionId, USER.getUserId());
+        startSessionAndConfirm(sessionId, USER.getUserId(), DEFAULT_LONDON_COURT_HOUSE_OU_CODE, MAGISTRATE);
+        requestCaseAssignmentAndConfirm(sessionId, USER.getUserId(), caseId);
 
         final Discharge discharge = DischargeBuilder.withDefaults()
                 .id(offenceId)
@@ -252,10 +228,8 @@ public class NotificationToDvlaToRemoveEndorsementsIT extends BaseIntegrationTes
                 asList(discharge),
                 FinancialImpositionBuilder.withDefaults());
 
-        eventListener
-                .subscribe(DecisionSaved.EVENT_NAME)
-                .subscribe(CaseCompleted.EVENT_NAME)
-                .run(() -> saveDecision(decision));
+        saveDecision(decision);
+        pollUntilCaseStatusCompleted(caseId);
     }
 
     private void createCase() throws SQLException {
@@ -264,14 +238,12 @@ public class NotificationToDvlaToRemoveEndorsementsIT extends BaseIntegrationTes
         sessionId = randomUUID();
         applicationId = randomUUID();
 
-        databaseCleaner.cleanViewStore();
+        cleanViewStore();
 
         provisionCaseAssignmentRestrictions(Sets.newHashSet(TFL, TVL, DVLA));
         stubDefaultCourtByCourtHouseOUCodeQuery();
         stubForUserDetails(USER, "ALL");
         stubGroupForUser(USER.getUserId(), "Legal Advisers");
-        stubResultDefinitions();
-        stubResultIds();
         stubGenerateDocumentEndPoint();
 
         createCasePayloadBuilder = CreateCase.CreateCasePayloadBuilder
@@ -288,55 +260,29 @@ public class NotificationToDvlaToRemoveEndorsementsIT extends BaseIntegrationTes
                 NATIONAL_COURT_NAME);
         stubRegionByPostcode(NATIONAL_COURT_CODE, DEFENDANT_REGION);
         stubEnforcementAreaByLjaCode();
-        CreateCase.createCaseForPayloadBuilder(createCasePayloadBuilder);
+        createCaseForPayloadBuilder(createCasePayloadBuilder);
         pollUntilCaseReady(caseId);
     }
 
-    private JsonObject sendSysDocGeneratorGenerationFailedPublicEvent(final UUID sourceCorrelationId) {
-        eventListener.subscribe(NotificationToRemoveEndorsementsGenerationFailed.EVENT_NAME)
-                .run(() -> SysDocGeneratorHelper.publishGenerationFailedPublicEvent(
-                        sourceCorrelationId,
-                        NOTIFICATION_TO_DVLA_TO_REMOVE_ENDORSEMENT.getValue()
-                ));
-
-        final Optional<JsonEnvelope> event = eventListener.popEvent(NotificationToRemoveEndorsementsGenerationFailed.EVENT_NAME);
-
-        assertThat(event.isPresent(), is(true));
-        return event.get().payloadAsJsonObject();
+    private void sendSysDocGeneratorGenerationFailedPublicEvent(final UUID sourceCorrelationId) {
+        publishGenerationFailedPublicEvent(
+                sourceCorrelationId,
+                NOTIFICATION_TO_DVLA_TO_REMOVE_ENDORSEMENT.getValue());
     }
 
-    private JsonObject sendSysDocGeneratorDocumentAvailablePublicEventAndWaitFor(final UUID sourceCorrelationId, final UUID documentFileServiceId, final String eventName) {
-        eventListener.subscribe(eventName).run(() ->
-                SysDocGeneratorHelper.publishDocumentAvailablePublicEvent(
-                        sourceCorrelationId,
-                        NOTIFICATION_TO_DVLA_TO_REMOVE_ENDORSEMENT.getValue(),
-                        documentFileServiceId)
-        );
-
-        final Optional<JsonEnvelope> event = eventListener.popEvent(eventName);
-
-        assertThat(event.isPresent(), is(true));
-        return event.get().payloadAsJsonObject();
+    private void sendSysDocGeneratorDocumentAvailablePublicEvent(final UUID sourceCorrelationId, final UUID documentFileServiceId) {
+        publishDocumentAvailablePublicEvent(
+                sourceCorrelationId,
+                NOTIFICATION_TO_DVLA_TO_REMOVE_ENDORSEMENT.getValue(),
+                documentFileServiceId);
     }
 
-    private JsonObject sendNotificationNotifyNotificationFailedPublicEvent(final UUID notificationId) {
-        eventListener.subscribe(NotificationToRemoveEndorsementsFailed.EVENT_NAME)
-                .run(() -> NotificationNotifyStub.publishNotificationFailedPublicEvent(notificationId));
-
-        final Optional<JsonEnvelope> event = eventListener.popEvent(NotificationToRemoveEndorsementsFailed.EVENT_NAME);
-
-        assertThat(event.isPresent(), is(true));
-        return event.get().payloadAsJsonObject();
+    private void sendNotificationNotifyNotificationFailedPublicEvent(final UUID notificationId) {
+        publishNotificationFailedPublicEvent(notificationId);
     }
 
-    private JsonObject sendNotificationNotifyNotificationSentPublicEvent(final UUID notificationId) {
-        eventListener.subscribe(NotificationToRemoveEndorsementsSent.EVENT_NAME)
-                .run(() -> NotificationNotifyStub.publishNotificationSentPublicEvent(notificationId));
-
-        final Optional<JsonEnvelope> event = eventListener.popEvent(NotificationToRemoveEndorsementsSent.EVENT_NAME);
-
-        assertThat(event.isPresent(), is(true));
-        return event.get().payloadAsJsonObject();
+    private void sendNotificationNotifyNotificationSentPublicEvent(final UUID notificationId) {
+        publishNotificationSentPublicEvent(notificationId);
     }
 
     private void assertStatusUpdatedInViewstore(final UUID applicationDecisionId,

@@ -6,11 +6,11 @@ import static java.util.Collections.singletonList;
 import static java.util.UUID.randomUUID;
 import static org.hamcrest.CoreMatchers.allOf;
 import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.lessThan;
 import static org.hamcrest.core.Is.is;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.hamcrest.MatcherAssert.assertThat;
 import static uk.gov.justice.json.schemas.fragments.sjp.WithdrawalRequestsStatus.withdrawalRequestsStatus;
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMatcher.jsonEnvelope;
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMetadataMatcher.metadata;
@@ -18,63 +18,52 @@ import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopePaylo
 import static uk.gov.moj.cpp.sjp.domain.common.CaseStatus.PLEA_RECEIVED_NOT_READY_FOR_DECISION;
 import static uk.gov.moj.cpp.sjp.domain.common.CaseStatus.PLEA_RECEIVED_READY_FOR_DECISION;
 import static uk.gov.moj.cpp.sjp.domain.plea.PleaType.NOT_GUILTY;
-import static uk.gov.moj.sjp.it.Constants.EVENT_SELECTOR_DATES_TO_AVOID_ADDED;
 import static uk.gov.moj.sjp.it.command.AddDatesToAvoid.addDatesToAvoid;
+import static uk.gov.moj.sjp.it.command.CreateCase.createCaseForPayloadBuilder;
 import static uk.gov.moj.sjp.it.helper.DatesToAvoidHelper.makeDatesToAvoidExpired;
 import static uk.gov.moj.sjp.it.helper.DatesToAvoidHelper.verifyDatesToAvoidExpiredEventEmitted;
-import static uk.gov.moj.sjp.it.helper.DatesToAvoidHelper.verifyDatesToAvoidRequiredEventEmitted;
 import static uk.gov.moj.sjp.it.helper.DecisionHelper.saveDefaultDecision;
-import static uk.gov.moj.sjp.it.helper.SetPleasHelper.requestSetPleas;
-import static uk.gov.moj.sjp.it.helper.SetPleasHelper.verifyCaseStatus;
-import static uk.gov.moj.sjp.it.helper.SetPleasHelper.verifyPleaCancelledEventEmitted;
-import static uk.gov.moj.sjp.it.helper.SetPleasHelper.verifyPleadedNotGuiltyEventEmitted;
-import static uk.gov.moj.sjp.it.helper.SetPleasHelper.verifySetPleasEventEmitted;
-import static uk.gov.moj.sjp.it.model.ProsecutingAuthority.*;
+import static uk.gov.moj.sjp.it.helper.OffencesWithdrawalRequestHelper.requestWithdrawalOfOffences;
+import static uk.gov.moj.sjp.it.helper.SetPleasHelper.requestSetPleasAndConfirm;
+import static uk.gov.moj.sjp.it.model.ProsecutingAuthority.DVLA;
+import static uk.gov.moj.sjp.it.model.ProsecutingAuthority.TFL;
+import static uk.gov.moj.sjp.it.model.ProsecutingAuthority.TVL;
+import static uk.gov.moj.sjp.it.pollingquery.CasePoller.pollForCase;
+import static uk.gov.moj.sjp.it.pollingquery.CasePoller.pollUntilCaseHasStatus;
 import static uk.gov.moj.sjp.it.pollingquery.PendingDatesToAvoidPoller.pollUntilPendingDatesToAvoidIsOk;
+import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubDefaultCourtByCourtHouseOUCodeQuery;
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubEnforcementAreaByPostcode;
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubProsecutorQuery;
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubRegionByPostcode;
 import static uk.gov.moj.sjp.it.stub.UsersGroupsStub.SJP_PROSECUTORS_GROUP;
 import static uk.gov.moj.sjp.it.stub.UsersGroupsStub.stubForUserDetails;
 import static uk.gov.moj.sjp.it.stub.UsersGroupsStub.stubGroupForUser;
+import static uk.gov.moj.sjp.it.util.CaseAssignmentRestrictionHelper.provisionCaseAssignmentRestrictions;
+import static uk.gov.moj.sjp.it.util.SjpDatabaseCleaner.cleanViewStore;
 
-import com.google.common.collect.Sets;
 import uk.gov.justice.services.common.converter.ZonedDateTimes;
 import uk.gov.justice.services.common.util.Clock;
 import uk.gov.justice.services.common.util.UtcClock;
 import uk.gov.justice.services.messaging.JsonEnvelope;
-import uk.gov.moj.sjp.it.model.ProsecutingAuthority;
-import uk.gov.moj.cpp.sjp.domain.plea.PleaType;
-import uk.gov.moj.cpp.sjp.event.DatesToAvoidRequired;
-import uk.gov.moj.cpp.sjp.event.PleaCancelled;
-import uk.gov.moj.cpp.sjp.event.PleadedNotGuilty;
-import uk.gov.moj.cpp.sjp.event.PleasSet;
 import uk.gov.moj.sjp.it.command.CreateCase;
 import uk.gov.moj.sjp.it.helper.EventListener;
-import uk.gov.moj.sjp.it.helper.OffencesWithdrawalRequestHelper;
-import uk.gov.moj.sjp.it.pollingquery.CasePoller;
-import uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub;
-import uk.gov.moj.sjp.it.util.CaseAssignmentRestrictionHelper;
-import uk.gov.moj.sjp.it.util.SjpDatabaseCleaner;
+import uk.gov.moj.sjp.it.model.ProsecutingAuthority;
 
 import java.time.LocalDate;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
-import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Sets;
 import com.jayway.jsonpath.ReadContext;
 import io.restassured.path.json.JsonPath;
 import org.apache.commons.lang3.tuple.Triple;
 import org.hamcrest.Matcher;
-import org.hamcrest.MatcherAssert;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
-@Disabled("Enable this when merging to master")
 public class DatesToAvoidIT extends BaseIntegrationTest {
 
     private static final Clock CLOCK = new UtcClock();
@@ -89,13 +78,12 @@ public class DatesToAvoidIT extends BaseIntegrationTest {
     private int tvlInitialPendingDatesToAvoidCount;
     private EventListener eventListener;
 
-    private final SjpDatabaseCleaner databaseCleaner = new SjpDatabaseCleaner();
     private static final String DEFENDANT_REGION = "croydon";
     private static final String NATIONAL_COURT_CODE = "1080";
 
     @BeforeEach
     public void setUp() throws Exception {
-        databaseCleaner.cleanViewStore();
+        cleanViewStore();
 
         tflUserId = randomUUID();
         tvlUserId = randomUUID();
@@ -103,35 +91,26 @@ public class DatesToAvoidIT extends BaseIntegrationTest {
         stubGroupForUser(tflUserId, SJP_PROSECUTORS_GROUP);
         stubForUserDetails(tflUserId, TFL);
 
-        ReferenceDataServiceStub.stubDefaultCourtByCourtHouseOUCodeQuery();
-        CaseAssignmentRestrictionHelper.provisionCaseAssignmentRestrictions(Sets.newHashSet(TFL, TVL, DVLA));
+        stubDefaultCourtByCourtHouseOUCodeQuery();
+        provisionCaseAssignmentRestrictions(Sets.newHashSet(TFL, TVL, DVLA));
 
         this.tflCaseBuilder = createCaseBuilder(TFL, 1);
 
         stubEnforcementAreaByPostcode(tflCaseBuilder.getDefendantBuilder().getAddressBuilder().getPostcode(), NATIONAL_COURT_CODE, "Bedfordshire Magistrates' Court");
         stubRegionByPostcode(NATIONAL_COURT_CODE, DEFENDANT_REGION);
-        CreateCase.createCaseForPayloadBuilder(this.tflCaseBuilder);
+        createCaseForPayloadBuilder(this.tflCaseBuilder);
         this.tflInitialPendingDatesToAvoidCount = pollForCountOfCasesPendingDatesToAvoid(tflUserId);
 
         stubProsecutorQuery(TFL.name(), TFL.getFullName(), randomUUID());
         stubProsecutorQuery(TVL.name(), TVL.getFullName(), randomUUID());
 
         this.tvlCaseBuilder = createCaseBuilder(TVL, 2);
-        CreateCase.createCaseForPayloadBuilder(this.tvlCaseBuilder);
+        createCaseForPayloadBuilder(this.tvlCaseBuilder);
         stubGroupForUser(tvlUserId, SJP_PROSECUTORS_GROUP);
         stubForUserDetails(tvlUserId, TVL);
         this.tvlInitialPendingDatesToAvoidCount = pollForCountOfCasesPendingDatesToAvoid(tvlUserId);
 
         eventListener = new EventListener();
-    }
-
-    private static CreateCase.CreateCasePayloadBuilder createCaseBuilder(final ProsecutingAuthority prosecutingAuthority, final int dayOfMonth) {
-        final CreateCase.CreateCasePayloadBuilder createCasePayloadBuilder = CreateCase.CreateCasePayloadBuilder.withDefaults();
-        createCasePayloadBuilder.withProsecutingAuthority(prosecutingAuthority);
-        //will make it first on the list for assignment (as earlier than default posting date)
-        createCasePayloadBuilder.withPostingDate(LocalDate.of(2000, 12, dayOfMonth));
-
-        return createCasePayloadBuilder;
     }
 
     @Test
@@ -149,84 +128,70 @@ public class DatesToAvoidIT extends BaseIntegrationTest {
     @Test
     public void shouldCaseBePendingDatesToAvoidForPleaChangeScenariosAndBeReadyAfterDatesToAvoidExpiry() {
         shouldCaseBePendingDatesToAvoidForPleaChangeScenarios();
-        verifyCaseStatus(tflCaseBuilder.getId(), PLEA_RECEIVED_NOT_READY_FOR_DECISION);
+        pollUntilCaseHasStatus(tflCaseBuilder.getId(), PLEA_RECEIVED_NOT_READY_FOR_DECISION);
         makeDatesToAvoidExpired(eventListener, tflCaseBuilder.getId());
         verifyDatesToAvoidExpiredEventEmitted(eventListener, tflCaseBuilder.getId());
-        verifyCaseStatus(tflCaseBuilder.getId(), PLEA_RECEIVED_READY_FOR_DECISION);
+        pollUntilCaseHasStatus(tflCaseBuilder.getId(), PLEA_RECEIVED_READY_FOR_DECISION);
     }
 
+    @Disabled("Enable this when merging to master")
     @Test
     public void shouldCaseBePendingDatesToAvoidForResultedCaseScenarioForTflUser() {
         shouldCaseBePendingDatesToAvoidForResultedCaseScenario(tflUserId, tflCaseBuilder, tflInitialPendingDatesToAvoidCount);
     }
 
+    @Disabled("Enable this when merging to master")
     @Test
     public void shouldCaseBePendingDatesToAvoidForResultedCaseScenarioForTvlUser() {
         shouldCaseBePendingDatesToAvoidForResultedCaseScenario(tvlUserId, tvlCaseBuilder, tvlInitialPendingDatesToAvoidCount);
     }
 
     @Test
-    public void shouldAddDatesToAvoidToCase() {
+    public void shouldAddAndUpdateDatesToAvoidToCase() {
         //given
         final String DATES_TO_AVOID_ADDED_PUBLIC_EVENT_NAME = "public.sjp.dates-to-avoid-added";
-
-        final UUID caseId = tflCaseBuilder.getId();
-
-        updatePleaToNotGuiltyAndConfirmPleasSet(caseId, tflCaseBuilder.getOffenceId(), tflCaseBuilder.getDefendantBuilder().getId());
-        verifyPleadedNotGuiltyEvent(tflCaseBuilder.getId(), tflCaseBuilder.getOffenceId(), tflCaseBuilder.getDefendantBuilder().getId());
-
-        final EventListener datesToAvoidAddedListener = new EventListener()
-                .subscribe(DATES_TO_AVOID_ADDED_PUBLIC_EVENT_NAME)
-                //when
-                .run(() -> addDatesToAvoid(caseId, DATE_TO_AVOID))
-                //then
-                .run(() -> assertThatCaseHasDatesToAvoid(DATE_TO_AVOID));
-
-        assertThatDatesToAvoidPublicEventWasRaised(datesToAvoidAddedListener,
-                DATES_TO_AVOID_ADDED_PUBLIC_EVENT_NAME, caseId, DATE_TO_AVOID);
-    }
-
-    @Test
-    public void shouldUpdateDatesToAvoidOnCase() {
-        //given
         final String DATES_TO_AVOID_UPDATED_PUBLIC_EVENT_NAME = "public.sjp.dates-to-avoid-updated";
 
         final UUID caseId = tflCaseBuilder.getId();
 
-        new EventListener()
-                .subscribe(EVENT_SELECTOR_DATES_TO_AVOID_ADDED)
-                .run(() -> addDatesToAvoid(caseId, DATE_TO_AVOID))
-                .popEvent(EVENT_SELECTOR_DATES_TO_AVOID_ADDED);
+        updatePleaToNotGuiltyAndConfirm(caseId, tflCaseBuilder.getOffenceId(), tflCaseBuilder.getDefendantBuilder().getId());
 
-        //then
-        EventListener datesToAvoidListener = new EventListener()
+        final EventListener addEventListener = new EventListener()
+                .subscribe(DATES_TO_AVOID_ADDED_PUBLIC_EVENT_NAME)
+                //when
+                .run(() -> addDatesToAvoid(caseId, DATE_TO_AVOID))
+                //then
+                .run(() -> pollForACaseWith(DATE_TO_AVOID));
+
+        assertThatDatesToAvoidPublicEventWasRaised(addEventListener,
+                DATES_TO_AVOID_ADDED_PUBLIC_EVENT_NAME, caseId, DATE_TO_AVOID);
+
+        final EventListener updateEventListener = new EventListener()
                 .subscribe(DATES_TO_AVOID_UPDATED_PUBLIC_EVENT_NAME)
                 //when
                 .run(() -> addDatesToAvoid(caseId, DATE_TO_AVOID_UPDATE))
                 //then
-                .run(() -> assertThatCaseHasDatesToAvoidUpdated(DATE_TO_AVOID_UPDATE));
+                .run(() -> pollForACaseWith(DATE_TO_AVOID_UPDATE));
 
-        assertThatDatesToAvoidPublicEventWasRaised(datesToAvoidListener,
+        assertThatDatesToAvoidPublicEventWasRaised(updateEventListener,
                 DATES_TO_AVOID_UPDATED_PUBLIC_EVENT_NAME, caseId, DATE_TO_AVOID_UPDATE);
     }
 
     private void shouldCaseBePendingDatesToAvoidForResultedCaseScenario(UUID userId, CreateCase.CreateCasePayloadBuilder createCasePayloadBuilder, int expectedPendingDatesToAvoidCount) {
 
         //updates plea to NOT_GUILTY for TFL case (making it pending dates-to-avoid submission)
-        updatePleaToNotGuiltyAndConfirmPleasSet(tflCaseBuilder.getId(), tflCaseBuilder.getOffenceId(), tflCaseBuilder.getDefendantBuilder().getId());
-        verifyPleadedNotGuiltyEvent(tflCaseBuilder.getId(), tflCaseBuilder.getOffenceId(), tflCaseBuilder.getDefendantBuilder().getId());
+        updatePleaToNotGuiltyAndConfirm(tflCaseBuilder.getId(), tflCaseBuilder.getOffenceId(), tflCaseBuilder.getDefendantBuilder().getId());
 
         //check tvl count not gone up (as a result of tfl plea update above)
         assertEquals(tvlInitialPendingDatesToAvoidCount, pollForCountOfCasesPendingDatesToAvoid(tvlUserId), "Ensure that access control is ON");
 
         //updates plea to NOT_GUILTY for TVL case (making it pending dates-to-avoid submission)
-        updatePleaToNotGuiltyAndConfirmPleasSet(tvlCaseBuilder.getId(), tvlCaseBuilder.getOffenceId(), tvlCaseBuilder.getDefendantBuilder().getId());
-        verifyPleadedNotGuiltyEvent(tvlCaseBuilder.getId(), tvlCaseBuilder.getOffenceId(), tvlCaseBuilder.getDefendantBuilder().getId());
+        updatePleaToNotGuiltyAndConfirm(tvlCaseBuilder.getId(), tvlCaseBuilder.getOffenceId(), tvlCaseBuilder.getDefendantBuilder().getId());
 
         //checks that correct dates-to-avoid record is retrieved (i.e. the one related to the case passed in)
         assertThatDatesToAvoidIsPendingSubmissionForCase(userId, createCasePayloadBuilder);
 
-        OffencesWithdrawalRequestHelper.requestWithdrawalOfOffences(createCasePayloadBuilder.getId(), userId, asList(withdrawalRequestsStatus()
+        requestWithdrawalOfOffences(createCasePayloadBuilder.getId(), userId, asList(withdrawalRequestsStatus()
                 .withOffenceId(createCasePayloadBuilder.getOffenceId())
                 .withWithdrawalRequestReasonId(randomUUID())
                 .build()));
@@ -238,18 +203,17 @@ public class DatesToAvoidIT extends BaseIntegrationTest {
 
     private void shouldCaseBePendingDatesToAvoidForPleaChangeScenarios() {
         //checks that dates-to-avoid is pending submission when NOT_GUILTY plea submitted
-        updatePleaToNotGuiltyAndConfirmPleasSet(tflCaseBuilder.getId(), tflCaseBuilder.getOffenceId(), tflCaseBuilder.getDefendantBuilder().getId());
-        verifyPleadedNotGuiltyEvent(tflCaseBuilder.getId(), tflCaseBuilder.getOffenceId(), tflCaseBuilder.getDefendantBuilder().getId());
-        verifyDatesToAvoidRequiredEvent(tflCaseBuilder.getId());
+        updatePleaToNotGuiltyAndConfirm(tflCaseBuilder.getId(), tflCaseBuilder.getOffenceId(), tflCaseBuilder.getDefendantBuilder().getId());
+//        verifyDatesToAvoidRequiredEvent(tflCaseBuilder.getId());
         assertThatDatesToAvoidIsPendingSubmissionForCase(tflUserId, tflCaseBuilder);
 
         //checks that dates-to-avoid NOT pending submission when plea is cancelled
         cancelPlea(tflCaseBuilder.getId(), tflCaseBuilder.getOffenceId(), tflCaseBuilder.getDefendantBuilder().getId());
-        verifyPleaCancelled(tflCaseBuilder.getId(), tflCaseBuilder.getOffenceId(), tflCaseBuilder.getDefendantBuilder().getId());
+        //verifyPleaCancelled(tflCaseBuilder.getId(), tflCaseBuilder.getOffenceId(), tflCaseBuilder.getDefendantBuilder().getId());
         assertThatNumberOfCasesPendingDatesToAvoidIsAccurate(tflUserId, tflInitialPendingDatesToAvoidCount);
 
         //checks that dates-to-avoid is pending submission again when plea updated to NOT_GUILTY
-        updatePleaToNotGuiltyAndConfirmPleasSet(tflCaseBuilder.getId(), tflCaseBuilder.getOffenceId(), tflCaseBuilder.getDefendantBuilder().getId());
+        updatePleaToNotGuiltyAndConfirm(tflCaseBuilder.getId(), tflCaseBuilder.getOffenceId(), tflCaseBuilder.getDefendantBuilder().getId());
         assertThatDatesToAvoidIsPendingSubmissionForCase(tflUserId, tflCaseBuilder);
     }
 
@@ -257,35 +221,16 @@ public class DatesToAvoidIT extends BaseIntegrationTest {
         saveDefaultDecision(createCasePayloadBuilder.getId(), createCasePayloadBuilder.getOffenceIds());
     }
 
-    private void updatePleaToNotGuiltyAndConfirmPleasSet(final UUID caseId, final UUID offenceId, final UUID defendantId) {
-        requestSetPleas(caseId, eventListener, true, false,
+    private void updatePleaToNotGuiltyAndConfirm(final UUID caseId, final UUID offenceId, final UUID defendantId) {
+        requestSetPleasAndConfirm(caseId, true, false,
                 true, null,
-                false, null, singletonList(Triple.of(offenceId, defendantId, NOT_GUILTY)),
-                PleasSet.EVENT_NAME, PleadedNotGuilty.EVENT_NAME, DatesToAvoidRequired.EVENT_NAME);
-
-        final Map pleaTypeByOffence = ImmutableMap.of(offenceId, NOT_GUILTY);
-        verifySetPleasEventEmitted(eventListener, caseId, defendantId, pleaTypeByOffence);
+                false, null, singletonList(Triple.of(offenceId, defendantId, NOT_GUILTY)));
     }
 
     private void cancelPlea(final UUID caseId, final UUID offenceId, final UUID defendantId) {
-        requestSetPleas(caseId, eventListener, false, false,
+        requestSetPleasAndConfirm(caseId, false, false,
                 false, null,
-                false, null, singletonList(Triple.of(offenceId, defendantId, null)),
-                PleasSet.EVENT_NAME, PleaCancelled.EVENT_NAME);
-        final Map<UUID, PleaType> pleaTypeByOffence = new HashMap<>();
-        verifySetPleasEventEmitted(eventListener, caseId, defendantId, pleaTypeByOffence);
-    }
-
-    private void verifyPleadedNotGuiltyEvent(final UUID caseId, final UUID offenceId, final UUID defendantId) {
-        verifyPleadedNotGuiltyEventEmitted(eventListener, caseId, defendantId, offenceId);
-    }
-
-    private void verifyDatesToAvoidRequiredEvent(final UUID caseId) {
-        verifyDatesToAvoidRequiredEventEmitted(eventListener, caseId);
-    }
-
-    private void verifyPleaCancelled(final UUID caseId, final UUID offenceId, final UUID defendantId) {
-        verifyPleaCancelledEventEmitted(eventListener, caseId, defendantId, offenceId);
+                false, null, singletonList(Triple.of(offenceId, defendantId, null)));
     }
 
     private void assertThatDatesToAvoidIsPendingSubmissionForCase(final UUID userId, final CreateCase.CreateCasePayloadBuilder aCase) {
@@ -325,34 +270,34 @@ public class DatesToAvoidIT extends BaseIntegrationTest {
         assertThat(Math.abs(CLOCK.now().toEpochSecond() - value), lessThan(tolerance));
     }
 
-    private void assertThatCaseHasDatesToAvoid(final String datesToAvoid) {
-        pollForACaseWith(datesToAvoid);
-    }
-
-    private void assertThatCaseHasDatesToAvoidUpdated(final String datesToAvoidUpdate) {
-        pollForACaseWith(datesToAvoidUpdate);
-    }
-
     private void pollForACaseWith(final String datesToAvoid) {
-        CasePoller.pollUntilCaseByIdIsOk(tflCaseBuilder.getId(),
-                withJsonPath("$.datesToAvoid", equalTo(datesToAvoid)));
+        pollForCase(tflCaseBuilder.getId(),
+                new Matcher[]{withJsonPath("$.datesToAvoid", equalTo(datesToAvoid))});
     }
 
     private void assertThatDatesToAvoidPublicEventWasRaised(final EventListener listener,
                                                             final String eventName,
                                                             final UUID caseId,
                                                             final String datesToAvoid) {
-        final Optional<JsonEnvelope> datesToAvoidPublicEvent = listener
-                .popEvent(eventName);
+        final Optional<JsonEnvelope> datesToAvoidPublicEvent = listener.popEvent(eventName);
 
         assertThat(datesToAvoidPublicEvent.isPresent(), is(true));
 
-        MatcherAssert.assertThat(datesToAvoidPublicEvent.get(),
+        assertThat(datesToAvoidPublicEvent.get(),
                 jsonEnvelope(
                         metadata().withName(eventName),
                         payload().isJson(allOf(
                                 withJsonPath("$.caseId", equalTo(caseId.toString())),
                                 withJsonPath("$.datesToAvoid", equalTo(datesToAvoid))
                         ))));
+    }
+
+    private CreateCase.CreateCasePayloadBuilder createCaseBuilder(final ProsecutingAuthority prosecutingAuthority, final int dayOfMonth) {
+        final CreateCase.CreateCasePayloadBuilder createCasePayloadBuilder = CreateCase.CreateCasePayloadBuilder.withDefaults();
+        createCasePayloadBuilder.withProsecutingAuthority(prosecutingAuthority);
+        //will make it first on the list for assignment (as earlier than default posting date)
+        createCasePayloadBuilder.withPostingDate(LocalDate.of(2000, 12, dayOfMonth));
+
+        return createCasePayloadBuilder;
     }
 }

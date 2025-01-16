@@ -7,15 +7,12 @@ import static org.hamcrest.Matchers.hasProperty;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.nullValue;
 import static uk.gov.moj.cpp.sjp.domain.decision.DecisionType.ADJOURN;
-import static uk.gov.moj.cpp.sjp.domain.decision.DecisionType.DISMISS;
-import static uk.gov.moj.cpp.sjp.domain.decision.DecisionType.FINANCIAL_PENALTY;
 
 import uk.gov.moj.cpp.sjp.domain.decision.DecisionType;
 import uk.gov.moj.cpp.sjp.domain.decision.OffenceDecision;
 import uk.gov.moj.cpp.sjp.domain.decision.PressRestriction;
 
 import org.hamcrest.Matcher;
-import org.hamcrest.Matchers;
 
 public class OffenceDecisionMatcher {
 
@@ -24,14 +21,6 @@ public class OffenceDecisionMatcher {
                 hasProperty("type", is(offenceDecision.getType())),
                 hasPressRestriction(offenceDecision)
         );
-    }
-
-    public static Matcher financialPenalty(final Matcher matcher) {
-        return allOf(hasProperty("type", Matchers.equalTo(FINANCIAL_PENALTY)), matcher);
-    }
-
-    public static Matcher dismiss(final Matcher matcher) {
-        return offenceDecisionHaving(DISMISS, matcher);
     }
 
     public static Matcher adjourn(final Matcher matcher) {
@@ -51,8 +40,8 @@ public class OffenceDecisionMatcher {
             return hasProperty("pressRestriction", nullValue());
         } else {
             return hasProperty("pressRestriction", allOf(
-                    hasProperty("name", is(pressRestriction.getName())),
-                    hasProperty("requested", is(pressRestriction.getRequested()))
+                            hasProperty("name", is(pressRestriction.getName())),
+                            hasProperty("requested", is(pressRestriction.getRequested()))
                     )
             );
         }

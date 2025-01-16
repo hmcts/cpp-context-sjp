@@ -10,6 +10,7 @@ import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubCourtByCourtHo
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubEnforcementAreaByPostcode;
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubProsecutorQuery;
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubRegionByPostcode;
+import static uk.gov.moj.sjp.it.util.SjpDatabaseCleaner.cleanViewStore;
 
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.sjp.it.commandclient.AssignNextCaseClient;
@@ -52,7 +53,7 @@ public class CaseUnassignmentIT extends BaseIntegrationTest {
     @BeforeEach
     public void setUp() throws SQLException {
         stubCourtByCourtHouseOUCodeQuery(COURT_HOUSE_OU_CODE, "2572");
-        cleaner.cleanViewStore();
+        cleanViewStore();
 
         CaseAssignmentRestrictionHelper.provisionCaseAssignmentRestrictions(Sets.newHashSet(TFL, TVL, DVLA));
 
@@ -80,10 +81,7 @@ public class CaseUnassignmentIT extends BaseIntegrationTest {
 
         AssignNextCaseClient assignCase = AssignNextCaseClient.builder().build();
         assignCase.sessionId = returnedSessionId[0];
-        assignCase.assignedPrivateHandler = envelope -> {
-            final UUID caseIdActual = UUID.fromString(((JsonEnvelope) envelope).payloadAsJsonObject().getString("caseId"));
-            assertThat(CASE_ID, equalTo(caseIdActual));
-        };
+
         Optional<Response> assignCaseResponse = assignCase.getExecutor().setExecutingUserId(USER_ID).executeSync();
         assertThat(assignCaseResponse.get().getStatus(), equalTo(202));
     }
@@ -97,7 +95,7 @@ public class CaseUnassignmentIT extends BaseIntegrationTest {
             final UUID caseId = UUID.fromString(((JsonEnvelope) envelope).payloadAsJsonObject().getString("caseId"));
             assertThat(caseId, equalTo(CASE_ID));
 
-            AssignmentHelper.assertCaseUnassigned(CASE_ID);
+            AssignmentHelper.pollCaseUnassigned(CASE_ID);
         };
 
         Optional<Response> response = unassignCase.getExecutor().executeSync();

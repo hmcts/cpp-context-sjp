@@ -2,7 +2,6 @@ package uk.gov.moj.sjp.it.helper;
 
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.isJson;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
-import static com.jayway.jsonpath.matchers.JsonPathMatchers.withoutJsonPath;
 import static java.util.UUID.randomUUID;
 import static javax.ws.rs.core.Response.Status.OK;
 import static org.hamcrest.CoreMatchers.allOf;
@@ -14,7 +13,7 @@ import static org.hamcrest.Matchers.hasSize;
 import static uk.gov.justice.services.test.utils.core.matchers.ResponsePayloadMatcher.payload;
 import static uk.gov.justice.services.test.utils.core.matchers.ResponseStatusMatcher.status;
 import static uk.gov.moj.sjp.it.helper.AssignmentHelper.requestCaseAssignment;
-import static uk.gov.moj.sjp.it.helper.SessionHelper.startMagistrateSession;
+import static uk.gov.moj.sjp.it.helper.SessionHelper.startMagistrateSessionAndConfirm;
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubDefaultCourtByCourtHouseOUCodeQuery;
 import static uk.gov.moj.sjp.it.test.BaseIntegrationTest.USER_ID;
 import static uk.gov.moj.sjp.it.util.DefaultRequests.searchCases;
@@ -79,29 +78,6 @@ public class CaseSearchResultHelper {
                 ));
     }
 
-    public void verifyNoPleaReceivedDate() {
-        pollWithDefaults(searchCases(urn, searchUserId))
-                .until(status().is(OK), payload().isJson(
-                        withoutJsonPath("$.results[0].pleaDate")
-                ));
-    }
-
-    public void verifyWithdrawalRequestedDateAndCaseStatus() {
-        pollWithDefaults(searchCases(urn, searchUserId))
-                .until(status().is(OK), payload().isJson(allOf(
-                        withJsonPath("$.results[0].withdrawalRequestedDate", notNullValue()),
-                        withJsonPath("$.results[0].status", is(CaseStatus.WITHDRAWAL_REQUEST_READY_FOR_DECISION.name())))
-                ));
-    }
-
-    public void verifyNoWithdrawalRequestedDateAndCaseStatus() {
-        pollWithDefaults(searchCases(urn, searchUserId))
-                .until(status().is(OK), payload().isJson(allOf(
-                        withoutJsonPath("$.results[0].withdrawalRequestedDate"),
-                        withJsonPath("$.results[0].status", is(CaseStatus.NO_PLEA_RECEIVED_READY_FOR_DECISION.name())))
-                ));
-    }
-
     public void verifyAssignment(final boolean assigned) {
         pollWithDefaults(searchCases(urn, searchUserId))
                 .until(status().is(OK), payload().isJson(allOf(
@@ -132,7 +108,7 @@ public class CaseSearchResultHelper {
 
         final UUID sessionId = randomUUID();
 
-        startMagistrateSession(sessionId, DEFAULT_USER_ID, DEFAULT_LONDON_COURT_HOUSE_OU_CODE, "Alan Smith");
+        startMagistrateSessionAndConfirm(sessionId, DEFAULT_USER_ID, DEFAULT_LONDON_COURT_HOUSE_OU_CODE, "Alan Smith");
         requestCaseAssignment(sessionId, DEFAULT_USER_ID);
     }
 

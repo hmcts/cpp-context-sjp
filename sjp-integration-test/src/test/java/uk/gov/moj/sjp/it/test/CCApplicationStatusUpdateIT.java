@@ -10,43 +10,35 @@ import static org.hamcrest.CoreMatchers.is;
 import static uk.gov.moj.cpp.sjp.domain.SessionType.MAGISTRATE;
 import static uk.gov.moj.sjp.it.Constants.DEFAULT_OFFENCE_CODE;
 import static uk.gov.moj.sjp.it.Constants.PUBLIC_EVENT;
+import static uk.gov.moj.sjp.it.command.CreateCase.CreateCasePayloadBuilder.withDefaults;
 import static uk.gov.moj.sjp.it.command.CreateCase.createCaseForPayloadBuilder;
-import static uk.gov.moj.sjp.it.helper.AssignmentHelper.requestCaseAssignment;
-import static uk.gov.moj.sjp.it.helper.SessionHelper.startSession;
+import static uk.gov.moj.sjp.it.helper.AssignmentHelper.requestCaseAssignmentAndConfirm;
+import static uk.gov.moj.sjp.it.helper.CaseHelper.pollUntilCaseReady;
+import static uk.gov.moj.sjp.it.helper.DecisionHelper.saveDecision;
+import static uk.gov.moj.sjp.it.helper.SessionHelper.startSessionAndConfirm;
 import static uk.gov.moj.sjp.it.model.ProsecutingAuthority.DVLA;
 import static uk.gov.moj.sjp.it.model.ProsecutingAuthority.TFL;
 import static uk.gov.moj.sjp.it.model.ProsecutingAuthority.TVL;
 import static uk.gov.moj.sjp.it.pollingquery.CasePoller.pollUntilCaseByIdIsOk;
-import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubAllResultDefinitions;
+import static uk.gov.moj.sjp.it.pollingquery.CasePoller.pollUntilCaseStatusCompleted;
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubDefaultCourtByCourtHouseOUCodeQuery;
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubEnforcementAreaByPostcode;
-import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubFixedLists;
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubProsecutorQuery;
-import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubQueryForAllProsecutors;
-import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubQueryForVerdictTypes;
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubRegionByPostcode;
-import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubResultDefinitions;
-import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubResultIds;
 import static uk.gov.moj.sjp.it.stub.UsersGroupsStub.stubForUserDetails;
+import static uk.gov.moj.sjp.it.util.CaseAssignmentRestrictionHelper.provisionCaseAssignmentRestrictions;
 import static uk.gov.moj.sjp.it.util.Defaults.DEFAULT_LONDON_COURT_HOUSE_OU_CODE;
 import static uk.gov.moj.sjp.it.util.FileUtil.getFileContentAsJson;
+import static uk.gov.moj.sjp.it.util.SjpDatabaseCleaner.cleanViewStore;
 import static uk.gov.moj.sjp.it.util.UrnProvider.generate;
 
 import uk.gov.justice.json.schemas.domains.sjp.ApplicationStatus;
 import uk.gov.justice.json.schemas.domains.sjp.User;
 import uk.gov.justice.services.test.utils.core.messaging.MessageProducerClient;
 import uk.gov.moj.cpp.sjp.domain.decision.OffenceDecision;
-import uk.gov.moj.cpp.sjp.event.CaseCompleted;
-import uk.gov.moj.cpp.sjp.event.CaseMarkedReadyForDecision;
-import uk.gov.moj.cpp.sjp.event.FinancialMeansDeleteDocsStarted;
-import uk.gov.moj.cpp.sjp.event.decision.DecisionSaved;
 import uk.gov.moj.sjp.it.command.CreateCase;
-import uk.gov.moj.sjp.it.helper.DecisionHelper;
-import uk.gov.moj.sjp.it.helper.EventListener;
 import uk.gov.moj.sjp.it.model.DecisionCommand;
 import uk.gov.moj.sjp.it.model.ProsecutingAuthority;
-import uk.gov.moj.sjp.it.util.CaseAssignmentRestrictionHelper;
-import uk.gov.moj.sjp.it.util.SjpDatabaseCleaner;
 import uk.gov.moj.sjp.it.util.builders.DismissBuilder;
 
 import java.sql.SQLException;
@@ -60,7 +52,7 @@ import com.google.common.collect.Sets;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-public class CCApplicationStatusUpdateIT extends BaseIntegrationTest  {
+public class CCApplicationStatusUpdateIT extends BaseIntegrationTest {
 
     private final ProsecutingAuthority prosecutingAuthority = TFL;
     private final User user = new User("John", "Smith", USER_ID);
@@ -71,10 +63,8 @@ public class CCApplicationStatusUpdateIT extends BaseIntegrationTest  {
     private final UUID caseId = randomUUID();
     private final UUID offenceId = randomUUID();
     private final UUID defendantId = randomUUID();
-    private final  UUID appId = randomUUID();
+    private final UUID appId = randomUUID();
 
-    private final EventListener eventListener = new EventListener();
-    private final SjpDatabaseCleaner databaseCleaner = new SjpDatabaseCleaner();
     private static final String NATIONAL_COURT_CODE = "1080";
     private static final UUID STAT_DEC_TYPE_ID = fromString("7375727f-30fc-3f55-99f3-36adc4f0e70e");
     private static final String STAT_DEC_TYPE_CODE = "MC80528";
@@ -82,22 +72,15 @@ public class CCApplicationStatusUpdateIT extends BaseIntegrationTest  {
 
     private final static LocalDate DATE_RECEIVED = LocalDate.now().minusDays(7);
 
-
-
-
     @BeforeEach
     public void setUp() throws SQLException {
-        databaseCleaner.cleanViewStore();
-        stubFixedLists();
-        stubAllResultDefinitions();
-        stubQueryForVerdictTypes();
-        stubQueryForAllProsecutors();
+        cleanViewStore();
         createCase();
         dismissCase();
     }
 
     @Test
-    public void  should_createCCApplicationStatus_WhenCCApplicationCreated () {
+    public void should_createCCApplicationStatus_WhenCCApplicationCreated() {
 
         final JsonObject payload = getFileContentAsJson("CCApplicationStatusUpdateIT/application-created-in-criminal-courts.json",
                 ImmutableMap.<String, Object>builder()
@@ -118,11 +101,10 @@ public class CCApplicationStatusUpdateIT extends BaseIntegrationTest  {
                 withJsonPath("$.ccApplicationStatus", is(ApplicationStatus.APPEAL_PENDING.name()))));
 
 
-
     }
 
     @Test
-    public void  should_createCCApplicationStatus_WhenCCApplicationCreatedWithAppearanceToMakeStatutoryDeclaration () {
+    public void should_createCCApplicationStatus_WhenCCApplicationCreatedWithAppearanceToMakeStatutoryDeclaration() {
 
         final JsonObject payload = getFileContentAsJson("CCApplicationStatusUpdateIT/application-created-in-criminal-courts.json",
                 ImmutableMap.<String, Object>builder()
@@ -145,7 +127,7 @@ public class CCApplicationStatusUpdateIT extends BaseIntegrationTest  {
     }
 
     @Test
-    public void  should_createCCApplicationStatus_WhenCCApplicationToReopenCase () {
+    public void should_createCCApplicationStatus_WhenCCApplicationToReopenCase() {
 
         final JsonObject payload = getFileContentAsJson("CCApplicationStatusUpdateIT/application-created-in-criminal-courts.json",
                 ImmutableMap.<String, Object>builder()
@@ -169,16 +151,12 @@ public class CCApplicationStatusUpdateIT extends BaseIntegrationTest  {
 
     private void createCase() {
         stubDefaultCourtByCourtHouseOUCodeQuery();
-        stubResultDefinitions();
-        stubResultIds();
         stubProsecutorQuery(prosecutingAuthority.name(), prosecutingAuthority.getFullName(), randomUUID());
         stubForUserDetails(user, "ALL");
 
-        CaseAssignmentRestrictionHelper.provisionCaseAssignmentRestrictions(Sets.newHashSet(TFL, TVL, DVLA));
+        provisionCaseAssignmentRestrictions(Sets.newHashSet(TFL, TVL, DVLA));
 
-        final CreateCase.CreateCasePayloadBuilder caseBuilder = CreateCase
-                .CreateCasePayloadBuilder
-                .withDefaults()
+        final CreateCase.CreateCasePayloadBuilder caseBuilder = withDefaults()
                 .withId(caseId)
                 .withProsecutingAuthority(prosecutingAuthority)
                 .withDefendantId(defendantId)
@@ -193,14 +171,13 @@ public class CCApplicationStatusUpdateIT extends BaseIntegrationTest  {
     }
 
     private void createCaseAndWaitUntilReady(final CreateCase.CreateCasePayloadBuilder caseBuilder) {
-        new EventListener().subscribe(CaseMarkedReadyForDecision.EVENT_NAME)
-                .run(() -> createCaseForPayloadBuilder(caseBuilder))
-                .popEvent(CaseMarkedReadyForDecision.EVENT_NAME);
+        createCaseForPayloadBuilder(caseBuilder);
+        pollUntilCaseReady(caseId);
     }
 
-    private static void assignCaseInMagistrateSession(final UUID sessionId, final UUID userId) {
-        startSession(sessionId, userId, DEFAULT_LONDON_COURT_HOUSE_OU_CODE, MAGISTRATE);
-        requestCaseAssignment(sessionId, USER_ID);
+    private void assignCaseInMagistrateSession(final UUID sessionId, final UUID userId) {
+        startSessionAndConfirm(sessionId, userId, DEFAULT_LONDON_COURT_HOUSE_OU_CODE, MAGISTRATE);
+        requestCaseAssignmentAndConfirm(sessionId, USER_ID, caseId);
     }
 
 
@@ -210,13 +187,8 @@ public class CCApplicationStatusUpdateIT extends BaseIntegrationTest  {
         final OffenceDecision offenceDecision = DismissBuilder.withDefaults(offenceId).build();
         final DecisionCommand decision = new DecisionCommand(magistrateSessionId, caseId, "Test note", user, asList(offenceDecision), null);
 
-        eventListener
-                .subscribe(DecisionSaved.EVENT_NAME)
-                .subscribe(CaseCompleted.EVENT_NAME)
-                .subscribe("public.sjp.all-offences-for-defendant-dismissed-or-withdrawn")
-                .subscribe("public.hearing.resulted")
-                .subscribe(FinancialMeansDeleteDocsStarted.EVENT_NAME)
-                .run(() -> DecisionHelper.saveDecision(decision));
+        saveDecision(decision);
+        pollUntilCaseStatusCompleted(caseId);
     }
 
 }

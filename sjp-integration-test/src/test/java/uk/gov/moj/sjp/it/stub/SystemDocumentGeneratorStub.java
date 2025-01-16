@@ -10,13 +10,10 @@ import static java.util.Collections.emptyList;
 import static java.util.stream.Collectors.toList;
 import static javax.ws.rs.core.HttpHeaders.CONTENT_TYPE;
 import static javax.ws.rs.core.MediaType.APPLICATION_OCTET_STREAM;
-import static org.apache.commons.io.FileUtils.readFileToByteArray;
 import static org.apache.http.HttpStatus.SC_OK;
 import static org.awaitility.Awaitility.await;
 import static uk.gov.justice.service.wiremock.testutil.InternalEndpointMockUtils.stubPingFor;
 
-import java.io.File;
-import java.io.IOException;
 import java.util.Collection;
 import java.util.List;
 
@@ -33,8 +30,6 @@ public class SystemDocumentGeneratorStub {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(SystemDocumentGeneratorStub.class);
 
-    private static final String RESPONSE_FILE_NAME = "scrooge-full.pdf";
-
     public static void stubDocumentGeneratorEndPoint(final byte[] document) {
         stubPingFor("system-documentgenerator-api");
 
@@ -44,31 +39,15 @@ public class SystemDocumentGeneratorStub {
                         .withBody(document)));
     }
 
-    public static void stubDocumentGeneratorEndPoint() {
-        stubDocumentGeneratorEndPoint(getFileInBytesFromName(RESPONSE_FILE_NAME));
-    }
-
-    private static byte[] getFileInBytesFromName(final String fileName) {
-        final String path = "src/test/resources/documents/";
-        try {
-            return readFileToByteArray(new File(path.concat(fileName)));
-        } catch (IOException e) {
-            LOGGER.info("IO Exception while reading the file, {}" + RESPONSE_FILE_NAME);
-        }
-
-        return null;
-    }
-
     public static List<JSONObject> pollDocumentGenerationRequests(final Matcher<Collection<?>> matcher) {
         try {
-            final List<JSONObject> postRequests = await().until(() ->
+
+            return await().until(() ->
                     findAll(postRequestedFor(urlPathMatching(SYSTEM_DOCUMENT_GENERATOR_QUERY_URL)))
                             .stream()
                             .map(LoggedRequest::getBodyAsString)
                             .map(JSONObject::new)
                             .collect(toList()), matcher);
-
-            return postRequests;
         } catch (final ConditionTimeoutException timeoutException) {
             LOGGER.info("Exception while finding the captured requests in wire mock:" + timeoutException);
             return emptyList();

@@ -1,14 +1,16 @@
 package uk.gov.moj.sjp.it.test;
 
 import static java.util.UUID.randomUUID;
+import static uk.gov.moj.sjp.it.command.CreateCase.CreateCasePayloadBuilder.withDefaults;
+import static uk.gov.moj.sjp.it.command.CreateCase.createCaseForPayloadBuilder;
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubEnforcementAreaByPostcode;
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubRegionByPostcode;
 import static uk.gov.moj.sjp.it.stub.UsersGroupsStub.stubForUserDetails;
 
 import uk.gov.justice.services.test.utils.core.random.StringGenerator;
-import uk.gov.moj.sjp.it.model.ProsecutingAuthority;
 import uk.gov.moj.sjp.it.command.CreateCase;
 import uk.gov.moj.sjp.it.helper.CaseSearchResultHelper;
+import uk.gov.moj.sjp.it.model.ProsecutingAuthority;
 
 import java.util.UUID;
 
@@ -33,28 +35,6 @@ public class SearchCasesAccessControlIT extends BaseIntegrationTest {
         stubForUserDetails(PROSECUTING_AUTHORITY_1_ACCESS_USER, PROSECUTING_AUTHORITY_1.name());
         stubForUserDetails(NO_PROSECUTING_AUTHORITY_ACCESS_USER);
 
-    }
-
-    private static CreateCase.CreateCasePayloadBuilder createCaseForProsecutingAuthority(final ProsecutingAuthority prosecutingAuthority, final boolean companyIsDefendant) {
-        final CreateCase.DefendantBuilder defendantBuilder = CreateCase.DefendantBuilder
-                .withDefaults()
-                .withLastName(defendantLastName);
-
-        if (companyIsDefendant) {
-            defendantBuilder.withLegalEntityName(companyName);
-        }
-
-        CreateCase.CreateCasePayloadBuilder prosecutorCasePayloadBuilder = CreateCase.CreateCasePayloadBuilder
-                .withDefaults()
-                .withProsecutingAuthority(prosecutingAuthority)
-                .withDefendantBuilder(defendantBuilder);
-
-        stubEnforcementAreaByPostcode(prosecutorCasePayloadBuilder.getDefendantBuilder().getAddressBuilder().getPostcode(), "1080", "Bedfordshire Magistrates' Court");
-        stubRegionByPostcode("1080", "TestRegion");
-
-        CreateCase.createCaseForPayloadBuilder(prosecutorCasePayloadBuilder);
-
-        return prosecutorCasePayloadBuilder;
     }
 
     @Test
@@ -158,5 +138,26 @@ public class SearchCasesAccessControlIT extends BaseIntegrationTest {
 
         // And I should not see cases for any other Prosecuting Authority in search results
         caseSearchResultHelper.verifyPersonNotFound(prosecutor2CasePayloadBuilder.getUrn(), companyName);
+    }
+
+    private CreateCase.CreateCasePayloadBuilder createCaseForProsecutingAuthority(final ProsecutingAuthority prosecutingAuthority, final boolean companyIsDefendant) {
+        final CreateCase.DefendantBuilder defendantBuilder = CreateCase.DefendantBuilder
+                .withDefaults()
+                .withLastName(defendantLastName);
+
+        if (companyIsDefendant) {
+            defendantBuilder.withLegalEntityName(companyName);
+        }
+
+        CreateCase.CreateCasePayloadBuilder prosecutorCasePayloadBuilder = withDefaults()
+                .withProsecutingAuthority(prosecutingAuthority)
+                .withDefendantBuilder(defendantBuilder);
+
+        stubEnforcementAreaByPostcode(prosecutorCasePayloadBuilder.getDefendantBuilder().getAddressBuilder().getPostcode(), "1080", "Bedfordshire Magistrates' Court");
+        stubRegionByPostcode("1080", "TestRegion");
+
+        createCaseForPayloadBuilder(prosecutorCasePayloadBuilder);
+
+        return prosecutorCasePayloadBuilder;
     }
 }

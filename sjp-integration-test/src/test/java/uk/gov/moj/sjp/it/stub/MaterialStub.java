@@ -47,7 +47,6 @@ public class MaterialStub {
     public static final String MATERIAL_QUERY_URL = "/material-service/query/api/rest/material";
     public static final String COMMAND_MEDIA_TYPE = "application/vnd.material.command.upload-file+json";
     public static final String MATERIAL_METADATA_QUERY_MEDIA_TYPE = "application/vnd.material.query.material-metadata+json";
-    public static final String DELETE_MATERIAL_COMMAND_MEDIA_TYPE = "application/vnd.material.delete-material+json";
 
     public static void stubAddCaseMaterial() {
         InternalEndpointMockUtils.stubPingFor("material-service");

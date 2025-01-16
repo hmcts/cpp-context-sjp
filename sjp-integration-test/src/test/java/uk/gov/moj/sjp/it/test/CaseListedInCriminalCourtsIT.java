@@ -28,19 +28,16 @@ import static uk.gov.moj.sjp.it.helper.SessionHelper.startSession;
 import static uk.gov.moj.sjp.it.model.ProsecutingAuthority.DVLA;
 import static uk.gov.moj.sjp.it.model.ProsecutingAuthority.TFL;
 import static uk.gov.moj.sjp.it.model.ProsecutingAuthority.TVL;
-import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubAllResultDefinitions;
-import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubBailStatuses;
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubDefaultCourtByCourtHouseOUCodeQuery;
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubHearingTypesQuery;
-import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubQueryForAllProsecutors;
-import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubQueryForVerdictTypes;
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubReferralDocumentMetadataQuery;
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubReferralReason;
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubReferralReasonsQuery;
-import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubResultIds;
 import static uk.gov.moj.sjp.it.stub.UsersGroupsStub.stubForUserDetails;
+import static uk.gov.moj.sjp.it.util.CaseAssignmentRestrictionHelper.provisionCaseAssignmentRestrictions;
 import static uk.gov.moj.sjp.it.util.Defaults.DEFAULT_LONDON_COURT_HOUSE_OU_CODE;
 import static uk.gov.moj.sjp.it.util.FileUtil.getFileContentAsJson;
+import static uk.gov.moj.sjp.it.util.SjpDatabaseCleaner.cleanViewStore;
 
 import uk.gov.justice.core.courts.CourtCentre;
 import uk.gov.justice.core.courts.HearingType;
@@ -67,8 +64,6 @@ import uk.gov.moj.sjp.it.command.CreateCase;
 import uk.gov.moj.sjp.it.helper.DecisionHelper;
 import uk.gov.moj.sjp.it.helper.EventListener;
 import uk.gov.moj.sjp.it.model.DecisionCommand;
-import uk.gov.moj.sjp.it.util.CaseAssignmentRestrictionHelper;
-import uk.gov.moj.sjp.it.util.SjpDatabaseCleaner;
 
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
@@ -95,27 +90,19 @@ public class CaseListedInCriminalCourtsIT extends BaseIntegrationTest {
     private UUID offence3Id = randomUUID();
     private final User user = new User("Bob", "Bolt", USER_ID);
     private CreateCase.CreateCasePayloadBuilder aCase;
-    private UUID defendantId;
     private LocalDate postingDate = LocalDate.now().minusDays(NOTICE_PERIOD_IN_DAYS + 1);
 
     @BeforeEach
     public void setUp() throws Exception {
         eventListener = new EventListener();
-        new SjpDatabaseCleaner().cleanViewStore();
+        cleanViewStore();
         stubDefaultCourtByCourtHouseOUCodeQuery();
         stubForUserDetails(user, "ALL");
-        stubAllResultDefinitions();
-        stubQueryForVerdictTypes();
-        stubQueryForAllProsecutors();
-        stubBailStatuses();
-        stubResultIds();
         stubReferralDocumentMetadataQuery(randomUUID().toString(), "SJPN");
 
-        CaseAssignmentRestrictionHelper.provisionCaseAssignmentRestrictions(Sets.newHashSet(TFL, TVL, DVLA));
+        provisionCaseAssignmentRestrictions(Sets.newHashSet(TFL, TVL, DVLA));
 
         aCase = createCase(caseId, offence1Id, offence2Id, offence3Id, postingDate);
-        defendantId = aCase.getDefendantBuilder().getId();
-
     }
 
     @Test

@@ -1,22 +1,25 @@
 package uk.gov.moj.sjp.it.stub;
 
-import com.github.tomakehurst.wiremock.client.WireMock;
+import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
+import static com.github.tomakehurst.wiremock.client.WireMock.equalTo;
+import static com.github.tomakehurst.wiremock.client.WireMock.get;
+import static com.github.tomakehurst.wiremock.client.WireMock.post;
+import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
+import static com.github.tomakehurst.wiremock.client.WireMock.urlPathMatching;
+import static java.lang.String.format;
+import static javax.json.Json.createObjectBuilder;
+import static javax.ws.rs.core.Response.Status.OK;
+import static uk.gov.moj.sjp.it.stub.StubHelper.waitForGetStubToBeReady;
+import static uk.gov.moj.sjp.it.stub.StubHelper.waitForPostStubToBeReady;
+
+import java.time.ZonedDateTime;
+import java.util.UUID;
 
 import javax.json.Json;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.Response;
-import java.time.ZonedDateTime;
-import java.util.UUID;
 
-import static com.github.tomakehurst.wiremock.client.WireMock.*;
-import static java.lang.String.format;
-import static javax.json.Json.createObjectBuilder;
-import static javax.ws.rs.core.HttpHeaders.CONTENT_TYPE;
-import static javax.ws.rs.core.Response.Status.ACCEPTED;
-import static javax.ws.rs.core.Response.Status.OK;
-import static uk.gov.justice.service.wiremock.testutil.InternalEndpointMockUtils.stubPingFor;
-import static uk.gov.moj.sjp.it.stub.StubHelper.waitForGetStubToBeReady;
-import static uk.gov.moj.sjp.it.stub.StubHelper.waitForPostStubToBeReady;
+import com.github.tomakehurst.wiremock.client.WireMock;
 
 public class IdMapperStub {
 
@@ -41,13 +44,6 @@ public class IdMapperStub {
         waitForGetStubToBeReady(format("/system-id-mapper-api/rest/systemid/mappings?sourceId=%s", sourceId), "application/vnd.systemid.mapping+json", OK);
     }
 
-    public static void stubCommandForRequestResponse() {
-        stubFor(post(urlMatching(format("/system-id-mapper-api/rest/systemid/mappings.*")))
-                .willReturn(aResponse().withStatus(ACCEPTED.getStatusCode())
-                        .withHeader(CONTENT_TYPE, "application/vnd.systemid.map+json")
-                        .withBody("")));
-    }
-
     public static void stubForIdMapperSuccess(final Response.Status status, final UUID id) {
         final String path = "/system-id-mapper-api/rest/systemid.*";
         final String mime = "application/vnd.systemid.map+json";
@@ -65,36 +61,6 @@ public class IdMapperStub {
 
     public static void stubForIdMapperSuccess(final Response.Status status) {
         stubForIdMapperSuccess(status, UUID.randomUUID());
-    }
-
-    private static final String ID_MAPPER_QUERY_URL = "/system-id-mapper-api/rest/systemid/mappings.*";
-    private static final String ID_MAPPER_QUERY_MEDIA_TYPE = "application/vnd.systemid.map+json";
-    private static final String ID_MAPPER_SERVICE = "system-id-mapper-api";
-
-    public static void stubIdMapperMappingFor(final int statusToReturn, final String sourceId, final String sourceType, final UUID targetId, final String targetType) {
-        final String error = format("Insert of mapping %s:%s to %s:%s failed due to conflict.", sourceId, sourceType, targetId.toString(), targetType);
-        final String responseConflictPayload = createObjectBuilder()
-                .add("id", targetId.toString())
-                .add("error", error).build().toString();
-
-        final String responseNoConflictPayload =  createObjectBuilder().add("id", targetId.toString()).build().toString();
-
-        stubPingFor(ID_MAPPER_SERVICE);
-
-        final String response = statusToReturn == 200 ? responseNoConflictPayload : responseConflictPayload;
-        final String mapObj = createObjectBuilder()
-                .add("sourceId", sourceId)
-                .add("sourceType", sourceType)
-                .add("targetType", targetType).build().toString();
-
-        stubFor(any(urlPathMatching(ID_MAPPER_QUERY_URL))
-                .withHeader(CONTENT_TYPE, equalTo(ID_MAPPER_QUERY_MEDIA_TYPE))
-                .willReturn(aResponse()
-                        .withStatus(statusToReturn)
-                        .withBody(response)
-                ));
-
-
     }
 
     public static void stubAddMapping() {

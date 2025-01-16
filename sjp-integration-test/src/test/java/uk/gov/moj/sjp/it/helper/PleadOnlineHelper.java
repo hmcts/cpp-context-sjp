@@ -2,27 +2,26 @@ package uk.gov.moj.sjp.it.helper;
 
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
 import static java.lang.String.format;
-import static java.util.Objects.nonNull;
 import static javax.ws.rs.core.Response.Status.OK;
 import static org.awaitility.Awaitility.await;
 import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.nullValue;
 import static org.junit.jupiter.api.Assertions.fail;
 import static uk.gov.justice.services.test.utils.core.matchers.ResponsePayloadMatcher.payload;
 import static uk.gov.justice.services.test.utils.core.matchers.ResponseStatusMatcher.status;
 import static uk.gov.moj.sjp.it.Constants.PUBLIC_EVENT_SET_PLEAS;
+import static uk.gov.moj.sjp.it.pollingquery.CasePoller.pollUntilCaseByIdIsOk;
 import static uk.gov.moj.sjp.it.util.DefaultRequests.getCaseById;
+import static uk.gov.moj.sjp.it.util.HttpClientUtil.getPostCallResponse;
+import static uk.gov.moj.sjp.it.util.HttpClientUtil.makeGetCall;
+import static uk.gov.moj.sjp.it.util.RestPollerWithDefaults.TIMEOUT_IN_SECONDS;
 import static uk.gov.moj.sjp.it.util.RestPollerWithDefaults.pollWithDefaults;
 import static uk.gov.moj.sjp.it.util.TopicUtil.retrieveMessage;
 
-import uk.gov.moj.cpp.sjp.domain.plea.PleaMethod;
 import uk.gov.moj.cpp.sjp.domain.plea.PleaType;
 import uk.gov.moj.sjp.it.model.PleasView;
-import uk.gov.moj.sjp.it.pollingquery.CasePoller;
 import uk.gov.moj.sjp.it.util.HttpClientUtil;
 import uk.gov.moj.sjp.it.util.TopicUtil;
 
@@ -49,8 +48,6 @@ public class PleadOnlineHelper implements AutoCloseable {
 
     private MessageConsumer publicEventsConsumer;
 
-    private MessageConsumer privateEventsConsumer;
-
     public PleadOnlineHelper(final UUID caseId, final UUID defendantId) {
         this.defendantId = defendantId;
         publicEventsConsumer = TopicUtil.publicEvents.createConsumer(PUBLIC_EVENT_SET_PLEAS);
@@ -60,30 +57,28 @@ public class PleadOnlineHelper implements AutoCloseable {
     public PleadOnlineHelper(final UUID caseId, final UUID defendantId, final UUID pcqId) {
         this.defendantId = defendantId;
         publicEventsConsumer = TopicUtil.publicEvents.createConsumer(PUBLIC_EVENT_SET_PLEAS);
-        privateEventsConsumer = TopicUtil.privateEvents.createConsumer("sjp.events.defendant-details-updated");
         writeUrl = String.format("/cases/%s/defendants/%s/plead-online-pcq-visited", caseId, defendantId);
     }
 
     public PleadOnlineHelper(final UUID caseId) {
         publicEventsConsumer = TopicUtil.publicEvents.createConsumer(PUBLIC_EVENT_SET_PLEAS);
-        defendantId = UUID.fromString(CasePoller.pollUntilCaseByIdIsOk(caseId).getString("defendant.id"));
+        defendantId = UUID.fromString(pollUntilCaseByIdIsOk(caseId).getString("defendant.id"));
         writeUrl = String.format("/cases/%s/defendants/%s/plead-online", caseId, defendantId);
     }
 
     public static Response getOnlinePlea(final String caseId, final String defendantId, final UUID userId) {
         final String resource = format("/cases/%s/defendants/%s/defendants-online-plea", caseId, defendantId);
         final String contentType = "application/vnd.sjp.query.defendants-online-plea+json";
-        return HttpClientUtil.makeGetCall(resource, contentType, userId);
+        return makeGetCall(resource, contentType, userId);
     }
 
 
     public static String getOnlinePlea(final String caseId, final String defendantId, final Matcher<Object> jsonMatcher, final UUID userId) {
-        return await().atMost(20, TimeUnit.SECONDS).until(() -> {
+        return await().atMost(TIMEOUT_IN_SECONDS, TimeUnit.SECONDS).until(() -> {
             final Response onlinePlea = getOnlinePlea(caseId, defendantId, userId);
             if (onlinePlea.getStatus() != OK.getStatusCode()) {
                 fail("Polling interrupted, please fix the error before continue. Status code: " + onlinePlea.getStatus());
             }
-
 
             String response = onlinePlea.readEntity(String.class);
             ObjectMapper objectMapper = new ObjectMapper();
@@ -93,7 +88,7 @@ public class PleadOnlineHelper implements AutoCloseable {
     }
 
     public static String getOnlinePleaAocpAccepted(final String caseId, final String defendantId, final Matcher<Object> jsonMatcher, final UUID userId) {
-        return await().atMost(20, TimeUnit.SECONDS).until(() -> {
+        return await().atMost(TIMEOUT_IN_SECONDS, TimeUnit.SECONDS).until(() -> {
             final Response onlinePlea = getOnlinePlea(caseId, defendantId, userId);
             if (onlinePlea.getStatus() != OK.getStatusCode()) {
                 fail("Polling interrupted, please fix the error before continue. Status code: " + onlinePlea.getStatus());
@@ -108,7 +103,7 @@ public class PleadOnlineHelper implements AutoCloseable {
 
     public static void verifyOnlinePleaReceivedAndUpdatedCaseDetailsFlag(final UUID caseId, final boolean onlinePleaReceived) {
         pollWithDefaults(getCaseById(caseId))
-                .timeout(20, TimeUnit.SECONDS)
+                .timeout(TIMEOUT_IN_SECONDS, TimeUnit.SECONDS)
                 .until(
                         status().is(OK),
                         payload().isJson(
@@ -124,11 +119,11 @@ public class PleadOnlineHelper implements AutoCloseable {
     }
 
     public String pleadOnline(final String payload, final Response.Status httpStatus) {
-        return HttpClientUtil.getPostCallResponse(writeUrl, "application/vnd.sjp.plead-online+json", payload, httpStatus);
+        return getPostCallResponse(writeUrl, "application/vnd.sjp.plead-online+json", payload, httpStatus);
     }
 
     public String pleadOnlineAocp(final String payload, final Response.Status httpStatus) {
-        return HttpClientUtil.getPostCallResponse(writeUrl, "application/vnd.sjp.plead-aocp-online+json", payload, httpStatus);
+        return getPostCallResponse(writeUrl, "application/vnd.sjp.plead-aocp-online+json", payload, httpStatus);
     }
 
     public void pleadOnline(final String payload) {
@@ -147,22 +142,9 @@ public class PleadOnlineHelper implements AutoCloseable {
         assertEventData(caseId, offenceId, pleaType, denialReason);
     }
 
-    public void verifyInPrivateTopic(UUID caseId, UUID defendantId, UUID pcqId) {
-        assertPrivateEventData(caseId, defendantId, pcqId);
-    }
-
-    public JsonPath verifyPleaUpdated(final UUID caseId, final PleaType pleaType, final PleaMethod pleaMethod) {
-        return verifyPleaUpdated(caseId, pleaType, pleaMethod, 0);
-    }
-
-    public JsonPath verifyPleaUpdated(final UUID caseId, final PleaType pleaType, final PleaMethod pleaMethod, final int index) {
-        return CasePoller.pollUntilCaseByIdIsOk(caseId,
-                allOf(
-                        withJsonPath(format("defendant.offences[%d].plea", index), is(pleaType.name())),
-                        withJsonPath(format("defendant.offences[%d].pleaMethod", index), is(pleaMethod.name())),
-                        withJsonPath(format("defendant.offences[%d].pleaDate", index), notNullValue()),
-                        withJsonPath("onlinePleaReceived", is(PleaMethod.ONLINE.equals(pleaMethod)))
-                )
+    public JsonPath verifyPleaUpdated(final UUID caseId, final Matcher[] matchers) {
+        return pollUntilCaseByIdIsOk(caseId,
+                allOf(matchers)
         );
     }
 
@@ -172,17 +154,6 @@ public class PleadOnlineHelper implements AutoCloseable {
         assertThat(message.get("pleas[0].offenceId"), equalTo(offenceId.toString()));
         assertThat(message.get("pleas[0].pleaType"), equalTo(pleaType.name()));
         assertThat(message.get("denialReason"), equalTo(denialReason));
-    }
-
-    private void assertPrivateEventData(final UUID caseId, final UUID defendantId, final UUID pcqId) {
-        final JsonPath message = retrieveMessage(privateEventsConsumer);
-        assertThat(message.get("caseId"), equalTo(caseId.toString()));
-        assertThat(message.get("defendantId"), equalTo(defendantId.toString()));
-        if (nonNull(pcqId)) {
-            assertThat(message.get("pcqId"), equalTo(pcqId.toString()));
-        } else {
-            assertThat(message.get("pcqId"), is(nullValue()));
-        }
     }
 
     @Override

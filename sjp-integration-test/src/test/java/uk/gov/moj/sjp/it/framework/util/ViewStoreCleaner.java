@@ -2,7 +2,6 @@ package uk.gov.moj.sjp.it.framework.util;
 
 import static java.lang.String.format;
 
-import uk.gov.justice.services.test.utils.persistence.DatabaseCleaner;
 import uk.gov.justice.services.test.utils.persistence.TestJdbcConnectionProvider;
 
 import java.sql.Connection;
@@ -30,23 +29,7 @@ public class ViewStoreCleaner {
     private static final String DELETE_PROCESSED_EVENT = "delete from processed_event where component='EVENT_INDEXER'";
     public static final String CONTEXT_NAME = "sjp";
 
-    private final DatabaseCleaner databaseCleaner = new DatabaseCleaner();
     private static final Logger LOGGER = LoggerFactory.getLogger(ViewStoreCleaner.class);
-
-    public void cleanViewstoreTables() {
-        databaseCleaner.cleanViewStoreTables(CONTEXT_NAME,
-                "offence",
-                "financial_means",
-                "employer",
-                "case_search_result",
-                "case_document",
-                "defendant",
-                "online_plea",
-                "session",
-                "case_details",
-                "ready_cases",
-                "processed_event");
-    }
 
     public void cleanDataInViewStore(final UUID caseId) {
         final String uuid = caseId.toString();

@@ -15,15 +15,11 @@ import static uk.gov.moj.sjp.it.test.ingestor.helper.ElasticSearchQueryHelper.ge
 
 import uk.gov.justice.json.schemas.domains.sjp.Gender;
 import uk.gov.moj.sjp.it.model.ProsecutingAuthority;
-import uk.gov.moj.cpp.sjp.event.CaseMarkedReadyForDecision;
-import uk.gov.moj.cpp.unifiedsearch.test.util.ingest.ElasticSearchClient;
-import uk.gov.moj.cpp.unifiedsearch.test.util.ingest.ElasticSearchIndexFinderUtil;
 import uk.gov.moj.cpp.unifiedsearch.test.util.ingest.ElasticSearchIndexRemoverUtil;
 import uk.gov.moj.sjp.it.command.CreateCase;
 import uk.gov.moj.sjp.it.command.UpdateDefendantDetails;
 import uk.gov.moj.sjp.it.command.builder.AddressBuilder;
 import uk.gov.moj.sjp.it.framework.util.ViewStoreCleaner;
-import uk.gov.moj.sjp.it.helper.EventListener;
 import uk.gov.moj.sjp.it.test.BaseIntegrationTest;
 
 import java.io.IOException;
@@ -48,13 +44,10 @@ public class DefendantDetailUpdatedIngestorIT extends BaseIntegrationTest {
     private static final String NATIONAL_COURT_CODE = "1080";
 
     private final UUID caseIdOne = randomUUID();
-    private ElasticSearchIndexFinderUtil elasticSearchIndexFinderUtil;
     private final ViewStoreCleaner viewStoreCleaner = new ViewStoreCleaner();
 
     @BeforeEach
     public void setUp() throws IOException {
-        final ElasticSearchClient elasticSearchClient = new ElasticSearchClient();
-        elasticSearchIndexFinderUtil = new ElasticSearchIndexFinderUtil(elasticSearchClient);
         new ElasticSearchIndexRemoverUtil().deleteAndCreateCaseIndex();
     }
 
@@ -104,9 +97,7 @@ public class DefendantDetailUpdatedIngestorIT extends BaseIntegrationTest {
         stubProsecutorQuery(prosecutingAuthority.name(), prosecutingAuthority.getFullName(), randomUUID());
         stubEnforcementAreaByPostcode(createCase.getDefendantBuilder().getAddressBuilder().getPostcode(), NATIONAL_COURT_CODE, "Bedfordshire Magistrates' Court");
         stubRegionByPostcode(NATIONAL_COURT_CODE, "TestRegion");
-        new EventListener()
-                .subscribe(CaseMarkedReadyForDecision.EVENT_NAME)
-                .run(() -> createCaseForPayloadBuilder(createCase));
+        createCaseForPayloadBuilder(createCase);
 
         final UUID defendantId = UUID.fromString(pollUntilCaseByIdIsOk(caseIdOne).getString("defendant.id"));
         updateDefendantDetailsForCaseAndPayload(caseIdOne, defendantId, builder);

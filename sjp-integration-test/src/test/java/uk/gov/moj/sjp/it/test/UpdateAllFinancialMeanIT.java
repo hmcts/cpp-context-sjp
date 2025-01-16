@@ -10,21 +10,23 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static uk.gov.moj.cpp.sjp.domain.IncomeFrequency.MONTHLY;
 import static uk.gov.moj.cpp.sjp.domain.IncomeFrequency.YEARLY;
-import static uk.gov.moj.sjp.it.helper.EmployerHelper.*;
+import static uk.gov.moj.sjp.it.command.CreateCase.createCaseForPayloadBuilder;
 import static uk.gov.moj.sjp.it.helper.EmployerHelper.getEmployerDeletedPublicEventMatcher;
 import static uk.gov.moj.sjp.it.helper.EmployerHelper.getEmployerPayload;
+import static uk.gov.moj.sjp.it.helper.EmployerHelper.getEmployerUpdatedPayloadMatcher;
 import static uk.gov.moj.sjp.it.helper.EmployerHelper.getEmployerUpdatedPublicEventMatcher;
+import static uk.gov.moj.sjp.it.helper.EmployerHelper.pollForEmployerForDefendant;
+import static uk.gov.moj.sjp.it.pollingquery.CasePoller.pollUntilCaseByIdIsOk;
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubEnforcementAreaByPostcode;
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubProsecutorQuery;
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubRegionByPostcode;
 
 import uk.gov.moj.cpp.sjp.domain.Benefits;
 import uk.gov.moj.cpp.sjp.domain.Income;
-import uk.gov.moj.sjp.it.model.ProsecutingAuthority;
 import uk.gov.moj.sjp.it.command.CreateCase;
 import uk.gov.moj.sjp.it.helper.EmployerHelper;
 import uk.gov.moj.sjp.it.helper.FinancialMeansHelper;
-import uk.gov.moj.sjp.it.pollingquery.CasePoller;
+import uk.gov.moj.sjp.it.model.ProsecutingAuthority;
 
 import java.math.BigDecimal;
 import java.util.UUID;
@@ -50,13 +52,13 @@ public class UpdateAllFinancialMeanIT extends BaseIntegrationTest {
 
         stubEnforcementAreaByPostcode(createCasePayloadBuilder.getDefendantBuilder().getAddressBuilder().getPostcode(), NATIONAL_COURT_CODE, "Bedfordshire Magistrates' Court");
         stubRegionByPostcode(NATIONAL_COURT_CODE, "TestRegion");
-        CreateCase.createCaseForPayloadBuilder(this.createCasePayloadBuilder);
+        createCaseForPayloadBuilder(this.createCasePayloadBuilder);
         final ProsecutingAuthority prosecutingAuthority = createCasePayloadBuilder.getProsecutingAuthority();
         stubProsecutorQuery(prosecutingAuthority.name(), prosecutingAuthority.getFullName(), randomUUID());
     }
 
     @AfterEach
-    public void tearDown() throws Exception {
+    public void tearDown() {
         financialMeansHelper.close();
     }
 
@@ -64,7 +66,7 @@ public class UpdateAllFinancialMeanIT extends BaseIntegrationTest {
     public void shouldUpdateFinancialMeansWithEmployerDetails() {
 
         final UUID caseId = createCasePayloadBuilder.getId();
-        final String defendantId = CasePoller.pollUntilCaseByIdIsOk(caseId).getString("defendant.id");
+        final String defendantId = pollUntilCaseByIdIsOk(caseId).getString("defendant.id");
         final Income income = new Income(MONTHLY, BigDecimal.valueOf(1000.50));
         final Benefits benefits = new Benefits(false, "", null);
         final String employmentStatus = "EMPLOYED";
@@ -97,22 +99,15 @@ public class UpdateAllFinancialMeanIT extends BaseIntegrationTest {
         shouldGetAllFinancialMeansUpdatedEventFromPublicTopic(defendantId);
 
         // assert the employer details
-        employerHelper.getEmployer(defendantId, getEmployerUpdatedPayloadMatcher(employer));
+        pollForEmployerForDefendant(defendantId, getEmployerUpdatedPayloadMatcher(employer));
         assertThat(employerHelper.getEventFromPublicTopic(), getEmployerUpdatedPublicEventMatcher(employer));
-    }
-
-    private void shouldGetAllFinancialMeansUpdatedEventFromPublicTopic(final String defendantId) {
-        final Matcher<Object> jsonMatcher = isJson(allOf(
-                withJsonPath("$.defendantId", is(defendantId))
-        ));
-        allFinancialMeansHelper.getEventFromPublicTopic(jsonMatcher);
     }
 
     @Test
     public void shouldDeleteEmployerDetails() {
 
         final UUID caseId = createCasePayloadBuilder.getId();
-        final String defendantId = CasePoller.pollUntilCaseByIdIsOk(caseId).getString("defendant.id");
+        final String defendantId = pollUntilCaseByIdIsOk(caseId).getString("defendant.id");
         final Income incomeBefore = new Income(MONTHLY, BigDecimal.valueOf(1000.51));
         final Benefits benefitsBefore = new Benefits(false, "", null);
         final String employmentStatusBefore = "EMPLOYED";
@@ -145,7 +140,7 @@ public class UpdateAllFinancialMeanIT extends BaseIntegrationTest {
         financialMeansHelper.getEventFromPublicTopic(expectedBefore);
 
         // assert the employer details
-        employerHelper.getEmployer(defendantId, getEmployerUpdatedPayloadMatcher(employerBefore));
+        pollForEmployerForDefendant(defendantId, getEmployerUpdatedPayloadMatcher(employerBefore));
         assertThat(employerHelper.getEventFromPublicTopic(), getEmployerUpdatedPublicEventMatcher(employerBefore));
 
 
@@ -178,9 +173,14 @@ public class UpdateAllFinancialMeanIT extends BaseIntegrationTest {
 
         shouldGetAllFinancialMeansUpdatedEventFromPublicTopic(defendantId);
         // assert the employer details
-        employerHelper.getEmployer(defendantId, isJson(withJsonPath("$.size()", is(0))));
+        pollForEmployerForDefendant(defendantId, isJson(withJsonPath("$.size()", is(0))));
         assertThat(employerHelper.getEventFromPublicTopic(), getEmployerDeletedPublicEventMatcher(defendantId));
     }
 
-
+    private void shouldGetAllFinancialMeansUpdatedEventFromPublicTopic(final String defendantId) {
+        final Matcher<Object> jsonMatcher = isJson(allOf(
+                withJsonPath("$.defendantId", is(defendantId))
+        ));
+        allFinancialMeansHelper.getEventFromPublicTopic(jsonMatcher);
+    }
 }

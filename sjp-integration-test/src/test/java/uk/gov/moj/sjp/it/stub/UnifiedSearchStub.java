@@ -22,7 +22,6 @@ import java.util.stream.Collectors;
 public class UnifiedSearchStub {
 
     public static final String SJP_ANY_OPEN_STATUS = "NO_PLEA_RECEIVED";
-    public static final String SJP_REFERRAL_STATUS = "REFERRED_FOR_COURT_HEARING";
 
     private static final String SEARCH_QUERY = "/unifiedsearchquery-service/query/api/rest/unifiedsearchquery/cases";
     private static final String SEARCH_QUERY_TYPE = "application/vnd.unifiedsearch.query.cases+json";
@@ -75,26 +74,24 @@ public class UnifiedSearchStub {
                                                               boolean sjp,
                                                               String status,
                                                               int dateOffset) {
-        String searchResult = "{ \n" +
+
+        return "{ \n" +
                 "  \"totalResults\": 1, \n" +
                 "  \"cases\": [\n" +
                 createAndInterpolateSingleCase(caseId, caseRef, sjp, status, dateOffset) +
                 "  ]\n" +
                 "}\n";
-
-        return searchResult;
     }
 
     private static String createMultiCaseUnifiedSearchResult(int numOfCases, String... cases) {
         final String multiCases = Arrays.stream(cases).collect(Collectors.joining(","));
-        String searchResult = "{ \n" +
+
+        return "{ \n" +
                 "  \"totalResults\": " + numOfCases + ", \n" +
                 "  \"cases\": [\n" +
                 multiCases +
                 "  ]\n" +
                 "}\n";
-
-        return searchResult;
     }
 
     private static String createAndInterpolateSingleCase(UUID caseId,

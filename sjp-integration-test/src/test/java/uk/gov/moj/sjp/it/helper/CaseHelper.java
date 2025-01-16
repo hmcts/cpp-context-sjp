@@ -18,9 +18,7 @@ import uk.gov.justice.services.test.utils.core.http.RequestParamsBuilder;
 
 import java.util.UUID;
 
-import javax.json.Json;
 import javax.json.JsonObject;
-import javax.ws.rs.core.Response;
 
 import com.jayway.jsonpath.ReadContext;
 import org.hamcrest.Matcher;
@@ -64,10 +62,10 @@ public class CaseHelper {
         return pollWithDefaultsUntilResponseIsJson(requestParams.build(), matcher);
     }
 
-    public static void addFinancialImpositionCorrelationId(final UUID caseId, final UUID defendantId, final UUID correlatioId) {
+    public static void addFinancialImpositionCorrelationId(final UUID caseId, final UUID defendantId, final UUID correlationId) {
         final String url = format("/cases/%s/defendant/%s/add-financial-imposition-correlation-id", caseId.toString(), defendantId.toString());
         final JsonObject payload = createObjectBuilder()
-                .add("correlationId", correlatioId.toString())
+                .add("correlationId", correlationId.toString())
                 .build();
         makePostCall(USER_ID, url, COMMAND_ADD_FINANCIAL_IMPOSITION_CORRELATION_ID, payload.toString(), ACCEPTED);
     }

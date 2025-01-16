@@ -14,7 +14,6 @@ import static org.hamcrest.CoreMatchers.hasItem;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.text.IsEqualCompressingWhiteSpace.equalToCompressingWhiteSpace;
 import static uk.gov.moj.sjp.it.Constants.NOTICE_PERIOD_IN_DAYS;
 import static uk.gov.moj.sjp.it.command.CreateCase.CreateCasePayloadBuilder;
@@ -30,13 +29,14 @@ import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubProsecutorQuer
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubRegionByPostcode;
 import static uk.gov.moj.sjp.it.stub.SysDocGeneratorStub.pollSysDocGenerationRequests;
 import static uk.gov.moj.sjp.it.stub.SysDocGeneratorStub.stubGenerateDocumentEndPoint;
+import static uk.gov.moj.sjp.it.util.SjpDatabaseCleaner.cleanViewStore;
+import static uk.gov.moj.sjp.it.util.SysDocGeneratorHelper.publishDocumentAvailablePublicEvent;
 
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.sjp.it.command.CreateCase;
 import uk.gov.moj.sjp.it.helper.EventListener;
 import uk.gov.moj.sjp.it.helper.PressTransparencyReportHelper;
 import uk.gov.moj.sjp.it.model.ProsecutingAuthority;
-import uk.gov.moj.sjp.it.util.SjpDatabaseCleaner;
 import uk.gov.moj.sjp.it.util.SysDocGeneratorHelper;
 
 import java.io.IOException;
@@ -54,11 +54,16 @@ import javax.json.JsonString;
 import org.hamcrest.CoreMatchers;
 import org.hamcrest.Matcher;
 import org.json.JSONObject;
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @SuppressWarnings({"squid:S1607"})
 public class PressTransparencyReportIT extends BaseIntegrationTest {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(PressTransparencyReportIT.class);
 
     private static final String TEMPLATE_NAME = "PressPendingCasesDeltaEnglish";
     private static final String TEMPLATE_NAME_FULL = "PressPendingCasesFullEnglish";
@@ -71,17 +76,22 @@ public class PressTransparencyReportIT extends BaseIntegrationTest {
     private final UUID caseId1 = randomUUID(), caseId2 = randomUUID();
     private final UUID offenceId1 = randomUUID(), offenceId2 = randomUUID();
     private PressTransparencyReportHelper pressTransparencyReportHelper = new PressTransparencyReportHelper();
-    private final EventListener eventListener = new EventListener();
 
     @BeforeEach
-    public void setUp() throws Exception {
+    public void beforeEachTest() throws Exception {
         resetAllRequests();
-        new SjpDatabaseCleaner().cleanViewStore();
+        cleanViewStore();
         stubGenerateDocumentEndPoint();
         stubAllIndividualProsecutorsQueries();
         stubAnyQueryOffences();
         stubAllReferenceData();
+    }
 
+    @AfterAll
+    public static void afterAllTests() {
+        LOGGER.info("Reinstating integration test stubs post running of {}", PressTransparencyReportIT.class.getSimpleName());
+        // reinstate stubs to original state
+        setup();
     }
 
     @Test
@@ -152,7 +162,7 @@ public class PressTransparencyReportIT extends BaseIntegrationTest {
         final EventListener metadataAddedEventListener = new EventListener()
                 .withMaxWaitTime(50000)
                 .subscribe(SJP_EVENTS_PRESS_TRANSPARENCY_REPORT_METADATA_ADDED)
-                .run(() -> SysDocGeneratorHelper.publishDocumentAvailablePublicEvent(
+                .run(() -> publishDocumentAvailablePublicEvent(
                         fromString(pressTransparencyReportId),
                         TEMPLATE_NAME_FULL,
                         generatedDocumentId)
@@ -160,10 +170,6 @@ public class PressTransparencyReportIT extends BaseIntegrationTest {
 
         final Optional<JsonEnvelope> metadataAdded = metadataAddedEventListener.popEvent(SJP_EVENTS_PRESS_TRANSPARENCY_REPORT_METADATA_ADDED);
         assertThat(metadataAdded.isPresent(), is(true));
-
-        final Matcher matcher = withJsonPath("$.reportsMetadata[*]", hasItem(isJson(
-                withJsonPath("fileId", CoreMatchers.equalTo(generatedDocumentId.toString()))
-        )));
 
         // validate the content
         final String pressReportContent = pressTransparencyReportHelper.requestToGetTransparencyReportPressContent(generatedDocumentId.toString());
@@ -270,13 +276,6 @@ public class PressTransparencyReportIT extends BaseIntegrationTest {
 
         final Optional<JsonEnvelope> generationFailed = generationFailedEventListener.popEvent(SJP_EVENTS_PRESS_TRANSPARENCY_REPORT_GENERATION_FAILED);
         assertThat(generationFailed.isPresent(), is(true));
-    }
-
-    private void validateMetadata(final JsonObject apiReportMetadata, final String generatedFileId) {
-        assertThat(apiReportMetadata.getString("fileId"), is(generatedFileId));
-        assertThat(apiReportMetadata.get("size").toString(), is(notNullValue()));
-        assertThat(apiReportMetadata.getInt("pages"), is(2));
-        assertThat(apiReportMetadata.getString("generatedAt"), is(notNullValue()));
     }
 
     private void validateDocumentGenerationRequest(final JSONObject docGenerationRequest,

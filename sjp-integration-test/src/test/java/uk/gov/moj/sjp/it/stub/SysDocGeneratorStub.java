@@ -15,6 +15,7 @@ import static java.util.stream.Collectors.toList;
 import static javax.ws.rs.core.HttpHeaders.CONTENT_TYPE;
 import static org.apache.http.HttpStatus.SC_ACCEPTED;
 import static uk.gov.justice.service.wiremock.testutil.InternalEndpointMockUtils.stubPingFor;
+import static uk.gov.moj.sjp.it.util.RestPollerWithDefaults.TIMEOUT_IN_SECONDS;
 
 import uk.gov.justice.services.common.http.HeaderConstants;
 
@@ -49,14 +50,13 @@ public class SysDocGeneratorStub {
 
     public static List<JSONObject> pollSysDocGenerationRequests(final Matcher<Collection<?>> matcher) {
         try {
-            final List<JSONObject> postRequests = await().atMost(90, SECONDS).until(() ->
+
+            return await().atMost(TIMEOUT_IN_SECONDS, SECONDS).until(() ->
                     findAll(postRequestedFor(urlPathMatching(SYS_DOC_GENERATOR_URL)))
                             .stream()
                             .map(LoggedRequest::getBodyAsString)
                             .map(JSONObject::new)
                             .collect(toList()), matcher);
-
-            return postRequests;
         } catch (final ConditionTimeoutException timeoutException) {
             LOGGER.info("Exception while finding the captured requests in wire mock:" + timeoutException);
             return emptyList();

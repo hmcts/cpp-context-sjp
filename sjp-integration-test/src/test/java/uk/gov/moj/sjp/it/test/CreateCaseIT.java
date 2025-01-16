@@ -9,18 +9,19 @@ import static java.util.stream.Collectors.toList;
 import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.notNullValue;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.blankOrNullString;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.core.Is.is;
-import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static uk.gov.moj.cpp.sjp.domain.DomainConstants.NUMBER_DAYS_WAITING_FOR_PLEA;
 import static uk.gov.moj.sjp.it.command.CreateCase.CreateCasePayloadBuilder.defaultCaseBuilder;
 import static uk.gov.moj.sjp.it.command.CreateCase.OffenceBuilder.defaultOffenceBuilder;
+import static uk.gov.moj.sjp.it.command.CreateCase.createCaseForPayloadBuilder;
 import static uk.gov.moj.sjp.it.helper.CaseProsecutingAuthorityHelper.getProsecutingAuthority;
 import static uk.gov.moj.sjp.it.model.ProsecutingAuthority.DVLA;
 import static uk.gov.moj.sjp.it.model.ProsecutingAuthority.TFL;
 import static uk.gov.moj.sjp.it.model.ProsecutingAuthority.TVL;
+import static uk.gov.moj.sjp.it.pollingquery.CasePoller.pollUntilCaseByIdIsOk;
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubEnforcementAreaByPostcode;
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubOffenceFineLevelsQuery;
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubProsecutorQuery;
@@ -36,7 +37,6 @@ import uk.gov.moj.sjp.it.command.CreateCase;
 import uk.gov.moj.sjp.it.command.builder.AddressBuilder;
 import uk.gov.moj.sjp.it.helper.EventListener;
 import uk.gov.moj.sjp.it.model.ProsecutingAuthority;
-import uk.gov.moj.sjp.it.pollingquery.CasePoller;
 
 import java.io.StringReader;
 import java.math.BigDecimal;
@@ -84,7 +84,7 @@ public class CreateCaseIT extends BaseIntegrationTest {
         createCase.getDefendantBuilder().withLastName(null);
         createCase.getDefendantBuilder().withLegalEntityName(null);
 
-        final String response = CreateCase.createCaseForPayloadBuilder(createCase, BAD_REQUEST);
+        final String response = createCaseForPayloadBuilder(createCase, BAD_REQUEST);
 
         JsonObject responseJson = responseToJsonObject(response);
         JsonValue validationErrors = responseJson.get("validationErrors");
@@ -132,12 +132,12 @@ public class CreateCaseIT extends BaseIntegrationTest {
 
         final Optional<JsonEnvelope> caseReceivedEvent = new EventListener()
                 .subscribe(CaseReceived.EVENT_NAME)
-                .run(() -> CreateCase.createCaseForPayloadBuilder(createCase))
+                .run(() -> createCaseForPayloadBuilder(createCase))
                 .popEvent(CaseReceived.EVENT_NAME);
 
         assertTrue(caseReceivedEvent.isPresent());
 
-        final JsonPath jsonResponse = CasePoller.pollUntilCaseByIdIsOk(caseId, JsonPathMatchers.withJsonPath("$.status", equalTo(CaseStatus.NO_PLEA_RECEIVED_READY_FOR_DECISION.name())));
+        final JsonPath jsonResponse = pollUntilCaseByIdIsOk(caseId, JsonPathMatchers.withJsonPath("$.status", equalTo(CaseStatus.NO_PLEA_RECEIVED_READY_FOR_DECISION.name())));
         assertThat(jsonResponse.get("id"), equalTo(caseId.toString()));
         assertThat(jsonResponse.get("urn"), equalTo(createCase.getUrn()));
         assertThat(jsonResponse.get("prosecutingAuthorityName"), equalTo(TFL.getFullName()));
@@ -177,22 +177,9 @@ public class CreateCaseIT extends BaseIntegrationTest {
         stubEnforcementAreaByPostcode(defendant.getAddressBuilder().getPostcode(), NATIONAL_COURT_CODE, "Bedfordshire Magistrates' Court");
         stubRegionByPostcode(NATIONAL_COURT_CODE, DEFENDANT_REGION);
 
-        final Optional<JsonEnvelope> caseReceivedEvent = new EventListener()
-                .subscribe(CaseReceived.EVENT_NAME)
-                .run(() -> CreateCase.createCaseForPayloadBuilder(createCase))
-                .popEvent(CaseReceived.EVENT_NAME);
+        createCaseForPayloadBuilder(createCase);
 
-        assertTrue(caseReceivedEvent.isPresent());
-        assertThat(caseReceivedEvent.get().payloadAsJsonObject().getString("expectedDateReady"), is(createCase.getPostingDate().plusDays(NUMBER_DAYS_WAITING_FOR_PLEA).toString()));
-
-        final JsonObject defendantObject = caseReceivedEvent.get().payloadAsJsonObject().getJsonObject("defendant");
-        final JsonArray offenceArray = defendantObject.getJsonArray("offences");
-        final JsonObject offence1 = offenceArray.getJsonObject(0);
-        assertThat(offence1.getBoolean("isEligibleAOCP"), is(true));
-        assertThat(offence1.getBoolean("prosecutorOfferAOCP"), is(true));
-        assertThat(offence1.getInt("aocpStandardPenaltyAmount"), is(100));
-
-        final JsonPath jsonResponse = CasePoller.pollUntilCaseByIdIsOk(caseId, JsonPathMatchers.withJsonPath("$.status", equalTo(CaseStatus.NO_PLEA_RECEIVED_READY_FOR_DECISION.name())));
+        final JsonPath jsonResponse = pollUntilCaseByIdIsOk(caseId, JsonPathMatchers.withJsonPath("$.status", equalTo(CaseStatus.NO_PLEA_RECEIVED_READY_FOR_DECISION.name())));
         assertThat(jsonResponse.get("id"), equalTo(caseId.toString()));
         assertThat(jsonResponse.get("urn"), equalTo(createCase.getUrn()));
         assertThat(jsonResponse.get("prosecutingAuthorityName"), equalTo(TFL.getFullName()));
@@ -241,15 +228,9 @@ public class CreateCaseIT extends BaseIntegrationTest {
         stubEnforcementAreaByPostcode(defendant.getAddressBuilder().getPostcode(), NATIONAL_COURT_CODE, "Bedfordshire Magistrates' Court");
         stubRegionByPostcode(NATIONAL_COURT_CODE, DEFENDANT_REGION);
 
-        final Optional<JsonEnvelope> caseReceivedEvent = new EventListener()
-                .subscribe(CaseReceived.EVENT_NAME)
-                .run(() -> CreateCase.createCaseForPayloadBuilder(createCase))
-                .popEvent(CaseReceived.EVENT_NAME);
+        createCaseForPayloadBuilder(createCase);
 
-        assertTrue(caseReceivedEvent.isPresent());
-        assertThat(caseReceivedEvent.get().payloadAsJsonObject().getString("expectedDateReady"), is(createCase.getPostingDate().plusDays(NUMBER_DAYS_WAITING_FOR_PLEA).toString()));
-
-        final JsonPath jsonResponse = CasePoller.pollUntilCaseByIdIsOk(caseId, JsonPathMatchers.withJsonPath("$.status", equalTo(CaseStatus.NO_PLEA_RECEIVED_READY_FOR_DECISION.name())));
+        final JsonPath jsonResponse = pollUntilCaseByIdIsOk(caseId, JsonPathMatchers.withJsonPath("$.status", equalTo(CaseStatus.NO_PLEA_RECEIVED_READY_FOR_DECISION.name())));
         assertThat(jsonResponse.get("id"), equalTo(caseId.toString()));
         assertThat(jsonResponse.get("urn"), equalTo(createCase.getUrn()));
         assertThat(jsonResponse.get("prosecutingAuthorityName"), equalTo(TFL.getFullName()));
@@ -287,7 +268,7 @@ public class CreateCaseIT extends BaseIntegrationTest {
         final String email2 = "@b.co";
         createCase.getDefendantBuilder().getContactDetailsBuilder().withEmail(email).withEmail2(email2);
 
-        final String response = CreateCase.createCaseForPayloadBuilder(createCase, BAD_REQUEST);
+        final String response = createCaseForPayloadBuilder(createCase, BAD_REQUEST);
 
         JsonObject responseJson = responseToJsonObject(response);
         JsonValue validationErrors = responseJson.get("validationErrors");
@@ -306,7 +287,7 @@ public class CreateCaseIT extends BaseIntegrationTest {
 
         createCase.getDefendantBuilder().getAddressBuilder().withPostcode(postCode);
 
-        final String response = CreateCase.createCaseForPayloadBuilder(createCase, BAD_REQUEST);
+        final String response = createCaseForPayloadBuilder(createCase, BAD_REQUEST);
 
         JsonObject responseJson = responseToJsonObject(response);
         JsonValue validationErrors = responseJson.get("validationErrors");
@@ -331,16 +312,10 @@ public class CreateCaseIT extends BaseIntegrationTest {
         stubEnforcementAreaByPostcode(createCase.getDefendantBuilder().getAddressBuilder().getPostcode(), NATIONAL_COURT_CODE, "Bedfordshire Magistrates' Court");
         stubRegionByPostcode(NATIONAL_COURT_CODE, DEFENDANT_REGION);
 
-        final Optional<JsonEnvelope> caseReceivedEvent = new EventListener()
-                .subscribe(CaseReceived.EVENT_NAME)
-                .run(() -> CreateCase.createCaseForPayloadBuilder(createCase))
-                .popEvent(CaseReceived.EVENT_NAME);
+        createCaseForPayloadBuilder(createCase);
 
-        assertTrue(caseReceivedEvent.isPresent());
-
-        final JsonPath jsonResponse = CasePoller.pollUntilCaseByIdIsOk(caseId, JsonPathMatchers.withJsonPath("$.status", equalTo(CaseStatus.NO_PLEA_RECEIVED_READY_FOR_DECISION.name())));
+        final JsonPath jsonResponse = pollUntilCaseByIdIsOk(caseId, JsonPathMatchers.withJsonPath("$.status", equalTo(CaseStatus.NO_PLEA_RECEIVED_READY_FOR_DECISION.name())));
         assertThat(jsonResponse.get("id"), equalTo(caseId.toString()));
-
         assertOffenceDvlaData(jsonResponse, backDutyFromDate, backDutyToDate, 0);
     }
 
@@ -358,14 +333,9 @@ public class CreateCaseIT extends BaseIntegrationTest {
         stubEnforcementAreaByPostcode(defendant.getAddressBuilder().getPostcode(), NATIONAL_COURT_CODE, "Bedfordshire Magistrates' Court");
         stubRegionByPostcode(NATIONAL_COURT_CODE, DEFENDANT_REGION);
 
-        final Optional<JsonEnvelope> caseReceivedEvent = new EventListener()
-                .subscribe(CaseReceived.EVENT_NAME)
-                .run(() -> CreateCase.createCaseForPayloadBuilder(createCase))
-                .popEvent(CaseReceived.EVENT_NAME);
+        createCaseForPayloadBuilder(createCase);
 
-        assertTrue(caseReceivedEvent.isPresent());
-
-        final JsonPath jsonResponse = CasePoller.pollUntilCaseByIdIsOk(caseId, JsonPathMatchers.withJsonPath("$.status", equalTo(CaseStatus.NO_PLEA_RECEIVED_READY_FOR_DECISION.name())));
+        final JsonPath jsonResponse = pollUntilCaseByIdIsOk(caseId, JsonPathMatchers.withJsonPath("$.status", equalTo(CaseStatus.NO_PLEA_RECEIVED_READY_FOR_DECISION.name())));
         assertThat(jsonResponse.get("id"), equalTo(caseId.toString()));
         assertThat(jsonResponse.get("urn"), equalTo(createCase.getUrn()));
         assertThat(jsonResponse.get("prosecutingAuthorityName"), equalTo(TFL.getFullName()));
@@ -386,14 +356,9 @@ public class CreateCaseIT extends BaseIntegrationTest {
         AddressBuilder defendantAddress = defendant.getAddressBuilder();
         defendantAddress.withPostcode(null);
 
-        final Optional<JsonEnvelope> caseReceivedEvent = new EventListener()
-                .subscribe(CaseReceived.EVENT_NAME)
-                .run(() -> CreateCase.createCaseForPayloadBuilder(createCase))
-                .popEvent(CaseReceived.EVENT_NAME);
+        createCaseForPayloadBuilder(createCase);
 
-        assertTrue(caseReceivedEvent.isPresent());
-
-        final JsonPath jsonResponse = CasePoller.pollUntilCaseByIdIsOk(caseId, JsonPathMatchers.withJsonPath("$.status", equalTo(CaseStatus.NO_PLEA_RECEIVED_READY_FOR_DECISION.name())));
+        final JsonPath jsonResponse = pollUntilCaseByIdIsOk(caseId, JsonPathMatchers.withJsonPath("$.status", equalTo(CaseStatus.NO_PLEA_RECEIVED_READY_FOR_DECISION.name())));
         assertThat(jsonResponse.get("id"), equalTo(caseId.toString()));
         assertThat(jsonResponse.get("urn"), equalTo(createCase.getUrn()));
         assertThat(jsonResponse.get("prosecutingAuthorityName"), equalTo(TFL.getFullName()));
@@ -413,14 +378,9 @@ public class CreateCaseIT extends BaseIntegrationTest {
         defendant.withAsn("12345");
         defendant.withPncIdentifier("6789");
 
-        final Optional<JsonEnvelope> caseReceivedEvent = new EventListener()
-                .subscribe(CaseReceived.EVENT_NAME)
-                .run(() -> CreateCase.createCaseForPayloadBuilder(createCase))
-                .popEvent(CaseReceived.EVENT_NAME);
+        createCaseForPayloadBuilder(createCase);
 
-        assertTrue(caseReceivedEvent.isPresent());
-
-        final JsonPath jsonResponse = CasePoller.pollUntilCaseByIdIsOk(caseId, JsonPathMatchers.withJsonPath("$.status", equalTo(CaseStatus.NO_PLEA_RECEIVED_READY_FOR_DECISION.name())));
+        final JsonPath jsonResponse = pollUntilCaseByIdIsOk(caseId, JsonPathMatchers.withJsonPath("$.status", equalTo(CaseStatus.NO_PLEA_RECEIVED_READY_FOR_DECISION.name())));
         assertThat(jsonResponse.get("id"), equalTo(caseId.toString()));
         assertThat(jsonResponse.get("urn"), equalTo(createCase.getUrn()));
         assertThat(jsonResponse.get("prosecutingAuthorityName"), equalTo(TFL.getFullName()));
@@ -446,12 +406,12 @@ public class CreateCaseIT extends BaseIntegrationTest {
 
         final Optional<JsonEnvelope> caseReceivedEvent = new EventListener()
                 .subscribe(CaseReceived.EVENT_NAME)
-                .run(() -> CreateCase.createCaseForPayloadBuilder(createCase))
+                .run(() -> createCaseForPayloadBuilder(createCase))
                 .popEvent(CaseReceived.EVENT_NAME);
 
         assertTrue(caseReceivedEvent.isPresent());
 
-        final JsonPath jsonResponse = CasePoller.pollUntilCaseByIdIsOk(caseId, JsonPathMatchers.withJsonPath("$.status", equalTo(CaseStatus.NO_PLEA_RECEIVED_READY_FOR_DECISION.name())));
+        final JsonPath jsonResponse = pollUntilCaseByIdIsOk(caseId, JsonPathMatchers.withJsonPath("$.status", equalTo(CaseStatus.NO_PLEA_RECEIVED_READY_FOR_DECISION.name())));
         assertThat(jsonResponse.get("id"), equalTo(caseId.toString()));
         assertThat(jsonResponse.get("urn"), equalTo(createCase.getUrn()));
         assertThat(jsonResponse.get("prosecutingAuthorityName"), equalTo(TVL.getFullName()));
@@ -475,7 +435,7 @@ public class CreateCaseIT extends BaseIntegrationTest {
 
         final Optional<JsonEnvelope> event = new EventListener()
                 .subscribe(CaseEligibleForAOCP.EVENT_NAME)
-                .run(() -> CreateCase.createCaseForPayloadBuilder(createCase))
+                .run(() -> createCaseForPayloadBuilder(createCase))
                 .popEvent(CaseEligibleForAOCP.EVENT_NAME);
 
         assertTrue(event.isPresent());

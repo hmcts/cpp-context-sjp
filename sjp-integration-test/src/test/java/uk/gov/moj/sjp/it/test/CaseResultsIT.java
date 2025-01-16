@@ -9,24 +9,22 @@ import static uk.gov.moj.cpp.sjp.domain.SessionType.MAGISTRATE;
 import static uk.gov.moj.sjp.it.Constants.DEFAULT_OFFENCE_CODE;
 import static uk.gov.moj.sjp.it.Constants.OFFENCE_DATE_CODE_FOR_BETWEEN;
 import static uk.gov.moj.sjp.it.command.CreateCase.createCaseForPayloadBuilder;
-import static uk.gov.moj.sjp.it.helper.AssignmentHelper.requestCaseAssignment;
-import static uk.gov.moj.sjp.it.helper.SessionHelper.startSession;
+import static uk.gov.moj.sjp.it.helper.AssignmentHelper.requestCaseAssignmentAndConfirm;
+import static uk.gov.moj.sjp.it.helper.CaseHelper.pollUntilCaseReady;
+import static uk.gov.moj.sjp.it.helper.DecisionHelper.saveDecision;
+import static uk.gov.moj.sjp.it.helper.SessionHelper.startSessionAndConfirm;
 import static uk.gov.moj.sjp.it.model.ProsecutingAuthority.DVLA;
 import static uk.gov.moj.sjp.it.model.ProsecutingAuthority.TFL;
 import static uk.gov.moj.sjp.it.model.ProsecutingAuthority.TVL;
-import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubAllResultDefinitions;
-import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubBailStatuses;
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubDefaultCourtByCourtHouseOUCodeQuery;
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubEnforcementAreaByPostcode;
-import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubFixedLists;
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubProsecutorQuery;
-import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubQueryForAllProsecutors;
-import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubQueryForVerdictTypes;
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubRegionByPostcode;
-import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubResultIds;
 import static uk.gov.moj.sjp.it.stub.UsersGroupsStub.stubForUserDetails;
+import static uk.gov.moj.sjp.it.util.CaseAssignmentRestrictionHelper.provisionCaseAssignmentRestrictions;
 import static uk.gov.moj.sjp.it.util.Defaults.DEFAULT_LONDON_COURT_HOUSE_OU_CODE;
 import static uk.gov.moj.sjp.it.util.Defaults.DEFAULT_USER_ID;
+import static uk.gov.moj.sjp.it.util.SjpDatabaseCleaner.cleanViewStore;
 import static uk.gov.moj.sjp.it.util.UrnProvider.generate;
 
 import uk.gov.justice.json.schemas.domains.sjp.User;
@@ -35,15 +33,10 @@ import uk.gov.moj.cpp.sjp.domain.decision.FinancialPenalty;
 import uk.gov.moj.cpp.sjp.domain.decision.disqualification.DisqualificationType;
 import uk.gov.moj.cpp.sjp.domain.decision.endorsement.PenaltyPointsReason;
 import uk.gov.moj.cpp.sjp.domain.decision.imposition.FinancialImposition;
-import uk.gov.moj.cpp.sjp.event.CaseCompleted;
-import uk.gov.moj.cpp.sjp.event.CaseMarkedReadyForDecision;
-import uk.gov.moj.cpp.sjp.event.decision.DecisionSaved;
 import uk.gov.moj.sjp.it.command.CreateCase;
-import uk.gov.moj.sjp.it.helper.DecisionHelper;
 import uk.gov.moj.sjp.it.helper.EventListener;
 import uk.gov.moj.sjp.it.model.DecisionCommand;
 import uk.gov.moj.sjp.it.model.ProsecutingAuthority;
-import uk.gov.moj.sjp.it.util.CaseAssignmentRestrictionHelper;
 import uk.gov.moj.sjp.it.util.SjpDatabaseCleaner;
 import uk.gov.moj.sjp.it.util.builders.FinancialImpositionBuilder;
 import uk.gov.moj.sjp.it.util.builders.FinancialPenaltyBuilder;
@@ -82,21 +75,13 @@ public class CaseResultsIT extends BaseIntegrationTest {
 
     @BeforeEach
     public void beforeEveryTest() throws SQLException {
-        databaseCleaner.cleanViewStore();
+        cleanViewStore();
 
         stubDefaultCourtByCourtHouseOUCodeQuery();
-        stubResultIds();
-        stubFixedLists();
         stubProsecutorQuery(prosecutingAuthority.name(), prosecutingAuthority.getFullName(), randomUUID());
         stubForUserDetails(user, "ALL");
-        stubAllResultDefinitions();
-        stubQueryForVerdictTypes();
-        stubQueryForAllProsecutors();
-        stubBailStatuses();
-        stubResultIds();
 
-        CaseAssignmentRestrictionHelper.provisionCaseAssignmentRestrictions(Sets.newHashSet(TFL, TVL, DVLA));
-
+        provisionCaseAssignmentRestrictions(Sets.newHashSet(TFL, TVL, DVLA));
 
         final CreateCase.CreateCasePayloadBuilder caseBuilder = CreateCase
                 .CreateCasePayloadBuilder
@@ -113,13 +98,11 @@ public class CaseResultsIT extends BaseIntegrationTest {
         stubEnforcementAreaByPostcode(caseBuilder.getDefendantBuilder().getAddressBuilder().getPostcode(), NATIONAL_COURT_CODE, "Bedfordshire Magistrates' Court");
         stubRegionByPostcode(NATIONAL_COURT_CODE, "DEFENDANT_REGION");
 
-        new EventListener()
-                .subscribe(CaseMarkedReadyForDecision.EVENT_NAME)
-                .run(() -> createCaseForPayloadBuilder(caseBuilder))
-                .popEvent(CaseMarkedReadyForDecision.EVENT_NAME);
+        createCaseForPayloadBuilder(caseBuilder);
+        pollUntilCaseReady(caseId);
 
-        startSession(sessionId, laUser.getUserId(), DEFAULT_LONDON_COURT_HOUSE_OU_CODE, MAGISTRATE);
-        requestCaseAssignment(sessionId, USER_ID);
+        startSessionAndConfirm(sessionId, laUser.getUserId(), DEFAULT_LONDON_COURT_HOUSE_OU_CODE, MAGISTRATE);
+        requestCaseAssignmentAndConfirm(sessionId, USER_ID, caseId);
     }
 
     @Test
@@ -130,15 +113,9 @@ public class CaseResultsIT extends BaseIntegrationTest {
         final FinancialImposition financialImposition = FinancialImpositionBuilder.withDefaults();
         final DecisionCommand decision = new DecisionCommand(sessionId, caseId, null, laUser, offencesDecisions, financialImposition);
 
-
-        // When
         eventListener
-                .subscribe(DecisionSaved.EVENT_NAME)
-                .subscribe(CaseCompleted.EVENT_NAME)
                 .subscribe("public.events.hearing.hearing-resulted")
-                .run(() -> DecisionHelper.saveDecision(decision));
-
-        // Then
+                .run(() -> saveDecision(decision));
 
         final Optional<JsonEnvelope> jsonEnvelopePublicHearingResulted = eventListener.popEvent(PUBLIC_EVENTS_HEARING_HEARING_RESULTED);
         final JsonObject hearingResultedPayload = jsonEnvelopePublicHearingResulted.get().payloadAsJsonObject();
@@ -149,7 +126,6 @@ public class CaseResultsIT extends BaseIntegrationTest {
         assertThat(convictingCourt.getString("code"), is("B01LY"));
         assertThat(!convictingDate.isEmpty(), is(true));
         assertThat(convictingDate, is(LocalDate.now().toString()));
-
 
     }
 
@@ -164,14 +140,9 @@ public class CaseResultsIT extends BaseIntegrationTest {
         final FinancialImposition financialImposition = FinancialImpositionBuilder.withDefaults();
         final DecisionCommand decision = new DecisionCommand(sessionId, caseId, null, laUser, offencesDecisions, financialImposition);
 
-        // When
         eventListener
-                .subscribe(DecisionSaved.EVENT_NAME)
-                .subscribe(CaseCompleted.EVENT_NAME)
                 .subscribe("public.events.hearing.hearing-resulted")
-                .run(() -> DecisionHelper.saveDecision(decision));
-
-        // Then
+                .run(() -> saveDecision(decision));
 
         final Optional<JsonEnvelope> jsonEnvelopePublicHearingResulted = eventListener.popEvent(PUBLIC_EVENTS_HEARING_HEARING_RESULTED);
         assertThat(jsonEnvelopePublicHearingResulted.isPresent(), is(true));
@@ -189,19 +160,11 @@ public class CaseResultsIT extends BaseIntegrationTest {
         final List<FinancialPenalty> offencesDecisions = singletonList(financialPenalty);
         final DecisionCommand decision = new DecisionCommand(sessionId, caseId, null, laUser, offencesDecisions, financialImposition);
 
-        // When
         eventListener
-                .subscribe(DecisionSaved.EVENT_NAME)
-                .subscribe(CaseCompleted.EVENT_NAME)
                 .subscribe("public.events.hearing.hearing-resulted")
-                .run(() -> DecisionHelper.saveDecision(decision));
-
-        // Then
-        // Then
+                .run(() -> saveDecision(decision));
 
         final Optional<JsonEnvelope> jsonEnvelopePublicHearingResulted = eventListener.popEvent(PUBLIC_EVENTS_HEARING_HEARING_RESULTED);
         assertThat(jsonEnvelopePublicHearingResulted.isPresent(), is(true));
     }
-
-
 }

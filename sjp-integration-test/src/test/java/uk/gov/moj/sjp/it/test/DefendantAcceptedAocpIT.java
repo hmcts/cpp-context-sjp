@@ -2,7 +2,6 @@ package uk.gov.moj.sjp.it.test;
 
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.isJson;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
-import static java.lang.String.format;
 import static java.time.ZonedDateTime.parse;
 import static java.util.UUID.randomUUID;
 import static org.hamcrest.CoreMatchers.allOf;
@@ -19,16 +18,18 @@ import static uk.gov.moj.cpp.sjp.event.processor.service.systemdocgenerator.Temp
 import static uk.gov.moj.cpp.sjp.persistence.entity.AocpAcceptedEmailStatus.Status.FAILED;
 import static uk.gov.moj.cpp.sjp.persistence.entity.AocpAcceptedEmailStatus.Status.QUEUED;
 import static uk.gov.moj.cpp.sjp.persistence.entity.AocpAcceptedEmailStatus.Status.SENT;
+import static uk.gov.moj.sjp.it.command.CreateCase.CreateCasePayloadBuilder.withDefaults;
+import static uk.gov.moj.sjp.it.command.CreateCase.createCaseForPayloadBuilder;
 import static uk.gov.moj.sjp.it.helper.PleadOnlineHelper.getOnlinePleaAocpAccepted;
+import static uk.gov.moj.sjp.it.helper.SessionHelper.resetAndStartAocpSession;
 import static uk.gov.moj.sjp.it.model.ProsecutingAuthority.DVLA;
 import static uk.gov.moj.sjp.it.model.ProsecutingAuthority.TFL;
 import static uk.gov.moj.sjp.it.model.ProsecutingAuthority.TVL;
+import static uk.gov.moj.sjp.it.pollingquery.CasePoller.pollForCase;
 import static uk.gov.moj.sjp.it.pollingquery.CasePoller.pollUntilCaseByIdIsOk;
 import static uk.gov.moj.sjp.it.stub.IdMapperStub.stubAddMapping;
 import static uk.gov.moj.sjp.it.stub.IdMapperStub.stubGetFromIdMapper;
-import static uk.gov.moj.sjp.it.stub.NotificationNotifyStub.stubNotifications;
 import static uk.gov.moj.sjp.it.stub.NotificationNotifyStub.verifyNotification;
-import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubAllReferenceData;
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubCountryByPostcodeQuery;
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubDefaultCourtByCourtHouseOUCodeQuery;
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubEnforcementAreaByPostcode;
@@ -36,8 +37,11 @@ import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubProsecutorQuer
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubQueryOffencesByCode;
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubRegionByPostcode;
 import static uk.gov.moj.sjp.it.stub.UsersGroupsStub.stubForUserDetails;
+import static uk.gov.moj.sjp.it.util.ActivitiHelper.executeTimerJobs;
+import static uk.gov.moj.sjp.it.util.ActivitiHelper.pollUntilAocpProcessExists;
+import static uk.gov.moj.sjp.it.util.CaseAssignmentRestrictionHelper.provisionCaseAssignmentRestrictions;
 import static uk.gov.moj.sjp.it.util.FileUtil.getPayload;
-import static uk.gov.moj.sjp.it.helper.SessionHelper.resetAndStartAocpSession;
+import static uk.gov.moj.sjp.it.util.SjpDatabaseCleaner.cleanViewStore;
 
 import uk.gov.justice.json.schemas.domains.sjp.User;
 import uk.gov.justice.services.messaging.JsonEnvelope;
@@ -50,13 +54,7 @@ import uk.gov.moj.sjp.it.helper.EventListener;
 import uk.gov.moj.sjp.it.helper.PleadOnlineHelper;
 import uk.gov.moj.sjp.it.model.ProsecutingAuthority;
 import uk.gov.moj.sjp.it.stub.NotificationNotifyStub;
-import uk.gov.moj.sjp.it.util.CaseAssignmentRestrictionHelper;
-
-import uk.gov.moj.sjp.it.pollingquery.CasePoller;
-import uk.gov.moj.sjp.it.util.ActivitiHelper;
-import uk.gov.moj.sjp.it.util.SjpDatabaseCleaner;
 import uk.gov.moj.sjp.it.util.SjpViewstore;
-import uk.gov.moj.sjp.it.verifier.PersonInfoVerifier;
 
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
@@ -69,9 +67,8 @@ import javax.json.JsonObject;
 import javax.ws.rs.core.Response;
 
 import com.google.common.collect.Sets;
-import org.awaitility.Awaitility;
-import com.jayway.jsonpath.matchers.JsonPathMatchers;
 import io.restassured.path.json.JsonPath;
+import org.awaitility.Awaitility;
 import org.hamcrest.Matcher;
 import org.hamcrest.Matchers;
 import org.json.JSONObject;
@@ -81,11 +78,9 @@ import org.junit.jupiter.api.Test;
 public class DefendantAcceptedAocpIT extends BaseIntegrationTest {
     private static final String TEMPLATE_PLEA_AOCP_ONLINE_PAYLOAD = "raml/json/sjp.command-plead-aocp-online.json";
     private static final String AOCP_ENGLISH_TEMPLATE_ID = "2300fded-e52f-4564-a92a-a6412b1c0f09";
-    private static final SjpDatabaseCleaner databaseCleaner = new SjpDatabaseCleaner();
     private static final String DEFENDANT_REGION = "croydon";
     private static final String NATIONAL_COURT_CODE = "1080";
     private final EventListener eventListener = new EventListener();
-    private PersonInfoVerifier personInfoVerifier;
     private CreateCase.CreateCasePayloadBuilder createCasePayloadBuilder;
     private UUID offenceId;
     private final SjpViewstore sjpViewstore = new SjpViewstore();
@@ -98,13 +93,11 @@ public class DefendantAcceptedAocpIT extends BaseIntegrationTest {
     @BeforeEach
     @SuppressWarnings("squid:S2925")
     public void setUp() throws Exception {
-        stubNotifications();
-        databaseCleaner.cleanViewStore();
+        cleanViewStore();
         offenceId = randomUUID();
-        CaseAssignmentRestrictionHelper.provisionCaseAssignmentRestrictions(Sets.newHashSet(TFL, TVL, DVLA));
+        provisionCaseAssignmentRestrictions(Sets.newHashSet(TFL, TVL, DVLA));
         this.createCasePayloadBuilder =
-                CreateCase.CreateCasePayloadBuilder
-                        .withDefaults()
+                withDefaults()
                         .withOffenceId(offenceId)
                         .withOffenceCode("PS00002")
                         .withPostingDate(LocalDate.now());
@@ -117,13 +110,11 @@ public class DefendantAcceptedAocpIT extends BaseIntegrationTest {
         final ProsecutingAuthority prosecutingAuthority = createCasePayloadBuilder.getProsecutingAuthority();
         stubProsecutorQuery(prosecutingAuthority.name(), prosecutingAuthority.getFullName(), randomUUID());
         stubQueryOffencesByCode("PS00002");
-        CreateCase.createCaseForPayloadBuilder(this.createCasePayloadBuilder);
+        createCaseForPayloadBuilder(this.createCasePayloadBuilder);
         stubForUserDetails(legalAdviser, "ALL");
         pollUntilCaseByIdIsOk(createCasePayloadBuilder.getId());
-        personInfoVerifier = PersonInfoVerifier.personInfoVerifierForCasePayload(createCasePayloadBuilder);
         stubCountryByPostcodeQuery("W1T 1JY", "England");
         stubDefaultCourtByCourtHouseOUCodeQuery();
-        stubAllReferenceData();
     }
 
 
@@ -139,7 +130,7 @@ public class DefendantAcceptedAocpIT extends BaseIntegrationTest {
         final String stringPayload = getPayload(TEMPLATE_PLEA_AOCP_ONLINE_PAYLOAD);
 
         final CreateCase.OffenceBuilder offenceBuilder = createCasePayloadBuilder.getOffenceBuilder();
-        String  offenceId = offenceBuilder.getId().toString();
+        String offenceId = offenceBuilder.getId().toString();
 
         final JSONObject payload = new JSONObject(stringPayload.replace("OFFENCE_ID", offenceId));
 
@@ -148,7 +139,7 @@ public class DefendantAcceptedAocpIT extends BaseIntegrationTest {
 
         final UUID caseId = createCasePayloadBuilder.getId();
         final CreateCase.DefendantBuilder defendantBuilder = createCasePayloadBuilder.getDefendantBuilder();
-        final UUID defendantId =  defendantBuilder.getId();
+        final UUID defendantId = defendantBuilder.getId();
 
         TimeUnit.SECONDS.sleep(2);
 
@@ -158,8 +149,8 @@ public class DefendantAcceptedAocpIT extends BaseIntegrationTest {
                         withJsonPath("$.onlinePleaDetails[0].plea", equalTo(AOCP_PENDING.name())))
                 ), USER_ID));
 
-        assertThat(response.getString("caseId"),is(caseId.toString()));
-        assertThat(response.getString("defendantId"),is(defendantId.toString()));
+        assertThat(response.getString("caseId"), is(caseId.toString()));
+        assertThat(response.getString("defendantId"), is(defendantId.toString()));
         assertThat(response.getString("onlinePleaDetails[0].offenceId"), is(offenceId));
         assertThat(parse(response.getString("submittedOn")).toLocalDate(), is(ZonedDateTime.now().toLocalDate()));
 
@@ -176,14 +167,16 @@ public class DefendantAcceptedAocpIT extends BaseIntegrationTest {
         assertThat(actual.getString("sentTime"), not(nullValue()));
         assertStatusUpdatedInViewstore(caseId, SENT);
 
-        final String pendingProscess = ActivitiHelper.pollUntilAocpProcessExists("timerTimeout", caseId.toString());
-        ActivitiHelper.executeTimerJobs(pendingProscess);
+        final String pendingProcess = pollUntilAocpProcessExists("timerTimeout", caseId.toString());
+        executeTimerJobs(pendingProcess);
 
-        final JsonPath jsonResponse = CasePoller.pollUntilCaseByIdIsOk(caseId, JsonPathMatchers.withJsonPath("$.status", equalTo(CaseStatus.COMPLETED.name())));
-        assertThat(jsonResponse.get("id"), is(caseId.toString()));
-        assertThat(jsonResponse.get("resultedThroughAocp"), is(true));
-        assertThat(jsonResponse.get("defendantAcceptedAocp"), is(true));
-        assertThat(jsonResponse.get(format("defendant.offences[%d].plea", 0)), equalTo("GUILTY"));
+        pollForCase(caseId, new Matcher[]{
+                withJsonPath("$.status", is(CaseStatus.COMPLETED.name())),
+                withJsonPath("$.id", is(caseId.toString())),
+                withJsonPath("$.resultedThroughAocp", is(true)),
+                withJsonPath("$.defendantAcceptedAocp", is(true)),
+                withJsonPath("$.defendant.offences[0].plea", is("GUILTY"))
+        });
 
     }
 

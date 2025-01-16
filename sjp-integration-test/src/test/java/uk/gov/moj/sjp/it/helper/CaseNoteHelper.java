@@ -1,7 +1,6 @@
 package uk.gov.moj.sjp.it.helper;
 
 import static java.util.Objects.nonNull;
-import static java.util.UUID.randomUUID;
 import static javax.json.Json.createObjectBuilder;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;

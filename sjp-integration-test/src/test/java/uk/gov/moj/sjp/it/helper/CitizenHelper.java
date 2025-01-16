@@ -1,7 +1,5 @@
 package uk.gov.moj.sjp.it.helper;
 
-import uk.gov.justice.services.test.utils.core.http.ResponseData;
-
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withoutJsonPath;
 import static javax.ws.rs.core.Response.Status.NOT_FOUND;
@@ -14,9 +12,6 @@ import static uk.gov.moj.sjp.it.util.DefaultRequests.getCaseByUrnAndPostcode;
 import static uk.gov.moj.sjp.it.util.RestPollerWithDefaults.pollWithDefaults;
 
 import java.util.UUID;
-
-import java.math.BigDecimal;
-import java.math.RoundingMode;
 
 import javax.json.JsonObject;
 

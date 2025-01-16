@@ -60,7 +60,6 @@ import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubDefaultCourtBy
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubHearingTypesQuery;
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubReferralReason;
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubReferralReasonsQuery;
-import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubResultIds;
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubWithdrawalReasonsQuery;
 import static uk.gov.moj.sjp.it.stub.UsersGroupsStub.stubForUserDetails;
 import static uk.gov.moj.sjp.it.util.ActivitiHelper.executeTimerJobs;
@@ -136,8 +135,6 @@ public class MultipleOffencesSaveDecisionIT extends BaseIntegrationTest {
     private static final String CASE_NOT_ASSIGNED = "The case must be assigned to the caller";
     private static final String OFFENCE_ALREADY_HAS_DECISION = "Offence %s already has a final decision";
     private static final String REFERRAL_CANNOT_BE_SAVED_WITH_ADJOURN = "REFER_FOR_COURT_HEARING decision can not be saved with decision(s) ADJOURN";
-    private static final String BEDFORDSHIRE_NATIONAL_COURT_CODE = "1080";
-    private static final String BEDFORDSHIRE_MAGISTRATES_COURT = "Bedfordshire Magistrates' Court";
     private final EventListener eventListener = new EventListener();
     private final User user = new User("John", "Smith", USER_ID);
     private UUID sessionId = randomUUID();
@@ -159,7 +156,7 @@ public class MultipleOffencesSaveDecisionIT extends BaseIntegrationTest {
 
     @BeforeEach
     public void setUp() throws Exception {
-        new SjpDatabaseCleaner().cleanViewStore();
+        SjpDatabaseCleaner.cleanViewStore();
 
         stubDefaultCourtByCourtHouseOUCodeQuery();
         stubForUserDetails(user, "ALL");
@@ -168,8 +165,6 @@ public class MultipleOffencesSaveDecisionIT extends BaseIntegrationTest {
 
         aCase = createCase(caseId, offence1Id, offence2Id, offence3Id, postingDate);
         defendantId = aCase.getDefendantBuilder().getId();
-
-        stubResultIds();
     }
 
     @Test
@@ -669,7 +664,7 @@ public class MultipleOffencesSaveDecisionIT extends BaseIntegrationTest {
     }
 
     @Test
-    public void shouldSaveAdjournDecisionWithWithdrawDecisionAndDismissDecision() throws Exception {
+    public void shouldSaveAdjournDecisionWithWithdrawDecisionAndDismissDecision() {
         final LocalDate adjournTo = now().plusDays(10);
         stubWithdrawalReasonsQuery(withdrawalReasonId, withdrawalReason);
 
@@ -710,7 +705,7 @@ public class MultipleOffencesSaveDecisionIT extends BaseIntegrationTest {
     }
 
     @Test
-    public void shouldSaveAdjournWithConvictionAndFinancialPenaltyOnDifferentSessions() throws Exception {
+    public void shouldSaveAdjournWithConvictionAndFinancialPenaltyOnDifferentSessions() {
         final LocalDate adjournTo = now().plusDays(10);
         stubWithdrawalReasonsQuery(withdrawalReasonId, withdrawalReason);
 
@@ -795,7 +790,7 @@ public class MultipleOffencesSaveDecisionIT extends BaseIntegrationTest {
     }
 
     @Test
-    public void shouldSaveReferForCourtHearingDecisionWithWithdrawDecisionAndDismissDecision() throws Exception {
+    public void shouldSaveReferForCourtHearingDecisionWithWithdrawDecisionAndDismissDecision() {
         final UUID referralReasonId = randomUUID();
         final UUID hearingTypeId = randomUUID();
         final String hearingCode = "PLE";

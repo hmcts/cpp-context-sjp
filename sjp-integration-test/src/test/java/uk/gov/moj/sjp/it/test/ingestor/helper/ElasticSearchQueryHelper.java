@@ -22,17 +22,12 @@ import org.slf4j.LoggerFactory;
 
 public class ElasticSearchQueryHelper {
     private static final Logger log = LoggerFactory.getLogger(ElasticSearchQueryHelper.class);
-    private static final Poller poller = new Poller(100, 3000L);
+    private static final Poller poller = new Poller(10, 1000L);
     private static final ElasticSearchIndexFinderUtil elasticSearch = new ElasticSearchIndexFinderUtil(new ElasticSearchClient());
 
 
     private ElasticSearchQueryHelper() {
     }
-
-    public static final Poller getPoller() {
-        return poller;
-    }
-
 
     public static JsonObject getCaseFromElasticSearch(final String... caseIds) {
         return jsonFromString(getJsonArray(getElasticSearchResponseWithPredicate(p -> true, caseIds).get(), "index").get().getString(0));

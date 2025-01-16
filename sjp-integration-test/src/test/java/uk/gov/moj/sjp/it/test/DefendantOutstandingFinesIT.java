@@ -16,7 +16,7 @@ import uk.gov.moj.sjp.it.pollingquery.CasePoller;
 import uk.gov.moj.sjp.it.stub.DefendantOutstandingFinesStub;
 
 import javax.ws.rs.core.Response;
-import java.io.IOException;
+
 import java.util.UUID;
 
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
@@ -53,7 +53,7 @@ public class DefendantOutstandingFinesIT extends BaseIntegrationTest {
     }
 
     @Test
-    public void shouldQueryOutstandingFines() throws IOException {
+    public void shouldQueryOutstandingFines() {
         final JsonPath jsonPath = CasePoller.pollUntilCaseByIdIsOk(caseIdOne);
         final UUID defendantId = UUID.fromString(jsonPath.getString("defendant.id"));
         final String firstName = jsonPath.getString("defendant.personalDetails.firstName");

@@ -18,12 +18,16 @@ import static uk.gov.justice.services.test.utils.core.matchers.ResponsePayloadMa
 import static uk.gov.justice.services.test.utils.core.matchers.ResponseStatusMatcher.status;
 import static uk.gov.moj.sjp.it.command.CreateCase.CreateCasePayloadBuilder.withDefaults;
 import static uk.gov.moj.sjp.it.command.CreateCase.createCaseForPayloadBuilder;
+import static uk.gov.moj.sjp.it.command.UpdateDefendantDetails.acknowledgeDefendantDetailsUpdates;
+import static uk.gov.moj.sjp.it.command.UpdateDefendantDetails.updateDefendantDetailsForCaseAndPayload;
 import static uk.gov.moj.sjp.it.model.ProsecutingAuthority.TFL;
+import static uk.gov.moj.sjp.it.pollingquery.CasePoller.pollUntilCaseByIdIsOk;
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubEnforcementAreaByPostcode;
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubProsecutorQuery;
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubRegionByPostcode;
 import static uk.gov.moj.sjp.it.stub.UsersGroupsStub.stubForUserDetails;
 import static uk.gov.moj.sjp.it.util.HttpClientUtil.getReadUrl;
+import static uk.gov.moj.sjp.it.util.HttpClientUtil.makeGetCall;
 import static uk.gov.moj.sjp.it.util.RestPollerWithDefaults.pollWithDefaults;
 
 import uk.gov.justice.services.common.converter.LocalDates;
@@ -31,13 +35,10 @@ import uk.gov.justice.services.common.http.HeaderConstants;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.test.utils.core.http.RequestParamsBuilder;
 import uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopePayloadMatcher;
-import uk.gov.moj.cpp.sjp.event.CaseReceived;
 import uk.gov.moj.sjp.it.command.CreateCase;
 import uk.gov.moj.sjp.it.command.UpdateDefendantDetails;
 import uk.gov.moj.sjp.it.helper.EventListener;
 import uk.gov.moj.sjp.it.model.ProsecutingAuthority;
-import uk.gov.moj.sjp.it.pollingquery.CasePoller;
-import uk.gov.moj.sjp.it.util.HttpClientUtil;
 
 import java.io.StringReader;
 import java.util.List;
@@ -73,13 +74,9 @@ public class DefendantDetailsIT extends BaseIntegrationTest {
         stubEnforcementAreaByPostcode(createCasePayloadBuilder.getDefendantBuilder().getAddressBuilder().getPostcode(), "1080", "Bedfordshire Magistrates' Court");
         stubRegionByPostcode("1080", "TestRegion");
 
-        new EventListener()
-                .subscribe(CaseReceived.EVENT_NAME)
-                .run(() -> createCaseForPayloadBuilder(createCasePayloadBuilder.withId(caseIdOne)));
+        createCaseForPayloadBuilder(createCasePayloadBuilder.withId(caseIdOne));
 
-        new EventListener()
-                .subscribe(CaseReceived.EVENT_NAME)
-                .run(() -> createCaseForPayloadBuilder(withDefaults().withId(caseIdTwo)));
+        createCaseForPayloadBuilder(withDefaults().withId(caseIdTwo));
 
         stubForUserDetails(tvlUserUid, ProsecutingAuthority.TVL);
         stubProsecutorQuery(TFL.name(), TFL.getFullName(), randomUUID());
@@ -89,13 +86,13 @@ public class DefendantDetailsIT extends BaseIntegrationTest {
     public void shouldUpdateDefendantDetails() {
         UpdateDefendantDetails.DefendantDetailsPayloadBuilder payloadBuilder = UpdateDefendantDetails.DefendantDetailsPayloadBuilder.withDefaults();
 
-        UpdateDefendantDetails.updateDefendantDetailsForCaseAndPayload(caseIdOne, UUID.fromString(CasePoller.pollUntilCaseByIdIsOk(caseIdOne).getString("defendant.id")), payloadBuilder);
+        UpdateDefendantDetails.updateDefendantDetailsForCaseAndPayload(caseIdOne, UUID.fromString(pollUntilCaseByIdIsOk(caseIdOne).getString("defendant.id")), payloadBuilder);
 
-        CasePoller.pollUntilCaseByIdIsOk(caseIdOne, allOf(
-                withJsonPath("$.defendant.personalDetails.nameChanged", is(false)),
-                withJsonPath("$.defendant.personalDetails.dobChanged", is(false)),
-                withJsonPath("$.defendant.personalDetails.addressChanged", is(false)),
-                withJsonPath("$.defendant.personalDetails.driverNumber", is("MORGA753116SM9IJ"))
+        pollUntilCaseByIdIsOk(caseIdOne, allOf(
+                        withJsonPath("$.defendant.personalDetails.nameChanged", is(false)),
+                        withJsonPath("$.defendant.personalDetails.dobChanged", is(false)),
+                        withJsonPath("$.defendant.personalDetails.addressChanged", is(false)),
+                        withJsonPath("$.defendant.personalDetails.driverNumber", is("MORGA753116SM9IJ"))
                 )
         );
     }
@@ -104,9 +101,9 @@ public class DefendantDetailsIT extends BaseIntegrationTest {
     public void shouldAllowNonStandardTitle() {
         UpdateDefendantDetails.DefendantDetailsPayloadBuilder payloadBuilder = UpdateDefendantDetails.DefendantDetailsPayloadBuilder.withDefaults().withTitle("Mister");
 
-        UpdateDefendantDetails.updateDefendantDetailsForCaseAndPayload(caseIdOne, UUID.fromString(CasePoller.pollUntilCaseByIdIsOk(caseIdOne).getString("defendant.id")), payloadBuilder);
+        updateDefendantDetailsForCaseAndPayload(caseIdOne, UUID.fromString(pollUntilCaseByIdIsOk(caseIdOne).getString("defendant.id")), payloadBuilder);
 
-        CasePoller.pollUntilCaseByIdIsOk(caseIdOne, allOf(
+        pollUntilCaseByIdIsOk(caseIdOne, allOf(
                 withJsonPath("$.defendant.personalDetails.nameChanged", is(false)),
                 withJsonPath("$.defendant.personalDetails.dobChanged", is(false)),
                 withJsonPath("$.defendant.personalDetails.addressChanged", is(false)),
@@ -118,9 +115,9 @@ public class DefendantDetailsIT extends BaseIntegrationTest {
     public void shouldAllowEmptyTitle() {
         UpdateDefendantDetails.DefendantDetailsPayloadBuilder payloadBuilder = UpdateDefendantDetails.DefendantDetailsPayloadBuilder.withDefaults().withTitle(null);
 
-        UpdateDefendantDetails.updateDefendantDetailsForCaseAndPayload(caseIdOne, UUID.fromString(CasePoller.pollUntilCaseByIdIsOk(caseIdOne).getString("defendant.id")), payloadBuilder);
+        updateDefendantDetailsForCaseAndPayload(caseIdOne, UUID.fromString(pollUntilCaseByIdIsOk(caseIdOne).getString("defendant.id")), payloadBuilder);
 
-        CasePoller.pollUntilCaseByIdIsOk(caseIdOne, allOf(
+        pollUntilCaseByIdIsOk(caseIdOne, allOf(
                 withJsonPath("$.defendant.personalDetails.nameChanged", is(false)),
                 withJsonPath("$.defendant.personalDetails.dobChanged", is(false)),
                 withJsonPath("$.defendant.personalDetails.addressChanged", is(false)),
@@ -135,9 +132,9 @@ public class DefendantDetailsIT extends BaseIntegrationTest {
                 .withLastName("LLOYD")
                 .withDateOfBirth(LocalDates.from("1980-07-15"));
 
-        UpdateDefendantDetails.updateDefendantDetailsForCaseAndPayload(caseIdOne, UUID.fromString(CasePoller.pollUntilCaseByIdIsOk(caseIdOne).getString("defendant.id")), payloadBuilder);
+        updateDefendantDetailsForCaseAndPayload(caseIdOne, UUID.fromString(pollUntilCaseByIdIsOk(caseIdOne).getString("defendant.id")), payloadBuilder);
 
-        CasePoller.pollUntilCaseByIdIsOk(caseIdOne, allOf(
+        pollUntilCaseByIdIsOk(caseIdOne, allOf(
                 withJsonPath("$.defendant.personalDetails.nameChanged", is(false)),
                 withJsonPath("$.defendant.personalDetails.dobChanged", is(false)),
                 withJsonPath("$.defendant.personalDetails.addressChanged", is(false))
@@ -163,7 +160,7 @@ public class DefendantDetailsIT extends BaseIntegrationTest {
         UpdateDefendantDetails.DefendantDetailsPayloadBuilder payloadBuilder = UpdateDefendantDetails.DefendantDetailsPayloadBuilder.withDefaults();
         payloadBuilder.withDriverNumber(driverNumber);
 
-        final String response = UpdateDefendantDetails.updateDefendantDetailsForCaseAndPayload(caseIdOne, UUID.fromString(CasePoller.pollUntilCaseByIdIsOk(caseIdOne).getString("defendant.id")), payloadBuilder, BAD_REQUEST);
+        final String response = updateDefendantDetailsForCaseAndPayload(caseIdOne, UUID.fromString(pollUntilCaseByIdIsOk(caseIdOne).getString("defendant.id")), payloadBuilder, BAD_REQUEST);
 
         JsonObject responseJson = responseToJsonObject(response);
         JsonValue validationErrors = responseJson.get("validationErrors");
@@ -177,7 +174,7 @@ public class DefendantDetailsIT extends BaseIntegrationTest {
         UpdateDefendantDetails.DefendantDetailsPayloadBuilder payloadBuilder = UpdateDefendantDetails.DefendantDetailsPayloadBuilder.withDefaults();
         payloadBuilder.getContactDetailsBuilder().withEmail(email);
 
-        final String response = UpdateDefendantDetails.updateDefendantDetailsForCaseAndPayload(caseIdOne, UUID.fromString(CasePoller.pollUntilCaseByIdIsOk(caseIdOne).getString("defendant.id")), payloadBuilder, BAD_REQUEST);
+        final String response = updateDefendantDetailsForCaseAndPayload(caseIdOne, UUID.fromString(pollUntilCaseByIdIsOk(caseIdOne).getString("defendant.id")), payloadBuilder, BAD_REQUEST);
 
         JsonObject responseJson = responseToJsonObject(response);
         JsonValue validationErrors = responseJson.get("validationErrors");
@@ -189,16 +186,15 @@ public class DefendantDetailsIT extends BaseIntegrationTest {
 
     @Test
     public void shouldNotReturnAcknowledgedUpdates() {
-        final JsonObject defendantDetailsUpdatesBeforeUpdate = getUpdatedDefendantDetails(USER_ID);
-        final int totalUpdatesBeforeUpdate = defendantDetailsUpdatesBeforeUpdate.getInt("total");
+        getUpdatedDefendantDetails(USER_ID);
 
         UpdateDefendantDetails.DefendantDetailsPayloadBuilder payloadBuilder = UpdateDefendantDetails.DefendantDetailsPayloadBuilder.withDefaults();
-        UUID defendantId = UUID.fromString(CasePoller.pollUntilCaseByIdIsOk(caseIdOne).getString("defendant.id"));
-        UpdateDefendantDetails.updateDefendantDetailsForCaseAndPayload(caseIdOne, defendantId, payloadBuilder);
+        UUID defendantId = UUID.fromString(pollUntilCaseByIdIsOk(caseIdOne).getString("defendant.id"));
+        updateDefendantDetailsForCaseAndPayload(caseIdOne, defendantId, payloadBuilder);
 
         final EventListener updatesAcknowledgedListener = new EventListener()
                 .subscribe(DEFENDANT_DETAILS_UPDATES_ACKNOWLEDGED_PUBLIC_EVENT)
-                .run(() -> UpdateDefendantDetails.acknowledgeDefendantDetailsUpdates(caseIdOne, defendantId));
+                .run(() -> acknowledgeDefendantDetailsUpdates(caseIdOne, defendantId));
 
         assertThatUpdatesAcknowledgedPublicEventRaised(updatesAcknowledgedListener, caseIdOne, defendantId);
     }
@@ -225,14 +221,14 @@ public class DefendantDetailsIT extends BaseIntegrationTest {
 
     @Test
     public void shouldObeyLimit() {
-        UpdateDefendantDetails.updateDefendantDetailsForCaseAndPayload(
+        updateDefendantDetailsForCaseAndPayload(
                 caseIdOne,
-                UUID.fromString(CasePoller.pollUntilCaseByIdIsOk(caseIdOne).getString("defendant.id")),
+                UUID.fromString(pollUntilCaseByIdIsOk(caseIdOne).getString("defendant.id")),
                 UpdateDefendantDetails.DefendantDetailsPayloadBuilder.withDefaults());
 
-        UpdateDefendantDetails.updateDefendantDetailsForCaseAndPayload(
+        updateDefendantDetailsForCaseAndPayload(
                 caseIdTwo,
-                UUID.fromString(CasePoller.pollUntilCaseByIdIsOk(caseIdTwo).getString("defendant.id")),
+                UUID.fromString(pollUntilCaseByIdIsOk(caseIdTwo).getString("defendant.id")),
                 UpdateDefendantDetails.DefendantDetailsPayloadBuilder.withDefaults());
 
 
@@ -251,9 +247,9 @@ public class DefendantDetailsIT extends BaseIntegrationTest {
     public void shouldReturnUpdatedDetailsBasedOnUserProsecutingAuthority() {
         final JsonObject existingUpdatedDefendantDetails = getUpdatedDefendantDetails(tvlUserUid);
 
-        UpdateDefendantDetails.updateDefendantDetailsForCaseAndPayload(
+        updateDefendantDetailsForCaseAndPayload(
                 caseIdOne,
-                UUID.fromString(CasePoller.pollUntilCaseByIdIsOk(caseIdOne).getString("defendant.id")),
+                UUID.fromString(pollUntilCaseByIdIsOk(caseIdOne).getString("defendant.id")),
                 UpdateDefendantDetails.DefendantDetailsPayloadBuilder.withDefaults());
 
         List<Matcher<? super ReadContext>> matchers = ImmutableList.<Matcher<? super ReadContext>>builder()
@@ -273,7 +269,7 @@ public class DefendantDetailsIT extends BaseIntegrationTest {
     }
 
     private JsonObject getUpdatedDefendantDetails(UUID userUid) {
-        final Response response = HttpClientUtil.makeGetCall(
+        final Response response = makeGetCall(
                 "/defendant-details-updates?limit=" + Integer.MAX_VALUE,
                 DEFENDANT_DETAIL_UPDATES_CONTENT_TYPE,
                 userUid);

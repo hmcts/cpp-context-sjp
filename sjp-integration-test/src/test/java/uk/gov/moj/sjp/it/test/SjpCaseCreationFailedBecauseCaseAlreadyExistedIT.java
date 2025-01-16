@@ -23,7 +23,6 @@ import org.hamcrest.Matchers;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-//TODO public events
 public class SjpCaseCreationFailedBecauseCaseAlreadyExistedIT extends BaseIntegrationTest{
 
     private MessageConsumer sjpCaseCreated ;

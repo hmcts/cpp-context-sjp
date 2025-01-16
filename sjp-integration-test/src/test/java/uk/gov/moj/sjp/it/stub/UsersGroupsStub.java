@@ -27,7 +27,6 @@ public class UsersGroupsStub {
     public static final String SJP_PROSECUTORS_GROUP = "SJP Prosecutors";
     public static final String LEGAL_ADVISERS_GROUP = "Legal Advisers";
     public static final String COURT_ADMINISTRATORS_GROUP = "Court Administrators";
-    public static final String ONLINE_PLEA_SYSTEM_USERS_GROUP = "Online Plea System Users";
 
     private static final String USER_GROUPS_ALL_USERS_QUERY_URL = "/usersgroups-service/query/api/rest/usersgroups/users/.*/groups";
     private static final String USER_GROUPS_USERS_QUERY_URL = "/usersgroups-service/query/api/rest/usersgroups/users/%s/groups";

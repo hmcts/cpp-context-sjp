@@ -28,7 +28,6 @@ import static uk.gov.moj.sjp.it.util.Defaults.DEFAULT_NON_LONDON_LJA_NATIONAL_CO
 import static uk.gov.moj.sjp.it.util.FileUtil.getFileContentAsJson;
 import static uk.gov.moj.sjp.it.util.FileUtil.getPayload;
 
-import uk.gov.justice.services.common.http.HeaderConstants;
 import uk.gov.moj.sjp.it.model.ProsecutingAuthority;
 
 import java.io.IOException;
@@ -55,15 +54,11 @@ public class ReferenceDataServiceStub {
     private static final String QUERY_PROSECUTORS_MIME_TYPE = "application/vnd.referencedata.query.prosecutors+json";
     private static final String QUERY_VICTIM_SURCHARGE_TYPE = "application/vnd.referencedata.query.victim-surcharges+json";
     private static final String REFERENCEDATAOFFENCES_SERVICE = "referencedataoffences-service";
-    private static final String QUERY_PROSECUTOR_MIME_TYPE = "application/vnd.referencedata.query.get.prosecutor.by.oucode+json";
-    private static final String QUERY_PROSECUTOR_PTIURN_PATH = "/referencedata-query-api/query/api/rest/referencedata/prosecutor?ptiurn=TFL";
-    private static final String QUERY_PROSECUTOR_PTIURN_MEDIA_TYPE = "application/vnd.referencedata.query.prosecutor.by.ptiurn+json";
     private static final String QUERY_VERDICT_TYPES_MIME_TYPE = "application/vnd.reference-data.verdict-types+json";
     private static final String QUERY_VERDICT_TYPES_BY_JURISDICTION__MIME_TYPE = "application/vnd.referencedata.query.verdict-types-jurisdiction+json";
     private static final String QUERY_BAIL_STATUSES_MIME_TYPE = "application/vnd.referencedata.bail-statuses+json";
     private static final String QUERY_ALL_RESULT_DEFINITIONS_MIME_TYPE = "application/vnd.referencedata.get-all-result-definitions+json";
     private static final String QUERY_RESULT_DEFINITIONS_MIME_TYPE = "application/vnd.referencedata.query-result-definitions+json";
-    private static final String QUERY_PROSECUTOR_BY_PTI_URN_MIME_TYPE = "application/vnd.referencedata.query.prosecutor.by.ptiurn+json";
     private static final String QUERY_ALL_FIXED_LIST_MIME_TYPE = "application/vnd.referencedata.get-all-fixed-list+json";
 
 
@@ -162,20 +157,6 @@ public class ReferenceDataServiceStub {
 
     public static JsonObject stubAnyQueryOffences() {
         return stubQueryOffencesByCode(DEFAULT_OFFENCE_CODE, matching(".*"));
-    }
-
-    public static void stubQueryOffenceById(final UUID offenceId) {
-        stubPingFor(REFERENCEDATAOFFENCES_SERVICE);
-        final JsonObject offence = createObjectBuilder()
-                .add("offenceId", offenceId.toString())
-                .add("cjsOffenceCode", "1")
-                .add("modeOfTrial", "SIMP").build();
-        final String urlPath = "/referencedataoffences-service/query/api/rest/referencedataoffences/offences";
-        stubFor(get(urlPathEqualTo(format(urlPath, offenceId)))
-                .willReturn(aResponse().withStatus(SC_OK)
-                        .withHeader(HeaderConstants.ID, randomUUID().toString())
-                        .withHeader(CONTENT_TYPE, APPLICATION_JSON)
-                        .withBody(offence.toString())));
     }
 
     public static void stubAllIndividualProsecutorsQueries() {
@@ -492,17 +473,6 @@ public class ReferenceDataServiceStub {
         } catch (final IOException e) {
             throw new UncheckedIOException(e);
         }
-    }
-
-    public static void stubResultDefinitions() {
-//        stubPingFor(REFERENCEDATA_SERVICE);
-//        final String urlPath = QUERY_API_PATH + "/result-definitions";
-//
-//        stubFor(get(urlPathEqualTo(urlPath))
-//                .willReturn(aResponse().withStatus(SC_OK)
-//                        .withHeader(ID, randomUUID().toString())
-//                        .withHeader(CONTENT_TYPE, APPLICATION_JSON)
-//                        .withBody(getPayload("stub-data/referencedata.result-definitions.json"))));
     }
 
     public static void stubResultIds() {

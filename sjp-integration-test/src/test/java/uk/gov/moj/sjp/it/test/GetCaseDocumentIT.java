@@ -12,29 +12,34 @@ import static org.hamcrest.CoreMatchers.allOf;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static uk.gov.moj.sjp.it.model.ProsecutingAuthority.TFL;
+import static org.hamcrest.Matchers.notNullValue;
 import static uk.gov.moj.sjp.it.helper.CaseDocumentHelper.getCaseDocumentContent;
 import static uk.gov.moj.sjp.it.helper.CaseDocumentHelper.getCaseDocumentMetadata;
+import static uk.gov.moj.sjp.it.helper.CaseDocumentHelper.pollForCaseDocument;
+import static uk.gov.moj.sjp.it.model.ProsecutingAuthority.TFL;
+import static uk.gov.moj.sjp.it.stub.MaterialStub.stubMaterialContentWithResponseStatusCode;
+import static uk.gov.moj.sjp.it.stub.MaterialStub.stubMaterialMetadataWithResponseStatusCode;
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubEnforcementAreaByPostcode;
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubRegionByPostcode;
+import static uk.gov.moj.sjp.it.stub.UsersGroupsStub.stubForUserDetails;
 
-
-import javax.json.Json;
 import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
-import uk.gov.moj.sjp.it.model.ProsecutingAuthority;
 import uk.gov.moj.cpp.sjp.event.CaseReceived;
 import uk.gov.moj.sjp.it.command.CreateCase;
 import uk.gov.moj.sjp.it.helper.CaseDocumentHelper;
 import uk.gov.moj.sjp.it.helper.EventListener;
+import uk.gov.moj.sjp.it.model.ProsecutingAuthority;
 import uk.gov.moj.sjp.it.stub.MaterialStub;
-import uk.gov.moj.sjp.it.stub.UsersGroupsStub;
 
 import java.time.ZonedDateTime;
 import java.util.UUID;
 
+import javax.json.Json;
 import javax.json.JsonObject;
 import javax.ws.rs.core.Response;
 
+import org.hamcrest.Matcher;
+import org.hamcrest.Matchers;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -57,9 +62,9 @@ public class GetCaseDocumentIT extends BaseIntegrationTest {
 
     @BeforeEach
     public void init() {
-        UsersGroupsStub.stubForUserDetails(tflUser, TFL);
-        UsersGroupsStub.stubForUserDetails(tvlUser, ProsecutingAuthority.TVL);
-        UsersGroupsStub.stubForUserDetails(legalAdviserUser, "ALL");
+        stubForUserDetails(tflUser, TFL);
+        stubForUserDetails(tvlUser, ProsecutingAuthority.TVL);
+        stubForUserDetails(legalAdviserUser, "ALL");
 
         final CreateCase.CreateCasePayloadBuilder createCasePayloadBuilder = CreateCase.CreateCasePayloadBuilder
                 .withDefaults().withId(tflCaseId)
@@ -116,8 +121,8 @@ public class GetCaseDocumentIT extends BaseIntegrationTest {
 
     @Test
     public void shouldPassThroughNotFoundFromMaterialContext() {
-        MaterialStub.stubMaterialMetadataWithResponseStatusCode(materialId, SC_NOT_FOUND);
-        MaterialStub.stubMaterialContentWithResponseStatusCode(materialId, SC_NOT_FOUND);
+        stubMaterialMetadataWithResponseStatusCode(materialId, SC_NOT_FOUND);
+        stubMaterialContentWithResponseStatusCode(materialId, SC_NOT_FOUND);
 
         assertThat(getCaseDocumentMetadata(tflCaseId, documentId, tflUser).getStatus(), is(SC_NOT_FOUND));
         assertThat(getCaseDocumentContent(tflCaseId, documentId, tflUser).getStatus(), is(SC_NOT_FOUND));
@@ -131,8 +136,8 @@ public class GetCaseDocumentIT extends BaseIntegrationTest {
 
     @Test
     public void shouldPassThroughForbiddenFromMaterialContext() {
-        MaterialStub.stubMaterialMetadataWithResponseStatusCode(materialId, SC_FORBIDDEN);
-        MaterialStub.stubMaterialContentWithResponseStatusCode(materialId, SC_FORBIDDEN);
+        stubMaterialMetadataWithResponseStatusCode(materialId, SC_FORBIDDEN);
+        stubMaterialContentWithResponseStatusCode(materialId, SC_FORBIDDEN);
 
         assertThat(getCaseDocumentMetadata(tflCaseId, documentId, tflUser).getStatus(), is(SC_FORBIDDEN));
         assertThat(getCaseDocumentContent(tflCaseId, documentId, tflUser).getStatus(), is(SC_FORBIDDEN));
@@ -144,10 +149,14 @@ public class GetCaseDocumentIT extends BaseIntegrationTest {
                 .run(() -> CreateCase.createCaseForPayloadBuilder(createTflCasePayloadBuilder));
     }
 
-    private static JsonObject addDocument(final UUID caseId, final UUID documentId, final UUID materialId, final String documentType, final UUID userId) {
+    private static void addDocument(final UUID caseId, final UUID documentId, final UUID materialId, final String documentType, final UUID userId) {
         try (final CaseDocumentHelper caseDocumentHelper = new CaseDocumentHelper(caseId)) {
             caseDocumentHelper.addCaseDocument(userId, documentId, materialId, documentType);
-            return caseDocumentHelper.findDocument(userId, 0, documentType, 1);
+            pollForCaseDocument(caseId, userId, new Matcher[]{
+                    withJsonPath("$.caseDocuments[0].documentNumber", Matchers.is(1)),
+                    withJsonPath("$.caseDocuments[0].documentType", Matchers.is(documentType)),
+                    withJsonPath("$.caseDocuments[0].materialId", notNullValue())
+            });
         }
     }
 }

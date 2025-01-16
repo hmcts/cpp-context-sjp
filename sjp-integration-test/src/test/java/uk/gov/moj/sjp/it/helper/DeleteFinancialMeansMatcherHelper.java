@@ -143,7 +143,10 @@ public class DeleteFinancialMeansMatcherHelper {
         final JSONObject person = onlinePleaPayload.getJSONObject("personalDetails");
         final JSONObject personContactDetails = person.getJSONObject("contactDetails");
 
-        final List<Matcher> matchers = new ArrayList<>(asList(
+        //personal details
+
+
+        return new ArrayList<>(asList(
                 withJsonPath("$.caseId", equalTo(caseId)),
                 withJsonPath("$.defendantId", equalTo(defendantId)),
 
@@ -156,9 +159,6 @@ public class DeleteFinancialMeansMatcherHelper {
                 withJsonPath("$.personalDetails.dateOfBirth", equalTo(person.getString("dateOfBirth"))),
                 withJsonPath("$.personalDetails.nationalInsuranceNumber", equalTo(person.getString("nationalInsuranceNumber")))
         ));
-
-
-        return matchers;
     }
 
 

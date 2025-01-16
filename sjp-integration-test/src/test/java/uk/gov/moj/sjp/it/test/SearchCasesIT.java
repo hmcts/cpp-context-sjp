@@ -23,6 +23,7 @@ import static uk.gov.moj.sjp.it.stub.UsersGroupsStub.stubForUserDetails;
 import static uk.gov.moj.sjp.it.util.DefaultRequests.getCaseById;
 import static uk.gov.moj.sjp.it.util.DefaultRequests.searchCases;
 import static uk.gov.moj.sjp.it.util.RestPollerWithDefaults.pollWithDefaults;
+import static uk.gov.moj.sjp.it.util.SjpDatabaseCleaner.cleanViewStore;
 
 import uk.gov.moj.sjp.it.command.CreateCase;
 import uk.gov.moj.sjp.it.command.UpdateDefendantDetails;
@@ -30,7 +31,6 @@ import uk.gov.moj.sjp.it.helper.CaseSearchResultHelper;
 import uk.gov.moj.sjp.it.helper.DecisionHelper;
 import uk.gov.moj.sjp.it.pollingquery.CasePoller;
 import uk.gov.moj.sjp.it.util.CaseAssignmentRestrictionHelper;
-import uk.gov.moj.sjp.it.util.SjpDatabaseCleaner;
 import uk.gov.moj.sjp.it.verifier.PersonInfoVerifier;
 
 import java.sql.SQLException;
@@ -42,12 +42,11 @@ import org.junit.jupiter.api.Test;
 
 public class SearchCasesIT extends BaseIntegrationTest {
 
-    private SjpDatabaseCleaner databaseCleaner = new SjpDatabaseCleaner();
     private CreateCase.DefendantBuilder defendantBuilder;
 
     @BeforeEach
     public void setUp() throws SQLException {
-        databaseCleaner.cleanViewStore();
+        cleanViewStore();
 
         CaseAssignmentRestrictionHelper.provisionCaseAssignmentRestrictions(Sets.newHashSet(TFL, TVL, DVLA));
 
@@ -147,7 +146,7 @@ public class SearchCasesIT extends BaseIntegrationTest {
     }
 
     @Test
-    public void verifyCaseAssignmentIsReflected() throws Exception {
+    public void verifyCaseAssignmentIsReflected() {
         //given case is created
         final CreateCase.CreateCasePayloadBuilder createCasePayloadBuilder = withDefaults().withDefendantBuilder(defendantBuilder);
         createCaseForPayloadBuilder(createCasePayloadBuilder);

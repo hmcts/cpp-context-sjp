@@ -7,18 +7,20 @@ import static javax.json.Json.createObjectBuilder;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static uk.gov.moj.cpp.sjp.domain.IncomeFrequency.MONTHLY;
+import static uk.gov.moj.sjp.it.command.CreateCase.createCaseForPayloadBuilder;
 import static uk.gov.moj.sjp.it.helper.DeleteFinancialMeansMatcherHelper.getExpectedFinancialMeanDataAfterDeletionMatcher;
 import static uk.gov.moj.sjp.it.helper.DeleteFinancialMeansMatcherHelper.getExpectedFinancialMeanDataBeforeDeletionMatcher;
 import static uk.gov.moj.sjp.it.helper.DeleteFinancialMeansMatcherHelper.getSavedOnlinePleaPayloadContentMatcher;
+import static uk.gov.moj.sjp.it.helper.EmployerHelper.getEmployerUpdatedPayloadMatcher;
 import static uk.gov.moj.sjp.it.helper.FinancialMeansHelper.getOnlinePleaData;
 import static uk.gov.moj.sjp.it.stub.MaterialStub.stubAddCaseMaterial;
-import static uk.gov.moj.sjp.it.stub.NotificationNotifyStub.stubNotifications;
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubAllIndividualProsecutorsQueries;
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubCountryByPostcodeQuery;
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubEnforcementAreaByPostcode;
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubQueryOffencesByCode;
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubRegionByPostcode;
 import static uk.gov.moj.sjp.it.util.FileUtil.getPayload;
+import static uk.gov.moj.sjp.it.util.HttpClientUtil.makePostCall;
 
 import uk.gov.moj.cpp.sjp.domain.Income;
 import uk.gov.moj.sjp.it.command.CreateCase;
@@ -50,11 +52,8 @@ import org.junit.jupiter.api.Test;
 public class DeleteFinancialMeansIT extends BaseIntegrationTest {
 
     private FinancialMeansHelper financialMeansHelper;
-    private EmployerHelper employerHelper;
     private CreateCase.CreateCasePayloadBuilder createCasePayloadBuilder;
     private static final String TEMPLATE_PLEA_NOT_GUILTY_PAYLOAD = "raml/json/sjp.command.plead-online__not-guilty.json";
-    //To add Case Document
-    private static final String PROSECUTING_AUTHORITY_ACCESS_ALL = "ALL";
     //To Query OnlinePlea
     private static final Set<UUID> DEFAULT_STUBBED_USER_ID = singleton(USER_ID);
     private static final String NATIONAL_COURT_CODE = "1080";
@@ -65,7 +64,6 @@ public class DeleteFinancialMeansIT extends BaseIntegrationTest {
 
         //Following 3 stubs require to post online plead successfully
         stubCountryByPostcodeQuery("W1T 1JY", "England");
-        stubNotifications();
         stubQueryOffencesByCode("PS00001");
         stubAllIndividualProsecutorsQueries();
 
@@ -73,18 +71,16 @@ public class DeleteFinancialMeansIT extends BaseIntegrationTest {
         this.createCasePayloadBuilder = CreateCase.CreateCasePayloadBuilder.withDefaults();
         stubEnforcementAreaByPostcode(createCasePayloadBuilder.getDefendantBuilder().getAddressBuilder().getPostcode(), NATIONAL_COURT_CODE, "Bedfordshire Magistrates' Court");
         stubRegionByPostcode(NATIONAL_COURT_CODE, "TestRegion");
-        CreateCase.createCaseForPayloadBuilder(this.createCasePayloadBuilder);
-
-        employerHelper = new EmployerHelper();
+        createCaseForPayloadBuilder(this.createCasePayloadBuilder);
     }
 
     @AfterEach
-    public void tearDown() throws Exception {
+    public void tearDown() {
         financialMeansHelper.close();
     }
 
     @Test
-    public void shouldDeleteFinancialMeansData() throws InterruptedException {
+    public void shouldDeleteFinancialMeansData() {
 
         final UUID caseId = createCasePayloadBuilder.getId();
         final String defendantId = CasePoller.pollUntilCaseByIdIsOk(caseId).getString("defendant.id");
@@ -149,7 +145,7 @@ public class DeleteFinancialMeansIT extends BaseIntegrationTest {
     }
 
     private void verifyEmployerDataDeletion(final String defendantId) {
-        final Response response = employerHelper.getEmployer(defendantId);
+        final Response response = EmployerHelper.pollForEmployerForDefendant(defendantId);
         assertThat(response.readEntity(String.class), is("{}"));
     }
 
@@ -159,20 +155,20 @@ public class DeleteFinancialMeansIT extends BaseIntegrationTest {
         }
     }
 
-    private void verifyOnlinePleaDataDeletion(final JSONObject pleaPayload, final UUID caseId, final String defendantId) throws InterruptedException {
+    private void verifyOnlinePleaDataDeletion(final JSONObject pleaPayload, final UUID caseId, final String defendantId) {
         final Matcher<Object> expectedOnlinePleaResultAfterDelete = getSavedOnlinePleaPayloadContentMatcher(pleaPayload, caseId.toString(), defendantId, true);
-        DEFAULT_STUBBED_USER_ID.forEach(userId -> getOnlinePleaData(caseId.toString(), expectedOnlinePleaResultAfterDelete, userId, defendantId.toString()));
+        DEFAULT_STUBBED_USER_ID.forEach(userId -> getOnlinePleaData(caseId.toString(), expectedOnlinePleaResultAfterDelete, userId, defendantId));
     }
 
     private void verifyFinancialMeansDataDeletion(final String defendantId) {
         financialMeansHelper.getFinancialMeans(defendantId, getExpectedFinancialMeanDataAfterDeletionMatcher());
     }
 
-    private void defendantRaisesOnlinePlea(final UUID caseId, final String defendantId, final JSONObject pleaPayload) throws InterruptedException {
-        financialMeansHelper.pleadOnline(pleaPayload.toString(), caseId, defendantId);
+    private void defendantRaisesOnlinePlea(final UUID caseId, final String defendantId, final JSONObject pleaPayload) {
+        pleadOnline(pleaPayload.toString(), caseId, defendantId);
         final Matcher<Object> expectedOnlinePleaResultBeforeDelete = getSavedOnlinePleaPayloadContentMatcher(pleaPayload, caseId.toString(), defendantId, false);
 
-        DEFAULT_STUBBED_USER_ID.forEach(userId -> getOnlinePleaData(caseId.toString(), expectedOnlinePleaResultBeforeDelete, userId, defendantId.toString()));
+        DEFAULT_STUBBED_USER_ID.forEach(userId -> getOnlinePleaData(caseId.toString(), expectedOnlinePleaResultBeforeDelete, userId, defendantId));
         verifyEmployerDataExist(caseId, defendantId, pleaPayload);
     }
 
@@ -181,7 +177,7 @@ public class DeleteFinancialMeansIT extends BaseIntegrationTest {
         final JSONObject jsonObject = pleaPayload.getJSONObject("employer");
         try (JsonReader jsonReader = Json.createReader(new StringReader(jsonObject.toString()))) {
             JsonObject employer1 = jsonReader.readObject();
-            employerHelper.getEmployer(defendantId, employerHelper.getEmployerUpdatedPayloadMatcher(employer1));
+            EmployerHelper.pollForEmployerForDefendant(defendantId, getEmployerUpdatedPayloadMatcher(employer1));
         }
     }
 
@@ -206,4 +202,11 @@ public class DeleteFinancialMeansIT extends BaseIntegrationTest {
         jsonObject.getJSONArray("offences").getJSONObject(0).put("id", createCasePayloadBuilder.getOffenceId().toString());
         return jsonObject;
     }
+
+    private void pleadOnline(final String payload, final UUID caseId, final String defendantId) {
+        final String writeUrl = String.format("/cases/%s/defendants/%s/plead-online", caseId, defendantId);
+        makePostCall(writeUrl, "application/vnd.sjp.plead-online+json", payload, Response.Status.ACCEPTED);
+    }
+
+
 }

@@ -3,10 +3,10 @@ package uk.gov.moj.sjp.it.test.ingestor;
 import static java.util.UUID.randomUUID;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static uk.gov.moj.sjp.it.model.ProsecutingAuthority.TFL;
-import static uk.gov.moj.cpp.sjp.event.CaseReceived.EVENT_NAME;
 import static uk.gov.moj.sjp.it.command.CreateCase.CreateCasePayloadBuilder;
+import static uk.gov.moj.sjp.it.command.CreateCase.CreateCasePayloadBuilder.withDefaults;
 import static uk.gov.moj.sjp.it.command.CreateCase.createCaseForPayloadBuilder;
+import static uk.gov.moj.sjp.it.model.ProsecutingAuthority.TFL;
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubEnforcementAreaByPostcode;
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubRegionByPostcode;
 import static uk.gov.moj.sjp.it.test.ingestor.helper.AddressVerificationHelper.addressLinesFrom;
@@ -15,7 +15,6 @@ import static uk.gov.moj.sjp.it.test.ingestor.helper.ElasticSearchQueryHelper.ge
 import uk.gov.moj.cpp.unifiedsearch.test.util.ingest.ElasticSearchIndexRemoverUtil;
 import uk.gov.moj.sjp.it.command.CreateCase;
 import uk.gov.moj.sjp.it.framework.util.ViewStoreCleaner;
-import uk.gov.moj.sjp.it.helper.EventListener;
 import uk.gov.moj.sjp.it.test.BaseIntegrationTest;
 
 import java.io.IOException;
@@ -47,8 +46,7 @@ public class CaseReceivedIngestorIT extends BaseIntegrationTest {
 
     @Test
     public void shouldIngestCaseReceivedEvent() {
-        final CreateCasePayloadBuilder createCase = CreateCasePayloadBuilder
-                .withDefaults()
+        final CreateCasePayloadBuilder createCase = withDefaults()
                 .withId(uuid)
                 .withProsecutingAuthority(TFL)
                 .withDefendantId(randomUUID())
@@ -57,10 +55,7 @@ public class CaseReceivedIngestorIT extends BaseIntegrationTest {
         stubEnforcementAreaByPostcode(createCase.getDefendantBuilder().getAddressBuilder().getPostcode(), NATIONAL_COURT_CODE, "Bedfordshire Magistrates' Court");
         stubRegionByPostcode(NATIONAL_COURT_CODE, "TestRegion");
 
-        new EventListener()
-                .subscribe(EVENT_NAME)
-                .run(() -> createCaseForPayloadBuilder(createCase))
-                .popEvent(EVENT_NAME);
+        createCaseForPayloadBuilder(createCase);
 
         final JsonObject outputCase = getCaseFromElasticSearch(uuid.toString());
 

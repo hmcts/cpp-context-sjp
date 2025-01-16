@@ -69,27 +69,8 @@ public class CommandExecutor {
         this.processCommandDeclaration(commandInstance);
     }
 
-    public CommandExecutor setCorrelationId(UUID correlationId) {
-        this.correlationId = correlationId;
-        return this;
-    }
-
     public CommandExecutor setExecutingUserId(UUID userId) {
         this.userId = userId;
-        return this;
-    }
-
-    public CommandExecutor onInvalid(Consumer<Set<ConstraintViolation<Object>>> onInvalidCommand) {
-        this.onInvalidCommand = onInvalidCommand;
-        return this;
-    }
-
-    public CommandExecutor setTimeoutFor(String key, Runnable timeout) {
-        if (listeners.containsKey(key)) {
-            listeners.get(key).setTimeoutBehaviour(timeout);
-        } else {
-            throw new IllegalArgumentException(format("Event listener key %s not present", key));
-        }
         return this;
     }
 
@@ -127,15 +108,6 @@ public class CommandExecutor {
             combinedFuture.get();
         } catch (ExecutionException | InterruptedException e) {
             throw new RuntimeException(e);
-        }
-        return this;
-    }
-
-    public CommandExecutor awaitFor(String key) {
-        try {
-            this.listeners.get(key).getFuture().get();
-        } catch (InterruptedException | ExecutionException e) {
-            throw new RuntimeException(format("Event listener with the key %s for command %s cancelled", key, this.commandInstance.getClass().getName()), e);
         }
         return this;
     }
@@ -210,7 +182,7 @@ public class CommandExecutor {
 
     private boolean validateCommandInstance() {
         Set<ConstraintViolation<Object>> violations = validatorFactory.getValidator().validate(this.commandInstance);
-        if (violations.size() == 0) {
+        if (violations.isEmpty()) {
             return true;
         } else if (this.onInvalidCommand != null) {
             onInvalidCommand.accept(violations);

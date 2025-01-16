@@ -21,17 +21,15 @@ import static uk.gov.moj.cpp.sjp.domain.plea.PleaType.GUILTY;
 import static uk.gov.moj.cpp.sjp.domain.plea.PleaType.NOT_GUILTY;
 import static uk.gov.moj.sjp.it.Constants.EVENT_OFFENCES_WITHDRAWAL_STATUS_SET;
 import static uk.gov.moj.sjp.it.Constants.NOTICE_PERIOD_IN_DAYS;
-import static uk.gov.moj.sjp.it.Constants.PUBLIC_EVENT_SET_PLEAS;
 import static uk.gov.moj.sjp.it.command.AddDatesToAvoid.addDatesToAvoid;
 import static uk.gov.moj.sjp.it.helper.CaseHelper.pollUntilCaseReady;
-import static uk.gov.moj.sjp.it.helper.SetPleasHelper.requestSetPleas;
+import static uk.gov.moj.sjp.it.helper.SetPleasHelper.requestSetPleasAndConfirm;
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubEnforcementAreaByPostcode;
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubProsecutorQuery;
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubRegionByPostcode;
 
 import uk.gov.justice.json.schemas.fragments.sjp.WithdrawalRequestsStatus;
 import uk.gov.moj.cpp.sjp.domain.CaseReadinessReason;
-import uk.gov.moj.sjp.it.model.ProsecutingAuthority;
 import uk.gov.moj.cpp.sjp.domain.common.CaseStatus;
 import uk.gov.moj.sjp.it.command.CreateCase;
 import uk.gov.moj.sjp.it.helper.CaseHelper;
@@ -39,6 +37,7 @@ import uk.gov.moj.sjp.it.helper.CaseSearchResultHelper;
 import uk.gov.moj.sjp.it.helper.EventListener;
 import uk.gov.moj.sjp.it.helper.OffencesWithdrawalRequestHelper;
 import uk.gov.moj.sjp.it.helper.ReadyCaseHelper;
+import uk.gov.moj.sjp.it.model.ProsecutingAuthority;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -88,8 +87,7 @@ public class ReadyCaseIT extends BaseIntegrationTest {
             caseSearchResultHelper.verifyCaseStatus(CaseStatus.NO_PLEA_RECEIVED_READY_FOR_DECISION);
 
             // verify the case status as PLEA_RECEIVED_READY_FOR_DECISION when all the pleas are set ti GUILTY
-            requestSetPleas(caseId,
-                    eventListener,
+            requestSetPleasAndConfirm(caseId,
                     true,
                     false,
                     true,
@@ -98,8 +96,7 @@ public class ReadyCaseIT extends BaseIntegrationTest {
                     null,
                     asList(Triple.of(offence1Id, defendantId, GUILTY),
                             Triple.of(offence2Id, defendantId, GUILTY),
-                            Triple.of(offence3Id, defendantId, GUILTY)),
-                    PUBLIC_EVENT_SET_PLEAS);
+                            Triple.of(offence3Id, defendantId, GUILTY)));
             verifyCaseReadyInViewStore(caseId, PLEADED_GUILTY);
             caseSearchResultHelper.verifyCaseStatus(CaseStatus.PLEA_RECEIVED_READY_FOR_DECISION);
             readyCaseHelper.verifyCaseMarkedReadyForDecisionEventEmitted(caseId, PLEADED_GUILTY, MAGISTRATE, MEDIUM);
@@ -122,8 +119,7 @@ public class ReadyCaseIT extends BaseIntegrationTest {
             readyCaseHelper.verifyCaseMarkedReadyForDecisionEventEmitted(caseId, PLEADED_GUILTY, MAGISTRATE, MEDIUM);
             verifyCaseReadyInViewStore(caseId, PLEADED_GUILTY);
 
-            requestSetPleas(caseId,
-                    eventListener,
+            requestSetPleasAndConfirm(caseId,
                     true,
                     false,
                     true,
@@ -132,8 +128,7 @@ public class ReadyCaseIT extends BaseIntegrationTest {
                     null,
                     asList(Triple.of(offence1Id, defendantId, null),
                             Triple.of(offence2Id, defendantId, null),
-                            Triple.of(offence3Id, defendantId, null)), // one plea
-                    PUBLIC_EVENT_SET_PLEAS);
+                            Triple.of(offence3Id, defendantId, null)));
             caseSearchResultHelper.verifyCaseStatus(CaseStatus.NO_PLEA_RECEIVED_READY_FOR_DECISION);
             readyCaseHelper.verifyCaseMarkedReadyForDecisionEventEmitted(caseId, PIA, MAGISTRATE, LOW);
             verifyCaseReadyInViewStore(caseId, PIA);
@@ -155,8 +150,7 @@ public class ReadyCaseIT extends BaseIntegrationTest {
             caseSearchResultHelper.verifyCaseStatus(CaseStatus.NO_PLEA_RECEIVED);
 
             // verify the case status as PLEA_RECEIVED_READY_FOR_DECISION
-            requestSetPleas(caseId,
-                    eventListener,
+            requestSetPleasAndConfirm(caseId,
                     true,
                     false,
                     true,
@@ -165,15 +159,13 @@ public class ReadyCaseIT extends BaseIntegrationTest {
                     null,
                     asList(Triple.of(offence1Id, defendantId, GUILTY),
                             Triple.of(offence2Id, defendantId, GUILTY),
-                            Triple.of(offence3Id, defendantId, GUILTY)),
-                    PUBLIC_EVENT_SET_PLEAS);
+                            Triple.of(offence3Id, defendantId, GUILTY)));
             caseSearchResultHelper.verifyCaseStatus(CaseStatus.PLEA_RECEIVED_READY_FOR_DECISION);
             readyCaseHelper.verifyCaseMarkedReadyForDecisionEventEmitted(caseId, PLEADED_GUILTY, MAGISTRATE, MEDIUM);
             verifyCaseReadyInViewStore(caseId, PLEADED_GUILTY);
 
             // verify the case status as PLEA_RECEIVED_READY_FOR_DECISION
-            requestSetPleas(caseId,
-                    eventListener,
+            requestSetPleasAndConfirm(caseId,
                     true,
                     false,
                     true,
@@ -182,8 +174,7 @@ public class ReadyCaseIT extends BaseIntegrationTest {
                     null,
                     asList(Triple.of(offence1Id, defendantId, NOT_GUILTY),
                             Triple.of(offence2Id, defendantId, NOT_GUILTY),
-                            Triple.of(offence3Id, defendantId, NOT_GUILTY)),
-                    PUBLIC_EVENT_SET_PLEAS);
+                            Triple.of(offence3Id, defendantId, NOT_GUILTY)));
             readyCaseHelper.verifyCaseUnmarkedReadyForDecisionEventEmitted(caseId, now().plusDays(10));
             CaseHelper.pollUntilCaseNotReady(caseId);
 
@@ -195,8 +186,7 @@ public class ReadyCaseIT extends BaseIntegrationTest {
             caseSearchResultHelper.verifyCaseStatus(CaseStatus.PLEA_RECEIVED_READY_FOR_DECISION);
 
             // verify the case status as NO_PLEA_RECEIVED
-            requestSetPleas(caseId,
-                    eventListener,
+            requestSetPleasAndConfirm(caseId,
                     true,
                     false,
                     true,
@@ -205,8 +195,7 @@ public class ReadyCaseIT extends BaseIntegrationTest {
                     null,
                     asList(Triple.of(offence1Id, defendantId, null),
                             Triple.of(offence2Id, defendantId, null),
-                            Triple.of(offence3Id, defendantId, null)),
-                    PUBLIC_EVENT_SET_PLEAS);
+                            Triple.of(offence3Id, defendantId, null)));
             readyCaseHelper.verifyCaseUnmarkedReadyForDecisionEventEmitted(caseId, postingDate.plusDays(28));
             caseSearchResultHelper.verifyCaseStatus(CaseStatus.NO_PLEA_RECEIVED);
             CaseHelper.pollUntilCaseNotReady(caseId);

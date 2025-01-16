@@ -20,13 +20,11 @@ import static org.hamcrest.Matchers.hasSize;
 import static uk.gov.justice.services.test.utils.core.matchers.ResponsePayloadMatcher.payload;
 import static uk.gov.justice.services.test.utils.core.matchers.ResponseStatusMatcher.status;
 import static uk.gov.justice.services.test.utils.core.matchers.UuidStringMatcher.isAUuid;
-import static uk.gov.moj.sjp.it.Constants.EVENT_SELECTOR_CASE_DOCUMENT_ADDED;
-import static uk.gov.moj.sjp.it.Constants.EVENT_SELECTOR_CASE_DOCUMENT_UPLOAD_REJECTED;
+import static uk.gov.moj.sjp.it.Constants.PUBLIC_ACTIVE_MQ_TOPIC;
 import static uk.gov.moj.sjp.it.Constants.PUBLIC_EVENT_SELECTOR_CASE_DOCUMENT_ADDED;
 import static uk.gov.moj.sjp.it.Constants.PUBLIC_EVENT_SELECTOR_CASE_DOCUMENT_ALREADY_EXISTS;
 import static uk.gov.moj.sjp.it.Constants.PUBLIC_EVENT_SELECTOR_CASE_DOCUMENT_UPLOADED;
 import static uk.gov.moj.sjp.it.Constants.PUBLIC_EVENT_SELECTOR_CASE_DOCUMENT_UPLOAD_REJECTED;
-import static uk.gov.moj.sjp.it.Constants.PUBLIC_ACTIVE_MQ_TOPIC;
 import static uk.gov.moj.sjp.it.stub.MaterialStub.stubMaterialMetadata;
 import static uk.gov.moj.sjp.it.test.BaseIntegrationTest.USER_ID;
 import static uk.gov.moj.sjp.it.util.DefaultRequests.getCaseById;
@@ -36,9 +34,6 @@ import static uk.gov.moj.sjp.it.util.FileUtil.getPayload;
 import static uk.gov.moj.sjp.it.util.HttpClientUtil.makeMultipartFormPostCall;
 import static uk.gov.moj.sjp.it.util.HttpClientUtil.makePostCall;
 import static uk.gov.moj.sjp.it.util.RestPollerWithDefaults.pollWithDefaults;
-import static uk.gov.moj.sjp.it.util.RestPollerWithDefaults.pollWithTimeParams;
-import static uk.gov.moj.sjp.it.util.TopicUtil.privateEvents;
-import static uk.gov.moj.sjp.it.util.TopicUtil.retrieveMessage;
 
 import uk.gov.justice.services.common.converter.ZonedDateTimes;
 import uk.gov.justice.services.common.util.UtcClock;
@@ -49,15 +44,14 @@ import uk.gov.moj.sjp.it.util.JsonHelper;
 
 import java.time.ZonedDateTime;
 import java.time.temporal.ChronoUnit;
-import java.util.Map;
 import java.util.UUID;
 
-import javax.jms.MessageConsumer;
 import javax.json.JsonObject;
 import javax.ws.rs.core.Response;
 
 import com.jayway.jsonpath.Filter;
 import io.restassured.path.json.JsonPath;
+import org.hamcrest.Matcher;
 import org.hamcrest.Matchers;
 import org.json.JSONObject;
 import org.slf4j.Logger;
@@ -75,17 +69,11 @@ public class CaseDocumentHelper implements AutoCloseable {
 
     private static final String TEMPLATE_ADD_CASE_DOCUMENT_PAYLOAD = "payload/sjp.command.add-case-document.json";
 
-    private static final String ID_PROPERTY = "id";
-    private static final String CASE_ID_PROPERTY = "caseId";
     private static final String MATERIAL_ID_PROPERTY = "materialId";
     private static final String DOCUMENT_TYPE_PROPERTY = "documentType";
     private static final String DOCUMENT_TYPE_PLEA = "PLEA";
     private static final String FILE_NAME_PLEA = "SMITH_Fred_TFL2041315_PLEA.pdf";
     private static final String FILE_PATH_PLEA = "src/test/resources/plea";
-
-    private static final String DOCUMENT_ID = "documentId";
-    private static final String DESCRIPTION = "description";
-
 
     private UUID caseId;
     private String request;
@@ -96,9 +84,6 @@ public class CaseDocumentHelper implements AutoCloseable {
     private MessageConsumerClient publicCaseDocumentUploaded = new MessageConsumerClient();
 
     private MessageConsumerClient publicConsumer = new MessageConsumerClient();
-    private MessageConsumer privateEventsConsumer;
-
-    private MessageConsumer privateEventsConsumerForRejectedCaseUpload;
     private MessageConsumerClient publicConsumerForRejected = new MessageConsumerClient();
 
     private ZonedDateTime uploadTime;
@@ -107,9 +92,6 @@ public class CaseDocumentHelper implements AutoCloseable {
         this.id = randomUUID().toString();
         this.materialId = randomUUID().toString();
         this.caseId = caseId;
-        privateEventsConsumer = privateEvents.createConsumer(EVENT_SELECTOR_CASE_DOCUMENT_ADDED);
-
-        privateEventsConsumerForRejectedCaseUpload = privateEvents.createConsumer(EVENT_SELECTOR_CASE_DOCUMENT_UPLOAD_REJECTED);
 
         publicConsumer.startConsumer(PUBLIC_EVENT_SELECTOR_CASE_DOCUMENT_ADDED, PUBLIC_ACTIVE_MQ_TOPIC);
         publicConsumerForRejected.startConsumer(PUBLIC_EVENT_SELECTOR_CASE_DOCUMENT_UPLOAD_REJECTED, PUBLIC_ACTIVE_MQ_TOPIC);
@@ -167,30 +149,6 @@ public class CaseDocumentHelper implements AutoCloseable {
         request = fileName;
         LOGGER.info("Uploading case document with payload from file: {}", request);
         makeMultipartFormPostCall(userId, writeUrl, "caseDocument", request);
-    }
-
-    public void verifyInActiveMQ() {
-        JsonPath jsonResponse = retrieveMessage(privateEventsConsumer);
-
-        LOGGER.info("Response: {}", jsonResponse.prettify());
-        JsonPath jsonRequest = new JsonPath(request);
-
-        Map caseDocument = jsonResponse.getJsonObject("caseDocument");
-        assertThat(caseDocument.get(ID_PROPERTY), is(id));
-        assertThat(jsonResponse.get(CASE_ID_PROPERTY), is(caseId.toString()));
-        assertJsonPayload(jsonRequest, caseDocument);
-    }
-
-    public void verifyInActiveMQCaseUploadRejected() {
-        JsonPath jsonResponse = retrieveMessage(privateEventsConsumerForRejectedCaseUpload, 40000l).orElse(null);
-
-        LOGGER.info("Response: {}", jsonResponse.prettify());
-        JsonPath jsonRequest = new JsonPath(request);
-
-        Map caseDocument = jsonResponse.getJsonObject(".");
-        final String description = String.format("Case Document %s Upload rejected as case %s is referred to court for hearing", caseDocument.get(DOCUMENT_ID), caseId);
-        assertThat(jsonResponse.get(DESCRIPTION), is(description));
-        assertJsonPayload(jsonResponse, caseDocument);
     }
 
     public void verifyInPublicTopic() {
@@ -273,22 +231,16 @@ public class CaseDocumentHelper implements AutoCloseable {
     }
 
 
-    public JsonObject findDocument(final UUID userId, final int index, final String documentType, final int documentNumber) {
-        final ResponseData documents = pollWithDefaults(getCaseDocumentsByCaseId(caseId, userId))
+    public static void pollForCaseDocument(final UUID caseId, final UUID userId, final Matcher[] matchers) {
+        pollWithDefaults(getCaseDocumentsByCaseId(caseId, userId))
                 .until(
                         status().is(OK),
-                        payload().isJson(allOf(
-                                withJsonPath("$.caseDocuments[" + index + "].documentNumber", Matchers.is(documentNumber)),
-                                withJsonPath("$.caseDocuments[" + index + "].documentType", Matchers.is(documentType)),
-                                withJsonPath("$.caseDocuments[" + index + "].materialId", Matchers.notNullValue())
-                        ))
+                        payload().isJson(allOf(matchers))
                 );
-
-        return JsonHelper.getJsonObject(documents.getPayload()).getJsonArray("caseDocuments").getJsonObject(0);
     }
 
     public JsonObject findAllDocumentsForTheUser(final UUID userId) {
-        final ResponseData documents = pollWithTimeParams(getCaseDocumentsByCaseId(caseId, userId), 2000, 100)
+        final ResponseData documents = pollWithDefaults(getCaseDocumentsByCaseId(caseId, userId))
                 .until(
                         status().is(OK),
                         payload().isJson(withJsonPath("$.caseDocuments[" + 0 + "].documentNumber", Matchers.notNullValue())
@@ -329,17 +281,8 @@ public class CaseDocumentHelper implements AutoCloseable {
         assertDocumentAdded();
     }
 
-    private void assertJsonPayload(JsonPath jsonRequest, Map caseDocument) {
-        assertThat(caseDocument.get(MATERIAL_ID_PROPERTY), is(jsonRequest.getString(MATERIAL_ID_PROPERTY)));
-        assertThat(caseDocument.get(DOCUMENT_TYPE_PROPERTY), is(jsonRequest.getString(DOCUMENT_TYPE_PROPERTY)));
-    }
-
     public String getDocumentId() {
         return id;
-    }
-
-    public String getMaterialId() {
-        return this.materialId;
     }
 
     @Override

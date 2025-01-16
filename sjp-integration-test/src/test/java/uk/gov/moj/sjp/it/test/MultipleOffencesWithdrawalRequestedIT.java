@@ -31,7 +31,7 @@ import static uk.gov.moj.sjp.it.helper.DecisionHelper.verifyCaseUnmarkedReady;
 import static uk.gov.moj.sjp.it.helper.DecisionHelper.verifyDecisionSaved;
 import static uk.gov.moj.sjp.it.helper.OffencesWithdrawalRequestHelper.assertCaseQueryDoesNotReturnWithdrawalReasons;
 import static uk.gov.moj.sjp.it.helper.OffencesWithdrawalRequestHelper.assertCaseQueryReturnsWithdrawalReasons;
-import static uk.gov.moj.sjp.it.helper.SessionHelper.startSession;
+import static uk.gov.moj.sjp.it.helper.SessionHelper.startSessionAndConfirm;
 import static uk.gov.moj.sjp.it.model.ProsecutingAuthority.DVLA;
 import static uk.gov.moj.sjp.it.model.ProsecutingAuthority.TFL;
 import static uk.gov.moj.sjp.it.model.ProsecutingAuthority.TVL;
@@ -73,8 +73,6 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-import javax.json.JsonObject;
-
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Sets;
 import org.hamcrest.Matcher;
@@ -100,7 +98,7 @@ public class MultipleOffencesWithdrawalRequestedIT extends BaseIntegrationTest {
 
     @BeforeEach
     public void setUp() throws Exception {
-        new SjpDatabaseCleaner().cleanViewStore();
+        SjpDatabaseCleaner.cleanViewStore();
 
         CaseAssignmentRestrictionHelper.provisionCaseAssignmentRestrictions(Sets.newHashSet(TFL, TVL, DVLA));
 
@@ -250,10 +248,9 @@ public class MultipleOffencesWithdrawalRequestedIT extends BaseIntegrationTest {
 
     }
 
-    private static JsonObject startSessionAndRequestAssignment(final UUID sessionId, final UUID userId, final SessionType sessionType) {
-        final JsonEnvelope session = startSession(sessionId, userId, DEFAULT_LONDON_COURT_HOUSE_OU_CODE, sessionType).get();
+    private static void startSessionAndRequestAssignment(final UUID sessionId, final UUID userId, final SessionType sessionType) {
+        startSessionAndConfirm(sessionId, userId, DEFAULT_LONDON_COURT_HOUSE_OU_CODE, sessionType);
         requestCaseAssignment(sessionId, userId);
-        return session.payloadAsJsonObject();
     }
 
     @Test

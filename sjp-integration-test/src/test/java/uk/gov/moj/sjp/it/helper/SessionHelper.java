@@ -5,12 +5,14 @@ import static javax.json.Json.createArrayBuilder;
 import static javax.json.Json.createObjectBuilder;
 import static javax.ws.rs.core.Response.Status.ACCEPTED;
 import static javax.ws.rs.core.Response.Status.OK;
+import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.notNullValue;
 import static uk.gov.justice.services.test.utils.core.http.RequestParamsBuilder.requestParams;
 import static uk.gov.justice.services.test.utils.core.matchers.ResponsePayloadMatcher.payload;
 import static uk.gov.justice.services.test.utils.core.matchers.ResponseStatusMatcher.status;
 import static uk.gov.moj.sjp.it.util.Defaults.DEFAULT_LEGAL_ADVISER;
 import static uk.gov.moj.sjp.it.util.HttpClientUtil.getReadUrl;
+import static uk.gov.moj.sjp.it.util.HttpClientUtil.makePostCall;
 import static uk.gov.moj.sjp.it.util.RestPollerWithDefaults.pollWithDefaults;
 
 import uk.gov.justice.core.courts.DelegatedPowers;
@@ -20,17 +22,13 @@ import uk.gov.justice.services.test.utils.core.http.RequestParamsBuilder;
 import uk.gov.moj.cpp.sjp.domain.SessionType;
 import uk.gov.moj.cpp.sjp.event.session.DelegatedPowersSessionStarted;
 import uk.gov.moj.cpp.sjp.event.session.MagistrateSessionStarted;
-import uk.gov.moj.sjp.it.util.HttpClientUtil;
 
-import java.io.StringReader;
 import java.util.EnumMap;
 import java.util.Optional;
 import java.util.UUID;
 
-import javax.json.Json;
 import javax.json.JsonObject;
 
-import com.jayway.jsonpath.ReadContext;
 import org.hamcrest.Matcher;
 
 public class SessionHelper {
@@ -50,16 +48,6 @@ public class SessionHelper {
         return startSession(sessionId, userId, payload);
     }
 
-    public static Optional<JsonEnvelope> startDelegatedPowersSessionAndWaitForEvent(final UUID sessionId, final UUID userId, final String courtHouseOUCode, final String eventName) {
-        return new EventListener().subscribe(eventName)
-                .run(() -> startDelegatedPowersSessionAsync(sessionId, userId, courtHouseOUCode))
-                .popEvent(eventName);
-    }
-
-    public static Optional<JsonEnvelope> startDelegatedPowersSession(final UUID sessionId, final UUID userId, final String courtHouseOUCode) {
-        return startDelegatedPowersSessionAndWaitForEvent(sessionId, userId, courtHouseOUCode, DelegatedPowersSessionStarted.EVENT_NAME);
-    }
-
     public static UUID startMagistrateSessionAsync(final UUID sessionId, final UUID userId, final String courtHouseOUCode, final String magistrate, final DelegatedPowers legalAdviser) {
         final JsonObject payload = createObjectBuilder()
                 .add("courtHouseOUCode", courtHouseOUCode)
@@ -71,14 +59,9 @@ public class SessionHelper {
         return startSession(sessionId, userId, payload);
     }
 
-    public static Optional<JsonEnvelope> startMagistrateSessionAndWaitForEvent(final UUID sessionId, final UUID userId, final String courtHouseOUCode, final String magistrate, final String eventName) {
-        return new EventListener().subscribe(eventName)
-                .run(() -> startMagistrateSessionAsync(sessionId, userId, courtHouseOUCode, magistrate, DEFAULT_LEGAL_ADVISER))
-                .popEvent(eventName);
-    }
-
-    public static Optional<JsonEnvelope> startMagistrateSession(final UUID sessionId, final UUID userId, final String courtHouseOUCode, final String magistrate) {
-        return startMagistrateSessionAndWaitForEvent(sessionId, userId, courtHouseOUCode, magistrate, MagistrateSessionStarted.EVENT_NAME);
+    public static void startMagistrateSessionAndConfirm(final UUID sessionId, final UUID userId, final String courtHouseOUCode, final String magistrate) {
+        startMagistrateSessionAsync(sessionId, userId, courtHouseOUCode, magistrate, DEFAULT_LEGAL_ADVISER);
+        pollForSessionStarted(sessionId, userId);
     }
 
     public static void startSessionAsync(final UUID sessionId, final UUID userId, final String courtHouseOUCode, final SessionType sessionType) {
@@ -104,28 +87,32 @@ public class SessionHelper {
                 .popEvent(eventName);
     }
 
-    public static JsonObject getSession(final UUID sessionId, final UUID userId) {
-        return getSession(sessionId, userId, withJsonPath("$.startedAt", notNullValue()));
+    public static void startSessionAndConfirm(final UUID sessionId, final UUID userId, final String courtHouseOUCode, final SessionType sessionType) {
+        startSessionAsync(sessionId, userId, courtHouseOUCode, sessionType);
+        pollForSessionStarted(sessionId, userId);
     }
 
-    public static JsonObject getSession(final UUID sessionId, final UUID userId, final Matcher<? super ReadContext> payloadMatcher) {
+    private static void pollForSessionStarted(final UUID sessionId, final UUID userId) {
+        pollForSession(sessionId, userId, new Matcher[]{withJsonPath("$.startedAt", notNullValue())});
+    }
+
+    public static void pollForSession(final UUID sessionId, final UUID userId, final Matcher[] matchers) {
         final RequestParamsBuilder requestParamsBuilder = requestParams(getReadUrl("/sessions/" + sessionId), "application/vnd.sjp.query.session+json")
                 .withHeader(HeaderConstants.USER_ID, userId);
-        final String payload = pollWithDefaults(requestParamsBuilder)
-                .until(status().is(OK), payload().isJson(payloadMatcher)).getPayload();
-        return Json.createReader(new StringReader(payload)).readObject();
+        pollWithDefaults(requestParamsBuilder)
+                .until(status().is(OK), payload().isJson(allOf(matchers)));
     }
 
     public static UUID endSession(final UUID sessionId, final UUID userId) {
         final String contentType = "application/vnd.sjp.end-session+json";
         final String url = String.format("/sessions/%s", sessionId);
-        return HttpClientUtil.makePostCall(userId, url, contentType, createObjectBuilder().build().toString(), ACCEPTED);
+        return makePostCall(userId, url, contentType, createObjectBuilder().build().toString(), ACCEPTED);
     }
 
     private static UUID startSession(final UUID sessionId, final UUID userId, final JsonObject payload) {
         final String contentType = "application/vnd.sjp.start-session+json";
         final String url = String.format("/sessions/%s", sessionId);
-        return HttpClientUtil.makePostCall(userId, url, contentType, payload.toString(), ACCEPTED);
+        return makePostCall(userId, url, contentType, payload.toString(), ACCEPTED);
     }
 
     private static JsonObject buildLegalAdviserJsonObject(final DelegatedPowers legalAdviser) {
@@ -139,6 +126,6 @@ public class SessionHelper {
     public static void resetAndStartAocpSession() {
         final String contentType = "application/vnd.sjp.reset-aocp-session+json";
         final String resource = "/reset-aocp-session";
-        HttpClientUtil.makePostCall(resource, contentType, "{}");
+        makePostCall(resource, contentType, "{}");
     }
 }

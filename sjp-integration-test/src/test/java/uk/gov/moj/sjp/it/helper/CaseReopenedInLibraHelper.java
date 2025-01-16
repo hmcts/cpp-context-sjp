@@ -8,12 +8,10 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.allOf;
-import static uk.gov.moj.sjp.it.Constants.EVENT_SELECTOR_CASE_REOPENED_IN_LIBRA;
-import static uk.gov.moj.sjp.it.Constants.EVENT_SELECTOR_CASE_REOPENED_IN_LIBRA_UNDONE;
-import static uk.gov.moj.sjp.it.Constants.EVENT_SELECTOR_CASE_REOPENED_IN_LIBRA_UPDATED;
 import static uk.gov.moj.sjp.it.Constants.PUBLIC_EVENT_SELECTOR_CASE_REOPENED_IN_LIBRA;
 import static uk.gov.moj.sjp.it.Constants.PUBLIC_EVENT_SELECTOR_CASE_REOPENED_IN_LIBRA_UNDONE;
 import static uk.gov.moj.sjp.it.Constants.PUBLIC_EVENT_SELECTOR_CASE_REOPENED_IN_LIBRA_UPDATED;
+import static uk.gov.moj.sjp.it.pollingquery.CasePoller.pollUntilCaseByIdIsOk;
 import static uk.gov.moj.sjp.it.util.FileUtil.getPayload;
 import static uk.gov.moj.sjp.it.util.HttpClientUtil.makePostCall;
 import static uk.gov.moj.sjp.it.util.TopicUtil.retrieveMessage;
@@ -40,16 +38,11 @@ public abstract class CaseReopenedInLibraHelper implements AutoCloseable {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(CaseReopenedInLibraHelper.class);
 
-    final MessageConsumer privateEventsConsumer;
     final MessageConsumer publicEventsConsumer;
 
     public static class MarkCaseReopenedInLibraHelper extends CaseReopenedInLibraHelper {
         public MarkCaseReopenedInLibraHelper(final UUID caseId) {
-            super(caseId, EVENT_SELECTOR_CASE_REOPENED_IN_LIBRA, PUBLIC_EVENT_SELECTOR_CASE_REOPENED_IN_LIBRA);
-        }
-
-        public void verifyEventInActiveMQ() {
-            verifyCaseReopenedInLibraInActiveMQ(privateEventsConsumer, markCaseReopenDetails);
+            super(caseId, PUBLIC_EVENT_SELECTOR_CASE_REOPENED_IN_LIBRA);
         }
 
         public void verifyEventInPublicTopic() {
@@ -67,11 +60,7 @@ public abstract class CaseReopenedInLibraHelper implements AutoCloseable {
 
     public static class UpdateCaseReopenedInLibraHelper extends CaseReopenedInLibraHelper {
         public UpdateCaseReopenedInLibraHelper(final UUID caseId) {
-            super(caseId, EVENT_SELECTOR_CASE_REOPENED_IN_LIBRA_UPDATED, PUBLIC_EVENT_SELECTOR_CASE_REOPENED_IN_LIBRA_UPDATED);
-        }
-
-        public void verifyEventInActiveMQ() {
-            verifyCaseReopenedInLibraInActiveMQ(privateEventsConsumer, updateCaseReopenDetails);
+            super(caseId, PUBLIC_EVENT_SELECTOR_CASE_REOPENED_IN_LIBRA_UPDATED);
         }
 
         public void verifyEventInPublicTopic() {
@@ -89,11 +78,7 @@ public abstract class CaseReopenedInLibraHelper implements AutoCloseable {
 
     public static class UndoCaseReopenedInLibraHelper extends CaseReopenedInLibraHelper {
         public UndoCaseReopenedInLibraHelper(final UUID caseId) {
-            super(caseId, EVENT_SELECTOR_CASE_REOPENED_IN_LIBRA_UNDONE, PUBLIC_EVENT_SELECTOR_CASE_REOPENED_IN_LIBRA_UNDONE);
-        }
-
-        public void verifyEventInActiveMQ() {
-            verifyCaseReopenUndoneInLibraInActiveMQ(privateEventsConsumer);
+            super(caseId, PUBLIC_EVENT_SELECTOR_CASE_REOPENED_IN_LIBRA_UNDONE);
         }
 
         public void verifyEventInPublicTopic() {
@@ -123,7 +108,7 @@ public abstract class CaseReopenedInLibraHelper implements AutoCloseable {
 
     final CaseReopenDetails updateCaseReopenDetails;
 
-    CaseReopenedInLibraHelper(final UUID caseId, final String privateSelector, final String publicSelector) {
+    CaseReopenedInLibraHelper(final UUID caseId, final String publicSelector) {
         this.caseId = caseId;
 
         this.markCaseReopenDetails = new CaseReopenDetails(
@@ -140,7 +125,6 @@ public abstract class CaseReopenedInLibraHelper implements AutoCloseable {
                 "Optional reason"
         );
 
-        privateEventsConsumer = TopicUtil.privateEvents.createConsumer(privateSelector);
         publicEventsConsumer = TopicUtil.publicEvents.createConsumer(publicSelector);
     }
 
@@ -162,7 +146,7 @@ public abstract class CaseReopenedInLibraHelper implements AutoCloseable {
     }
 
     void assertCaseNotReopenedInLibra() {
-        CasePoller.pollUntilCaseByIdIsOk(caseId,
+        pollUntilCaseByIdIsOk(caseId,
                 allOf(
                         withJsonPath("$.id", is(caseId.toString())),
                         withoutJsonPath("$.reopenedDate"),
@@ -173,7 +157,7 @@ public abstract class CaseReopenedInLibraHelper implements AutoCloseable {
     }
 
     void assertCaseReopenedInLibra(final CaseReopenDetails caseReopenDetails) {
-        CasePoller.pollUntilCaseByIdIsOk(caseId,
+        pollUntilCaseByIdIsOk(caseId,
                 allOf(
                         withJsonPath("$.id", is(caseReopenDetails.getCaseId().toString())),
                         withJsonPath("$.reopenedDate", is(caseReopenDetails.getReopenedDate().toString())),
@@ -206,8 +190,6 @@ public abstract class CaseReopenedInLibraHelper implements AutoCloseable {
         makePostCall(writeUrl, UNDO_WRITE_MEDIA_TYPE, "{}");
     }
 
-    public abstract void verifyEventInActiveMQ();
-
     public abstract void verifyEventInPublicTopic();
 
     public abstract void assertCaseReopenedDetailsSet();
@@ -216,11 +198,6 @@ public abstract class CaseReopenedInLibraHelper implements AutoCloseable {
 
     @Override
     public void close() {
-        try {
-            privateEventsConsumer.close();
-        } catch (JMSException e) {
-            LOGGER.warn("Exception while closing consumer", e);
-        }
         try {
             publicEventsConsumer.close();
         } catch (JMSException e) {

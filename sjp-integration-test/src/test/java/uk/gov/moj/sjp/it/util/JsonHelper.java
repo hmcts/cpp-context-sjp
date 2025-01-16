@@ -12,7 +12,6 @@ import java.io.StringReader;
 import java.io.StringWriter;
 import java.io.UncheckedIOException;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import javax.json.Json;
 import javax.json.JsonObject;
@@ -76,11 +75,9 @@ public class JsonHelper {
         }
         JSONCompareResult compareResult = null;
         if (CollectionUtils.isNotEmpty(ignoreComparisonList)) {
-            List<Customization> customizationsList = ignoreComparisonList.stream()
-                    .map(ignore -> new Customization(ignore, (o1, o2) -> true))
-                    .collect(Collectors.toList());
             compareResult = compareJSON(json1.toString(), json2.toString(),
-                    new CustomComparator(STRICT, customizationsList.toArray(new Customization[customizationsList.size()])));
+                    new CustomComparator(STRICT, ignoreComparisonList.stream()
+                            .map(ignore -> new Customization(ignore, (o1, o2) -> true)).toArray(Customization[]::new)));
         } else {
             compareResult = compareJSON(json1.toString(), json2.toString(), STRICT);
         }

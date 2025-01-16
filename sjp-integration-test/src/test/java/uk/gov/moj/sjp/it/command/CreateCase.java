@@ -4,13 +4,11 @@ import org.apache.commons.lang3.RandomStringUtils;
 import uk.gov.justice.json.schemas.domains.sjp.Gender;
 import uk.gov.justice.json.schemas.domains.sjp.Language;
 import uk.gov.justice.services.common.converter.LocalDates;
-import uk.gov.moj.cpp.sjp.domain.decision.PressRestriction;
 import uk.gov.moj.sjp.it.command.builder.AddressBuilder;
 import uk.gov.moj.sjp.it.command.builder.ContactDetailsBuilder;
 import uk.gov.moj.sjp.it.model.ProsecutingAuthority;
 import uk.gov.moj.sjp.it.util.UrnProvider;
 
-import javax.json.Json;
 import javax.json.JsonArrayBuilder;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
@@ -36,7 +34,6 @@ import static uk.gov.moj.sjp.it.Constants.DEFAULT_OFFENCE_CODE;
 import static uk.gov.moj.sjp.it.util.HttpClientUtil.getPostCallResponse;
 
 public class CreateCase {
-    private static final String ADD_FINANCIAL_IMPOSITION_WRITE_MEDIA_TYPE = "application/vnd.sjp.add-financial-imposition-account-number-bdf+json";
 
     private static final String WRITE_MEDIA_TYPE = "application/vnd.sjp.create-sjp-case+json";
     private final CreateCasePayloadBuilder payloadBuilder;
@@ -51,14 +48,6 @@ public class CreateCase {
 
     public static String createCaseForPayloadBuilder(final CreateCasePayloadBuilder payloadBuilder, final Response.Status status) {
         return new CreateCase(payloadBuilder).createCase(status);
-    }
-
-    public static String addFinancialImposition(final UUID caseId, final UUID defendantId, final Response.Status status) {
-        final JsonObjectBuilder payload = Json.createObjectBuilder();
-        payload.add("correlationId", caseId.toString())
-                .add("accountNumber", "12345678");
-
-        return getPostCallResponse("/cases/" + caseId.toString() + "/defendant/" + defendantId.toString() + "/add-financial-imposition-account-number-bdf", ADD_FINANCIAL_IMPOSITION_WRITE_MEDIA_TYPE, payload.build().toString(), status);
     }
 
     private void createCase() {
@@ -207,7 +196,6 @@ public class CreateCase {
         private LocalDate postingDate;
         private DefendantBuilder defendantBuilder;
         private List<OffenceBuilder> offenceBuilders;
-        private PressRestriction pressRestriction;
 
         private CreateCasePayloadBuilder() {
             this.prosecutingAuthority = ProsecutingAuthority.TFL;
@@ -219,7 +207,6 @@ public class CreateCase {
             this.urn = UrnProvider.generate(prosecutingAuthority);
             this.enterpriseId = RandomStringUtils.randomAlphanumeric(12).toUpperCase();
             this.getOffenceBuilder().withId(randomUUID());
-            this.pressRestriction = null;
         }
 
         public static CreateCasePayloadBuilder defaultCaseBuilder() {
@@ -283,10 +270,6 @@ public class CreateCase {
 
         public OffenceBuilder getOffenceBuilder() {
             return offenceBuilders.get(0);
-        }
-
-        public OffenceBuilder getOffenceBuilder(final UUID offenceId) {
-            return offenceBuilders.stream().filter(o -> o.getId().equals(offenceId)).findFirst().get();
         }
 
         public List<OffenceBuilder> getOffenceBuilders() {

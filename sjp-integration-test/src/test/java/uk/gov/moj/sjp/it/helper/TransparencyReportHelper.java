@@ -1,13 +1,7 @@
 package uk.gov.moj.sjp.it.helper;
 
 import static org.apache.commons.io.IOUtils.toByteArray;
-import static uk.gov.justice.services.test.utils.core.http.RequestParamsBuilder.requestParams;
-import static uk.gov.moj.sjp.it.test.BaseIntegrationTest.USER_ID;
-import static uk.gov.moj.sjp.it.util.HttpClientUtil.getReadUrl;
-import static uk.gov.moj.sjp.it.util.RestPollerWithDefaults.pollWithDefaultsUntilResponseIsJson;
 
-import uk.gov.justice.services.common.http.HeaderConstants;
-import uk.gov.justice.services.test.utils.core.http.RequestParamsBuilder;
 import uk.gov.moj.sjp.it.util.HttpClientUtil;
 import uk.gov.moj.sjp.it.util.PdfContentHelper;
 
@@ -19,7 +13,6 @@ import javax.json.JsonObject;
 import javax.ws.rs.core.Response;
 
 import org.apache.commons.io.IOUtils;
-import org.hamcrest.Matcher;
 
 public class TransparencyReportHelper {
 
@@ -27,17 +20,6 @@ public class TransparencyReportHelper {
         final String resource = "/transparency-report/request";
         final String contentType = "application/vnd.sjp.request-transparency-report+json";
         HttpClientUtil.makePostCall(resource, contentType, payload.toString());
-    }
-
-    public JsonObject pollForTransparencyReportMetadata(final Matcher matcher) {
-        final String acceptHeader = "application/vnd.sjp.query.transparency-report-metadata+json";
-        final String resource = "/transparency-report/metadata";
-
-        final RequestParamsBuilder requestParams = requestParams(getReadUrl(resource), acceptHeader)
-                .withHeader(HeaderConstants.USER_ID, USER_ID);
-
-        return pollWithDefaultsUntilResponseIsJson(requestParams.build(), matcher);
-
     }
 
     public String requestToGetTransparencyReportContent(String contentId) throws IOException {

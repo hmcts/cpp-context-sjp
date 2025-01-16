@@ -6,8 +6,8 @@ import static org.hamcrest.CoreMatchers.anyOf;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static uk.gov.moj.cpp.sjp.event.CaseReceived.EVENT_NAME;
 import static uk.gov.moj.sjp.it.Constants.SJP_EVENT;
+import static uk.gov.moj.sjp.it.command.CreateCase.CreateCasePayloadBuilder.withDefaults;
 import static uk.gov.moj.sjp.it.command.CreateCase.createCaseForPayloadBuilder;
 import static uk.gov.moj.sjp.it.model.ProsecutingAuthority.TFL;
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubEnforcementAreaByPostcode;
@@ -23,7 +23,6 @@ import uk.gov.justice.services.test.utils.core.messaging.MessageProducerClient;
 import uk.gov.moj.cpp.unifiedsearch.test.util.ingest.ElasticSearchIndexRemoverUtil;
 import uk.gov.moj.sjp.it.command.CreateCase;
 import uk.gov.moj.sjp.it.framework.util.ViewStoreCleaner;
-import uk.gov.moj.sjp.it.helper.EventListener;
 import uk.gov.moj.sjp.it.test.BaseIntegrationTest;
 
 import java.io.IOException;
@@ -82,18 +81,14 @@ public class DefendantDetailsMovedFromPeopleIngestorIT extends BaseIntegrationTe
     }
 
     private void setUpCaseAndDefendants(final CreateCase.CreateCasePayloadBuilder createCase) {
-        new EventListener()
-                .subscribe(EVENT_NAME)
-                .run(() -> createCaseForPayloadBuilder(createCase))
-                .popEvent(EVENT_NAME);
+        createCaseForPayloadBuilder(createCase);
 
         final JsonObject outputCase = getCaseFromElasticSearch(createCase.getId().toString());
         assertThat(createCase.getId().toString(), is(outputCase.getString("caseId")));
     }
 
     private CreateCase.CreateCasePayloadBuilder getCreateCasePayloadBuilder(final UUID caseId, final UUID defendantId) {
-        return CreateCase.CreateCasePayloadBuilder
-                .withDefaults()
+        return withDefaults()
                 .withId(caseId)
                 .withProsecutingAuthority(TFL)
                 .withDefendantId(defendantId)
@@ -101,7 +96,6 @@ public class DefendantDetailsMovedFromPeopleIngestorIT extends BaseIntegrationTe
     }
 
     private void publishDefendantDetailsMovedFromPeopleEvent(final String caseId, final String defendantId) {
-        //stubForUserDetails(tvlUserUid, ProsecutingAuthority.TVL);
 
         final String payloadDefendantDetailsMovedFromPeople = getPayload(STUB_DATA_SJP_EVENTS_DEFENDANT_DETAILS_MOVED_FROM_PEOPLE)
                 .replace("CASE_ID", caseId)

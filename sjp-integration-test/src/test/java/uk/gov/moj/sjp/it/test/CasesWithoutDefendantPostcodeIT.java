@@ -2,12 +2,12 @@ package uk.gov.moj.sjp.it.test;
 
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
 import static java.util.UUID.randomUUID;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.is;
-import static org.hamcrest.MatcherAssert.assertThat;
 import static uk.gov.moj.sjp.it.helper.CaseHelper.pollCasesWithoutDefendantPostcodeUntileResponseIsJson;
-import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubQueryForAllProsecutors;
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubRegionByPostcode;
+import static uk.gov.moj.sjp.it.util.SjpDatabaseCleaner.cleanViewStore;
 
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.sjp.event.CaseReceived;
@@ -33,8 +33,7 @@ public class CasesWithoutDefendantPostcodeIT extends BaseIntegrationTest {
 
     @BeforeEach
     public void setUp() throws Exception {
-        cleaner.cleanViewStore();
-        stubQueryForAllProsecutors();
+        cleanViewStore();
         stubRegionByPostcode(NATIONAL_COURT_CODE, "TestRegion");
     }
 

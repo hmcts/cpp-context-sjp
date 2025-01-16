@@ -22,7 +22,6 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Map;
 import java.util.Optional;
-import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.Callable;
 
@@ -80,11 +79,6 @@ public class EventListener {
         return this;
     }
 
-    public EventListener unsubscribe(String eventName) {
-        this.eventsByName.remove(eventName);
-        return this;
-    }
-
     public EventListener run(final Runnable action) {
         Map<String, MessageConsumerClient> consumers = eventsByName.keySet().parallelStream().collect(toMap(p -> p, this::startConsumer));
         consumers.values().forEach(MessageConsumerClient::cleanQueue);
@@ -114,10 +108,6 @@ public class EventListener {
         return ofNullable(this.eventsByName.get(eventName).poll());
     }
 
-    public Optional<JsonEnvelope> peekEvent(final String eventName) {
-        return ofNullable(this.eventsByName.get(eventName).peek());
-    }
-
     public <T> Optional<Envelope<T>> popEvent(final Class<T> eventClass) {
 
         final Event eventAnnotation = eventClass.getAnnotation(Event.class);
@@ -139,10 +129,6 @@ public class EventListener {
     public EventListener reset() {
         this.eventsByName.clear();
         return this;
-    }
-
-    public Set<String> getSubscribedEvents() {
-        return eventsByName.keySet();
     }
 
     private MessageConsumerClient startConsumer(String eventName) {

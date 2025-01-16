@@ -1,8 +1,18 @@
 package uk.gov.moj.sjp.it.test.ingestor;
 
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+import static java.util.UUID.randomUUID;
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static uk.gov.justice.services.eventstore.management.commands.IndexerCatchupCommand.INDEXER_CATCHUP;
+import static uk.gov.justice.services.jmx.api.mbean.CommandRunMode.FORCED;
+import static uk.gov.justice.services.jmx.system.command.client.connection.JmxParametersBuilder.jmxParameters;
+import static uk.gov.justice.services.test.utils.common.host.TestHostProvider.getHost;
+import static uk.gov.moj.sjp.it.command.CreateCase.createCaseForPayloadBuilder;
+import static uk.gov.moj.sjp.it.model.ProsecutingAuthority.TFL;
+import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubEnforcementAreaByPostcode;
+import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubRegionByPostcode;
+import static uk.gov.moj.sjp.it.test.ingestor.helper.ElasticSearchQueryHelper.getCaseFromElasticSearch;
+
 import uk.gov.justice.services.jmx.system.command.client.SystemCommanderClient;
 import uk.gov.justice.services.jmx.system.command.client.TestSystemCommanderClientFactory;
 import uk.gov.justice.services.jmx.system.command.client.connection.JmxParameters;
@@ -11,27 +21,16 @@ import uk.gov.justice.services.test.utils.persistence.DatabaseCleaner;
 import uk.gov.moj.cpp.unifiedsearch.test.util.ingest.ElasticSearchIndexRemoverUtil;
 import uk.gov.moj.sjp.it.command.CreateCase;
 import uk.gov.moj.sjp.it.framework.util.ViewStoreCleaner;
-import uk.gov.moj.sjp.it.helper.EventListener;
 import uk.gov.moj.sjp.it.test.BaseIntegrationTest;
 
-import javax.json.JsonObject;
 import java.io.IOException;
 import java.util.UUID;
 
-import static java.util.UUID.randomUUID;
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static uk.gov.justice.services.eventstore.management.commands.IndexerCatchupCommand.INDEXER_CATCHUP;
-import static uk.gov.justice.services.jmx.api.mbean.CommandRunMode.FORCED;
-import static uk.gov.justice.services.jmx.system.command.client.connection.JmxParametersBuilder.jmxParameters;
-import static uk.gov.justice.services.management.ping.commands.PingCommand.PING;
-import static uk.gov.justice.services.test.utils.common.host.TestHostProvider.getHost;
-import static uk.gov.moj.cpp.sjp.event.CaseReceived.EVENT_NAME;
-import static uk.gov.moj.sjp.it.command.CreateCase.createCaseForPayloadBuilder;
-import static uk.gov.moj.sjp.it.model.ProsecutingAuthority.TFL;
-import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubEnforcementAreaByPostcode;
-import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubRegionByPostcode;
-import static uk.gov.moj.sjp.it.test.ingestor.helper.ElasticSearchQueryHelper.getCaseFromElasticSearch;
+import javax.json.JsonObject;
+
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 public class IndexerCatchupIT extends BaseIntegrationTest {
     public static final String CASE_ID = "7e2f843e-d639-40b3-8611-8015f3a18958";
@@ -92,7 +91,7 @@ public class IndexerCatchupIT extends BaseIntegrationTest {
                 .build();
         try (final SystemCommanderClient systemCommanderClient = systemCommanderClientFactory.create(jmxParameters)) {
 
-            systemCommanderClient.getRemote(CONTEXT).call(PING,
+            systemCommanderClient.getRemote(CONTEXT).call(INDEXER_CATCHUP,
                     NULL_COMMAND_RUNTIME_ID,
                     NULL_COMMAND_RUNTIME_STRING,
                     FORCED.isGuarded());
@@ -112,9 +111,6 @@ public class IndexerCatchupIT extends BaseIntegrationTest {
                 .withDefendantId(randomUUID());
         stubEnforcementAreaByPostcode(createCase.getDefendantBuilder().getAddressBuilder().getPostcode(), NATIONAL_COURT_CODE, "Bedfordshire Magistrates' Court");
         stubRegionByPostcode(NATIONAL_COURT_CODE, "TestRegion");
-        new EventListener()
-                .subscribe(EVENT_NAME)
-                .run(() -> createCaseForPayloadBuilder(createCase))
-                .popEvent(EVENT_NAME);
+        createCaseForPayloadBuilder(createCase);
     }
 }

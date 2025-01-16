@@ -1,20 +1,5 @@
 package uk.gov.moj.sjp.it.util;
 
-import uk.gov.justice.json.schemas.domains.sjp.User;
-import uk.gov.justice.services.common.http.HeaderConstants;
-import uk.gov.justice.services.test.utils.core.http.RequestParamsBuilder;
-import uk.gov.moj.sjp.it.model.ProsecutingAuthority;
-
-import javax.json.JsonArrayBuilder;
-import javax.json.JsonObject;
-import javax.json.JsonObjectBuilder;
-import javax.ws.rs.core.Response;
-import java.time.ZonedDateTime;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Random;
-import java.util.Set;
-
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
 import static java.util.UUID.randomUUID;
 import static javax.json.Json.createArrayBuilder;
@@ -24,13 +9,32 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.Matchers.greaterThan;
 import static uk.gov.justice.json.schemas.domains.sjp.User.user;
 import static uk.gov.justice.services.test.utils.core.http.RequestParamsBuilder.requestParams;
-import static uk.gov.moj.sjp.it.model.ProsecutingAuthority.*;
+import static uk.gov.moj.sjp.it.model.ProsecutingAuthority.DVLA;
+import static uk.gov.moj.sjp.it.model.ProsecutingAuthority.TFL;
+import static uk.gov.moj.sjp.it.model.ProsecutingAuthority.TVL;
 import static uk.gov.moj.sjp.it.stub.UsersGroupsStub.stubForUserDetails;
 import static uk.gov.moj.sjp.it.stub.UsersGroupsStub.stubGroupForUser;
 import static uk.gov.moj.sjp.it.util.Defaults.DEFAULT_LONDON_LJA_NATIONAL_COURT_CODE;
 import static uk.gov.moj.sjp.it.util.HttpClientUtil.getReadUrl;
 import static uk.gov.moj.sjp.it.util.HttpClientUtil.makePostCall;
 import static uk.gov.moj.sjp.it.util.RestPollerWithDefaults.pollWithDefaultsUntilResponseIsJson;
+
+import uk.gov.justice.json.schemas.domains.sjp.User;
+import uk.gov.justice.services.common.http.HeaderConstants;
+import uk.gov.justice.services.test.utils.core.http.RequestParamsBuilder;
+import uk.gov.moj.sjp.it.model.ProsecutingAuthority;
+
+import java.time.ZonedDateTime;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Set;
+
+import javax.json.JsonArrayBuilder;
+import javax.json.JsonObject;
+import javax.json.JsonObjectBuilder;
+import javax.ws.rs.core.Response;
+
+import org.hamcrest.Matcher;
 
 public class CaseAssignmentRestrictionHelper {
 
@@ -39,7 +43,6 @@ public class CaseAssignmentRestrictionHelper {
             .withFirstName("system")
             .withLastName("system")
             .build();
-    private static final Random random = new Random();
 
     public static void provisionCaseAssignmentRestrictions(Set<ProsecutingAuthority> prosecutingAuthorities) {
 
@@ -78,16 +81,19 @@ public class CaseAssignmentRestrictionHelper {
         makePostCall(systemUser.getUserId(), url, "application/vnd.sjp.add-case-assignment-restriction+json", payloadBuilder.build().toString(), Response.Status.ACCEPTED);
 
         // Ensure the restriction exists
-        getCaseAssignmentRestriction(prosecutingAuthority, ZonedDateTime.now().minusDays(1));
+        pollCaseAssignmentRestriction(prosecutingAuthority, new Matcher[]{
+                withJsonPath("$.prosecutingAuthority", is(prosecutingAuthority)),
+                withJsonPath("$.dateTimeCreated", greaterThan(ZonedDateTime.now().minusDays(1).toString()))
+        });
+
     }
 
-    private static JsonObject getCaseAssignmentRestriction(final String prosecutingAuthority, final ZonedDateTime requestTime) {
+    public static JsonObject pollCaseAssignmentRestriction(final String prosecutingAuthority, final Matcher[] matchers) {
         final String url = String.format("/case-assignment-restriction?prosecutingAuthority=%s", prosecutingAuthority);
         final RequestParamsBuilder requestParams = requestParams(getReadUrl(url), "application/vnd.sjp.query.case-assignment-restriction+json")
                 .withHeader(HeaderConstants.USER_ID, systemUser.getUserId());
 
         return pollWithDefaultsUntilResponseIsJson(requestParams.build(),
-                allOf(withJsonPath("$.prosecutingAuthority", is(prosecutingAuthority)),
-                        withJsonPath("$.dateTimeCreated", greaterThan(requestTime.toString()))));
+                allOf(matchers));
     }
 }

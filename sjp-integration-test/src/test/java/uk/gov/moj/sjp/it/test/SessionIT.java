@@ -1,8 +1,8 @@
 package uk.gov.moj.sjp.it.test;
 
-import static com.jayway.jsonpath.matchers.JsonPathMatchers.isJson;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withoutJsonPath;
+import static java.util.UUID.randomUUID;
 import static org.hamcrest.CoreMatchers.allOf;
 import static org.hamcrest.CoreMatchers.anyOf;
 import static org.hamcrest.CoreMatchers.equalTo;
@@ -14,25 +14,28 @@ import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMetad
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopePayloadMatcher.payloadIsJson;
 import static uk.gov.moj.cpp.sjp.domain.SessionType.DELEGATED_POWERS;
 import static uk.gov.moj.cpp.sjp.domain.SessionType.MAGISTRATE;
-import static uk.gov.moj.sjp.it.helper.SessionHelper.startMagistrateSessionAndWaitForEvent;
+import static uk.gov.moj.sjp.it.helper.SessionHelper.endSession;
+import static uk.gov.moj.sjp.it.helper.SessionHelper.pollForSession;
+import static uk.gov.moj.sjp.it.helper.SessionHelper.startDelegatedPowersSessionAsync;
+import static uk.gov.moj.sjp.it.helper.SessionHelper.startMagistrateSessionAsync;
+import static uk.gov.moj.sjp.it.util.Defaults.DEFAULT_LEGAL_ADVISER;
 
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.sjp.event.processor.SessionProcessor;
-import uk.gov.moj.sjp.it.helper.SessionHelper;
+import uk.gov.moj.sjp.it.helper.EventListener;
 import uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub;
 
 import java.util.Optional;
 import java.util.UUID;
 
+import org.hamcrest.Matcher;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-
 public class SessionIT extends BaseIntegrationTest {
 
-    private final UUID existingSessionId = UUID.randomUUID();
-    private final UUID sessionId = UUID.randomUUID();
-    private final UUID userId = UUID.randomUUID();
+    private final UUID sessionId = randomUUID();
+    private final UUID userId = randomUUID();
     private final String courtHouseOUCode = "B01OK";
     private final String courtHouseName = "Wimbledon Magistrates' Court";
     private final String localJusticeAreaNationalCourtCode = "2577";
@@ -44,7 +47,7 @@ public class SessionIT extends BaseIntegrationTest {
 
     @Test
     public void shouldStartAndEndDelegatedPowersSessionAndCreatePublicEvent() {
-        final Optional<JsonEnvelope> sessionStartedEvent = SessionHelper.startDelegatedPowersSessionAndWaitForEvent(sessionId, userId, courtHouseOUCode, SessionProcessor.PUBLIC_SJP_SESSION_STARTED);
+        final Optional<JsonEnvelope> sessionStartedEvent = startDelegatedPowersSessionAndWaitForEvent(sessionId, userId, courtHouseOUCode, SessionProcessor.PUBLIC_SJP_SESSION_STARTED);
 
         assertThat(sessionStartedEvent.isPresent(), is(true));
         assertThat(sessionStartedEvent.get(), jsonEnvelope(metadata().withName(SessionProcessor.PUBLIC_SJP_SESSION_STARTED),
@@ -56,7 +59,7 @@ public class SessionIT extends BaseIntegrationTest {
                         withJsonPath("$.type", equalTo(DELEGATED_POWERS.name())))
                 )));
 
-        assertThat(SessionHelper.getSession(sessionId, userId).toString(), isJson(allOf(
+        pollForSession(sessionId, userId, new Matcher[]{
                 withJsonPath("$.sessionId", equalTo(sessionId.toString())),
                 withJsonPath("$.userId", equalTo(userId.toString())),
                 withJsonPath("$.courtHouseCode", equalTo(courtHouseOUCode)),
@@ -66,17 +69,16 @@ public class SessionIT extends BaseIntegrationTest {
                 withoutJsonPath("$.endedAt"),
                 withoutJsonPath("$.magistrate"),
                 anyOf(allOf(
-                        withJsonPath("$.prosecutors[0]", equalTo("TFL")),
-                        withJsonPath("$.prosecutors[1]", equalTo("DVL"))),
+                                withJsonPath("$.prosecutors[0]", equalTo("TFL")),
+                                withJsonPath("$.prosecutors[1]", equalTo("DVL"))),
                         allOf(
                                 withJsonPath("$.prosecutors[1]", equalTo("TFL")),
                                 withJsonPath("$.prosecutors[0]", equalTo("DVL"))))
 
-        )));
+        });
 
-
-        SessionHelper.endSession(sessionId, userId);
-        SessionHelper.getSession(sessionId, userId, withJsonPath("$.endedAt", notNullValue()));
+        endSession(sessionId, userId);
+        pollForSession(sessionId, userId, new Matcher[]{withJsonPath("$.endedAt", notNullValue())});
     }
 
     @Test
@@ -95,7 +97,7 @@ public class SessionIT extends BaseIntegrationTest {
                         withJsonPath("$.type", equalTo(MAGISTRATE.name())))
                 )));
 
-        assertThat(SessionHelper.getSession(sessionId, userId).toString(), isJson(allOf(
+        pollForSession(sessionId, userId, new Matcher[]{
                 withJsonPath("$.sessionId", equalTo(sessionId.toString())),
                 withJsonPath("$.userId", equalTo(userId.toString())),
                 withJsonPath("$.courtHouseCode", equalTo(courtHouseOUCode)),
@@ -104,15 +106,29 @@ public class SessionIT extends BaseIntegrationTest {
                 withJsonPath("$.type", equalTo(MAGISTRATE.name())),
                 withJsonPath("$.magistrate", equalTo(magistrate)),
                 anyOf(allOf(
-                        withJsonPath("$.prosecutors[0]", equalTo("TFL")),
-                        withJsonPath("$.prosecutors[1]", equalTo("DVL"))),
+                                withJsonPath("$.prosecutors[0]", equalTo("TFL")),
+                                withJsonPath("$.prosecutors[1]", equalTo("DVL"))),
                         allOf(
                                 withJsonPath("$.prosecutors[1]", equalTo("TFL")),
                                 withJsonPath("$.prosecutors[0]", equalTo("DVL"))))
-        )));
+        });
 
 
-        SessionHelper.endSession(sessionId, userId);
-        SessionHelper.getSession(sessionId, userId, withJsonPath("$.endedAt", notNullValue()));
+        endSession(sessionId, userId);
+        pollForSession(sessionId, userId, new Matcher[]{withJsonPath("$.endedAt", notNullValue())});
     }
+
+    private Optional<JsonEnvelope> startDelegatedPowersSessionAndWaitForEvent(final UUID sessionId, final UUID userId, final String courtHouseOUCode, final String eventName) {
+        return new EventListener().subscribe(eventName)
+                .run(() -> startDelegatedPowersSessionAsync(sessionId, userId, courtHouseOUCode))
+                .popEvent(eventName);
+    }
+
+    private Optional<JsonEnvelope> startMagistrateSessionAndWaitForEvent(final UUID sessionId, final UUID userId, final String courtHouseOUCode, final String magistrate, final String eventName) {
+        return new EventListener().subscribe(eventName)
+                .run(() -> startMagistrateSessionAsync(sessionId, userId, courtHouseOUCode, magistrate, DEFAULT_LEGAL_ADVISER))
+                .popEvent(eventName);
+    }
+
+
 }

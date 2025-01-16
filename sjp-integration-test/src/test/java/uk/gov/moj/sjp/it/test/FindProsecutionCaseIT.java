@@ -6,22 +6,21 @@ import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.core.Is.is;
 import static uk.gov.justice.json.schemas.domains.sjp.Language.W;
 import static uk.gov.moj.sjp.it.command.CreateCase.CreateCasePayloadBuilder.withDefaults;
+import static uk.gov.moj.sjp.it.command.CreateCase.createCaseForPayloadBuilder;
 import static uk.gov.moj.sjp.it.model.ProsecutingAuthority.DVLA;
 import static uk.gov.moj.sjp.it.model.ProsecutingAuthority.TFL;
 import static uk.gov.moj.sjp.it.model.ProsecutingAuthority.TVL;
+import static uk.gov.moj.sjp.it.pollingquery.CasePoller.pollUntilProsecutionCaseByIdIsOk;
 import static uk.gov.moj.sjp.it.stub.ProsecutionCaseFileServiceStub.stubCaseDetails;
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubCountryNationalities;
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubEthnicities;
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubProsecutorQuery;
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubQueryOffencesByCode;
 import static uk.gov.moj.sjp.it.util.CaseAssignmentRestrictionHelper.provisionCaseAssignmentRestrictions;
+import static uk.gov.moj.sjp.it.util.SjpDatabaseCleaner.cleanViewStore;
 import static uk.gov.moj.sjp.it.util.UrnProvider.generate;
 
-import uk.gov.moj.cpp.sjp.event.CaseMarkedReadyForDecision;
 import uk.gov.moj.sjp.it.command.CreateCase;
-import uk.gov.moj.sjp.it.helper.EventListener;
-import uk.gov.moj.sjp.it.pollingquery.CasePoller;
-import uk.gov.moj.sjp.it.util.SjpDatabaseCleaner;
 
 import java.util.UUID;
 
@@ -31,8 +30,6 @@ import org.junit.jupiter.api.Test;
 
 @SuppressWarnings("squid:S2699")
 public class FindProsecutionCaseIT extends BaseIntegrationTest {
-
-    private SjpDatabaseCleaner databaseCleaner = new SjpDatabaseCleaner();
 
     private final UUID caseId = randomUUID();
     private final UUID offenceId1 = randomUUID();
@@ -46,7 +43,7 @@ public class FindProsecutionCaseIT extends BaseIntegrationTest {
 
     @BeforeEach
     public void setUp() throws Exception {
-        databaseCleaner.cleanViewStore();
+        cleanViewStore();
 
         provisionCaseAssignmentRestrictions(Sets.newHashSet(TFL, TVL, DVLA));
         stubProsecutorQuery(TFL.name(), TFL.getFullName(), prosecutorId);
@@ -59,7 +56,7 @@ public class FindProsecutionCaseIT extends BaseIntegrationTest {
     @Test
     public void shouldFindProsecutionCase() {
         createCaseWithSingleOffence();
-        CasePoller.pollUntilProsecutionCaseByIdIsOk(caseId, allOf(
+        pollUntilProsecutionCaseByIdIsOk(caseId, allOf(
                 withJsonPath("$.id", is(caseId.toString())),
                 withJsonPath("$.prosecutionCaseIdentifier.prosecutionAuthorityId", is(prosecutorId.toString())),
                 withJsonPath("$.prosecutionCaseIdentifier.prosecutionAuthorityCode", is("TFL")),
@@ -78,7 +75,7 @@ public class FindProsecutionCaseIT extends BaseIntegrationTest {
     @Test
     public void shouldFindProsecutionCaseWhenDefendantIsCompany() {
         createCaseWithSingleOffenceForCompany();
-        CasePoller.pollUntilProsecutionCaseByIdIsOk(caseId, allOf(
+        pollUntilProsecutionCaseByIdIsOk(caseId, allOf(
                 withJsonPath("$.id", is(caseId.toString())),
                 withJsonPath("$.prosecutionCaseIdentifier.prosecutionAuthorityId", is(prosecutorId.toString())),
                 withJsonPath("$.prosecutionCaseIdentifier.prosecutionAuthorityCode", is("TFL")),
@@ -107,10 +104,7 @@ public class FindProsecutionCaseIT extends BaseIntegrationTest {
                 .withUrn(caseUrn);
 
 
-        new EventListener()
-                .subscribe(CaseMarkedReadyForDecision.EVENT_NAME)
-                .run(() -> CreateCase.createCaseForPayloadBuilder(createCasePayloadBuilder))
-                .popEvent(CaseMarkedReadyForDecision.EVENT_NAME);
+        createCaseForPayloadBuilder(createCasePayloadBuilder);
     }
 
     private void createCaseWithSingleOffenceForCompany() {
@@ -134,10 +128,7 @@ public class FindProsecutionCaseIT extends BaseIntegrationTest {
                 .withId(caseId)
                 .withUrn(caseUrn);
 
-        new EventListener()
-                .subscribe(CaseMarkedReadyForDecision.EVENT_NAME)
-                .run(() -> CreateCase.createCaseForPayloadBuilder(createCasePayloadBuilder))
-                .popEvent(CaseMarkedReadyForDecision.EVENT_NAME);
+        createCaseForPayloadBuilder(createCasePayloadBuilder);
     }
 
 }

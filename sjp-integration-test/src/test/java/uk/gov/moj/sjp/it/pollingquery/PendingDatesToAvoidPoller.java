@@ -10,14 +10,11 @@ import static uk.gov.moj.sjp.it.util.RestPollerWithDefaults.pollWithDefaults;
 import uk.gov.justice.services.common.http.HeaderConstants;
 import uk.gov.justice.services.test.utils.core.http.RequestParamsBuilder;
 
-import java.util.concurrent.TimeUnit;
-
 import com.jayway.jsonpath.ReadContext;
 import io.restassured.path.json.JsonPath;
 import org.hamcrest.Matcher;
 
 public class PendingDatesToAvoidPoller {
-    private static final int POLLING_TIMEOUT = 20;
 
     private static RequestParamsBuilder getDatesToAvoid(final String userId) {
         final String contentType = "application/vnd.sjp.query.pending-dates-to-avoid+json";
@@ -27,7 +24,6 @@ public class PendingDatesToAvoidPoller {
 
     public static JsonPath pollUntilPendingDatesToAvoidIsOk(final String userId, final Matcher<? super ReadContext> jsonPayloadMatcher) {
         return new JsonPath(pollWithDefaults(getDatesToAvoid(userId))
-                .timeout(POLLING_TIMEOUT, TimeUnit.SECONDS)
                 .until(
                         status().is(OK),
                         payload().isJson(jsonPayloadMatcher)

@@ -16,6 +16,7 @@ import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.hasProperty;
+import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.hasToString;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
@@ -26,10 +27,11 @@ import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMatch
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMetadataMatcher.metadata;
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopePayloadMatcher.payload;
 import static uk.gov.moj.sjp.it.command.CreateCase.createCaseForPayloadBuilder;
-import static uk.gov.moj.sjp.it.helper.AssignmentHelper.requestCaseAssignment;
+import static uk.gov.moj.sjp.it.helper.AssignmentHelper.requestCaseAssignmentAndConfirm;
 import static uk.gov.moj.sjp.it.helper.CaseHelper.pollUntilCaseReady;
-import static uk.gov.moj.sjp.it.helper.SessionHelper.startSession;
+import static uk.gov.moj.sjp.it.helper.SessionHelper.startSessionAndConfirm;
 import static uk.gov.moj.sjp.it.pollingquery.CasePoller.getCase;
+import static uk.gov.moj.sjp.it.pollingquery.CasePoller.pollForCase;
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubEnforcementAreaByPostcode;
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubProsecutorQuery;
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubRegionByPostcode;
@@ -115,7 +117,7 @@ public class DecisionHelper {
         final SessionType sessionType = SessionType.valueOf(readyCase.getString("sessionType"));
         final ProsecutingAuthority prosecutingAuthority = ProsecutingAuthority.valueOf(readyCase.getString("prosecutingAuthority"));
 
-        final UUID sessionId = startSessionAndRequestAssignment(DEFAULT_USER, sessionType, prosecutingAuthority);
+        final UUID sessionId = startSessionAndRequestAssignment(DEFAULT_USER, sessionType, prosecutingAuthority, caseId);
 
         saveDefaultDecisionInSession(caseId, sessionId, DEFAULT_USER_ID, offenceIds);
     }
@@ -124,9 +126,8 @@ public class DecisionHelper {
         final List<OffenceDecision> offenceDecisions = offenceIds.stream().map(offenceId -> DismissBuilder.withDefaults(offenceId).build()).collect(toList());
         final DecisionCommand decisionCommand = new DecisionCommand(sessionId, caseId, "", new User("John", "Smith", userId), offenceDecisions, null);
 
-        new EventListener()
-                .subscribe(CaseCompleted.EVENT_NAME)
-                .run(() -> saveDecision(decisionCommand));
+        saveDecision(decisionCommand);
+        pollForCase(caseId, new Matcher[]{withJsonPath("$.caseDecisions", hasSize(1))});
 
     }
 
@@ -586,10 +587,10 @@ public class DecisionHelper {
     }
 
     public static void verifyCaseReferredForCourtHearingV2(final DecisionSaved decisionSaved,
-                                                         final ReferForCourtHearing referForCourtHearing,
-                                                         final CaseReferredForCourtHearingV2 caseReferredForCourtHearing,
-                                                         final List<OffenceDecisionInformation> offenceDecisionInformationList,
-                                                         final String referralReason) {
+                                                           final ReferForCourtHearing referForCourtHearing,
+                                                           final CaseReferredForCourtHearingV2 caseReferredForCourtHearing,
+                                                           final List<OffenceDecisionInformation> offenceDecisionInformationList,
+                                                           final String referralReason) {
         assertThat(caseReferredForCourtHearing.getCaseId(), is(decisionSaved.getCaseId()));
         assertThat(caseReferredForCourtHearing.getReferralReasonId(), is(referForCourtHearing.getReferralReasonId()));
         assertThat(caseReferredForCourtHearing.getReferralReason(), is(referralReason));
@@ -651,11 +652,11 @@ public class DecisionHelper {
                 .get();
     }
 
-    private static UUID startSessionAndRequestAssignment(final User user, final SessionType sessionType, final ProsecutingAuthority prosecutingAuthority) {
+    private static UUID startSessionAndRequestAssignment(final User user, final SessionType sessionType, final ProsecutingAuthority prosecutingAuthority, final UUID caseId) {
         final String courtHouseCode = prosecutingAuthority == ProsecutingAuthority.TFL ? DEFAULT_LONDON_COURT_HOUSE_OU_CODE : DEFAULT_NON_LONDON_COURT_HOUSE_OU_CODE;
-        final UUID sessionId = UUID.randomUUID();
-        startSession(sessionId, user.getUserId(), courtHouseCode, sessionType).get();
-        requestCaseAssignment(sessionId, user.getUserId());
+        final UUID sessionId = randomUUID();
+        startSessionAndConfirm(sessionId, user.getUserId(), courtHouseCode, sessionType);
+        requestCaseAssignmentAndConfirm(sessionId, user.getUserId(), caseId);
         return sessionId;
     }
 

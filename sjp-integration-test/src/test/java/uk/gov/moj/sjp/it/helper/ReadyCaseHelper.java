@@ -66,16 +66,4 @@ public class ReadyCaseHelper implements AutoCloseable {
                         withJsonPath("priority", equalTo(priority.name()))
                 )))));
     }
-
-    public void verifyCaseExpectedDateReadyChangedEventEmitted(final UUID caseId, final LocalDate oldExpectedDateReady, final LocalDate newExpectedDateReady) {
-        final Optional<JsonEnvelope> event = retrieveMessageAsJsonEnvelope(privateMessageConsumer);
-        assertThat(event.isPresent(), is(true));
-        assertThat(event.get(), jsonEnvelope(
-                metadata().withName(CaseExpectedDateReadyChanged.EVENT_NAME),
-                payloadIsJson((allOf(
-                        withJsonPath("caseId", equalTo(caseId.toString())),
-                        withJsonPath("oldExpectedDateReady", equalTo(oldExpectedDateReady.toString())),
-                        withJsonPath("newExpectedDateReady", equalTo(newExpectedDateReady.toString()))
-                )))));
-    }
 }

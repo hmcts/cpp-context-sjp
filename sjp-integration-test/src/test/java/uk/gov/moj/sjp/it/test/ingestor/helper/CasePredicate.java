@@ -14,7 +14,7 @@ public class CasePredicate {
     private CasePredicate() {
     }
 
-    private static Predicate<JsonObject> casePropertyPredicate(final String casePropertyName, final String casePropertyValue) {
+    public static Predicate<JsonObject> casePropertyPredicate(final String casePropertyName, final String casePropertyValue) {
         return jsonObject -> {
             final JsonObject index = jsonFromString(getJsonArray(jsonObject, "index").get().getString(0));
             return index.containsKey(casePropertyName) && (index.getString(casePropertyName).equals(casePropertyValue));

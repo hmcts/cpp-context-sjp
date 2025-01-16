@@ -51,7 +51,7 @@ public class UpdateFinancialMeanIT extends BaseIntegrationTest {
     }
 
     @AfterEach
-    public void tearDown() throws Exception {
+    public void tearDown() {
         financialMeansHelper.close();
     }
 

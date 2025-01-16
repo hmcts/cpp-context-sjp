@@ -1,15 +1,19 @@
 package uk.gov.moj.sjp.it.helper;
 
+import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.awaitility.Awaitility.await;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
 import static javax.json.Json.createObjectBuilder;
 import static javax.ws.rs.core.Response.Status.ACCEPTED;
 import static javax.ws.rs.core.Response.Status.OK;
 import static org.hamcrest.CoreMatchers.is;
+import static uk.gov.moj.sjp.it.pollingquery.CasePoller.pollUntilCaseByIdIsOk;
+import static uk.gov.moj.sjp.it.util.HttpClientUtil.makeGetCall;
+import static uk.gov.moj.sjp.it.util.HttpClientUtil.makePostCall;
+import static uk.gov.moj.sjp.it.util.RestPollerWithDefaults.TIMEOUT_IN_SECONDS;
 
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.sjp.event.session.CaseAssigned;
-import uk.gov.moj.sjp.it.pollingquery.CasePoller;
 import uk.gov.moj.sjp.it.util.HttpClientUtil;
 
 import java.util.Optional;
@@ -27,7 +31,7 @@ public class AssignmentHelper {
     public static UUID requestCaseAssignmentAsync(final UUID sessionId, final UUID userId) {
         final String contentType = "application/vnd.sjp.assign-next-case+json";
         final String url = String.format("/sessions/%s", sessionId);
-        return HttpClientUtil.makePostCall(userId, url, contentType, "{}", ACCEPTED);
+        return makePostCall(userId, url, contentType, "{}", ACCEPTED);
     }
 
     public static Optional<JsonEnvelope> requestCaseAssignmentAndWaitForEvent(final UUID sessionId, final UUID userId, final String expectedEvent) {
@@ -40,7 +44,12 @@ public class AssignmentHelper {
     public static Response getCaseAssignment(final UUID caseId, final UUID userId) {
         final String contentType = "application/vnd.sjp.query.case-assignment+json";
         final String url = String.format("/cases/%s/assignment", caseId);
-        return HttpClientUtil.makeGetCall(url, contentType, userId);
+        return makeGetCall(url, contentType, userId);
+    }
+
+    public static void requestCaseAssignmentAndConfirm(final UUID sessionId, final UUID userId, final UUID caseId) {
+        requestCaseAssignmentAsync(sessionId, userId);
+        pollUntilCaseAssignedToUser(caseId, userId);
     }
 
     public static Optional<JsonEnvelope> requestCaseAssignment(final UUID sessionId, final UUID userId) {
@@ -56,15 +65,15 @@ public class AssignmentHelper {
     }
 
     public static boolean pollUntilCaseAssignedToUser(final UUID caseId, final UUID userId) {
-        return await().until(() -> isCaseAssignedToUser(caseId, userId), is(true));
+        return await().atMost(TIMEOUT_IN_SECONDS, SECONDS).until(() -> isCaseAssignedToUser(caseId, userId), is(true));
     }
 
     public static boolean pollUntilCaseNotAssignedToUser(final UUID caseId, final UUID userId) {
-        return await().until(() -> isCaseAssignedToUser(caseId, userId), is(false));
+        return await().atMost(TIMEOUT_IN_SECONDS, SECONDS).until(() -> isCaseAssignedToUser(caseId, userId), is(false));
     }
 
-    public static void assertCaseUnassigned(final UUID caseId) {
-        CasePoller.pollUntilCaseByIdIsOk(caseId, withJsonPath("$.assigned", is(false)));
+    public static void pollCaseUnassigned(final UUID caseId) {
+        pollUntilCaseByIdIsOk(caseId, withJsonPath("$.assigned", is(false)));
     }
 
     public static UUID assignCaseToUser(final UUID caseId,
@@ -78,6 +87,6 @@ public class AssignmentHelper {
                 .add("userId", assigneeId.toString())
                 .build();
 
-        return HttpClientUtil.makePostCall(callerId, url, contentType, payload.toString(), expectedStatus);
+        return makePostCall(callerId, url, contentType, payload.toString(), expectedStatus);
     }
 }

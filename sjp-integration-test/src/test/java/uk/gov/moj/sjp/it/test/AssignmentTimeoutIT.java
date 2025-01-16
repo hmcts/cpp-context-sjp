@@ -3,30 +3,27 @@ package uk.gov.moj.sjp.it.test;
 import static java.time.LocalDate.now;
 import static java.util.UUID.randomUUID;
 import static org.codehaus.groovy.runtime.InvokerHelper.asList;
-import static uk.gov.moj.sjp.it.Constants.PRIVATE_ACTIVE_MQ_TOPIC;
-import static uk.gov.moj.sjp.it.helper.AssignmentHelper.assertCaseUnassigned;
-import static uk.gov.moj.sjp.it.helper.AssignmentHelper.requestCaseAssignment;
+import static uk.gov.moj.sjp.it.command.CreateCase.createCaseForPayloadBuilder;
+import static uk.gov.moj.sjp.it.helper.AssignmentHelper.pollCaseUnassigned;
+import static uk.gov.moj.sjp.it.helper.AssignmentHelper.requestCaseAssignmentAndConfirm;
+import static uk.gov.moj.sjp.it.helper.CaseHelper.pollUntilCaseReady;
+import static uk.gov.moj.sjp.it.helper.DecisionHelper.saveDefaultDecisionInSession;
+import static uk.gov.moj.sjp.it.helper.SessionHelper.startMagistrateSessionAndConfirm;
 import static uk.gov.moj.sjp.it.model.ProsecutingAuthority.DVLA;
 import static uk.gov.moj.sjp.it.model.ProsecutingAuthority.TFL;
 import static uk.gov.moj.sjp.it.model.ProsecutingAuthority.TVL;
 import static uk.gov.moj.sjp.it.stub.AssignmentStub.stubGetEmptyAssignmentsByDomainObjectId;
-import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubAllReferenceData;
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubDefaultCourtByCourtHouseOUCodeQuery;
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubEnforcementAreaByPostcode;
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubProsecutorQuery;
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubRegionByPostcode;
-import static uk.gov.moj.sjp.it.util.ActivitiHelper.pollUntilProcessDeleted;
-import static uk.gov.moj.sjp.it.util.ActivitiHelper.pollUntilProcessExists;
+import static uk.gov.moj.sjp.it.util.CaseAssignmentRestrictionHelper.provisionCaseAssignmentRestrictions;
 import static uk.gov.moj.sjp.it.util.Defaults.DEFAULT_LONDON_COURT_HOUSE_OU_CODE;
 import static uk.gov.moj.sjp.it.util.Defaults.DEFAULT_USER_ID;
+import static uk.gov.moj.sjp.it.util.SjpDatabaseCleaner.cleanViewStore;
 
-import uk.gov.justice.services.test.utils.core.messaging.MessageConsumerClient;
-import uk.gov.moj.cpp.sjp.event.CaseMarkedReadyForDecision;
 import uk.gov.moj.sjp.it.command.CreateCase;
-import uk.gov.moj.sjp.it.helper.DecisionHelper;
-import uk.gov.moj.sjp.it.helper.SessionHelper;
 import uk.gov.moj.sjp.it.model.ProsecutingAuthority;
-import uk.gov.moj.sjp.it.util.CaseAssignmentRestrictionHelper;
 import uk.gov.moj.sjp.it.util.SjpDatabaseCleaner;
 
 import java.util.UUID;
@@ -37,10 +34,6 @@ import org.junit.jupiter.api.Test;
 
 public class AssignmentTimeoutIT extends BaseIntegrationTest {
 
-    private static final String CASE_ASSIGNMENT_TIMEOUT_PROCESS_NAME = "sjpCaseAssignmentTimeout";
-
-    private SjpDatabaseCleaner databaseCleaner = new SjpDatabaseCleaner();
-
     private static final UUID CASE_ID = randomUUID(), OFFENCE_ID = randomUUID();
 
     private static CreateCase.CreateCasePayloadBuilder createCasePayloadBuilder = CreateCase.CreateCasePayloadBuilder.withDefaults()
@@ -50,7 +43,7 @@ public class AssignmentTimeoutIT extends BaseIntegrationTest {
 
     @BeforeEach
     public void setUp() throws Exception {
-        databaseCleaner.cleanViewStore();
+        cleanViewStore();
 
         stubDefaultCourtByCourtHouseOUCodeQuery();
         stubGetEmptyAssignmentsByDomainObjectId(CASE_ID);
@@ -61,40 +54,23 @@ public class AssignmentTimeoutIT extends BaseIntegrationTest {
         stubEnforcementAreaByPostcode(createCasePayloadBuilder.getDefendantBuilder().getAddressBuilder().getPostcode(), NATIONAL_COURT_CODE, "Bedfordshire Magistrates' Court");
         stubRegionByPostcode(NATIONAL_COURT_CODE, "region");
 
-        CaseAssignmentRestrictionHelper.provisionCaseAssignmentRestrictions(Sets.newHashSet(TFL, TVL, DVLA));
+        provisionCaseAssignmentRestrictions(Sets.newHashSet(TFL, TVL, DVLA));
 
-        createCaseAndWaitUntilReady(CASE_ID, OFFENCE_ID);
-        stubAllReferenceData();
-
+        createCaseForPayloadBuilder(createCasePayloadBuilder);
+        pollUntilCaseReady(CASE_ID);
     }
 
     @Test
-    public void shouldCancelAssignmentTimerWhenDecisionSaved() {
+    public void shouldCancelAssignmentWhenDecisionSaved() {
         final UUID sessionId = randomUUID();
 
-        startSession(sessionId, DEFAULT_USER_ID);
+        startMagistrateSessionAndConfirm(sessionId, DEFAULT_USER_ID, DEFAULT_LONDON_COURT_HOUSE_OU_CODE, "John Smith");
 
-        requestCaseAssignment(sessionId, DEFAULT_USER_ID);
+        requestCaseAssignmentAndConfirm(sessionId, DEFAULT_USER_ID, CASE_ID);
 
-        pollUntilProcessExists(CASE_ASSIGNMENT_TIMEOUT_PROCESS_NAME, CASE_ID.toString());
+        saveDefaultDecisionInSession(CASE_ID, sessionId, DEFAULT_USER_ID, asList(OFFENCE_ID));
 
-        DecisionHelper.saveDefaultDecisionInSession(CASE_ID, sessionId, DEFAULT_USER_ID, asList(OFFENCE_ID));
-
-        pollUntilProcessDeleted(CASE_ASSIGNMENT_TIMEOUT_PROCESS_NAME, CASE_ID.toString(), "Timeout cancelled");
-
-        assertCaseUnassigned(CASE_ID);
-    }
-
-    private static void createCaseAndWaitUntilReady(final UUID caseId, final UUID offenceId) {
-        try (final MessageConsumerClient messageConsumerClient = new MessageConsumerClient()) {
-            messageConsumerClient.startConsumer(CaseMarkedReadyForDecision.EVENT_NAME, PRIVATE_ACTIVE_MQ_TOPIC);
-            CreateCase.createCaseForPayloadBuilder(createCasePayloadBuilder);
-            messageConsumerClient.retrieveMessage();
-        }
-    }
-
-    private static void startSession(final UUID sessionId, final UUID userId) {
-        SessionHelper.startMagistrateSession(sessionId, userId, DEFAULT_LONDON_COURT_HOUSE_OU_CODE, "John Smith");
+        pollCaseUnassigned(CASE_ID);
     }
 
 }

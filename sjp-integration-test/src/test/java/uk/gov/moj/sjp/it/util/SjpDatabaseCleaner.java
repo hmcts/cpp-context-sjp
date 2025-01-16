@@ -10,12 +10,12 @@ import java.sql.Statement;
 public class SjpDatabaseCleaner {
     private static final String SJP_NAME = "sjp";
 
-    private final DatabaseCleaner databaseCleaner = new DatabaseCleaner();
+    private static final DatabaseCleaner DATABASE_CLEANER = new DatabaseCleaner();
 
-    public void cleanViewStore() throws SQLException {
+    public static void cleanViewStore() throws SQLException {
         cleanSnapshot();
 
-        databaseCleaner.cleanViewStoreTables(
+        DATABASE_CLEANER.cleanViewStoreTables(
                 SJP_NAME,
                 "financial_means",
                 "employer",
@@ -37,13 +37,13 @@ public class SjpDatabaseCleaner {
         );
     }
 
-    public void cleanAll() throws SQLException {
+    public static void cleanAll() throws SQLException {
         cleanSnapshot();
-        databaseCleaner.cleanEventLogTable(SJP_NAME);
-        databaseCleaner.cleanStreamBufferTable(SJP_NAME);
-        databaseCleaner.cleanStreamStatusTable(SJP_NAME);
+        DATABASE_CLEANER.cleanEventLogTable(SJP_NAME);
+        DATABASE_CLEANER.cleanStreamBufferTable(SJP_NAME);
+        DATABASE_CLEANER.cleanStreamStatusTable(SJP_NAME);
 
-        databaseCleaner.cleanViewStoreTables(
+        DATABASE_CLEANER.cleanViewStoreTables(
                 SJP_NAME,
                 "financial_means",
                 "employer",
@@ -61,7 +61,7 @@ public class SjpDatabaseCleaner {
         );
     }
 
-    private void cleanSnapshot() throws SQLException {
+    private static void cleanSnapshot() throws SQLException {
         final TestJdbcConnectionProvider testJdbcConnectionProvider = new TestJdbcConnectionProvider();
         try (final Connection sjpEventStoreConnection = testJdbcConnectionProvider.getEventStoreConnection("sjp");
              final Statement statement = sjpEventStoreConnection.createStatement()) {

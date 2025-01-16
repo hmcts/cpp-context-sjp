@@ -11,15 +11,14 @@ import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubEnforcementAre
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubProsecutorQuery;
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubRegionByPostcode;
 import static uk.gov.moj.sjp.it.stub.UsersGroupsStub.stubForUserDetails;
-import static uk.gov.moj.sjp.it.test.ingestor.helper.ElasticSearchQueryHelper.getCaseFromElasticSearch;
+import static uk.gov.moj.sjp.it.test.ingestor.helper.CasePredicate.casePayloadContains;
+import static uk.gov.moj.sjp.it.test.ingestor.helper.ElasticSearchQueryHelper.getCaseFromElasticSearchWithPredicate;
 import static uk.gov.moj.sjp.it.util.FileUtil.getPayload;
 
-import uk.gov.moj.cpp.sjp.event.PleasSet;
 import uk.gov.moj.cpp.unifiedsearch.test.util.ingest.ElasticSearchIndexRemoverUtil;
 import uk.gov.moj.sjp.it.command.CreateCase;
 import uk.gov.moj.sjp.it.command.builder.AddressBuilder;
 import uk.gov.moj.sjp.it.framework.util.ViewStoreCleaner;
-import uk.gov.moj.sjp.it.helper.EventListener;
 import uk.gov.moj.sjp.it.helper.PleadOnlineHelper;
 import uk.gov.moj.sjp.it.model.ProsecutingAuthority;
 import uk.gov.moj.sjp.it.test.BaseIntegrationTest;
@@ -37,9 +36,6 @@ import org.junit.jupiter.api.Test;
 
 public class PleaReceivedIngestorIT extends BaseIntegrationTest {
     private static final String ONLINE_PLEA_PAYLOAD = "raml/json/sjp.command.plead-online__not-guilty_for_ingester.json";
-
-    private EventListener eventListener = new EventListener();
-
 
     private CreateCasePayloadBuilder casePayloadBuilder;
     private CreateCase.DefendantBuilder defendantBuilder;
@@ -82,7 +78,7 @@ public class PleaReceivedIngestorIT extends BaseIntegrationTest {
     public void shouldIngestCaseReceivedEvent() {
         pleadOnline();
 
-        final JsonObject outputCase = getCaseFromElasticSearch(casePayloadBuilder.getId().toString());
+        final JsonObject outputCase = getCaseFromElasticSearchWithPredicate(casePayloadContains(defendantBuilder.getFirstName()), casePayloadBuilder.getId().toString());
 
         verifyElasticSearchResponse(outputCase);
     }
@@ -110,9 +106,7 @@ public class PleaReceivedIngestorIT extends BaseIntegrationTest {
 
         final PleadOnlineHelper pleadOnlineHelper = new PleadOnlineHelper(casePayloadBuilder.getId());
 
-        eventListener
-                .subscribe(PleasSet.EVENT_NAME)
-                .run(() -> pleadOnlineHelper.pleadOnline(pleaPayload.toString()));
+        pleadOnlineHelper.pleadOnline(pleaPayload.toString());
 
         return pleaPayload;
     }

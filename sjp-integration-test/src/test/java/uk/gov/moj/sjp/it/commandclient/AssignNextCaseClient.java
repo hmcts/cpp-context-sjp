@@ -34,14 +34,8 @@ public class AssignNextCaseClient {
     @EventHandler(AssignmentProcessor.PUBLIC_SJP_CASE_ASSIGNED)
     public Consumer assignedPublicHandler;
 
-    @EventHandler(CaseAssigned.EVENT_NAME)
-    public Consumer assignedPrivateHandler;
-
     @EventHandler(AssignmentProcessor.PUBLIC_SJP_CASE_ASSIGNMENT_REJECTED)
     public Consumer assignmentRejectedPublicHandler;
-
-    @EventHandler(CaseAssignmentRejected.EVENT_NAME)
-    public Consumer assignmentRejectedPrivateHandler;
 
     @EventHandler(AssignmentProcessor.PUBLIC_SJP_CASE_NOT_ASSIGNED)
     public Consumer notAssignedHandler;

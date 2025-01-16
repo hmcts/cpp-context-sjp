@@ -1,7 +1,6 @@
 package uk.gov.moj.sjp.it.pollingquery;
 
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
-import static java.util.concurrent.TimeUnit.SECONDS;
 import static javax.ws.rs.core.Response.Status.FORBIDDEN;
 import static javax.ws.rs.core.Response.Status.INTERNAL_SERVER_ERROR;
 import static javax.ws.rs.core.Response.Status.OK;
@@ -12,6 +11,7 @@ import static org.hamcrest.Matchers.anyOf;
 import static org.junit.jupiter.api.Assertions.fail;
 import static uk.gov.justice.services.test.utils.core.matchers.ResponsePayloadMatcher.payload;
 import static uk.gov.justice.services.test.utils.core.matchers.ResponseStatusMatcher.status;
+import static uk.gov.moj.cpp.sjp.domain.common.CaseStatus.COMPLETED;
 import static uk.gov.moj.sjp.it.util.DefaultRequests.getCaseById;
 import static uk.gov.moj.sjp.it.util.DefaultRequests.getPotentialCasesByDefendantId;
 import static uk.gov.moj.sjp.it.util.DefaultRequests.getProsecutionCaseById;
@@ -31,9 +31,6 @@ import org.hamcrest.Matcher;
 
 public class CasePoller {
 
-    private static final int POLLING_TIMEOUT = 60;
-    private static final int POLLING_INTERVAL = 1;
-
     public static JsonPath pollUntilCaseByIdIsOk(final UUID caseId) {
         return pollUntilCaseByIdIsOk(caseId, any(ReadContext.class));
     }
@@ -45,8 +42,6 @@ public class CasePoller {
 
     public static JsonPath pollUntilCaseByIdIsOk(final UUID caseId, final Matcher<? super ReadContext> jsonPayloadMatcher) {
         ResponseData responseData = pollWithDefaults(getCaseById(caseId)).logging()
-                .timeout(POLLING_TIMEOUT, SECONDS)
-                .pollInterval(POLLING_INTERVAL, SECONDS)
                 .until(
                         anyOf(
                                 allOf(
@@ -65,8 +60,6 @@ public class CasePoller {
 
     public static JsonPath pollUntilProsecutionCaseByIdIsOk(final UUID caseId, final Matcher<? super ReadContext> jsonPayloadMatcher) {
         ResponseData responseData = pollWithDefaults(getProsecutionCaseById(caseId)).logging()
-                .timeout(POLLING_TIMEOUT, SECONDS)
-                .pollInterval(POLLING_INTERVAL, SECONDS)
                 .until(
                         anyOf(
                                 allOf(
@@ -85,8 +78,6 @@ public class CasePoller {
 
     public static String pollUntilPotentialCasesByDefendantIdIsOk(final UUID defendantId) {
         ResponseData responseData = pollWithDefaults(getPotentialCasesByDefendantId(defendantId)).logging()
-                .timeout(POLLING_TIMEOUT, SECONDS)
-                .pollInterval(POLLING_INTERVAL, SECONDS)
                 .until(
                         anyOf(
                                 allOf(
@@ -107,4 +98,11 @@ public class CasePoller {
         return JsonHelper.getJsonObject(pollUntilCaseByIdIsOk(caseId, jsonPayloadMatcher).prettyPrint());
     }
 
+    public static void pollForCase(final UUID caseId, final Matcher[] matchers) {
+        pollUntilCaseByIdIsOk(caseId, allOf(matchers));
+    }
+
+    public static void pollUntilCaseStatusCompleted(final UUID caseId) {
+        pollUntilCaseHasStatus(caseId, COMPLETED);
+    }
 }

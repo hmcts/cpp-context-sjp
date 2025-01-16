@@ -1,5 +1,6 @@
 package uk.gov.moj.sjp.it.helper;
 
+import static org.apache.commons.lang3.RandomStringUtils.randomAlphabetic;
 import static org.awaitility.Awaitility.await;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.isJson;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
@@ -10,11 +11,12 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMatcher.jsonEnvelope;
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMetadataMatcher.metadata;
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopePayloadMatcher.payloadIsJson;
+import static uk.gov.moj.sjp.it.util.HttpClientUtil.makeGetCall;
+import static uk.gov.moj.sjp.it.util.HttpClientUtil.makePostCall;
 import static uk.gov.moj.sjp.it.util.TopicUtil.retrieveMessageAsJsonObject;
 
 import uk.gov.justice.services.messaging.DefaultJsonObjectEnvelopeConverter;
 import uk.gov.justice.services.messaging.JsonEnvelope;
-import uk.gov.moj.sjp.it.util.HttpClientUtil;
 import uk.gov.moj.sjp.it.util.TopicUtil;
 
 import java.util.UUID;
@@ -26,7 +28,6 @@ import javax.json.JsonObject;
 import javax.ws.rs.core.Response;
 
 import com.jayway.jsonpath.ReadContext;
-import org.apache.commons.lang3.RandomStringUtils;
 import org.hamcrest.Matcher;
 
 public class EmployerHelper implements AutoCloseable {
@@ -53,23 +54,23 @@ public class EmployerHelper implements AutoCloseable {
     public void updateEmployer(final UUID caseId, final String defendantId, final JsonObject payload) {
         final String resource = String.format("/cases/%s/defendant/%s/employer", caseId, defendantId);
         final String contentType = "application/vnd.sjp.update-employer+json";
-        HttpClientUtil.makePostCall(resource, contentType, payload.toString());
+        makePostCall(resource, contentType, payload.toString());
     }
 
-    public Response getEmployer(final String defendantId) {
+    public static Response pollForEmployerForDefendant(final String defendantId) {
         final String resource = format("/defendant/%s/employer", defendantId);
         final String contentType = "application/vnd.sjp.query.employer+json";
-        return HttpClientUtil.makeGetCall(resource, contentType);
+        return makeGetCall(resource, contentType);
     }
 
-    public String getEmployer(final String defendantId, final Matcher<Object> jsonMatcher) {
-        return await().atMost(30, TimeUnit.SECONDS).until(() -> getEmployer(defendantId).readEntity(String.class), jsonMatcher);
+    public static String pollForEmployerForDefendant(final String defendantId, final Matcher<Object> jsonMatcher) {
+        return await().atMost(30, TimeUnit.SECONDS).until(() -> pollForEmployerForDefendant(defendantId).readEntity(String.class), jsonMatcher);
     }
 
     public void deleteEmployer(final String caseId, final String defendantId) {
         final String resource = String.format("/cases/%s/defendant/%s/employer", caseId, defendantId);
         final String contentType = "application/vnd.sjp.delete-employer+json";
-        HttpClientUtil.makePostCall(resource, contentType, null);
+        makePostCall(resource, contentType, null);
     }
 
     public JsonEnvelope getEventFromPublicTopic() {
@@ -80,14 +81,14 @@ public class EmployerHelper implements AutoCloseable {
 
     public static JsonObject getEmployerPayload() {
         final JsonObject address = createObjectBuilder()
-                .add(FIELD_ADDRESS_1, RandomStringUtils.randomAlphabetic(12))
+                .add(FIELD_ADDRESS_1, randomAlphabetic(12))
                 .add(FIELD_ADDRESS_2, "Flat 8")
                 .add(FIELD_ADDRESS_3, "Lant House")
                 .add(FIELD_ADDRESS_4, "London")
                 .add(FIELD_ADDRESS_5, "Greater London")
                 .add(FIELD_POST_CODE, "SE1 1PJ").build();
         return createObjectBuilder()
-                .add(FIELD_NAME, RandomStringUtils.randomAlphabetic(12))
+                .add(FIELD_NAME, randomAlphabetic(12))
                 .add(FIELD_EMPLOYEE_REFERENCE, "abcdef")
                 .add(FIELD_PHONE, "02020202020")
                 .add(FIELD_ADDRESS, address).build();
@@ -127,7 +128,7 @@ public class EmployerHelper implements AutoCloseable {
     }
 
     @Override
-    public void close() throws Exception {
+    public void close() {
         if (null != messageConsumer) {
             try {
                 messageConsumer.close();

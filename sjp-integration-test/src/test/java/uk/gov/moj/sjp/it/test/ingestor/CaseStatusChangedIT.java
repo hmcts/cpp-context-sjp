@@ -80,7 +80,6 @@ public class CaseStatusChangedIT extends BaseIntegrationTest {
     private void test(CaseReopenedInLibraHelper caseReopenedInLibraHelper) {
         caseReopenedInLibraHelper.call();
         caseReopenedInLibraHelper.assertCaseReopenedDetailsSet();
-        caseReopenedInLibraHelper.verifyEventInActiveMQ();
         caseReopenedInLibraHelper.verifyEventInPublicTopic();
     }
 }

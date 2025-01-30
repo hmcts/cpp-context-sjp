@@ -4,7 +4,7 @@
     <parent>
         <groupId>uk.gov.moj.cpp.common</groupId>
         <artifactId>service-parent-pom</artifactId>
-        <version>17.100.3.1</version>
+        <version>17.101.0</version>
     </parent>
 
     <groupId>uk.gov.moj.cpp.sjp</groupId>
@@ -53,7 +53,7 @@
         <cpp.framework.action.mapping.enabled>true</cpp.framework.action.mapping.enabled>
         <mvn.site.url>file://${project.build.directory}/site</mvn.site.url>
         <file.alfresco.version>2.3.0</file.alfresco.version>
-        <coredomain.version>17.101.0</coredomain.version>
+        <coredomain.version>17.101.1</coredomain.version>
         <criminal-court-public-model.version>${coredomain.version}</criminal-court-public-model.version>
         <javax.el-api.version>3.0.0</javax.el-api.version>
         <joda-time.version>2.10</joda-time.version>

@@ -15,10 +15,8 @@ import static javax.ws.rs.core.Response.Status.ACCEPTED;
 import static org.awaitility.Awaitility.waitAtMost;
 import static org.hamcrest.Matchers.hasSize;
 import static uk.gov.moj.sjp.it.Constants.PUBLIC_EVENT;
-import static uk.gov.moj.sjp.it.stub.StubHelper.waitForPostStubToBeReady;
 import static uk.gov.moj.sjp.it.util.RestPollerWithDefaults.TIMEOUT_IN_SECONDS;
 
-import uk.gov.justice.service.wiremock.testutil.InternalEndpointMockUtils;
 import uk.gov.justice.services.test.utils.core.messaging.MessageProducerClient;
 import uk.gov.moj.sjp.it.util.JsonHelper;
 
@@ -41,15 +39,11 @@ public class NotificationNotifyStub {
     public static final String COMMAND_MEDIA_TYPE = "application/vnd.notificationnotify.email+json";
 
     public static void stubNotifications() {
-        InternalEndpointMockUtils.stubPingFor("notificationnotify-service");
-
         stubFor(post(urlPathMatching(COMMAND_URL + ".*"))
                 .withHeader(CONTENT_TYPE, equalTo(COMMAND_MEDIA_TYPE))
                 .willReturn(aResponse().withStatus(ACCEPTED.getStatusCode())
                         .withHeader("CPPID", randomUUID().toString())
                         .withHeader(CONTENT_TYPE, APPLICATION_JSON)));
-
-        waitForPostStubToBeReady(COMMAND_URL + randomUUID(), COMMAND_MEDIA_TYPE, ACCEPTED);
     }
 
     public static void verifyNotification(final String email, final String urn, final String templateId) {

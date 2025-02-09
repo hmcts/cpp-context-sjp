@@ -37,7 +37,6 @@ import uk.gov.moj.sjp.it.command.CreateCase;
 import uk.gov.moj.sjp.it.helper.EventListener;
 import uk.gov.moj.sjp.it.model.DecisionCommand;
 import uk.gov.moj.sjp.it.model.ProsecutingAuthority;
-import uk.gov.moj.sjp.it.util.SjpDatabaseCleaner;
 import uk.gov.moj.sjp.it.util.builders.FinancialImpositionBuilder;
 import uk.gov.moj.sjp.it.util.builders.FinancialPenaltyBuilder;
 
@@ -61,7 +60,6 @@ public class CaseResultsIT extends BaseIntegrationTest {
 
     private final User user = new User("Integration", "Tester", DEFAULT_USER_ID);
     private final EventListener eventListener = new EventListener();
-    private final SjpDatabaseCleaner databaseCleaner = new SjpDatabaseCleaner();
     private UUID sessionId = randomUUID();
 
     private final ProsecutingAuthority prosecutingAuthority = TFL;

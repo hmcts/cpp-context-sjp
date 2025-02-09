@@ -20,7 +20,6 @@ import static uk.gov.moj.sjp.it.util.SjpDatabaseCleaner.cleanViewStore;
 import uk.gov.justice.json.schemas.domains.sjp.User;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.sjp.it.helper.EventListener;
-import uk.gov.moj.sjp.it.util.SjpDatabaseCleaner;
 
 import java.time.LocalDate;
 import java.util.Optional;

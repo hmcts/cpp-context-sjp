@@ -7,7 +7,6 @@ public class Constants {
     public static final String PUBLIC_EVENT_SELECTOR_CASE_DOCUMENT_UPLOADED = "public.sjp.case-document-uploaded";
     public static final String PUBLIC_EVENT_SELECTOR_CASE_DOCUMENT_ADDED = "public.sjp.case-document-added";
     public static final String PUBLIC_EVENT_SELECTOR_CASE_DOCUMENT_UPLOAD_REJECTED = "public.sjp.events.case-document-upload-rejected";
-    public static final String EVENT_SELECTOR_DATES_TO_AVOID_ADDED = "sjp.events.dates-to-avoid-added";
     public static final String EVENT_OFFENCES_WITHDRAWAL_STATUS_SET = "sjp.events.offences-withdrawal-status-set";
     public static final String PUBLIC_EVENT_OFFENCES_WITHDRAWAL_STATUS_SET = "public.sjp.offences-withdrawal-status-set";
     public static final String PUBLIC_CASE_RESERVED = "public.sjp.case-reserved";

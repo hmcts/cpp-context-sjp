@@ -15,7 +15,6 @@ import uk.gov.moj.sjp.it.command.CreateCase;
 import uk.gov.moj.sjp.it.command.CreateCase.CreateCasePayloadBuilder;
 import uk.gov.moj.sjp.it.command.CreateCase.OffenceBuilder;
 import uk.gov.moj.sjp.it.helper.EventListener;
-import uk.gov.moj.sjp.it.util.SjpDatabaseCleaner;
 
 import java.time.LocalDate;
 import java.util.Optional;
@@ -26,8 +25,6 @@ import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 @SuppressWarnings("squid:S1607")
 public class CasesWithoutDefendantPostcodeIT extends BaseIntegrationTest {
-
-    private final SjpDatabaseCleaner cleaner = new SjpDatabaseCleaner();
 
     private static final String NATIONAL_COURT_CODE = "1080";
 

@@ -6,7 +6,6 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.Matchers.hasProperty;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.nullValue;
-import static uk.gov.moj.cpp.sjp.domain.decision.DecisionType.ADJOURN;
 
 import uk.gov.moj.cpp.sjp.domain.decision.DecisionType;
 import uk.gov.moj.cpp.sjp.domain.decision.OffenceDecision;
@@ -21,10 +20,6 @@ public class OffenceDecisionMatcher {
                 hasProperty("type", is(offenceDecision.getType())),
                 hasPressRestriction(offenceDecision)
         );
-    }
-
-    public static Matcher adjourn(final Matcher matcher) {
-        return offenceDecisionHaving(ADJOURN, matcher);
     }
 
     public static Matcher offenceDecisionHaving(final DecisionType decisionType, final Matcher matcher) {

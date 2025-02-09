@@ -42,7 +42,6 @@ public class CaseAssignmentRestrictionIT extends BaseIntegrationTest {
 
     @BeforeEach
     public void setUp() throws SQLException {
-        final SjpDatabaseCleaner cleaner = new SjpDatabaseCleaner();
         cleanViewStore();
 
         stubForUserDetails(systemUser);

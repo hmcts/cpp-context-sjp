@@ -21,7 +21,6 @@ import uk.gov.moj.sjp.it.helper.AssignmentHelper;
 import uk.gov.moj.sjp.it.model.Defendant;
 import uk.gov.moj.sjp.it.model.ProsecutingAuthority;
 import uk.gov.moj.sjp.it.util.CaseAssignmentRestrictionHelper;
-import uk.gov.moj.sjp.it.util.SjpDatabaseCleaner;
 
 import java.sql.SQLException;
 import java.util.Optional;
@@ -47,8 +46,6 @@ public class CaseUnassignmentIT extends BaseIntegrationTest {
     private static final String COURT_HOUSE_OU_CODE = "B01OK";
     private final UUID[] returnedSessionId = new UUID[1];
     private final String magistrate = "John Smith";
-
-    private final SjpDatabaseCleaner cleaner = new SjpDatabaseCleaner();
 
     @BeforeEach
     public void setUp() throws SQLException {

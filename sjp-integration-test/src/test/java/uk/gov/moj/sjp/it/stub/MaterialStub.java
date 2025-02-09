@@ -25,7 +25,6 @@ import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
 import static uk.gov.justice.services.messaging.JsonEnvelope.metadataFrom;
 import static uk.gov.moj.sjp.it.Constants.PUBLIC_EVENT;
 
-import uk.gov.justice.service.wiremock.testutil.InternalEndpointMockUtils;
 import uk.gov.justice.services.common.http.HeaderConstants;
 import uk.gov.justice.services.messaging.DefaultJsonObjectEnvelopeConverter;
 import uk.gov.justice.services.messaging.JsonEnvelope;
@@ -49,8 +48,6 @@ public class MaterialStub {
     public static final String MATERIAL_METADATA_QUERY_MEDIA_TYPE = "application/vnd.material.query.material-metadata+json";
 
     public static void stubAddCaseMaterial() {
-        InternalEndpointMockUtils.stubPingFor("material-service");
-
         stubFor(post(urlPathEqualTo(COMMAND_URL))
                 .willReturn(aResponse().withStatus(SC_ACCEPTED)
                         .withHeader(HeaderConstants.ID, randomUUID().toString())
@@ -63,12 +60,12 @@ public class MaterialStub {
     public static UUID processMaterialAddedCommand(final UUID documentReference) {
         final DefaultJsonObjectEnvelopeConverter envelopeConverter = new DefaultJsonObjectEnvelopeConverter();
         final JsonEnvelope addMaterialCommand = await().until(() -> findAll(postRequestedFor(urlPathEqualTo(COMMAND_URL))
-                .withHeader(CONTENT_TYPE, equalTo(COMMAND_MEDIA_TYPE)))
-                .stream()
-                .map(LoggedRequest::getBodyAsString)
-                .map(envelopeConverter::asEnvelope)
-                .filter(command -> documentReference.toString().equals(command.payloadAsJsonObject().getString("fileServiceId", null)))
-                .findFirst(), not(empty()))
+                        .withHeader(CONTENT_TYPE, equalTo(COMMAND_MEDIA_TYPE)))
+                        .stream()
+                        .map(LoggedRequest::getBodyAsString)
+                        .map(envelopeConverter::asEnvelope)
+                        .filter(command -> documentReference.toString().equals(command.payloadAsJsonObject().getString("fileServiceId", null)))
+                        .findFirst(), not(empty()))
                 .get();
 
         try (final MessageProducerClient producerClient = new MessageProducerClient()) {
@@ -89,8 +86,6 @@ public class MaterialStub {
     }
 
     public static void stubMaterialMetadata(final UUID materialId, final String fileName, final String mimeType, final ZonedDateTime addedAt) {
-        InternalEndpointMockUtils.stubPingFor("material-service");
-
         final JsonObject metadata = Json.createObjectBuilder()
                 .add("materialId", materialId.toString())
                 .add("fileName", fileName)
@@ -109,8 +104,6 @@ public class MaterialStub {
     }
 
     public static void stubMaterialMetadataWithResponseStatusCode(final UUID materialId, int responseStatusCode) {
-        InternalEndpointMockUtils.stubPingFor("material-service");
-
         stubFor(get(urlPathEqualTo(MATERIAL_QUERY_URL + "/material/" + materialId + "/metadata"))
                 .willReturn(aResponse().withStatus(responseStatusCode)
                         .withHeader(HeaderConstants.ID, randomUUID().toString())
@@ -118,8 +111,6 @@ public class MaterialStub {
     }
 
     public static void stubMaterialContent(final UUID materialId, final byte[] materialContent, final String mimeType) {
-        InternalEndpointMockUtils.stubPingFor("material-service");
-
         stubFor(get(urlPathEqualTo(MATERIAL_QUERY_URL + "/material/" + materialId))
                 .withQueryParam("stream", equalTo("true"))
                 .withQueryParam("requestPdf", equalTo("false"))
@@ -130,8 +121,6 @@ public class MaterialStub {
     }
 
     public static void stubMaterialContentWithResponseStatusCode(final UUID materialId, int responseStatusCode) {
-        InternalEndpointMockUtils.stubPingFor("material-service");
-
         stubFor(get(urlPathEqualTo(MATERIAL_QUERY_URL + "/material/" + materialId))
                 .withQueryParam("stream", equalTo("true"))
                 .withQueryParam("requestPdf", equalTo("false"))
@@ -140,14 +129,11 @@ public class MaterialStub {
     }
 
     public static void stubDeleteMaterial(final String materialId) {
-        InternalEndpointMockUtils.stubPingFor("material-service");
-
         stubFor(post(urlPathEqualTo(format(DELETE_COMMAND_URL, materialId)))
                 .willReturn(aResponse().withStatus(SC_ACCEPTED)));
     }
 
     public static void assertMaterialDeleteFMICommandInvoked(String materialId) {
-
         verifyCallsToStubbedEndpoint(format(DELETE_COMMAND_URL, materialId), 1);
     }
 

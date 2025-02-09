@@ -56,7 +56,6 @@ import uk.gov.moj.sjp.it.command.CreateCase;
 import uk.gov.moj.sjp.it.helper.EventListener;
 import uk.gov.moj.sjp.it.model.DecisionCommand;
 import uk.gov.moj.sjp.it.model.ProsecutingAuthority;
-import uk.gov.moj.sjp.it.util.SjpDatabaseCleaner;
 import uk.gov.moj.sjp.it.util.builders.DischargeBuilder;
 
 import java.math.BigDecimal;
@@ -80,7 +79,6 @@ public class CaseFinancialImpositionExportIT extends BaseIntegrationTest {
     private UUID correlationId;
     private String accountNumber = "123456780";
 
-    private final SjpDatabaseCleaner databaseCleaner = new SjpDatabaseCleaner();
     private final EventListener eventListener = new EventListener();
     private CreateCase.CreateCasePayloadBuilder createCasePayloadBuilder;
     private final static LocalDate POSTING_DATE = now().minusDays(NOTICE_PERIOD_IN_DAYS + 1);

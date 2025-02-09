@@ -16,7 +16,6 @@ import static uk.gov.moj.sjp.it.util.JsonHelper.lenientCompare;
 import static uk.gov.moj.sjp.it.util.JsonHelper.strictCompareIgnoringSelectedData;
 import static uk.gov.moj.sjp.it.util.RestPollerWithDefaults.TIMEOUT_IN_SECONDS;
 
-import uk.gov.justice.service.wiremock.testutil.InternalEndpointMockUtils;
 import uk.gov.moj.sjp.it.util.JsonHelper;
 
 import java.util.List;
@@ -32,8 +31,6 @@ public class ProgressionServiceStub {
     public static final String REFER_TO_COURT_COMMAND_CONTENT = "application/vnd.progression.refer-cases-to-court+json";
 
     public static void stubReferCaseToCourtCommand() {
-        InternalEndpointMockUtils.stubPingFor("progression-service");
-
         stubFor(post(urlPathEqualTo(REFER_TO_COURT_COMMAND_URL))
                 .withHeader(CONTENT_TYPE, equalTo(REFER_TO_COURT_COMMAND_CONTENT))
                 .willReturn(aResponse().withStatus(SC_ACCEPTED)));

@@ -39,7 +39,6 @@ import uk.gov.moj.sjp.it.command.CreateCase;
 import uk.gov.moj.sjp.it.helper.CaseDocumentHelper;
 import uk.gov.moj.sjp.it.helper.DeleteCaseDocumentHelper;
 import uk.gov.moj.sjp.it.model.ProsecutingAuthority;
-import uk.gov.moj.sjp.it.stub.SchedulingStub;
 
 import java.sql.SQLException;
 import java.time.LocalDate;

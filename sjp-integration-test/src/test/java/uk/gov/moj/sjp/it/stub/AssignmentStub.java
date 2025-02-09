@@ -10,8 +10,6 @@ import static javax.ws.rs.core.HttpHeaders.CONTENT_TYPE;
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
 import static org.apache.http.HttpStatus.SC_OK;
 
-import uk.gov.justice.service.wiremock.testutil.InternalEndpointMockUtils;
-
 import java.util.Optional;
 import java.util.UUID;
 
@@ -29,8 +27,6 @@ public class AssignmentStub {
     }
 
     public static void stubGetAssignmentsByDomainObjectId(final UUID caseId, final Optional<String> assignmentNature, final UUID... assignees) {
-        InternalEndpointMockUtils.stubPingFor("assignment-service");
-
         final JsonArrayBuilder assignments = Json.createArrayBuilder();
         for (final UUID assignee : assignees) {
             final JsonObjectBuilder assignment = Json.createObjectBuilder()

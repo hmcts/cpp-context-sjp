@@ -8,9 +8,6 @@ import static com.github.tomakehurst.wiremock.client.WireMock.urlPathMatching;
 import static java.util.UUID.randomUUID;
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
 import static javax.ws.rs.core.Response.Status.OK;
-import static uk.gov.moj.sjp.it.stub.StubHelper.waitForStubToBeReady;
-
-import uk.gov.justice.service.wiremock.testutil.InternalEndpointMockUtils;
 
 import java.time.LocalDate;
 import java.util.Arrays;
@@ -24,13 +21,9 @@ public class UnifiedSearchStub {
     public static final String SJP_ANY_OPEN_STATUS = "NO_PLEA_RECEIVED";
 
     private static final String SEARCH_QUERY = "/unifiedsearchquery-service/query/api/rest/unifiedsearchquery/cases";
-    private static final String SEARCH_QUERY_TYPE = "application/vnd.unifiedsearch.query.cases+json";
-    private static final String SERVICE_NAME = "unifiedsearchquery-service";
 
     public static void stubUnifiedSearchQueryForCases(UUID potentialCaseId,
                                                       String potentialCaseRef) {
-        InternalEndpointMockUtils.stubPingFor(SERVICE_NAME);
-
         final String sjpOpenCase =
                 createSingleCaseUnifiedSearchResult(randomUUID(),
                         "",
@@ -47,7 +40,6 @@ public class UnifiedSearchStub {
                         .withBody(sjpOpenCase)
                 )
         );
-        waitForStubToBeReady(SEARCH_QUERY + "?partyDateOfBirth=1980-10-10", SEARCH_QUERY_TYPE);
 
         final String sjpOpenCase2 =
                 createAndInterpolateSingleCase(potentialCaseId,
@@ -66,7 +58,6 @@ public class UnifiedSearchStub {
                         .withBody(multiCasesResult)
                 )
         );
-        waitForStubToBeReady(SEARCH_QUERY + "?partyDateOfBirth=1980-10-15", SEARCH_QUERY_TYPE);
     }
 
     private static String createSingleCaseUnifiedSearchResult(UUID caseId,

@@ -19,15 +19,12 @@ import static uk.gov.moj.sjp.it.stub.UsersGroupsStub.stubForUserDetails;
 import static uk.gov.moj.sjp.it.util.RestPollerWithDefaults.DELAY_IN_SECONDS;
 import static uk.gov.moj.sjp.it.util.RestPollerWithDefaults.INTERVAL_IN_SECONDS;
 
-import uk.gov.justice.service.wiremock.testutil.InternalEndpointMockUtils;
 import uk.gov.moj.cpp.unifiedsearch.test.util.ingest.ElasticSearchIndexRemoverUtil;
 import uk.gov.moj.sjp.it.util.Defaults;
 
 import java.io.IOException;
 import java.util.UUID;
 
-import com.github.tomakehurst.wiremock.client.WireMock;
-import org.awaitility.Awaitility;
 import org.junit.jupiter.api.BeforeAll;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -53,14 +50,14 @@ public abstract class BaseIntegrationTest {
     }
 
     private static void setUpElasticSearch() {
-        elasticSearchIndexRemoverUtil  = new ElasticSearchIndexRemoverUtil();
+        elasticSearchIndexRemoverUtil = new ElasticSearchIndexRemoverUtil();
         deleteAndCreateIndex();
     }
 
     protected static void deleteAndCreateIndex() {
         try {
             elasticSearchIndexRemoverUtil.deleteAndCreateCaseIndex();
-        }catch (final IOException e){
+        } catch (final IOException e) {
             LOGGER.error("Error while creating index ", e);
         }
     }
@@ -70,7 +67,6 @@ public abstract class BaseIntegrationTest {
         LOGGER.info("Setting up integration test stubs once for whole test run");
         resetAllRequests();
         reset();
-        InternalEndpointMockUtils.stubPingFor("usersgroups-service");
         stubAllGroupsForUser();
         stubForUserDetails(USER_ID, "ALL");
         stubQueryOffencesByCode(DEFAULT_OFFENCE_CODE);

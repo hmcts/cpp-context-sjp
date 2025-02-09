@@ -89,7 +89,7 @@ public class HttpClientUtil {
 
         final MultipartFormDataOutput mdo = new MultipartFormDataOutput();
         mdo.addFormData(fileFieldName, file, MediaType.MULTIPART_FORM_DATA_TYPE, file.getName());
-        final GenericEntity<MultipartFormDataOutput> entity = new GenericEntity<MultipartFormDataOutput>(mdo) {
+        final GenericEntity<MultipartFormDataOutput> entity = new GenericEntity<>(mdo) {
         };
         final Response response = ResteasyClientBuilderFactory.clientBuilder().build().target(getWriteUrl(url)).request().headers(headers).post(
                 Entity.entity(entity, MediaType.MULTIPART_FORM_DATA_TYPE)

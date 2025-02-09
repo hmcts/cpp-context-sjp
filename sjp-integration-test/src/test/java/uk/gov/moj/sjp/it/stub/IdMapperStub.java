@@ -6,11 +6,8 @@ import static com.github.tomakehurst.wiremock.client.WireMock.get;
 import static com.github.tomakehurst.wiremock.client.WireMock.post;
 import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlPathMatching;
-import static java.lang.String.format;
 import static javax.json.Json.createObjectBuilder;
 import static javax.ws.rs.core.Response.Status.OK;
-import static uk.gov.moj.sjp.it.stub.StubHelper.waitForGetStubToBeReady;
-import static uk.gov.moj.sjp.it.stub.StubHelper.waitForPostStubToBeReady;
 
 import java.time.ZonedDateTime;
 import java.util.UUID;
@@ -40,8 +37,6 @@ public class IdMapperStub {
                         .withBody(responseBody)
                 )
         );
-
-        waitForGetStubToBeReady(format("/system-id-mapper-api/rest/systemid/mappings?sourceId=%s", sourceId), "application/vnd.systemid.mapping+json", OK);
     }
 
     public static void stubForIdMapperSuccess(final Response.Status status, final UUID id) {
@@ -55,8 +50,6 @@ public class IdMapperStub {
                         .withBody(createObjectBuilder().add("id", id.toString()).build().toString())
                 )
         );
-
-        waitForPostStubToBeReady(path, mime, status);
     }
 
     public static void stubForIdMapperSuccess(final Response.Status status) {

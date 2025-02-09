@@ -12,7 +12,6 @@ import static javax.ws.rs.core.HttpHeaders.CONTENT_TYPE;
 import static javax.ws.rs.core.MediaType.APPLICATION_OCTET_STREAM;
 import static org.apache.http.HttpStatus.SC_OK;
 import static org.awaitility.Awaitility.await;
-import static uk.gov.justice.service.wiremock.testutil.InternalEndpointMockUtils.stubPingFor;
 
 import java.util.Collection;
 import java.util.List;
@@ -31,8 +30,6 @@ public class SystemDocumentGeneratorStub {
     private static final Logger LOGGER = LoggerFactory.getLogger(SystemDocumentGeneratorStub.class);
 
     public static void stubDocumentGeneratorEndPoint(final byte[] document) {
-        stubPingFor("system-documentgenerator-api");
-
         stubFor(post(urlPathMatching(SYSTEM_DOCUMENT_GENERATOR_QUERY_URL))
                 .willReturn(aResponse().withStatus(SC_OK)
                         .withHeader(CONTENT_TYPE, APPLICATION_OCTET_STREAM)

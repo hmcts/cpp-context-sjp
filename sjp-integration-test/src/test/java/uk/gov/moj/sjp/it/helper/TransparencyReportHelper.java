@@ -29,12 +29,8 @@ public class TransparencyReportHelper {
         final Response response = HttpClientUtil.makeGetCall(resource, acceptHeader);
 
         byte[] resultOrderContent;
-        InputStream inputStream = null;
-        try {
-            inputStream = response.readEntity(InputStream.class);
+        try (InputStream inputStream = response.readEntity(InputStream.class)) {
             resultOrderContent = toByteArray(inputStream);
-        } finally {
-            inputStream.close();
         }
 
         final PdfContentHelper pdfHelper = new PdfContentHelper(resultOrderContent);

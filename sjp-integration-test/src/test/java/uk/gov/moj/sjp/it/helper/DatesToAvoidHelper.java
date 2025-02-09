@@ -13,10 +13,8 @@ import static uk.gov.justice.services.test.utils.core.matchers.JsonValueIsJsonMa
 import static uk.gov.moj.sjp.it.util.QueueUtil.sendToQueue;
 
 import uk.gov.justice.services.messaging.JsonEnvelope;
-import uk.gov.moj.cpp.sjp.event.DatesToAvoidRequired;
 import uk.gov.moj.cpp.sjp.event.DatesToAvoidTimerExpired;
 
-import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -31,18 +29,6 @@ public class DatesToAvoidHelper {
         eventListener.subscribe(DatesToAvoidTimerExpired.EVENT_NAME)
                 .run(() -> sendToQueue("sjp.handler.command", createEnvelope("sjp.command.expire-dates-to-avoid-timer",
                         createObjectBuilder().add("caseId", caseId.toString()).build())));
-    }
-
-    public static void verifyDatesToAvoidRequiredEventEmitted(EventListener eventListener, UUID caseId) {
-        final List<Matcher<? super ReadContext>> matchers = new ArrayList<>();
-        matchers.add(withJsonPath("caseId", is(caseId.toString())));
-        matchers.add(withJsonPath("datesToAvoidExpirationDate", is(LocalDate.now().plusDays(10).toString())));
-        final Optional<JsonEnvelope> jsonEnvelope = eventListener.popEvent(DatesToAvoidRequired.EVENT_NAME);
-
-        assertThat(jsonEnvelope.get(), jsonEnvelope(
-                metadata().withName(DatesToAvoidRequired.EVENT_NAME),
-                payload(isJson(allOf(matchers)))
-        ));
     }
 
     public static void verifyDatesToAvoidExpiredEventEmitted(final EventListener eventListener, final UUID caseId) {

@@ -34,7 +34,6 @@ import uk.gov.moj.cpp.sjp.domain.common.CaseStatus;
 import uk.gov.moj.sjp.it.command.CreateCase;
 import uk.gov.moj.sjp.it.helper.CaseHelper;
 import uk.gov.moj.sjp.it.helper.CaseSearchResultHelper;
-import uk.gov.moj.sjp.it.helper.EventListener;
 import uk.gov.moj.sjp.it.helper.OffencesWithdrawalRequestHelper;
 import uk.gov.moj.sjp.it.helper.ReadyCaseHelper;
 import uk.gov.moj.sjp.it.model.ProsecutingAuthority;
@@ -60,8 +59,6 @@ public class ReadyCaseIT extends BaseIntegrationTest {
     private final UUID defendantId = randomUUID();
 
     private final UUID withdrawalRequestReasonId = randomUUID();
-
-    private final EventListener eventListener = new EventListener();
 
     private final ReadyCaseHelper readyCaseHelper = new ReadyCaseHelper();
 

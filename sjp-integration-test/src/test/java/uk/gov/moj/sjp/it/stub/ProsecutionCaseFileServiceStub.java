@@ -14,15 +14,11 @@ import static org.apache.http.HttpStatus.SC_OK;
 import static uk.gov.justice.services.common.http.HeaderConstants.ID;
 import static uk.gov.moj.sjp.it.util.FileUtil.getPayload;
 
-import uk.gov.justice.service.wiremock.testutil.InternalEndpointMockUtils;
-
 import java.util.UUID;
 
 public class ProsecutionCaseFileServiceStub {
 
     public static void stubCaseDetails(final UUID caseId, final String resourceName) {
-        InternalEndpointMockUtils.stubPingFor("prosecutioncasefile-service");
-
         final String query = "application/vnd.prosecutioncasefile.query.case+json";
         final String urlPath = format("/prosecutioncasefile-service/query/api/rest/prosecutioncasefile/cases/%s", caseId.toString());
         stubFor(get(urlPathEqualTo(urlPath))

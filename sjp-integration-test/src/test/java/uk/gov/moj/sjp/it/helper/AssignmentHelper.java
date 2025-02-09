@@ -14,7 +14,6 @@ import static uk.gov.moj.sjp.it.util.RestPollerWithDefaults.TIMEOUT_IN_SECONDS;
 
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.sjp.event.session.CaseAssigned;
-import uk.gov.moj.sjp.it.util.HttpClientUtil;
 
 import java.util.Optional;
 import java.util.UUID;

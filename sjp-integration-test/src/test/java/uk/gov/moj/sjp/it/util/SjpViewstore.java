@@ -2,7 +2,6 @@ package uk.gov.moj.sjp.it.util;
 
 import static java.util.Objects.nonNull;
 
-import uk.gov.justice.services.test.utils.persistence.TestJdbcConnectionProvider;
 import uk.gov.moj.cpp.sjp.persistence.entity.AocpAcceptedEmailStatus;
 import uk.gov.moj.cpp.sjp.persistence.entity.EnforcementNotification;
 import uk.gov.moj.cpp.sjp.persistence.entity.NotificationOfEndorsementStatus;
@@ -16,7 +15,8 @@ import java.util.UUID;
 
 public class SjpViewstore {
 
-    private TestJdbcConnectionProvider connectionProvider = new TestJdbcConnectionProvider();
+
+    private final TestJdbcConnectionProvider connectionProvider = TestJdbcConnectionProvider.getInstance();
 
     public SjpViewstore() {
     }

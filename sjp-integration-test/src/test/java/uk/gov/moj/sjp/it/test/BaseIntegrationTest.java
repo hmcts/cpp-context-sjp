@@ -19,22 +19,27 @@ import static uk.gov.moj.sjp.it.stub.UsersGroupsStub.stubForUserDetails;
 import static uk.gov.moj.sjp.it.util.RestPollerWithDefaults.DELAY_IN_SECONDS;
 import static uk.gov.moj.sjp.it.util.RestPollerWithDefaults.INTERVAL_IN_SECONDS;
 
+import uk.gov.justice.services.integrationtest.utils.jms.JmsResourceManagementExtension;
 import uk.gov.moj.cpp.unifiedsearch.test.util.ingest.ElasticSearchIndexRemoverUtil;
 import uk.gov.moj.sjp.it.util.Defaults;
 
 import java.io.IOException;
+import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
+@ExtendWith(JmsResourceManagementExtension.class)
 public abstract class BaseIntegrationTest {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(BaseIntegrationTest.class);
     private static final String HOST = System.getProperty("INTEGRATION_HOST_KEY", "localhost");
     public static final UUID USER_ID = Defaults.DEFAULT_USER_ID;
     public static final String PUBLIC_EVENTS_HEARING_HEARING_RESULTED = "public.events.hearing.hearing-resulted";
+    private static final Map<String, String> cachedStubs = new ConcurrentHashMap<>();
 
     protected static ElasticSearchIndexRemoverUtil elasticSearchIndexRemoverUtil = null;
 
@@ -50,8 +55,11 @@ public abstract class BaseIntegrationTest {
     }
 
     private static void setUpElasticSearch() {
-        elasticSearchIndexRemoverUtil = new ElasticSearchIndexRemoverUtil();
-        deleteAndCreateIndex();
+        if(elasticSearchIndexRemoverUtil == null) {
+            elasticSearchIndexRemoverUtil = new ElasticSearchIndexRemoverUtil();
+            deleteAndCreateIndex();
+        }
+
     }
 
     protected static void deleteAndCreateIndex() {

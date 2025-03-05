@@ -53,7 +53,7 @@ public class DefendantPotentialCaseIT extends BaseIntegrationTest {
     public void shouldReturnFalseForPotentialCases() {
         UUID caseId = randomUUID();
         UUID defendantId = randomUUID();
-        privateEventsProducer.startProducer(SJP_EVENT);
+//        privateEventsProducer.startProducer(SJP_EVENT);
         final ProsecutingAuthority prosecutingAuthority = TFL;
         stubProsecutorQuery(prosecutingAuthority.name(), prosecutingAuthority.getFullName(), randomUUID());
 

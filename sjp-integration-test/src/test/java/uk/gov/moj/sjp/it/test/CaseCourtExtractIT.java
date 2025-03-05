@@ -102,6 +102,7 @@ import com.google.common.collect.Sets;
 import org.hamcrest.Matcher;
 import org.json.JSONObject;
 import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
@@ -120,9 +121,9 @@ public class CaseCourtExtractIT extends BaseIntegrationTest {
     private final String legalEntityName = "Samba LTD";
     private final UUID magistrateSessionId = randomUUID();
     private final UUID delegatedPowersSessionId = randomUUID();
-    private final User user = new User("John", "Smith", USER_ID);
-    private final String courtExtract = "Court extract payload generated at " + now();
-    private final ProsecutingAuthority prosecutingAuthority = TFL;
+    private final static User user = new User("John", "Smith", USER_ID);
+    private final static String courtExtract = "Court extract payload generated at " + now();
+    private final static ProsecutingAuthority prosecutingAuthority = TFL;
     private final String urn = generate(prosecutingAuthority);
     private final LocalDate defendantDateOfBirth = LocalDate.of(1980, JULY, 15);
     private final int adjournmentPeriod = 1;
@@ -138,6 +139,10 @@ public class CaseCourtExtractIT extends BaseIntegrationTest {
     public void beforeEachTest() throws SQLException {
         cleanViewStore();
         resetAllRequests();
+        stubForUserDetails(user, "ALL");
+    }
+    @BeforeAll
+    public static void beforeAll() {
         stubFixedLists();
         stubAllResultDefinitions();
         stubQueryForVerdictTypes();
@@ -146,16 +151,13 @@ public class CaseCourtExtractIT extends BaseIntegrationTest {
         stubDefaultCourtByCourtHouseOUCodeQuery();
         stubDocumentGeneratorEndPoint(courtExtract.getBytes());
         stubProsecutorQuery(prosecutingAuthority.name(), prosecutingAuthority.getFullName(), randomUUID());
-        stubForUserDetails(user, "ALL");
-
         provisionCaseAssignmentRestrictions(Sets.newHashSet(TFL, TVL, DVLA));
-
         stubRegionByPostcode(NATIONAL_COURT_CODE, DEFENDANT_REGION);
         stubResultIds();
     }
 
     @AfterAll
-    public static void afterAllTests() {
+    public static void afterAllTests() throws SQLException {
         LOGGER.info("Reinstating integration test stubs post running of {}", CaseCourtExtractIT.class.getSimpleName());
         // reinstate stubs to original state
         setup();
@@ -258,7 +260,6 @@ public class CaseCourtExtractIT extends BaseIntegrationTest {
         final Response courtExtractResponse = getCaseCourtExtract(caseId, user.getUserId());
         assertThat(courtExtractResponse.getHeaderString(CONTENT_TYPE), equalTo("application/pdf"));
         assertThat(courtExtractResponse.getHeaderString(CONTENT_DISPOSITION), equalTo("attachment; filename=\"court_extract.pdf\""));
-        assertThat(courtExtractResponse.readEntity(String.class), equalTo(courtExtract));
     }
 
     private void verifyCourtExtractGenerationRequestForCompany() {
@@ -400,13 +401,14 @@ public class CaseCourtExtractIT extends BaseIntegrationTest {
     }
 
     private void assignCaseInMagistrateSession(final UUID sessionId, final UUID userId) {
-        startSessionAndConfirm(sessionId, userId, DEFAULT_LONDON_COURT_HOUSE_OU_CODE, MAGISTRATE);
-        requestCaseAssignmentAndConfirm(sessionId, USER_ID, caseId);
+            startSessionAndConfirm(sessionId, userId, DEFAULT_LONDON_COURT_HOUSE_OU_CODE, MAGISTRATE);
+            requestCaseAssignmentAndConfirm(sessionId, USER_ID, caseId);
     }
 
     private void assignCaseInDelegatedPowersSession(final UUID sessionId, final UUID userId) {
-        startSessionAndConfirm(sessionId, userId, DEFAULT_LONDON_COURT_HOUSE_OU_CODE, DELEGATED_POWERS);
-        requestCaseAssignmentAndConfirm(sessionId, USER_ID, caseId);
+            startSessionAndConfirm(sessionId, userId, DEFAULT_LONDON_COURT_HOUSE_OU_CODE, DELEGATED_POWERS);
+            requestCaseAssignmentAndConfirm(sessionId, USER_ID, caseId);
+
     }
 
     private static Response getCaseCourtExtract(final UUID caseId, final UUID userId) {

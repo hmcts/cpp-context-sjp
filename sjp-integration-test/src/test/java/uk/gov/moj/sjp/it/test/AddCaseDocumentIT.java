@@ -1,7 +1,6 @@
 package uk.gov.moj.sjp.it.test;
 
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
-import static java.util.Arrays.asList;
 import static java.util.UUID.randomUUID;
 import static org.apache.commons.lang3.RandomStringUtils.randomAlphanumeric;
 import static org.apache.commons.lang3.RandomUtils.nextInt;
@@ -46,6 +45,7 @@ import uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub;
 import uk.gov.moj.sjp.it.stub.UsersGroupsStub;
 import uk.gov.moj.sjp.it.util.CaseAssignmentRestrictionHelper;
 
+import java.util.List;
 import java.util.UUID;
 
 import com.google.common.collect.Sets;
@@ -202,9 +202,9 @@ public class AddCaseDocumentIT extends BaseIntegrationTest {
         requestCaseAssignmentAndConfirm(sessionId, USER_ID, caseId);
 
         final DefendantCourtOptions defendantCourtOptions = new DefendantCourtOptions(new DefendantCourtInterpreter("French", true), false, NO_DISABILITY_NEEDS);
-        final ReferForCourtHearing referForCourtHearing = new ReferForCourtHearing(null, asList(new OffenceDecisionInformation(offenceId, VerdictType.PROVED_SJP)), referralReasonId, listingNotes, estimatedHearingDuration, defendantCourtOptions, null);
+        final ReferForCourtHearing referForCourtHearing = new ReferForCourtHearing(null, List.of(new OffenceDecisionInformation(offenceId, VerdictType.PROVED_SJP)), referralReasonId, listingNotes, estimatedHearingDuration, defendantCourtOptions, null);
 
-        final DecisionCommand decision = new DecisionCommand(sessionId, createCasePayloadBuilder.getId(), null, legalAdviser, asList(referForCourtHearing), null);
+        final DecisionCommand decision = new DecisionCommand(sessionId, createCasePayloadBuilder.getId(), null, legalAdviser, List.of(referForCourtHearing), null);
 
 
         eventListener

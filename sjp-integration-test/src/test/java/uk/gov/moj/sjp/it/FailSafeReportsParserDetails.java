@@ -20,7 +20,7 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 public class FailSafeReportsParserDetails {
-    private static final String directory = "/Users/rohitprashar/Downloads/main";
+    private static final String directory = "/Users/rohitprashar/Downloads/failsafe-reports";
     private static final String outputFilePath = directory + "/test-results.csv";
 
     public static void main(String[] args) {

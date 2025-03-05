@@ -15,6 +15,7 @@ import static org.awaitility.Awaitility.await;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 import com.github.tomakehurst.wiremock.verification.LoggedRequest;
 import org.awaitility.core.ConditionTimeoutException;
@@ -39,7 +40,8 @@ public class SystemDocumentGeneratorStub {
     public static List<JSONObject> pollDocumentGenerationRequests(final Matcher<Collection<?>> matcher) {
         try {
 
-            return await().until(() ->
+            return await().pollInterval(200, TimeUnit.MILLISECONDS).
+                    until(() ->
                     findAll(postRequestedFor(urlPathMatching(SYSTEM_DOCUMENT_GENERATOR_QUERY_URL)))
                             .stream()
                             .map(LoggedRequest::getBodyAsString)

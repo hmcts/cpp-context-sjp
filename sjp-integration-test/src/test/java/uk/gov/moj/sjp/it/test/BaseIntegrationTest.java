@@ -18,12 +18,14 @@ import static uk.gov.moj.sjp.it.stub.UsersGroupsStub.stubAllGroupsForUser;
 import static uk.gov.moj.sjp.it.stub.UsersGroupsStub.stubForUserDetails;
 import static uk.gov.moj.sjp.it.util.RestPollerWithDefaults.DELAY_IN_SECONDS;
 import static uk.gov.moj.sjp.it.util.RestPollerWithDefaults.INTERVAL_IN_SECONDS;
+import static uk.gov.moj.sjp.it.util.SjpDatabaseCleaner.cleanViewStore;
 
 import uk.gov.justice.services.integrationtest.utils.jms.JmsResourceManagementExtension;
 import uk.gov.moj.cpp.unifiedsearch.test.util.ingest.ElasticSearchIndexRemoverUtil;
 import uk.gov.moj.sjp.it.util.Defaults;
 
 import java.io.IOException;
+import java.sql.SQLException;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
@@ -71,7 +73,7 @@ public abstract class BaseIntegrationTest {
     }
 
     @BeforeAll
-    public static void setup() {
+    public static void setup() throws SQLException {
         LOGGER.info("Setting up integration test stubs once for whole test run");
         resetAllRequests();
         reset();

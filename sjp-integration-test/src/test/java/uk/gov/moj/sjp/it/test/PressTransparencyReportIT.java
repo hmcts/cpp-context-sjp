@@ -37,6 +37,7 @@ import uk.gov.moj.sjp.it.model.ProsecutingAuthority;
 import uk.gov.moj.sjp.it.util.SysDocGeneratorHelper;
 
 import java.io.IOException;
+import java.sql.SQLException;
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
 import java.util.List;
@@ -83,7 +84,7 @@ public class PressTransparencyReportIT extends BaseIntegrationTest {
     }
 
     @AfterAll
-    public static void afterAllTests() {
+    public static void afterAllTests() throws SQLException {
         LOGGER.info("Reinstating integration test stubs post running of {}", PressTransparencyReportIT.class.getSimpleName());
         // reinstate stubs to original state
         setup();

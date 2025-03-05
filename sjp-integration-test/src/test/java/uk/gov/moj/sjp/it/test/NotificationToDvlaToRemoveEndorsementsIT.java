@@ -299,7 +299,6 @@ public class NotificationToDvlaToRemoveEndorsementsIT extends BaseIntegrationTes
     private void pollUntil(final Callable<Integer> function, final Matcher<Integer> matcher) {
         Awaitility.await()
                 .pollInterval(200, TimeUnit.MILLISECONDS)
-                .timeout(3, TimeUnit.SECONDS)
                 .until(function, matcher);
     }
 

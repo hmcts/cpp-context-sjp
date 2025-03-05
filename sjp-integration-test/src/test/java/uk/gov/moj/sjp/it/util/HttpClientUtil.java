@@ -54,8 +54,6 @@ public class HttpClientUtil {
 
         final String writeUrl = getWriteUrl(url);
         final Response response = restClient.postCommand(writeUrl, mediaType, payload, map);
-        LOGGER.info("Post call made: \n\tURL = {} \n\tMedia type = {} \n\tPayload = {}\n\tUser = {}\n",
-                writeUrl, mediaType, payload, userId);
 
         assertThat(format("Post returned not expected status code with body: %s", response.readEntity(String.class)),
                 response.getStatus(), is(expectedStatus.getStatusCode()));
@@ -70,8 +68,8 @@ public class HttpClientUtil {
 
         final String writeUrl = getWriteUrl(url);
         final Response response = restClient.postCommand(writeUrl, mediaType, payload, map);
-        LOGGER.info("Post call made: \n\tURL = {} \n\tMedia type = {} \n\tPayload = {}\n\tUser = {}\n",
-                writeUrl, mediaType, payload, USER_ID);
+        LOGGER.info("Post call made: \n\tURL = {} \n\tMedia type = {} \n\tUser = {}\n",
+                writeUrl, mediaType, USER_ID);
         final String responseBody = response.readEntity(String.class);
         assertThat(format("Post returned not expected status code with body: %s", responseBody),
                 response.getStatus(), is(expectedStatus.getStatusCode()));

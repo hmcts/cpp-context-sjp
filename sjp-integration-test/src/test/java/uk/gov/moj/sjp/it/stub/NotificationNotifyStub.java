@@ -14,9 +14,11 @@ import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
 import static javax.ws.rs.core.Response.Status.ACCEPTED;
 import static org.awaitility.Awaitility.waitAtMost;
 import static org.hamcrest.Matchers.hasSize;
+import static uk.gov.justice.services.integrationtest.utils.jms.JmsMessageProducerClientProvider.newPublicJmsMessageProducerClientProvider;
 import static uk.gov.moj.sjp.it.Constants.PUBLIC_EVENT;
 import static uk.gov.moj.sjp.it.util.RestPollerWithDefaults.TIMEOUT_IN_SECONDS;
 
+import uk.gov.justice.services.integrationtest.utils.jms.JmsMessageProducerClient;
 import uk.gov.justice.services.test.utils.core.messaging.MessageProducerClient;
 import uk.gov.moj.sjp.it.util.JsonHelper;
 
@@ -49,8 +51,8 @@ public class NotificationNotifyStub {
     public static void verifyNotification(final String email, final String urn, final String templateId) {
 
         final Predicate<JSONObject> commandPayloadPredicate = commandPayload -> commandPayload.getString("sendToAddress").equals(email)
-                && commandPayload.getJSONObject("personalisation").getString("urn").equals(urn)
-                && commandPayload.getString("templateId").equals(templateId);
+                                                                                && commandPayload.getJSONObject("personalisation").getString("urn").equals(urn)
+                                                                                && commandPayload.getString("templateId").equals(templateId);
 
         waitAtMost(Duration.ofSeconds(TIMEOUT_IN_SECONDS)).until(() ->
                 findAll(postRequestedFor(urlPathMatching(COMMAND_URL + ".*"))
@@ -84,10 +86,10 @@ public class NotificationNotifyStub {
                 .add("errorMessage", "An error has occurred")
                 .build();
 
-        try (final MessageProducerClient producerClient = new MessageProducerClient()) {
-            producerClient.startProducer(PUBLIC_EVENT);
-            producerClient.sendMessage("public.notificationnotify.events.notification-failed", payload);
-        }
+        final JmsMessageProducerClient publicJmsMessageProducerClient = newPublicJmsMessageProducerClientProvider()
+                .getMessageProducerClient();
+        publicJmsMessageProducerClient.sendMessage("public.notificationnotify.events.notification-failed", payload);
+
     }
 
     public static void publishNotificationSentPublicEvent(final UUID notificationId) {

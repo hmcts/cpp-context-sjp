@@ -1,9 +1,9 @@
 package uk.gov.moj.sjp.it.producer;
 
-import static uk.gov.moj.sjp.it.Constants.PUBLIC_EVENT;
+import static uk.gov.justice.services.integrationtest.utils.jms.JmsMessageProducerClientProvider.newPublicJmsMessageProducerClientProvider;
 import static uk.gov.moj.sjp.it.util.FileUtil.getFileContentAsJson;
 
-import uk.gov.justice.services.test.utils.core.messaging.MessageProducerClient;
+import uk.gov.justice.services.integrationtest.utils.jms.JmsMessageProducerClient;
 
 import java.util.UUID;
 
@@ -37,10 +37,9 @@ public final class ReferToCourtHearingProducer {
                 .put("rejectionReason", rejectionReason)
                 .build());
 
-        try (final MessageProducerClient producerClient = new MessageProducerClient()) {
-            producerClient.startProducer(PUBLIC_EVENT);
-            producerClient.sendMessage("public.progression.refer-prosecution-cases-to-court-rejected", payload);
-        }
+        JmsMessageProducerClient messageProducerClient = newPublicJmsMessageProducerClientProvider().getMessageProducerClient();
+        messageProducerClient.sendMessage("public.progression.refer-prosecution-cases-to-court-rejected", payload);
+
     }
 
 }

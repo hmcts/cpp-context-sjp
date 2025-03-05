@@ -6,12 +6,12 @@ import static java.util.UUID.fromString;
 import static java.util.UUID.randomUUID;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.notNullValue;
+import static uk.gov.justice.services.integrationtest.utils.jms.JmsMessageProducerClientProvider.newPublicJmsMessageProducerClientProvider;
 import static uk.gov.moj.cpp.sjp.domain.SessionType.MAGISTRATE;
 import static uk.gov.moj.cpp.sjp.domain.disability.DisabilityNeeds.disabilityNeedsOf;
 import static uk.gov.moj.cpp.sjp.domain.verdict.VerdictType.PROVED_SJP;
 import static uk.gov.moj.sjp.it.Constants.CASE_NOTE_ADDED_EVENT;
 import static uk.gov.moj.sjp.it.Constants.NOTICE_PERIOD_IN_DAYS;
-import static uk.gov.moj.sjp.it.Constants.PUBLIC_EVENT;
 import static uk.gov.moj.sjp.it.helper.AssignmentHelper.requestCaseAssignment;
 import static uk.gov.moj.sjp.it.helper.DecisionHelper.createCase;
 import static uk.gov.moj.sjp.it.helper.DecisionHelper.verifyCaseCompleted;
@@ -45,8 +45,8 @@ import uk.gov.justice.core.courts.NextHearing;
 import uk.gov.justice.json.schemas.domains.sjp.User;
 import uk.gov.justice.json.schemas.domains.sjp.events.CaseNoteAdded;
 import uk.gov.justice.services.common.converter.ZonedDateTimes;
+import uk.gov.justice.services.integrationtest.utils.jms.JmsMessageProducerClient;
 import uk.gov.justice.services.messaging.JsonEnvelope;
-import uk.gov.justice.services.test.utils.core.messaging.MessageProducerClient;
 import uk.gov.moj.cpp.sjp.domain.DefendantCourtInterpreter;
 import uk.gov.moj.cpp.sjp.domain.DefendantCourtOptions;
 import uk.gov.moj.cpp.sjp.domain.SessionType;
@@ -217,10 +217,10 @@ public class CaseListedInCriminalCourtsIT extends BaseIntegrationTest {
     }
 
     private void raisePublicReferredToCourtEvent(final JsonObject payload) {
-        try (final MessageProducerClient producerClient = new MessageProducerClient()) {
-            producerClient.startProducer(PUBLIC_EVENT);
-            producerClient.sendMessage(PUBLIC_PROGRESSION_PROSECUTION_CASES_REFERRED_TO_COURT, payload);
-        }
+        final JmsMessageProducerClient publicJmsMessageProducerClient = newPublicJmsMessageProducerClientProvider()
+                .getMessageProducerClient();
+        publicJmsMessageProducerClient.sendMessage(PUBLIC_PROGRESSION_PROSECUTION_CASES_REFERRED_TO_COURT, payload);
+
     }
 
     private static JsonObject startSessionAndRequestAssignment(final UUID sessionId, final SessionType sessionType) {

@@ -7,9 +7,9 @@ import static java.util.UUID.fromString;
 import static java.util.UUID.randomUUID;
 import static org.hamcrest.CoreMatchers.allOf;
 import static org.hamcrest.CoreMatchers.is;
+import static uk.gov.justice.services.integrationtest.utils.jms.JmsMessageProducerClientProvider.newPublicJmsMessageProducerClientProvider;
 import static uk.gov.moj.cpp.sjp.domain.SessionType.MAGISTRATE;
 import static uk.gov.moj.sjp.it.Constants.DEFAULT_OFFENCE_CODE;
-import static uk.gov.moj.sjp.it.Constants.PUBLIC_EVENT;
 import static uk.gov.moj.sjp.it.command.CreateCase.CreateCasePayloadBuilder.withDefaults;
 import static uk.gov.moj.sjp.it.command.CreateCase.createCaseForPayloadBuilder;
 import static uk.gov.moj.sjp.it.helper.AssignmentHelper.requestCaseAssignmentAndConfirm;
@@ -34,7 +34,7 @@ import static uk.gov.moj.sjp.it.util.UrnProvider.generate;
 
 import uk.gov.justice.json.schemas.domains.sjp.ApplicationStatus;
 import uk.gov.justice.json.schemas.domains.sjp.User;
-import uk.gov.justice.services.test.utils.core.messaging.MessageProducerClient;
+import uk.gov.justice.services.integrationtest.utils.jms.JmsMessageProducerClient;
 import uk.gov.moj.cpp.sjp.domain.decision.OffenceDecision;
 import uk.gov.moj.sjp.it.command.CreateCase;
 import uk.gov.moj.sjp.it.model.DecisionCommand;
@@ -92,10 +92,10 @@ public class CCApplicationStatusUpdateIT extends BaseIntegrationTest {
                         .put("LINK_TYPE", "SJP")
                         .put("APPLICATION_RECEIVED_DATE", DATE_RECEIVED)
                         .build());
-        try (final MessageProducerClient producerClient = new MessageProducerClient()) {
-            producerClient.startProducer(PUBLIC_EVENT);
-            producerClient.sendMessage("public.progression.court-application-created", payload);
-        }
+        final JmsMessageProducerClient publicJmsMessageProducerClient = newPublicJmsMessageProducerClientProvider()
+                .getMessageProducerClient();
+        publicJmsMessageProducerClient.sendMessage("public.progression.court-application-created", payload);
+
 
         pollUntilCaseByIdIsOk(caseId, allOf(
                 withJsonPath("$.ccApplicationStatus", is(ApplicationStatus.APPEAL_PENDING.name()))));
@@ -116,10 +116,10 @@ public class CCApplicationStatusUpdateIT extends BaseIntegrationTest {
                         .put("LINK_TYPE", "LINKED")
                         .put("APPLICATION_RECEIVED_DATE", DATE_RECEIVED)
                         .build());
-        try (final MessageProducerClient producerClient = new MessageProducerClient()) {
-            producerClient.startProducer(PUBLIC_EVENT);
-            producerClient.sendMessage("public.progression.court-application-created", payload);
-        }
+        final JmsMessageProducerClient publicJmsMessageProducerClient = newPublicJmsMessageProducerClientProvider()
+                .getMessageProducerClient();
+        publicJmsMessageProducerClient.sendMessage("public.progression.court-application-created", payload);
+
 
         pollUntilCaseByIdIsOk(caseId, allOf(
                 withJsonPath("$.ccApplicationStatus", is(ApplicationStatus.REOPENING_PENDING.name()))));
@@ -139,10 +139,10 @@ public class CCApplicationStatusUpdateIT extends BaseIntegrationTest {
                         .put("LINK_TYPE", "LINKED")
                         .put("APPLICATION_RECEIVED_DATE", DATE_RECEIVED)
                         .build());
-        try (final MessageProducerClient producerClient = new MessageProducerClient()) {
-            producerClient.startProducer(PUBLIC_EVENT);
-            producerClient.sendMessage("public.progression.court-application-created", payload);
-        }
+
+        final JmsMessageProducerClient producerClient = newPublicJmsMessageProducerClientProvider()
+                .getMessageProducerClient();
+        producerClient.sendMessage("public.progression.court-application-created", payload);
 
         pollUntilCaseByIdIsOk(caseId, allOf(
                 withJsonPath("$.ccApplicationStatus", is(ApplicationStatus.STATUTORY_DECLARATION_PENDING.name()))));

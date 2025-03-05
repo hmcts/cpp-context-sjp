@@ -1,10 +1,10 @@
 package uk.gov.moj.sjp.it.test;
 
+import static java.time.LocalDate.*;
 import static java.util.UUID.randomUUID;
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static uk.gov.moj.sjp.it.Constants.SJP_EVENT;
 import static uk.gov.moj.sjp.it.command.CreateCase.CreateCasePayloadBuilder.defaultCaseBuilder;
 import static uk.gov.moj.sjp.it.command.CreateCase.createCaseForPayloadBuilder;
 import static uk.gov.moj.sjp.it.model.ProsecutingAuthority.TFL;
@@ -14,7 +14,6 @@ import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubProsecutorQuer
 import static uk.gov.moj.sjp.it.stub.UnifiedSearchStub.stubUnifiedSearchQueryForCases;
 
 import uk.gov.justice.services.messaging.JsonEnvelope;
-import uk.gov.justice.services.test.utils.core.messaging.MessageProducerClient;
 import uk.gov.moj.cpp.sjp.event.CaseReceived;
 import uk.gov.moj.sjp.it.command.CreateCase;
 import uk.gov.moj.sjp.it.helper.EventListener;
@@ -40,7 +39,7 @@ import org.junit.jupiter.api.Test;
 public class DefendantPotentialCaseIT extends BaseIntegrationTest {
 
     private static final String CASE_REF = "Potential case reference";
-    private final MessageProducerClient privateEventsProducer = new MessageProducerClient();
+
     private UUID randomCaseId;
 
     @BeforeEach
@@ -49,16 +48,16 @@ public class DefendantPotentialCaseIT extends BaseIntegrationTest {
         stubUnifiedSearchQueryForCases(randomCaseId, CASE_REF);
     }
 
+
     @Test
     public void shouldReturnFalseForPotentialCases() {
         UUID caseId = randomUUID();
         UUID defendantId = randomUUID();
-//        privateEventsProducer.startProducer(SJP_EVENT);
         final ProsecutingAuthority prosecutingAuthority = TFL;
         stubProsecutorQuery(prosecutingAuthority.name(), prosecutingAuthority.getFullName(), randomUUID());
 
         final CreateCase.CreateCasePayloadBuilder createCase = createCase(caseId,
-                defendantId, prosecutingAuthority, LocalDate.of(1980, 11, 10));
+                defendantId, prosecutingAuthority, of(1980, 11, 10));
 
         createCaseForPayloadBuilder(createCase);
         pollForCase(caseId, new Matcher[]{JsonPathMatchers.withJsonPath("$.hasPotentialCase", is(false))});
@@ -68,7 +67,6 @@ public class DefendantPotentialCaseIT extends BaseIntegrationTest {
     public void shouldFindPotentialCases() {
         UUID caseId = randomCaseId;
         UUID defendantId = randomUUID();
-        privateEventsProducer.startProducer(SJP_EVENT);
 
         final ProsecutingAuthority prosecutingAuthority = TFL;
         stubProsecutorQuery(prosecutingAuthority.name(), prosecutingAuthority.getFullName(), randomUUID());
@@ -76,7 +74,7 @@ public class DefendantPotentialCaseIT extends BaseIntegrationTest {
         final CreateCase.CreateCasePayloadBuilder createCase = createCase(caseId,
                 defendantId,
                 prosecutingAuthority,
-                LocalDate.of(1980, 10, 15));
+                of(1980, 10, 15));
         final Optional<JsonEnvelope> caseReceivedEvent = new EventListener()
                 .subscribe(CaseReceived.EVENT_NAME)
                 .run(() -> createCaseForPayloadBuilder(createCase))
@@ -91,7 +89,7 @@ public class DefendantPotentialCaseIT extends BaseIntegrationTest {
         final JsonObject sjpOpenCase = sjpOpenCases.getJsonObject(0);
         assertEquals(caseId.toString(), sjpOpenCase.getString("caseId"));
         assertEquals(CASE_REF, sjpOpenCase.getString("caseRef"));
-        assertEquals(LocalDate.of(2015, 12, 2).toString(), sjpOpenCase.getString("postingOrHearingDate"));
+        assertEquals(of(2015, 12, 2).toString(), sjpOpenCase.getString("postingOrHearingDate"));
 
         final JsonArray offenceTitles = sjpOpenCase.getJsonArray("offenceTitles");
         assertEquals(1, offenceTitles.size());

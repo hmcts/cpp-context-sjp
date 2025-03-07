@@ -39,9 +39,6 @@ public class SjpDatabaseCleaner {
 
     public static void cleanAll() throws SQLException {
         cleanSnapshot();
-        DATABASE_CLEANER.cleanEventLogTable(SJP_NAME);
-        DATABASE_CLEANER.cleanStreamBufferTable(SJP_NAME);
-        DATABASE_CLEANER.cleanStreamStatusTable(SJP_NAME);
 
         DATABASE_CLEANER.cleanViewStoreTables(
                 SJP_NAME,

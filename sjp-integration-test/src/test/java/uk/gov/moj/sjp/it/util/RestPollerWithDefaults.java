@@ -27,7 +27,7 @@ public class RestPollerWithDefaults {
 
     public static final long DELAY_IN_SECONDS = 0L;
     public static final long INTERVAL_IN_SECONDS = 1L;
-    public static final long TIMEOUT_IN_SECONDS = 30L;
+    public static final long TIMEOUT_IN_SECONDS = 10L;
 
     public static RestPoller pollWithDefaults(final RequestParamsBuilder requestParamsBuilder) {
         return pollWithDefaults(requestParamsBuilder.build());

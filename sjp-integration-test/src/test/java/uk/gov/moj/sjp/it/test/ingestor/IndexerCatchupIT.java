@@ -16,11 +16,9 @@ import static uk.gov.moj.sjp.it.test.ingestor.helper.ElasticSearchQueryHelper.ge
 import uk.gov.justice.services.jmx.system.command.client.SystemCommanderClient;
 import uk.gov.justice.services.jmx.system.command.client.TestSystemCommanderClientFactory;
 import uk.gov.justice.services.jmx.system.command.client.connection.JmxParameters;
-import uk.gov.justice.services.test.utils.core.messaging.MessageProducerClient;
 import uk.gov.justice.services.test.utils.persistence.DatabaseCleaner;
 import uk.gov.moj.cpp.unifiedsearch.test.util.ingest.ElasticSearchIndexRemoverUtil;
 import uk.gov.moj.sjp.it.command.CreateCase;
-import uk.gov.moj.sjp.it.framework.util.ViewStoreCleaner;
 import uk.gov.moj.sjp.it.test.BaseIntegrationTest;
 
 import java.io.IOException;
@@ -28,7 +26,6 @@ import java.util.UUID;
 
 import javax.json.JsonObject;
 
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -36,8 +33,6 @@ public class IndexerCatchupIT extends BaseIntegrationTest {
     public static final String CASE_ID = "7e2f843e-d639-40b3-8611-8015f3a18958";
     private final DatabaseCleaner databaseCleaner = new DatabaseCleaner();
     private final TestSystemCommanderClientFactory systemCommanderClientFactory = new TestSystemCommanderClientFactory();
-    private final ViewStoreCleaner viewStoreCleaner = new ViewStoreCleaner();
-    private final MessageProducerClient privateEventsProducer = new MessageProducerClient();
     private ElasticSearchIndexRemoverUtil elasticSearchIndexRemoverUtil = new ElasticSearchIndexRemoverUtil();
     private static final String NATIONAL_COURT_CODE = "1080";
 
@@ -56,13 +51,6 @@ public class IndexerCatchupIT extends BaseIntegrationTest {
         databaseCleaner.cleanViewStoreTables(CONTEXT, "processed_event", "stream_status", "stream_buffer");
 
         elasticSearchIndexRemoverUtil.deleteAndCreateCaseIndex();
-    }
-
-
-    @AfterEach
-    public void tearDown() {
-        viewStoreCleaner.cleanDataInViewStore(UUID.fromString(CASE_ID));
-        privateEventsProducer.close();
     }
 
     @Test

@@ -8,6 +8,7 @@ import static javax.json.Json.createObjectBuilder;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.is;
+import static uk.gov.justice.services.integrationtest.utils.jms.JmsMessageProducerClientProvider.newPublicJmsMessageProducerClientProvider;
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMatcher.jsonEnvelope;
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMetadataMatcher.metadata;
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopePayloadMatcher.payloadIsJson;
@@ -17,7 +18,6 @@ import static uk.gov.moj.cpp.sjp.domain.decision.discharge.PeriodUnit.MONTH;
 import static uk.gov.moj.cpp.sjp.domain.decision.imposition.PaymentType.PAY_TO_COURT;
 import static uk.gov.moj.cpp.sjp.domain.verdict.VerdictType.FOUND_GUILTY;
 import static uk.gov.moj.sjp.it.Constants.NOTICE_PERIOD_IN_DAYS;
-import static uk.gov.moj.sjp.it.Constants.PUBLIC_EVENT;
 import static uk.gov.moj.sjp.it.command.CreateCase.createCaseForPayloadBuilder;
 import static uk.gov.moj.sjp.it.helper.AssignmentHelper.requestCaseAssignmentAndConfirm;
 import static uk.gov.moj.sjp.it.helper.CaseHelper.addFinancialImpositionCorrelationId;
@@ -40,8 +40,8 @@ import static uk.gov.moj.sjp.it.util.Defaults.DEFAULT_LONDON_COURT_HOUSE_OU_CODE
 import static uk.gov.moj.sjp.it.util.SjpDatabaseCleaner.cleanViewStore;
 
 import uk.gov.justice.json.schemas.domains.sjp.User;
+import uk.gov.justice.services.integrationtest.utils.jms.JmsMessageProducerClient;
 import uk.gov.justice.services.messaging.JsonEnvelope;
-import uk.gov.justice.services.test.utils.core.messaging.MessageProducerClient;
 import uk.gov.moj.cpp.sjp.domain.decision.CourtDetails;
 import uk.gov.moj.cpp.sjp.domain.decision.Discharge;
 import uk.gov.moj.cpp.sjp.domain.decision.discharge.DischargePeriod;
@@ -174,11 +174,10 @@ public class CaseFinancialImpositionExportIT extends BaseIntegrationTest {
     }
 
     private void publishStagingEnforcementAcknowledgement() {
-        try (final MessageProducerClient producerClient = new MessageProducerClient()) {
-            producerClient.startProducer(PUBLIC_EVENT);
-            producerClient.sendMessage("public.stagingenforcement.enforce-financial-imposition-acknowledgement",
-                    enforceFinancialImpositionAcknowledgementPayload());
-        }
+        final JmsMessageProducerClient producerClient = newPublicJmsMessageProducerClientProvider()
+                .getMessageProducerClient();
+        producerClient.sendMessage("public.stagingenforcement.enforce-financial-imposition-acknowledgement",
+                enforceFinancialImpositionAcknowledgementPayload());
     }
 
     private JsonObject enforceFinancialImpositionAcknowledgementPayload() {

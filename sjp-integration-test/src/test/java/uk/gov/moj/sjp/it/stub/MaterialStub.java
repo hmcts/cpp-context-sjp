@@ -21,14 +21,14 @@ import static org.apache.http.HttpStatus.SC_OK;
 import static org.awaitility.Awaitility.await;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
+import static uk.gov.justice.services.integrationtest.utils.jms.JmsMessageProducerClientProvider.newPublicJmsMessageProducerClientProvider;
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
 import static uk.gov.justice.services.messaging.JsonEnvelope.metadataFrom;
-import static uk.gov.moj.sjp.it.Constants.PUBLIC_EVENT;
 
 import uk.gov.justice.services.common.http.HeaderConstants;
+import uk.gov.justice.services.integrationtest.utils.jms.JmsMessageProducerClient;
 import uk.gov.justice.services.messaging.DefaultJsonObjectEnvelopeConverter;
 import uk.gov.justice.services.messaging.JsonEnvelope;
-import uk.gov.justice.services.test.utils.core.messaging.MessageProducerClient;
 
 import java.time.ZonedDateTime;
 import java.util.UUID;
@@ -68,20 +68,21 @@ public class MaterialStub {
                         .findFirst(), not(empty()))
                 .get();
 
-        try (final MessageProducerClient producerClient = new MessageProducerClient()) {
-            producerClient.startProducer(PUBLIC_EVENT);
-            final JsonEnvelope materialAddedEventPayload = envelopeFrom(metadataFrom(addMaterialCommand.metadata())
-                            .withName("material.material-added"),
-                    createObjectBuilder()
-                            .add("materialId", addMaterialCommand.payloadAsJsonObject().getJsonString("materialId"))
-                            .add("fileDetails", createObjectBuilder()
-                                    .add("fileName", "fileName")
-                                    .add("externalLink", "localhost/fileName").build())
-                            .add("materialAddedDate", ZonedDateTime.now().toString())
-                            .build());
+        JmsMessageProducerClient messageProducerClient = newPublicJmsMessageProducerClientProvider()
+                .getMessageProducerClient();
 
-            producerClient.sendMessage("material.material-added", materialAddedEventPayload);
-        }
+        final JsonEnvelope materialAddedEventPayload = envelopeFrom(metadataFrom(addMaterialCommand.metadata())
+                        .withName("material.material-added"),
+                createObjectBuilder()
+                        .add("materialId", addMaterialCommand.payloadAsJsonObject().getJsonString("materialId"))
+                        .add("fileDetails", createObjectBuilder()
+                                .add("fileName", "fileName")
+                                .add("externalLink", "localhost/fileName").build())
+                        .add("materialAddedDate", ZonedDateTime.now().toString())
+                        .build());
+
+        messageProducerClient.sendMessage("material.material-added", materialAddedEventPayload);
+
         return UUID.fromString(addMaterialCommand.payloadAsJsonObject().getString("materialId"));
     }
 

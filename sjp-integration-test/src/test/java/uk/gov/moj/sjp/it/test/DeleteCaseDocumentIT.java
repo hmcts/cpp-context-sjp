@@ -52,15 +52,17 @@ import org.junit.jupiter.api.Test;
 
 public class DeleteCaseDocumentIT extends BaseIntegrationTest {
 
-    private UUID caseId, documentId, offenceId, materialId, sessionId, legalAdviserId;
-    private User legalAdviser, secondLineSupport;
+    private UUID caseId;
+    private UUID documentId;
+    private UUID materialId;
+    private UUID sessionId;
+    private User secondLineSupport;
     private final UUID systemUserId = randomUUID();
     private static final String NATIONAL_COURT_CODE = "1080";
     private static final String DEFENDANT_REGION = "croydon";
     private final static LocalDate POSTING_DATE = now().minusDays(NOTICE_PERIOD_IN_DAYS + 1);
     private final static User USER = new User("John", "Rambo", randomUUID());
 
-    private CreateCase.CreateCasePayloadBuilder createCasePayloadBuilder;
     private final DeleteCaseDocumentHelper deleteCaseDocumentHelper = new DeleteCaseDocumentHelper();
 
     @BeforeAll
@@ -79,11 +81,11 @@ public class DeleteCaseDocumentIT extends BaseIntegrationTest {
         caseId = randomUUID();
         documentId = randomUUID();
         materialId = randomUUID();
-        offenceId = randomUUID();
+        UUID offenceId = randomUUID();
         sessionId = randomUUID();
-        legalAdviserId = randomUUID();
+        UUID legalAdviserId = randomUUID();
 
-        legalAdviser = user()
+        User legalAdviser = user()
                 .withUserId(randomUUID())
                 .withFirstName("John")
                 .withLastName("Smith")
@@ -105,7 +107,7 @@ public class DeleteCaseDocumentIT extends BaseIntegrationTest {
         stubGetFromIdMapper(PARTIAL_AOCP_CRITERIA_NOTIFICATION.name(), caseId.toString(),
                 "CASE_ID", caseId.toString());
 
-        createCasePayloadBuilder = withDefaults()
+        CreateCase.CreateCasePayloadBuilder createCasePayloadBuilder = withDefaults()
                 .withId(caseId)
                 .withOffenceId(offenceId)
                 .withPostingDate(POSTING_DATE);

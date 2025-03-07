@@ -6,6 +6,7 @@ import static org.hamcrest.CoreMatchers.anyOf;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static uk.gov.justice.services.integrationtest.utils.jms.JmsMessageProducerClientProvider.newPrivateJmsMessageProducerClientProvider;
 import static uk.gov.moj.sjp.it.Constants.SJP_EVENT;
 import static uk.gov.moj.sjp.it.command.CreateCase.CreateCasePayloadBuilder.withDefaults;
 import static uk.gov.moj.sjp.it.command.CreateCase.createCaseForPayloadBuilder;
@@ -18,6 +19,7 @@ import static uk.gov.moj.sjp.it.test.ingestor.helper.ElasticSearchQueryHelper.ge
 import static uk.gov.moj.sjp.it.test.ingestor.helper.IngesterHelper.buildEnvelope;
 import static uk.gov.moj.sjp.it.util.FileUtil.getPayload;
 
+import uk.gov.justice.services.integrationtest.utils.jms.JmsMessageProducerClient;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.test.utils.core.messaging.MessageProducerClient;
 import uk.gov.moj.cpp.unifiedsearch.test.util.ingest.ElasticSearchIndexRemoverUtil;
@@ -32,7 +34,6 @@ import java.util.UUID;
 import javax.json.JsonArray;
 import javax.json.JsonObject;
 
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -41,23 +42,15 @@ public class DefendantDetailsMovedFromPeopleIngestorIT extends BaseIntegrationTe
     private final static String STUB_DATA_SJP_EVENTS_DEFENDANT_DETAILS_MOVED_FROM_PEOPLE = "stub-data/sjp.events.defendant-details-moved-from-people.json";
     private final static String SJP_EVENTS_DEFENDANT_DETAILS_MOVED_FROM_PEOPLE = "sjp.events.defendant-details-moved-from-people";
 
-    private final MessageProducerClient privateEventsProducer = new MessageProducerClient();
+    final JmsMessageProducerClient privateEventsProducer = newPrivateJmsMessageProducerClientProvider("sjp")
+            .getMessageProducerClient();
 
     private final UUID caseId = randomUUID();
     private final ViewStoreCleaner viewStoreCleaner = new ViewStoreCleaner();
     private static final String NATIONAL_COURT_CODE = "1080";
 
-    @BeforeEach
-    public void setUp() throws IOException {
-        privateEventsProducer.startProducer(SJP_EVENT);
-        new ElasticSearchIndexRemoverUtil().deleteAndCreateCaseIndex();
-    }
 
-    @AfterEach
-    public void tearDown() {
-        viewStoreCleaner.cleanDataInViewStore(caseId);
-        privateEventsProducer.close();
-    }
+
 
     @Test
     public void shouldIngestDefendantDetailsMovedFromPeopleEvent() {
@@ -133,11 +126,10 @@ public class DefendantDetailsMovedFromPeopleIngestorIT extends BaseIntegrationTe
 
     private void assertAliases(final JsonArray aliases) {
 
-        for (int i = 0; i < aliases.size(); i++) {
-            final JsonObject alias = (JsonObject) aliases.get(i);
+        aliases.stream().map(jsonValue -> (JsonObject) jsonValue).forEachOrdered(alias -> {
             assertThat(alias.getString("title"), anyOf(equalTo("Mr"), equalTo("Dr")));
             assertThat(alias.getString("firstName"), equalTo("David"));
             assertThat(alias.getString("lastName"), anyOf(equalTo("LLOYD"), equalTo("SMITH")));
-        }
+        });
     }
 }

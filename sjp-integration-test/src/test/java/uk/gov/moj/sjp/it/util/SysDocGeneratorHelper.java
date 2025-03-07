@@ -2,9 +2,9 @@ package uk.gov.moj.sjp.it.util;
 
 import static java.util.UUID.randomUUID;
 import static javax.json.Json.createObjectBuilder;
-import static uk.gov.moj.sjp.it.Constants.PUBLIC_EVENT;
+import static uk.gov.justice.services.integrationtest.utils.jms.JmsMessageProducerClientProvider.newPublicJmsMessageProducerClientProvider;
 
-import uk.gov.justice.services.test.utils.core.messaging.MessageProducerClient;
+import uk.gov.justice.services.integrationtest.utils.jms.JmsMessageProducerClient;
 
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
@@ -35,10 +35,9 @@ public class SysDocGeneratorHelper {
                 documentFileServiceId
         );
 
-        try (final MessageProducerClient producerClient = new MessageProducerClient()) {
-            producerClient.startProducer(PUBLIC_EVENT);
-            producerClient.sendMessage("public.systemdocgenerator.events.document-available", payload);
-        }
+        final JmsMessageProducerClient producerClient = newPublicJmsMessageProducerClientProvider()
+                .getMessageProducerClient();
+        producerClient.sendMessage("public.systemdocgenerator.events.document-available", payload);
     }
 
     public static void publishGenerationFailedPublicEvent(final UUID sourceCorrelationId,
@@ -55,10 +54,9 @@ public class SysDocGeneratorHelper {
                 payloadFileServiceId
         );
 
-        try (final MessageProducerClient producerClient = new MessageProducerClient()) {
-            producerClient.startProducer(PUBLIC_EVENT);
-            producerClient.sendMessage("public.systemdocgenerator.events.generation-failed", payload);
-        }
+        final JmsMessageProducerClient producerClient = newPublicJmsMessageProducerClientProvider()
+                .getMessageProducerClient();
+        producerClient.sendMessage("public.systemdocgenerator.events.generation-failed", payload);
     }
 
     private static JsonObject documentAvailablePayload(final UUID sourceCorrelationId,

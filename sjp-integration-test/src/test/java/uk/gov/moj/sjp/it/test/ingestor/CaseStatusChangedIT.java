@@ -69,6 +69,8 @@ public class CaseStatusChangedIT extends BaseIntegrationTest {
 
         try (final CaseReopenedInLibraHelper mark = new MarkCaseReopenedInLibraHelper(caseId)) {
             test(mark);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
         }
 
         outputCase = getCaseFromElasticSearchWithPredicate(caseStatusIs(REOPENED_IN_LIBRA), caseId.toString());

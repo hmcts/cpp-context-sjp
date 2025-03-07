@@ -112,7 +112,6 @@ public class CaseDocumentHelper implements AutoCloseable {
         jsonObject.put(MATERIAL_ID_PROPERTY, materialId);
 
         request = jsonObject.toString();
-        LOGGER.info("Adding case document with payload: {}");
         makePostCall(userId, writeUrl, WRITE_MEDIA_TYPE, request, Response.Status.ACCEPTED);
     }
 
@@ -147,7 +146,6 @@ public class CaseDocumentHelper implements AutoCloseable {
     public void uploadCaseDocument(UUID userId, String documentType, String fileName) {
         String writeUrl = format("/cases/%s/upload-case-document/%s", caseId, documentType);
         request = fileName;
-        LOGGER.info("Uploading case document with payload from file: {}");
         makeMultipartFormPostCall(userId, writeUrl, "caseDocument", request);
     }
 

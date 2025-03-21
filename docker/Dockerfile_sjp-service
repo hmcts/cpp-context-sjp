@@ -8,13 +8,12 @@ ARG repo_loc=https://libraries-internal.mdv.cpp.nonlive/artifactory/repocentral
 ARG framework_libraries_version=17.101.2
 ARG framework_version=17.101.6
 ARG eventstore_version=17.101.5
+ARG activiti_version=17.21.1
 
 ARG wildfly_home=/opt/jboss/wildfly
 ARG wildfly_user=jboss
 ARG context_group_name=sjp
 ARG context_name=sjp
-
-ARG activiti_version=5.22.0
 
 # service war file
 ADD ${repo_loc}/uk/gov/moj/cpp/${context_group_name}/${context_name}-service/${version}/${context_name}-service-${version}.war ${wildfly_home}/standalone/deployments/

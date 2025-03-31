@@ -164,7 +164,7 @@ public class DefendantPotentialCaseServiceImpl implements DefendantPotentialCase
     public List<CaseRuleResult> findDefendantCaseMatchingRule(Envelope<?> envelope,
                                                               DefendantDetail defendant) {
         LOGGER.info("Checking whether defendant has any potential Open/Closed Sjp " +
-                "or CourtCase - defendant={}", defendant);
+                "or CourtCase - defendantId={}", defendant.getId());
         final List<DefendantCase> defendantCases =
                 defendantCaseSearcher.searchDefendantCases(envelope, defendant);
         final List<CaseRuleResult> caseRuleResultList = new ArrayList<>();

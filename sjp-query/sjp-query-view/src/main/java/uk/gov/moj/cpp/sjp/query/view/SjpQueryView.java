@@ -406,13 +406,12 @@ public class SjpQueryView {
                 OnlinePlea legalEntityFinanceDetails = legalEntityDetailsOnlinePleaRepository.findBy(caseId);
                 onlinePlea.setLegalEntityDetails(legalEntityFinanceDetails.getLegalEntityDetails());
             }
-            LOGGER.info("Received online plea via finder method  findBy({}) {}", caseId, onlinePlea);
+            LOGGER.info("Received online plea via finder method  findBy({})", caseId);
         } else {
             LOGGER.info("User is a normal user online plea  findOnlinePleaWithoutFinances({}) with caseId {}", caseId, caseId);
             // Prosecutors cannot see finances.
             onlinePlea = onlinePleaRepository.findOnlinePleaWithoutFinances(caseId);
-            LOGGER.info("Received online plea via finder method  findOnlinePleaWithoutFinances({}) {}", caseId, onlinePlea);
-            LOGGER.info("Received online plea via finder method  findOnlinePleaWithoutFinances({}) {}", caseId, onlinePlea);
+            LOGGER.info("Received online plea via finder method  findOnlinePleaWithoutFinances({})", caseId);
         }
 
         final AocpOnlinePlea aocpOnlinePlea = aocpOnlinePleaRepository.findAocpPleaByCaseId(caseId);

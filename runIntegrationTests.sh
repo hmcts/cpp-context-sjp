@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 # Script that runs, liquibase, deploys wars and runs integration tests
-
+#
 CONTEXT_NAME=sjp
 
 FRAMEWORK_LIBRARIES_VERSION=17.101.2

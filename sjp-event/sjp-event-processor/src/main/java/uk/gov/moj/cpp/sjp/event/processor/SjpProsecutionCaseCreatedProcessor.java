@@ -77,7 +77,6 @@ public class SjpProsecutionCaseCreatedProcessor {
                 .build();
 
         final JsonObject payload = createObjectBuilder().add("courtDocuments", documentsArray).build();
-        LOGGER.info("CreateCourtDocumentsPayload {}",payload);
 
         sender.send(enveloper
                 .withMetadataFrom(envelope,

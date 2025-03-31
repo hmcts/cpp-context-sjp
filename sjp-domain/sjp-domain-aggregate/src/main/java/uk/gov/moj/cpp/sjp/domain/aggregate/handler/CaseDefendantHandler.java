@@ -249,7 +249,6 @@ public class CaseDefendantHandler {
         final LocalDate defendantDateOfBirth = state.getDefendantDateOfBirth();
         if ((defendantDateOfBirth != null && !defendantDateOfBirth.equals(person.getDateOfBirth()))
                 || (defendantDateOfBirth == null && person.getDateOfBirth() != null)) {
-            LOGGER.info("old dob: {} new dob {} ", defendantDateOfBirth, person.getDateOfBirth());
             isDateOfBirthChanged = true;
             events.add(new DefendantDateOfBirthUpdateRequested(
                     state.getCaseId(),
@@ -259,7 +258,6 @@ public class CaseDefendantHandler {
 
         final Address defendantAddress = state.getDefendantAddress();
         if (defendantAddress != null && !defendantAddress.equals(person.getAddress())) {
-            LOGGER.info("old address: {} new address {} ", defendantAddress, person.getAddress());
             isAddressChanged = true;
             events.add(new DefendantAddressUpdateRequested(
                     state.getCaseId(),
@@ -272,8 +270,6 @@ public class CaseDefendantHandler {
         final String defendantLastName = state.getDefendantLastName();
         if (!StringUtils.equalsIgnoreCase(defendantFirstName, person.getFirstName()) ||
                 !StringUtils.equalsIgnoreCase(defendantLastName, person.getLastName())) {
-            LOGGER.info("old first name: {} new first name {} ", defendantFirstName, person.getFirstName());
-            LOGGER.info("old last name: {} new last name {} ", defendantLastName, person.getLastName());
             isNameChanged = true;
             events.add(new DefendantNameUpdateRequested(
                     state.getCaseId(),
@@ -281,7 +277,6 @@ public class CaseDefendantHandler {
                     null,
                     updatedDate));
         } else if (isCompanyNameChanged(person.getLegalEntityName(), state)) {
-            LOGGER.info("old legal entity name: {} new legal entity {} ", state.getDefendantLegalEntityName(), person.getLegalEntityName());
             isNameChanged = true;
             events.add(new DefendantNameUpdateRequested(
                     state.getCaseId(),

@@ -101,7 +101,6 @@ public class SjpApplicationDecisionToHearingResultConverter {
         if (caseDetails.getCaseApplication() != null) {
             LOGGER.info("BEFORE:publishing public.sjp.case-resulted for case {} for application", caseId);
             final PublicHearingResulted publicHearingResulted = handleApplicationDecision(sourceMetadata, sjpSessionEnvelope, caseDetails, savedOn);
-            LOGGER.info("[publicHearingResulted for Application]:{}", toJsonString(publicHearingResulted));
 
             LOGGER.info("AFTER:publishing public.sjp.case-resulted for case {} for application", caseId);
             return publicHearingResulted;

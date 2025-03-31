@@ -54,7 +54,6 @@ public class VerdictConverter {
             final Optional<JsonObject> verdictOptional = jCachedReferenceData.getVerdict(verdictTypeMap.get(verdictType.name()), emptyEnvelope);
             if (verdictOptional.isPresent()) {
                 final JsonObject verdictObject = verdictOptional.get();
-                LOGGER.info("verdict from reference data : {}",verdictObject);
                 final String id = verdictObject.getString("id");
                 return verdict()
                         .withVerdictDate(convictionDate != null ? convictionDate.toString() : null)

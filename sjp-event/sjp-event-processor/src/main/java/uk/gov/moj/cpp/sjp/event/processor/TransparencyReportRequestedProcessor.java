@@ -237,9 +237,6 @@ public class TransparencyReportRequestedProcessor {
                 .add(LANGUAGE, language)
                 .add(REQUEST_TYPE, type)
                 .add(LIST_PAYLOAD, payloadForDocumentGeneration);
-        if (LOGGER.isInfoEnabled()) {
-            LOGGER.info("publishing Sjp public event for transparency report {}, {}", PUBLIC_EVENT_SJP_PENDING_CASES_PUBLIC_LIST_GENERATED, payloadForDocumentGeneration);
-        }
 
         sender.send(Envelope.envelopeFrom(metadataFrom(envelope.metadata())
                         .withName(PUBLIC_EVENT_SJP_PENDING_CASES_PUBLIC_LIST_GENERATED),

@@ -489,7 +489,7 @@ public class ReferenceDataService {
 
 
         if (LOGGER.isInfoEnabled()) {
-            LOGGER.info(" get referral reasons '{}' received with payload {} ", REFERENCEDATA_GET_REFERRAL_REASON_BY_ID, referralReasonsEnvelope.payload());
+            LOGGER.info(" get referral reasons '{}' received with payload {} ", REFERENCEDATA_GET_REFERRAL_REASON_BY_ID, referralReasonsEnvelope.toObfuscatedDebugString());
         }
 
         return Optional.ofNullable(requester.requestAsAdmin(referralReasonsEnvelope)

@@ -52,6 +52,11 @@ public class HearingResultedProcessor {
             return;
         }
 
+        if (hearing.getProsecutionCases() != null && hearing.getProsecutionCases().stream().anyMatch(e-> Objects.nonNull(e.getMigrationSourceSystem()))){
+            LOGGER.info("public.events.hearing.hearing-resulted has migrationsource system.  Hence ignoring");
+            return ;
+        }
+
         LOGGER.info("public.events.hearing.hearing-resulted processing start");
         if (isEmpty(hearing.getCourtApplications())) {
             LOGGER.info("courtApplications is empty. no processing required");

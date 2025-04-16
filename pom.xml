@@ -4,7 +4,7 @@
     <parent>
         <groupId>uk.gov.moj.cpp.common</groupId>
         <artifactId>service-parent-pom</artifactId>
-        <version>17.101.0</version>
+        <version>17.101.1</version>
     </parent>
 
     <groupId>uk.gov.moj.cpp.sjp</groupId>
@@ -40,20 +40,20 @@
 
         <assignment.version>6.0.0</assignment.version>
         <access-control-sjp-providers.version>4.1.4-ATCM</access-control-sjp-providers.version>
-        <material.version>17.0.22</material.version>
+        <material.version>17.0.57</material.version>
         <notification.notify.version>17.0.1</notification.notify.version>
-        <referencedata.version>17.0.64</referencedata.version>
-        <referencedata.offences.version>17.0.17</referencedata.offences.version>
+        <referencedata.version>17.0.84</referencedata.version>
+        <referencedata.offences.version>17.0.29</referencedata.offences.version>
         <scheduling.version>17.0.11</scheduling.version>
         <authorisation.service.version>0.1.49</authorisation.service.version>
-        <usersgroups.version>17.0.21</usersgroups.version>
-        <progression.version>17.0.97</progression.version>
-        <prosecutioncasefile.version>17.0.11</prosecutioncasefile.version>
+        <usersgroups.version>17.0.32</usersgroups.version>
+        <progression.version>17.0.106</progression.version>
+        <prosecutioncasefile.version>17.0.41</prosecutioncasefile.version>
         <access-control-sjp-providers.version>4.1.4-ATCM</access-control-sjp-providers.version>
         <cpp.framework.action.mapping.enabled>true</cpp.framework.action.mapping.enabled>
         <mvn.site.url>file://${project.build.directory}/site</mvn.site.url>
         <file.alfresco.version>2.3.0</file.alfresco.version>
-        <coredomain.version>17.101.3</coredomain.version>
+        <coredomain.version>17.101.4</coredomain.version>
         <criminal-court-public-model.version>${coredomain.version}</criminal-court-public-model.version>
         <javax.el-api.version>3.0.0</javax.el-api.version>
         <joda-time.version>2.10</joda-time.version>
@@ -67,7 +67,7 @@
         <elasticsearch-maven-plugin.version>6.13</elasticsearch-maven-plugin.version>
         <elasticsearch.embedded.version>7.16.2</elasticsearch.embedded.version>
         <stagingenforcement.version>17.0.14</stagingenforcement.version>
-        <unifiedsearch.version>17.0.12</unifiedsearch.version>
+        <unifiedsearch.version>17.0.23</unifiedsearch.version>
         <jsonassert.version>1.5.0</jsonassert.version>
         <junit4.version>4.13.1</junit4.version>
         <maven.cucumber.reporting.version>2.0.0</maven.cucumber.reporting.version>

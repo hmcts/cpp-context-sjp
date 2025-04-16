@@ -19,6 +19,7 @@ import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubCountryByPostc
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubEnforcementAreaByPostcode;
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubQueryOffencesByCode;
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubRegionByPostcode;
+import static uk.gov.moj.sjp.it.stub.UsersGroupsStub.stubForUserDetails;
 import static uk.gov.moj.sjp.it.util.FileUtil.getPayload;
 import static uk.gov.moj.sjp.it.util.HttpClientUtil.makePostCall;
 
@@ -45,10 +46,8 @@ import org.hamcrest.Matcher;
 import org.json.JSONObject;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
-@Disabled("Enable this when merging to master")
 public class DeleteFinancialMeansIT extends BaseIntegrationTest {
 
     private FinancialMeansHelper financialMeansHelper;
@@ -66,6 +65,7 @@ public class DeleteFinancialMeansIT extends BaseIntegrationTest {
         stubCountryByPostcodeQuery("W1T 1JY", "England");
         stubQueryOffencesByCode("PS00001");
         stubAllIndividualProsecutorsQueries();
+        stubForUserDetails(UUID.fromString("1ac91935-4f82-4a4f-bd17-fb50397e42dd"), "ALL");
 
         financialMeansHelper = new FinancialMeansHelper();
         this.createCasePayloadBuilder = CreateCase.CreateCasePayloadBuilder.withDefaults();
@@ -80,7 +80,7 @@ public class DeleteFinancialMeansIT extends BaseIntegrationTest {
     }
 
     @Test
-    public void shouldDeleteFinancialMeansData() {
+    void shouldDeleteFinancialMeansData() {
 
         final UUID caseId = createCasePayloadBuilder.getId();
         final String defendantId = CasePoller.pollUntilCaseByIdIsOk(caseId).getString("defendant.id");

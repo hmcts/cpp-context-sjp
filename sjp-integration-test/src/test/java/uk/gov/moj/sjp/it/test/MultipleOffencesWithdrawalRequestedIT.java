@@ -39,6 +39,7 @@ import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubDefaultCourtBy
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubEnforcementAreaByPostcode;
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubProsecutorQuery;
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubRegionByPostcode;
+import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubVariableWithdrawalReasons;
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubWithdrawalReasonsQuery;
 import static uk.gov.moj.sjp.it.stub.UsersGroupsStub.stubForUserDetails;
 import static uk.gov.moj.sjp.it.util.Defaults.DEFAULT_LONDON_COURT_HOUSE_OU_CODE;
@@ -77,14 +78,12 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Sets;
 import org.hamcrest.Matcher;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
-@Disabled("DD-17905:Commented as part of 21.25.01 as it is failing on Jenkins at random, but works locally")
 public class MultipleOffencesWithdrawalRequestedIT extends BaseIntegrationTest {
 
-    private final UUID withdrawalRequestReasonId1 = randomUUID();
-    private final UUID withdrawalRequestReasonId2 = randomUUID();
+    private final UUID withdrawalRequestReasonId1 = UUID.fromString("c0cc786b-9b95-448a-a965-d7a7d8d6134c");
+    private final UUID withdrawalRequestReasonId2 = UUID.fromString("4910f0f7-599e-4eb6-9ba0-620407e297e0");
     private final Map<UUID, String> withdrawalReasons = ImmutableMap.of(withdrawalRequestReasonId1, "Insufficient Evidence", withdrawalRequestReasonId2, "Not in public interest to proceed");
     private final UUID userId = USER_ID;
     private final User user = new User("John", "Smith", userId);
@@ -182,7 +181,6 @@ public class MultipleOffencesWithdrawalRequestedIT extends BaseIntegrationTest {
     }
 
     @Test
-    @Disabled("DD-17905:Commented as part of 21.25.01 as it is failing on Jenkins at random, but works locally")
     public void offenceWithdrawalForSomeOffencesOnAPartiallyDecidedCaseMakesCaseReady() throws Exception {
         stubDefaultCourtByCourtHouseOUCodeQuery();
         stubForUserDetails(user, "ALL");
@@ -303,6 +301,8 @@ public class MultipleOffencesWithdrawalRequestedIT extends BaseIntegrationTest {
 
     @Test
     public void offenceWithdrawalRequestReasonChangeForMultipleOffences() throws Exception {
+        stubVariableWithdrawalReasons(withdrawalRequestReasonId1.toString(), "Insufficient Evidence");
+
         try (final OffencesWithdrawalRequestHelper withdrawalHelper = new OffencesWithdrawalRequestHelper(userId, EVENT_OFFENCES_WITHDRAWAL_STATUS_SET)) {
             withdrawalHelper.requestWithdrawalOfOffences(caseId, requestPayload());
             assertThat(withdrawalHelper.getEventFromTopic(), notNullValue());

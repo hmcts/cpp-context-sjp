@@ -25,10 +25,9 @@ import javax.json.Json;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
-public class ResultOrdersIT extends BaseIntegrationTest {
+class ResultOrdersIT extends BaseIntegrationTest {
 
     private CreateCase.CreateCasePayloadBuilder case0;
     private CaseDocumentHelper resultOrder0;
@@ -52,7 +51,6 @@ public class ResultOrdersIT extends BaseIntegrationTest {
     }
 
     @Test
-    @Disabled("To be removed as part of - ATCM-4077, unstable test for not needed functionality")
     public void whenGetResultOrders() {
         //when
         final LocalDate FROM_DATE = LocalDate.now(ZoneOffset.UTC);
@@ -76,7 +74,7 @@ public class ResultOrdersIT extends BaseIntegrationTest {
                 withJsonPath("$.resultOrders[0].defendant.address.address3", is(case1.getDefendantBuilder().getAddressBuilder().getAddress3())),
                 withJsonPath("$.resultOrders[0].defendant.address.address4", is(case1.getDefendantBuilder().getAddressBuilder().getAddress4())),
                 withJsonPath("$.resultOrders[0].defendant.address.address5", is(case1.getDefendantBuilder().getAddressBuilder().getAddress5())),
-                withJsonPath("$.resultOrders[0].defendant.address.postCode", is(case1.getDefendantBuilder().getAddressBuilder().getPostcode())),
+                withJsonPath("$.resultOrders[0].defendant.address.postcode", is(case1.getDefendantBuilder().getAddressBuilder().getPostcode())),
                 withJsonPath("$.resultOrders[0].order.documentId", is(resultOrder1.getDocumentId())),
                 withJsonPath("$.resultOrders[1].caseId", is(case0.getId().toString())),
                 withJsonPath("$.resultOrders[1].urn", is(case0.getUrn())),
@@ -89,7 +87,7 @@ public class ResultOrdersIT extends BaseIntegrationTest {
                 withJsonPath("$.resultOrders[1].defendant.address.address3", is(case0.getDefendantBuilder().getAddressBuilder().getAddress3())),
                 withJsonPath("$.resultOrders[1].defendant.address.address4", is(case0.getDefendantBuilder().getAddressBuilder().getAddress4())),
                 withJsonPath("$.resultOrders[1].defendant.address.address5", is(case0.getDefendantBuilder().getAddressBuilder().getAddress5())),
-                withJsonPath("$.resultOrders[1].defendant.address.postCode", is(case0.getDefendantBuilder().getAddressBuilder().getPostcode())),
+                withJsonPath("$.resultOrders[1].defendant.address.postcode", is(case0.getDefendantBuilder().getAddressBuilder().getPostcode())),
                 withJsonPath("$.resultOrders[1].order.documentId", is(resultOrder0.getDocumentId())))));
     }
 

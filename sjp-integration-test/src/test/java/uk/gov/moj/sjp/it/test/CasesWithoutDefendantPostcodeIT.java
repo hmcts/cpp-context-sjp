@@ -24,7 +24,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 @SuppressWarnings("squid:S1607")
-public class CasesWithoutDefendantPostcodeIT extends BaseIntegrationTest {
+class CasesWithoutDefendantPostcodeIT extends BaseIntegrationTest {
 
     private static final String NATIONAL_COURT_CODE = "1080";
 
@@ -35,8 +35,7 @@ public class CasesWithoutDefendantPostcodeIT extends BaseIntegrationTest {
     }
 
     @Test
-    @Disabled
-    public void shouldListAllCasesWithoutDefendantPostcode() {
+    void shouldListAllCasesWithoutDefendantPostcode() {
         final UUID caseId1 = randomUUID();
         final String urn1 = "TFL1";
         final LocalDate postingDate1 = LocalDate.now().minusDays(7);

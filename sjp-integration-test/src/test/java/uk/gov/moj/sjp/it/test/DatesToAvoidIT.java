@@ -45,9 +45,11 @@ import uk.gov.justice.services.common.converter.ZonedDateTimes;
 import uk.gov.justice.services.common.util.Clock;
 import uk.gov.justice.services.common.util.UtcClock;
 import uk.gov.justice.services.messaging.JsonEnvelope;
+import uk.gov.moj.cpp.sjp.event.CaseMarkedReadyForDecision;
 import uk.gov.moj.sjp.it.command.CreateCase;
 import uk.gov.moj.sjp.it.helper.EventListener;
 import uk.gov.moj.sjp.it.model.ProsecutingAuthority;
+import uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -61,10 +63,9 @@ import io.restassured.path.json.JsonPath;
 import org.apache.commons.lang3.tuple.Triple;
 import org.hamcrest.Matcher;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
-public class DatesToAvoidIT extends BaseIntegrationTest {
+class DatesToAvoidIT extends BaseIntegrationTest {
 
     private static final Clock CLOCK = new UtcClock();
     private static final String DATE_TO_AVOID = "a-date-to-avoid";
@@ -98,7 +99,12 @@ public class DatesToAvoidIT extends BaseIntegrationTest {
 
         stubEnforcementAreaByPostcode(tflCaseBuilder.getDefendantBuilder().getAddressBuilder().getPostcode(), NATIONAL_COURT_CODE, "Bedfordshire Magistrates' Court");
         stubRegionByPostcode(NATIONAL_COURT_CODE, DEFENDANT_REGION);
-        createCaseForPayloadBuilder(this.tflCaseBuilder);
+
+        new EventListener()
+                .subscribe(CaseMarkedReadyForDecision.EVENT_NAME)
+                .run(() -> CreateCase.createCaseForPayloadBuilder(tflCaseBuilder))
+                .popEvent(CaseMarkedReadyForDecision.EVENT_NAME);
+
         this.tflInitialPendingDatesToAvoidCount = pollForCountOfCasesPendingDatesToAvoid(tflUserId);
 
         stubProsecutorQuery(TFL.name(), TFL.getFullName(), randomUUID());
@@ -115,6 +121,7 @@ public class DatesToAvoidIT extends BaseIntegrationTest {
 
     @Test
     public void shouldCaseBePendingDatesToAvoidForPleaChangeScenariosAndBeResultedAfterDatesToAvoid() {
+        setupIdMapperStub();
         shouldCaseBePendingDatesToAvoidForPleaChangeScenarios();
 
         addDatesToAvoid(tflCaseBuilder.getId(), DATE_TO_AVOID);
@@ -134,15 +141,17 @@ public class DatesToAvoidIT extends BaseIntegrationTest {
         pollUntilCaseHasStatus(tflCaseBuilder.getId(), PLEA_RECEIVED_READY_FOR_DECISION);
     }
 
-    @Disabled("Enable this when merging to master")
     @Test
-    public void shouldCaseBePendingDatesToAvoidForResultedCaseScenarioForTflUser() {
+    void shouldCaseBePendingDatesToAvoidForResultedCaseScenarioForTflUser() {
+        setupIdMapperStub();
+        ReferenceDataServiceStub.stubWithdrawalReasons();
         shouldCaseBePendingDatesToAvoidForResultedCaseScenario(tflUserId, tflCaseBuilder, tflInitialPendingDatesToAvoidCount);
     }
 
-    @Disabled("Enable this when merging to master")
     @Test
-    public void shouldCaseBePendingDatesToAvoidForResultedCaseScenarioForTvlUser() {
+    void shouldCaseBePendingDatesToAvoidForResultedCaseScenarioForTvlUser() {
+        setupIdMapperStub();
+        ReferenceDataServiceStub.stubWithdrawalReasons();
         shouldCaseBePendingDatesToAvoidForResultedCaseScenario(tvlUserId, tvlCaseBuilder, tvlInitialPendingDatesToAvoidCount);
     }
 

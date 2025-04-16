@@ -11,7 +11,6 @@ import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubEnforcementAre
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubRegionByPostcode;
 import static uk.gov.moj.sjp.it.stub.UsersGroupsStub.stubGroupForUser;
 
-import org.junit.jupiter.api.Disabled;
 import uk.gov.moj.cpp.sjp.event.CaseMarkedReadyForDecision;
 import uk.gov.moj.sjp.it.command.CreateCase;
 import uk.gov.moj.sjp.it.command.CreateCase.CreateCasePayloadBuilder;
@@ -22,8 +21,7 @@ import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-@Disabled("Enable this when merging to master")
-public class AssignCaseIT extends BaseIntegrationTest {
+class AssignCaseIT extends BaseIntegrationTest {
 
     private final UUID caseId1 = randomUUID();
     private final UUID caseId2 = randomUUID();
@@ -51,7 +49,7 @@ public class AssignCaseIT extends BaseIntegrationTest {
     }
 
     @Test
-    public void shouldAssignReadyCaseToUser() {
+    void shouldAssignReadyCaseToUser() {
         pollUntilCaseNotAssignedToUser(caseId1, systemUserId);
         pollUntilCaseNotAssignedToUser(caseId2, systemUserId);
 
@@ -67,7 +65,7 @@ public class AssignCaseIT extends BaseIntegrationTest {
     }
 
     @Test
-    public void shouldRejectAssignmentRequestedByNonSystemUser() {
+    void shouldRejectAssignmentRequestedByNonSystemUser() {
         assignCaseToUser(caseId1, legalAdviserId, legalAdviserId, FORBIDDEN);
         assignCaseToUser(caseId1, legalAdviserId, courtAdminId, FORBIDDEN);
         assignCaseToUser(caseId1, legalAdviserId, prosecutorId, FORBIDDEN);

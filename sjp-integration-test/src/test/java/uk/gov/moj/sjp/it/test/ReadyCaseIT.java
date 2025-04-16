@@ -24,9 +24,12 @@ import static uk.gov.moj.sjp.it.Constants.NOTICE_PERIOD_IN_DAYS;
 import static uk.gov.moj.sjp.it.command.AddDatesToAvoid.addDatesToAvoid;
 import static uk.gov.moj.sjp.it.helper.CaseHelper.pollUntilCaseReady;
 import static uk.gov.moj.sjp.it.helper.SetPleasHelper.requestSetPleasAndConfirm;
+import static uk.gov.moj.sjp.it.stub.IdMapperStub.stubForIdMapperSuccess;
+import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubWithdrawalReasons;
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubEnforcementAreaByPostcode;
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubProsecutorQuery;
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubRegionByPostcode;
+import static uk.gov.moj.sjp.it.stub.UsersGroupsStub.stubForUserDetails;
 
 import uk.gov.justice.json.schemas.fragments.sjp.WithdrawalRequestsStatus;
 import uk.gov.moj.cpp.sjp.domain.CaseReadinessReason;
@@ -43,11 +46,11 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
+import javax.ws.rs.core.Response;
+
 import org.apache.commons.lang3.tuple.Triple;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
-@Disabled("Enable this when merging to master")
 public class ReadyCaseIT extends BaseIntegrationTest {
 
     private final UUID caseId = randomUUID();
@@ -68,6 +71,10 @@ public class ReadyCaseIT extends BaseIntegrationTest {
 
     @Test
     public void shouldChangeCaseReadinessWhenCaseAfterNoticeEndDate() throws Exception {
+        stubForUserDetails(userId, "ALL");
+        stubForIdMapperSuccess(Response.Status.OK);
+        stubWithdrawalReasons();
+
         try (OffencesWithdrawalRequestHelper offencesWithdrawalRequestHelper = new OffencesWithdrawalRequestHelper(userId, EVENT_OFFENCES_WITHDRAWAL_STATUS_SET)) {
             // create a case which is more than 28 days old
             final LocalDate postingDate = now().minusDays(NOTICE_PERIOD_IN_DAYS + 1);
@@ -103,7 +110,7 @@ public class ReadyCaseIT extends BaseIntegrationTest {
             offencesWithdrawalRequestHelper.requestWithdrawalOfOffences(caseId, getRequestWithdrawalPayload());
 
             caseSearchResultHelper.verifyCaseStatus(CaseStatus.WITHDRAWAL_REQUEST_READY_FOR_DECISION);
-            readyCaseHelper.verifyCaseMarkedReadyForDecisionEventEmitted(caseId, WITHDRAWAL_REQUESTED, MAGISTRATE, HIGH);
+            readyCaseHelper.verifyCaseMarkedReadyForDecisionEventEmitted(caseId, WITHDRAWAL_REQUESTED, DELEGATED_POWERS, HIGH);
             verifyCaseReadyInViewStore(caseId, WITHDRAWAL_REQUESTED);
 
 
@@ -134,6 +141,9 @@ public class ReadyCaseIT extends BaseIntegrationTest {
 
     @Test
     public void shouldChangeCaseReadinessWhenCaseBeforeNoticeEndDate() throws Exception {
+        stubForUserDetails(userId, "ALL");
+        stubForIdMapperSuccess(Response.Status.OK);
+
         try (OffencesWithdrawalRequestHelper offencesWithdrawalRequestHelper = new OffencesWithdrawalRequestHelper(userId, EVENT_OFFENCES_WITHDRAWAL_STATUS_SET)) {
             // create a case which is more than 28 days old
             final LocalDate postingDate = now().minusDays(NOTICE_PERIOD_IN_DAYS - 1);

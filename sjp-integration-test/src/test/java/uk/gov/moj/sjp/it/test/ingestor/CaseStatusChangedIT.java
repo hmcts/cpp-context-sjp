@@ -3,7 +3,7 @@ package uk.gov.moj.sjp.it.test.ingestor;
 import static java.util.UUID.randomUUID;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static uk.gov.moj.cpp.sjp.domain.common.CaseStatus.NO_PLEA_RECEIVED_READY_FOR_DECISION;
+import static uk.gov.moj.cpp.sjp.domain.common.CaseStatus.COMPLETED;
 import static uk.gov.moj.cpp.sjp.domain.common.CaseStatus.REOPENED_IN_LIBRA;
 import static uk.gov.moj.sjp.it.helper.DecisionHelper.saveDefaultDecision;
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubEnforcementAreaByPostcode;
@@ -28,11 +28,9 @@ import javax.json.JsonObject;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
-@Disabled("Enable this when merging to master")
-public class CaseStatusChangedIT extends BaseIntegrationTest {
+class CaseStatusChangedIT extends BaseIntegrationTest {
     private final ViewStoreCleaner viewStoreCleaner = new ViewStoreCleaner();
     private CreateCase.CreateCasePayloadBuilder createCasePayloadBuilder = CreateCase.CreateCasePayloadBuilder.withDefaults();
     private static final String NATIONAL_COURT_CODE = "1080";
@@ -60,11 +58,11 @@ public class CaseStatusChangedIT extends BaseIntegrationTest {
     }
 
     @Test
-    public void shouldChangeCaseStatus() {
+    void shouldChangeCaseStatus() {
         final UUID caseId= createCasePayloadBuilder.getId();
-        JsonObject outputCase = getCaseFromElasticSearchWithPredicate(caseStatusIs(NO_PLEA_RECEIVED_READY_FOR_DECISION), caseId.toString());
+        JsonObject outputCase = getCaseFromElasticSearchWithPredicate(caseStatusIs(COMPLETED), caseId.toString());
         assertThat(caseId.toString(), is(outputCase.getString("caseId")));
-        assertThat(outputCase.getString("caseStatus"), is(NO_PLEA_RECEIVED_READY_FOR_DECISION.name()));
+        assertThat(outputCase.getString("caseStatus"), is(COMPLETED.name()));
         assertThat(outputCase.getString("_case_type"), is("PROSECUTION"));
 
         try (final CaseReopenedInLibraHelper mark = new MarkCaseReopenedInLibraHelper(caseId)) {

@@ -20,6 +20,8 @@ import static uk.gov.moj.sjp.it.helper.OffencesWithdrawalRequestHelper.assertCas
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubEnforcementAreaByPostcode;
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubProsecutorQuery;
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubRegionByPostcode;
+import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubWithdrawalReasons;
+import static uk.gov.moj.sjp.it.stub.UsersGroupsStub.stubForUserDetails;
 import static uk.gov.moj.sjp.it.util.EventUtil.eventsByName;
 
 import uk.gov.justice.json.schemas.fragments.sjp.WithdrawalRequestsStatus;
@@ -42,13 +44,11 @@ import java.util.UUID;
 import com.google.common.collect.ImmutableMap;
 import org.hamcrest.Matcher;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
-@Disabled("Enable this when merging to master")
-public class SingleOffenceWithdrawalRequestIT extends BaseIntegrationTest {
+class SingleOffenceWithdrawalRequestIT extends BaseIntegrationTest {
 
-    private final UUID withdrawalRequestReasonId1 = randomUUID();
+    private final UUID withdrawalRequestReasonId1 = UUID.fromString("030d4335-f9fe-39e0-ad7e-d01a0791ff87");
     private final UUID withdrawalRequestReasonId2 = randomUUID();
     private final Map<UUID, String> withdrawalReasons = ImmutableMap.of(withdrawalRequestReasonId1, "Insufficient Evidence", withdrawalRequestReasonId2, "Not in public interest to proceed");
     private final UUID userId = randomUUID();
@@ -64,7 +64,8 @@ public class SingleOffenceWithdrawalRequestIT extends BaseIntegrationTest {
         stubProsecutorQuery(prosecutingAuthority.name(), prosecutingAuthority.getFullName(), randomUUID());
         stubEnforcementAreaByPostcode(casePayloadBuilder.getDefendantBuilder().getAddressBuilder().getPostcode(), NATIONAL_COURT_CODE, "Bedfordshire Magistrates' Court");
         stubRegionByPostcode(NATIONAL_COURT_CODE, "TestRegion");
-
+        setupIdMapperStub();
+        stubForUserDetails(UUID.fromString(userId.toString()), "ALL");
         new EventListener()
                 .subscribe(CaseReceived.EVENT_NAME)
                 .run(() -> {
@@ -75,7 +76,8 @@ public class SingleOffenceWithdrawalRequestIT extends BaseIntegrationTest {
     }
 
     @Test
-    public void offenceWithdrawalRequested() throws Exception {
+    void offenceWithdrawalRequested() throws Exception {
+        stubWithdrawalReasons();
         try (final OffencesWithdrawalRequestHelper withdrawalRequestHelper = new OffencesWithdrawalRequestHelper(userId, EVENT_OFFENCES_WITHDRAWAL_STATUS_SET, OffenceWithdrawalRequested.EVENT_NAME)) {
             withdrawalRequestHelper.requestWithdrawalOfOffences(caseId, requestPayload());
 

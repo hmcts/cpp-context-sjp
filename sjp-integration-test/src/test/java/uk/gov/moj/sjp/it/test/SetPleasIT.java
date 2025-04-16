@@ -89,11 +89,9 @@ import org.apache.commons.lang3.tuple.Triple;
 import org.hamcrest.CoreMatchers;
 import org.hamcrest.Matcher;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
-@Disabled("Enable this when merging to master")
-public class SetPleasIT extends BaseIntegrationTest {
+class SetPleasIT extends BaseIntegrationTest {
 
     private final UUID sessionId = randomUUID();
     private final UUID caseId = randomUUID();
@@ -108,7 +106,6 @@ public class SetPleasIT extends BaseIntegrationTest {
 
     private Map<UUID, PleaType> pleaTypesByOffence = new HashMap<>();
     private CreateCase.CreateCasePayloadBuilder aCase;
-    private static final String DISABILITY_NEEDS = "Hearing aid";
 
     @BeforeEach
     public void setUp() throws Exception {
@@ -146,7 +143,6 @@ public class SetPleasIT extends BaseIntegrationTest {
                 true,
                 null,
                 false,
-                DISABILITY_NEEDS,
                 asList(Triple.of(offence1Id, defendantId, GUILTY),
                         Triple.of(offence2Id, defendantId, NOT_GUILTY),
                         Triple.of(offence3Id, defendantId, GUILTY_REQUEST_HEARING)),
@@ -158,11 +154,10 @@ public class SetPleasIT extends BaseIntegrationTest {
                 false,
                 null,
                 false,
-                DISABILITY_NEEDS,
                 pleaTypesByOffence,
                 PleasSet.EVENT_NAME, PleadedNotGuilty.EVENT_NAME, PleadedGuilty.EVENT_NAME, PleadedGuiltyCourtHearingRequested.EVENT_NAME, PUBLIC_EVENT_SET_PLEAS);
 
-        verifyCaseDefendantUpdated(caseId, pleaTypesByOffence, DISABILITY_NEEDS);
+        verifyCaseDefendantUpdated(caseId, pleaTypesByOffence);
 
         // verify case readiness state
         pollUntilCaseHasStatus(caseId, PLEA_RECEIVED_READY_FOR_DECISION);
@@ -177,7 +172,6 @@ public class SetPleasIT extends BaseIntegrationTest {
                 true,
                 null,
                 false,
-                null,
                 asList(Triple.of(offence1Id, defendantId, GUILTY),
                         Triple.of(offence2Id, defendantId, NOT_GUILTY),
                         Triple.of(offence3Id, defendantId, GUILTY_REQUEST_HEARING)),
@@ -189,7 +183,6 @@ public class SetPleasIT extends BaseIntegrationTest {
                 true,
                 null,
                 false,
-                null,
                 pleaTypesByOffence,
                 PleasSet.EVENT_NAME, HearingLanguagePreferenceUpdatedForDefendant.EVENT_NAME);
 
@@ -201,7 +194,6 @@ public class SetPleasIT extends BaseIntegrationTest {
                 false,
                 null,
                 false,
-                null,
                 asList(Triple.of(offence1Id, defendantId, GUILTY),
                         Triple.of(offence2Id, defendantId, GUILTY),
                         Triple.of(offence3Id, defendantId, GUILTY)),
@@ -217,10 +209,9 @@ public class SetPleasIT extends BaseIntegrationTest {
                 null,
                 null,
                 null,
-                null,
                 pleaTypesByOffence,
                 PleasSet.EVENT_NAME, HearingLanguagePreferenceCancelledForDefendant.EVENT_NAME);
-        verifyCaseDefendantUpdated(caseId, pleaTypesByOffence, null);
+        verifyCaseDefendantUpdated(caseId, pleaTypesByOffence);
 
         // verify case readiness state
         pollUntilCaseHasStatus(caseId, PLEA_RECEIVED_READY_FOR_DECISION);
@@ -235,7 +226,6 @@ public class SetPleasIT extends BaseIntegrationTest {
                 true,
                 null,
                 false,
-                null,
                 asList(Triple.of(offence1Id, defendantId, GUILTY),
                         Triple.of(offence2Id, defendantId, NOT_GUILTY),
                         Triple.of(offence3Id, defendantId, GUILTY_REQUEST_HEARING)),
@@ -247,7 +237,6 @@ public class SetPleasIT extends BaseIntegrationTest {
                 true,
                 null,
                 false,
-                null,
                 pleaTypesByOffence,
                 PleasSet.EVENT_NAME);
 
@@ -259,7 +248,6 @@ public class SetPleasIT extends BaseIntegrationTest {
                 false,
                 null,
                 false,
-                null,
                 asList(Triple.of(offence1Id, defendantId, null),
                         Triple.of(offence2Id, defendantId, GUILTY),
                         Triple.of(offence3Id, defendantId, GUILTY)),
@@ -275,11 +263,10 @@ public class SetPleasIT extends BaseIntegrationTest {
                 null,
                 null,
                 null,
-                null,
                 pleaTypesByOffence,
                 PleaCancelled.EVENT_NAME);
 
-        verifyCaseDefendantUpdated(caseId, pleaTypesByOffence, null);
+        verifyCaseDefendantUpdated(caseId, pleaTypesByOffence);
     }
 
     @Test
@@ -292,7 +279,6 @@ public class SetPleasIT extends BaseIntegrationTest {
                 true,
                 "GERMAN",
                 true,
-                null,
                 asList(Triple.of(offence1Id, defendantId, GUILTY),
                         Triple.of(offence2Id, defendantId, NOT_GUILTY),
                         Triple.of(offence3Id, defendantId, GUILTY_REQUEST_HEARING)),
@@ -304,7 +290,6 @@ public class SetPleasIT extends BaseIntegrationTest {
                 false,
                 "GERMAN",
                 true,
-                null,
                 pleaTypesByOffence,
                 PleasSet.EVENT_NAME, InterpreterUpdatedForDefendant.EVENT_NAME);
 
@@ -316,7 +301,6 @@ public class SetPleasIT extends BaseIntegrationTest {
                 true,
                 null,
                 false,
-                null,
                 asList(Triple.of(offence1Id, defendantId, GUILTY),
                         Triple.of(offence2Id, defendantId, NOT_GUILTY),
                         Triple.of(offence3Id, defendantId, GUILTY_REQUEST_HEARING)),
@@ -327,11 +311,10 @@ public class SetPleasIT extends BaseIntegrationTest {
                 false,
                 null,
                 false,
-                null,
                 pleaTypesByOffence,
                 PleasSet.EVENT_NAME, InterpreterCancelledForDefendant.EVENT_NAME);
 
-        verifyCaseDefendantUpdated(caseId, pleaTypesByOffence, null);
+        verifyCaseDefendantUpdated(caseId, pleaTypesByOffence);
     }
 
     /**
@@ -370,7 +353,6 @@ public class SetPleasIT extends BaseIntegrationTest {
                 true,
                 null,
                 false,
-                null,
                 singletonList(Triple.of(offence2Id, defendantId, GUILTY)),
                 PleasSet.EVENT_NAME, InterpreterUpdatedForDefendant.EVENT_NAME);
 
@@ -409,7 +391,6 @@ public class SetPleasIT extends BaseIntegrationTest {
                 true,
                 null,
                 false,
-                null,
                 singletonList(Triple.of(offence1Id, defendantId, GUILTY)),
                 PleasSet.EVENT_NAME, InterpreterUpdatedForDefendant.EVENT_NAME);
 
@@ -448,7 +429,6 @@ public class SetPleasIT extends BaseIntegrationTest {
                 true,
                 null,
                 false,
-                null,
                 singletonList(Triple.of(offence1Id, defendantId, GUILTY)),
                 PleasSet.EVENT_NAME, PleadedGuilty.EVENT_NAME, CaseStatusChanged.EVENT_NAME);
 
@@ -471,7 +451,6 @@ public class SetPleasIT extends BaseIntegrationTest {
             final boolean interpreterEnabled,
             final String language,
             final boolean needed,
-            final String disabilityNeeds,
             final List<Triple<UUID, UUID, PleaType>> pleaInfoList,
             final String... eventNames
     ) {
@@ -481,10 +460,6 @@ public class SetPleasIT extends BaseIntegrationTest {
         }
         if (interpreterEnabled) {
             setPleasPayloadBuilder.withInterpreter(language, needed);
-        }
-
-        if (disabilityNeeds != null) {
-            setPleasPayloadBuilder.disabilityNeeds(disabilityNeeds);
         }
 
         pleaInfoList.forEach(pleaInfo -> setPleasPayloadBuilder
@@ -503,7 +478,6 @@ public class SetPleasIT extends BaseIntegrationTest {
                                                final Boolean welshHearing,
                                                final String language,
                                                final Boolean interpreter,
-                                               final String disabilityNeeds,
                                                final Map<UUID, PleaType> pleaTypeByOffence,
                                                final String... eventsToBeEmitted) {
 
@@ -525,12 +499,6 @@ public class SetPleasIT extends BaseIntegrationTest {
                         matchers.add(withJsonPath("defendantCourtOptions.interpreter.needed", is(interpreter)));
                     }
 
-                    if (disabilityNeeds != null) {
-                        matchers.add(withJsonPath("disabilityNeeds.needed", is(true)));
-                        matchers.add(withJsonPath("disabilityNeeds.disabilityNeeds", is(disabilityNeeds)));
-                    } else {
-                        matchers.add(withJsonPath("disabilityNeeds.needed", is(false)));
-                    }
                     matchers.add(allOf(
                                     pleaTypeByOffence.entrySet().stream()
                                             .map(entry -> withJsonPath("$.pleas.*",
@@ -571,8 +539,7 @@ public class SetPleasIT extends BaseIntegrationTest {
     }
 
     private JsonPath verifyCaseDefendantUpdated(final UUID caseId,
-                                                final Map<UUID, PleaType> pleaTypeByOffence,
-                                                final String disabilityNeeds) {
+                                                final Map<UUID, PleaType> pleaTypeByOffence) {
         final List<Matcher<? super ReadContext>> matchers = new ArrayList<>();
         matchers.add(withJsonPath("onlinePleaReceived", is(false)));
         matchers.add(allOf(
@@ -588,12 +555,6 @@ public class SetPleasIT extends BaseIntegrationTest {
                                 )))
                         .collect(toList())));
 
-        if (disabilityNeeds != null) {
-            matchers.add(withJsonPath("$.defendant.disabilityNeeds.needed", is(true)));
-            matchers.add(withJsonPath("$.defendant.disabilityNeeds.disabilityNeeds", is(disabilityNeeds)));
-        } else {
-            matchers.add(withJsonPath("$.defendant.disabilityNeeds.needed", is(false)));
-        }
         return pollUntilCaseByIdIsOk(caseId, allOf(matchers));
     }
 }

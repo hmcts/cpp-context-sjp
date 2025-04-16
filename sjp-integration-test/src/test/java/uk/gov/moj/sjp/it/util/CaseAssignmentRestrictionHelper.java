@@ -15,6 +15,7 @@ import static uk.gov.moj.sjp.it.model.ProsecutingAuthority.TVL;
 import static uk.gov.moj.sjp.it.stub.UsersGroupsStub.stubForUserDetails;
 import static uk.gov.moj.sjp.it.stub.UsersGroupsStub.stubGroupForUser;
 import static uk.gov.moj.sjp.it.util.Defaults.DEFAULT_LONDON_LJA_NATIONAL_COURT_CODE;
+import static uk.gov.moj.sjp.it.util.Defaults.DEFAULT_NON_LONDON_LJA_NATIONAL_COURT_CODE;
 import static uk.gov.moj.sjp.it.util.HttpClientUtil.getReadUrl;
 import static uk.gov.moj.sjp.it.util.HttpClientUtil.makePostCall;
 import static uk.gov.moj.sjp.it.util.RestPollerWithDefaults.pollWithDefaultsUntilResponseIsJson;

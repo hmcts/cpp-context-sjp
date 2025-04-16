@@ -7,6 +7,8 @@ import static java.util.UUID.randomUUID;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.greaterThan;
+import static uk.gov.moj.cpp.sjp.domain.common.CaseStatus.COMPLETED;
+import static uk.gov.moj.cpp.sjp.domain.common.CaseStatus.COMPLETED_APPLICATION_PENDING;
 import static uk.gov.moj.cpp.sjp.domain.SessionType.MAGISTRATE;
 import static uk.gov.moj.cpp.sjp.domain.decision.discharge.DischargeType.CONDITIONAL;
 import static uk.gov.moj.cpp.sjp.domain.decision.discharge.PeriodUnit.MONTH;
@@ -29,7 +31,7 @@ import static uk.gov.moj.sjp.it.helper.SessionHelper.startSessionAndConfirm;
 import static uk.gov.moj.sjp.it.model.ProsecutingAuthority.DVLA;
 import static uk.gov.moj.sjp.it.model.ProsecutingAuthority.TFL;
 import static uk.gov.moj.sjp.it.model.ProsecutingAuthority.TVL;
-import static uk.gov.moj.sjp.it.pollingquery.CasePoller.pollUntilCaseStatusCompleted;
+import static uk.gov.moj.sjp.it.pollingquery.CasePoller.pollUntilCaseHasStatus;
 import static uk.gov.moj.sjp.it.stub.IdMapperStub.stubAddMapping;
 import static uk.gov.moj.sjp.it.stub.IdMapperStub.stubForIdMapperSuccess;
 import static uk.gov.moj.sjp.it.stub.IdMapperStub.stubGetFromIdMapper;
@@ -81,10 +83,9 @@ import com.google.common.collect.Sets;
 import org.awaitility.Awaitility;
 import org.hamcrest.Matcher;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
-public class EnforcementPendingApplicationNotificationIT extends BaseIntegrationTest {
+class EnforcementPendingApplicationNotificationIT extends BaseIntegrationTest {
 
     private static final String ADD_FINANCIAL_IMPOSITION_WRITE_MEDIA_TYPE = "application/vnd.sjp.add-financial-imposition-account-number-bdf+json";
     private static final LocalDate POSTING_DATE = now().minusDays(NOTICE_PERIOD_IN_DAYS + 1);
@@ -112,9 +113,9 @@ public class EnforcementPendingApplicationNotificationIT extends BaseIntegration
     }
 
     @Test
-    public void shouldRequestPdfEmailAttachmentGenerationViaSystemDocGeneratorAndSendToNotificationNotify() throws SQLException {
+    void shouldRequestPdfEmailAttachmentGenerationViaSystemDocGeneratorAndSendToNotificationNotify() throws SQLException {
         createCase();
-        completeCaseWithEndorsementsApplied();
+        completeCaseWithEndorsementsApplied(COMPLETED);
         createCaseApplicationStatDecs();
 
         stubGetFromIdMapper(ENFORCEMENT_PENDING_APPLICATION_NOTIFICATION.name(), applicationId.toString(),
@@ -134,12 +135,11 @@ public class EnforcementPendingApplicationNotificationIT extends BaseIntegration
     }
 
     @Test
-    @Disabled("Enable after atcm-7161")
-    public void shouldUpdateViewstoreWhenSystemDocGeneratorGeneratedPublicEventIsReceived() throws SQLException {
+    void shouldUpdateViewstoreWhenSystemDocGeneratorGeneratedPublicEventIsReceived() throws SQLException {
         createCase();
-        completeCaseWithEndorsementsApplied();
+        completeCaseWithEndorsementsApplied(COMPLETED);
         createCaseApplicationStatDecs();
-        completeCaseWithEndorsementsApplied();
+        completeCaseWithEndorsementsApplied(COMPLETED_APPLICATION_PENDING);
         final UUID sourceCorrelationId = randomUUID();
         final UUID documentFileServiceId = randomUUID();
         sjpViewstore.insertNotificationOfEnforcementPendingStatus(sourceCorrelationId, null, REQUIRED, ZonedDateTime.now());
@@ -155,7 +155,7 @@ public class EnforcementPendingApplicationNotificationIT extends BaseIntegration
     @Test
     public void shouldUpdateViewstoreWhenSystemDocGeneratorGenerationFailedPublicEventIsReceived() throws SQLException {
         createCase();
-        completeCaseWithEndorsementsApplied();
+        completeCaseWithEndorsementsApplied(COMPLETED);
         createCaseApplicationStatDecs();
         final UUID sourceCorrelationId = randomUUID();
         sjpViewstore.insertNotificationOfEnforcementPendingStatus(sourceCorrelationId, null, REQUIRED, ZonedDateTime.now());
@@ -189,7 +189,7 @@ public class EnforcementPendingApplicationNotificationIT extends BaseIntegration
     @Test
     public void shouldRequestPdfEmailAttachmentGenerationViaSystemDocGeneratorAndSendToNotificationNotifyForOrganisation() throws SQLException {
         createCase();
-        completeCaseWithEndorsementsApplied();
+        completeCaseWithEndorsementsApplied(COMPLETED);
         createCaseApplicationStatDecsForOrganisation();
 
         stubGetFromIdMapper(ENFORCEMENT_PENDING_APPLICATION_NOTIFICATION.name(), applicationId.toString(),
@@ -229,7 +229,7 @@ public class EnforcementPendingApplicationNotificationIT extends BaseIntegration
         pollUntilCaseReady(caseId);
     }
 
-    private void completeCaseWithEndorsementsApplied() {
+    private void completeCaseWithEndorsementsApplied(uk.gov.moj.cpp.sjp.domain.common.CaseStatus status) {
         startSessionAndConfirm(sessionId, USER.getUserId(), DEFAULT_LONDON_COURT_HOUSE_OU_CODE, MAGISTRATE);
         requestCaseAssignmentAndConfirm(sessionId, USER.getUserId(), caseId);
 
@@ -252,7 +252,7 @@ public class EnforcementPendingApplicationNotificationIT extends BaseIntegration
                 FinancialImpositionBuilder.withDefaults());
 
         saveDecision(decision);
-        pollUntilCaseStatusCompleted(caseId);
+        pollUntilCaseHasStatus(caseId, status);
 
         addFinancialImposition(caseId, createCasePayloadBuilder.getDefendantBuilder().getId(), Response.Status.ACCEPTED);
     }

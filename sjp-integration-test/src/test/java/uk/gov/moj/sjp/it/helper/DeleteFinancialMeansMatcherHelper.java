@@ -67,72 +67,71 @@ public class DeleteFinancialMeansMatcherHelper {
 
         final List<Matcher> matchers = new ArrayList<>(asList(
                 //outgoings
-                withJsonPath("$.outgoings.accommodationAmount", equalTo(accommodationOutgoing.getDouble("amount"))),
-                withJsonPath("$.outgoings.councilTaxAmount", equalTo(councilTaxOutgoing.getDouble("amount"))),
-                withJsonPath("$.outgoings.householdBillsAmount", equalTo(householdBillsOutgoing.getDouble("amount"))),
-                withJsonPath("$.outgoings.travelExpensesAmount", equalTo(travelExpensesOutgoing.getDouble("amount"))),
-                withJsonPath("$.outgoings.childMaintenanceAmount", equalTo(childMaintenanceOutgoing.getDouble("amount"))),
-                withJsonPath("$.outgoings.otherDescription", equalTo(otherOutgoing.getString("description"))),
-                withJsonPath("$.outgoings.otherAmount", equalTo(otherOutgoing.getDouble("amount"))),
-                withJsonPath("$.outgoings.monthlyAmount", equalTo(1772.3))
+                withJsonPath("$.pleas[0].outgoings.accommodationAmount", equalTo(accommodationOutgoing.getDouble("amount"))),
+                withJsonPath("$.pleas[0].outgoings.councilTaxAmount", equalTo(councilTaxOutgoing.getDouble("amount"))),
+                withJsonPath("$.pleas[0].outgoings.householdBillsAmount", equalTo(householdBillsOutgoing.getDouble("amount"))),
+                withJsonPath("$.pleas[0].outgoings.travelExpensesAmount", equalTo(travelExpensesOutgoing.getDouble("amount"))),
+                withJsonPath("$.pleas[0].outgoings.childMaintenanceAmount", equalTo(childMaintenanceOutgoing.getDouble("amount"))),
+                withJsonPath("$.pleas[0].outgoings.otherDescription", equalTo(otherOutgoing.getString("description"))),
+                withJsonPath("$.pleas[0].outgoings.otherAmount", equalTo(otherOutgoing.getDouble("amount"))),
+                withJsonPath("$.pleas[0].outgoings.monthlyAmount", equalTo(1772.3))
         ));
 
         //Financial data matchers
         matchers.addAll(asList(
                 //financial-means
-                withJsonPath("$.employment.incomePaymentFrequency", equalTo(financialMeans.getJSONObject("income").getString("frequency"))),
-                withJsonPath("$.employment.incomePaymentAmount", equalTo(financialMeans.getJSONObject("income").getDouble("amount"))),
-                withJsonPath("$.employment.benefitsClaimed", equalTo(financialMeans.getJSONObject("benefits").getBoolean("claimed"))),
-                withJsonPath("$.employment.benefitsType", equalTo(financialMeans.getJSONObject("benefits").getString("type"))),
-                withJsonPath("$.employment.benefitsDeductPenaltyPreference", equalTo(financialMeans.getJSONObject("benefits").getBoolean("deductPenaltyPreference"))),
+                withJsonPath("$.pleas[0].employment.incomePaymentFrequency", equalTo(financialMeans.getJSONObject("income").getString("frequency"))),
+                withJsonPath("$.pleas[0].employment.incomePaymentAmount", equalTo(financialMeans.getJSONObject("income").getDouble("amount"))),
+                withJsonPath("$.pleas[0].employment.benefitsClaimed", equalTo(financialMeans.getJSONObject("benefits").getBoolean("claimed"))),
+                withJsonPath("$.pleas[0].employment.benefitsType", equalTo(financialMeans.getJSONObject("benefits").getString("type"))),
+                withJsonPath("$.pleas[0].employment.benefitsDeductPenaltyPreference", equalTo(financialMeans.getJSONObject("benefits").getBoolean("deductPenaltyPreference"))),
 
                 //employer
-                withJsonPath("$.employer.name", equalTo(employer.getString("name"))),
-                withJsonPath("$.employer.employeeReference", equalTo(employer.getString("employeeReference"))),
-                withJsonPath("$.employer.phone", equalTo(employer.getString("phone"))),
-                withJsonPath("$.employer.address.address1", equalTo(employerAddress.getString("address1"))),
-                withJsonPath("$.employer.address.address2", equalTo(employerAddress.getString("address2"))),
-                withJsonPath("$.employer.address.address3", equalTo(employerAddress.getString("address3"))),
-                withJsonPath("$.employer.address.address4", equalTo(employerAddress.getString("address4"))),
-                withJsonPath("$.employer.address.address5", equalTo(employerAddress.getString("address5"))),
-                withJsonPath("$.employer.address.postcode", equalTo(employerAddress.getString("postcode")))
+                withJsonPath("$.pleas[0].employer.name", equalTo(employer.getString("name"))),
+                withJsonPath("$.pleas[0].employer.employeeReference", equalTo(employer.getString("employeeReference"))),
+                withJsonPath("$.pleas[0].employer.phone", equalTo(employer.getString("phone"))),
+                withJsonPath("$.pleas[0].employer.address.address1", equalTo(employerAddress.getString("address1"))),
+                withJsonPath("$.pleas[0].employer.address.address2", equalTo(employerAddress.getString("address2"))),
+                withJsonPath("$.pleas[0].employer.address.address3", equalTo(employerAddress.getString("address3"))),
+                withJsonPath("$.pleas[0].employer.address.address4", equalTo(employerAddress.getString("address4"))),
+                withJsonPath("$.pleas[0].employer.address.address5", equalTo(employerAddress.getString("address5"))),
+                withJsonPath("$.pleas[0].employer.address.postcode", equalTo(employerAddress.getString("postcode")))
         ));
         return matchers;
 
     }
 
-
     private static List<Matcher> getOutgoingsMatcherAfterDelete() {
         final List<Matcher> matchers = new ArrayList<>(asList(
-                withoutJsonPath("$.outgoings.accommodationAmount"),
-                withoutJsonPath("$.outgoings.councilTaxAmount"),
-                withoutJsonPath("$.outgoings.householdBillsAmount"),
-                withoutJsonPath("$.outgoings.travelExpensesAmount"),
-                withoutJsonPath("$.outgoings.childMaintenanceAmount"),
-                withoutJsonPath("$.outgoings.otherDescription"),
-                withoutJsonPath("$.outgoings.otherAmount"),
-                withoutJsonPath("$.outgoings.monthlyAmount")
+                withoutJsonPath("$.pleas[0].outgoings.accommodationAmount"),
+                withoutJsonPath("$.pleas[0].outgoings.councilTaxAmount"),
+                withoutJsonPath("$.pleas[0].outgoings.householdBillsAmount"),
+                withoutJsonPath("$.pleas[0].outgoings.travelExpensesAmount"),
+                withoutJsonPath("$.pleas[0].outgoings.childMaintenanceAmount"),
+                withoutJsonPath("$.pleas[0].outgoings.otherDescription"),
+                withoutJsonPath("$.pleas[0].outgoings.otherAmount"),
+                withoutJsonPath("$.pleas[0].outgoings.monthlyAmount")
         ));
 
         //Financial means matchers
         matchers.addAll(asList(
                 //financial-means
-                withoutJsonPath("$.employment.incomePaymentFrequency"),
-                withoutJsonPath("$.employment.incomePaymentAmount"),
-                withoutJsonPath("$.employment.benefitsClaimed"),
-                withoutJsonPath("$.employment.benefitsType"),
-                withoutJsonPath("$.employment.benefitsDeductPenaltyPreference"),
+                withoutJsonPath("$.pleas[0].employment.incomePaymentFrequency"),
+                withoutJsonPath("$.pleas[0].employment.incomePaymentAmount"),
+                withoutJsonPath("$.pleas[0].employment.benefitsClaimed"),
+                withoutJsonPath("$.pleas[0].employment.benefitsType"),
+                withoutJsonPath("$.pleas[0].employment.benefitsDeductPenaltyPreference"),
 
                 //employer
-                withoutJsonPath("$.employer.name"),
-                withoutJsonPath("$.employer.employeeReference"),
-                withoutJsonPath("$.employer.phone"),
-                withoutJsonPath("$.employer.address.address1"),
-                withoutJsonPath("$.employer.address.address2"),
-                withoutJsonPath("$.employer.address.address3"),
-                withoutJsonPath("$.employer.address.address4"),
-                withoutJsonPath("$.employer.address.address5"),
-                withoutJsonPath("$.employer.address.postcode")
+                withoutJsonPath("$.pleas[0].employer.name"),
+                withoutJsonPath("$.pleas[0].employer.employeeReference"),
+                withoutJsonPath("$.pleas[0].employer.phone"),
+                withoutJsonPath("$.pleas[0].employer.address.address1"),
+                withoutJsonPath("$.pleas[0].employer.address.address2"),
+                withoutJsonPath("$.pleas[0].employer.address.address3"),
+                withoutJsonPath("$.pleas[0].employer.address.address4"),
+                withoutJsonPath("$.pleas[0].employer.address.address5"),
+                withoutJsonPath("$.pleas[0].employer.address.postcode")
         ));
 
         return matchers;
@@ -147,17 +146,17 @@ public class DeleteFinancialMeansMatcherHelper {
 
 
         return new ArrayList<>(asList(
-                withJsonPath("$.caseId", equalTo(caseId)),
-                withJsonPath("$.defendantId", equalTo(defendantId)),
+                withJsonPath("$.pleas[0].caseId", equalTo(caseId)),
+                withJsonPath("$.pleas[0].defendantId", equalTo(defendantId)),
 
                 //personal details
-                withJsonPath("$.personalDetails.firstName", equalTo(person.getString("firstName"))),
-                withJsonPath("$.personalDetails.lastName", equalTo(person.getString("lastName"))),
-                withJsonPath("$.personalDetails.homeTelephone", equalTo(personContactDetails.getString("home"))),
-                withJsonPath("$.personalDetails.mobile", equalTo(personContactDetails.getString("mobile"))),
-                withJsonPath("$.personalDetails.email", equalTo(personContactDetails.getString("email"))),
-                withJsonPath("$.personalDetails.dateOfBirth", equalTo(person.getString("dateOfBirth"))),
-                withJsonPath("$.personalDetails.nationalInsuranceNumber", equalTo(person.getString("nationalInsuranceNumber")))
+                withJsonPath("$.pleas[0].personalDetails.firstName", equalTo(person.getString("firstName"))),
+                withJsonPath("$.pleas[0].personalDetails.lastName", equalTo(person.getString("lastName"))),
+                withJsonPath("$.pleas[0].personalDetails.homeTelephone", equalTo(personContactDetails.getString("home"))),
+                withJsonPath("$.pleas[0].personalDetails.mobile", equalTo(personContactDetails.getString("mobile"))),
+                withJsonPath("$.pleas[0].personalDetails.email", equalTo(personContactDetails.getString("email"))),
+                withJsonPath("$.pleas[0].personalDetails.dateOfBirth", equalTo(person.getString("dateOfBirth"))),
+                withJsonPath("$.pleas[0].personalDetails.nationalInsuranceNumber", equalTo(person.getString("nationalInsuranceNumber")))
         ));
     }
 

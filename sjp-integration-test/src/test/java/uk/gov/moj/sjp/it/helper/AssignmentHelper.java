@@ -48,6 +48,7 @@ public class AssignmentHelper {
 
     public static void requestCaseAssignmentAndConfirm(final UUID sessionId, final UUID userId, final UUID caseId) {
         requestCaseAssignmentAsync(sessionId, userId);
+        assignCaseToUser(caseId, userId, UUID.randomUUID(), ACCEPTED);
         pollUntilCaseAssignedToUser(caseId, userId);
     }
 

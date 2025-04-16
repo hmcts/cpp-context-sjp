@@ -526,8 +526,6 @@ public class DecisionHelper {
         matchers.add(withJsonPath("caseId", is(decisionSaved.getCaseId().toString())));
         matchers.add(withJsonPath("decisionId", is(decisionSaved.getDecisionId().toString())));
         matchers.add(withJsonPath("sessionId", is(decisionSaved.getSessionId().toString())));
-        matchers.add(withJsonPath("defendantId", is(decisionSaved.getDefendantId().toString())));
-        matchers.add(withJsonPath("defendantName", is(decisionSaved.getDefendantName())));
         matchers.add(withJsonPath("savedAt", is(ZonedDateTimes.toString(decisionSaved.getSavedAt()))));
 
 

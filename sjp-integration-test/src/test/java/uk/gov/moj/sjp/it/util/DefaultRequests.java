@@ -49,8 +49,9 @@ public class DefaultRequests {
     }
 
     public static RequestParamsBuilder searchCases(final String query, final UUID userId) {
-        return requestParams(getReadUrl("/search?q=" + query), CASE_SEARCH_RESULTS_MEDIA_TYPE)
+        final RequestParamsBuilder requestParamsBuilder = requestParams(getReadUrl("/search?q=" + query), CASE_SEARCH_RESULTS_MEDIA_TYPE)
                 .withHeader(HeaderConstants.USER_ID, userId);
+        return requestParamsBuilder;
     }
 
     public static RequestParamsBuilder getCaseByUrnAndPostcode(final String caseUrn, final String postcode) {

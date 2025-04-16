@@ -28,6 +28,8 @@ import javax.jms.MessageConsumer;
 import javax.json.JsonObject;
 import javax.ws.rs.core.Response;
 
+import com.jayway.jsonpath.JsonPath;
+import com.jayway.jsonpath.ReadContext;
 import org.hamcrest.Matcher;
 
 public class FinancialMeansHelper implements AutoCloseable {
@@ -100,15 +102,17 @@ public class FinancialMeansHelper implements AutoCloseable {
         assertThat("A deleted material is present", materialIdFromQueryResult.isPresent(), is(true));
     }
 
-    public static String getOnlinePleaData(final String caseId, final Matcher<Object> jsonMatcher, final UUID userId, final String defendantId) {
+    public static boolean getOnlinePleaData(final String caseId, final Matcher<Object> jsonMatcher, final UUID userId, final String defendantId) {
         return await().atMost(20, SECONDS).until(() -> {
             final Response onlinePlea = getOnlinePlea(caseId, defendantId, userId);
             if (onlinePlea.getStatus() != OK.getStatusCode()) {
-                return "{}";
+                return false;
             }
-            return onlinePlea.readEntity(String.class);
-        }, jsonMatcher);
+            ReadContext ctx = JsonPath.parse(onlinePlea.readEntity(String.class));
+            return jsonMatcher.matches(ctx); // Check if matcher is satisfied
+        }, Boolean::booleanValue);
     }
+
 
     @Override
     public void close() {

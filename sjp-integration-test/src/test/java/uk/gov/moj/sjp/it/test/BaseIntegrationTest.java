@@ -1,8 +1,14 @@
 package uk.gov.moj.sjp.it.test;
 
+import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
 import static com.github.tomakehurst.wiremock.client.WireMock.configureFor;
+import static com.github.tomakehurst.wiremock.client.WireMock.get;
+import static com.github.tomakehurst.wiremock.client.WireMock.post;
 import static com.github.tomakehurst.wiremock.client.WireMock.reset;
 import static com.github.tomakehurst.wiremock.client.WireMock.resetAllRequests;
+import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
+import static com.github.tomakehurst.wiremock.client.WireMock.urlPathMatching;
+import static java.util.UUID.randomUUID;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.awaitility.Awaitility.setDefaultPollDelay;
 import static org.awaitility.Awaitility.setDefaultPollInterval;
@@ -16,9 +22,9 @@ import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubQueryVictimSur
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubResultIds;
 import static uk.gov.moj.sjp.it.stub.UsersGroupsStub.stubAllGroupsForUser;
 import static uk.gov.moj.sjp.it.stub.UsersGroupsStub.stubForUserDetails;
+import static uk.gov.moj.sjp.it.util.FileUtil.getPayload;
 import static uk.gov.moj.sjp.it.util.RestPollerWithDefaults.DELAY_IN_SECONDS;
 import static uk.gov.moj.sjp.it.util.RestPollerWithDefaults.INTERVAL_IN_SECONDS;
-import static uk.gov.moj.sjp.it.util.SjpDatabaseCleaner.cleanViewStore;
 
 import uk.gov.justice.services.integrationtest.utils.jms.JmsResourceManagementExtension;
 import uk.gov.moj.cpp.unifiedsearch.test.util.ingest.ElasticSearchIndexRemoverUtil;
@@ -79,6 +85,7 @@ public abstract class BaseIntegrationTest {
         reset();
         stubAllGroupsForUser();
         stubForUserDetails(USER_ID, "ALL");
+        stubForUserDetails(UUID.fromString("1ac91935-4f82-4a4f-bd17-fb50397e42dd"), "ALL");
         stubQueryOffencesByCode(DEFAULT_OFFENCE_CODE);
         stubQueryForVerdictTypesByJurisdiction();
         stubQueryVictimSurcharge();
@@ -86,5 +93,19 @@ public abstract class BaseIntegrationTest {
         stubNotifications();
         stubBailStatuses();
         stubResultIds();
+    }
+
+    private static final String SYSTEM_ID_MAPPER_ENDPOINT = "/system-id-mapper-api/rest/systemid/mappings/*";
+
+    public static void setupIdMapperStub() {
+        stubFor(get(urlPathMatching(SYSTEM_ID_MAPPER_ENDPOINT))
+                .willReturn(aResponse()
+                        .withStatus(404)));
+
+        stubFor(post(urlPathMatching(SYSTEM_ID_MAPPER_ENDPOINT))
+                .willReturn(aResponse()
+                        .withStatus(200)
+                        .withBody(getPayload("stub-data/id-mapper.json")
+                                .replaceAll("RANDOM_ID", randomUUID().toString()))));
     }
 }

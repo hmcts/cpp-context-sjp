@@ -13,6 +13,7 @@ import static javax.json.Json.createArrayBuilder;
 import static javax.json.Json.createObjectBuilder;
 import static javax.ws.rs.core.HttpHeaders.CONTENT_TYPE;
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
+import static javax.ws.rs.core.Response.Status.OK;
 import static org.apache.http.HttpHeaders.ACCEPT;
 import static org.apache.http.HttpStatus.SC_OK;
 import static uk.gov.justice.services.common.http.HeaderConstants.ID;
@@ -505,6 +506,35 @@ public class ReferenceDataServiceStub {
                                         .toString()
                         )));
         return dvlaEmailAddress;
+    }
+
+    private static final String WITHDRAWAL_REASONS_ENDPOINT = "/referencedata-service/query/api/rest/referencedata/offence-withdraw-request-reasons";
+    private static final String WITHDRAWAL_REASONS_CONTENT_TYPE = "application/vnd.referencedata.offence-withdraw-request-reasons+json";
+
+    public static void stubWithdrawalReasons() {
+        stubFor(get(urlPathEqualTo(WITHDRAWAL_REASONS_ENDPOINT))
+                .withHeader(ACCEPT, equalTo(WITHDRAWAL_REASONS_CONTENT_TYPE))
+                .willReturn(aResponse()
+                        .withStatus(OK.getStatusCode())
+                        .withHeader(ID, UUID.randomUUID().toString())
+                        .withHeader(CONTENT_TYPE, WITHDRAWAL_REASONS_CONTENT_TYPE)
+                        .withBody(getPayload("stub-data/referencedata-withdrawal-reasons.json")))
+        );
+    }
+
+    public static void stubVariableWithdrawalReasons(final String reasonId, final String reasonCode) {
+        final String payload = getPayload("stub-data/referencedata-variable-withdrawal-reasons.json")
+                .replaceAll("REASON_ID", reasonId)
+                .replaceAll("REASON_CODE", reasonCode);
+
+        stubFor(get(urlPathEqualTo(WITHDRAWAL_REASONS_ENDPOINT))
+                .withHeader(ACCEPT, equalTo(WITHDRAWAL_REASONS_CONTENT_TYPE))
+                .willReturn(aResponse()
+                        .withStatus(OK.getStatusCode())
+                        .withHeader(ID, UUID.randomUUID().toString())
+                        .withHeader(CONTENT_TYPE, WITHDRAWAL_REASONS_CONTENT_TYPE)
+                        .withBody(payload))
+        );
     }
 
     private static String pathFor(final String endpoint) {

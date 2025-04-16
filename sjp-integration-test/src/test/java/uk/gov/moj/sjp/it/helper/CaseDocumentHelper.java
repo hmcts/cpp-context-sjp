@@ -5,7 +5,6 @@ import static com.jayway.jsonpath.Criteria.where;
 import static com.jayway.jsonpath.JsonPath.compile;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.isJson;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
-import static com.jayway.jsonpath.matchers.JsonPathMatchers.withoutJsonPath;
 import static java.lang.String.format;
 import static java.util.UUID.fromString;
 import static java.util.UUID.randomUUID;
@@ -16,6 +15,7 @@ import static org.hamcrest.CoreMatchers.hasItem;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.emptyIterable;
 import static org.hamcrest.Matchers.hasSize;
 import static uk.gov.justice.services.test.utils.core.matchers.ResponsePayloadMatcher.payload;
 import static uk.gov.justice.services.test.utils.core.matchers.ResponseStatusMatcher.status;
@@ -251,7 +251,7 @@ public class CaseDocumentHelper implements AutoCloseable {
                 .until(
                         status().is(Response.Status.OK),
                         payload().isJson(allOf(
-                                withoutJsonPath("$.caseDocuments")
+                                withJsonPath("$.caseDocuments", emptyIterable())
                         ))
                 );
     }

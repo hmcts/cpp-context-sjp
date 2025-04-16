@@ -96,7 +96,6 @@ import javax.json.JsonObject;
 
 import org.hamcrest.Matcher;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 @SuppressWarnings({"squid:S1607"})
@@ -346,8 +345,7 @@ public class PressRestrictionsSaveDecisionIT extends BaseIntegrationTest {
     }
 
     @Test
-    @Disabled
-    public void shouldSavePaymentTerms() {
+    void shouldSavePaymentTerms() {
         // Given
         final FinancialPenalty financialPenalty = FinancialPenaltyBuilder.withDefaults().build();
         final Dismiss dismiss = DismissBuilder.withDefaults().pressRestriction(CHILDS_NAME).build();

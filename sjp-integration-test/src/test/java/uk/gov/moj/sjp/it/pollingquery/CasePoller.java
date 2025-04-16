@@ -12,6 +12,7 @@ import static org.junit.jupiter.api.Assertions.fail;
 import static uk.gov.justice.services.test.utils.core.matchers.ResponsePayloadMatcher.payload;
 import static uk.gov.justice.services.test.utils.core.matchers.ResponseStatusMatcher.status;
 import static uk.gov.moj.cpp.sjp.domain.common.CaseStatus.COMPLETED;
+import static uk.gov.moj.cpp.sjp.domain.common.CaseStatus.COMPLETED_APPLICATION_PENDING;
 import static uk.gov.moj.sjp.it.util.DefaultRequests.getCaseById;
 import static uk.gov.moj.sjp.it.util.DefaultRequests.getPotentialCasesByDefendantId;
 import static uk.gov.moj.sjp.it.util.DefaultRequests.getProsecutionCaseById;
@@ -105,4 +106,5 @@ public class CasePoller {
     public static void pollUntilCaseStatusCompleted(final UUID caseId) {
         pollUntilCaseHasStatus(caseId, COMPLETED);
     }
+
 }

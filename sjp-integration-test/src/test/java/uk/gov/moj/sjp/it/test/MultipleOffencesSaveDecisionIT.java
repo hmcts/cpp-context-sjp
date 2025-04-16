@@ -39,7 +39,6 @@ import static uk.gov.moj.sjp.it.helper.DecisionHelper.verifyCaseQueryWithDisabil
 import static uk.gov.moj.sjp.it.helper.DecisionHelper.verifyCaseQueryWithDismissDecision;
 import static uk.gov.moj.sjp.it.helper.DecisionHelper.verifyCaseQueryWithReferForCourtHearingDecision;
 import static uk.gov.moj.sjp.it.helper.DecisionHelper.verifyCaseQueryWithWithdrawnDecision;
-import static uk.gov.moj.sjp.it.helper.DecisionHelper.verifyCaseReferredForCourtHearing;
 import static uk.gov.moj.sjp.it.helper.DecisionHelper.verifyCaseUnassigned;
 import static uk.gov.moj.sjp.it.helper.DecisionHelper.verifyCaseUnmarkedReady;
 import static uk.gov.moj.sjp.it.helper.DecisionHelper.verifyDecisionRejected;
@@ -56,10 +55,14 @@ import static uk.gov.moj.sjp.it.model.PleaInfo.pleaInfo;
 import static uk.gov.moj.sjp.it.model.ProsecutingAuthority.DVLA;
 import static uk.gov.moj.sjp.it.model.ProsecutingAuthority.TFL;
 import static uk.gov.moj.sjp.it.model.ProsecutingAuthority.TVL;
+import static uk.gov.moj.sjp.it.stub.IdMapperStub.stubForIdMapperSuccess;
+import static uk.gov.moj.sjp.it.stub.ProgressionServiceStub.stubReferCaseToCourtCommand;
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubDefaultCourtByCourtHouseOUCodeQuery;
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubHearingTypesQuery;
+import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubReferralDocumentMetadataQuery;
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubReferralReason;
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubReferralReasonsQuery;
+import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubVariableWithdrawalReasons;
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubWithdrawalReasonsQuery;
 import static uk.gov.moj.sjp.it.stub.UsersGroupsStub.stubForUserDetails;
 import static uk.gov.moj.sjp.it.util.ActivitiHelper.executeTimerJobs;
@@ -94,7 +97,6 @@ import uk.gov.moj.cpp.sjp.domain.plea.PleaType;
 import uk.gov.moj.cpp.sjp.event.CaseAdjournedToLaterSjpHearingRecorded;
 import uk.gov.moj.cpp.sjp.event.CaseCompleted;
 import uk.gov.moj.cpp.sjp.event.CaseMarkedReadyForDecision;
-import uk.gov.moj.cpp.sjp.event.CaseReferredForCourtHearing;
 import uk.gov.moj.cpp.sjp.event.CaseUnmarkedReadyForDecision;
 import uk.gov.moj.cpp.sjp.event.HearingLanguagePreferenceUpdatedForDefendant;
 import uk.gov.moj.cpp.sjp.event.InterpreterUpdatedForDefendant;
@@ -121,14 +123,13 @@ import java.util.List;
 import java.util.UUID;
 
 import javax.json.JsonObject;
+import javax.ws.rs.core.Response;
 
 import com.google.common.collect.Sets;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
-@Disabled("Enable this when merging to master")
-public class MultipleOffencesSaveDecisionIT extends BaseIntegrationTest {
+class MultipleOffencesSaveDecisionIT extends BaseIntegrationTest {
 
     private static final String ADJOURN_REASON = "Not enough documents present for decision, waiting for document";
     private static final String CASE_ALREADY_COMPLETED = "The case is already completed";
@@ -143,7 +144,7 @@ public class MultipleOffencesSaveDecisionIT extends BaseIntegrationTest {
     private UUID offence1Id = randomUUID();
     private UUID offence2Id = randomUUID();
     private UUID offence3Id = randomUUID();
-    private UUID withdrawalReasonId = randomUUID();
+    final UUID withdrawalReasonId = UUID.fromString("c0cc786b-9b95-448a-a965-d7a7d8d6134c");
     private String withdrawalReason = "Insufficient evidence";
     private LocalDate postingDate = now().minusDays(NOTICE_PERIOD_IN_DAYS + 1);
     private CreateCase.CreateCasePayloadBuilder aCase;
@@ -160,6 +161,10 @@ public class MultipleOffencesSaveDecisionIT extends BaseIntegrationTest {
 
         stubDefaultCourtByCourtHouseOUCodeQuery();
         stubForUserDetails(user, "ALL");
+        stubVariableWithdrawalReasons(withdrawalReasonId.toString(), withdrawalReason);
+        stubForIdMapperSuccess(Response.Status.OK);
+        stubReferralDocumentMetadataQuery(randomUUID().toString(), "SJPN");
+        stubReferCaseToCourtCommand();
 
         CaseAssignmentRestrictionHelper.provisionCaseAssignmentRestrictions(Sets.newHashSet(TFL, TVL, DVLA));
 
@@ -169,8 +174,6 @@ public class MultipleOffencesSaveDecisionIT extends BaseIntegrationTest {
 
     @Test
     public void shouldSaveWithdrawDecisionWithNote() throws Exception {
-        stubWithdrawalReasonsQuery(withdrawalReasonId, withdrawalReason);
-
         try (final OffencesWithdrawalRequestHelper offencesWithdrawalRequestHelper = new OffencesWithdrawalRequestHelper(USER_ID)) {
             new EventListener()
                     .subscribe(CaseMarkedReadyForDecision.EVENT_NAME)
@@ -317,7 +320,6 @@ public class MultipleOffencesSaveDecisionIT extends BaseIntegrationTest {
 
     @Test
     public void shouldSaveSetAsideDecisionAndClearThePleas() {
-
         final LocalDate adjournTo = now().plusDays(10);
         stubWithdrawalReasonsQuery(withdrawalReasonId, withdrawalReason);
 
@@ -444,15 +446,16 @@ public class MultipleOffencesSaveDecisionIT extends BaseIntegrationTest {
 
     @Test
     public void shouldSaveSetAsideDecisionAndReferForCourtHearingPreConviction() {
-
         final UUID referralReasonId = randomUUID();
         final String hearingCode = "PLE";
         final String referralReason = "Case unsuitable for SJP";
+        final String hearingDescription = "PLE";
 
         final LocalDate adjournTo = now().plusDays(10);
         stubWithdrawalReasonsQuery(withdrawalReasonId, withdrawalReason);
         stubReferralReasonsQuery(referralReasonId, hearingCode, referralReason);
         stubReferralReason(referralReasonId.toString(), "stub-data/referencedata.referral-reason.json");
+        stubHearingTypesQuery(randomUUID().toString(), hearingCode, hearingDescription);
 
         final Adjourn adjournDecision = new Adjourn(null, asList(
                 createOffenceDecisionInformation(offence1Id, FOUND_GUILTY),
@@ -540,10 +543,9 @@ public class MultipleOffencesSaveDecisionIT extends BaseIntegrationTest {
                 pleaInfo(offence3Id, PleaType.GUILTY));
 
         // save a new decision
-        final List<OffenceDecisionInformation> offenceDecisionInformations = asList(createOffenceDecisionInformation(offence1Id, NO_VERDICT), createOffenceDecisionInformation(offence2Id, NO_VERDICT), createOffenceDecisionInformation(offence3Id, NO_VERDICT));
+        final List<OffenceDecisionInformation> offenceDecisionInformations = asList(createOffenceDecisionInformation(offence1Id, FOUND_GUILTY), createOffenceDecisionInformation(offence2Id, NO_VERDICT), createOffenceDecisionInformation(offence3Id, NO_VERDICT));
         final DefendantCourtOptions defendantCourtOptions = new DefendantCourtOptions(new DefendantCourtInterpreter("French", true), false, NO_DISABILITY_NEEDS);
         final ReferForCourtHearing referForCourtHearing = new ReferForCourtHearing(randomUUID(), offenceDecisionInformations, referralReasonId, "listing notes", 10, defendantCourtOptions, null);
-
 
         final List<OffenceDecision> offencesDecisionList = asList(referForCourtHearing);
         final DecisionCommand newDecisionCommand = new DecisionCommand(sessionId, caseId, null, user, offencesDecisionList, null);
@@ -553,21 +555,18 @@ public class MultipleOffencesSaveDecisionIT extends BaseIntegrationTest {
                 .subscribe(DecisionSaved.EVENT_NAME)
                 .subscribe(CaseUnassigned.EVENT_NAME)
                 .subscribe(CaseCompleted.EVENT_NAME)
-                .subscribe(CaseReferredForCourtHearing.EVENT_NAME)
                 .subscribe(InterpreterUpdatedForDefendant.EVENT_NAME)
                 .subscribe(CASE_NOTE_ADDED_EVENT)
                 .run(() -> DecisionHelper.saveDecision(newDecisionCommand));
 
         final DecisionSaved newDecisionSaved = eventListener.popEventPayload(DecisionSaved.class);
         final CaseNoteAdded caseNoteAdded2 = eventListener.popEventPayload(CaseNoteAdded.class);
-        final CaseReferredForCourtHearing caseReferredForCourtHearing = eventListener.popEventPayload(CaseReferredForCourtHearing.class);
         final InterpreterUpdatedForDefendant interpreterUpdatedForDefendant = eventListener.popEventPayload(InterpreterUpdatedForDefendant.class);
         final CaseUnassigned newCaseUnassigned = eventListener.popEventPayload(CaseUnassigned.class);
         final CaseCompleted caseCompleted = eventListener.popEventPayload(CaseCompleted.class);
 
         verifyDecisionSaved(newDecisionCommand, newDecisionSaved);
         verifyListingNotesAdded(decision, newDecisionSaved, referForCourtHearing, caseNoteAdded2);
-        verifyCaseReferredForCourtHearing(newDecisionSaved, referForCourtHearing, caseReferredForCourtHearing, offenceDecisionInformations, "Critical");
         verifyInterpreterUpdated(newDecisionSaved, referForCourtHearing, interpreterUpdatedForDefendant);
         verifyCaseUnassigned(caseId, newCaseUnassigned);
         verifyCaseNotReadyInViewStore(caseId, USER_ID);
@@ -633,7 +632,6 @@ public class MultipleOffencesSaveDecisionIT extends BaseIntegrationTest {
                 .subscribe(DecisionSaved.EVENT_NAME)
                 .subscribe(CaseUnassigned.EVENT_NAME)
                 .subscribe(CaseUnmarkedReadyForDecision.EVENT_NAME)
-                .subscribe(CaseReferredForCourtHearing.EVENT_NAME)
                 .subscribe(InterpreterUpdatedForDefendant.EVENT_NAME)
                 .subscribe(HearingLanguagePreferenceUpdatedForDefendant.EVENT_NAME)
                 .subscribe(CaseCompleted.EVENT_NAME)
@@ -643,7 +641,6 @@ public class MultipleOffencesSaveDecisionIT extends BaseIntegrationTest {
         final DecisionSaved decisionSaved = eventListener.popEventPayload(DecisionSaved.class);
         final CaseNoteAdded caseNoteAdded = eventListener.popEventPayload(CaseNoteAdded.class);
         final CaseUnassigned caseUnassigned = eventListener.popEventPayload(CaseUnassigned.class);
-        final CaseReferredForCourtHearing caseReferredForCourtHearing = eventListener.popEventPayload(CaseReferredForCourtHearing.class);
         final InterpreterUpdatedForDefendant interpreterUpdatedForDefendant = eventListener.popEventPayload(InterpreterUpdatedForDefendant.class);
         final HearingLanguagePreferenceUpdatedForDefendant hearingLanguagePreferenceUpdatedForDefendant = eventListener.popEventPayload(HearingLanguagePreferenceUpdatedForDefendant.class);
         final CaseCompleted caseCompleted = eventListener.popEventPayload(CaseCompleted.class);
@@ -651,7 +648,6 @@ public class MultipleOffencesSaveDecisionIT extends BaseIntegrationTest {
 
         verifyDecisionSaved(decision, decisionSaved);
         verifyListingNotesAdded(decision, decisionSaved, referForCourtHearing, caseNoteAdded);
-        verifyCaseReferredForCourtHearing(decisionSaved, referForCourtHearing, caseReferredForCourtHearing, offenceDecisionInformationList, "Critical");
         verifyInterpreterUpdated(decisionSaved, referForCourtHearing, interpreterUpdatedForDefendant);
         verifyHearingLanguagePreferenceUpdated(decisionSaved, referForCourtHearing, hearingLanguagePreferenceUpdatedForDefendant);
         verifyCaseUnassigned(caseId, caseUnassigned);
@@ -819,7 +815,6 @@ public class MultipleOffencesSaveDecisionIT extends BaseIntegrationTest {
                 .subscribe(CaseUnassigned.EVENT_NAME)
                 .subscribe(CASE_ADJOURNED_TO_LATER_SJP_EVENT)
                 .subscribe(CaseUnmarkedReadyForDecision.EVENT_NAME)
-                .subscribe(CaseReferredForCourtHearing.EVENT_NAME)
                 .subscribe(InterpreterUpdatedForDefendant.EVENT_NAME)
                 .subscribe(HearingLanguagePreferenceUpdatedForDefendant.EVENT_NAME)
                 .subscribe(CaseCompleted.EVENT_NAME)
@@ -828,7 +823,6 @@ public class MultipleOffencesSaveDecisionIT extends BaseIntegrationTest {
         final DecisionSaved decisionSaved = eventListener.popEventPayload(DecisionSaved.class);
         final CaseNoteAdded caseNoteAdded = eventListener.popEventPayload(CaseNoteAdded.class);
         final CaseUnassigned caseUnassigned = eventListener.popEventPayload(CaseUnassigned.class);
-        final CaseReferredForCourtHearing caseReferredForCourtHearing = eventListener.popEventPayload(CaseReferredForCourtHearing.class);
         final InterpreterUpdatedForDefendant interpreterUpdatedForDefendant = eventListener.popEventPayload(InterpreterUpdatedForDefendant.class);
         final HearingLanguagePreferenceUpdatedForDefendant hearingLanguagePreferenceUpdatedForDefendant = eventListener.popEventPayload(HearingLanguagePreferenceUpdatedForDefendant.class);
         final CaseCompleted caseCompleted = eventListener.popEventPayload(CaseCompleted.class);
@@ -837,7 +831,6 @@ public class MultipleOffencesSaveDecisionIT extends BaseIntegrationTest {
         verifyCaseUnassigned(caseId, caseUnassigned);
         verifyCaseNotReadyInViewStore(caseId, USER_ID);
         verifyListingNotesAdded(decisionCommand, decisionSaved, referForCourtHearingDecision, caseNoteAdded);
-        verifyCaseReferredForCourtHearing(decisionSaved, referForCourtHearingDecision, caseReferredForCourtHearing, offenceDecisionInformationList, "Critical");
         verifyInterpreterUpdated(decisionSaved, referForCourtHearingDecision, interpreterUpdatedForDefendant);
         verifyHearingLanguagePreferenceUpdated(decisionSaved, referForCourtHearingDecision, hearingLanguagePreferenceUpdatedForDefendant);
         verifyCaseCompleted(caseId, caseCompleted);

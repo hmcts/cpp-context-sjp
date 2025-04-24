@@ -2,6 +2,7 @@ package uk.gov.moj.cpp.sjp.query.api.decorator;
 
 import static java.lang.String.format;
 import static java.time.LocalDate.now;
+import static java.util.Objects.nonNull;
 import static javax.json.Json.createArrayBuilder;
 import static javax.json.Json.createObjectBuilder;
 import static org.hamcrest.CoreMatchers.equalTo;
@@ -25,6 +26,9 @@ import javax.json.JsonObjectBuilder;
 import org.apache.commons.lang3.StringUtils;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.NullAndEmptySource;
+import org.junit.jupiter.params.provider.ValueSource;
 
 
 public class OffenceHelperTest {
@@ -166,6 +170,28 @@ public class OffenceHelperTest {
                 .build();
 
         assertFalse(offenceHelper.hasFinalDecision(offence1, createArrayBuilder().build()));
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"Either Way", "Indictable"})
+    void shouldBeNonSummaryOffenceAsTrueWhenModeOfTrialDerivedINonSummary(final String modeOfTrialsDerived) {
+        final JsonObject offenceDefinition = createObjectBuilder()
+                .add("modeOfTrialDerived", modeOfTrialsDerived)
+                .build();
+
+        assertTrue(offenceHelper.isNonSummaryOffence(offenceDefinition));
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"Summary"})
+    @NullAndEmptySource
+    void shouldBeNonSummaryOffenceAsFalseWhenModeOfTrialDerivedIsSummary(final String modeOfTrialsDerived) {
+        final JsonObjectBuilder offenceDefinition = createObjectBuilder();
+        if(nonNull(modeOfTrialsDerived)){
+            offenceDefinition.add("modeOfTrialDerived", modeOfTrialsDerived);
+        }
+
+        assertFalse(offenceHelper.isNonSummaryOffence(offenceDefinition.build()));
     }
 
 

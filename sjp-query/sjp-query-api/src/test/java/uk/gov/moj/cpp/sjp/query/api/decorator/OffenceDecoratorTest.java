@@ -154,6 +154,7 @@ public class OffenceDecoratorTest {
                 .add("notInEffect", false)
                 .add("outOfTime", true)
                 .add("imprisonable", false)
+                .add("isNonSummaryOffence", true)
                 .add("withdrawalRequestReasonId", WITHDRAWAL_REQUEST_REASON_ID_FOR_INSUFFICIENT_EVIDENCE)
                 .add("withdrawalRequestReason", INSUFFICIENT_EVIDENCE)
                 .add("maxFineLevel", "3")
@@ -174,6 +175,7 @@ public class OffenceDecoratorTest {
                 .add("notInEffect", true)
                 .add("outOfTime", false)
                 .add("imprisonable", true)
+                .add("isNonSummaryOffence", false)
                 .add("withdrawalRequestReasonId", WITHDRAWAL_REQUEST_REASON_ID_FOR_NOT_IN_PUBLIC_INTEREST_TO_PROCEED)
                 .add("withdrawalRequestReason", NOT_IN_PUBLIC_INTEREST_TO_PROCEED)
                 .add("maxFineLevel", "")
@@ -195,6 +197,7 @@ public class OffenceDecoratorTest {
                 .add("notInEffect", false)
                 .add("outOfTime", false)
                 .add("imprisonable", false)
+                .add("isNonSummaryOffence", true)
                 .add("maxFineLevel", "3")
                 .add("hasFinalDecision", false)
                 .add("pendingWithdrawal", false)
@@ -219,6 +222,10 @@ public class OffenceDecoratorTest {
         when(offenceHelper.getSentencing(offenceDefinition1)).thenReturn(EMPTY);
         when(offenceHelper.getSentencing(offenceDefinition2)).thenReturn("Yes");
         when(offenceHelper.getSentencing(offenceDefinition3)).thenReturn("Yes");
+
+        when(offenceHelper.isNonSummaryOffence(offenceDefinition1)).thenReturn(true);
+        when(offenceHelper.isNonSummaryOffence(offenceDefinition2)).thenReturn(false);
+        when(offenceHelper.isNonSummaryOffence(offenceDefinition3)).thenReturn(true);
 
         final JsonObject expectedDecoratedCase = buildCaseWithOffences(expectedDecoratedOffence1, expectedDecoratedOffence2, expectedDecoratedOffence3);
 

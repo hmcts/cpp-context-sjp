@@ -26,6 +26,7 @@ import org.apache.commons.lang3.tuple.Pair;
 public class OffenceHelper {
 
     private static final List<String> nonImprisonableModeOfTrials = asList("STRAFF", "SNONIMP");
+    private static final List<String> nonSummaryOffenceModeOfTrialsDerived = asList("Either Way", "Indictable");
     private static final List<String> unLimitedFineLevels = asList("U", "S", "O");
 
     public String getEnglishTitle(final JsonObject offenceDefinition) {
@@ -69,6 +70,10 @@ public class OffenceHelper {
 
     public boolean isOffenceImprisonable(final JsonObject offenceDefinition) {
         return !nonImprisonableModeOfTrials.contains(ofNullable(offenceDefinition.getString("modeOfTrial",null)).orElse(EMPTY).toUpperCase());
+    }
+
+    public boolean isNonSummaryOffence(final JsonObject offenceDefinition) {
+        return offenceDefinition.containsKey("modeOfTrialDerived") && nonSummaryOffenceModeOfTrialsDerived.contains(offenceDefinition.getString("modeOfTrialDerived"));
     }
 
     public String getMaxFineLevel(JsonObject offenceDefinition) {

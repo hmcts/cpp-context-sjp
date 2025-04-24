@@ -52,6 +52,7 @@ public class OffenceDecorator {
                 .add("outOfTime", offenceHelper.isOffenceOutOfTime(offenceInstance, offenceDefinition))
                 .add("notInEffect", offenceHelper.isOffenceNotInEffect(offenceInstance, offenceDefinition))
                 .add("imprisonable", offenceHelper.isOffenceImprisonable(offenceDefinition))
+                .add("isNonSummaryOffence", offenceHelper.isNonSummaryOffence(offenceDefinition))
                 .add("maxFineLevel", offenceHelper.getMaxFineLevel(offenceDefinition))
                 .add("hasFinalDecision", offenceHelper.hasFinalDecision(offenceInstance, caseDecisions))
                 .add("pendingWithdrawal", hasPendingWithdrawal(offenceInstance, caseDecisions))

@@ -43,7 +43,7 @@
         <material.version>17.0.57</material.version>
         <notification.notify.version>17.0.1</notification.notify.version>
         <referencedata.version>17.0.84</referencedata.version>
-        <referencedata.offences.version>17.0.29</referencedata.offences.version>
+        <referencedata.offences.version>17.0.32</referencedata.offences.version>
         <scheduling.version>17.0.11</scheduling.version>
         <authorisation.service.version>0.1.49</authorisation.service.version>
         <usersgroups.version>17.0.32</usersgroups.version>

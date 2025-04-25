@@ -4,7 +4,7 @@
     <parent>
         <artifactId>sjp-domain</artifactId>
         <groupId>uk.gov.moj.cpp.sjp</groupId>
-        <version>17.0.82-SNAPSHOT</version>
+        <version>17.0.83-SNAPSHOT</version>
     </parent>
 
     <artifactId>sjp-domain-prosecution</artifactId>

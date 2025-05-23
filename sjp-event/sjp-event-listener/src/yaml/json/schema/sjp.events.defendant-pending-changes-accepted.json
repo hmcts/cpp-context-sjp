@@ -19,7 +19,7 @@
       "type": "string"
     },
     "dateOfBirth": {
-      "$ref": "http://justice.gov.uk/json/schemas/domains/sjp/temporal.json#/definitions/date-time"
+      "type": "string"
     },
     "address": {
       "$ref": "http://justice.gov.uk/json/schemas/domains/sjp/address.json"

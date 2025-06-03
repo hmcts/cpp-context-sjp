@@ -25,6 +25,7 @@ import uk.gov.justice.services.eventsourcing.source.core.exception.EventStreamEx
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.test.utils.core.enveloper.EnveloperFactory;
 import uk.gov.moj.cpp.sjp.domain.aggregate.CaseAggregate;
+import uk.gov.moj.cpp.sjp.domain.aggregate.state.CaseAggregateState;
 import uk.gov.moj.cpp.sjp.event.CaseDocumentUploadRejected;
 import uk.gov.moj.cpp.sjp.event.CaseDocumentUploaded;
 import uk.gov.moj.cpp.sjp.event.CaseStarted;
@@ -61,6 +62,9 @@ public class UploadCaseDocumentHandlerTest {
     @Mock
     private AggregateService aggregateService;
 
+    @Mock
+    private CaseAggregateState state;
+
     @InjectMocks
     private UploadCaseDocumentHandler uploadCaseDocumentHandler;
 
@@ -83,6 +87,7 @@ public class UploadCaseDocumentHandlerTest {
     public void setUp() {
         when(aggregateService.get(any(), any())).thenReturn(caseAggregate);
         caseAggregate.getState().setManagedByAtcm(true);
+        caseAggregate.getState().setMetadataUserId(randomUUID());
     }
 
     @Test
@@ -90,6 +95,7 @@ public class UploadCaseDocumentHandlerTest {
 
         final JsonEnvelope command = createCaseDocumentUploadCommand(CASE_ID, DOCUMENT_REFERENCE, DOCUMENT_TYPE);
         when(eventSource.getStreamById(CASE_ID)).thenReturn(eventStream);
+        when(aggregateService.get(eventStream, CaseAggregate.class)).thenReturn(caseAggregate);
 
         uploadCaseDocumentHandler.handle(command);
 
@@ -114,6 +120,9 @@ public class UploadCaseDocumentHandlerTest {
 
         final JsonEnvelope command = createCaseDocumentUploadCommand(CASE_ID, DOCUMENT_REFERENCE, DOCUMENT_TYPE);
         when(eventSource.getStreamById(CASE_ID)).thenReturn(eventStream);
+        when(aggregateService.get(eventStream, CaseAggregate.class)).thenReturn(caseAggregate1);
+        when(caseAggregate1.getState()).thenReturn(state);
+        when(state.getMetadataUserId()).thenReturn(randomUUID());
 
         final CaseDocumentUploadRejected caseDocumentUploadRejected = new CaseDocumentUploadRejected(DOCUMENT_REFERENCE, "");
         when(caseAggregate1.uploadCaseDocument(CASE_ID, DOCUMENT_REFERENCE, DOCUMENT_TYPE)).thenReturn(Stream.of(caseDocumentUploadRejected));

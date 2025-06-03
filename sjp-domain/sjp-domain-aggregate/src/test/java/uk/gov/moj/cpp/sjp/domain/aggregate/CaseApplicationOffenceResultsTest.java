@@ -73,7 +73,7 @@ public class CaseApplicationOffenceResultsTest extends CaseAggregateBaseTest {
         assertThat(applicationOffenceResultsSaved.getHearing()
                 .getCourtApplications().get(0)
                 .getCourtApplicationCases().get(0)
-                .getOffences().get(0).getJudicialResults().get(0).getResultText(), is("FO - Fine\nFined £500.00\nPDATE - Pay by date\nPay by date. Date to pay in full by: 12/12/2024."));
+                .getOffences().get(0).getJudicialResults().get(0).getResultText(), is("FO - Fine\nFined £500.00"));
     }
 
     @Test

@@ -242,9 +242,6 @@ subscriptions_descriptor:
               - name: sjp.events.transparency-report-generation-failed
                 schema_uri: http://justice.gov.uk/json/schemas/domains/sjp/events/sjp.transparency-report-generation-failed.json
 
-              - name: sjp.events.transparency-pdf-report-generation-failed
-                schema_uri: http://justice.gov.uk/json/schemas/domains/sjp/events/sjp.transparency-pdf-report-generation-failed.json
-
               - name: sjp.events.case-application-recorded
                 schema_uri: http://cpp.moj.gov.uk/sjp/event/case-application-recorded.json
 

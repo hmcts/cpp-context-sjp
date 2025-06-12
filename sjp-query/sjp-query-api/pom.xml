@@ -42,24 +42,48 @@
                         <artifactId>material-query-api</artifactId>
                         <version>${material.version}</version>
                         <classifier>raml</classifier>
+                        <exclusions>
+                            <exclusion>
+                                <groupId>*</groupId>
+                                <artifactId>*</artifactId>
+                            </exclusion>
+                        </exclusions>
                     </dependency>
                     <dependency>
                         <groupId>uk.gov.moj.cpp.referencedata.offences</groupId>
                         <artifactId>referencedataoffences-query-api</artifactId>
                         <version>${referencedata.offences.version}</version>
                         <classifier>raml</classifier>
+                        <exclusions>
+                            <exclusion>
+                                <groupId>*</groupId>
+                                <artifactId>*</artifactId>
+                            </exclusion>
+                        </exclusions>
                     </dependency>
                     <dependency>
                         <groupId>uk.gov.moj.cpp.referencedata</groupId>
                         <artifactId>referencedata-query-api</artifactId>
                         <version>${referencedata.version}</version>
                         <classifier>raml</classifier>
+                        <exclusions>
+                            <exclusion>
+                                <groupId>*</groupId>
+                                <artifactId>*</artifactId>
+                            </exclusion>
+                        </exclusions>
                     </dependency>
                     <dependency>
                         <groupId>uk.gov.moj.cpp.usersgroups</groupId>
                         <artifactId>usersgroups-query-api</artifactId>
                         <version>${usersgroups.version}</version>
                         <classifier>raml</classifier>
+                        <exclusions>
+                            <exclusion>
+                                <groupId>*</groupId>
+                                <artifactId>*</artifactId>
+                            </exclusion>
+                        </exclusions>
                     </dependency>
                 </dependencies>
             </plugin>

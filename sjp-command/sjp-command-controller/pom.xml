@@ -77,6 +77,12 @@
                         <artifactId>referencedata-query-api</artifactId>
                         <version>${referencedata.version}</version>
                         <classifier>raml</classifier>
+                        <exclusions>
+                            <exclusion>
+                                <groupId>*</groupId>
+                                <artifactId>*</artifactId>
+                            </exclusion>
+                        </exclusions>
                     </dependency>
                 </dependencies>
             </plugin>

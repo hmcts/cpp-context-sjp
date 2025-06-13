@@ -63,7 +63,6 @@ public class DeleteCaseDocumentIT extends BaseIntegrationTest {
     private final static LocalDate POSTING_DATE = now().minusDays(NOTICE_PERIOD_IN_DAYS + 1);
     private final static User USER = new User("John", "Rambo", randomUUID());
 
-    private CreateCase.CreateCasePayloadBuilder createCasePayloadBuilder;
     private final DeleteCaseDocumentHelper deleteCaseDocumentHelper = new DeleteCaseDocumentHelper();
 
     @BeforeAll

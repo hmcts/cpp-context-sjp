@@ -169,6 +169,11 @@ public class CaseAggregateState implements AggregateState {
     private boolean caseReserved;
     private LocalDate savedAt;
     private ApplicationResultsRecorded applicationResults;
+    private UUID metadataUserId;
+
+    public UUID getMetadataUserId() {return metadataUserId;}
+
+    public void setMetadataUserId(final UUID metadataUserId) {this.metadataUserId = metadataUserId;}
 
     public ApplicationResultsRecorded getApplicationResults() {return applicationResults;}
 

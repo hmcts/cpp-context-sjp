@@ -180,7 +180,10 @@ final class CompositeCaseAggregateStateMutator implements AggregateStateMutator<
     private static final AggregateStateMutator<EmployerUpdated, CaseAggregateState> EMPLOYER_UPDATED_MUTATOR =
             (event, state) -> state.setEmployerDetailsUpdated(true);
     private static final AggregateStateMutator<CaseAssigned, CaseAggregateState> CASE_ASSIGNED_MUTATOR =
-            (event, state) -> state.setAssigneeId(event.getAssigneeId());
+            (event, state) -> {
+                state.setAssigneeId(event.getAssigneeId());
+                state.setMetadataUserId(event.getAssigneeId());
+            };
     private static final AggregateStateMutator<CaseUnassigned, CaseAggregateState> CASE_UNASSIGNED_MUTATOR =
             (event, state) -> state.setAssigneeId(null);
     private static final AggregateStateMutator<CaseAssignmentDeleted, CaseAggregateState> CASE_ASSIGNMENT_DELETED_MUTATOR =

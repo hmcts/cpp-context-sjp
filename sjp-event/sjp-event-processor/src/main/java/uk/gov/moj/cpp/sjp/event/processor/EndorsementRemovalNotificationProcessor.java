@@ -32,6 +32,7 @@ import javax.inject.Inject;
 public class EndorsementRemovalNotificationProcessor {
 
     private static final String COMMAND_NAME = "sjp.command.endorsement-removal-notification-queued";
+    public static final String SJP_COMMAND_UPLOAD_CASE_DOCUMENT = "sjp.command.upload-case-document";
 
     @Inject
     @Value(key = "notificationOfEndorsementsTemplateId")
@@ -76,6 +77,19 @@ public class EndorsementRemovalNotificationProcessor {
         notificationNotify.sendEmail(emailNotification, envelope);
 
         sendNotificationQueuedCommand(envelope);
+
+        uploadDocumentToCaseCommand(envelope, getCaseDetails(envelope).getId(), getFileId(envelope));
+    }
+
+    public void uploadDocumentToCaseCommand(final JsonEnvelope envelope, final UUID caseId, final UUID fileId) {
+        final JsonEnvelope envelopeToSend = envelopeFrom(
+                JsonEnvelope.metadataFrom(envelope.metadata()).withName(SJP_COMMAND_UPLOAD_CASE_DOCUMENT),
+                createObjectBuilder()
+                        .add("caseId", caseId.toString())
+                        .add("caseDocument", fileId.toString())
+                        .add("caseDocumentType", "EndorsementRemovalNotification").build()
+        );
+        sender.send(envelopeToSend);
     }
 
     private void  sendNotificationQueuedCommand(final JsonEnvelope envelope) {

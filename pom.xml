@@ -42,7 +42,7 @@
         <access-control-sjp-providers.version>4.1.4-ATCM</access-control-sjp-providers.version>
         <material.version>17.0.57</material.version>
         <notification.notify.version>17.0.1</notification.notify.version>
-        <referencedata.version>17.0.96</referencedata.version>
+        <referencedata.version>17.0.99</referencedata.version>
         <referencedata.offences.version>17.0.32</referencedata.offences.version>
         <scheduling.version>17.0.11</scheduling.version>
         <authorisation.service.version>0.1.49</authorisation.service.version>

@@ -36,7 +36,7 @@ public final class RuleConstants {
     }
 
     public static List<String> getUploadCaseDocumentActionGroups() {
-        return asList(GROUP_LEGAL_ADVISERS, GROUP_COURT_ADMINISTRATORS, GROUP_SYSTEM_USERS, GROUP_SJP_PROSECUTORS);
+        return asList(GROUP_LEGAL_ADVISERS, GROUP_COURT_ADMINISTRATORS, GROUP_SYSTEM_USERS, GROUP_SJP_PROSECUTORS, GROUP_MAGISTRATES);
     }
 
     public static List<String> getUpdateFinancialMeansGroups() {

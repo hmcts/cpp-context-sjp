@@ -13,6 +13,7 @@ import static uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderF
 
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
 import uk.gov.justice.services.messaging.JsonEnvelope;
+import uk.gov.moj.cpp.sjp.domain.Address;
 import uk.gov.moj.cpp.sjp.event.DefendantPendingChangesAccepted;
 import uk.gov.moj.cpp.sjp.persistence.entity.DefendantDetailUpdateRequest;
 import uk.gov.moj.cpp.sjp.persistence.repository.DefendantDetailUpdateRequestRepository;
@@ -32,7 +33,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 @ExtendWith(MockitoExtension.class)
-public class DefendantPendingChangesAcceptedListenerTest {
+class DefendantPendingChangesAcceptedListenerTest {
     @Mock
     private JsonObjectToObjectConverter jsonObjectToObjectConverter;
     @Mock
@@ -43,8 +44,9 @@ public class DefendantPendingChangesAcceptedListenerTest {
     private ArgumentCaptor<DefendantDetailUpdateRequest> captor;
 
     @Test
-    public void shouldMarkDefendantDetailUpdateRequestAsUpdated() {
+    void shouldMarkDefendantDetailUpdateRequestAsUpdated() {
         ZonedDateTime acceptedAt = ZonedDateTime.now(UTC);
+        String legalEntityName = "ABC Legal Ltd";
 
         UUID caseId = UUID.randomUUID();
         UUID defendantId = UUID.randomUUID();
@@ -65,7 +67,7 @@ public class DefendantPendingChangesAcceptedListenerTest {
                 metadataWithRandomUUID("sjp.events.defendant-pending-changes-accepted"),
                 eventPayload);
         when(jsonObjectToObjectConverter.convert(eventPayload, DefendantPendingChangesAccepted.class))
-                .thenReturn(new DefendantPendingChangesAccepted(caseId, defendantId, acceptedAt));
+                .thenReturn(new DefendantPendingChangesAccepted(caseId, defendantId, acceptedAt, "firstName", "lastName", acceptedAt.toLocalDate(), Address.UNKNOWN, legalEntityName));
         when(defendantDetailUpdateRequestRepository.findBy(caseId)).thenReturn(detailUpdateRequest);
 
         defendantPendingChangesAcceptedListener.defendantPendingChangesAccepted(event);

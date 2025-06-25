@@ -1,0 +1,16 @@
+{
+  "caseId": "1fb5e324-0d69-420f-b12c-7b45de626294",
+  "defendantId": "4e89fdec-b86a-4f5e-8887-6f0daf209edc",
+  "acceptedAt": "2025-05-09",
+  "firstName": "Testy",
+  "lastName": "Testerson",
+  "dateOfBirth": "1990-09-09",
+  "address": {
+    "address1": "14 Tottenham Court Road",
+    "address2": "London",
+    "address3": "England",
+    "address4": "UK",
+    "address5": "Greater London",
+    "postcode": "W1T 1JY"
+  }
+}

@@ -89,7 +89,7 @@ import javax.json.JsonObject;
 @SuppressWarnings({"WeakerAccess", "squid:S1133"})
 public class CaseAggregate implements Aggregate {
 
-    private static final long serialVersionUID = 19L;
+    private static final long serialVersionUID = 20L;
     private static final AggregateStateMutator<Object, CaseAggregateState> AGGREGATE_STATE_MUTATOR = AggregateStateMutator.compositeCaseAggregateStateMutator();
     private static final CaseReadinessHandler caseReadinessHandler = CaseReadinessHandler.INSTANCE;
 
@@ -496,9 +496,15 @@ public class CaseAggregate implements Aggregate {
                             Offence::getJudicialResults
                     ));
             final List<DefendantJudicialResult> defendantJudicialResults = payload.getHearing().getDefendantJudicialResults();
-            if (nonNull(defendantJudicialResults) && !applicationOffenceResultsMap.keySet().isEmpty()) {
-                mergeDefendantJudicialResultsWithOffenceResults(applicationOffenceResultsMap, defendantJudicialResults);
-            }
+            Optional.ofNullable(defendantJudicialResults).ifPresent(defJudicialResults -> defJudicialResults.forEach(defJudicialResult ->
+                    applicationOffenceResultsMap.computeIfPresent(
+                            defJudicialResult.getJudicialResult().getOffenceId(),
+                            (key, existingJudicialResultList) -> {
+                                existingJudicialResultList.add(defJudicialResult.getJudicialResult());
+                                return existingJudicialResultList;
+                            }
+                    )
+            ));
             applicationResultsFromAggregate.getHearing().getCourtApplications()
                     .forEach(courtApplication -> courtApplication.getCourtApplicationCases()
                             .forEach(courtApplicationCase -> courtApplicationCase.getOffences()
@@ -512,23 +518,11 @@ public class CaseAggregate implements Aggregate {
                                         }
                                     })
                             ));
-            return new ApplicationOffencesResults(applicationResultsFromAggregate.getHearing(),
+            return new ApplicationOffencesResults(Hearing.hearing().withValuesFrom(applicationResultsFromAggregate.getHearing()).build(),
                     applicationResultsFromAggregate.getHearingDay(), applicationResultsFromAggregate.getIsReshare(),
                     applicationResultsFromAggregate.getShadowListedOffences(), applicationResultsFromAggregate.getSharedTime());
         } else {
             return null;
         }
-    }
-
-    private static void mergeDefendantJudicialResultsWithOffenceResults(final Map<UUID, List<JudicialResult>> applicationOffenceResultsMap, final List<DefendantJudicialResult> defendantJudicialResults) {
-        applicationOffenceResultsMap.forEach((offenceId, judicialResultsList) -> {
-            if (!defendantJudicialResults.isEmpty() && offenceId.equals(defendantJudicialResults.get(0).getJudicialResult().getOffenceId()) && !judicialResultsList.isEmpty()) {
-                final JudicialResult finalJudicialResult = judicialResultsList.get(judicialResultsList.size() - 1);
-                final String mergedResultText = finalJudicialResult.getResultText() + "\n" + defendantJudicialResults.stream()
-                        .map(obj -> obj.getJudicialResult().getResultText())
-                        .collect(Collectors.joining("\n"));
-                judicialResultsList.set(judicialResultsList.size() - 1, JudicialResult.judicialResult().withValuesFrom(finalJudicialResult).withResultText(mergedResultText).build());
-            }
-        });
     }
 }

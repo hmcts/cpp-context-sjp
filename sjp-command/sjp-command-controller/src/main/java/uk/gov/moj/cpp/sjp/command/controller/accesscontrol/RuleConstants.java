@@ -10,13 +10,14 @@ public final class RuleConstants {
     private static final String GROUP_COURT_ADMINISTRATORS = "Court Administrators";
     private static final String GROUP_SJP_PROSECUTORS = "SJP Prosecutors";
     private static final String SECOND_LINE_SUPPORT = "Second Line Support";
+    private static final String GROUP_MAGISTRATES = "Magistrates";
 
     private RuleConstants() {
         throw new IllegalAccessError("Utility class");
     }
 
     public static List<String> getUploadCaseDocumentActionGroups() {
-        return Arrays.asList(GROUP_LEGAL_ADVISERS, GROUP_COURT_ADMINISTRATORS, GROUP_SYSTEM_USERS, GROUP_SJP_PROSECUTORS);
+        return Arrays.asList(GROUP_LEGAL_ADVISERS, GROUP_COURT_ADMINISTRATORS, GROUP_SYSTEM_USERS, GROUP_SJP_PROSECUTORS, GROUP_MAGISTRATES);
     }
 
     public static List<String> getMarkAsLegalSocCheckedActionGroups() {

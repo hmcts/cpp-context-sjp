@@ -1,5 +1,6 @@
 package uk.gov.moj.cpp.sjp.command.handler;
 
+import static java.util.Objects.nonNull;
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
 
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
@@ -72,6 +73,14 @@ public class CaseCommandHandler {
             sessions.put(offenceId, session);
         }
         return sessions;
+    }
+
+    protected String getUserIdFromCaseAggregate(final UUID caseId) {
+        final EventStream eventStream = eventSource.getStreamById(caseId);
+        final CaseAggregate aCase = aggregateService.get(eventStream, CaseAggregate.class);
+        return nonNull(aCase.getState().getMetadataUserId()) ?
+                aCase.getState().getMetadataUserId().toString() :
+                null;
     }
 
     protected UUID getCaseId(final JsonObject payload) {

@@ -166,7 +166,13 @@ public class CaseDefendantHandler {
         final DefendantPendingChangesAccepted defendantPendingChangesAccepted = defendantPendingChangesAccepted()
                 .withCaseId(caseId)
                 .withDefendantId(defendantId)
-                .withAcceptedAt(updatedDate).build();
+                .withAcceptedAt(updatedDate)
+                .withFirstName(person.getFirstName())
+                .withLastName(person.getLastName())
+                .withDateOfBirth(person.getDateOfBirth())
+                .withAddress(person.getAddress())
+                .withLegalEntityName(person.getLegalEntityName())
+                .build();
         events.add(defendantPendingChangesAccepted);
 
         return events.build();

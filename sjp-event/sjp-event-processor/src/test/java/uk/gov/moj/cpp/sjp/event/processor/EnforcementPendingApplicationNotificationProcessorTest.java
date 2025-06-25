@@ -9,6 +9,7 @@ import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMetadataMatcher.metadata;
@@ -132,10 +133,11 @@ public class EnforcementPendingApplicationNotificationProcessorTest {
 
         processor.sendEmailToNotificationNotify(envelope);
 
-        verify(sender).send(envelopeCaptor.capture());
-        final Envelope<JsonValue> sentEnvelope = envelopeCaptor.getValue();
-        assertThat(sentEnvelope.metadata(), metadata().withName("sjp.command.enforcement-pending-application-queue-notification"));
-        assertThat(sentEnvelope.payload(), payloadIsJson(withJsonPath("$.applicationId", equalTo(event.getApplicationId().toString()))));
+        verify(sender,times(2)).send(envelopeCaptor.capture());
+        final List<Envelope<JsonValue>> envelopesSent = envelopeCaptor.getAllValues();
+        assertThat(envelopesSent.get(0).metadata(), metadata().withName("sjp.command.enforcement-pending-application-queue-notification"));
+        assertThat(envelopesSent.get(0).payload(), payloadIsJson(withJsonPath("$.applicationId", equalTo(event.getApplicationId().toString()))));
+        assertThat(envelopesSent.get(1).metadata(), metadata().withName("sjp.command.upload-case-document"));
     }
 
     @Test

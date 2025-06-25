@@ -36,6 +36,7 @@ import javax.inject.Inject;
 @ServiceComponent(EVENT_PROCESSOR)
 public class EnforcementPendingApplicationNotificationProcessor {
     private static final String QUEUE_EMAIL_NOTIFICATION_COMMAND_NAME = "sjp.command.enforcement-pending-application-queue-notification";
+    public static final String SJP_COMMAND_UPLOAD_CASE_DOCUMENT = "sjp.command.upload-case-document";
 
     @Inject
     @Value(key = "enforcementPendingApplicationNotificationTemplateId", defaultValue = "07d1f043-6052-4d18-adce-58678d0e7018")
@@ -107,6 +108,8 @@ public class EnforcementPendingApplicationNotificationProcessor {
         notificationNotify.sendEmail(emailNotification, envelope);
 
         sendNotificationQueuedCommand(envelope);
+
+       uploadDocumentToCaseCommand(envelope, caseDetails.getId(), getFileId(envelope));
     }
 
     private void sendNotificationQueuedCommand(final JsonEnvelope envelope) {
@@ -116,6 +119,17 @@ public class EnforcementPendingApplicationNotificationProcessor {
                 createObjectBuilder()
                         .add("applicationId", applicationId)
                         .add("queuedTime", ZonedDateTime.now().toString())
+        );
+        sender.send(envelopeToSend);
+    }
+
+    public void uploadDocumentToCaseCommand(final JsonEnvelope envelope, final UUID caseId, final UUID fileId) {
+        final JsonEnvelope envelopeToSend = envelopeFrom(
+                JsonEnvelope.metadataFrom(envelope.metadata()).withName(SJP_COMMAND_UPLOAD_CASE_DOCUMENT),
+                createObjectBuilder()
+                        .add("caseId", caseId.toString())
+                        .add("caseDocument", fileId.toString())
+                        .add("caseDocumentType", "EnforcementPendingApplicationNotification").build()
         );
         sender.send(envelopeToSend);
     }

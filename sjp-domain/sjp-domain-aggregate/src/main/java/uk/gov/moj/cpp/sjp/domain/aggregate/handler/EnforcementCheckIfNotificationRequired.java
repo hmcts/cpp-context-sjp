@@ -1,11 +1,15 @@
 package uk.gov.moj.cpp.sjp.domain.aggregate.handler;
 
 import static java.time.ZonedDateTime.now;
+import static java.util.Collections.emptyList;
 import static java.util.Objects.nonNull;
+import static org.apache.commons.collections.CollectionUtils.isEmpty;
+import static org.apache.commons.collections.CollectionUtils.isNotEmpty;
 
 import uk.gov.justice.core.courts.Address;
 import uk.gov.justice.core.courts.ContactNumber;
 import uk.gov.justice.core.courts.CourtApplication;
+import uk.gov.justice.core.courts.Offence;
 import uk.gov.justice.core.courts.Organisation;
 import uk.gov.justice.core.courts.Person;
 import uk.gov.justice.json.schemas.domains.sjp.ApplicationType;
@@ -13,12 +17,15 @@ import uk.gov.moj.cpp.sjp.domain.EnforcementPendingApplicationRequiredNotificati
 import uk.gov.moj.cpp.sjp.domain.aggregate.state.Application;
 import uk.gov.moj.cpp.sjp.domain.aggregate.state.CaseAggregateState;
 import uk.gov.moj.cpp.sjp.domain.aggregate.state.FinancialImpositionExportDetails;
+import uk.gov.moj.cpp.sjp.domain.decision.DecisionType;
+import uk.gov.moj.cpp.sjp.domain.decision.OffenceDecision;
 import uk.gov.moj.cpp.sjp.event.EnforcementPendingApplicationNotificationRequired;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -41,7 +48,8 @@ public class EnforcementCheckIfNotificationRequired {
             final Application currentApplication = state.getCurrentApplication();
             final ApplicationType applicationType = currentApplication.getType();
             final String gobAccountNumber = financialImpositionExportDetails.getAccountNumber();
-            if (gobAccountNumber != null && isStatDecOrReOpeningApplication(applicationType)) {
+            final List<UUID> clonedOffenceIdList = getCaseOffenceIdList(currentApplication.getCourtApplication());
+            if (gobAccountNumber != null && isStatDecOrReOpeningApplication(applicationType) && hasFinancialImpositionOnTheCase(clonedOffenceIdList, state.getOffenceDecisionsWithOffenceIds())) {
                 final int divisionCode = checkNotificationRequired.getDivisionCode();
                 final EnforcementPendingApplicationNotificationRequired event =
                         enrichEnforcementPendingApplicationNotificationRequired(gobAccountNumber, divisionCode, state);
@@ -49,6 +57,24 @@ public class EnforcementCheckIfNotificationRequired {
             }
         }
         return Stream.empty();
+    }
+
+    private boolean hasFinancialImpositionOnTheCase(final List<UUID> clonedOffenceIdList, final Map<UUID, OffenceDecision> offenceDecisionsByOffenceId) {
+        if (isEmpty(clonedOffenceIdList)) {
+            return true;
+        }
+        return clonedOffenceIdList.stream()
+                .filter(clonedOffenceId -> nonNull(offenceDecisionsByOffenceId.get(clonedOffenceId)))
+                .anyMatch(clonedOffenceId -> offenceDecisionsByOffenceId.get(clonedOffenceId).getType()  == DecisionType.FINANCIAL_PENALTY);
+    }
+
+    private static List<UUID> getCaseOffenceIdList(final CourtApplication courtApplication) {
+        if (nonNull(courtApplication) && isNotEmpty(courtApplication.getCourtApplicationCases())) {
+            return courtApplication.getCourtApplicationCases().stream()
+                    .flatMap(cac -> cac.getOffences().stream())
+                    .map(Offence::getId).collect(Collectors.toList());
+        }
+        return emptyList();
     }
 
     private EnforcementPendingApplicationNotificationRequired enrichEnforcementPendingApplicationNotificationRequired(final String gobAccountNumber,

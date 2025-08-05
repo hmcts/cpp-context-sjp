@@ -17,7 +17,7 @@
 #
 ##################################################################################################
 
-FRAMEWORK_VERSION=17.103.0-M15
+FRAMEWORK_VERSION=$(mvn help:evaluate -Dexpression=framework.version -q -DforceStdout)
 CONTEXT_NAME="sjp"
 USER_NAME="admin"
 PASSWORD="admin"

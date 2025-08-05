@@ -3,7 +3,7 @@
     <parent>
         <artifactId>sjp-viewstore</artifactId>
         <groupId>uk.gov.moj.cpp.sjp</groupId>
-        <version>17.0.95-PEG-1777-SNAPSHOT</version>
+        <version>17.103.0-PEG-1777-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -105,6 +105,12 @@
             <version>${project.version}</version>
         </dependency>
 
+        <dependency>
+            <groupId>com.h2database</groupId>
+            <artifactId>h2</artifactId>
+            <version>${h2.version}</version>
+            <scope>test</scope>
+        </dependency>
 
     </dependencies>
 

@@ -397,7 +397,33 @@ public class DecisionApiTest {
         ));
     }
 
+    @Test
+    public void shouldCaptureCourtScheduleIdInReferForCourtHearingDecision() {
+        final UUID courtScheduleId = randomUUID();
+        final JsonObject nextHearing = createObjectBuilder()
+                .add("id", randomUUID().toString())
+                .add("courtId", "1234")
+                .add("dateAndTime", ZonedDateTime.now(clock.now().getZone()).toString())
+                .add("courtScheduleId", courtScheduleId.toString())
+                .build();
 
+        final JsonObject referDecision = createObjectBuilder()
+                .add("offenceId", OFFENCE1_ID.toString())
+                .add("type", "REFER_FOR_COURT_HEARING")
+                .add("nextHearing", nextHearing)
+                .build();
+
+        final JsonArray offenceDecisions = createArrayBuilder().add(referDecision).build();
+        final JsonEnvelope envelope = createCaseDecisionCommandWithOffence(offenceDecisions);
+
+        decisionApi.saveDecision(envelope);
+
+        verify(sender).send(envelopeCaptor.capture());
+
+        assertThat(envelopeCaptor.getValue().payload().toString(), isJson(
+                withJsonPath("$.offenceDecisions[0].nextHearing.courtScheduleId", is(courtScheduleId.toString()))
+        ));
+    }
 
     private JsonEnvelope createApplicationDecisionCommand(final boolean granted, final String rejectionReason,
                                                           final boolean outOfTime, final String outOfTimeReason) {

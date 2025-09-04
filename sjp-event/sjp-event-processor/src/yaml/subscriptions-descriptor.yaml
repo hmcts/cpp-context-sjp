@@ -221,6 +221,9 @@ subscriptions_descriptor:
         - name: sjp.events.case-already-reserved
           schema_uri: http://justice.gov.uk/json/schemas/domains/sjp/event/case-already-reserved.json
 
+        - name: sjp.events.case-reserve-failed-as-already-completed
+          schema_uri: http://justice.gov.uk/json/schemas/domains/sjp/event/case-reserve-failed-as-already-completed.json
+
         - name: sjp.events.case-unreserved
           schema_uri: http://justice.gov.uk/json/schemas/domains/sjp/event/case-unreserved.json
 

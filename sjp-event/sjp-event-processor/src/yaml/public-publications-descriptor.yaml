@@ -173,4 +173,7 @@ subscriptions_descriptor:
         - name: public.sjp.delete-case-document-request-rejected
           schema_uri: http://cpp.moj.gov.uk/sjp/json/schema/event/public.sjp.delete-case-document-request-rejected.json
 
+        - name: public.sjp.case-reserve-failed-as-already-completed
+          schema_uri: http://cpp.moj.gov.uk/sjp/json/schema/event/public.sjp.case-reserve-failed-as-already-completed.json
+
       event_source_name: public.event.source

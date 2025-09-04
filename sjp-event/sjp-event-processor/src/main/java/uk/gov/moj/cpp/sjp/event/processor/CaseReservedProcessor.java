@@ -11,10 +11,7 @@ import uk.gov.justice.services.core.annotation.Handles;
 import uk.gov.justice.services.core.annotation.ServiceComponent;
 import uk.gov.justice.services.core.sender.Sender;
 import uk.gov.justice.services.messaging.JsonEnvelope;
-import uk.gov.moj.cpp.sjp.event.CaseAlreadyReserved;
-import uk.gov.moj.cpp.sjp.event.CaseAlreadyUnReserved;
-import uk.gov.moj.cpp.sjp.event.CaseReserved;
-import uk.gov.moj.cpp.sjp.event.CaseUnReserved;
+import uk.gov.moj.cpp.sjp.event.*;
 import uk.gov.moj.cpp.sjp.event.processor.service.timers.TimerService;
 
 @ServiceComponent(Component.EVENT_PROCESSOR)
@@ -61,5 +58,12 @@ public class CaseReservedProcessor {
         sender.send(envelop(caseReservedEnvelope.payloadAsJsonObject())
                 .withName("public.sjp.case-already-unreserved")
                 .withMetadataFrom(caseReservedEnvelope));
+    }
+
+    @Handles(CaseReserveFailedAsAlreadyCompleted.EVENT_NAME)
+    public void handleCaseReservedFailedAsAlreadyCompleted(final JsonEnvelope caseReservedFailedEnvelope){
+        sender.send(envelop(caseReservedFailedEnvelope.payloadAsJsonObject())
+                .withName("public.sjp.case-reserve-failed-as-already-completed")
+                .withMetadataFrom(caseReservedFailedEnvelope));
     }
 }

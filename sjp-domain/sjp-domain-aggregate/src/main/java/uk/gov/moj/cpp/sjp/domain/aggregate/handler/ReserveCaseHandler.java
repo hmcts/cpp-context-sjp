@@ -14,6 +14,7 @@ import uk.gov.moj.cpp.sjp.event.CaseAlreadyUnReserved;
 import uk.gov.moj.cpp.sjp.event.CaseMarkedReadyForDecision;
 import uk.gov.moj.cpp.sjp.event.CaseReserved;
 import uk.gov.moj.cpp.sjp.event.CaseUnReserved;
+import uk.gov.moj.cpp.sjp.event.CaseReserveFailedAsAlreadyCompleted;
 
 public class ReserveCaseHandler {
 
@@ -26,6 +27,8 @@ public class ReserveCaseHandler {
         final Stream.Builder<Object> streamBuilder = Stream.builder();
         if(caseAggregateState.getCaseReserved()){
             streamBuilder.add(new CaseAlreadyReserved(caseAggregateState.getCaseId()));
+        }else if(caseAggregateState.isCaseCompleted()){
+            streamBuilder.add(new CaseReserveFailedAsAlreadyCompleted(caseAggregateState.getCaseId()));
         }else {
             final ZonedDateTime reservedAt = ZonedDateTime.now();
             streamBuilder.add(new CaseReserved(caseAggregateState.getCaseId(), caseAggregateState.getUrn(), reservedAt, reservedBy));

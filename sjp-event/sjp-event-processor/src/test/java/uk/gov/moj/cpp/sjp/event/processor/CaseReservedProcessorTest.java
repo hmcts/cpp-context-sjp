@@ -136,4 +136,19 @@ public class CaseReservedProcessorTest {
                         withJsonPath("$.caseId", equalTo(caseId.toString()))
                 )));
     }
+
+    @Test
+    public void shouldRaiseCaseReserveFailedAsAlreadyCompletedPublicEvent() {
+        final JsonEnvelope privateEvent = createEnvelope("sjp.case-reserve-failed-as-already-completed",
+                createObjectBuilder().add("caseId", caseId.toString()).build());
+
+        caseReservedProcessor.handleCaseReservedFailedAsAlreadyCompleted(privateEvent);
+
+        verify(sender).send(envelopeCaptor.capture());
+        final Envelope<JsonValue> sentEnvelope = envelopeCaptor.getValue();
+
+        assertThat(sentEnvelope.metadata().name(), is("public.sjp.case-reserve-failed-as-already-completed"));
+        assertThat(sentEnvelope.payload(),
+                payloadIsJson(withJsonPath("$.caseId", equalTo(caseId.toString()))));
+    }
 }

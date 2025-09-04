@@ -15,11 +15,13 @@ import uk.gov.moj.cpp.sjp.domain.CaseReadinessReason;
 import uk.gov.moj.cpp.sjp.domain.Priority;
 import uk.gov.moj.cpp.sjp.domain.SessionType;
 import uk.gov.moj.cpp.sjp.domain.aggregate.state.CaseAggregateState;
-import uk.gov.moj.cpp.sjp.event.CaseAlreadyReserved;
 import uk.gov.moj.cpp.sjp.event.CaseAlreadyUnReserved;
+import uk.gov.moj.cpp.sjp.event.CaseUnReserved;
+import uk.gov.moj.cpp.sjp.event.CaseAlreadyReserved;
+import uk.gov.moj.cpp.sjp.event.CaseReserveFailedAsAlreadyCompleted;
 import uk.gov.moj.cpp.sjp.event.CaseMarkedReadyForDecision;
 import uk.gov.moj.cpp.sjp.event.CaseReserved;
-import uk.gov.moj.cpp.sjp.event.CaseUnReserved;
+
 
 public class ReserveCaseHandlerTest {
 
@@ -64,6 +66,16 @@ public class ReserveCaseHandlerTest {
         assertThat(eventStream.size(), is(1));
         final CaseAlreadyReserved caseReserved = (CaseAlreadyReserved) eventStream.get(0);
         assertThat(caseReserved.getCaseId(), is(caseAggregateState.getCaseId()));
+    }
+
+    @Test
+    public void shouldNotReserveWhenCaseIsCompleted() {
+        caseAggregateState.markCaseCompleted();
+        final List<Object> eventStream = ReserveCaseHandler.INSTANCE.reserveCase(caseAggregateState, userId).collect(Collectors.toList());
+
+        assertThat(eventStream.size(), is(1));
+        final CaseReserveFailedAsAlreadyCompleted failedEvent = (CaseReserveFailedAsAlreadyCompleted) eventStream.get(0);
+        assertThat(failedEvent.getCaseId(), is(caseAggregateState.getCaseId()));
     }
 
     @Test

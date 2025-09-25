@@ -448,6 +448,9 @@ baseUri: http://localhost:8080/sjp-command-api/command/api/rest/sjp
       (mapping):
           requestType: application/vnd.sjp.mark-as-legal-soc-checked+json
           name: sjp.mark-as-legal-soc-checked
+      (mapping):
+          requestType: application/vnd.sjp.update-offence-code+json
+          name: sjp.update-offence-code
       ...
     body:
       application/vnd.sjp.assign-case+json:
@@ -460,6 +463,11 @@ baseUri: http://localhost:8080/sjp-command-api/command/api/rest/sjp
            !include json/schema/sjp.resubmit-results.json
       application/vnd.sjp.resolve-conviction-court-bdf+json: !!null
       application/vnd.sjp.mark-as-legal-soc-checked+json: !!null
+      application/vnd.sjp.update-offence-code+json:
+        example:
+          !include json/sjp.update-offence-code.json
+        schema:
+          !include json/schema/sjp.update-offence-code.json
 
     responses:
       202:

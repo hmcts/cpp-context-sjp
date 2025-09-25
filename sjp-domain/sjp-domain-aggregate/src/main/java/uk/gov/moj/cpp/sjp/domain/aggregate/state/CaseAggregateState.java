@@ -25,6 +25,7 @@ import uk.gov.moj.cpp.sjp.domain.CaseDocument;
 import uk.gov.moj.cpp.sjp.domain.CaseReadinessReason;
 import uk.gov.moj.cpp.sjp.domain.ContactDetails;
 import uk.gov.moj.cpp.sjp.domain.Interpreter;
+import uk.gov.moj.cpp.sjp.domain.Offence;
 import uk.gov.moj.cpp.sjp.domain.aggregate.domain.DocumentCountByDocumentType;
 import uk.gov.moj.cpp.sjp.domain.decision.ConvictingDecision;
 import uk.gov.moj.cpp.sjp.domain.decision.ConvictingInformation;
@@ -170,6 +171,8 @@ public class CaseAggregateState implements AggregateState {
     private LocalDate savedAt;
     private ApplicationResultsRecorded applicationResults;
     private UUID metadataUserId;
+    private boolean metroLinkSubmittedWithWrongOffence;
+    private List<Offence> offenceData = new ArrayList<>();
 
     public UUID getMetadataUserId() {return metadataUserId;}
 
@@ -1185,5 +1188,22 @@ public class CaseAggregateState implements AggregateState {
     public void setAocpAcceptedPleaDate(final ZonedDateTime aocpAcceptedPleaDate) {
         this.aocpAcceptedPleaDate = aocpAcceptedPleaDate;
     }
+
+    public boolean isMetroLinkSubmittedWithWrongOffence() {
+        return metroLinkSubmittedWithWrongOffence;
+    }
+
+    public void setMetroLinkSubmittedWithWrongOffence(final boolean metroLinkSubmittedWithWrongOffence) {
+        this.metroLinkSubmittedWithWrongOffence = metroLinkSubmittedWithWrongOffence;
+    }
+
+    public List<Offence> getOffenceData() {
+        return offenceData;
+    }
+
+    public void setOffenceData(final List<Offence> offenceData) {
+        this.offenceData = offenceData;
+    }
+
 
 }

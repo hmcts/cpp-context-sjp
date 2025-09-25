@@ -7,7 +7,8 @@ public enum ProsecutingAuthority {
     TVL("TV License"),
     DVLA("Driver and Vehicle Licensing Agency"),
     TFL("Transport for London"),
-    POLICE("Police");
+    POLICE("Police"),
+    METLI("MetroLink");
 
     private String fullName;
 

@@ -54,6 +54,7 @@ import uk.gov.moj.cpp.sjp.domain.aggregate.handler.ResolveConvictionCourtHandler
 import uk.gov.moj.cpp.sjp.domain.aggregate.handler.ResubmitResultsHandler;
 import uk.gov.moj.cpp.sjp.domain.aggregate.handler.SetDatesToAvoidRequiredAggregateHandler;
 import uk.gov.moj.cpp.sjp.domain.aggregate.handler.UpdateAllFinancialMeansAggregateHandler;
+import uk.gov.moj.cpp.sjp.domain.aggregate.handler.UpdateOffenceCodeHandler;
 import uk.gov.moj.cpp.sjp.domain.aggregate.handler.plea.OnlinePleaHandler;
 import uk.gov.moj.cpp.sjp.domain.aggregate.handler.plea.SetPleasHandler;
 import uk.gov.moj.cpp.sjp.domain.aggregate.mutator.AggregateStateMutator;
@@ -81,10 +82,9 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Supplier;
+import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-
-import javax.json.JsonObject;
 
 @SuppressWarnings({"WeakerAccess", "squid:S1133"})
 public class CaseAggregate implements Aggregate {
@@ -524,5 +524,9 @@ public class CaseAggregate implements Aggregate {
         } else {
             return null;
         }
+    }
+
+    public Stream<Object> updateOffenceCode(final UUID caseId, final String offenceCode) {
+        return UpdateOffenceCodeHandler.INSTANCE.updateOffenceCode(getState(), caseId, offenceCode);
     }
 }

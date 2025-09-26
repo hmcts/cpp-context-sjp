@@ -5,8 +5,11 @@ import static com.jayway.jsonassert.JsonAssert.with;
 import static java.lang.String.format;
 import static java.time.LocalDate.now;
 import static java.util.UUID.randomUUID;
+import static java.util.concurrent.TimeUnit.SECONDS;
 import static java.util.stream.Collectors.toList;
+import static javax.json.Json.createObjectBuilder;
 import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
+import static org.awaitility.Awaitility.await;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -19,6 +22,7 @@ import static uk.gov.moj.sjp.it.command.CreateCase.OffenceBuilder.defaultOffence
 import static uk.gov.moj.sjp.it.command.CreateCase.createCaseForPayloadBuilder;
 import static uk.gov.moj.sjp.it.helper.CaseProsecutingAuthorityHelper.getProsecutingAuthority;
 import static uk.gov.moj.sjp.it.model.ProsecutingAuthority.DVLA;
+import static uk.gov.moj.sjp.it.model.ProsecutingAuthority.METLI;
 import static uk.gov.moj.sjp.it.model.ProsecutingAuthority.TFL;
 import static uk.gov.moj.sjp.it.model.ProsecutingAuthority.TVL;
 import static uk.gov.moj.sjp.it.pollingquery.CasePoller.pollUntilCaseByIdIsOk;
@@ -27,6 +31,9 @@ import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubOffenceFineLev
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubProsecutorQuery;
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubQueryOffencesByCode;
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubRegionByPostcode;
+import static uk.gov.moj.sjp.it.stub.UsersGroupsStub.stubForUserDetails;
+import static uk.gov.moj.sjp.it.util.HttpClientUtil.makePostCall;
+import static uk.gov.moj.sjp.it.util.RestPollerWithDefaults.TIMEOUT_IN_SECONDS;
 
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.messaging.JsonObjects;
@@ -49,6 +56,7 @@ import javax.json.Json;
 import javax.json.JsonArray;
 import javax.json.JsonObject;
 import javax.json.JsonValue;
+import javax.ws.rs.core.Response;
 
 import com.jayway.jsonpath.matchers.JsonPathMatchers;
 import io.restassured.path.json.JsonPath;
@@ -68,6 +76,9 @@ public class CreateCaseIT extends BaseIntegrationTest {
 
     private final static String offenceCode1 = "CA03010";
     private final static String offenceCode2 = "CA03011";
+
+    private static final String WRITE_URL_PATTERN = "/cases/%s";
+    private static final String UPDATE_OFFENCE_MEDIA_TYPE = "application/vnd.sjp.update-offence-code+json";
 
     @BeforeEach
     public void setUp(){
@@ -155,6 +166,65 @@ public class CreateCaseIT extends BaseIntegrationTest {
         assertThat(jsonResponse.get("defendant.legalEntityDetails.contactDetails.email") , equalTo(defendant.getContactDetailsBuilder().getEmail()));
         assertThat(jsonResponse.get("defendant.legalEntityDetails.contactDetails.home") , equalTo(defendant.getContactDetailsBuilder().getHome()));
 
+    }
+
+    @Test
+    void shouldUpdateOffenceCodeForMetroLinkProsecutorAuthority() {
+        stubForUserDetails(USER_ID, "ALL");
+        final UUID caseId = randomUUID();
+        final ProsecutingAuthority prosecutingAuthority = METLI;
+        stubProsecutorQuery(prosecutingAuthority.name(), prosecutingAuthority.getFullName(), randomUUID());
+
+        final String offenceCode1 = "GM00001";
+        final String offenceCode2 = "GM00002";
+
+        stubQueryOffencesByCode(offenceCode1);
+        stubQueryOffencesByCode(offenceCode2);
+
+        final int fineLevel = 3;
+        final BigDecimal maxValue = BigDecimal.valueOf(1000);
+
+        stubOffenceFineLevelsQuery(fineLevel, maxValue);
+
+        final CreateCase.CreateCasePayloadBuilder createCase = createMultiOffenceCase(caseId, prosecutingAuthority,
+                newArrayList(offenceCode1));
+
+        final CreateCase.DefendantBuilder defendant = createCase.getDefendantBuilder();
+        defendant.withAsn("12345");
+        defendant.withPncIdentifier("6789");
+        defendant.withLegalEntityName("test");
+        defendant.withFirstName(null);
+        defendant.withLastName(null);
+        defendant.withTitle(null);
+        defendant.withDateOfBirth(null);
+        defendant.withDriverNumber(null);
+        defendant.withGender(null);
+        defendant.withNationalInsuranceNumber(null);
+        defendant.withDriverLicenceDetails(null);
+
+        final Optional<JsonEnvelope> caseReceivedEvent = new EventListener()
+                .subscribe(CaseReceived.EVENT_NAME)
+                .run(() -> createCaseForPayloadBuilder(createCase))
+                .popEvent(CaseReceived.EVENT_NAME);
+
+        assertTrue(caseReceivedEvent.isPresent());
+
+        final JsonPath jsonResponse = pollUntilCaseByIdIsOk(caseId, JsonPathMatchers.withJsonPath("$.status", equalTo(CaseStatus.NO_PLEA_RECEIVED_READY_FOR_DECISION.name())));
+        assertThat(jsonResponse.get("id"), equalTo(caseId.toString()));
+        assertThat(jsonResponse.get("urn"), equalTo(createCase.getUrn()));
+        assertThat(jsonResponse.get("prosecutingAuthorityName"), equalTo(METLI.getFullName()));
+
+        //fire new event
+        final JsonObject updateOffenceCodePayload = createObjectBuilder()
+                .add("offenceCode", offenceCode2)
+                .build();
+
+        makePostCall(USER_ID, format(WRITE_URL_PATTERN, caseId),
+                UPDATE_OFFENCE_MEDIA_TYPE,
+                updateOffenceCodePayload.toString(),
+                Response.Status.ACCEPTED);
+
+        verifyOffenceCode(caseId, offenceCode2);
     }
 
     @Test
@@ -510,5 +580,13 @@ public class CreateCaseIT extends BaseIntegrationTest {
     }
     private JsonObject responseToJsonObject(String response) {
         return Json.createReader(new StringReader(response)).readObject();
+    }
+
+    private static void verifyOffenceCode(final UUID caseId, final String offenceCode2) {
+        await().atMost(TIMEOUT_IN_SECONDS, SECONDS).until(() -> {
+            final JsonPath updateCase = pollUntilCaseByIdIsOk(caseId);
+            assertThat(updateCase.get("prosecutingAuthorityName"), equalTo(METLI.getFullName()));
+            return offenceCode2.equalsIgnoreCase(updateCase.get("defendant.offences[0].offenceCode"));
+        });
     }
 }

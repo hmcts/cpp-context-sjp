@@ -17,6 +17,9 @@ final class CaseReceivedMutator implements AggregateStateMutator<CaseReceived, C
 
     static final CaseReceivedMutator INSTANCE = new CaseReceivedMutator();
 
+    private static final String METRO_LINK = "METLI";
+    public static final String GM00001 = "GM00001";
+
     private CaseReceivedMutator() {
     }
 
@@ -69,5 +72,16 @@ final class CaseReceivedMutator implements AggregateStateMutator<CaseReceived, C
 
         final AOCPCost aocpCost = new AOCPCost(event.getCaseId(), event.getCosts(), aocpCostDefendant);
         state.addAOCPCost(event.getCaseId(), aocpCost);
+
+        // resolving the state here to avoid the un necessary storing of the offence in the aggregate
+        // very specific impl to resolve a prod issue should never be changed to use it for other
+        if (METRO_LINK.equals(state.getProsecutingAuthority()) &&
+                event.getDefendant()
+                        .getOffences()
+                        .stream()
+                        .anyMatch(offence -> GM00001.equals(offence.getLibraOffenceCode()))) {
+            state.setOffenceData(event.getDefendant().getOffences());
+            state.setMetroLinkSubmittedWithWrongOffence(true);
+        }
     }
 }

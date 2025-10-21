@@ -52,10 +52,10 @@ public class FinancialMeansConverterTest {
             assertThat(financialMeans.getIncome().getFrequency(), equalTo(financialMeansEntity.getIncomePaymentFrequency()));
             assertThat(financialMeans.getIncome().getAmount(), equalTo(financialMeansEntity.getIncomePaymentAmount()));
         }
-        if(financialMeans.getBenefits() != null) {
-            assertThat(financialMeans.getBenefits().getClaimed(), equalTo(financialMeansEntity.getBenefitsClaimed()));
-            assertThat(financialMeans.getBenefits().getType(), equalTo(financialMeansEntity.getBenefitsType()));
-        }
+
+        assertThat(financialMeans.getBenefits().getClaimed(), equalTo(financialMeansEntity.getBenefitsClaimed()));
+        assertThat(financialMeans.getBenefits().getType(), equalTo(financialMeansEntity.getBenefitsType()));
+
         assertThat(financialMeans.getEmploymentStatus(), equalTo(financialMeansEntity.getEmploymentStatus()));
     }
 }

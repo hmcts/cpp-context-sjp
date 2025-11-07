@@ -12,6 +12,7 @@ import uk.gov.moj.cpp.sjp.domain.decision.Discharge;
 import uk.gov.moj.cpp.sjp.domain.decision.Dismiss;
 import uk.gov.moj.cpp.sjp.domain.decision.FinancialPenalty;
 import uk.gov.moj.cpp.sjp.domain.decision.NoSeparatePenalty;
+import uk.gov.moj.cpp.sjp.domain.decision.Oats;
 import uk.gov.moj.cpp.sjp.domain.decision.OffenceDecisionInformation;
 import uk.gov.moj.cpp.sjp.domain.decision.OffenceDecisionVisitor;
 import uk.gov.moj.cpp.sjp.domain.decision.PressRestriction;
@@ -27,6 +28,7 @@ import uk.gov.moj.cpp.sjp.persistence.entity.DischargePeriod;
 import uk.gov.moj.cpp.sjp.persistence.entity.DismissOffenceDecision;
 import uk.gov.moj.cpp.sjp.persistence.entity.FinancialPenaltyOffenceDecision;
 import uk.gov.moj.cpp.sjp.persistence.entity.NoSeparatePenaltyOffenceDecision;
+import uk.gov.moj.cpp.sjp.persistence.entity.OatsOffenceDecision;
 import uk.gov.moj.cpp.sjp.persistence.entity.OffenceDecision;
 import uk.gov.moj.cpp.sjp.persistence.entity.OffenceDetail;
 import uk.gov.moj.cpp.sjp.persistence.entity.ReferForCourtHearingDecision;
@@ -97,6 +99,18 @@ public class OffenceDecisionConverter implements OffenceDecisionVisitor {
         );
 
         entities = singletonList(withdrawOffenceDecision);
+    }
+
+    @Override
+    public void visit(final Oats oats) {
+        entities = oats.offenceDecisionInformationAsList()
+                .stream()
+                .map(offenceDecisionInformation -> new OatsOffenceDecision(
+                        offenceDecisionInformation.getOffenceId(),
+                        caseDecisionId,
+                        offenceDecisionInformation.getVerdict(),
+                        getPressRestrictionForMultiOffences(oats, offenceDecisionInformation)
+                )).collect(toList());
     }
 
     @Override

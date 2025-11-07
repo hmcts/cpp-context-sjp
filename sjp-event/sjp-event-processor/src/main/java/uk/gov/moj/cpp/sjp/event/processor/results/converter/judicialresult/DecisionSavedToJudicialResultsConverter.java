@@ -14,6 +14,7 @@ import uk.gov.moj.cpp.sjp.event.processor.results.converter.judicialresult.aggre
 import uk.gov.moj.cpp.sjp.event.processor.results.converter.judicialresult.aggregator.FinancialImpositionDecisionResultAggregator;
 import uk.gov.moj.cpp.sjp.event.processor.results.converter.judicialresult.aggregator.FinancialPenaltyDecisionResultAggregator;
 import uk.gov.moj.cpp.sjp.event.processor.results.converter.judicialresult.aggregator.NoSeparatePenaltyDecisionResultAggregator;
+import uk.gov.moj.cpp.sjp.event.processor.results.converter.judicialresult.aggregator.OatsDecisionResultAggregator;
 import uk.gov.moj.cpp.sjp.event.processor.results.converter.judicialresult.aggregator.ReferForCourtHearingDecisionResultAggregator;
 import uk.gov.moj.cpp.sjp.event.processor.results.converter.judicialresult.aggregator.ReferredForFutureSjpSessionDecisionResultAggregator;
 import uk.gov.moj.cpp.sjp.event.processor.results.converter.judicialresult.aggregator.ReferredToOpenCourtDecisionResultAggregator;
@@ -34,6 +35,9 @@ public class DecisionSavedToJudicialResultsConverter {
 
     @Inject
     private DismissDecisionResultAggregator dismissDecisionResultAggregator;
+
+    @Inject
+    private OatsDecisionResultAggregator oatsDecisionResultAggregator;
 
     @Inject
     private AdjournDecisionResultAggregator adjournDecisionResultAggregator;
@@ -115,6 +119,9 @@ public class DecisionSavedToJudicialResultsConverter {
                 break;
             case DISMISS:
                 dismissDecisionResultAggregator.aggregate(offenceDecision, sjpSessionPayloadObject, resultsAggregate, resultedOn);
+                break;
+            case OATS:
+                oatsDecisionResultAggregator.aggregate(offenceDecision, sjpSessionPayloadObject, resultsAggregate, resultedOn);
                 break;
             case ADJOURN:
                 adjournDecisionResultAggregator.aggregate(offenceDecision, sjpSessionPayloadObject, resultsAggregate, resultOn);

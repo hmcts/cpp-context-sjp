@@ -11,7 +11,8 @@ public enum DecisionType {
     NO_SEPARATE_PENALTY(DecisionName.NO_SEPARATE_PENALTY, true),
     SET_ASIDE(DecisionName.SET_ASIDE, false),
     REFERRED_TO_OPEN_COURT(DecisionName.REFERRED_TO_OPEN_COURT, true),
-    REFERRED_FOR_FUTURE_SJP_SESSION(DecisionName.REFERRED_FOR_FUTURE_SJP_SESSION, true);
+    REFERRED_FOR_FUTURE_SJP_SESSION(DecisionName.REFERRED_FOR_FUTURE_SJP_SESSION, true),
+    OATS(DecisionName.OATS, true);
 
     private final Boolean isFinal;
 
@@ -37,6 +38,7 @@ public enum DecisionType {
         public static final String SET_ASIDE = "SET_ASIDE";
         public static final String REFERRED_TO_OPEN_COURT = "REFERRED_TO_OPEN_COURT";
         public static final String REFERRED_FOR_FUTURE_SJP_SESSION = "REFERRED_FOR_FUTURE_SJP_SESSION";
+        public static final String OATS = "OATS";
 
         private DecisionName() {
         }

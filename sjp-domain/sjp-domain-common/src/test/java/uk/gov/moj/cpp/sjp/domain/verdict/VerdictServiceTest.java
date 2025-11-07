@@ -16,6 +16,7 @@ public class VerdictServiceTest {
         return Stream.of(
                 Arguments.of(PleaType.GUILTY, DecisionType.ADJOURN, ConvictionType.PRE, VerdictType.NO_VERDICT),
                 Arguments.of(PleaType.NOT_GUILTY, DecisionType.WITHDRAW, ConvictionType.PRE, VerdictType.NO_VERDICT),
+                Arguments.of(PleaType.NOT_GUILTY, DecisionType.OATS, ConvictionType.PRE, VerdictType.NO_VERDICT),
                 Arguments.of(PleaType.GUILTY, DecisionType.REFER_FOR_COURT_HEARING, ConvictionType.PRE, VerdictType.FOUND_GUILTY),
                 Arguments.of(PleaType.GUILTY_REQUEST_HEARING, DecisionType.REFER_FOR_COURT_HEARING, ConvictionType.PRE, VerdictType.FOUND_GUILTY),
                 Arguments.of(null, DecisionType.REFER_FOR_COURT_HEARING, ConvictionType.PRE, VerdictType.PROVED_SJP),

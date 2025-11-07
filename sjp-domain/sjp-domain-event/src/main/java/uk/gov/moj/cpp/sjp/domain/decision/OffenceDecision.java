@@ -29,7 +29,8 @@ import org.apache.commons.lang3.builder.HashCodeBuilder;
         @Type(value = ReferredForFutureSJPSession.class, name = DecisionType.DecisionName.REFERRED_FOR_FUTURE_SJP_SESSION),
         @Type(value = FinancialPenalty.class, name = DecisionType.DecisionName.FINANCIAL_PENALTY),
         @Type(value = NoSeparatePenalty.class, name = DecisionType.DecisionName.NO_SEPARATE_PENALTY),
-        @Type(value = SetAside.class, name = DecisionType.DecisionName.SET_ASIDE)
+        @Type(value = SetAside.class, name = DecisionType.DecisionName.SET_ASIDE),
+        @Type(value = Oats.class, name = DecisionType.DecisionName.OATS),
 })
 public abstract class OffenceDecision implements Serializable {
 

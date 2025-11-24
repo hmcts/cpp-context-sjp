@@ -160,7 +160,7 @@ public class PleadOnlineIT extends BaseIntegrationTest {
     private CreateCase.CreateCasePayloadBuilder createCasePayloadBuilder;
     private UUID offenceId;
     final User legalAdviser = user()
-            .withUserId(UUID.fromString("7242d476-9ca3-454a-93ee-78bf148602bf"))
+            .withUserId(USER_ID)
             .withFirstName("John")
             .withLastName("Smith")
             .build();

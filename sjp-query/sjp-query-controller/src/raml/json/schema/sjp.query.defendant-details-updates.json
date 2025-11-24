@@ -1,5 +1,0 @@
-{
-  "$schema": "http://json-schema.org/draft-04/schema#",
-  "id": "http://justice.gov.uk/json/schemas/domains/sjp/query/defendant-details-updates.json",
-  "$ref": "http://justice.gov.uk/json/schemas/domains/sjp/queries/defendant-details-updates.json"
-}

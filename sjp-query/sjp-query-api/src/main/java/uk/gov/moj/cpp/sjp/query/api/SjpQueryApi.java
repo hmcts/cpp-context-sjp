@@ -1,6 +1,7 @@
 package uk.gov.moj.cpp.sjp.query.api;
 
 import static java.util.Optional.ofNullable;
+import static javax.json.Json.createArrayBuilder;
 import static javax.json.Json.createObjectBuilder;
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
 import static uk.gov.justice.services.messaging.JsonEnvelope.metadataFrom;
@@ -12,6 +13,7 @@ import uk.gov.justice.services.core.annotation.Handles;
 import uk.gov.justice.services.core.annotation.ServiceComponent;
 import uk.gov.justice.services.core.enveloper.Enveloper;
 import uk.gov.justice.services.core.requester.Requester;
+import uk.gov.justice.services.messaging.Envelope;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.sjp.query.api.converter.CaseConverter;
 import uk.gov.moj.cpp.sjp.query.api.decorator.DecisionDecorator;
@@ -26,6 +28,7 @@ import uk.gov.moj.cpp.sjp.query.service.WithdrawalReasons;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 import javax.inject.Inject;
 import javax.json.JsonObject;
@@ -33,10 +36,14 @@ import javax.json.JsonObjectBuilder;
 import javax.json.JsonValue;
 import javax.ws.rs.NotFoundException;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 @SuppressWarnings("WeakerAccess")
 @ServiceComponent(Component.QUERY_API)
 public class SjpQueryApi {
 
+    public static final String DEFENDANT_ID = "defendantId";
     @Inject
     private Requester requester;
 
@@ -66,6 +73,8 @@ public class SjpQueryApi {
 
     @Inject
     private CaseConverter caseConverter;
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(SjpQueryApi.class);
 
     @Handles("sjp.query.case")
     public JsonEnvelope findCase(final JsonEnvelope query) {
@@ -163,7 +172,7 @@ public class SjpQueryApi {
                 })
                 .ifPresent(e -> allFinancialMeans.add("employment", e));
 
-        ofNullable(financialMeansEnvelope.payloadAsJsonObject().get("defendantId")).ifPresent(e -> allFinancialMeans.add("defendantId", e));
+        ofNullable(financialMeansEnvelope.payloadAsJsonObject().get(DEFENDANT_ID)).ifPresent(e -> allFinancialMeans.add(DEFENDANT_ID, e));
         ofNullable(financialMeansEnvelope.payloadAsJsonObject().get("income")).ifPresent(e -> allFinancialMeans.add("income", e));
         ofNullable(financialMeansEnvelope.payloadAsJsonObject().get("benefits")).ifPresent(e -> allFinancialMeans.add("benefits", e));
 
@@ -268,7 +277,51 @@ public class SjpQueryApi {
 
     @Handles("sjp.query.defendant-outstanding-fines")
     public JsonEnvelope getOutstandingFines(final JsonEnvelope query) {
-        return requester.request(query);
+
+        final Envelope<DefendantProfilingView> profilingViewEnvelope = requester.request(
+                enveloper.withMetadataFrom(query, "sjp.query.defendant-profile")
+                        .apply(query.payloadAsJsonObject()), DefendantProfilingView.class);
+
+
+        final DefendantProfilingView defendantProfilingView = profilingViewEnvelope.payload();
+        JsonObject payload = null;
+        if (defendantProfilingView != null) {
+            final JsonObjectBuilder payloadBuilder = createObjectBuilder();
+            payloadBuilder
+                    .add(DEFENDANT_ID, defendantProfilingView.getId().toString())
+                    .add("firstname", defendantProfilingView.getFirstName())
+                    .add("lastname", defendantProfilingView.getLastName());
+            if (!Objects.isNull(defendantProfilingView.getDateOfBirth())) {
+                payloadBuilder.add("dob", defendantProfilingView.getDateOfBirth().toString());
+            }
+            if (!Objects.isNull(defendantProfilingView.getNationalInsuranceNumber())) {
+                payloadBuilder.add("ninumber", defendantProfilingView.getNationalInsuranceNumber());
+            }
+            payload = payloadBuilder.build();
+            final JsonEnvelope enforcementRequestEnvelope = requester.requestAsAdmin(
+                    enveloper.withMetadataFrom(query, "stagingenforcement.defendant.outstanding-fines")
+                            .apply(payload));
+
+            final JsonObject outstandingFines = enforcementRequestEnvelope.payloadAsJsonObject();
+
+            logSummary(defendantProfilingView, outstandingFines);
+
+            return enveloper.withMetadataFrom(query, "sjp.query.defendant-outstanding-fines")
+                    .apply(outstandingFines);
+        } else {
+            return enveloper.withMetadataFrom(query, "sjp.query.defendant-outstanding-fines")
+                    .apply(createObjectBuilder().add("outstandingFines", createArrayBuilder()).build());
+        }
+    }
+
+    private void logSummary(final DefendantProfilingView defendantProfilingView, final JsonObject outstandingFines) {
+        int numberOfFines = 0;
+        try {
+            numberOfFines = outstandingFines.getJsonArray("outstandingFines").size();
+        } catch (final ClassCastException e) {
+            LOGGER.trace(e.getMessage(), e);
+        }
+        LOGGER.info("OutstandingFines for {}: {} ", defendantProfilingView.getId(), numberOfFines);
     }
 
     @Handles("sjp.query.cases-without-defendant-postcode")

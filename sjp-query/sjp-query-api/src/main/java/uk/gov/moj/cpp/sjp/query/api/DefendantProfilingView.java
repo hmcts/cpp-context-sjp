@@ -1,4 +1,4 @@
-package uk.gov.moj.cpp.sjp.query.controller.response;
+package uk.gov.moj.cpp.sjp.query.api;
 
 import java.time.LocalDate;
 import java.util.Objects;

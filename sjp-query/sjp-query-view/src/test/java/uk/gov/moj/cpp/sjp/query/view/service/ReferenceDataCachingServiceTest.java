@@ -1,0 +1,55 @@
+package uk.gov.moj.cpp.sjp.query.view.service;
+
+import static javax.json.Json.createReader;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import uk.gov.justice.services.core.requester.Requester;
+
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
+
+import javax.json.JsonArray;
+import javax.json.JsonObject;
+
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.hasItem;
+import static org.hamcrest.Matchers.hasProperty;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.inOrder;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+import org.mockito.junit.jupiter.MockitoExtension;
+
+@ExtendWith(MockitoExtension.class)
+public class ReferenceDataCachingServiceTest {
+
+    @Mock
+    private Requester requester;
+
+    @Mock
+    private ReferenceDataService referenceDataService;
+
+    @InjectMocks
+    private ReferenceDataCachingService cache;
+
+    @Test
+    public void shouldGetAllProsecutors() {
+        when(referenceDataService.getAllProsecutors()).thenReturn(prosecutorsResponseEnvelope());
+        assertTrue(Objects.nonNull(cache.getAllProsecutors()));
+        assertEquals(1, cache.getAllProsecutors().size());
+    }
+
+    private Optional<JsonArray> prosecutorsResponseEnvelope() {
+        final JsonObject prosecutorsData = createReader(getClass().getClassLoader().getResourceAsStream("prosecutors-ref-data.json")).readObject();
+        return Optional.ofNullable(prosecutorsData.getJsonArray("prosecutors"));
+    }
+
+}

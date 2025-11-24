@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+         http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.3.xsd">
+
+    <changeSet id="88" author="koray.kaya"
+               logicalFilePath="liquibase/sjp-view-store-db-changelog.xml">
+
+        <addColumn tableName="transparency_report_metadata">
+            <column name="file_service_id" type="uuid"/>
+            <column name="number_of_pages" type="integer"/>
+            <column name="size_in_bytes" type="integer"/>
+            <column name="document_format" type="TEXT"/>
+            <column name="document_request_type" type="TEXT"/>
+            <column name="title" type="TEXT"/>
+            <column name="language" type="TEXT"/>
+        </addColumn>
+    </changeSet>
+
+</databaseChangeLog>

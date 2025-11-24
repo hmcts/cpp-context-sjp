@@ -1,0 +1,92 @@
+responses:
+   202?:
+     headers:
+      Content-Type :
+        description: MIME Type of the response body
+        type: string
+        example: text/plain; charset=utf-8
+      Content-Encoding:
+        description: Indicates encoding, mostly for gzip compression
+        type: string
+        example: gzip
+      #X-UID:
+      #  description: IdAM authentication token
+      #  type: string
+      #  example: 8fd7b660-b755-413c-8073-0648baf312a6
+      #CP-Version:
+      #  description: Platform service sub-version indicator, in the form of a date YYYY-MM-DD.
+      #  type: string
+      #  example: 2015-08-27
+   200?:
+     headers:
+      Content-Type :
+        description: MIME Type of the response body
+        type: string
+        example: text/plain; charset=utf-8
+      Content-Encoding:
+        description: Indicates encoding, mostly for gzip compression
+        type: string
+        example: gzip
+      #X-UID:
+      #  description: IdAM authentication token
+      #  type: string
+      #  example: 8fd7b660-b755-413c-8073-0648baf312a6
+      #CP-Version:
+      #  description: Platform service sub-version indicator, in the form of a date YYYY-MM-DD.
+      #  type: string
+      #  example: 2015-08-27
+   500?:
+     headers:
+      Content-Type :
+        description: MIME Type of the response body
+        type: string
+        example: text/plain; charset=utf-8
+      Content-Encoding:
+        description: Indicates encoding, mostly for gzip compression
+        type: string
+        example: gzip
+     # X-UID:
+     #   description: IdAM authentication token
+     #   type: string
+     #   example: 8fd7b660-b755-413c-8073-0648baf312a6
+     # CP-Version:
+     #   description: Platform service sub-version indicator, in the form of a date YYYY-MM-DD.
+     #   type: string
+     #   example: 2015-08-27
+   400?:
+     headers:
+      Content-Type :
+        description: MIME Type of the response body
+        type: string
+        example: text/plain; charset=utf-8
+      Content-Encoding:
+        description: Indicates encoding, mostly for gzip compression
+        type: string
+        example: gzip
+      #X-UID:
+      #  description: IdAM authentication token
+      #  type: string
+      #  example: 8fd7b660-b755-413c-8073-0648baf312a6
+      #CP-Version:
+      #  description: Platform service sub-version indicator, in the form of a date YYYY-MM-DD.
+      #  type: string
+      #  example: 2015-08-27
+        
+   404?:
+     headers:
+      Content-Type :
+        description: MIME Type of the response body
+        type: string
+        example: text/plain; charset=utf-8
+      Content-Encoding:
+        description: Indicates encoding, mostly for gzip compression
+        type: string
+        example: gzip
+      #X-UID:
+      #  description: IdAM authentication token
+      #  type: string
+      #  example: 8fd7b660-b755-413c-8073-0648baf312a6
+      #CP-Version:
+      #  description: Platform service sub-version indicator, in the form of a date YYYY-MM-DD.
+      #  type: string
+      #  example: 2015-08-27

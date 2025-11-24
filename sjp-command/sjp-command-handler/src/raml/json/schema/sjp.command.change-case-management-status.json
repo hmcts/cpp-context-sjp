@@ -1,0 +1,18 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://justice.gov.uk/json/schemas/domains/sjp/command/sjp.command.change-case-management-status.json",
+  "type": "object",
+  "properties": {
+    "caseId": {
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+    },
+    "caseManagementStatus": {
+      "$ref": "http://justice.gov.uk/json/schemas/domains/sjp/case-management-status.json"
+    }
+  },
+  "additionalProperties": false,
+  "required": [
+    "caseId",
+    "caseManagementStatus"
+  ]
+}

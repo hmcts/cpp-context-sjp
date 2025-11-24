@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+         http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.3.xsd">
+
+    <changeSet id="086-create-defendant-update-request-table" author="team/pet1/koray.kaya">
+        <createTable tableName="defendant_update_request">
+            <column name="case_id" type="uuid">
+                <constraints primaryKey="true"/>
+            </column>
+            <column name="defendant_id" type="uuid"/>
+            <column name="first_name" type="text"/>
+            <column name="last_name" type="text"/>
+            <column name="legal_entity_name" type="text"/>
+            <column name="date_of_birth" type="date"/>
+            <column name="address1" type="text"/>
+            <column name="address2" type="text"/>
+            <column name="address3" type="text"/>
+            <column name="address4" type="text"/>
+            <column name="address5" type="text"/>
+            <column name="postcode" type="text"/>
+            <column name="status" type="text"/>
+            <column name="updated_at" type="date"/>
+            <column name="name_updated" type="boolean"/>
+            <column name="address_updated" type="boolean"/>
+            <column name="dob_updated" type="boolean"/>
+        </createTable>
+    </changeSet>
+</databaseChangeLog>

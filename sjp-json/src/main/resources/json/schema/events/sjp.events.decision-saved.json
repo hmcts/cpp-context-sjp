@@ -1,0 +1,48 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://justice.gov.uk/json/schemas/domains/sjp/event/decision-saved.json",
+  "type": "object",
+  "properties": {
+    "decisionId": {
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+    },
+    "sessionId": {
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+    },
+    "caseId": {
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+    },
+    "urn": {
+      "type": "string"
+    },
+    "defendantId": {
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+    },
+    "defendantName": {
+      "type": "string"
+    },
+    "savedAt": {
+      "$ref": "http://justice.gov.uk/json/schemas/domains/sjp/temporal.json#/definitions/date-time"
+    },
+    "offenceDecisions": {
+      "$ref": "http://justice.gov.uk/json/schemas/domains/sjp/offence-decisions.json"
+    },
+    "financialImposition": {
+      "$ref": "http://cpp.moj.gov.uk/core/sjp/decision/financial-imposition/financialImposition.json"
+    },
+    "resultedThroughAOCP": {
+      "type": "boolean"
+    },
+    "applicationFlow": {
+      "type": "boolean"
+    }
+  },
+  "required": [
+    "decisionId",
+    "sessionId",
+    "caseId",
+    "savedAt",
+    "offenceDecisions"
+  ],
+  "additionalProperties": false
+}

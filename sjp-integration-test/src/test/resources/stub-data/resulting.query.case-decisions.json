@@ -1,0 +1,80 @@
+{
+  "caseDecisions": [
+    {
+      "id": "6a31571f-a46f-4895-a2dc-0e3dab5c1301",
+      "caseId": "237ed89a-3d51-4d27-ba94-bddd417abf3c",
+      "sjpSessionId": "db91cbba-db65-4379-9dd0-3d7cbe858e24",
+      "created": "2015-08-04T10:11:00Z",
+      "note": "my note",
+      "verdict": "PSJ",
+      "offences": [
+        {
+          "id": "7d566f6c-f7ac-484c-bfb6-38fde2d687da",
+          "results": [
+            {
+              "code": "GSJ",
+              "registerText": "Guilty Plea(s) accepted Single Justice Procedure",
+              "terminalEntries": [
+              ]
+            },
+            {
+              "code": "FO",
+              "registerText": "Fined £40.00",
+              "terminalEntries": [
+                {
+                  "index": 1,
+                  "value": "40.00"
+                }
+              ]
+            },
+            {
+              "code": "FCOMP",
+              "registerText": "To pay compensation of £1.50",
+              "terminalEntries": [
+                {
+                  "index": 1,
+                  "value": "1.50"
+                }
+              ]
+            },
+            {
+              "code": "FVS",
+              "registerText": "To pay victim surcharge of £20.00",
+              "terminalEntries": [
+                {
+                  "index": 1,
+                  "value": "20.00"
+                }
+              ]
+            },
+            {
+              "code": "FCOST",
+              "registerText": "To pay costs of £80.00",
+              "terminalEntries": [
+                {
+                  "index": 1,
+                  "value": "80.00"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": null,
+          "results": [
+            {
+              "code": "COLLO",
+              "registerText": "Balance to pay £141.50. To be paid by 29/10/2015",
+              "terminalEntries": [
+                {
+                  "index": 1,
+                  "value": "141.50"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

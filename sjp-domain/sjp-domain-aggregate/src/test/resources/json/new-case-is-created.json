@@ -1,0 +1,20 @@
+{
+  "_metadata": {
+    "name": "sjp.events.case-received"
+  },
+  "urn": "TFL34652354",
+  "prosecutingAuthority": "TVL",
+  "postingDate":"2019-07-01",
+  "defendant": {
+    "id": "*",
+    "numPreviousConvictions": 0,
+    "offences": [
+      {
+        "offenceSequenceNo": 0,
+        "libraOffenceDateCode": 0
+      }
+    ]
+  },
+  "createdOn": "2012-02-22T02:06:58.147Z",
+  "expectedDateReady": "2019-07-29"
+}

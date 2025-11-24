@@ -1,0 +1,18 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://cpp.moj.gov.uk/sjp/json/schema/event/public-plea-cancelled.json",
+  "type": "object",
+  "properties": {
+    "caseId": {
+      "type": "string"
+    },
+    "offenceId": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "caseId",
+    "offenceId"
+  ],
+  "additionalProperties": false
+}

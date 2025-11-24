@@ -1,0 +1,62 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://justice.gov.uk/json/schemas/domains/sjp.query.cases-for-soc-check.json",
+  "type": "object",
+  "properties": {
+    "cases": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+          },
+          "urn": {
+            "type": "string"
+          },
+          "lastUpdatedDate": {
+            "$ref": "http://justice.gov.uk/json/schemas/domains/sjp/temporal.json#/definitions/date-time"
+          },
+          "magistrate": {
+            "type": "string"
+          },
+          "legalAdvisor": {
+            "type": "string"
+          },
+          "prosecutingAuthority": {
+            "type": "string"
+          }
+        },
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "urn",
+          "lastUpdatedDate",
+          "magistrate",
+          "legalAdvisor",
+          "prosecutingAuthority"
+        ]
+      }
+    }
+  },
+  "totalCount": {
+    "type": "integer"
+  },
+  "numberOfPages": {
+    "type": "integer"
+  },
+  "pageNumber": {
+    "type": "integer"
+  },
+  "pageSize": {
+    "type": "integer"
+  },
+  "additionalProperties": false,
+  "required": [
+    "cases",
+    "totalCount",
+    "numberOfPages",
+    "pageNumber",
+    "pageSize"
+  ]
+}

@@ -1,0 +1,7 @@
+<kmodule xmlns="http://www.drools.org/xsd/kmodule">
+    <kbase name="QUERY_CONTROLLER"
+           packages="uk.gov.moj.cpp.sjp.query.controller.accesscontrol"
+           default="false">
+        <ksession name="QUERY_CONTROLLER_SESSION" default="false" type="stateless"/>
+    </kbase>
+</kmodule>

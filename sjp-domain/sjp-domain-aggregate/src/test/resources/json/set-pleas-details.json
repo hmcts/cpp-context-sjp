@@ -1,0 +1,24 @@
+{
+  "caseId": "c4ec3a35-76bf-4649-b43a-761e71c3765e",
+  "userId": "c4ec3a35-76bf-4649-b43a-761e71c3763e",
+  "pleadAt": "2019-06-01T02:06:58.147Z",
+  "pleas": {
+    "defendantCourtOptions": {
+      "welshHearing": false,
+      "interpreter": {
+        "language": "French",
+        "needed": true
+      },
+      "disabilityNeeds": {
+        "needed" : false
+      }
+    },
+    "pleas": [
+      {
+        "offenceId": "042c541a-55b5-4f66-98f0-46b9e560f1b5",
+        "defendantId": "50770ba9-37ea-4713-8cab-fe5bf1202716",
+        "pleaType": "NOT_GUILTY"
+      }
+    ]
+  }
+}

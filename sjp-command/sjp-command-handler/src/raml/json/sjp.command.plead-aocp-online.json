@@ -1,0 +1,33 @@
+{
+  "caseId": "1fb5e324-0d69-420f-b12c-7b45de626294",
+  "defendantId": "4e89fdec-b86a-4f5e-8887-6f0daf209edc",
+  "personalDetails": {
+    "firstName": "Testy",
+    "lastName": "Testerson",
+    "address": {
+      "address1": "14 Tottenham Court Road",
+      "address2": "London",
+      "address3": "England",
+      "address4": "UK",
+      "address5": "Greater London",
+      "postcode": "W1T 1JY"
+    },
+    "contactDetails": {
+      "home": "0208000888",
+      "mobile": "07890123123",
+      "email": "criminal@gmail.com"
+    },
+    "dateOfBirth": "1990-09-09",
+    "nationalInsuranceNumber": "AB123456A",
+    "region": "South-end-on-sea",
+    "driverNumber": "TESTY708166G99KZ"
+  },
+  "offences": [
+    {
+      "id": "ecf30a03-8a17-4fc5-81d2-b72ac0a13d17",
+      "plea": "NOT_GUILTY",
+      "notGuiltyBecause": "I was forced to do it"
+    }
+  ],
+  "aocpAccepted": true
+}

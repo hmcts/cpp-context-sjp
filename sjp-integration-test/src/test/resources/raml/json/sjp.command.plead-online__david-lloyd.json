@@ -1,0 +1,91 @@
+{
+  "personalDetails": {
+    "firstName": "David",
+    "lastName": "LLOYD",
+    "address": {
+      "address1": "14 Tottenham Court Road",
+      "address2": "London",
+      "address3": "England",
+      "address4": "UK",
+      "address5": "Greater London",
+      "postcode": "W1T 1JY"
+    },
+    "contactDetails": {
+      "home": "02087654321",
+      "mobile": "07123456789",
+      "email": "email@email.com"
+    },
+    "dateOfBirth": "1980-07-15",
+    "nationalInsuranceNumber": "BB123456B",
+    "driverNumber": "MORGA753116SM9IB"
+  },
+  "offences": [
+    {
+      "id": "${offenceId1}",
+      "plea": "${plea1}",
+      "mitigation": "${mitigation}"
+    },
+    {
+      "id": "${offenceId2}",
+      "plea": "${plea2}",
+      "notGuiltyBecause": "${notGuiltyBecause}"
+    },
+    {
+      "id": "${offenceId3}",
+      "plea": "${plea3}"
+    }
+  ],
+  "outstandingFines": true,
+  "comeToCourt": false,
+  "financialMeans": {
+    "income": {
+      "amount": 200.25,
+      "frequency": "MONTHLY"
+    },
+    "benefits": {
+      "claimed": true,
+      "type": "jobseekers allowance",
+      "deductPenaltyPreference": false
+    },
+    "employmentStatus": "EMPLOYED"
+  },
+  "employer": {
+    "employeeReference": "12345",
+    "name": "Pret a manger",
+    "phone": "020 7998 0007",
+    "address": {
+      "address1": "18 Tottenham Court Road",
+      "address2": "London",
+      "address3": "England",
+      "address4": "UK",
+      "address5": "Greater London",
+      "postcode": "W1T 1JY"
+    }
+  },
+  "outgoings": [
+    {
+      "description": "Accommodation",
+      "amount": 500.30
+    },
+    {
+      "description": "Council Tax",
+      "amount": 120.50
+    },
+    {
+      "description": "Household bills",
+      "amount": 50.80
+    },
+    {
+      "description": "Travel expenses",
+      "amount": 100.10
+    },
+    {
+      "description": "Child maintenance",
+      "amount": 500.20
+    },
+    {
+      "description": "Other",
+      "amount": 500.40
+    }
+  ]
+}

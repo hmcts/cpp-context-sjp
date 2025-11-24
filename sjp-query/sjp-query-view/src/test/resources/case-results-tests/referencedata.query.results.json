@@ -1,0 +1,438 @@
+[
+  {
+    "id": "02dfe808-7c3e-4833-b1ae-ec71622aa293",
+    "code": "INSTL",
+    "registerText": "Instalments of £{96} to be paid {97} starting {98}",
+    "registerTextWelsh": "Rhandaliadau o £{96} i’w talu {97} yn cychwyn ar {98}",
+    "category": "Final Disposal",
+    "resultSetCode": "FCOLO",
+    "resultSetName": "Notice of Collection Orders",
+    "resultTitle": "Instalments only",
+    "terminalEntries": [
+      {
+        "id": "6a0af74b-ccc3-4658-bd22-59ec17b26326",
+        "resultId": "02dfe808-7c3e-4833-b1ae-ec71622aa293",
+        "index": 1,
+        "name": "Amount of surcharge",
+        "lastModified": "2017-04-12T11:16:38.089Z"
+      }
+    ],
+    "lastModified": "2020-02-21T12:35:52.231Z"
+  },
+  {
+    "id": "09c23115-d9bc-40fb-bc39-3da1ad476ec9",
+    "code": "TFOOUT",
+    "registerText": "{1}",
+    "registerTextWelsh": "{1}",
+    "category": "Final Disposal",
+    "resultSetCode": "EEOF",
+    "resultSetName": "Fine Enforcement",
+    "resultTitle": "Transfer of Fine Order to a Court in England or Wales",
+    "terminalEntries": [],
+    "lastModified": "2020-02-21T12:35:52.330Z"
+  },
+  {
+    "id": "0c28787f-536d-410c-ad22-ebb2810ec67a",
+    "code": "SUMRCC",
+    "registerText": "Referred to full court hearing. Reason: {35}.",
+    "registerTextWelsh": "Wedi ei gyfeirio am wrandawiad llys llawn. Rheswm:{35}.",
+    "category": "Interim",
+    "resultSetCode": "SUMREIS",
+    "resultSetName": "Summons",
+    "resultTitle": "Summons on referral to criminal court",
+    "cjsCode": 4506,
+    "terminalEntries": [],
+    "lastModified": "2020-02-21T12:35:52.422Z"
+  },
+  {
+    "id": "34caaf8e-30b6-42ad-95aa-84d80e462de9",
+    "code": "NCR",
+    "registerText": "{1}",
+    "registerTextWelsh": "{1}",
+    "category": "Ancillary",
+    "resultSetCode": "NOREAS",
+    "resultSetName": "No Order Reason",
+    "resultTitle": "No compensation reason",
+    "terminalEntries": [],
+    "lastModified": "2020-02-21T12:35:52.544Z"
+  },
+  {
+    "id": "35747206-079b-4274-9ef4-90345ee81901",
+    "code": "NCOLLO",
+    "registerText": "{4}",
+    "registerTextWelsh": "{4}",
+    "category": "Final Disposal",
+    "resultSetCode": "FCOLO",
+    "resultSetName": "Notice of Collection Orders",
+    "resultTitle": "No collection order made",
+    "terminalEntries": [],
+    "lastModified": "2020-02-21T12:35:52.673Z"
+  },
+  {
+    "id": "37ce4bde-501f-40a4-9137-740b13ef0825",
+    "code": "AEOC",
+    "registerText": "£{15}. Reason: {10}",
+    "registerTextWelsh": "£{15}. Rheswm: {10}",
+    "category": "Final Disposal",
+    "resultSetCode": "FCOLO",
+    "resultSetName": "Notice of Collection Orders",
+    "resultTitle": "Attachment of earnings order",
+    "terminalEntries": [],
+    "lastModified": "2020-02-21T12:35:52.790Z"
+  },
+  {
+    "id": "39df140d-193d-4d39-9062-edf263a2d9d6",
+    "code": "NCOSTS",
+    "registerText": "{5}",
+    "registerTextWelsh": "{5}",
+    "category": "Ancillary",
+    "resultSetCode": "NOREAS",
+    "resultSetName": "No Order Reason",
+    "resultTitle": "No order for costs",
+    "terminalEntries": [],
+    "lastModified": "2020-02-21T12:35:52.909Z"
+  },
+  {
+    "id": "466812c3-e065-4b42-b767-1e2f92311961",
+    "code": "NSP",
+    "registerText": "No separate penalty",
+    "registerTextWelsh": "Dim cosb ar wahân",
+    "category": "Final Disposal",
+    "resultSetCode": "DISPO",
+    "resultSetName": "Disposal (Other)",
+    "resultTitle": "No separate penalty",
+    "cjsCode": 1057,
+    "terminalEntries": [],
+    "lastModified": "2020-02-21T12:35:52.995Z"
+  },
+  {
+    "id": "58a12d7d-81f5-473a-8c7d-3d19cfe3e781",
+    "code": "FVS",
+    "registerText": "£{1}",
+    "registerTextWelsh": "£{1}",
+    "category": "Final Disposal",
+    "resultSetCode": "EFINIMP",
+    "resultSetName": "Financial Impositions",
+    "resultTitle": "Victim Surcharge",
+    "cjsCode": 3117,
+    "terminalEntries": [
+      {
+        "id": "122237b4-5a46-44d1-aebb-67fae0a673f3",
+        "resultId": "58a12d7d-81f5-473a-8c7d-3d19cfe3e781",
+        "index": 1,
+        "name": "Amount of surcharge",
+        "lastModified": "2017-04-12T11:16:38.089Z"
+      }
+    ],
+    "lastModified": "2020-02-21T12:35:53.083Z"
+  },
+  {
+    "id": "5bc6b1e3-acbc-4daf-9689-d54f4e532256",
+    "code": "ABDC",
+    "registerText": "Sum to be recovered £{1}. Reason: {2}",
+    "registerTextWelsh": "Swm i’w adennill £{1}. Rheswm: {2}",
+    "category": "Final Disposal",
+    "resultSetCode": "FCOLO",
+    "resultSetName": "Notice of Collection Orders",
+    "resultTitle": "Application made for benefit deductions",
+    "terminalEntries": [],
+    "lastModified": "2020-02-21T12:35:53.181Z"
+  },
+  {
+    "id": "5ea16ab3-6a93-454d-82ea-2f103017350b",
+    "code": "SUMRTO",
+    "registerText": "Summons issued for hearing before {15} on {5} at {20} at {10}. Reason: {35}.",
+    "registerTextWelsh": "Gwŷs wedi ei chodi am wrandawiad gerbron  {15} ar {5} am {20} yn {10}. Rheswm: {35}.",
+    "category": "Interim",
+    "resultSetCode": "SUMREIS",
+    "resultSetName": "Summons",
+    "resultTitle": "Summons on referral to other court",
+    "cjsCode": 4506,
+    "terminalEntries": [],
+    "lastModified": "2020-02-21T12:35:53.296Z"
+  },
+  {
+    "id": "76364120-9855-4fac-b506-3d47bfb44ee0",
+    "code": "LSUMI",
+    "registerText": "A lump sum of £{96} to be paid, followed by instalments of £{98} paid {100} starting {99}",
+    "registerTextWelsh": "Cyfandaliad o £{96} i’w dalu, gyda rhandaliadau i ddilyn o £{98} i’w talu {100} yn cychwyn ar {99}",
+    "category": "Final Disposal",
+    "resultSetCode": "FCOLO",
+    "resultSetName": "Notice of Collection Orders",
+    "resultTitle": "Lump sum plus instalments",
+    "terminalEntries": [
+      {
+        "id": "9f9f1462-35b5-4f50-877e-08f03d4e9088",
+        "resultId": "76364120-9855-4fac-b506-3d47bfb44ee0",
+        "index": 96,
+        "name": "Lump sum amount",
+        "lastModified": "2017-04-12T11:16:38.089Z"
+      },
+      {
+        "id": "82bcbd94-84f5-4d93-99ad-26cf0ac90f7e",
+        "resultId": "76364120-9855-4fac-b506-3d47bfb44ee0",
+        "index": 98,
+        "name": "Instalment amount",
+        "lastModified": "2017-04-12T11:16:38.089Z"
+      }
+    ],
+    "lastModified": "2020-02-21T12:35:53.393Z"
+  },
+  {
+    "id": "77b04a79-3857-48cd-a35b-02c37f7b92fe",
+    "code": "GPTAC",
+    "registerText": "Guilty plea taken into account when imposing sentence",
+    "registerTextWelsh": "Os pledir yn euog, rhoir ystyriaeth i hynny wrth ddedfrydu",
+    "category": "Ancillary",
+    "resultSetCode": "GPTA",
+    "resultSetName": "Guilty Plea taken into account",
+    "resultTitle": "Guilty Plea taken into account",
+    "terminalEntries": [],
+    "lastModified": "2020-02-21T12:35:53.502Z"
+  },
+  {
+    "id": "789870af-531f-4c94-8fb9-456ea413a3c9",
+    "code": "AD",
+    "registerText": "-",
+    "registerTextWelsh": "-",
+    "category": "Final Disposal",
+    "resultSetCode": "ADIS",
+    "resultSetName": "Absolute Discharge",
+    "resultTitle": "Absolute Discharge",
+    "cjsCode": 1017,
+    "terminalEntries": [],
+    "lastModified": "2020-02-21T12:35:53.634Z"
+  },
+  {
+    "id": "7e7c97c9-3209-4f32-b623-a3b7525c4d99",
+    "code": "RLSUMI",
+    "registerText": "A lump sum of £{96} to be paid, followed by instalments of £{98} paid {100} starting {99}",
+    "registerTextWelsh": "Cyfandaliad o £{96} i’w dalu, gyda rhandaliadau i ddilyn o £{98} i’w talu {100} yn cychwyn ar {99}",
+    "category": "Final Disposal",
+    "resultSetCode": "FCOLO",
+    "resultSetName": "Notice of Collection Orders",
+    "resultTitle": "Reserve Terms Lump sum plus instalments",
+    "terminalEntries": [],
+    "lastModified": "2020-02-21T12:35:53.765Z"
+  },
+  {
+    "id": "861ed282-d1fd-41a3-b022-8e317de5183b",
+    "code": "RSJP",
+    "registerText": "Closed: Referred for future SJP session",
+    "registerTextWelsh": "Wedi cau: Wedi ei gyfeirio am sesiwn SJP ar adeg yn y dyfodol",
+    "category": "Interim",
+    "resultSetCode": "DISPO",
+    "resultSetName": "Disposal (Other)",
+    "resultTitle": "Referred for other SJP session",
+    "terminalEntries": [],
+    "lastModified": "2020-02-21T12:35:53.901Z"
+  },
+  {
+    "id": "8b35952f-2d6e-479d-99aa-25b55611b130",
+    "code": "LSUM",
+    "registerText": "£{5} to be paid as a {6}",
+    "registerTextWelsh": "£{5} i’w dalu fel {6}",
+    "category": "Final Disposal",
+    "resultSetCode": "FCOLO",
+    "resultSetName": "Notice of Collection Orders",
+    "resultTitle": "Lump sum",
+    "terminalEntries": [
+      {
+        "id": "6519e77a-09a3-4d1f-9b16-f98956982e2b",
+        "resultId": "8b35952f-2d6e-479d-99aa-25b55611b130",
+        "index": 1,
+        "name": "Total amount",
+        "lastModified": "2017-04-12T11:16:38.089Z"
+      }
+    ],
+    "lastModified": "2020-02-21T12:35:54.005Z"
+  },
+  {
+    "id": "90d74b42-ca24-4913-9220-e704b699efe3",
+    "code": "D",
+    "registerText": "-",
+    "registerTextWelsh": "-",
+    "category": "Final Disposal",
+    "resultSetCode": "DDW",
+    "resultSetName": "Dismissed/Discont/Withdrawn",
+    "resultTitle": "Dismissed",
+    "cjsCode": 2006,
+    "terminalEntries": [],
+    "lastModified": "2020-02-21T12:35:54.091Z"
+  },
+  {
+    "id": "a0b553fb-5071-4457-9d49-185c84af0f8d",
+    "code": "NOVS",
+    "registerText": "Victim surcharge {5} because: {10}",
+    "registerTextWelsh": "Gordal dioddefwr o {5} oherwydd: {10}",
+    "category": "Ancillary",
+    "resultSetCode": "NOREAS",
+    "resultSetName": "No Order Reason",
+    "resultTitle": "No victim surcharge reasons",
+    "terminalEntries": [],
+    "lastModified": "2020-02-21T12:35:54.200Z"
+  },
+  {
+    "id": "a20c2471-e6d7-40c1-84e5-d967d93f18b7",
+    "code": "RINSTL",
+    "registerText": "Instalments of £{96} to be paid {97} starting {98}",
+    "registerTextWelsh": "Rhandaliadau o £{96} i’w talu {97} yn cychwyn ar {98}",
+    "category": "Final Disposal",
+    "resultSetCode": "FCOLO",
+    "resultSetName": "Notice of Collection Orders",
+    "resultTitle": "Reserve Terms Instalments only",
+    "terminalEntries": [],
+    "lastModified": "2020-02-21T12:35:54.288Z"
+  },
+  {
+    "id": "aaac221b-f2eb-4947-9b8c-860761ac6c2b",
+    "code": "RLSUM",
+    "registerText": "Outstanding balance to be paid as a {6}",
+    "registerTextWelsh": "Balans sy’n weddill i’w dalu fel {6}",
+    "category": "Final Disposal",
+    "resultSetCode": "FCOLO",
+    "resultSetName": "Notice of Collection Orders",
+    "resultTitle": "Reserve Terms Lump sum",
+    "terminalEntries": [],
+    "lastModified": "2020-02-21T12:35:54.372Z"
+  },
+  {
+    "id": "b6996db3-cafd-473a-9e94-9060478e5ccd",
+    "code": "FCOST",
+    "registerText": "£{1}",
+    "registerTextWelsh": "£{1}",
+    "category": "Final Disposal",
+    "resultSetCode": "EFINIMP",
+    "resultSetName": "Financial Impositions",
+    "resultTitle": "Costs",
+    "cjsCode": 3011,
+    "terminalEntries": [
+      {
+        "id": "8259c692-3e02-42d9-923a-8f44d14c9cf8",
+        "resultId": "b6996db3-cafd-473a-9e94-9060478e5ccd",
+        "index": 1,
+        "name": "Amount of costs",
+        "lastModified": "2017-04-12T11:16:38.089Z"
+      }
+    ],
+    "lastModified": "2020-02-21T12:35:54.451Z"
+  },
+  {
+    "id": "bbabf61c-aa80-4b0f-8e93-77c873210217",
+    "code": "COLLO",
+    "registerText": "{4}. {9}",
+    "registerTextWelsh": "{4}. {9}",
+    "category": "Final Disposal",
+    "resultSetCode": "FCOLO",
+    "resultSetName": "Notice of Collection Orders",
+    "resultTitle": "Collection order made",
+    "terminalEntries": [],
+    "lastModified": "2020-02-21T12:35:54.533Z"
+  },
+  {
+    "id": "bcdca7df-ab21-45f6-bc19-f883cf3d407e",
+    "code": "FO",
+    "registerText": "£{1}",
+    "registerTextWelsh": "£{1}",
+    "category": "Final Disposal",
+    "resultSetCode": "EFINIMP",
+    "resultSetName": "Financial Impositions",
+    "resultTitle": "Fine",
+    "cjsCode": 1015,
+    "terminalEntries": [
+      {
+        "id": "ead2374d-4fbf-4060-9c56-1d06a621780f",
+        "resultId": "bcdca7df-ab21-45f6-bc19-f883cf3d407e",
+        "index": 1,
+        "name": "Amount of fine",
+        "lastModified": "2017-04-12T11:16:38.089Z"
+      }
+    ],
+    "lastModified": "2020-02-21T12:35:54.617Z"
+  },
+  {
+    "id": "db6629c8-4198-47d1-8471-49520e460444",
+    "code": "WDRNNOT",
+    "registerText": "{2}",
+    "registerTextWelsh": "{2}",
+    "category": "Final Disposal",
+    "resultSetCode": "DDW",
+    "resultSetName": "Dismissed/Discont/Withdrawn",
+    "resultTitle": "Withdrawn",
+    "cjsCode": 2063,
+    "terminalEntries": [],
+    "lastModified": "2020-02-21T12:35:54.711Z"
+  },
+  {
+    "id": "eff3b4ab-4fd7-4e18-a922-944d4558100b",
+    "code": "ADJOURNSJP",
+    "registerText": "Adjourned to or after {1}",
+    "registerTextWelsh": "Wedi’i ohirio tan {1} neu ar ôl hynny",
+    "category": "Interim",
+    "resultSetCode": "ADJOURN",
+    "resultSetName": "AdjournmentSJP",
+    "resultTitle": "Adjourn to later SJP hearing",
+    "terminalEntries": [],
+    "lastModified": "2020-02-21T12:35:54.809Z"
+  },
+  {
+    "id": "fc0ccba9-3826-430e-8ab5-dbf0c1142876",
+    "code": "FCOMP",
+    "registerText": "£{1}",
+    "registerTextWelsh": "£{1}",
+    "category": "Final Disposal",
+    "resultSetCode": "EFINIMP",
+    "resultSetName": "Financial Impositions",
+    "resultTitle": "Compensation",
+    "cjsCode": 3012,
+    "terminalEntries": [
+      {
+        "id": "3af6daf9-3fbe-4fd2-8a01-71a03f598ec2",
+        "resultId": "fc0ccba9-3826-430e-8ab5-dbf0c1142876",
+        "index": 1,
+        "name": "Amount of compensation",
+        "lastModified": "2017-04-12T11:16:38.089Z"
+      }
+    ],
+    "lastModified": "2020-02-21T12:35:54.909Z"
+  },
+  {
+    "id": "ff5e40fb-8983-41e4-b4c9-942e026e25fc",
+    "code": "CD",
+    "registerText": "{1} {2}",
+    "registerTextWelsh": "{1} {2}",
+    "category": "Final Disposal",
+    "resultSetCode": "CDIS",
+    "resultSetName": "Conditional Discharge",
+    "resultTitle": "Conditional Discharge",
+    "cjsCode": 1018,
+    "terminalEntries": [],
+    "lastModified": "2020-02-21T12:35:55.005Z"
+  },
+  {
+    "id": "6b92cb52-24c8-4b44-b29f-82971a640bb0",
+    "code": "FVEBD",
+    "registerText": "£{1}",
+    "registerTextWelsh": "£{1}",
+    "category": "Final Disposal",
+    "resultSetCode": "EFINIMP",
+    "resultSetName": "Financial Impositions",
+    "resultTitle": "Back duty",
+    "cjsCode": 3014,
+    "terminalEntries": [],
+    "lastModified": "2020-02-21T14:58:19.699Z"
+  },
+  {
+    "id": "8da018ef-1f0d-4afb-acc2-7514ed6fd3a2",
+    "code": "EXPEN",
+    "registerText": "£{1}",
+    "registerTextWelsh": "£{1}",
+    "category": "Final Disposal",
+    "resultSetCode": "EFINIMP",
+    "resultSetName": "Financial Impositions",
+    "resultTitle": "Excise penalty",
+    "cjsCode": 1119,
+    "terminalEntries": [],
+    "lastModified": "2020-02-21T14:58:19.799Z"
+  }
+]

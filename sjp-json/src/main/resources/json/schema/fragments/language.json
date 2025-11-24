@@ -1,0 +1,11 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://justice.gov.uk/json/schemas/domains/sjp/language.json",
+  "type": "string",
+  "description": "Identifies the language to be used, values E or W (English or Welsh)",
+  "enum": [
+    "E",
+    "W"
+  ],
+  "default": "E"
+}

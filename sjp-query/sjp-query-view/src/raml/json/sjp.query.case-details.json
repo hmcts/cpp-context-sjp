@@ -1,0 +1,68 @@
+{
+  "id": "7e2f843e-d639-40b3-8611-8015f3a18958",
+  "enterpriseId": "2K2SLYFC743H",
+  "dateTimeCreated": "2016-07-01T00:00Z",
+  "urn": "22C22222222",
+  "costs": 50.50,
+  "completed": false,
+  "assigned": false,
+  "postConviction": false,
+  "postingDate": "2016-07-01",
+  "reopenedDate": "2017-01-01",
+  "adjournedTo": "2020-01-01",
+  "libraCaseNumber": "LIBRA12345",
+  "reopenedInLibraReason": "REASON",
+  "caseDocuments": [
+    {
+      "id": "7bde207f-ce57-49e5-b961-7577831171fb",
+      "materialId": "7bde207f-ce57-49e5-b961-7577831171fb",
+      "documentType": "SJPN",
+      "documentNumber": 1,
+      "addedAt": "2018-08-26T14:55:47.631Z"
+    }
+  ],
+  "caseDecisions": [
+    {
+      "id":"32bcbaa6-ff56-40cb-8a71-408feb5077cc",
+      "session":{
+        "sessionId":"88dc450d-7d5c-4770-85fc-2c7126bc08c0",
+        "legalAdviserUserId":"a085e359-6069-4694-8820-7810e7dfe762",
+        "courtHouseCode":"B23HS00",
+        "courtHouseName":"Leamington Spa Magistrates' Court",
+        "localJusticeAreaNationalCourtCode":"2905",
+        "magistrate":"re",
+        "startedAt":"2019-06-04T14:34:54.164Z",
+        "sessionType":"MAGISTRATE"
+      },
+      "savedAt":"2019-06-04T14:35:28.906Z"
+    }
+  ],
+  "defendant": {
+    "id": "30b83084-d2fe-4a70-bbd1-fae1dfdb4b95",
+    "interpreter": {
+      "needed": true,
+      "language": "french"
+    },
+    "numPreviousConvictions": 0,
+    "offences": [
+      {
+        "id": "0baecac5-222b-402d-9047-84803679edad",
+        "offenceCode": "OF61131",
+        "plea": "GUILTY",
+        "indicatedPlea": "GUILTY",
+        "pleaMethod": "POSTAL",
+        "offenceSequenceNumber": 1,
+        "pleaMitigation": "The dog ate my ticket",
+        "chargeDate": "2016-02-18",
+        "wording": "On 19/01/2016 At wandsworth bridge rd SW6 Being a passenger on a Public Service Vehicle operated on behalf of London Bus Services Limited being used for the carriage of passengers at separate fares did use in relation to the journey you were taking a ticket which had been issued for use by another person on terms that it is not transferable",
+        "wordingWelsh": "Welsh wording: On 19/01/2016 At wandsworth bridge rd SW6 Being a passenger on a Public Service Vehicle operated on behalf of London Bus Services Limited being used for the carriage of passengers at separate fares did use in relation to the journey you were taking a ticket which had been issued for use by another person on terms that it is not transferable",
+        "pendingWithdrawal": false,
+        "compensation": 1.23,
+        "prosecutionFacts": "No ticket at the gates, forgery"
+      }
+    ]
+  },
+  "prosecutingAuthority": "TFL",
+  "status": "NO_PLEA_RECEIVED",
+  "listedInCriminalCourts": true
+}

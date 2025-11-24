@@ -1,0 +1,9 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://cpp.moj.gov.uk/sjp/reset-aocp-session-request",
+  "type": "object",
+  "properties": {
+  },
+  "required": [
+  ]
+}

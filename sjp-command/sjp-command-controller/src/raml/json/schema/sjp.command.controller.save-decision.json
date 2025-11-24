@@ -1,0 +1,34 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "type": "object",
+  "properties": {
+    "caseId": {
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+    },
+    "sessionId": {
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+    },
+    "note": {
+      "type": "string"
+    },
+    "offenceDecisions": {
+      "$ref": "http://justice.gov.uk/json/schemas/domains/sjp/offence-decisions.json"
+    },
+    "financialImposition": {
+      "$ref": "http://cpp.moj.gov.uk/core/sjp/decision/financial-imposition/financialImposition.json"
+    },
+    "savedAt": {
+      "$ref": "http://justice.gov.uk/json/schemas/domains/sjp/temporal.json#/definitions/date-time"
+    },
+    "isApplicationFlow": {
+      "type": "boolean"
+    }
+  },
+  "required": [
+    "caseId",
+    "sessionId",
+    "offenceDecisions",
+    "savedAt"
+  ],
+  "additionalProperties": false
+}

@@ -1,0 +1,12 @@
+package uk.gov.moj.cpp.sjp.command.controller.accesscontrol;
+
+import uk.gov.moj.cpp.accesscontrol.drools.Outcome;
+import uk.gov.moj.cpp.accesscontrol.drools.Action;
+
+rule "Command - Acknowledge defendant details updates"
+  when
+    $outcome: Outcome();
+    $action: Action(name == "sjp.command.acknowledge-defendant-details-updates");
+  then
+    $outcome.setSuccess(true);
+end

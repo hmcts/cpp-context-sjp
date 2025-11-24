@@ -1,0 +1,25 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://justice.gov.uk/json/schemas/domains/sjp/command/sjp.update-transparency-report-data.json",
+  "type": "object",
+  "properties": {
+    "transparencyReportId": {
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+    },
+    "metadata" : {
+      "$ref": "http://justice.gov.uk/json/schemas/domains/sjp/transparency-report-file-metadata.json"
+    },
+    "language": {
+      "enum": [
+        "en",
+        "cy"
+      ]
+    }
+  },
+  "required": [
+    "transparencyReportId",
+    "metadata",
+    "language"
+  ],
+  "additionalProperties": false
+}

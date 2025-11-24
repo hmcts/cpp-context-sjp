@@ -1,0 +1,53 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://justice.gov.uk/json/schemas/domains/sjp/command/sjp.update-financial-means.json",
+  "type": "object",
+  "properties": {
+    "caseId":{
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+    },
+    "defendantId": {
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+    },
+    "income": {
+      "type": "object",
+      "properties": {
+        "frequency": {
+          "enum": [
+            "WEEKLY",
+            "MONTHLY",
+            "FORTNIGHTLY",
+            "YEARLY"
+          ]
+        },
+        "amount": {
+          "type": "number",
+          "minimum": 0
+        }
+      },
+      "additionalProperties": false
+    },
+    "benefits": {
+      "type": "object",
+      "properties": {
+        "claimed": {
+          "type": "boolean"
+        },
+        "type": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
+    "employmentStatus": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "caseId",
+    "defendantId",
+    "income",
+    "benefits"
+  ],
+  "additionalProperties": false
+}

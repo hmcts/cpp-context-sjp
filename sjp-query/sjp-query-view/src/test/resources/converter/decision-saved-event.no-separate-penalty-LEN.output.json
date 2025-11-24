@@ -1,0 +1,18 @@
+[
+  {
+    "id": "16fe3d8d-ed6c-41a1-9fa2-c331e695f32c",
+    "verdict": "PROVED_SJP",
+    "results": [
+      {
+        "code": "NSP",
+        "resultTypeId": "49939c7c-750f-403e-9ce1-f82e3e568065",
+        "terminalEntries": []
+      },
+      {
+        "code": "LEN",
+        "resultTypeId": "b0aeb4fc-df63-4e2f-af88-97e3f23e847f",
+        "terminalEntries": []
+      }
+    ]
+  }
+]

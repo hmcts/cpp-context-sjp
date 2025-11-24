@@ -1,0 +1,23 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://justice.gov.uk/json/schemas/domains/sjp/legal-entity-details.json",
+  "type": "object",
+  "properties": {
+    "legalEntityName": {
+      "type": "string"
+    },
+    "address": {
+      "$ref": "http://justice.gov.uk/json/schemas/domains/sjp/address.json"
+    },
+    "contactDetails": {
+      "$ref": "http://justice.gov.uk/json/schemas/domains/sjp/contact-details.json"
+    },
+    "addressChanged": {
+      "type": "boolean"
+    },
+    "legalEntityNameChanged": {
+      "type": "boolean"
+    }
+  },
+  "additionalProperties": false
+}

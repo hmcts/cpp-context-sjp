@@ -1,0 +1,33 @@
+{
+  "id": "b295197d-0a13-49b2-b252-884fd32601b0",
+  "urn": "TFL36768OKXHK",
+  "ptiUrn": "AqfLWIg",
+  "initiationCode": "W",
+  "summonsCode": "E",
+  "prosecutingAuthority": "TVL",
+  "libraOriginatingOrg": "fdoGVSp",
+  "libraHearingLocation": "UILUfou",
+  "dateOfHearing": "2017-05-11",
+  "timeOfHearing": "XVGjwPkU",
+  "personId": "cdfe7af1-9bf4-4cf4-81cc-119d823335ae",
+  "defendantId": "cd23dbea-501d-43dc-ba54-68bfdfdf9853",
+  "costs": 0.0,
+  "numPreviousConvictions": 0,
+  "postingDate": "2017-04-13",
+  "offences": [
+    {
+      "id": "17170f60-b9b6-42b1-8a51-6f8bbdd2492f",
+      "prosecutorCaseId": "VUyyxQhDPn",
+      "offenceSequenceNo": 1,
+      "libraOffenceCode": "iYtJyMV",
+      "chargeDate": "2017-04-12",
+      "libraOffenceDateCode": 1,
+      "offenceDate": "2017-02-01",
+      "offenceWording": "TqMblach a a ajdjdjd jJgsHTdjTNLTFLMRgWTwlJ",
+      "prosecutionFacts": "dmd dd mdmv",
+      "witnessStatement": "zkjsnfsdfksdnjf ksd fsndkfnsdnfdsfmdsmv",
+      "compensation": 0.0
+    }
+  ],
+  "createdOn": "2017-04-12T11:17:39.655Z"
+}

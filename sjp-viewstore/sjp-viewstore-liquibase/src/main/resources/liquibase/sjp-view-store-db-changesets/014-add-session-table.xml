@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+         http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.3.xsd">
+
+    <changeSet id="14" author="tomaszp" logicalFilePath="liquibase/sjp-view-store-db-changelog.xml">
+
+        <createTable tableName="session">
+            <column name="id" type="uuid">
+                <constraints primaryKey="true"/>
+            </column>
+            <column name="user_id" type="uuid"></column>
+            <column name="court_house_name" type="text"/>
+            <column name="local_justice_area_national_court_code" type="text"/>
+            <column name="magistrate" type="text"/>
+            <column name="type" type="text"/>
+            <column name="started_at" type="timestamp with time zone"/>
+            <column name="ended_at" type="timestamp with time zone"/>
+        </createTable>
+
+    </changeSet>
+
+</databaseChangeLog>

@@ -1,0 +1,97 @@
+{
+  "fixedListCollection": [
+    {
+      "id": "8dc70c95-fb09-4842-9138-bc579fceb605",
+      "version": "2018-04-19T10:44:50.219Z",
+      "elements": [
+        {
+          "code": "CON",
+          "value": "Convicted"
+        },
+        {
+          "code": "ACQ",
+          "value": "Acquitted"
+        }
+      ]
+    },
+    {
+      "id": "da9ab30d-d263-4123-9bde-e3078d547a8e",
+      "version": "2018-04-19T11:44:50.333Z",
+      "elements": [
+        {
+          "code": "AC",
+          "value": "the officer in charge of the Attendance Centre"
+        },
+        {
+          "code": "EM",
+          "value": "the electronic monitoring supervisor"
+        },
+        {
+          "code": "PO",
+          "value": "a probation officer"
+        },
+        {
+          "code": "YOT",
+          "value": "a member of the youth offending team"
+        },
+        {
+          "code": "PROV",
+          "value": "an officer of a provider of probation services"
+        }
+      ]
+    },
+    {
+      "id": "cd4cc782-5dd6-11e8-9c2d-fa7ae01bbebc",
+      "version": "2019-06-03T12:07:49.586Z",
+      "startDate": "2019-06-03",
+      "elements": [
+        {
+          "code": "FOURTEEN",
+          "value": "lump sum 14 days"
+        },
+        {
+          "code": "TWOEIGHT",
+          "value": "lump sum 28 days"
+        }
+      ]
+    },
+    {
+      "id": "6e5f1afe-e35f-11e8-9f32-f2801f1b9fd1",
+      "version": "2019-06-03T12:25:36.146Z",
+      "startDate": "2019-06-04",
+      "elements": [
+        {
+          "code": "TFL2",
+          "value": "Transport for London"
+        },
+        {
+          "code": "DVLA2",
+          "value": "Driver and Vehicle Licensing Agency"
+        },
+        {
+          "code": "TVL3",
+          "value": "Television Licensing Organisation"
+        }
+      ]
+    },
+    {
+      "id": "e555e078-5dd8-11e8-9c2d-fa7ae01bbebc",
+      "version": "2019-06-03T12:25:33.888Z",
+      "startDate": "2019-06-04",
+      "elements": [
+        {
+          "code": "WKLY",
+          "value": "weekly"
+        },
+        {
+          "code": "FTNLY",
+          "value": "fortnightly"
+        },
+        {
+          "code": "MTHLY",
+          "value": "monthly"
+        }
+      ]
+    }
+  ]
+}

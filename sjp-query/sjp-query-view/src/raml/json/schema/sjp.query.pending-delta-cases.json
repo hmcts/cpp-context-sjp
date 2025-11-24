@@ -1,0 +1,90 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "type": "object",
+  "properties": {
+    "pendingCases": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "caseId": {
+            "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+          },
+          "caseUrn": {
+            "type": "string"
+          },
+          "defendantName": {
+            "type": "string"
+          },
+          "firstName" : {
+            "type" : "string"
+          },
+          "lastName" : {
+            "type" : "string"
+          },
+          "defendantDateOfBirth": {
+            "$ref": "http://justice.gov.uk/json/schemas/domains/sjp/temporal.json#/definitions/date"
+          },
+          "addressLine1": {
+            "type": "string"
+          },
+          "addressLine2": {
+            "type": "string"
+          },
+          "town": {
+            "type": "string"
+          },
+          "county": {
+            "type": "string"
+          },
+          "postcode": {
+            "type": "string"
+          },
+          "offences": {
+            "type": "array",
+            "items": {
+              "offenceCode": {
+                "type": "string"
+              },
+              "offenceStartDate": {
+                "$ref": "http://justice.gov.uk/json/schemas/domains/sjp/temporal.json#/definitions/date-time"
+              },
+              "offenceWording": {
+                "type" : "string"
+              },
+              "pressRestriction" : {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string"
+                  },
+                  "requested": {
+                    "type": "boolean"
+                  }
+                },
+                "required" : [
+                  "requested"
+                ]
+              },
+              "completed" : {
+                "type" : "boolean"
+              }
+            }
+          },
+          "prosecutorName": {
+            "type": "string"
+          }
+        },
+        "additionalProperties": false,
+        "required": [
+          "defendantName",
+          "postcode"
+        ]
+      }
+    }
+  },
+  "additionalProperties": false,
+  "required": [
+    "pendingCases"
+  ]
+}

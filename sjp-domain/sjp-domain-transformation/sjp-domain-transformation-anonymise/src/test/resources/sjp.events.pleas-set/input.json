@@ -1,0 +1,24 @@
+{
+  "caseId": "9afc48be-3b06-4168-8650-41531b23153a",
+  "defendantCourtOptions": {
+    "interpreter": {
+      "language": "French",
+      "needed": true
+    },
+    "welshHearing": true
+  },
+  "pleas": [
+    {
+      "defendantId": "e928e0a7-ee54-4371-aed9-b3db794607ae",
+      "offenceId": "219d77a9-c910-462e-8c38-905fb74e6a51",
+      "pleaType": "GUILTY",
+      "mitigation": "I was drunk at the time"
+    },
+    {
+      "defendantId": "e928e0a7-ee54-4371-aed9-b3db794607ae",
+      "offenceId": "6744c435-915e-44ff-b467-7286fb7c4c15",
+      "pleaType": "NOT_GUILTY",
+      "notGuiltyBecause": "I wasn't there"
+    }
+  ]
+}

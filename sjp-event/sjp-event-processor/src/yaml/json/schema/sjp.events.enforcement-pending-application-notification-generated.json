@@ -1,0 +1,22 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://justice.gov.uk/json/schemas/domains/sjp/events/enforcement-pending-application-notification-generated.json",
+  "type": "object",
+  "properties": {
+    "applicationId": {
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+    },
+    "fileId": {
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+    },
+    "generatedTime": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "applicationId",
+    "fileId",
+    "generatedTime"
+  ],
+  "additionalProperties": false
+}

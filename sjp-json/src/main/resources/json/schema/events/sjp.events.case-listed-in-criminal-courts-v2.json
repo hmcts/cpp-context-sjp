@@ -1,0 +1,26 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://cpp.moj.gov.uk/sjp/event/case-listed-in-criminal-courts-v2.json",
+  "type": "object",
+  "properties": {
+    "offenceHearings": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "$ref": "http://cpp.moj.gov.uk/sjp/event/case-offence-listed-in-criminal-courts.json"
+      }
+    },
+    "decisionSaved": {
+      "$ref": "http://justice.gov.uk/json/schemas/domains/sjp/events/decision-saved.json"
+    },
+    "caseId": {
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+    }
+  },
+  "required": [
+    "offenceHearings",
+    "decisionSaved",
+    "caseId"
+  ],
+  "additionalProperties": false
+}

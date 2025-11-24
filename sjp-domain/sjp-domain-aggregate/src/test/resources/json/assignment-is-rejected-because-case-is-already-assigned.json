@@ -1,0 +1,6 @@
+{
+  "_metadata": {
+    "name": "sjp.events.case-assignment-rejected"
+  },
+  "reason": "CASE_ASSIGNED_TO_OTHER_USER"
+}

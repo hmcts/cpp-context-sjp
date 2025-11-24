@@ -1,0 +1,46 @@
+{
+  "id": "a224e325-22f7-45ab-a595-954ed0bffbdd",
+  "urn": "urn",
+  "completed": false,
+  "assigned": false,
+  "aocpEligible": true,
+  "readyForDecision": true,
+  "aocpTotalCost": 143.57,
+  "aocpVictimSurcharge": 40.0,
+  "costs": 1.23,
+  "defendant": {
+    "id": "3a586aed-aee0-4cc8-a1eb-fcf80196a4aa",
+    "personalDetails": {
+      "firstName": "David",
+      "lastName": "LLOYD",
+      "dateOfBirth": "1980-07-15",
+      "contactDetails": {
+        "mobile": "07890123123",
+        "email": "criminal@gmail.com",
+        "home": "0208000888"
+      },
+      "address": {
+        "address1": "14 Tottenham Court Road",
+        "address2": "London",
+        "address3": "England",
+        "address4": "UK",
+        "address5": "Greater London",
+        "postcode": "W1T 1JY"
+      }
+    },
+    "offences": [
+      {
+        "id": "4023c959-fad1-3e47-b678-ff7f0c0c1f48",
+        "title": "Use / install a television set without a licence",
+        "legislation": "Contrary to section 363(2) and (4) of the Communications Act 2003.",
+        "titleWelsh": "Defnyddio set deledu heb drwydded",
+        "legislationWelsh": "Yn groes i adran 363(2) a (4) Deddf Cyfathrebu 2003.",
+        "wording": "Committed some offence",
+        "pendingWithdrawal": false,
+        "plea": "",
+        "endorsable": false
+      }
+    ],
+    "pcqId": "9ec012ea-566a-4952-ad8d-b09a57030d95"
+  }
+}

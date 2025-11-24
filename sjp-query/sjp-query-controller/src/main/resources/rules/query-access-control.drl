@@ -1,0 +1,292 @@
+package uk.gov.moj.cpp.sjp.query.controller.accesscontrol;
+
+import uk.gov.moj.cpp.accesscontrol.drools.Outcome;
+import uk.gov.moj.cpp.accesscontrol.drools.Action;
+
+rule "sjp.query.case"
+  when
+    $outcome: Outcome();
+    $action: Action(name == "sjp.query.case");
+  then
+    $outcome.setSuccess(true);
+end
+
+rule "sjp.query.prosecution-case"
+  when
+    $outcome: Outcome();
+    $action: Action(name == "sjp.query.prosecution-case");
+  then
+    $outcome.setSuccess(true);
+end
+
+rule "sjp.query.case-with-document-metadata"
+  when
+    $outcome: Outcome();
+    $action: Action(name == "sjp.query.case-with-document-metadata");
+  then
+    $outcome.setSuccess(true);
+end
+
+rule "sjp.query.case-by-urn"
+  when
+    $outcome: Outcome();
+    $action: Action(name == "sjp.query.case-by-urn");
+  then
+    $outcome.setSuccess(true);
+end
+
+rule "sjp.query.financial-means"
+  when
+    $outcome: Outcome();
+    $action: Action(name == "sjp.query.financial-means");
+  then
+    $outcome.setSuccess(true);
+end
+
+rule "sjp.query.defendant-potential-cases"
+  when
+    $outcome: Outcome();
+    $action: Action(name == "sjp.query.defendant-potential-cases");
+  then
+    $outcome.setSuccess(true);
+end
+
+rule "sjp.query.employer"
+  when
+    $outcome: Outcome();
+    $action: Action(name == "sjp.query.employer");
+  then
+    $outcome.setSuccess(true);
+end
+
+rule "sjp.query.case-document"
+  when
+    $outcome: Outcome();
+    $action: Action(name == "sjp.query.case-document");
+  then
+    $outcome.setSuccess(true);
+end
+
+rule "sjp.query.case-documents"
+  when
+    $outcome: Outcome();
+    $action: Action(name == "sjp.query.case-documents");
+  then
+    $outcome.setSuccess(true);
+end
+
+rule "sjp.query.case-by-urn-postcode"
+  when
+    $outcome: Outcome();
+    $action: Action(name == "sjp.query.case-by-urn-postcode");
+  then
+    $outcome.setSuccess(true);
+end
+
+rule "sjp.query.cases-search-by-material-id"
+  when
+    $outcome: Outcome();
+    $action: Action(name == "sjp.query.cases-search-by-material-id");
+  then
+    $outcome.setSuccess(true);
+end
+
+rule "sjp.query.case-search-results"
+  when
+    $outcome: Outcome();
+    $action: Action(name == "sjp.query.case-search-results");
+  then
+    $outcome.setSuccess(true);
+end
+
+rule "sjp.query.cases-missing-sjpn"
+  when
+    $outcome: Outcome();
+    $action: Action(name == "sjp.query.cases-missing-sjpn");
+  then
+    $outcome.setSuccess(true);
+end
+
+rule "sjp.query.result-orders"
+  when
+    $outcome: Outcome();
+    $action: Action(name == "sjp.query.result-orders");
+  then
+    $outcome.setSuccess(true);
+end
+
+rule "sjp.query.defendants-online-plea"
+  when
+    $outcome: Outcome();
+    $action: Action(name == "sjp.query.defendants-online-plea");
+  then
+    $outcome.setSuccess(true);
+end
+
+rule "sjp.query.pending-dates-to-avoid"
+  when
+    $outcome: Outcome();
+    $action: Action(name == "sjp.query.pending-dates-to-avoid");
+  then
+    $outcome.setSuccess(true);
+end
+
+rule "sjp.query.session"
+  when
+    $outcome: Outcome();
+    $action: Action(name == "sjp.query.session");
+  then
+    $outcome.setSuccess(true);
+end
+
+rule "sjp.query.ready-cases"
+  when
+    $outcome: Outcome();
+    $action: Action(name == "sjp.query.ready-cases");
+  then
+    $outcome.setSuccess(true);
+end
+
+rule "sjp.query.case-assignment"
+  when
+    $outcome: Outcome();
+    $action: Action(name == "sjp.query.case-assignment");
+  then
+    $outcome.setSuccess(true);
+end
+
+rule "sjp.query.case-prosecuting-authority"
+  when
+    $outcome: Outcome();
+    $action: Action(name == "sjp.query.case-prosecuting-authority");
+  then
+    $outcome.setSuccess(true);
+end
+
+rule "sjp.query.defendant-details-updates"
+  when
+    $outcome: Outcome();
+    $action: Action(name == "sjp.query.defendant-details-updates");
+  then
+    $outcome.setSuccess(true);
+end
+
+rule "sjp.query.case-notes"
+  when
+    $outcome: Outcome();
+    $action: Action(name == "sjp.query.case-notes");
+  then
+    $outcome.setSuccess(true);
+end
+
+rule "sjp.query.transparency-report-metadata"
+  when
+    $outcome: Outcome();
+    $action: Action(name == "sjp.query.transparency-report-metadata");
+  then
+    $outcome.setSuccess(true);
+end
+
+rule "sjp.query.press-transparency-report-metadata"
+  when
+    $outcome: Outcome();
+    $action: Action(name == "sjp.query.press-transparency-report-metadata");
+  then
+    $outcome.setSuccess(true);
+end
+
+rule "sjp.query.case-court-extract"
+  when
+    $outcome: Outcome();
+    $action: Action(name == "sjp.query.case-court-extract");
+  then
+    $outcome.setSuccess(true);
+end
+
+rule "sjp.query.case-results"
+  when
+    $outcome: Outcome();
+    $action: Action(name == "sjp.query.case-results");
+  then
+    $outcome.setSuccess(true);
+end
+
+rule "sjp.query.not-guilty-plea-cases"
+  when
+    $outcome: Outcome();
+    $action: Action(name == "sjp.query.not-guilty-plea-cases");
+  then
+    $outcome.setSuccess(true);
+end
+
+rule "sjp.query.case-assignment-restriction"
+  when
+    $outcome: Outcome();
+    $action: Action(name == "sjp.query.case-assignment-restriction");
+  then
+    $outcome.setSuccess(true);
+end
+
+rule "sjp.query.defendant-outstanding-fines"
+  when
+    $outcome: Outcome();
+    $action: Action(name == "sjp.query.defendant-outstanding-fines");
+  then
+    $outcome.setSuccess(true);
+end
+
+rule "sjp.query.cases-without-defendant-postcode"
+  when
+    $outcome: Outcome();
+    $action: Action(name == "sjp.query.cases-without-defendant-postcode");
+  then
+    $outcome.setSuccess(true);
+end
+
+rule "Regions - API - Get all regions"
+  when
+    $outcome: Outcome();
+    $action: Action(name == "sjp.query.regions");
+  then
+    $outcome.setSuccess(true);
+end
+
+rule "sjp - Query - API - Get common case application"
+  when
+    $outcome: Outcome();
+    $action: Action(name == "sjp.query.common-case-application");
+  then
+    $outcome.setSuccess(true);
+end
+
+rule "sjp.query.convicting-court-session"
+  when
+    $outcome: Outcome();
+    $action: Action(name == "sjp.query.convicting-court-session");
+  then
+    $outcome.setSuccess(true);
+end
+
+rule "sjp - Query - API - Get account note"
+  when
+    $outcome: Outcome();
+    $action: Action(name == "sjp.query.account-note");
+  then
+    $outcome.setSuccess(true);
+end
+
+rule "sjp - Query -API -Get cases for soc check"
+  when
+    $outcome: Outcome();
+    $action: Action(name == "sjp.query.cases-for-soc-check");
+  then
+    $outcome.setSuccess(true);
+end
+
+rule "sjp - Query - API - Get prosecuting authority for lja"
+  when
+    $outcome: Outcome();
+    $action: Action(name == "sjp.query.prosecuting-authority-for-lja");
+  then
+    $outcome.setSuccess(true);
+end

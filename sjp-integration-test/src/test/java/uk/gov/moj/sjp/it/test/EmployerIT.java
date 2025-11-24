@@ -1,0 +1,82 @@
+package uk.gov.moj.sjp.it.test;
+
+
+import static com.jayway.jsonpath.matchers.JsonPathMatchers.isJson;
+import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
+import static java.util.UUID.randomUUID;
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static uk.gov.moj.sjp.it.command.CreateCase.createCaseForPayloadBuilder;
+import static uk.gov.moj.sjp.it.helper.EmployerHelper.getEmployerDeletedPublicEventMatcher;
+import static uk.gov.moj.sjp.it.helper.EmployerHelper.getEmployerPayload;
+import static uk.gov.moj.sjp.it.helper.EmployerHelper.getEmployerUpdatedPayloadMatcher;
+import static uk.gov.moj.sjp.it.helper.EmployerHelper.getEmployerUpdatedPublicEventMatcher;
+import static uk.gov.moj.sjp.it.model.ProsecutingAuthority.TFL;
+import static uk.gov.moj.sjp.it.pollingquery.CasePoller.pollUntilCaseByIdIsOk;
+import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubEnforcementAreaByPostcode;
+import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubProsecutorQuery;
+import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubRegionByPostcode;
+
+import uk.gov.moj.sjp.it.command.CreateCase;
+import uk.gov.moj.sjp.it.helper.EmployerHelper;
+import uk.gov.moj.sjp.it.helper.FinancialMeansHelper;
+
+import java.util.UUID;
+
+import javax.json.JsonObject;
+
+import org.hamcrest.Matcher;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
+public class EmployerIT extends BaseIntegrationTest {
+
+    private EmployerHelper employerHelper;
+    private FinancialMeansHelper financialMeansHelper;
+    private static final String NATIONAL_COURT_CODE = "1080";
+    private final CreateCase.CreateCasePayloadBuilder createCasePayloadBuilder = CreateCase.CreateCasePayloadBuilder.withDefaults();
+
+    @BeforeEach
+    public void setUp() {
+        employerHelper = new EmployerHelper();
+        financialMeansHelper = new FinancialMeansHelper();
+        stubEnforcementAreaByPostcode(createCasePayloadBuilder.getDefendantBuilder().getAddressBuilder().getPostcode(), NATIONAL_COURT_CODE, "Bedfordshire Magistrates' Court");
+        stubRegionByPostcode(NATIONAL_COURT_CODE, "TestRegion");
+    }
+
+    @AfterEach
+    public void tearDown() {
+        employerHelper.close();
+        financialMeansHelper.close();
+    }
+
+    @Test
+    public void shouldCreateUpdateAndDeleteEmployer() {
+        createCaseForPayloadBuilder(createCasePayloadBuilder);
+        stubProsecutorQuery(TFL.name(), TFL.getFullName(), randomUUID());
+
+        final UUID caseId = createCasePayloadBuilder.getId();
+        final String defendantId = pollUntilCaseByIdIsOk(caseId).getString("defendant.id");
+
+        final JsonObject employer1 = getEmployerPayload();
+
+        final JsonObject employer2 = getEmployerPayload();
+
+        employerHelper.updateEmployer(caseId, defendantId, employer1);
+        EmployerHelper.pollForEmployerForDefendant(defendantId, getEmployerUpdatedPayloadMatcher(employer1));
+        assertThat(employerHelper.getEventFromPublicTopic(), getEmployerUpdatedPublicEventMatcher(employer1));
+
+        employerHelper.updateEmployer(caseId, defendantId, employer2);
+        EmployerHelper.pollForEmployerForDefendant(defendantId, getEmployerUpdatedPayloadMatcher(employer2));
+        assertThat(employerHelper.getEventFromPublicTopic(), getEmployerUpdatedPublicEventMatcher(employer2));
+
+        final Matcher<Object> expectedFinancialMeans = isJson(withJsonPath("$.employmentStatus", is("EMPLOYED")));
+        financialMeansHelper.getFinancialMeans(defendantId, expectedFinancialMeans);
+
+        employerHelper.deleteEmployer(caseId.toString(), defendantId);
+        EmployerHelper.pollForEmployerForDefendant(defendantId, isJson(withJsonPath("$.size()", is(0))));
+        assertThat(employerHelper.getEventFromPublicTopic(), getEmployerDeletedPublicEventMatcher(defendantId));
+    }
+
+}

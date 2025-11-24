@@ -1,0 +1,20 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://justice.gov.uk/json/schemas/domains/sjp/query/all-financial-means.json",
+  "type": "object",
+  "properties": {
+    "defendantId": {
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+    },
+    "income": {
+      "type": "http://justice.gov.uk/json/schemas/domains/sjp/income.json"
+    },
+    "benefits": {
+      "type": "http://justice.gov.uk/json/schemas/domains/sjp/benefits.json"
+    },
+    "employment": {
+      "type": "http://justice.gov.uk/json/schemas/domains/sjp/employment.json"
+    }
+  },
+  "additionalProperties": false
+}

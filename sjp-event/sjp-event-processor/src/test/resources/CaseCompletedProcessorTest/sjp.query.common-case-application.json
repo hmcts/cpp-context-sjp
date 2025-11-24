@@ -1,0 +1,93 @@
+{
+  "id": "369a5b95-c78b-40c8-9209-6d4e4570c8b6",
+  "type": {
+    "appealFlag": false,
+    "applicantAppellantFlag": false,
+    "breachType": "NOT_APPLICABLE",
+    "categoryCode": "categoryCode123",
+    "code": "MC80528",
+    "commrOfOathFlag": false,
+    "courtExtractAvlFlag": false,
+    "courtOfAppealFlag": false,
+    "id": "7375727f-30fc-3f55-99f3-36adc4f0e70e",
+    "jurisdiction": "MAGISTRATES",
+    "linkType": "STANDALONE",
+    "offenceActiveOrder": "COURT_ORDER",
+    "pleaApplicableFlag": false,
+    "prosecutorThirdPartyFlag": false,
+    "spiOutApplicableFlag": false,
+    "summonsTemplateType": "NOT_APPLICABLE",
+    "type": "A"
+  },
+  "applicationReceivedDate": "2021-01-25",
+  "applicationReference": "NW5ABTGQML",
+  "applicant": {
+    "id": "00000000-0000-0000-0000-000000000000",
+    "notificationRequired": false,
+    "summonsRequired": false,
+    "synonym": "a"
+  },
+  "subject": {
+    "id": "00000000-0000-0000-0000-000000000000",
+    "notificationRequired": false,
+    "summonsRequired": false,
+    "synonym": "a"
+  },
+  "applicationStatus": "FINALISED",
+  "judicialResults": [
+    {
+      "judicialResultTypeId": "e2f6e11b-c3a2-4e76-8d29-fbede4174988",
+      "judicialResultId": "bbf17349-53ac-486c-aaae-1fc80aca4e2c",
+      "orderedHearingId": "be409a8f-40a9-438f-bb6b-e79ce8f21b61",
+      "judicialResultPrompts": [
+        {
+          "judicialResultPromptTypeId": "7b6ef0ac-2d0b-44e5-a68e-4720b96cc679",
+          "value": "Section 14 of the Magistrates' Courts Act 1980"
+        },
+        {
+          "judicialResultPromptTypeId": "36e32c50-dbec-41c4-904b-25eb20c9c54a",
+          "value": true
+        },
+        {
+          "judicialResultPromptTypeId": "28bea132-dd7a-42d1-a1cc-bcd50ce49e67",
+          "value": "TFL579805073"
+        },
+        {
+          "judicialResultPromptTypeId": "9c57c174-e939-49e9-8e14-f4ecda7d6483",
+          "value": "FG59 4FD"
+        },
+        {
+          "judicialResultPromptTypeId": "0a7dd6aa-f7cc-43d7-ba03-c9621f3e4471",
+          "reference": "prosecutortobenotifiedOrganisationName",
+          "value": "Transport for London"
+        },
+        {
+          "judicialResultPromptTypeId": "0a7dd6aa-f7cc-43d7-ba03-c9621f3e4471",
+          "reference": "prosecutortobenotifiedAddress1",
+          "value": "6th Floor Windsor House"
+        },
+        {
+          "judicialResultPromptTypeId": "0a7dd6aa-f7cc-43d7-ba03-c9621f3e4471",
+          "reference": "prosecutortobenotifiedAddress2",
+          "value": "42-50 Victoria Street"
+        },
+        {
+          "judicialResultPromptTypeId": "0a7dd6aa-f7cc-43d7-ba03-c9621f3e4471",
+          "reference": "prosecutortobenotifiedAddress3",
+          "value": "London"
+        },
+        {
+          "judicialResultPromptTypeId": "0a7dd6aa-f7cc-43d7-ba03-c9621f3e4471",
+          "reference": "prosecutortobenotifiedPostCode",
+          "value": ""
+        }
+      ]
+    },
+    {
+      "judicialResultTypeId": "f42fa098-0f7b-4269-ac4f-b10c9b6832d7",
+      "judicialResultId": "bfe3748e-2975-44ca-b3fd-4d1c9e151f10",
+      "orderedHearingId": "be409a8f-40a9-438f-bb6b-e79ce8f21b61",
+      "judicialResultPrompts": []
+    }
+  ]
+}

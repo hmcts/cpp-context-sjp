@@ -1,0 +1,12 @@
+{
+  "defendantDetails": [
+    {
+      "defendantId": "30b83084-d2fe-4a70-bbd1-fae1dfdb4b95",
+      "caseId": "30b83084-d2fe-4a70-bbd1-fae1dfdb4b95",
+      "firstName": "test",
+      "lastName": "testsurname",
+      "dateOfBirth": "1998-10-12",
+      "nationalInsuranceNumber": "SP123456"
+    }
+  ]
+}

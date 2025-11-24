@@ -1,0 +1,16 @@
+package uk.gov.moj.cpp.sjp.command.api.accesscontrol;
+
+import uk.gov.moj.cpp.accesscontrol.drools.Outcome;
+import uk.gov.moj.cpp.accesscontrol.drools.Action;
+import uk.gov.moj.cpp.sjp.command.api.accesscontrol.RuleConstants;
+
+global uk.gov.moj.cpp.accesscontrol.common.providers.UserAndGroupProvider userAndGroupProvider;
+
+rule "Command - Rule for application decision"
+  when
+    $outcome: Outcome();
+    $action: Action(name == "sjp.save-application-decision");
+    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, RuleConstants.getSaveDecisionActionGroups()));
+  then
+    $outcome.setSuccess(true);
+end

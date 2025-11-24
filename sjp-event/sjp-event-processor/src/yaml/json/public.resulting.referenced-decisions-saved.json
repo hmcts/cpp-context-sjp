@@ -1,0 +1,71 @@
+{
+  "caseId": "b702f661-0856-4cdc-b7ff-88922da78b2c",
+  "sjpSessionId": "d9f1908a-148d-4c63-bf46-f2ee9571daaf",
+  "resultedOn": "2016-12-16T13:47:01.115Z",
+  "verdict": "PSJ",
+  "accountDivisionCode": 130,
+  "enforcingCourtCode": 199,
+  "offences": [
+    {
+      "id": "7d566f6c-f7ac-484c-bfb6-38fde2d687da",
+      "results": [
+        {
+          "code": "GSJ",
+          "resultTypeId": "12081e7b-41fd-4b99-b16e-f2bab04334d4",
+          "terminalEntries": []
+        },
+        {
+          "code": "FO",
+          "resultTypeId": "68250ac8-4351-42dc-ba06-1855e2d44054",
+          "terminalEntries": [
+            {
+              "index": 1,
+              "value": "40.00"
+            }
+          ]
+        },
+        {
+          "code": "FCOMP",
+          "resultTypeId": "72dbbb13-011c-49e8-b48e-83e08da7a255",
+          "terminalEntries": [
+            {
+              "index": 1,
+              "value": "1.50"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": null,
+      "results": [
+        {
+          "code": "COLLO",
+          "resultTypeId": "8488bfbf-9f7d-4075-a583-e88fe365491e",
+          "terminalEntries": [
+          ]
+        },
+        {
+          "code": "FVS",
+          "resultTypeId": "44760e66-c8e5-4b99-9d36-601ac376074d",
+          "terminalEntries": [
+            {
+              "index": 1,
+              "value": "20.00"
+            }
+          ]
+        },
+        {
+          "code": "FCOST",
+          "resultTypeId": "9b78a369-9856-4582-b0f9-4eed440627ac",
+          "terminalEntries": [
+            {
+              "index": 1,
+              "value": "80.00"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

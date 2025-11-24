@@ -1,0 +1,46 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://justice.gov.uk/json/schemas/domains/sjp/event/case-document-already-exists.json",
+  "type": "object",
+  "properties": {
+    "caseId": {
+      "id": "/caseId",
+      "type": "string"
+    },
+    "caseDocument": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "materialId": {
+          "type": "string"
+        },
+        "documentType": {
+          "enum": [
+            "SJPN",
+            "CITN",
+            "PLEA",
+            "FINANCIAL_MEANS",
+            "WS",
+            "RESULT_ORDER"
+          ]
+        },
+        "addedAt": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "materialId",
+        "addedAt"
+      ]
+    }
+  },
+  "additionalProperties": false,
+  "required": [
+    "caseId",
+    "caseDocument"
+  ]
+}

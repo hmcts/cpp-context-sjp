@@ -1,0 +1,736 @@
+#%RAML 0.8
+title: Sjp Query
+version: v0.1
+protocols: [ HTTP, HTTPS ]
+
+baseUri: http://localhost:8080/sjp-query-controller/query/controller/rest/sjp
+
+/cases/{caseId}:
+  description: return a case
+  uriParameters:
+    caseId:
+      description: Case ID
+      type: string
+  get:
+    description: |
+      ...
+      (mapping):
+          responseType: application/vnd.sjp.query.case+json
+          name: sjp.query.case
+      (mapping):
+          responseType: application/vnd.sjp.query.prosecution-case+json
+          name: sjp.query.prosecution-case
+      ...
+    responses:
+      200:
+        body:
+          application/vnd.sjp.query.case+json:
+            schema: !include json/schema/sjp.query.case-details.json
+            example: !include json/sjp.query.case-details.json
+          application/vnd.sjp.query.prosecution-case+json:
+            schema: !include json/schema/sjp.query.prosecution-case.json
+            example: !include json/sjp.query.prosecution-case.json
+
+/cases:
+  get:
+    description: |
+      Get case by URN
+      ...
+      (mapping):
+          responseType: application/vnd.sjp.query.case-by-urn+json
+          name: sjp.query.case-by-urn
+
+      ...
+    queryParameters:
+      urn:
+        description: URN
+        type: string
+        required: false
+    responses:
+        200:
+          description: OK
+          body:
+                application/vnd.sjp.query.case-by-urn+json:
+                  schema: !include json/schema/sjp.query.case-details.json
+                  example: !include json/sjp.query.case-details.json
+
+/result-orders:
+  get:
+    description: |
+      Get cases with order.
+      ...
+      (mapping):
+          responseType: application/vnd.sjp.query.result-orders+json
+          name: sjp.query.result-orders
+      ...
+    queryParameters:
+      fromDate:
+          description: From date inclusive.
+          type: string
+          required: true
+      toDate:
+          description: To date exclusive.
+          type: string
+          required: true
+
+    responses:
+      200:
+        body:
+          application/vnd.sjp.query.result-orders+json:
+            schema: !include json/schema/sjp.query.result-orders.json
+            example: !include json/sjp.query.result-orders.json
+
+/cases-missing-sjpn:
+  get:
+    description: |
+      Get cases missing the SJPN
+      ...
+      (mapping):
+          responseType: application/vnd.sjp.query.cases-missing-sjpn+json
+          name: sjp.query.cases-missing-sjpn
+      ...
+    queryParameters:
+      limit:
+        description: |
+          Limits the number of case IDs returned. Set to 0 if you only need the number of cases.
+        type: integer
+        required: false
+      daysSincePosting:
+        description: |
+          Returns cases that has posting date older than daysSincePosting.
+        type: integer
+        required: false
+
+    responses:
+      200:
+        body:
+          application/vnd.sjp.query.cases-missing-sjpn+json:
+            schema: !include json/schema/sjp.query.cases-missing-sjpn.json
+            example: !include json/sjp.query.cases-missing-sjpn.json
+
+/defendant-details-updates:
+  get:
+    description: |
+      Retrieves the unacknowledged defendant detail updates
+      ...
+      (mapping):
+          responseType: application/vnd.sjp.query.defendant-details-updates+json
+          name: sjp.query.defendant-details-updates
+      ...
+    queryParameters:
+      limit:
+        description: |
+          Defines the number of updates to be returned.
+        type: integer
+        required: true
+      regionId:
+        description: The defendant's region.
+        type: string
+        required: false
+
+    responses:
+        200:
+          description: OK
+          body:
+                application/vnd.sjp.query.defendant-details-updates+json:
+                  schema: !include json/schema/sjp.query.defendant-details-updates.json
+                  example: !include json/sjp.query.defendant-details-updates.json
+
+/defendant/{defendantId}/financial-means:
+  uriParameters:
+    defendantId:
+      description: The ID of the defendant
+      type: string
+  get:
+    description: |
+      Retrieve financial means information
+      ...
+      (mapping):
+          responseType: application/vnd.sjp.query.financial-means+json
+          name: sjp.query.financial-means
+      ...
+    responses:
+        200:
+          description: OK
+          body:
+                application/vnd.sjp.query.financial-means+json:
+                  schema: !include json/schema/sjp.query.financial-means.json
+                  example: !include json/sjp.query.financial-means.json
+
+/defendant/{defendantId}/potential-cases:
+  uriParameters:
+    defendantId:
+      description: The ID of the defendant
+      type: string
+  get:
+    description: |
+      Retrieve defendant's other potential SJP and criminal court cases which are open or closed within last 28 days in posting/hearing date order
+      ...
+      (mapping):
+          responseType: application/vnd.sjp.query.defendant-potential-cases+json
+          name: sjp.query.defendant-potential-cases
+      ...
+    responses:
+      200:
+        description: OK
+        body:
+          application/vnd.sjp.query.defendant-potential-cases+json:
+            schema: !include json/schema/sjp.query.defendant-potential-cases.json
+            example: !include json/sjp.query.defendant-potential-cases.json
+
+/defendant/{defendantId}/employer:
+  uriParameters:
+    defendantId:
+      description: The ID of the defendant
+      type: string
+  get:
+    description: |
+      Retrieve employer information
+      ...
+      (mapping):
+          responseType: application/vnd.sjp.query.employer+json
+          name: sjp.query.employer
+      ...
+    responses:
+        200:
+          description: OK
+          body:
+                application/vnd.sjp.query.employer+json:
+                  schema: !include json/schema/sjp.query.employer.json
+                  example: !include json/sjp.query.employer.json
+
+/search:
+  get:
+    description: |
+      Search for cases
+      ...
+      (mapping):
+          responseType: application/vnd.sjp.query.cases-search-by-material-id+json
+          name: sjp.query.cases-search-by-material-id
+
+      (mapping):
+          responseType: application/vnd.sjp.query.case-search-results+json
+          name: sjp.query.case-search-results
+
+
+      ...
+    queryParameters:
+      q:
+        description: query
+        type: string
+    responses:
+        200:
+          description: OK
+          body:
+                application/vnd.sjp.query.cases-search-by-material-id+json:
+                  schema: !include json/schema/sjp.query.cases-search-by-material-id.json
+                  example: !include json/sjp.query.cases-search-by-material-id.json
+
+                application/vnd.sjp.query.case-search-results+json:
+                  schema: !include json/schema/sjp.query.case-search-results.json
+                  example: !include json/sjp.query.case-search-results.json
+
+/cases/{caseId}/documents:
+  description: Get list of case documents for a corresponding case
+  uriParameters:
+    caseId:
+      description: Case ID
+      type: string
+  get:
+    description: |
+      ...
+      (mapping):
+          responseType: application/vnd.sjp.query.case-documents+json
+          name: sjp.query.case-documents
+      ...
+    responses:
+      200:
+        body:
+          application/vnd.sjp.query.case-documents+json:
+            schema: !include json/schema/sjp.query.case-documents.json
+            example: !include json/sjp.query.case-documents.json
+
+/cases/{caseId}/documents/{documentId}:
+  description: get case document
+  get:
+    description: |
+      ...
+      (mapping):
+          responseType: application/vnd.sjp.query.case-document+json
+          name: sjp.query.case-document
+      ...
+    responses:
+      200:
+        body:
+          application/vnd.sjp.query.case-document+json:
+            schema: !include json/schema/sjp.query.case-document.json
+            example: !include json/sjp.query.case-document.json
+
+/cases-for-citizen:
+  get:
+    description: |
+      Get case by URN and postcode
+      ...
+      (mapping):
+          responseType: application/vnd.sjp.query.case-by-urn-postcode+json
+          name: sjp.query.case-by-urn-postcode
+      ...
+    queryParameters:
+      urn:
+        description: URN
+        type: string
+        required: true
+      postcode:
+        description: Postcode
+        type: string
+        required: true
+
+    responses:
+        200:
+          description: OK
+          body:
+                application/vnd.sjp.query.case-by-urn-postcode+json:
+                  schema: !include json/schema/sjp.query.case-with-offence-reference-data.json
+                  example: !include json/sjp.query.case-with-offence-reference-data.json
+
+/cases/{caseId}/defendants/{defendantId}/defendants-online-plea:
+  get:
+    description: |
+      Get defendant's online plea on a case.
+      ...
+      (mapping):
+          responseType: application/vnd.sjp.query.defendants-online-plea+json
+          name: sjp.query.defendants-online-plea
+      ...
+    queryParameters:
+    responses:
+        200:
+          description: OK
+          body:
+                application/vnd.sjp.query.defendants-online-plea+json:
+                  schema: !include json/schema/sjp.query.defendants-online-pleas.json
+                  example: !include json/sjp.query.defendants-online-pleas.json
+
+/cases/{caseId}/assignment:
+  get:
+    description: |
+      Get case assignment.
+      ...
+      (mapping):
+          responseType: application/vnd.sjp.query.case-assignment+json
+          name: sjp.query.case-assignment
+      ...
+    responses:
+        200:
+          description: OK
+          body:
+                application/vnd.sjp.query.case-assignment+json:
+                  schema: !include json/schema/sjp.query.case-assignment.json
+                  example: !include json/sjp.query.case-assignment.json
+
+/cases/pending-dates-to-avoid:
+  get:
+    description: |
+      Get all cases that are pending submission (from the prosecutor) of any dates-to-avoid for the case's trial.
+      ...
+      (mapping):
+          responseType: application/vnd.sjp.query.pending-dates-to-avoid+json
+          name: sjp.query.pending-dates-to-avoid
+      ...
+    queryParameters:
+     regionId:
+            description: The defendant's region id.
+            type: string
+            required: false
+    responses:
+        200:
+          description: OK
+          body:
+                application/vnd.sjp.query.pending-dates-to-avoid+json:
+                  schema: !include json/schema/sjp.query.pending-dates-to-avoid.json
+                  example: !include json/sjp.query.pending-dates-to-avoid.json
+
+/cases/ready-cases:
+  get:
+    description: |
+      Get ready cases
+      ...
+      (mapping):
+          responseType: application/vnd.sjp.query.ready-cases+json
+          name: sjp.query.ready-cases
+      ...
+    queryParameters:
+      assigneeId:
+        type: string
+        required: false
+    responses:
+      200:
+        body:
+          application/vnd.sjp.query.ready-cases+json:
+            schema: !include json/schema/sjp.query.ready-cases.json
+            example: !include json/sjp.query.ready-cases.json
+
+/cases/without-defendant-postcode:
+  get:
+    description: |
+      Get non completed cases without defendant postcode
+      ...
+      (mapping):
+          responseType: application/vnd.sjp.query.cases-without-defendant-postcode+json
+          name: sjp.query.cases-without-defendant-postcode
+      ...
+    queryParameters:
+          pageSize:
+            description: Number of item per page. Default is 20
+            type: number
+            required: false
+          pageNumber:
+            description: Current page. Could be 1 or 2 or 3 or ...
+            type: number
+            required: false
+    responses:
+      200:
+        body:
+          application/vnd.sjp.query.cases-without-defendant-postcode+json:
+            schema: !include json/schema/sjp.query.cases-without-defendant-postcode.json
+            example: !include json/sjp.query.cases-without-defendant-postcode.json
+
+
+/sessions/{sessionId}:
+  get:
+    description: |
+      Get session.
+      ...
+      (mapping):
+          responseType: application/vnd.sjp.query.session+json
+          name: sjp.query.session
+      ...
+    responses:
+        200:
+          description: OK
+          body:
+                application/vnd.sjp.query.session+json:
+                  schema: !include json/schema/sjp.query.session.json
+                  example: !include json/sjp.query.session.json
+
+/convicting-court-session/{offenceId}:
+  description: return convicting court session
+  uriParameters:
+    offenceId:
+      description: Offence ID
+      type: string
+  get:
+    description: |
+      Get convicting court session.
+      ...
+      (mapping):
+          responseType: application/vnd.sjp.query.convicting-court-session+json
+          name: sjp.query.convicting-court-session
+      ...
+    responses:
+        200:
+          description: OK
+          body:
+                application/vnd.sjp.query.convicting-court-session+json:
+                  schema: !include json/schema/sjp.query.convicting-court-session.json
+                  example: !include json/sjp.query.convicting-court-session.json
+
+/cases/{caseId}/prosecuting-authority:
+  get:
+    description: |
+      get case prosecuting authority
+      ...
+      (mapping):
+          responseType: application/vnd.sjp.query.case-prosecuting-authority+json
+          name: sjp.query.case-prosecuting-authority
+      ...
+    responses:
+      200:
+        body:
+          application/vnd.sjp.query.case-prosecuting-authority+json:
+            schema: !include json/schema/sjp.query.case-prosecuting-authority.json
+            example: !include json/sjp.query.case-prosecuting-authority.json
+
+/cases/{caseId}/notes:
+  get:
+    description: |
+      get case notes
+      ...
+      (mapping):
+          responseType: application/vnd.sjp.query.case-notes+json
+          name: sjp.query.case-notes
+      ...
+    responses:
+      200:
+        body:
+          application/vnd.sjp.query.case-notes+json:
+            schema: !include json/schema/sjp.query.case-notes.json
+            example: !include json/sjp.query.case-notes.json
+
+/transparency-report/metadata:
+  get:
+    description: |
+      fetch the latest transparency reports metadata
+      ...
+      (mapping):
+          responseType: application/vnd.sjp.query.transparency-report-metadata+json
+          name: sjp.query.transparency-report-metadata
+      ...
+    responses:
+      200:
+        body:
+          application/vnd.sjp.query.transparency-report-metadata+json:
+            schema: !include json/schema/sjp.query.transparency-report-metadata.json
+            example: !include json/sjp.query.transparency-report-metadata.json
+
+/press-transparency-report/metadata:
+  get:
+    description: |
+      fetch the latest press transparency reports metadata
+      ...
+      (mapping):
+          responseType: application/vnd.sjp.query.press-transparency-report-metadata+json
+          name: sjp.query.press-transparency-report-metadata
+      ...
+    responses:
+      200:
+        body:
+          application/vnd.sjp.query.press-transparency-report-metadata+json:
+            schema: !include json/schema/sjp.query.press-transparency-report-metadata.json
+            example: !include json/sjp.query.press-transparency-report-metadata.json
+
+/cases/{caseId}/documents/court-extract:
+  uriParameters:
+     caseId:
+       description: Case ID
+       type: string
+       required: true
+  get:
+    description: |
+        ...
+        (mapping):
+            responseType: application/vnd.sjp.query.case-court-extract+json
+            name: sjp.query.case-court-extract
+        ...
+    responses:
+      200:
+        body:
+          application/vnd.sjp.query.case-court-extract+json:
+            schema: !include json/schema/sjp.query.case-court-extract.json
+            example: !include json/sjp.query.case-court-extract.json
+
+/cases/{caseId}/results:
+  uriParameters:
+     caseId:
+       description: Case ID
+       type: string
+       required: true
+  get:
+    description: |
+        ...
+        (mapping):
+            responseType: application/vnd.sjp.query.case-results+json
+            name: sjp.query.case-results
+        ...
+    responses:
+      200:
+        body:
+          application/vnd.sjp.query.case-results+json:
+            schema: !include json/schema/sjp.query.case-results.json
+            example: !include json/sjp.query.case-results.json
+
+/not-guilty-plea-cases:
+  get:
+    description: |
+      Retrieve not-guilty-plead cases for a given prosecuting authority
+      ...
+      (mapping):
+          responseType: application/vnd.sjp.query.not-guilty-plea-cases+json
+          name: sjp.query.not-guilty-plea-cases
+      ...
+    queryParameters:
+      prosecutingAuthority:
+        description: Prosecuting authority (i.e. TFL, TVL or TFL,TVL,DVLA,POLICE)
+        type: string
+        required: false
+      pageSize:
+        description: Number of item per page. Default is 20
+        type: number
+        required: false
+      pageNumber:
+        description: Current page. Could be 1 or 2 or 3 or ...
+        type: number
+        required: false
+    responses:
+        200:
+          description: OK
+          body:
+                application/vnd.sjp.query.not-guilty-plea-cases+json:
+                  schema: !include json/schema/sjp.query.not-guilty-plea-cases.json
+                  example: !include json/sjp.query.not-guilty-plea-cases.json
+
+/case-assignment-restriction:
+  get:
+    description: |
+      Retrieve case assignment restriction for a given prosecutor oucode
+      ...
+      (mapping):
+          responseType: application/vnd.sjp.query.case-assignment-restriction+json
+          name: sjp.query.case-assignment-restriction
+      ...
+    queryParameters:
+      prosecutingAuthority:
+        type: string
+        required: true
+    responses:
+        200:
+          description: OK
+          body:
+                application/vnd.sjp.query.case-assignment-restriction+json:
+                  schema: !include json/schema/sjp.query.case-assignment-restriction.json
+                  example: !include json/sjp.query.case-assignment-restriction.json
+
+/defendant/{defendantId}/outstanding-fines:
+  uriParameters:
+        defendantId:
+           description: ID of defendant to query outstanding fines
+           type: string
+  get:
+      description: |
+        ...
+        (mapping):
+            responseType: application/vnd.sjp.query.defendant-outstanding-fines+json
+            name: sjp.query.defendant-outstanding-fines
+        ...
+      responses:
+            200:
+                description: OK
+                body:
+                  application/vnd.sjp.query.defendant-outstanding-fines+json:
+                    example:  !include json/sjp.query.defendant-outstanding-fines.json
+                    schema:  !include  json/schema/sjp.query.defendant-outstanding-fines.json
+
+/regions:
+  get:
+    description: |
+      Get a list of all regions from the Reference Data API
+      ...
+      (mapping):
+          responseType: application/vnd.sjp.query.regions+json
+          name: sjp.query.regions
+      ...
+    responses:
+      200:
+        body:
+          application/vnd.sjp.query.regions+json:
+            schema: !include json/schema/sjp.query.regions.json
+            example: !include json/sjp.query.regions.json
+
+/cases/{caseId}/common-case-application:
+  uriParameters:
+     caseId:
+       description: Case ID
+       type: string
+       required: true
+  get:
+    description: |
+        ...
+        (mapping):
+            responseType: application/vnd.sjp.query.common-case-application+json
+            name: sjp.query.common-case-application
+        ...
+    responses:
+      200:
+        body:
+          application/vnd.sjp.query.common-case-application+json:
+            schema: !include json/schema/sjp.query.common-case-application.json
+
+/cases/{caseUrn}/account-note:
+  get:
+    description: |
+      get account note
+      ...
+      (mapping):
+          responseType: application/vnd.sjp.query.account-note+json
+          name: sjp.query.account-note
+      ...
+    responses:
+      200:
+        body:
+          application/vnd.sjp.query.account-note+json:
+            schema: !include json/schema/sjp.query.account-note.json
+
+
+/case-for-soc-check:
+  get:
+    description: |
+      Retrieve cases for SOC check
+      ...
+      (mapping):
+          responseType: application/vnd.sjp.query.cases-for-soc-check+json
+          name: sjp.query.cases-for-soc-check
+      ...
+    queryParameters:
+      courtHouseCode:
+        description: court house code
+        type: string
+        required: true
+      ljaCode:
+        description: lja code
+        type: string
+        required: true
+      fromDate:
+          description: From date inclusive.
+          type: string
+          required: true
+      toDate:
+          description: To date exclusive.
+          type: string
+          required: true
+      percentage:
+        description: percent of total number of cases
+        type: number
+        required: true
+      pageSize:
+        description: Number of item per page. Default is 20
+        type: number
+        required: true
+      pageNumber:
+        description: Current page. Could be 1 or 2 or 3 or ...
+        type: number
+        required: true
+      sortOrder:
+        description: Sort order (ASC / DESC). Default is DESC
+        type: string
+        required: false
+      sortField:
+        description: Sort by field name. Default is date
+        type: string
+        required: false
+    responses:
+        200:
+          description: OK
+          body:
+                application/vnd.sjp.query.cases-for-soc-check+json:
+                  schema: !include json/schema/sjp.query.cases-for-soc-check.json
+
+/prosecuting-authority:
+  get:
+    description: |
+      get prosecuting authority list by lja code
+      ...
+      (mapping):
+          responseType: application/vnd.sjp.query.prosecuting-authority-for-lja+json
+          name: sjp.query.prosecuting-authority-for-lja
+      ...
+    queryParameters:
+      ljaCode:
+        description: lja code
+        type: string
+        required: true
+    responses:
+      200:
+        body:
+          application/vnd.sjp.query.prosecuting-authority-for-lja+json:
+            schema: !include json/schema/sjp.query.prosecuting-authority-for-lja.json
+            example: !include json/sjp.query.prosecuting-authority-for-lja.json

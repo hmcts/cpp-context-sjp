@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+         http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.3.xsd">
+
+    <changeSet id="084-remove-pcq_visited-and-add-pcqId-to-defendant" author="Natraj.Molala"
+               logicalFilePath="liquibase/sjp-view-store-db-changelog.xml">
+
+        <dropColumn tableName="defendant">
+            <column name="pcq_visited"/>
+        </dropColumn>
+
+        <addColumn tableName="defendant">
+            <column name="pcq_id" type="UUID"/>
+        </addColumn>
+
+        <rollback>
+            <addColumn tableName="defendant">
+                <column name="pcq_visited" type="boolean"/>
+            </addColumn>
+
+            <dropColumn tableName="defendant">
+                <column name="pcq_id"/>
+            </dropColumn>
+        </rollback>
+
+    </changeSet>
+
+</databaseChangeLog>

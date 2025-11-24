@@ -1,0 +1,63 @@
+package uk.gov.moj.cpp.sjp.command.api.accesscontrol;
+
+import uk.gov.moj.cpp.accesscontrol.drools.Outcome;
+import uk.gov.moj.cpp.accesscontrol.drools.Action;
+import java.util.Arrays;
+import uk.gov.moj.cpp.sjp.command.api.accesscontrol.RuleConstants;
+
+global uk.gov.moj.cpp.accesscontrol.common.providers.UserAndGroupProvider userAndGroupProvider;
+
+rule "Command - Rule for start session"
+  when
+    $outcome: Outcome();
+    $action: Action(name == "sjp.start-session");
+    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, RuleConstants.getStartAocpSessionGroups()));
+  then
+    $outcome.setSuccess(true);
+end
+
+rule "Command - Rule for end session"
+  when
+    $outcome: Outcome();
+    $action: Action(name == "sjp.end-session");
+    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, RuleConstants.getEndAocpSessionGroups()));
+  then
+    $outcome.setSuccess(true);
+end
+
+rule "Command - Rule for assigning case"
+  when
+    $outcome: Outcome();
+    $action: Action(name == "sjp.assign-next-case");
+    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, RuleConstants.getAssignCaseGroups()));
+  then
+    $outcome.setSuccess(true);
+end
+
+rule "Command - Rule for assigning a case to a user"
+  when
+    $outcome: Outcome();
+    $action: Action(name == "sjp.assign-case");
+    eval(userAndGroupProvider.isSystemUser($action));
+  then
+    $outcome.setSuccess(true);
+end
+
+rule "Command - Rule for unassigning case"
+  when
+    $outcome: Outcome();
+    $action: Action(name == "sjp.unassign-case");
+    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, RuleConstants.getAssignCaseGroups()));
+  then
+    $outcome.setSuccess(true);
+end
+
+rule "Command - Rule for reset aocp session"
+  when
+    $outcome: Outcome();
+    $action: Action(name == "sjp.reset-aocp-session");
+    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, RuleConstants.getStartAocpSessionGroups()));
+  then
+    $outcome.setSuccess(true);
+end
+

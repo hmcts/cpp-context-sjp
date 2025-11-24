@@ -1,0 +1,92 @@
+[
+  {
+    "_metadata": {
+      "name": "sjp.events.case-application-recorded"
+    },
+    "caseId": "c4ec3a35-76bf-4649-b43a-761e71c3765e",
+    "courtApplication": {
+      "applicant": {
+        "id": "00000000-0000-0000-0000-000000000000",
+        "notificationRequired": false,
+        "summonsRequired": false,
+        "synonym": "a"
+      },
+      "applicationReceivedDate": "2020-09-03",
+      "applicationReference": "HYLKOSTVEA",
+      "applicationStatus": "IN_PROGRESS",
+      "courtApplicationCases": [
+        {
+          "isSJP": true,
+          "prosecutionCaseId": "c4ec3a35-76bf-4649-b43a-761e71c3765e",
+          "prosecutionCaseIdentifier": {
+            "prosecutionAuthorityCode": "TFL",
+            "prosecutionAuthorityId": "cf73207f-3ced-488a-82a0-3fba79c3ce85",
+            "prosecutionAuthorityReference": "TFL12345-ABC"
+          }
+        }
+      ],
+      "id": "c4ec3a35-76bf-4649-b43a-761e71c3765e",
+      "subject": {
+        "id": "00000000-0000-0000-0000-000000000000",
+        "notificationRequired": false,
+        "summonsRequired": false,
+        "synonym": "a"
+      },
+      "type": {
+        "appealFlag": false,
+        "applicantAppellantFlag": false,
+        "breachType": "NOT_APPLICABLE",
+        "categoryCode": "categoryCode123",
+        "code": "MC80528",
+        "commrOfOathFlag": false,
+        "courtExtractAvlFlag": false,
+        "courtOfAppealFlag": false,
+        "id": "00000000-0000-0000-0000-000000000000",
+        "jurisdiction": "MAGISTRATES",
+        "linkType": "STANDALONE",
+        "offenceActiveOrder": "COURT_ORDER",
+        "pleaApplicableFlag": false,
+        "prosecutorThirdPartyFlag": false,
+        "spiOutApplicableFlag": false,
+        "summonsTemplateType": "NOT_APPLICABLE",
+        "type": "a"
+      }
+    }
+  },
+  {
+    "_metadata": {
+      "name": "sjp.events.case-stat-dec-recorded"
+    },
+    "applicant": {
+      "id": "00000000-0000-0000-0000-000000000000",
+      "notificationRequired": false,
+      "summonsRequired": false,
+      "synonym": "a"
+    },
+    "applicationId": "c4ec3a35-76bf-4649-b43a-761e71c3765e"
+  },
+  {
+    "_metadata": {
+      "name": "sjp.events.application-status-changed"
+    },
+    "applicationId": "c4ec3a35-76bf-4649-b43a-761e71c3765e",
+    "status": "STATUTORY_DECLARATION_PENDING"
+  },
+  {
+    "_metadata": {
+      "name": "sjp.events.case-marked-ready-for-decision"
+    },
+    "caseId": "c4ec3a35-76bf-4649-b43a-761e71c3765e",
+    "reason": "APPLICATION_PENDING",
+    "markedAt": "2021-02-15T11:28:50.513Z",
+    "sessionType": "MAGISTRATE",
+    "priority": "HIGH"
+  },
+  {
+    "_metadata": {
+      "name": "sjp.events.case-status-changed"
+    },
+    "caseId": "c4ec3a35-76bf-4649-b43a-761e71c3765e",
+    "caseStatus": "COMPLETED_APPLICATION_PENDING"
+  }
+]

@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+         http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.3.xsd">
+
+    <changeSet id="29" author="ATCM/Mojo/resul.ceylan"
+               logicalFilePath="liquibase/sjp-view-store-db-changelog.xml">
+        <addColumn tableName="case_details">
+            <column name="hearing_court_name" type="text"/>
+        </addColumn>
+        <addColumn tableName="case_details">
+            <column name="hearing_time" type="timestamp with time zone"/>
+        </addColumn>
+    </changeSet>
+
+</databaseChangeLog>

@@ -1,0 +1,20 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://justice.gov.uk/json/schemas/domains/sjp/income.json",
+  "type": "object",
+  "properties": {
+    "frequency": {
+      "enum": [
+        "WEEKLY",
+        "MONTHLY",
+        "FORTNIGHTLY",
+        "YEARLY"
+      ]
+    },
+    "amount": {
+      "type": "number",
+      "minimum": 0
+    }
+  },
+  "additionalProperties": false
+}

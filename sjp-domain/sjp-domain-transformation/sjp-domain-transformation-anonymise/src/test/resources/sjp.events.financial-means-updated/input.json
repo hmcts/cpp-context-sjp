@@ -1,0 +1,35 @@
+{
+  "defendantId": "07584fcb-b6df-41e2-8e86-87911f1b61fe",
+  "income": {
+    "frequency": "MONTHLY",
+    "amount": 4000
+  },
+  "benefits": {
+    "claimed": false
+  },
+  "employmentStatus": "SELF_EMPLOYED",
+  "outgoings": [
+    {
+      "description": "Accommodation",
+      "amount": 1200
+    },
+    {
+      "description": "Council Tax",
+      "amount": 200
+    },
+    {
+      "description": "Household Bills",
+      "amount": 130
+    },
+    {
+      "description": "Travel Expenses",
+      "amount": 100
+    },
+    {
+      "description": "Child Maintenance",
+      "amount": 0
+    }
+  ],
+  "updatedByOnlinePlea": true,
+  "updatedDate": "2019-11-22T11:47:43.705Z"
+}

@@ -1,0 +1,46 @@
+{
+  "regionalOrganisations": [
+    {
+      "id": "40805c9f-42c3-3e8f-a1a8-c75165aff66b",
+      "seqNum": 40,
+      "regionName": "North West",
+      "cbwaEnforcerEmail": "NWBreach@Justice.gov.uk"
+    },
+    {
+      "id": "80a67650-25a4-337e-bda7-2fb2e7c689bc",
+      "seqNum": 30,
+      "regionName": "North East",
+      "cbwaEnforcerEmail": "North_East_Breach_@Justice.gov.uk"
+    },
+    {
+      "id": "cb46ca55-2bcb-308d-876f-b61a8aaee4ce",
+      "seqNum": 20,
+      "regionName": "Midlands",
+      "cbwaEnforcerEmail": "MidlandsBreach@Justice.gov.uk"
+    },
+    {
+      "id": "cecfdf28-ef5c-311a-a563-cfb8dc582cc6",
+      "seqNum": 60,
+      "regionName": "South West",
+      "cbwaEnforcerEmail": "SwestEastPNCinbox@Justice.gov.uk"
+    },
+    {
+      "id": "d3cb5d31-d18d-35c6-9318-d62f958a0fc6",
+      "seqNum": 70,
+      "regionName": "Wales",
+      "cbwaEnforcerEmail": "BreachAdmin@Justice.gov.uk"
+    },
+    {
+      "id": "aa597777-d263-3fb9-9c08-b632052db706",
+      "seqNum": 50,
+      "regionName": "South East",
+      "cbwaEnforcerEmail": "SE-Breach@Justice.gov.uk; LCCCCPBW@justice.gov.uk;"
+    },
+    {
+      "id": "05f6b08c-29df-3ad0-94d3-32529c555b82",
+      "seqNum": 10,
+      "regionName": "London",
+      "cbwaEnforcerEmail": "lccccpbw@justice.gov.uk;"
+    }
+  ]
+}

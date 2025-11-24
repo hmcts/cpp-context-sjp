@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+         http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.3.xsd">
+
+    <changeSet id="34" author="ATCM/Mojo/resul.ceylan"
+               logicalFilePath="liquibase/sjp-view-store-db-changelog.xml">
+        <dropColumn tableName="case_search_result">
+            <column name="plea_type"/>
+            <column name="plea_date"/>
+        </dropColumn>
+        <addColumn tableName="case_search_result">
+            <column name="defendant_id" type="uuid"/>
+        </addColumn>
+
+        <rollback>
+            <addColumn tableName="case_search_result">
+                <column name="plea_type" type="text"/>
+            </addColumn>
+            <addColumn tableName="case_search_result">
+                <column name="plea_date" type="datetime"/>
+            </addColumn>
+            <dropColumn tableName="case_search_result">
+                <column name="defendant_id"/>
+            </dropColumn>
+        </rollback>
+
+    </changeSet>
+
+</databaseChangeLog>

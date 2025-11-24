@@ -1,0 +1,9 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://cpp.moj.gov.uk/sjp/resolve-case-status",
+  "type": "object",
+  "properties": {
+  },
+  "required": [
+  ]
+}

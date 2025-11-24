@@ -1,0 +1,32 @@
+{
+  "regions": [
+    {
+      "id": "40805c9f-42c3-3e8f-a1a8-c75165aff66b",
+      "name": "North West"
+    },
+    {
+      "id": "80a67650-25a4-337e-bda7-2fb2e7c689bc",
+      "name": "North East"
+    },
+    {
+      "id": "cb46ca55-2bcb-308d-876f-b61a8aaee4ce",
+      "name": "Midlands"
+    },
+    {
+      "id": "cecfdf28-ef5c-311a-a563-cfb8dc582cc6",
+      "name": "South West"
+    },
+    {
+      "id": "d3cb5d31-d18d-35c6-9318-d62f958a0fc6",
+      "name": "Wales"
+    },
+    {
+      "id": "aa597777-d263-3fb9-9c08-b632052db706",
+      "name": "South East"
+    },
+    {
+      "id": "05f6b08c-29df-3ad0-94d3-32529c555b82",
+      "name": "London"
+    }
+  ]
+}

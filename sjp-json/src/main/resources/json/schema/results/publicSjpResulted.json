@@ -1,0 +1,36 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://justice.gov.uk/json/schemas/domains/sjp/results/publicSjpResulted.json",
+  "type": "object",
+  "properties": {
+    "session": {
+      "$ref": "http://justice.gov.uk/json/schemas/domains/sjp/results/baseSessionStructure.json"
+    }
+  },
+  "additionalProperties": false,
+  "required": [
+    "session"
+  ],
+  "oneOf": [
+    {
+      "properties": {
+        "cases": {
+          "type": "array",
+          "items": {
+            "$ref": "http://justice.gov.uk/json/schemas/domains/sjp/results/baseCaseDetails.json"
+          }
+        }
+      }
+    },
+    {
+      "properties": {
+        "courtApplications": {
+          "type": "array",
+          "items": {
+            "$ref": "http://justice.gov.uk/core/courts/courtApplication.json"
+          }
+        }
+      }
+    }
+  ]
+}

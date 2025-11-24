@@ -1,0 +1,55 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id" : "http://justice.gov.uk/json/schemas/domains/sjp/event/pleas-set.json",
+  "type": "object",
+  "properties": {
+    "caseId": {
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+    },
+    "defendantCourtOptions": {
+      "$ref" : "http://cpp.moj.gov.uk/core/sjp/defendant-court-options.json"
+    },
+    "pleas" : {
+      "type": "array",
+      "items": {
+        "id": "http://justice.gov.uk/json/schemas/domains/sjp/command/plea.json",
+        "type": "object",
+        "properties": {
+          "defendantId": {
+            "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+          },
+          "offenceId": {
+            "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+          },
+          "pleaType": {
+            "oneOf": [
+              {
+                "type": "string",
+                "enum": ["GUILTY","NOT_GUILTY", "GUILTY_REQUEST_HEARING"]
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "notGuiltyBecause": {
+            "type": "string"
+          },
+          "mitigation": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "defendantId",
+          "offenceId"
+        ],
+        "additionalProperties": false
+      }
+    }
+  },
+  "required": [
+    "caseId",
+    "pleas"
+  ],
+  "additionalProperties": false
+}

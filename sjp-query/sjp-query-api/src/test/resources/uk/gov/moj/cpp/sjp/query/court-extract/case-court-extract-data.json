@@ -1,0 +1,64 @@
+{
+  "generationDate": "2019-07-09",
+  "generationTime" : "12:00",
+  "defendant": {
+    "address": "14 Tottenham Court Road, London, England, UK, W1T 1JY",
+    "name": "David LLOYD",
+    "dateOfBirth": "15 July 1980",
+    "age": 50
+  },
+  "offences": [
+    {
+      "sequenceNumber" : 1,
+      "title": "Public service vehicle - passenger use altered / defaced ticket",
+      "wording": "On 02/07/2016 At threadneedle street EC2 Being a passenger on a Public service Vehicle operated on behalf of London Bus Services Limited being used for the carriage of passengers at separate fares where the vehicle was being operated by a Driver without a Conductor did not as directed by the Driver an Inspector or a Notice displayed on the vehicle pay the fare for the journey in accordance with the direction  ",
+      "legislation":"<legislation>",
+      "offenceDecisions" : [
+        {
+          "plea": "<plea?>",
+          "pleaDate": "%1$s",
+          "verdict": "Found not guilty",
+          "magistrate": "Max Ivory",
+          "decisionDate": "%1$s",
+          "legalAdviser": "Paul Stewart",
+          "result": "DISMISS"
+        }
+      ]
+    },
+    {
+      "sequenceNumber" : 2,
+      "title": "Public service vehicle - passenger use altered / defaced ticket",
+      "wording": "On 02/07/2016 At threadneedle street EC2 Being a passenger on a Public service Vehicle operated on behalf of London Bus Services Limited being used for the carriage of passengers at separate fares where the vehicle was being operated by a Driver without a Conductor did not as directed by the Driver an Inspector or a Notice displayed on the vehicle pay the fare for the journey in accordance with the direction  ",
+      "legislation":"<legislation>",
+      "offenceDecisions" : [
+        {
+          "plea": "<plea?>",
+          "pleaDate": "%1$s",
+          "verdict": "Found not guilty",
+          "magistrate": "Max Ivory",
+          "decisionDate": "%1$s",
+          "legalAdviser": "Paul Stewart",
+          "result": "DISMISS"
+        },
+        {
+          "plea": "<plea?>",
+          "pleaDate": "%1$s",
+          "verdict": "Found not guilty",
+          "magistrate": "Max Ivory",
+          "decisionDate": "%1$s",
+          "legalAdviser": "Paul Stewart",
+          "result": "DISMISS"
+        }
+      ]
+    }
+
+
+  ],
+  "caseDetails": {
+    "reference": "TFL2041316",
+    "prosecutor": "Transport for London",
+    "prosecutorAddress" : "address of prosecutor",
+    "courtHouseName": "Court house name",
+    "courtHouseCode": "CourtHouseCode"
+  }
+}

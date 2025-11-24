@@ -1,0 +1,18 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "type": "object",
+  "id": "http://cpp.moj.gov.uk/sjp/update-employer",
+  "properties": {
+    "employer": {
+      "$ref": "http://cpp.moj.gov.uk/sjp/employer.json"
+    },
+    "caseId": {
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+    },
+    "defendantId": {
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+    }
+  },
+  "required": [ "employer", "caseId", "defendantId"],
+  "additionalProperties": false
+}

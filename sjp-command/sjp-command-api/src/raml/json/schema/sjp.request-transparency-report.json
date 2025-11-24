@@ -1,0 +1,30 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "type": "object",
+  "properties": {
+    "format": {
+      "type": "string",
+      "enum": [
+        "PDF",
+        "JSON"
+      ]
+    },
+    "requestType": {
+      "type": "string",
+      "enum": [
+        "FULL",
+        "DELTA"
+      ]
+    },
+    "language": {
+      "type": "string",
+      "enum": [
+        "ENGLISH",
+        "WELSH"
+      ]
+    }
+  },
+  "required": [
+    "format", "language"
+  ]
+}

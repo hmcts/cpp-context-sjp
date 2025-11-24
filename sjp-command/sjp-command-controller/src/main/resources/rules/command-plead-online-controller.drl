@@ -1,0 +1,20 @@
+package uk.gov.moj.cpp.sjp.command.controller.accesscontrol;
+
+import uk.gov.moj.cpp.accesscontrol.drools.Outcome;
+import uk.gov.moj.cpp.accesscontrol.drools.Action;
+
+rule "Command Controller - Plead Online"
+  when
+    $outcome: Outcome();
+    $action: Action(name == "sjp.command.plead-online");
+  then
+    $outcome.setSuccess(true);
+end
+
+rule "Command Controller - Plead Online for PCQ visited"
+  when
+    $outcome: Outcome();
+    $action: Action(name == "sjp.command.plead-online-pcq-visited");
+  then
+    $outcome.setSuccess(true);
+end

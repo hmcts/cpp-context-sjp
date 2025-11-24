@@ -1,0 +1,48 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://cpp.moj.gov.uk/sjp/event/case-referred-for-court-hearing-v2.json",
+  "properties": {
+    "caseId": {
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+    },
+    "decisionId": {
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+    },
+    "referralReasonId": {
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+    },
+    "referralReason": {
+      "type": "string"
+    },
+    "listingNotes": {
+      "type": "string"
+    },
+    "estimatedHearingDuration": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 999
+    },
+    "referredAt": {
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/date-time"
+    },
+    "referredOffenceIds": {
+      "type": "array",
+      "items": {
+        "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+      }
+    },
+    "defendantCourtOptions": {
+      "$ref": "http://cpp.moj.gov.uk/core/sjp/defendant-court-options.json"
+    },
+    "nextHearing": {
+      "$ref": "http://justice.gov.uk/core/courts/nextHearing.json"
+    }
+  },
+  "required": [
+    "caseId",
+    "decisionId",
+    "referralReasonId",
+    "estimatedHearingDuration",
+    "referredAt"
+  ]
+}

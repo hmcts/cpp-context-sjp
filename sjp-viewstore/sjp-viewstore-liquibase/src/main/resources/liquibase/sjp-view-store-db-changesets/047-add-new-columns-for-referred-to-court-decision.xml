@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+         http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.3.xsd">
+
+    <changeSet id="47" author="team/ATCM/JustIce/Ram"
+               logicalFilePath="liquibase/sjp-view-store-db-changelog.xml">
+
+        <addColumn tableName="offence_decision">
+            <column name="referred_to_court" type="text"/>
+            <column name="referred_to_room" type="smallint"/>
+            <column name="referred_to_date_time" type="datetime"/>
+            <column name="reason" type="text"/>
+            <column name="magistrates_court" type="text"/>
+        </addColumn>
+
+    </changeSet>
+
+</databaseChangeLog>

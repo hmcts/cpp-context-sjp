@@ -1,0 +1,90 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "type": "object",
+  "properties": {
+    "foundCasesWithOutdatedDefendantsName": {
+      "type": "boolean"
+    },
+    "results": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "caseId": {
+            "type": "string"
+          },
+          "urn": {
+            "type": "string"
+          },
+          "assigned": {
+            "type": "boolean"
+          },
+          "completed": {
+            "type": "boolean"
+          },
+          "enterpriseId": {
+            "type": "string",
+            "minLength": 12,
+            "maxLength": 12
+          },
+          "prosecutingAuthority": {
+            "id": "/prosecutingAuthority",
+            "type": "string"
+          },
+          "postingDate": {
+            "type": "string"
+          },
+          "reopendDate": {
+            "type": "string"
+          },
+          "pleaDate": {
+            "type": "string"
+          },
+          "withdrawalRequestedDate": {
+            "type": "string"
+          },
+          "status": {
+            "$ref" : "http://justice.gov.uk/json/schemas/domains/sjp/case-status.json"
+          },
+          "defendant": {
+            "type": "object",
+            "properties": {
+              "firstName": {
+                "type": "string"
+              },
+              "lastName": {
+                "type": "string"
+              },
+              "dateOfBirth": {
+                "type": "string"
+              },
+              "outdated": {
+                "type": "boolean"
+              }
+            },
+            "additionalProperties": false,
+            "required": [
+              "firstName",
+              "lastName"
+            ]
+          },
+          "listedInCriminalCourts": {
+            "type": "boolean"
+          }
+        },
+        "additionalProperties": false,
+        "required": [
+          "caseId",
+          "urn",
+          "enterpriseId",
+          "prosecutingAuthority",
+          "defendant"
+        ]
+      }
+    }
+  },
+  "additionalProperties": false,
+  "required": [
+    "results"
+  ]
+}

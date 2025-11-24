@@ -1,0 +1,20 @@
+package uk.gov.moj.cpp.sjp.command.controller.accesscontrol;
+
+import uk.gov.moj.cpp.accesscontrol.drools.Outcome;
+import uk.gov.moj.cpp.accesscontrol.drools.Action;
+
+rule "Command - Rule for case decision"
+  when
+    $outcome: Outcome();
+    $action: Action(name == "sjp.command.controller.save-decision");
+  then
+    $outcome.setSuccess(true);
+end
+
+rule "Command - Rule for defendant aocp response timer expired requested"
+  when
+    $outcome: Outcome();
+    $action: Action(name == "sjp.command.controller.expire-defendant-aocp-response-timer");
+  then
+    $outcome.setSuccess(true);
+end

@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+         http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.3.xsd">
+
+    <changeSet id="17" author="ATCM/mojo" logicalFilePath="liquibase/sjp-view-store-db-changelog.xml">
+
+        <dropColumn tableName="case_details">
+            <column name="initiation_code" />
+            <column name="pti_urn" />
+            <column name="summons_code" />
+            <column name="libra_originating_org" />
+            <column name="libra_hearing_location" />
+        </dropColumn>
+
+        <rollback>
+            <addColumn tableName="case_details">
+                <column name="initiation_code" type="text"/>
+                <column name="pti_urn" type="text"/>
+                <column name="summons_code" type="text" />
+                <column name="libra_originating_org" type="text"/>
+                <column name="libra_hearing_location" type="text"/>
+            </addColumn>
+        </rollback>
+
+    </changeSet>
+
+</databaseChangeLog>

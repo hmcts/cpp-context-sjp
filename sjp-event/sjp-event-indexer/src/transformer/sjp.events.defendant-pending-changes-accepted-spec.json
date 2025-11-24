@@ -1,0 +1,49 @@
+{
+  "operations": [
+    {
+      "operation": "shift",
+      "spec": {
+        "caseId": "caseId",
+        "defendantId": "parties[0].partyId",
+        "#PROSECUTION": "_case_type",
+        "#defendant": "parties[0]._party_type",
+        "firstName": "parties[0].firstName",
+        "lastName": "parties[0].lastName",
+        "dateOfBirth": "parties[0].dateOfBirth",
+        "address": {
+          "*": "parties[0].addressLines",
+          "postcode": "parties[0].postCode"
+        },
+        "legalEntityName": "parties[0].organisationName"
+      }
+    }, {
+      "operation": "modify-overwrite-beta",
+      "spec": {
+        "parties": {
+          "*": {
+            "addressLines": "=join(' ',@(1,addressLines))"
+          }
+        }
+      }
+    }, {
+      "operation": "shift",
+      "spec": {
+        "caseId": "caseId",
+        "_case_type": "_case_type",
+        "parties": "parties",
+        "addressLines": "parties[0].addressLines"
+      }
+    },
+    {
+      "operation": "modify-overwrite-beta",
+      "spec": {
+        "\\_case_type": "=toUpper",
+        "parties": {
+          "*": {
+            "\\_party_type": "=toUpper"
+          }
+        }
+      }
+    }
+  ]
+}

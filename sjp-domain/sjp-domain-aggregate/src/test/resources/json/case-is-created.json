@@ -1,0 +1,24 @@
+{
+  "_metadata": {
+    "name": "sjp.events.case-received"
+  },
+  "id": "c4ec3a35-76bf-4649-b43a-761e71c3765e",
+  "enterpriseId": "2K2SLYFC743H",
+  "caseId": "c4ec3a35-76bf-4649-b43a-761e71c3765e",
+  "urn": "TFL34652354",
+  "prosecutingAuthority": "TVL",
+  "postingDate": "2019-05-01",
+  "defendant": {
+    "id": "50770ba9-37ea-4713-8cab-fe5bf1202716",
+    "numPreviousConvictions": 0,
+    "offences": [
+      {
+        "id": "042c541a-55b5-4f66-98f0-46b9e560f1b5",
+        "offenceSequenceNo": 0,
+        "libraOffenceDateCode": 0
+      }
+    ]
+  },
+  "createdOn": "2012-02-22T02:06:58.147Z",
+  "expectedDateReady": "2020-07-29"
+}

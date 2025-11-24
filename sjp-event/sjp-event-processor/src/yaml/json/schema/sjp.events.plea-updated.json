@@ -1,0 +1,38 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://justice.gov.uk/json/schemas/domains/sjp/events/plea-updated.json",
+  "type": "object",
+  "properties": {
+    "caseId": {
+      "type": "string"
+    },
+    "offenceId": {
+      "type": "string"
+    },
+    "plea": {
+      "$ref": "http://justice.gov.uk/json/schemas/domains/sjp/plea-type.json"
+    },
+    "pleaMethod": {
+      "$ref": "http://justice.gov.uk/json/schemas/domains/sjp/plea-method.json"
+    },
+    "pleaDetails": {
+      "type": "object"
+    },
+    "mitigation": {
+      "type": "string"
+    },
+    "notGuiltyBecause": {
+      "type": "string"
+    },
+    "updatedDate": {
+      "$ref": "http://justice.gov.uk/json/schemas/domains/sjp/temporal.json#/definitions/date-time"
+    }
+  },
+  "required": [
+    "plea",
+    "caseId",
+    "offenceId",
+    "updatedDate"
+  ],
+  "additionalProperties": false
+}

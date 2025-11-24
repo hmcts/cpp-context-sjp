@@ -4,7 +4,7 @@
     <parent>
         <groupId>uk.gov.moj.cpp.sjp</groupId>
         <artifactId>sjp-parent</artifactId>
-        <version>17.0.104-CIMD2983-SNAPSHOT</version>
+        <version>17.0.105-CIMD2983-SNAPSHOT</version>
     </parent>
 
     <modelVersion>4.0.0</modelVersion>

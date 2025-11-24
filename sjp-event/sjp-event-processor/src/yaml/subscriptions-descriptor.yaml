@@ -286,4 +286,7 @@ subscriptions_descriptor:
         - name: public.prosecutioncasefile.sjp-plead-online
           schema_uri: http://justice.gov.uk/core/courts/public.prosecutioncasefile.sjp-plead-online.json
 
+        - name: public.progression.case-defendant-changed
+          schema_uri: http://justice.gov.uk/sjp/courts/defendant-updated.json
+
       event_source_name: public.event.source

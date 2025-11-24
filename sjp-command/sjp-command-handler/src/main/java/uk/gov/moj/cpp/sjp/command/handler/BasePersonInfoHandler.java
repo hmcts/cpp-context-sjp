@@ -23,7 +23,7 @@ public class BasePersonInfoHandler {
     }
 
     protected String getStringOrNull(final JsonObject object, final String fieldName) {
-        return getString(object, fieldName).orElse(null);
+        return object.getString(fieldName, null);
     }
 
     protected UUID getUserId(final Envelope<?> command) {

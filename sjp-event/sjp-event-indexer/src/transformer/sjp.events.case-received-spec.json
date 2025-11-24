@@ -1,0 +1,98 @@
+{
+  "operations": [
+    {
+      "operation": "shift",
+      "spec": {
+        "caseId": "caseId",
+        "urn": "caseReference",
+        "prosecutingAuthority": "prosecutingAuthority",
+        "postingDate": "sjpNoticeServed",
+        "#NO_PLEA_RECEIVED": "caseStatus",
+        "#PROSECUTION": "_case_type",
+        "defendant": {
+          "id": "parties[0].partyId",
+          "#defendant": "parties[0]._party_type",
+          "title": ["parties[0].title", "parties[0].aliases[0].title"],
+          "firstName": ["parties[0].firstName", "parties[0].aliases[0].firstName"],
+          "lastName": ["parties[0].lastName", "parties[0].aliases[0].lastName"],
+          "dateOfBirth": "parties[0].dateOfBirth",
+          "gender": "parties[0].gender",
+          "legalEntityName": ["parties[0].organisationName","parties[0].aliases[0].organisationName"],
+          "address": {
+            "address1": "parties[0].address1",
+            "address2": "parties[0].address2",
+            "address3": "parties[0].address3",
+            "address4": "parties[0].address4",
+            "address5": "parties[0].address5",
+            "postcode": "parties[0].postCode"
+          },
+          "asn": "parties[0].arrestSummonsNumber"
+        }
+      }
+    },
+    {
+      "operation": "modify-default-beta",
+      "spec": {
+        "addressLines": "=concat(@(1,parties[0].address1),' ',@(1,parties[0].address2),' ',@(1,parties[0].address3),' ',@(1,parties[0].address4),' ',@(1,parties[0].address5))"
+      }
+    },
+    {
+      "operation": "shift",
+      "spec": {
+        "caseId": "caseId",
+        "parties": "parties",
+        "caseReference": "caseReference",
+        "prosecutingAuthority": "prosecutingAuthority",
+        "sjpNoticeServed": "sjpNoticeServed",
+        "caseStatus": "caseStatus",
+        "_case_type": "_case_type",
+        "_party_type": "_party_type",
+        "addressLines": "parties[0].addressLines",
+        "postCode": "parties[0].postcode"
+      }
+    },
+    {
+      "operation": "remove",
+      "spec": {
+        "parties": {
+          "*": {
+            "address1": "",
+            "address2": "",
+            "address3": "",
+            "address4": "",
+            "address5": ""
+          }
+        }
+      }
+    },
+    {
+      "operation": "modify-overwrite-beta",
+      "spec": {
+        "\\_is_sjp": [
+          "=toBoolean",
+          true
+        ],
+        "\\_is_charging": [
+          "=toBoolean",
+          false
+        ],
+        "\\_is_magistrates": [
+          "=toBoolean",
+          false
+        ],
+        "\\_is_crown": [
+          "=toBoolean",
+          false
+        ],
+        "\\_case_type": "=toUpper",
+        "caseStatus":   "=toUpper",
+        "prosecutingAuthority": "=toUpper",
+        "parties": {
+          "*": {
+            "\\_party_type": "=toUpper"
+          }
+        }
+      }
+    }
+  ]
+}

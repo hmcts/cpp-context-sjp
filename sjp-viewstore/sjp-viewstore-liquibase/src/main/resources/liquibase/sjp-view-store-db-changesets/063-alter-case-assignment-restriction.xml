@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+         http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.3.xsd">
+
+    <changeSet id="63.1" author="team/ATCM/resul.ceylan" logicalFilePath="liquibase/sjp-view-store-db-changelog.xml">
+        <renameColumn tableName="case_assignment_restriction" newColumnName="prosecuting_authority" oldColumnName="prosecutor_oucode" />
+        <rollback>
+            <renameColumn tableName="case_assignment_restriction" oldColumnName="prosecuting_authority" newColumnName="prosecutor_oucode" />
+        </rollback>
+    </changeSet>
+    <changeSet id="63.2" author="team/ATCM/resul.ceylan" logicalFilePath="liquibase/sjp-view-store-db-changelog.xml">
+        <dropColumn tableName="case_assignment_restriction" columnName="id" />
+        <addPrimaryKey columnNames="prosecuting_authority" tableName="case_assignment_restriction" constraintName="pk_case_assignment_restriction"/>
+        <addNotNullConstraint tableName="case_assignment_restriction" columnName="prosecuting_authority" />
+        <rollback>
+            <dropPrimaryKey tableName="case_assignment_restriction" constraintName="pk_case_assignment_restriction" />
+            <dropNotNullConstraint tableName="case_assignment_restriction" columnName="prosecuting_authority" />
+            <addColumn tableName="case_assignment_restriction">
+                <column name="id">
+                    <constraints unique="true" nullable="false" primaryKey="true"/>
+                </column>
+            </addColumn>
+        </rollback>
+    </changeSet>
+</databaseChangeLog>

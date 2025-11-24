@@ -1,0 +1,92 @@
+{
+  "results": [
+    {
+      "id": "6feb0f2e-8d1e-40c7-af2c-05b28c69e5fc",
+      "code": "WDRNNOT"
+    },
+    {
+      "id": "14d66587-8fbe-424f-a369-b1144f1684e3",
+      "code": "D"
+    },
+    {
+      "id": "45b0c1fe-afe6-4652-822f-7842d79eada3",
+      "code": "CD"
+    },
+    {
+      "id": "45b0c1fe-afe6-4652-822f-7842d79eada4",
+      "code": "FCOMP"
+    },
+    {
+      "id": "45b0c1fe-afe6-4652-822f-6842d79eada4",
+      "code": "FCOST"
+    },
+    {
+      "id": "35b0c1fe-afe6-4652-822f-6842d79eada4",
+      "code": "FVS"
+    },
+    {
+      "id": "35b0c1fe-afe6-4652-822f-6842d79eada9",
+      "code": "LSUMI"
+    },
+    {
+      "id": "b318f084-f40e-438c-98ba-99b7ce5f3ebf",
+      "code": "FO"
+    },
+    {
+      "id": "b318f084-f40e-438c-98ba-99b7ce5f3eb1",
+      "code": "NCR"
+    },
+    {
+      "id": "b318f084-f40e-438c-98ba-99b7ce5f3eb2",
+      "code": "COLLO"
+    },
+    {
+      "id": "b318f084-f40e-438c-98ba-99b7ce5f3eb3",
+      "code": "INSTL"
+    },
+    {
+      "id": "0bd4ce39-2055-4fae-9087-dfd7e5ddd449",
+      "code": "LEN"
+    },
+    {
+      "id": "2391bb68-579f-4c3b-bc12-9d6ff681668d",
+      "code": "LEP"
+    },
+    {
+      "id": "ad511d29-af34-4db1-841e-77b174f16bc7",
+      "code": "LEA"
+    },
+    {
+      "id": "b8c354b4-be3d-4f73-b313-65e0b92f0d86",
+      "code": "DDD"
+    },
+    {
+      "id": "b96f6aae-ed91-4e39-a85d-cfd440288a0e",
+      "code": "DDO"
+    },
+    {
+      "id": "dd016c2e-7745-4c4c-a02d-cb899bc10aee",
+      "code": "DDP"
+    },
+    {
+      "id": "aa276903-632c-4796-921b-23035fa934ca",
+      "code": "SUMRCC"
+    },
+    {
+      "id": "49939c7c-750f-403e-9ce1-f82e3e568065",
+      "code": "NSP"
+    },
+    {
+      "id": "ea1ee5a4-be13-48dc-8411-78f22e01c236",
+      "code": "LPC"
+    },
+    {
+      "id": "5c5a693f-c26c-4352-bbb3-ac72dd141e88",
+      "code": "DNP"
+    },
+    {
+      "id": "c3a39c2f-b056-442f-8dfc-604b5434f956",
+      "code": "NONE"
+    }
+  ]
+}

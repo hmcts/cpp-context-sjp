@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+         http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.3.xsd">
+
+    <changeSet id="48" author="ATCM/Mojo/resul.ceylan"
+               logicalFilePath="liquibase/sjp-view-store-db-changelog.xml">
+        <dropColumn tableName="online_plea">
+            <column name="plea"/>
+            <column name="mitigation"/>
+            <column name="not_guilty_because"/>
+        </dropColumn>
+        <addColumn tableName="online_plea">
+            <column name="outstanding_fines" type="BOOLEAN"></column>
+        </addColumn>
+
+        <rollback>
+            <addColumn tableName="online_plea">
+                <column name="plea" type="TEXT"></column>
+                <column name="mitigation" type="TEXT"></column>
+                <column name="not_guilty_because" type="TEXT"></column>
+            </addColumn>
+            <dropColumn tableName="online_plea">
+                <column name="outstanding_fines"/>
+            </dropColumn>
+        </rollback>
+
+    </changeSet>
+
+</databaseChangeLog>

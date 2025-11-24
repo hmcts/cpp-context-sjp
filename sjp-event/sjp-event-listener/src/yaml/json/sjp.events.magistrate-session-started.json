@@ -1,0 +1,14 @@
+{
+  "magistrate": "John Wall",
+  "sessionId": "aa746921-d839-4867-bcf9-b41db8ebc852",
+  "userId": "aa746921-d839-4867-bcf9-b41db8ebc852",
+  "courtHouseCode": "B01LY",
+  "courtHouseName": "Wimbledon Magistrates' Court",
+  "localJusticeAreaNationalCourtCode": "2577",
+  "startedAt": "2018-02-05T15:14:29.894Z",
+  "legalAdviser": {
+    "userId": "31ec3a16-8721-498c-8da5-f099390ee254",
+    "firstName": "Erica",
+    "lastName": "Wilson"
+  }
+}

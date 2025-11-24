@@ -1,0 +1,133 @@
+{
+  "courtReferral": {
+    "prosecutionCases": [
+      {
+        "statementOfFacts": "No ticket at the gates, forgery",
+        "originatingOrganisation" : "GAEAA01",
+        "statementOfFactsWelsh": "some facts in welsh",
+        "defendants": [
+          {
+            "offences": [
+              {
+                "count": 1,
+                "orderIndex": 1,
+                "id": "${OFFENCE_ID1}",
+                "notifiedPlea": {
+                  "notifiedPleaDate": "${REFERRAL_DATE}",
+                  "notifiedPleaValue": "NO_NOTIFICATION",
+                  "offenceId": "${OFFENCE_ID1}"
+                },
+                "offenceDateCode": 1,
+                "wording": "Committed some offence",
+                "chargeDate": "2016-01-01",
+                "offenceDefinitionId": "9efdbffa-08f0-4cb5-905d-139511ddcadc",
+                "startDate": "2016-01-01",
+                "offenceFacts" : {
+                  "vehicleRegistration" : "FG59 4FD",
+                  "vehicleMake" : "Ford"
+                },
+                "reportingRestrictions": [
+                  {
+                    "id": "1efdbffa-08f0-4cb5-905d-139511ddc000",
+                    "label": "Vehicle Excise Back Duty",
+                    "orderedDate": "${REFERRAL_DATE}"
+                  }
+                ]
+              }
+            ],
+            "numberOfPreviousConvictionsCited": 2,
+            "id": "${DEFENDANT_ID}",
+            "masterDefendantId": "${DEFENDANT_ID}",
+            "prosecutionCaseId": "${CASE_ID}",
+            "personDefendant": {
+              "selfDefinedEthnicityId": "1daefec3-2f76-8109-82d9-2e60544a6c01",
+              "personDetails": {
+                "lastName": "LLOYD",
+                "occupation": "worker",
+                "address": {
+                  "address3": "England",
+                  "address2": "London",
+                  "address1": "14 Tottenham Court Road",
+                  "postcode": "W1T 1JY",
+                  "address5": "Greater London",
+                  "address4": "UK"
+                },
+                "gender": "MALE",
+                "nationalityId": "22ef7a73-df50-4349-8c72-ca3b9ace6363",
+                "dateOfBirth": "1980-07-15",
+                "title": "MR",
+                "interpreterLanguageNeeds": "French",
+                "documentationLanguageNeeds": "${HEARING_LANGUAGE}",
+                "firstName": "David",
+                "occupationCode": "1",
+                "nationalInsuranceNumber": "${NINO}",
+                "contact": {
+                  "secondaryEmail": "secondary-email@abv.bg",
+                  "work": "+21312321312312",
+                  "mobile": "07123456789",
+                  "primaryEmail": "email@email.com",
+                  "home": "02087654321"
+                },
+                "specificRequirements": "wobbling a bit, but I am fine"
+              },
+              "driverNumber": "${DRIVER_NUMBER}",
+              "arrestSummonsNumber": "asn",
+              "pncId": "pncId"
+            }
+          }
+        ],
+        "initiationCode": "J",
+        "id": "${CASE_ID}",
+        "prosecutionCaseIdentifier": {
+          "prosecutionAuthorityReference": "${PROSECUTING_AUTHORITY_REFERENCE}",
+          "prosecutionAuthorityId": "${PROSECUTING_AUTHORITY_ID}",
+          "prosecutionAuthorityCode": "TFL"
+        },
+        "statementOfFacts": "No ticket at the gates, forgery"
+      }
+    ],
+    "sjpReferral": {
+      "noticeDate": "2015-12-02",
+      "referralDate": "${REFERRAL_DATE}",
+      "referringJudicialDecision": {
+        "location": "court house name",
+        "courtHouseCode": "B01OK",
+        "judiciary": [
+          {
+            "judicialRoleTypeSJP": "LEGAL_ADVISER",
+            "judicialName": "John Smith"
+          },
+          {
+            "judicialRoleTypeSJP": "MAGISTRATE",
+            "judicialName": "John Smith ${MAGISTRATE_ID}"
+          }
+        ]
+      }
+    },
+    "listHearingRequests": [
+      {
+        "hearingType": {
+          "id": "${HEARING_TYPE_ID}"
+        },
+        "jurisdictionType": "MAGISTRATES",
+        "estimateMinutes": 10,
+        "listDefendantRequests": [
+          {
+            "hearingLanguageNeeds": "${HEARING_LANGUAGE}",
+            "referralReason": {
+              "description": "Critical (Defendant has to attend)",
+              "id": "${REFERRAL_REASON_ID}",
+              "defendantId": "${DEFENDANT_ID}"
+            },
+            "summonsRequired": "SJP_REFERRAL",
+            "defendantOffences": [
+              "${OFFENCE_ID1}"
+            ],
+            "prosecutionCaseId": "${CASE_ID}"
+          }
+        ],
+        "listingDirections": "${LISTING_NOTES}"
+      }
+    ]
+  }
+}

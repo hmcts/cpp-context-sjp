@@ -1,0 +1,10 @@
+{
+  "type": "object",
+  "id": "http://justice.gov.uk/json/schemas/domains/sjp/events/complete-case.json",
+  "properties": {
+    "caseId": {
+      "type": "string",
+      "required": true
+    }
+  }
+}

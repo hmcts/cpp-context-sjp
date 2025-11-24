@@ -1,0 +1,105 @@
+{
+  "urn": "${urn}",
+  "prosecutingAuthority": "TFL",
+  "policeFlag": false,
+  "costs": 1.23,
+  "postConviction": false,
+  "dateTimeCreated": "${dateTimeCreated}",
+  "prosecutingAuthorityName": "Transport for London",
+  "defendant": {
+    "speakWelsh": false,
+    "offences": [
+      {
+        "backDutyOffence": false,
+        "penaltyType": "",
+        "notInEffect": true,
+        "sentencing": "",
+        "maxFineLevel": "S",
+        "offenceSequenceNumber": 1,
+        "title": "Postal service - convey a letter without a licence",
+        "imprisonable": true,
+        "vehicleRegistrationMark": "FG59 4FD",
+        "outOfTime": false,
+        "prosecutionFacts": "No ticket at the gates, forgery",
+        "offenceCode": "PS00001",
+        "pleaDate": "${pleaDate}",
+        "backDutyDateTo": "2015-05-30",
+        "id": "${offenceId}",
+        "legislation": "Contrary to section 6(2) of the Postal Services Act 2000.",
+        "sequenceNumber": 1,
+        "pendingWithdrawal": false,
+        "cjsCode": "PS00001",
+        "pleaMethod": "ONLINE",
+        "plea": "NOT_GUILTY",
+        "vehicleMake": "Ford",
+        "backDutyDateFrom": "2015-04-30",
+        "hasFinalDecision": false,
+        "compensation": 2.34,
+        "wording": "Committed some offence",
+        "chargeDate": "2016-01-01",
+        "startDate": "2016-01-01",
+        "backDuty": 340.3,
+        "endorsable" : false,
+        "pressRestrictable": false,
+        "offenceDateCode": 1
+      }
+    ],
+    "caseId": "${caseId}",
+    "numPreviousConvictions": 2,
+    "personalDetails": {
+      "firstName": "David",
+      "lastName": "LLOYD",
+      "address": {
+        "address1": "14 Tottenham Court Road",
+        "address2": "London",
+        "address3": "England",
+        "address4": "UK",
+        "address5": "Greater London",
+        "postcode": "W1T 1JY"
+      },
+      "gender": "Male",
+      "nationalInsuranceNumber": "AB123456A",
+      "driverNumber" : "MORGA753116SM9IJ",
+      "driverLicenceDetails": "test",
+      "addressChanged": false,
+      "dateOfBirth": "1980-07-15",
+      "title": "Mr",
+      "contactDetails": {
+        "mobile": "07890123123",
+        "email": "criminal@gmail.com",
+        "home": "0208000888"
+      },
+      "dobChanged": false,
+      "nameChanged": false
+    },
+    "interpreter": {
+      "needed": true,
+      "language": "French"
+    },
+    "id": "${defendantId}",
+    "disabilityNeeds" : {
+      "needed" : false
+    },
+    "asn": "asn",
+    "pncIdentifier": "pncId",
+    "pcqId": "${pcqId}"
+  },
+  "readyForDecision": false,
+  "caseDocuments": [
+  ],
+  "caseDecisions": [
+
+  ],
+  "listedInCriminalCourts": false,
+  "postConviction": false,
+  "hasPotentialCase": false,
+  "assigned": false,
+  "id": "${caseId}",
+  "completed": false,
+  "postingDate": "2015-12-02",
+  "enterpriseId": "${enterpriseId}",
+  "onlinePleaReceived": true,
+  "aocpEligible": false,
+  "status": "${caseStatus}",
+  "managedByATCM": true
+}

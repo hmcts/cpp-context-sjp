@@ -1,0 +1,26 @@
+package uk.gov.moj.cpp.sjp.command.api.accesscontrol;
+
+import uk.gov.moj.cpp.accesscontrol.drools.Outcome;
+import uk.gov.moj.cpp.accesscontrol.drools.Action;
+import java.util.Arrays;
+import uk.gov.moj.cpp.sjp.command.api.accesscontrol.RuleConstants;
+
+global uk.gov.moj.cpp.accesscontrol.common.providers.UserAndGroupProvider userAndGroupProvider;
+
+rule "Command - Rule for case decision"
+  when
+    $outcome: Outcome();
+    $action: Action(name == "sjp.save-decision");
+    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, RuleConstants.getSaveDecisionActionGroups()));
+  then
+    $outcome.setSuccess(true);
+end
+
+rule "Command - Rule for aocp response timer expired requested"
+  when
+    $outcome: Outcome();
+    $action: Action(name == "sjp.expire-defendant-aocp-response-timer");
+    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, RuleConstants.getAocpSaveDecisionActionGroups()));
+  then
+    $outcome.setSuccess(true);
+end

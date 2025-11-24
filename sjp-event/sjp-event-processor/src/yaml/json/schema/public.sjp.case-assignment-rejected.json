@@ -1,0 +1,13 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://cpp.moj.gov.uk/sjp/json/schema/event/public-case-assignment-rejected.json",
+  "type": "object",
+  "properties": {
+    "reason": {
+      "$ref": "http://justice.gov.uk/json/schemas/domains/sjp/case-rejection-reason.json"
+    }
+  },
+  "required": [
+    "reason"
+  ]
+}

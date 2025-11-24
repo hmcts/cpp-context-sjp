@@ -1,0 +1,17 @@
+{
+  "victimSurcharges": [
+    {
+      "id": "0374f87f-1f6e-333d-8901-f2a48f6e8e8c",
+      "seqNum": 10,
+      "surchargeType": "Fine",
+      "surchargeLevel": "Adult",
+      "sentenceLengthMin": 0,
+      "sentenceLengthMax": 6,
+      "surchargeAmount": null,
+      "surchargeAmountMin": null,
+      "surchargeAmountMax": 2000,
+      "surchargeFinePercentage": 40,
+      "validFrom": "2016-04-07"
+    }
+  ]
+}

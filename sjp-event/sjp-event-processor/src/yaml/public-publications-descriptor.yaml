@@ -1,0 +1,179 @@
+subscriptions_descriptor:
+  spec_version: 1.0.0
+  service: hearing
+  service_component: EVENT_PROCESSOR
+  subscriptions:
+    - name: public event processor subscription
+      events:
+        - name: public.sjp.case-started
+          schema_uri: http://cpp.moj.gov.uk/sjp/json/schema/event/public-case-started.json
+
+        - name: public.sjp.sjp-case-created
+          schema_uri: http://cpp.moj.gov.uk/sjp/json/schema/event/public-sjp-case-created.json
+
+        - name: public.sjp.case-creation-failed-because-case-already-existed
+          schema_uri: http://cpp.moj.gov.uk/sjp/json/schema/event/public-case-creation-failed-because-case-already-existed.json
+
+        - name: public.sjp.all-offences-withdrawal-requested
+          schema_uri: http://cpp.moj.gov.uk/sjp/json/schema/event/public-all-offences-withdrawal-requested.json
+
+        - name: public.sjp.all-offences-withdrawal-request-cancelled
+          schema_uri: http://cpp.moj.gov.uk/sjp/json/schema/event/public-all-offences-withdrawal-request-cancelled.json
+
+        - name: public.sjp.case-document-added
+          schema_uri: http://cpp.moj.gov.uk/sjp/json/schema/event/public-case-document-added.json
+
+        - name: public.sjp.events.case-document-upload-rejected
+          schema_uri: http://justice.gov.uk/json/schemas/domains/sjp/event/public-case-document-upload-rejected.json
+
+        - name: public.sjp.case-document-already-exists
+          schema_uri: http://cpp.moj.gov.uk/sjp/json/schema/event/public-case-document-already-exists.json
+
+        - name: public.sjp.case-created
+          schema_uri: http://cpp.moj.gov.uk/sjp/json/schema/event/public-case-created.json
+
+        - name: public.sjp.case-update-rejected
+          schema_uri: http://cpp.moj.gov.uk/sjp/json/schema/event/public-case-update-rejected.json
+
+        - name: public.sjp.case-reopened-in-libra
+          schema_uri: http://cpp.moj.gov.uk/sjp/json/schema/event/public-case-reopened-in-libra.json
+
+        - name: public.sjp.case-reopened-in-libra-updated
+          schema_uri: http://cpp.moj.gov.uk/sjp/json/schema/event/public-case-reopened-in-libra-updated.json
+
+        - name: public.sjp.case-reopened-in-libra-undone
+          schema_uri: http://cpp.moj.gov.uk/sjp/json/schema/event/public-case-reopened-in-libra-undone.json
+
+        - name: public.sjp.plea-updated
+          schema_uri: http://cpp.moj.gov.uk/sjp/json/schema/event/public-plea-updated.json
+
+        - name: public.sjp.plea-cancelled
+          schema_uri: http://cpp.moj.gov.uk/sjp/json/schema/event/public-plea-cancelled.json
+
+        - name: public.sjp.case-document-uploaded
+          schema_uri: http://cpp.moj.gov.uk/sjp/json/schema/event/public-case-document-uploaded.json
+
+        - name: public.sjp.financial-means-updated
+          schema_uri: http://cpp.moj.gov.uk/sjp/json/schema/event/public-financial-means-udpated.json
+
+        - name: public.sjp.all-financial-means-updated
+          schema_uri: http://cpp.moj.gov.uk/sjp/json/schema/event/public-all-financial-means-updated.json
+
+        - name: public.sjp.employer-updated
+          schema_uri: http://cpp.moj.gov.uk/sjp/json/schema/event/public-employer-updated.json
+
+        - name: public.sjp.employer-deleted
+          schema_uri: http://cpp.moj.gov.uk/sjp/json/schema/event/public-employer-deleted.json
+
+        - name: public.sjp.events.defendant-details-updated
+          schema_uri: http://cpp.moj.gov.uk/sjp/json/schema/event/public-defendant-details-updated.json
+
+        - name: public.sjp.session-started
+          schema_uri: http://cpp.moj.gov.uk/sjp/json/schema/event/public-session-started.json
+
+        - name: public.sjp.case-not-assigned
+          schema_uri: http://cpp.moj.gov.uk/sjp/json/schema/event/public-case-not-assigned.json
+
+        - name: public.sjp.case-assigned
+          schema_uri: http://cpp.moj.gov.uk/sjp/json/schema/event/public-case-assigned.json
+
+        - name: public.sjp.case-assignment-rejected
+          schema_uri: http://cpp.moj.gov.uk/sjp/json/schema/event/public-case-assignment-rejected.json
+
+        - name: public.sjp.dates-to-avoid-added
+          schema_uri: http://cpp.moj.gov.uk/sjp/json/schema/event/public-dates-to-avoid-added.json
+
+        - name: public.sjp.dates-to-avoid-updated
+          schema_uri: http://cpp.moj.gov.uk/sjp/json/schema/event/public-dates-to-avoid-updated.json
+
+        - name: public.sjp.defendant-details-updates-acknowledged
+          schema_uri: http://cpp.moj.gov.uk/sjp/json/schema/event/public-defendant-details-updates-acknowledged.json
+
+        - name: public.sjp.offences-withdrawal-status-set
+          schema_uri: http://cpp.moj.gov.uk/sjp/json/schema/event/public-offences-withdrawal-requests-status-set.json
+
+        - name: public.sjp.pleas-set
+          schema_uri: http://cpp.moj.gov.uk/sjp/json/schema/event/public-set-pleas.json
+
+        - name: public.sjp.events.defendant-financial-means-deleted
+          schema_uri: http://justice.gov.uk/json/schemas/domains/sjp_public/events/public.sjp.financial-means-deleted.json
+
+        - name: public.sjp.all-offences-for-defendant-dismissed-or-withdrawn
+          schema_uri: http://justice.gov.uk/json/schemas/domains/sjp_public/events/public.sjp.all-offences-for-defendant-dismissed-or-withdrawn.json
+
+        - name: public.sjp.case-decision-saved
+          schema_uri: http://cpp.moj.gov.uk/sjp/json/schema/event/public-case-decision-saved.json
+
+        - name: public.events.sjp.case-referred-to-court
+          schema_uri: http://cpp.moj.gov.uk/sjp/json/schema/event/public.events.sjp.case-referred-to-court.json
+
+        - name: public.sjp.case-unassigned
+          schema_uri: http://cpp.moj.gov.uk/sjp/json/schema/event/public-case-unassigned.json
+
+        - name: public.sjp.case-resulted
+          schema_uri: http://cpp.moj.gov.uk/sjp/json/schema/event/public-sjp.case-resulted.json
+
+        - name: public.sjp.case-note-added
+          schema_uri: http://justice.gov.uk/json/schemas/domains/sjp/events/public-case-note-added.json
+
+        - name: public.sjp.cases-management-status-updated
+          schema_uri: http://justice.gov.uk/json/schemas/domains/sjp/events/public-cases-management-status-updated.json
+
+        - name: public.sjp.application-decision-set-aside
+          schema_uri: http://justice.gov.uk/json/schemas/domains/sjp/events/public-application-decision-set-aside.json
+
+        - name: public.sjp.financial-imposition-account-number-added
+          schema_uri: http://cpp.moj.gov.uk/sjp/json/schema/event/public-sjp-financial-imposition-account-number-added.json
+
+        - name: public.sjp.case-application-recorded
+          schema_uri: http://justice.gov.uk/json/schemas/domains/sjp/events/public.sjp.case-application-recorded.json
+
+        - name: public.hearing.resulted
+          schema_uri: http://cpp.moj.gov.uk/sjp/json/schema/event/publicHearingResulted.json
+
+        - name: public.events.hearing.hearing-resulted
+          schema_uri: http://justice.gov.uk/hearing/courts/public.events.hearing.hearing-resulted.json
+
+        - name: public.sjp.events.case-decision-resubmitted
+          schema_uri: http://justice.gov.uk/json/schemas/domains/sjp/events/public.sjp.events.case-decision-resubmitted.json
+
+        - name: public.sjp.events.conviction-court-resolved
+          schema_uri: http://justice.gov.uk/json/schemas/domains/sjp/events/public.sjp.events.conviction-court-resolved.json
+
+        - name: public.sjp.pending-cases-public-list-generated
+          schema_uri: http://cpp.moj.gov.uk/sjp/json/schema/event/public.sjp.pending-cases-public-list-generated.json
+
+        - name: public.sjp.case-legal-soc-checked
+          schema_uri: http://cpp.moj.gov.uk/sjp/json/schema/event/public.sjp.marked-as-legal-soc-checked.json
+
+        - name: public.sjp.press-transparency-report-generated
+          schema_uri: http://cpp.moj.gov.uk/sjp/json/schema/event/public.sjp.press-transparency-report-generated.json
+
+        - name: public.sjp.case-reserved
+          schema_uri: http://cpp.moj.gov.uk/sjp/json/schema/event/public.sjp.case-reserved.json
+
+        - name: public.sjp.case-already-reserved
+          schema_uri: http://cpp.moj.gov.uk/sjp/json/schema/event/public.sjp.case-already-reserved.json
+
+        - name: public.sjp.case-unreserved
+          schema_uri: http://cpp.moj.gov.uk/sjp/json/schema/event/public.sjp.case-unreserved.json
+
+        - name: public.sjp.case-already-unreserved
+          schema_uri: http://cpp.moj.gov.uk/sjp/json/schema/event/public.sjp.case-already-unreserved.json
+
+        - name: public.sjp.events.defendant-pending-changes-accepted
+          schema_uri: http://cpp.moj.gov.uk/sjp/json/schema/event/public.sjp.events.defendant-pending-changes-accepted.json
+
+        - name: public.sjp.events.defendant-pending-changes-rejected
+          schema_uri: http://cpp.moj.gov.uk/sjp/json/schema/event/public.sjp.events.defendant-pending-changes-rejected.json
+
+        - name: public.sjp.delete-case-document-request-accepted
+          schema_uri: http://cpp.moj.gov.uk/sjp/json/schema/event/public.sjp.delete-case-document-request-accepted.json
+
+        - name: public.sjp.delete-case-document-request-rejected
+          schema_uri: http://cpp.moj.gov.uk/sjp/json/schema/event/public.sjp.delete-case-document-request-rejected.json
+
+        - name: public.sjp.case-reserve-failed-as-already-completed
+          schema_uri: http://cpp.moj.gov.uk/sjp/json/schema/event/public.sjp.case-reserve-failed-as-already-completed.json
+
+      event_source_name: public.event.source

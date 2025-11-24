@@ -1,0 +1,39 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://justice.gov.uk/json/schemas/domains/sjp/events/interpreter-for-defendant-updated.json",
+  "type": "object",
+  "properties": {
+    "caseId": {
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+    },
+    "defendantId": {
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+    },
+    "interpreter": {
+      "type": "object",
+      "properties": {
+        "needed": {
+          "type": "boolean"
+        },
+        "language": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "needed"
+      ]
+    },
+    "updatedByOnlinePlea": {
+      "type": "boolean"
+    },
+    "updatedDate": {
+      "$ref": "http://justice.gov.uk/json/schemas/domains/sjp/temporal.json#/definitions/date-time"
+    }
+  },
+  "required": [
+    "caseId",
+    "defendantId",
+    "interpreter"
+  ],
+  "additionalProperties": false
+}

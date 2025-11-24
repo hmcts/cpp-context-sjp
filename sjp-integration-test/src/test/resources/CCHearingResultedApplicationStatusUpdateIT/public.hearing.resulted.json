@@ -1,0 +1,128 @@
+{
+  "hearing": {
+    "id": "c6a3fb7e-7523-4391-98a0-ae622ad4ac33",
+    "jurisdictionType" : "CROWN",
+    "type": {
+      "description": "First hearing",
+      "id": "4a0e892d-c0c5-3c51-95b8-704d8c781776"
+    },
+    "courtCentre": {
+      "id": "99ad5b10-7ccb-4b5d-a93c-7684d0b8e441",
+      "name": "Croydon court"
+
+    },
+    "courtApplications": [
+      {
+        "judicialResults": [
+          {
+            "judicialResultId": "9dd628ba-e888-407f-9ac7-7e40faddb395",
+            "judicialResultTypeId": "${JUDICIAL_RESULT_TYPE_ID}",
+            "rollUpPrompts": true,
+            "publishedForNows": false,
+            "orderedHearingId": "d0340c74-c4a7-4209-9626-299004f25b67",
+            "label": "Bail condition: Assessments/Reports - participate in any assistance or treatment considered appropriate for misuse of class A drugs",
+            "level": "O",
+            "rank": 28200,
+            "isAvailableForCourtExtract": false,
+            "isFinancialResult": false,
+            "publishedAsAPrompt": true,
+            "excludedFromResults": false,
+            "alwaysPublished": false,
+            "lifeDuration": false,
+            "isAdjournmentResult": false,
+            "category": "FINAL",
+            "urgent": false,
+            "isConvictedResult": true,
+            "d20": false,
+            "resultDefinitionGroup": "Bail conditions",
+            "qualifier": "GT",
+            "postHearingCustodyStatus": "A",
+            "terminatesOffenceProceedings": false,
+            "resultText": "Custody time limit\nCustody time limit expires 24/07/2020\nReason for extension Prosecutor absent\nTime spent in custody (in days) 34",
+            "orderedDate": "2018-04-12"
+          }
+        ],
+
+        "courtApplicationCases": [
+          {
+            "prosecutionCaseId": "${CASE_ID}",
+            "prosecutionCaseIdentifier": {
+              "prosecutionAuthorityCode": "TFL",
+              "prosecutionAuthorityId": "cf73207f-3ced-488a-82a0-3fba79c3ce85",
+              "prosecutionAuthorityReference": "TFL12345-A"
+            },
+            "isSJP": true
+          }
+        ],
+        "id": "${APP_ID}",
+        "type": {
+          "id": "${TYPE_ID}",
+          "type": "${APPLICATION_TYPE}",
+          "code": "${APPLICATION_CODE}",
+          "categoryCode": "categoryCode123",
+          "linkType": "${LINK_TYPE}",
+          "jurisdiction": "MAGISTRATES",
+          "summonsTemplateType": "NOT_APPLICABLE",
+          "breachType": "NOT_APPLICABLE",
+          "appealFlag": true,
+          "applicantAppellantFlag": false,
+          "pleaApplicableFlag": false,
+          "commrOfOathFlag": false,
+          "courtOfAppealFlag": false,
+          "courtExtractAvlFlag": false,
+          "prosecutorThirdPartyFlag": false,
+          "spiOutApplicableFlag": false,
+          "offenceActiveOrder": "COURT_ORDER"
+        },
+        "applicationReceivedDate": "${APPLICATION_RECEIVED_DATE}",
+        "applicant": {
+          "id": "00000000-0000-0000-0000-000000000000",
+          "synonym": "a",
+          "summonsRequired": false,
+          "notificationRequired": false
+        },
+        "subject": {
+          "id": "00000000-0000-0000-0000-000000000000",
+          "synonym": "a",
+          "summonsRequired": false,
+          "notificationRequired": false
+        },
+        "applicationStatus": "UN_ALLOCATED"
+      }
+    ],
+    "isSJPHearing": false
+  },
+  "variants": [
+    {
+      "key": {
+        "hearingId": "7a3f466e-6f12-4915-acde-b2f3cf229b3f",
+        "defendantId": "d700b79b-45f1-4ee5-8266-f727d07ed9e7",
+        "nowsTypeId": "5a7bbb07-aa18-400d-a2de-56a5103e4ff0",
+        "usergroups": [
+          "Listings Officers",
+          "Court Clerks"
+        ]
+      },
+      "materialId": "f79bf106-84e0-4bd9-911a-fc28cd6a8c9c",
+      "description": "Imprisonment Order",
+      "templateName": "SingleTemplate",
+      "status": "GENERATED"
+    },
+    {
+      "key": {
+        "hearingId": "7a3f466e-6f12-4915-acde-b2f3cf229b3f",
+        "defendantId": "d700b79b-45f1-4ee5-8266-f727d07ed9e7",
+        "nowsTypeId": "5a7bbb07-aa18-400d-a2de-56a5103e4ff0",
+        "usergroups": [
+          "System Users",
+          "Court Clerks"
+        ]
+      },
+      "materialId": "a7757369-8382-4a4b-9640-ace82d5222f6",
+      "description": "Imprisonment Order",
+      "templateName": "SingleTemplate",
+      "status": "BUILDING"
+    }
+  ],
+  "sharedTime": "2016-06-01T10:00:00Z"
+}

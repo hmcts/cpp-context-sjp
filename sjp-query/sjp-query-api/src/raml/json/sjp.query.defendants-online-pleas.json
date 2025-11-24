@@ -1,0 +1,82 @@
+{
+  "caseId": "60852915-fee5-4bae-a5c0-22fbacc12b01",
+  "defendantId": "85d3c74e-a4e9-4010-9498-61700a0d9bd9",
+  "submittedOn": "2019-10-14T23:13:20.170Z",
+  "onlinePleaDetails": [
+    {
+      "id": "b9de9a3b-ac74-4411-8aea-10d616156640",
+      "offenceId": "aec15187-776b-4f72-b059-9a6dd015f908",
+      "caseId": "60852915-fee5-4bae-a5c0-22fbacc12b01",
+      "defendantId": "85d3c74e-a4e9-4010-9498-61700a0d9bd9",
+      "plea": "GUILTY",
+      "mitigation": "mit 1",
+      "offenceTitle": "Use / install a television set without a licence"
+    },
+    {
+      "id": "61cd4664-49fb-4b3c-bf99-81c1ce2c07be",
+      "offenceId": "ac39ec35-0dff-4e37-b68d-9bd6cd8e987b",
+      "caseId": "60852915-fee5-4bae-a5c0-22fbacc12b01",
+      "defendantId": "85d3c74e-a4e9-4010-9498-61700a0d9bd9",
+      "plea": "NOT_GUILTY",
+      "notGuiltyBecause": "not guilty because 1",
+      "offenceTitle": "Obstruct person executing search warrant for TV receiver"
+    }
+  ],
+  "personalDetails": {
+    "firstName": "Seyit Ahmet Kamil",
+    "lastName": "GUNGOR",
+    "address": {
+      "address1": "Line 11",
+      "address2": "Line 22",
+      "address3": "Line 33",
+      "address4": "Line 44",
+      "address5": "Line 55",
+      "postcode": "SE16 5UD"
+    },
+    "email": "A@b.co",
+    "dateOfBirth": "1960-09-09",
+    "nationalInsuranceNumber": "AA123456D",
+    "driverNumber": "TESTY708166G99KZ"
+  },
+  "pleaDetails": {
+    "comeToCourt": true,
+    "interpreterLanguage": "Arabic",
+    "witnessDispute": "witness dispute",
+    "witnessDetails": "witness details",
+    "unavailability": "Available",
+    "speakWelsh": false,
+    "outstandingFines": true,
+    "interpreterRequired": true
+  },
+  "employment": {
+    "incomePaymentFrequency": "MONTHLY",
+    "incomePaymentAmount": 2000.0,
+    "employmentStatus": "EMPLOYED",
+    "benefitsClaimed": true,
+    "benefitsType": "child maintenance",
+    "benefitsDeductPenaltyPreference": false
+  },
+  "employer": {
+    "employeeReference": "12345",
+    "name": "Pret a manger",
+    "phone": "020 7998 0007",
+    "address": {
+      "address1": "Line 11",
+      "address2": "Line 22",
+      "address3": "Line 33",
+      "address4": "Line 44",
+      "address5": "Line 55",
+      "postcode": "SE16 5UD"
+    }
+  },
+  "outgoings": {
+    "accommodationAmount": 500.3,
+    "councilTaxAmount": 120.5,
+    "householdBillsAmount": 50.8,
+    "travelExpensesAmount": 100.1,
+    "childMaintenanceAmount": 500.2,
+    "otherDescription": "Other",
+    "otherAmount": 500.4,
+    "monthlyAmount": 1772.3
+  }
+}

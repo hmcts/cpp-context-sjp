@@ -1,0 +1,38 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://justice.gov.uk/json/schemas/domains/sjp/queries/enriched-defendant.json",
+  "type": "object",
+  "properties": {
+    "id": {
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+    },
+    "caseId": {
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+    },
+    "personalDetails": {
+      "$ref" : "http://justice.gov.uk/json/schemas/domains/sjp/personal-details.json"
+    },
+    "legalEntityDetails": {
+      "$ref" : "http://justice.gov.uk/json/schemas/domains/sjp/legal-entity-details.json"
+    },
+    "offences": {
+      "type": "array",
+      "items": {
+        "$ref" : "http://justice.gov.uk/json/schemas/domains/sjp/queries/enriched-offence.json"
+      }
+    },
+    "interpreter": {
+      "$ref" : "http://justice.gov.uk/json/schemas/domains/sjp/interpreter.json"
+    },
+    "numPreviousConvictions": {
+      "type": "integer"
+    },
+    "speakWelsh": {
+      "type": "boolean"
+    },
+    "defendantDetailUpdateRequest": {
+      "$ref" : "http://justice.gov.uk/json/schemas/domains/sjp/queries/defendant-detail-update-request.json"
+    }
+  },
+  "additionalProperties": false
+}

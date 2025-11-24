@@ -1,0 +1,25 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://cpp.moj.gov.uk/sjp/json/schema/event/public-case-document-already-exists.json",
+  "type": "object",
+  "properties": {
+    "caseId": {
+      "type": "string"
+    },
+    "id": {
+      "type": "string",
+      "description": "case document id"
+    },
+    "materialId": {
+      "type": "string"
+    },
+    "documentType" : {
+      "enum": ["SJPN", "CITN", "PLEA", "FINANCIAL_MEANS", "WS", "RESULT_ORDER"]
+    }
+  },
+  "required": [
+    "caseId",
+    "id",
+    "materialId"
+  ]
+}

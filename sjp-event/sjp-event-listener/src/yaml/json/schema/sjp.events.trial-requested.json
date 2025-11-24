@@ -1,0 +1,26 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://justice.gov.uk/json/schemas/domains/sjp/events/trial-requested.json",
+  "type": "object",
+  "properties": {
+    "caseId": {
+      "type": "string"
+    },
+    "unavailability": {
+      "type": "string"
+    },
+    "witnessDetails": {
+      "type": "string"
+    },
+    "witnessDispute": {
+      "type": "string"
+    },
+    "updatedDate": {
+      "$ref": "http://justice.gov.uk/json/schemas/domains/sjp/temporal.json#/definitions/date-time"
+    }
+  },
+  "required": [
+    "caseId"
+  ],
+  "additionalProperties": false
+}

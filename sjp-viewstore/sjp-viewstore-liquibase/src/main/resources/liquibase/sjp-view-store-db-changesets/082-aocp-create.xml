@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+         http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.3.xsd">
+
+    <changeSet id="82" author="team/Latin/erol.kureli"
+               logicalFilePath="liquibase/sjp-view-store-db-changelog.xml">
+
+        <createTable tableName="email_notification">
+
+            <column name="id" type="uuid">
+                <constraints primaryKey="true"/>
+            </column>
+
+            <column name="reference_id" type="uuid">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="status" type="text">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="updated" type="timestamp without time zone">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="notification_type" type="text">
+                <constraints nullable="false"/>
+            </column>
+
+        </createTable>
+
+        <addUniqueConstraint
+                columnNames="reference_id, notification_type"
+                constraintName="email_notification_unique_constraint"
+                tableName="email_notification"
+        />
+
+        <createTable tableName="accepted_email_notification">
+            <column name="case_id" type="uuid">
+                <constraints primaryKey="true"/>
+            </column>
+
+            <column name="status" type="text">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="updated" type="timestamp without time zone">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
+        <createTable tableName="aocp_online_plea">
+
+            <column name="id" type="uuid">
+                <constraints primaryKey="true"/>
+            </column>
+
+            <column name="case_id" type="UUID">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="defendant_id" type="UUID"/>
+
+            <column name="submitted_on" type="DATETIME"/>
+
+            <column name="aocp_accepted" type="boolean"/>
+
+            <!-- Personal details Section -->
+            <column name="personal_details_first_name" type="TEXT"/>
+            <column name="personal_details_last_name" type="TEXT"/>
+            <column name="personal_details_address1" type="TEXT"/>
+            <column name="personal_details_address2" type="TEXT"/>
+            <column name="personal_details_address3" type="TEXT"/>
+            <column name="personal_details_address4" type="TEXT"/>
+            <column name="personal_details_address5" type="TEXT"/>
+            <column name="personal_details_postcode" type="TEXT"/>
+            <column name="personal_details_telephone_number_home" type="TEXT"/>
+            <column name="personal_details_telephone_number_mobile" type="TEXT"/>
+            <column name="personal_details_email" type="TEXT"/>
+            <column name="personal_details_date_of_birth" type="TEXT"/>
+            <column name="personal_details_national_insurance_number" type="TEXT"/>
+            <column name="personal_details_driver_licence_details" type="text"/>
+            <column name="personal_details_driver_number" type="text"/>
+
+        </createTable>
+
+        <addUniqueConstraint
+                columnNames="case_id"
+                constraintName="aocp_online_plea_unique_constraint"
+                tableName="aocp_online_plea"
+        />
+
+        <rollback>
+            <dropTable tableName="email_notification"/>
+            <dropTable tableName="accepted_email_notification"/>
+            <dropTable tableName="aocp_online_plea"/>
+        </rollback>
+
+    </changeSet>
+
+</databaseChangeLog>

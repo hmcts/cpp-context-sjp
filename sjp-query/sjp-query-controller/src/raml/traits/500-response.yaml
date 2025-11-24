@@ -1,0 +1,15 @@
+responses:
+  500:
+    description: Unexcepted error in the service
+    body:
+      example: |
+        {
+          "errorType": "Unexpected error",
+          "stackTrace":"java.lang.Exception : Something went wrong
+            .....
+            sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+            sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:62)
+            sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+            java.lang.reflect.Method.invoke(Method.java:497)
+            java.lang.Thread.run(Thread.java:745)"   
+        }

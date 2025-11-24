@@ -1,0 +1,63 @@
+---
+resource_descriptor:
+  spec_version: '1.0.0'
+  version: '${project.version}'
+
+  resources:
+    - name: java:/app/sjp-service/DS.eventstore
+      type: xa-datasource
+      setup:
+        - type: liquibase
+          maven:
+            groupId: uk.gov.justice.services
+            artifactId: event-repository-liquibase
+            type: jar
+            version: '${cpp.framework.version}'
+        - type: liquibase
+          maven:
+            groupId: uk.gov.justice.services
+            artifactId: aggregate-snapshot-repository-liquibase
+            type: jar
+            version: '${cpp.framework.version}'
+
+    - name: java:/DS.sjp
+      type: xa-datasource
+      setup:
+        - type: liquibase
+          maven:
+            groupId: uk.gov.justice.services
+            artifactId: event-buffer-liquibase
+            type: jar
+            version: '${cpp.framework.version}'
+        - type: liquibase
+          maven:
+            groupId: uk.gov.moj.cpp.sjp
+            artifactId: sjp-viewstore-liquibase
+            type: jar
+            version: '${project.version}'
+
+    - name: sjp.controller.command
+      type: queue
+    - name: sjp.handler.command
+      type: queue
+    - name: sjp.event
+      type: topic
+    - name: public.event
+      type: topic
+
+
+    # Artefact provides these services
+    - name:   'sjp-service'
+      id:     'sjp'
+      target: '/sjp-service'
+      map:
+        - '/sjp-command-api'
+        - '/sjp-command-controller'
+        - '/sjp-command-handler'
+        - '/sjp-event-listener'
+        - '/sjp-event-processor'
+        - '/sjp-query-api'
+        - '/sjp-query-controller'
+        - '/sjp-query-view'
+      matcher: '/sjp-[^/]+'
+

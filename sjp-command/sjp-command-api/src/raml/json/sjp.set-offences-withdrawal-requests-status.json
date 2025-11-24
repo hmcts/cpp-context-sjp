@@ -1,0 +1,12 @@
+{
+  "withdrawalRequestsStatus": [
+    {
+      "offenceId": "88fbfd34-a9b8-46bf-9c09-42b0a2ef9536",
+      "withdrawalRequestReasonId": "f89302ea-9ad4-44e7-8e5d-5c4ef1171ca6"
+    },
+    {
+      "offenceId": "77fbfd34-a9b8-46bf-9c09-42b0a2ef9536",
+      "withdrawalRequestReasonId": "f89302ea-9ad4-44e7-8e5d-5c4ef1171ca6"
+    }
+  ]
+}

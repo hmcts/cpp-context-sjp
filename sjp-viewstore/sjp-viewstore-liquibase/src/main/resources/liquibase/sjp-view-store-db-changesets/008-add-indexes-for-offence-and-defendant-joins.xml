@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+         http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.3.xsd">
+
+    <changeSet id="08" author="jgraham" logicalFilePath="liquibase/sjp-view-store-db-changelog.xml">
+
+        <createIndex tableName="defendant" indexName="defendant_case_id_idx">
+            <column name="case_id" type="UUID"/>
+        </createIndex>
+        <createIndex tableName="offence" indexName="offence_defendant_id_idx">
+            <column name="defendant_id" type="UUID"/>
+        </createIndex>
+
+    </changeSet>
+
+</databaseChangeLog>

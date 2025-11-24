@@ -1,0 +1,7 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://justice.gov.uk/json/schemas/domains/sjp/note-text.json",
+  "type": "string",
+  "minLength": 1,
+  "maxLength": 100000
+}

@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+         http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.3.xsd">
+
+    <property name="uuid_function" value="uid.uuid_generate_v4()"/>
+
+    <changeSet id="39.1" author="ATCM">
+        <dropColumn tableName="offence_decision" columnName="id"/>
+
+        <addColumn tableName="offence_decision">
+            <column name="referral_reason_id" type="uuid"></column>
+            <column name="estimated_hearing_duration" type="integer"></column>
+            <column name="listing_notes" type="text"></column>
+        </addColumn>
+
+        <addPrimaryKey tableName="offence_decision" columnNames="offence_id, case_decision_id"/>
+    </changeSet>
+
+</databaseChangeLog>

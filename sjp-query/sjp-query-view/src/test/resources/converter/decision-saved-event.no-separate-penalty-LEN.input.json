@@ -1,0 +1,18 @@
+{
+  "caseId": "${caseId}",
+  "sjpSessionId": "${sessionId}",
+  "decisionId": "${decisionId}",
+  "resultedOn": "${resultedOn}",
+  "offenceDecisions": [
+    {
+      "type": "NO_SEPARATE_PENALTY",
+      "licenceEndorsed": true,
+      "offenceDecisionInformation": [
+        {
+          "offenceId": "${offence1Id}",
+          "verdict": "PROVED_SJP"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,60 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id" : "http://justice.gov.uk/json/schemas/domains/sjp/event/aocp-pleas-set.json",
+  "type": "object",
+  "properties": {
+    "caseId": {
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+    },
+    "pleas" : {
+      "type": "array",
+      "items": {
+        "id": "http://justice.gov.uk/json/schemas/domains/sjp/event/plea.json",
+        "type": "object",
+        "properties": {
+          "defendantId": {
+            "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+          },
+          "offenceId": {
+            "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+          },
+          "pleaType": {
+            "oneOf": [
+              {
+                "type": "string",
+                "enum": ["GUILTY"]
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "notGuiltyBecause": {
+            "type": "string"
+          },
+          "mitigation": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "defendantId",
+          "offenceId"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "pleaMethod": {
+      "$ref": "http://justice.gov.uk/json/schemas/domains/sjp/plea-method.json"
+    },
+    "pleaDate": {
+      "$ref": "http://justice.gov.uk/json/schemas/domains/sjp/temporal.json#/definitions/date-time"
+    }
+  },
+  "required": [
+    "caseId",
+    "pleas",
+    "pleaDate",
+    "pleaMethod"
+  ],
+  "additionalProperties": false
+}

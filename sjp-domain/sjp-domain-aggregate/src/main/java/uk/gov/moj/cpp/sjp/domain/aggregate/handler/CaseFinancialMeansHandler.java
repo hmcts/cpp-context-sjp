@@ -1,0 +1,85 @@
+package uk.gov.moj.cpp.sjp.domain.aggregate.handler;
+
+import static java.util.stream.Collectors.toList;
+import static java.util.stream.Stream.of;
+import static uk.gov.moj.cpp.sjp.domain.aggregate.handler.HandlerUtils.createRejectionEvents;
+
+import uk.gov.moj.cpp.sjp.domain.Benefits;
+import uk.gov.moj.cpp.sjp.domain.CaseDocument;
+import uk.gov.moj.cpp.sjp.domain.Employer;
+import uk.gov.moj.cpp.sjp.domain.FinancialMeans;
+import uk.gov.moj.cpp.sjp.domain.Income;
+import uk.gov.moj.cpp.sjp.domain.aggregate.state.CaseAggregateState;
+import uk.gov.moj.cpp.sjp.event.AllFinancialMeansUpdated;
+import uk.gov.moj.cpp.sjp.event.FinancialMeansDeleted;
+import uk.gov.moj.cpp.sjp.event.FinancialMeansUpdated;
+
+import java.math.BigDecimal;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
+import java.util.stream.Stream;
+
+public class CaseFinancialMeansHandler {
+
+    public static final CaseFinancialMeansHandler INSTANCE = new CaseFinancialMeansHandler();
+
+    private static final BigDecimal MAX_VALUE = BigDecimal.valueOf(999999999.99);
+
+    private CaseFinancialMeansHandler() {
+    }
+
+    public Stream<Object> updateFinancialMeans(final UUID userId,
+                                               final FinancialMeans financialMeans,
+                                               final CaseAggregateState state) {
+
+        return createRejectionEvents(
+                userId,
+                "Update financial means",
+                financialMeans.getDefendantId(),
+                state
+        ).orElse(getFinancialMeansEventStream(financialMeans));
+    }
+
+    public Stream<Object> getFinancialMeansEventStream(FinancialMeans financialMeans) {
+        return of(FinancialMeansUpdated.createEvent(
+                financialMeans.getDefendantId(),
+                getRevisedIncome(financialMeans),
+                financialMeans.getBenefits(),
+                financialMeans.getEmploymentStatus(),
+                financialMeans.getGrossTurnover(),
+                financialMeans.getNetTurnover(),
+                financialMeans.getNumberOfEmployees(),
+                financialMeans.getTradingMoreThanTwelveMonths()));
+    }
+
+    public Stream<Object> getAllFinancialMeansUpdatedEventStream(final UUID defendantId, final Income income, final Benefits benefits, final Employer employer, final String employmentStatus) {
+        return of(new AllFinancialMeansUpdated(defendantId, income, benefits, employmentStatus, employer));
+    }
+
+    public Stream<Object> deleteFinancialMeans(final UUID defendantId, final CaseAggregateState state) {
+
+        final List<UUID> materialIds = state.getCaseDocuments()
+                .entrySet()
+                .stream()
+                .map(Map.Entry::getValue)
+                .filter(caseDocument ->
+                        CaseAggregateState.FINANCIAL_MEANS_DOCUMENT_TYPE
+                                .equals(caseDocument.getDocumentType()))
+                .map(CaseDocument::getMaterialId)
+                .collect(toList());
+
+        return of(FinancialMeansDeleted.createEvent(defendantId, materialIds));
+    }
+
+    private static Income getRevisedIncome(final FinancialMeans financialMeans) {
+        if (financialMeans.getIncome() != null
+                && financialMeans.getIncome().getAmount() != null
+                && financialMeans.getIncome().getAmount().compareTo(MAX_VALUE) > 0) {
+            final BigDecimal incomeAmount = new BigDecimal("0");
+            return new Income(financialMeans.getIncome().getFrequency(), incomeAmount);
+        }
+        return financialMeans.getIncome();
+    }
+
+}

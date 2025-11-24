@@ -1,0 +1,6 @@
+{
+  "_metadata": {
+    "name": "sjp.events.case-unassignment-rejected"
+  },
+  "reason": "CASE_NOT_ASSIGNED"
+}

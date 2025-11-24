@@ -1,0 +1,97 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://justice.gov.uk/json/schemas/domains/sjp/queries/cases-missing-sjpn.json",
+  "type": "object",
+  "properties": {
+    "ids": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "cases": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+          },
+          "urn": {
+            "type": "string"
+          },
+          "prosecutingAuthority": {
+            "type": "string"
+          },
+          "defendant": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+              },
+              "title": {
+                "type": "string"
+              },
+              "firstName": {
+                "type": "string"
+              },
+              "lastName": {
+                "type": "string"
+              },
+              "dateOfBirth": {
+                "$ref": "http://justice.gov.uk/json/schemas/domains/sjp/temporal.json#/definitions/date"
+              },
+              "nationalInsuranceNumber": {
+                "type": "string"
+              },
+              "driverNumber": {
+                "type": "string"
+              },
+              "gender": {
+                "$ref": "http://justice.gov.uk/json/schemas/domains/sjp/gender.json"
+              },
+              "legalEntityName": {
+                "type": "string"
+              }
+            },
+            "anyOf": [
+              {
+                "required": [
+                  "id",
+                  "firstName",
+                  "lastName",
+                  "gender"
+                ]
+              },
+              {
+                "required": [
+                  "id",
+                  "legalEntityName"
+                ]
+              }
+            ],
+            "additionalProperties": false
+          },
+          "postingDate": {
+            "$ref": "http://justice.gov.uk/json/schemas/domains/sjp/temporal.json#/definitions/date"
+          }
+        },
+        "required": [
+          "id",
+          "urn",
+          "prosecutingAuthority",
+          "defendant",
+          "postingDate"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "count": {
+      "type": "integer"
+    }
+  },
+  "additionalProperties": false,
+  "required": [
+    "count"
+  ]
+}

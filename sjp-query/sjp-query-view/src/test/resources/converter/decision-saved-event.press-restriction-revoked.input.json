@@ -1,0 +1,83 @@
+{
+  "caseId": "${caseId}",
+  "sjpSessionId": "${sessionId}",
+  "decisionId": "${decisionId}",
+  "resultedOn": "${resultedOn}",
+  "offenceDecisions": [
+    {
+      "type": "FINANCIAL_PENALTY",
+      "offenceDecisionInformation": [
+        {
+          "offenceId": "${offence1Id}",
+          "verdict": "PROVED_SJP"
+        }
+      ],
+      "pressRestriction": {
+        "requested": false
+      }
+    },
+    {
+      "type": "DISCHARGE",
+      "offenceDecisionInformation": [
+        {
+          "offenceId": "${offence2Id}",
+          "verdict": "PROVED_SJP"
+        }
+      ],
+      "dischargeType": "ABSOLUTE",
+      "pressRestriction": {
+        "requested": false
+      }
+    },
+    {
+      "type": "DISMISS",
+      "offenceDecisionInformation": [
+        {
+          "offenceId": "${offence3Id}",
+          "verdict": "FOUND_NOT_GUILTY"
+        }
+      ],
+      "pressRestriction": {
+        "requested": false
+      }
+    },
+    {
+      "type": "WITHDRAW",
+      "offenceDecisionInformation": [
+        {
+          "offenceId": "${offence4Id}",
+          "verdict": "NO_VERDICT"
+        }
+      ],
+      "withdrawalReasonId": "1dbf0960-51e3-4d90-803d-d54cd8ea7d3e",
+      "pressRestriction": {
+        "requested": false
+      }
+    },
+    {
+      "type": "NO_SEPARATE_PENALTY",
+      "offenceDecisionInformation": [
+        {
+          "offenceId": "${offence5Id}",
+          "verdict": "FOUND_GUILTY"
+        }
+      ],
+      "guiltyPleaTakenIntoAccount": false,
+      "licenceEndorsed": false,
+      "pressRestriction": {
+        "requested": false
+      }
+    },
+    {
+      "type": "SET_ASIDE",
+      "offenceDecisionInformation": [
+        {
+          "offenceId": "${offence6Id}"
+        }
+      ],
+      "pressRestriction": {
+        "requested": false
+      }
+    }
+  ]
+}

@@ -1,0 +1,45 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://justice.gov.uk/json/schemas/domains/sjp/command/sjp.update-case-listed-in-criminal-courts.json",
+  "type": "object",
+  "properties": {
+    "caseId": {
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+    },
+    "defendantId": {
+      "$ref": "http://justice.gov.uk/core/courts/courtsDefinitions.json#/definitions/uuid"
+    },
+    "defendantOffences": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "$ref": "http://justice.gov.uk/core/courts/courtsDefinitions.json#/definitions/uuid"
+      }
+    },
+    "hearingId": {
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+    },
+    "courtCentre": {
+      "$ref": "http://justice.gov.uk/core/courts/courtCentre.json"
+    },
+    "hearingDays": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "$ref": "http://justice.gov.uk/core/courts/hearingDay.json"
+      }
+    },
+    "hearingType": {
+      "$ref": "http://justice.gov.uk/core/courts/hearingType.json"
+    }
+  },
+  "additionalProperties": false,
+  "required": [
+    "caseId",
+    "defendantId",
+    "defendantOffences",
+    "hearingId",
+    "courtCentre",
+    "hearingDays"
+  ]
+}

@@ -1,0 +1,146 @@
+{
+  "decisionId": "079e4889-e938-4056-8d6f-cc43511218ff",
+  "sessionId": "d7e68305-98b0-4b1a-ba3d-041009eea126",
+  "caseId": "2b484dc8-9477-47c4-ab4c-d24007d74846",
+  "savedAt": "2020-01-07T16:33:50.376Z",
+  "offenceDecisions": [
+    {
+      "type": "ADJOURN",
+      "id": "62b99f2e-2b13-4a5d-a09d-97d276af5aa7",
+      "offenceDecisionInformation": [
+        {
+          "offenceId": "a2c78db0-2756-4570-921a-cde92b3885fe",
+          "verdict": "NO_VERDICT"
+        }
+      ],
+      "reason": "not enough arguments",
+      "adjournTo": "2020-01-29"
+    },
+    {
+      "type": "WITHDRAW",
+      "id": "5d822529-4496-4b8a-a770-720f0d8531a5",
+      "offenceDecisionInformation": {
+        "offenceId": "ca7b10ae-f9a0-4b49-9e8f-0c4b5b55b4f7",
+        "verdict": "NO_VERDICT"
+      },
+      "withdrawalReasonId": "030d4335-f9fe-39e0-ad7e-d01a0791ff87"
+    },
+    {
+      "type": "DISMISS",
+      "id": "45e286ab-7535-4b95-a1a0-5b52f8ea6932",
+      "offenceDecisionInformation": {
+        "offenceId": "19f8c2d8-f796-467c-9f7a-938d811e1f2f",
+        "verdict": "FOUND_NOT_GUILTY"
+      }
+    },
+    {
+      "type": "REFERRED_FOR_FUTURE_SJP_SESSION",
+      "id": "45e286ab-7535-4b95-a1a0-5b52f8ea6932",
+      "offenceDecisionInformation": [
+        {
+          "offenceId": "6b11003d-5db3-4864-bc54-3d1ba3cb6fba",
+          "verdict": "NO_VERDICT"
+        },
+        {
+          "offenceId": "bc2158d5-7b40-45e0-8974-bb25bbb375f7",
+          "verdict": "NO_VERDICT"
+        }
+      ]
+    },
+    {
+      "type": "DISCHARGE",
+      "id": "716681dd-7dbf-44e5-bb38-d586108e6bf6",
+      "offenceDecisionInformation": {
+        "offenceId": "8c15b323-2dcc-4fba-a99e-3360bdda3d05",
+        "verdict": "PROVED_SJP"
+      },
+      "dischargeType": "ABSOLUTE",
+      "compensation": 0,
+      "noCompensationReason": "Limited means of the defendant",
+      "guiltyPleaTakenIntoAccount": false
+    },
+    {
+      "type": "FINANCIAL_PENALTY",
+      "id": "29c46e7d-b1be-4b9d-885b-72d3773776cf",
+      "offenceDecisionInformation": {
+        "offenceId": "b6e17d9f-2e77-4f58-bbc4-36c819929510",
+        "verdict": "PROVED_SJP"
+      },
+      "fine": 220,
+      "compensation": 0,
+      "noCompensationReason": "There is no loss or damage",
+      "guiltyPleaTakenIntoAccount": false
+    },
+    {
+      "type": "REFER_FOR_COURT_HEARING",
+      "id": "063b2ede-20e1-401c-8cdd-d8df2a2c6a63",
+      "offenceDecisionInformation": [
+        {
+          "offenceId": "6b11003d-5db3-4864-bc54-3d1ba3cb6fba",
+          "verdict": "NO_VERDICT"
+        },
+        {
+          "offenceId": "bc2158d5-7b40-45e0-8974-bb25bbb375f7",
+          "verdict": "NO_VERDICT"
+        }
+      ],
+      "referralReasonId": "d10c5cc4-ec2a-41ac-bd6e-a3659c5cfeb1",
+      "estimatedHearingDuration": 20,
+      "defendantCourtOptions": {
+        "interpreter": {
+          "needed": false
+        },
+        "welshHearing": false
+      }
+    },
+    {
+      "type": "REFERRED_TO_OPEN_COURT",
+      "id": "063b2ede-20e1-401c-8cdd-d8df2a2c6a63",
+      "offenceDecisionInformation": [
+        {
+          "offenceId": "6b11003d-5db3-4864-bc54-3d1ba3cb6fba",
+          "verdict": "NO_VERDICT"
+        },
+        {
+          "offenceId": "bc2158d5-7b40-45e0-8974-bb25bbb375f7",
+          "verdict": "NO_VERDICT"
+        }
+      ],
+      "referredToCourt": "",
+      "referredToRoom": 20,
+      "referredToDateTime": "2020-01-07T16:33:50.376Z",
+      "reason": "Random reason",
+      "magistratesCourt": "A magistrates court"
+    }
+  ],
+  "financialImposition": {
+    "costsAndSurcharge": {
+      "costs": 0,
+      "reasonForNoCosts": "sdfsdf",
+      "victimSurcharge": 32,
+      "collectionOrderMade": true
+    },
+    "payment": {
+      "totalSum": 252,
+      "paymentType": "PAY_TO_COURT",
+      "reasonWhyNotAttachedOrDeducted": "No information from defendant",
+      "reasonForDeductingFromBenefits": "COMPENSATION_ORDERED",
+      "paymentTerms": {
+        "reserveTerms": false,
+        "lumpSum": {
+          "amount": 252,
+          "withinDays": 14
+        },
+        "installments": {
+          "amount": 252,
+          "period": "MONTHLY",
+          "startDate": "2020-01-07"
+        }
+      },
+      "fineTransferredTo": {
+        "nationalCourtCode": "1753",
+        "nationalCourtName": "South Cumbria Magistrates' Court"
+      }
+    }
+  }
+}

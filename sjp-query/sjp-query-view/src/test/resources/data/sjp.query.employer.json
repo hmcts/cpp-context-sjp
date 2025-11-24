@@ -1,0 +1,14 @@
+{
+  "defendantId": "c4d922ba-20c6-4d68-ab56-3611401bbc7c",
+  "employeeReference": "12345",
+  "name": "McDonald's",
+  "address": {
+    "address1": "14 Tottenham Court Road",
+    "address2": "London",
+    "address3": "England",
+    "address4": "UK",
+    "address5": "Greater London",
+    "postcode": "W1T 1JY"
+  },
+  "phone": "020 7998 9300"
+}

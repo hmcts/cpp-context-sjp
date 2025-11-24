@@ -1,0 +1,29 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://justice.gov.uk/json/schemas/domains/sjp/query/offences-verdicts.json",
+  "type": "object",
+  "properties": {
+    "verdicts": {
+      "type": "array",
+      "items": {
+        "id": "http://justice.gov.uk/json/schemas/domains/sjp/query/offence-verdict.json",
+        "type": "object",
+        "properties": {
+          "offenceNumber" : {
+            "type": "number"
+          },
+          "verdict" : {
+            "$ref": "http://cpp.moj.gov.uk/core/sjp/verdict/verdict-type.json"
+          }
+        },
+        "required": [
+          "offenceNumber",
+          "verdict"
+        ]
+      }
+    }
+  },
+  "required": [
+    "verdicts"
+  ]
+}

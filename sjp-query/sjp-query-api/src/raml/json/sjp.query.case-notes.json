@@ -1,0 +1,22 @@
+{
+  "caseId": "f1c7ab7e-22db-4d18-a865-23cb495ec435",
+  "notes": [
+    {
+      "noteId": "db97759a-83f5-4a72-b99c-9426ba58b394",
+      "noteType": "CASE",
+      "noteText": "test note 1",
+      "addedAt": "2019-08-26T16:39:15.417Z",
+      "authorFirstName": "John",
+      "authorLastName": "Wall"
+    },
+    {
+      "noteId": "d8cfdaf2-4a0f-4b4f-8d24-07537b2dcbd5",
+      "noteType": "DECISION",
+      "noteText": "test note 2",
+      "addedAt": "2019-01-26T16:39:15.417Z",
+      "authorFirstName": "Ben",
+      "authorLastName": "Smith",
+      "decisionId": "d9b38b48-2aae-4e40-9c4b-9613bf38d2da"
+    }
+  ]
+}

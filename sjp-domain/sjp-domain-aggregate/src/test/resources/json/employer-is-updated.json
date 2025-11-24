@@ -1,0 +1,19 @@
+{
+  "_metadata": {
+    "name": "sjp.events.employer-updated"
+  },
+  "defendantId": "50770ba9-37ea-4713-8cab-fe5bf1202716",
+  "name": "Pret a manger",
+  "employeeReference": "12345",
+  "phone": "020 7998 0007",
+  "address": {
+    "address1": "18 Tottenham Court Road",
+    "address2": "London",
+    "address3": "England",
+    "address4": "UK",
+    "address5": "Greater London",
+    "postcode": "W1T 1JY"
+  },
+  "updatedByOnlinePlea": true,
+  "updatedDate": "2012-02-22T02:06:58.147Z"
+}

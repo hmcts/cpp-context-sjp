@@ -1,0 +1,146 @@
+{
+  "caseDecisions": [
+    {
+      "id": "5bb371a3-c687-4aa7-9bfa-f76f03433513",
+      "caseId": "62aaea6e-b705-47c8-8141-90ed3f252acf",
+      "created": "2019-03-22T14:15:40.586Z[UTC]",
+      "interim": false,
+      "verdict": "GSJ",
+      "sjpSessionId": "2751d66b-9890-4709-b71d-e6a08a30d62e",
+      "offences": [
+        {
+          "id": "3e2058e8-73b2-48a3-991a-d8748169d623",
+          "results": [
+            {
+              "terminalEntries": [
+                {
+                  "index": 1,
+                  "value": "40"
+                },
+                {
+                  "index": -1,
+                  "value": "A"
+                }
+              ],
+              "code": "FO",
+              "registerText": "£40",
+              "registerTextWelsh": "£40"
+            },
+            {
+              "terminalEntries": [],
+              "code": "GPTAC",
+              "registerText": "Guilty plea taken into account when imposing sentence",
+              "registerTextWelsh": "Os pledir yn euog, rhoir ystyriaeth i hynny wrth ddedfrydu"
+            },
+            {
+              "terminalEntries": [
+                {
+                  "index": 1,
+                  "value": "6.00"
+                }
+              ],
+              "code": "FCOMP",
+              "registerText": "£6.00",
+              "registerTextWelsh": "£6.00"
+            }
+          ],
+          "decision": "FINANCIAL_PENALTY"
+        },
+        {
+          "results": [
+            {
+              "terminalEntries": [
+                {
+                  "index": 1,
+                  "value": "10.99"
+                }
+              ],
+              "code": "FCOST",
+              "registerText": "£10.99",
+              "registerTextWelsh": "£10.99"
+            },
+            {
+              "terminalEntries": [
+                {
+                  "index": 4,
+                  "value": "Attach to earnings"
+                },
+                {
+                  "index": 9,
+                  "value": ""
+                }
+              ],
+              "code": "COLLO",
+              "registerText": "Attach to earnings. ",
+              "registerTextWelsh": "Attach to earnings. "
+            },
+            {
+              "terminalEntries": [
+                {
+                  "index": 1,
+                  "value": "30"
+                }
+              ],
+              "code": "FVS",
+              "registerText": "£30",
+              "registerTextWelsh": "£30"
+            },
+            {
+              "terminalEntries": [
+                {
+                  "index": 15,
+                  "value": "86.99000000000001"
+                },
+                {
+                  "index": 10,
+                  "value": "Compensation ordered"
+                }
+              ],
+              "code": "AEOC",
+              "registerText": "£86.99. Reason: Compensation ordered",
+              "registerTextWelsh": "£86.99. Rheswm: Compensation ordered"
+            },
+            {
+              "terminalEntries": [
+                {
+                  "index": 5,
+                  "value": "86.99000000000001"
+                },
+                {
+                  "index": 6,
+                  "value": "Lump sum within 14 days"
+                }
+              ],
+              "code": "RLSUM",
+              "registerText": "Outstanding balance to be paid as a Lump sum within 14 days",
+              "registerTextWelsh": "Balans sy’n weddill i’w dalu fel Cyfandaliad o fewn 14 diwrnod"
+            },
+            {
+              "terminalEntries": [
+                {
+                  "index": 1,
+                  "value": "South London Magistrates' Court"
+                },
+                {
+                  "index": -1,
+                  "value": "77"
+                },
+                {
+                  "index": -2,
+                  "value": "828"
+                },
+                {
+                  "index": -3,
+                  "value": "2576"
+                }
+              ],
+              "code": "TFOOUT",
+              "registerText": "South London Magistrates' Court",
+              "registerTextWelsh": "South London Magistrates' Court"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

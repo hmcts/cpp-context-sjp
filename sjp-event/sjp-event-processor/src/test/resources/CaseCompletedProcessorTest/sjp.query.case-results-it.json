@@ -1,0 +1,64 @@
+{
+  "caseId": "0d61cb1c-d841-4262-9fd2-e726b8e4df35",
+  "accountDivisionCode": 77,
+  "enforcingCourtCode": 828,
+  "caseDecisions": [
+    {
+      "sjpSessionId": "284eebcd-035d-4248-9724-a115308de640",
+      "resultedOn": "2021-01-29T09:14:48.124Z[UTC]",
+      "offences": [
+        {
+          "id": "86aa2966-fae7-4bd1-920a-52bb44c0293c",
+          "verdict": "NO_VERDICT",
+          "results": [
+            {
+              "resultDefinitionId": "6feb0f2e-8d1e-40c7-af2c-05b28c69e5fc",
+              "prompts": [
+                {
+                  "promptDefinitionId": "318c9eb2-cf3c-4592-a353-1b2166c15f81",
+                  "value": "Insufficient Evidence"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "9460d873-ff1c-469e-b189-a8b8743e1848",
+          "verdict": "NO_VERDICT",
+          "results": [
+            {
+              "resultDefinitionId": "f7784e82-20b5-4d2c-b174-6fd57ebf8d7c",
+              "prompts": [
+                {
+                  "promptDefinitionId": "185e6a04-8b44-430d-8073-d8d12f69733a",
+                  "value": "2021-02-05"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "sjpSessionId": "85571919-86bb-4d02-a495-e08cfea623ae",
+      "resultedOn": "2021-01-29T09:15:00.939Z[UTC]",
+      "offences": [
+        {
+          "id": "9460d873-ff1c-469e-b189-a8b8743e1848",
+          "verdict": "NO_VERDICT",
+          "results": [
+            {
+              "resultDefinitionId": "6feb0f2e-8d1e-40c7-af2c-05b28c69e5fc",
+              "prompts": [
+                {
+                  "promptDefinitionId": "318c9eb2-cf3c-4592-a353-1b2166c15f81",
+                  "value": "Insufficient Evidence"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

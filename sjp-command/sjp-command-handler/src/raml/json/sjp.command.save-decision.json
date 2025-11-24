@@ -1,0 +1,21 @@
+{
+  "caseId": "6bc6dbdc-7b8b-4d98-b3c4-5d21467e7c50",
+  "decisionId": "fc3f8d82-d200-4cab-a492-2796e6fdf42c",
+  "sessionId": "87a321ef-ea34-47d7-865d-7f430b4775be",
+  "note": "wrongly convicted",
+  "offenceDecisions": [
+    {
+      "offenceDecisionId": "7e2f843e-d639-40b3-8611-8015f3a18958",
+      "type": "WITHDRAW",
+      "offenceId": "77fbfd34-a9b8-46bf-9c09-42b0a2ef9536",
+      "withdrawalReasonId": "f89302ea-9ad4-44e7-8e5d-5c4ef1171ca6"
+    }
+  ],
+  "savedAt": "2019-01-01T09:00:00Z",
+  "savedBy": {
+    "userId": "c70867c0-3d9b-4cd4-978d-056a2915bb75",
+    "firstName": "john",
+    "lastName": "smith"
+  },
+  "isApplicationFlow": true
+}

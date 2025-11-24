@@ -1,0 +1,39 @@
+{
+  "offenceWithdrawRequestReasons": [
+    {
+      "id": "030d4335-f9fe-39e0-ad7e-d01a0791ff87",
+      "sequence": 10,
+      "reasonCodeDescription": "Insufficient Evidence",
+      "legalAdviser": true,
+      "prosecutor": true
+    },
+    {
+      "id": "93c6b978-4cad-31f0-a6d9-59cfd71c324a",
+      "sequence": 20,
+      "reasonCodeDescription": "Agreement between prosecutor and defendant reached",
+      "legalAdviser": true,
+      "prosecutor": true
+    },
+    {
+      "id": "a11670b7-681a-39dc-951e-f2f1c24fb4c9",
+      "sequence": 30,
+      "reasonCodeDescription": "Not in public interest to proceed",
+      "legalAdviser": true,
+      "prosecutor": true
+    },
+    {
+      "id": "3c582e1a-a896-35ee-bb1d-1317c3f22982",
+      "sequence": 40,
+      "reasonCodeDescription": "Alternative Charge",
+      "legalAdviser": true,
+      "prosecutor": true
+    },
+    {
+      "id": "11b9087a-4681-3484-b2cf-684295353ac6",
+      "sequence": 50,
+      "reasonCodeDescription": "Other",
+      "legalAdviser": true,
+      "prosecutor": false
+    }
+  ]
+}

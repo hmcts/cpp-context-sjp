@@ -1,0 +1,12 @@
+package uk.gov.moj.cpp.sjp.command.controller.accesscontrol;
+
+import uk.gov.moj.cpp.accesscontrol.drools.Outcome;
+import uk.gov.moj.cpp.accesscontrol.drools.Action;
+
+rule "Command - Rule for Request to resolve Conviction details"
+  when
+    $outcome: Outcome();
+    $action: Action(name == "sjp.command.resolve-conviction-court-bdf");
+   then
+    $outcome.setSuccess(true);
+end

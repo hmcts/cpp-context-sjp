@@ -1,0 +1,51 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://justice.gov.uk/json/schemas/domains/sjp/query/pending-dates-to-avoid.json",
+  "type": "object",
+  "properties": {
+    "cases": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "caseId": {
+            "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+          },
+          "pleaEntry": {
+            "$ref": "http://justice.gov.uk/json/schemas/domains/sjp/temporal.json#/definitions/date-time"
+          },
+          "firstName": {
+            "type": "string"
+          },
+          "lastName": {
+            "type": "string"
+          },
+          "address": {
+            "$ref": "http://justice.gov.uk/json/schemas/domains/sjp/address.json"
+          },
+          "referenceNumber": {
+            "type": "string"
+          },
+          "dateOfBirth": {
+            "$ref": "http://justice.gov.uk/json/schemas/domains/sjp/temporal.json#/definitions/date"
+          },
+          "region": {
+            "type": "string"
+          },
+          "legalEntityName": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "caseId"
+        ]
+      }
+    },
+    "count": {
+      "type": "integer"
+    }
+  },
+  "required": [
+    "cases"
+  ]
+}

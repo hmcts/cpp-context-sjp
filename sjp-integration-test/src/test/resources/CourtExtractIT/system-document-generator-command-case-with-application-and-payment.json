@@ -1,0 +1,282 @@
+{
+  "templateName": "CourtExtract",
+  "conversionFormat": "pdf",
+  "templatePayload": {
+    "generationDate": "${GENERATION_DATE}",
+    "generationTime": "${GENERATION_TIME}",
+    "defendant": {
+      "address": "14 Tottenham Court Road London England UK Greater London , W1T 1JY",
+      "firstName": "David",
+      "lastName": "LLOYD",
+      "dateOfBirth": "15 July 1980",
+      "age": "${AGE}"
+    },
+    "decisionCourtExtractView": [
+      {
+        "offencesApplicationsDecisions": [
+          {
+            "sequenceNumber": 1,
+            "offenceDecisions": [
+              {
+                "offenceId": "7884634a-8b25-4650-be3b-7ca393309001",
+                "heading": "Court decision",
+                "lines": [
+                  {
+                    "label": "Plea",
+                    "value": "No plea received"
+                  },
+                  {
+                    "label": "Verdict",
+                    "value": "Guilty plea accepted"
+                  },
+                  {
+                    "label": "Date of verdict",
+                    "value": "${GENERATION_DATE}"
+                  },
+                  {
+                    "label": "Result",
+                    "value": "Discharged conditionally"
+                  },
+                  {
+                    "label": "Period",
+                    "value": "2 months"
+                  },
+                  {
+                    "label": "To pay compensation of",
+                    "value": "£230"
+                  },
+                  {
+                    "label": "Decision made",
+                    "value": "${DECISION_DATE}\n${MAGISTRATE_NAME} (Magistrate)"
+                  }
+                ]
+              }
+            ],
+            "type": "Offence",
+            "title": "Postal service - convey a letter without a licence",
+            "wording": "Committed some offence",
+            "legislation": "Contrary to section 6(2) of the Postal Services Act 2000."
+          },
+          {
+            "sequenceNumber": 2,
+            "offenceDecisions": [
+              {
+                "offenceId": "7884634a-8b25-4650-be3b-7ca393309002",
+                "heading": "Court decision",
+                "lines": [
+                  {
+                    "label": "Plea",
+                    "value": "No plea received"
+                  },
+                  {
+                    "label": "Verdict",
+                    "value": "Guilty plea accepted"
+                  },
+                  {
+                    "label": "Date of verdict",
+                    "value": "${GENERATION_DATE}"
+                  },
+                  {
+                    "label": "Result",
+                    "value": "Discharged absolutely"
+                  },
+                  {
+                    "label": "To pay compensation of",
+                    "value": "£20"
+                  },
+                  {
+                    "label": "Defendant's guilty plea",
+                    "value": "Taken into account when imposing sentence"
+                  },
+                  {
+                    "label": "Decision made",
+                    "value": "${DECISION_DATE}\n${MAGISTRATE_NAME} (Magistrate)"
+                  }
+                ]
+              }
+            ],
+            "type": "Offence",
+            "title": "Postal service - convey a letter without a licence",
+            "wording": "Committed some offence",
+            "legislation": "Contrary to section 6(2) of the Postal Services Act 2000."
+          }
+        ],
+        "payment": {
+          "victimSurcharge": "£32",
+          "paymentMethodReason": "No information from defendant",
+          "paymentMethod": "Pay directly to court",
+          "collectionOrderMade": true,
+          "paymentTerms": "Instalments of £20 to be paid monthly starting on ${INSTALLMENT_DATE}",
+          "prosecutionCosts": "£120",
+          "totalCompensation": "£250",
+          "totalToPay": "£402"
+        },
+        "hasFinancialImposition": true
+      },
+      {
+        "offencesApplicationsDecisions": [
+          {
+            "sequenceNumber": 0,
+            "offenceDecisions": [],
+            "applicationDecision": {
+              "heading": "Previous court decision",
+              "lines": [
+                {
+                  "label": "Result",
+                  "value": "Statutory declaration made under section 16E of the Magistrates' Courts Act 1980. Conviction and Sentence imposed on ${DECISION_DATE}"
+                },
+                {
+                  "label": "Decision made",
+                  "value": "${DECISION_DATE}\n${MAGISTRATE_NAME} (Magistrate)"
+                }
+              ]
+            },
+            "type": "Application",
+            "wording": "Appearance to make statutory declaration (SJP case)"
+          }
+        ],
+        "hasFinancialImposition": false
+      },
+      {
+        "offencesApplicationsDecisions": [
+          {
+            "sequenceNumber": 1,
+            "offenceDecisions": [
+              {
+                "offenceId": "7884634a-8b25-4650-be3b-7ca393309001",
+                "heading": "Previous court decision",
+                "lines": [
+                  {
+                    "label": "Plea",
+                    "value": "Guilty"
+                  },
+                  {
+                    "label": "Plea date",
+                    "value": "${PLEA_DATE}"
+                  },
+                  {
+                    "label": "Verdict",
+                    "value": "Found not guilty"
+                  },
+                  {
+                    "label": "Date of verdict",
+                    "value": "${GENERATION_DATE}"
+                  },
+                  {
+                    "label": "Result",
+                    "value": "Dismissed"
+                  },
+                  {
+                    "label": "Decision made",
+                    "value": "${DECISION_DATE}\n${MAGISTRATE_NAME} (Magistrate)"
+                  }
+                ]
+              },
+              {
+                "offenceId": "7884634a-8b25-4650-be3b-7ca393309001",
+                "heading": "Previous court decision",
+                "lines": [
+                  {
+                    "label": "Plea",
+                    "value": "Guilty, court hearing requested"
+                  },
+                  {
+                    "label": "Plea date",
+                    "value": "${PLEA_DATE}"
+                  },
+                  {
+                    "label": "Result",
+                    "value": "Adjourn to later SJP hearing.\nOn or after ${DECISION_DATE}"
+                  },
+                  {
+                    "label": "Decision made",
+                    "value": "${DECISION_DATE}\n${MAGISTRATE_NAME} (Legal Adviser)"
+                  }
+                ]
+              }
+            ],
+            "type": "Offence",
+            "title": "Postal service - convey a letter without a licence",
+            "wording": "Committed some offence",
+            "legislation": "Contrary to section 6(2) of the Postal Services Act 2000."
+          },
+          {
+            "sequenceNumber": 2,
+            "offenceDecisions": [
+              {
+                "offenceId": "7884634a-8b25-4650-be3b-7ca393309002",
+                "heading": "Previous court decision",
+                "lines": [
+                  {
+                    "label": "Plea",
+                    "value": "No plea received"
+                  },
+                  {
+                    "label": "Verdict",
+                    "value": "Found not guilty"
+                  },
+                  {
+                    "label": "Date of verdict",
+                    "value": "${GENERATION_DATE}"
+                  },
+                  {
+                    "label": "Result",
+                    "value": "Dismissed"
+                  },
+                  {
+                    "label": "Decision made",
+                    "value": "${DECISION_DATE}\n${MAGISTRATE_NAME} (Magistrate)"
+                  }
+                ]
+              },
+              {
+                "offenceId": "7884634a-8b25-4650-be3b-7ca393309002",
+                "heading": "Previous court decision",
+                "lines": [
+                  {
+                    "label": "Plea",
+                    "value": "No plea received"
+                  },
+                  {
+                    "label": "Result",
+                    "value": "Adjourn to later SJP hearing.\nOn or after ${DECISION_DATE}"
+                  },
+                  {
+                    "label": "Decision made",
+                    "value": "${DECISION_DATE}\n${MAGISTRATE_NAME} (Legal Adviser)"
+                  }
+                ]
+              }
+            ],
+            "type": "Offence",
+            "title": "Postal service - convey a letter without a licence",
+            "wording": "Committed some offence",
+            "legislation": "Contrary to section 6(2) of the Postal Services Act 2000."
+          }
+        ],
+        "payment": {
+          "victimSurcharge": "£32",
+          "paymentMethodReason": "No information from defendant",
+          "paymentMethod": "Pay directly to court",
+          "collectionOrderMade": true,
+          "paymentTerms": "Instalments of £20 to be paid monthly starting on ${INSTALLMENT_DATE}",
+          "prosecutionCosts": "£120",
+          "totalCompensation": "£250",
+          "totalToPay": "£402"
+        },
+        "hasFinancialImposition": true
+      }
+    ],
+    "caseDetails": {
+      "reference": "${URN}",
+      "prosecutor": "Transport for London",
+      "prosecutorAddress": {
+        "line1": "6th Floor Windsor House",
+        "line2": "42-50 Victoria Street",
+        "line3": "London"
+      },
+      "courtHouseName": "court house name",
+      "courtHouseCode": "2572"
+    }
+  }
+}

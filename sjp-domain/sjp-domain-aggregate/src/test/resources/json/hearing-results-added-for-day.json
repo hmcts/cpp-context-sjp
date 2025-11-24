@@ -1,0 +1,287 @@
+{
+  "hearing": {
+    "courtCentre": {
+      "address": {
+        "address1": "176A Lavender Hill",
+        "address2": "London",
+        "address3": "",
+        "address4": "",
+        "address5": "",
+        "postcode": "SW11 1JU"
+      },
+      "code": "B01LY00",
+      "courtHearingLocation": "B01LY01",
+      "id": "f8254db1-1683-483e-afb3-b87fde5a0a26",
+      "lja": {
+        "ljaCode": "2577",
+        "ljaName": "South West London Magistrates' Court"
+      },
+      "name": "Lavender Hill Magistrates' Court",
+      "roomId": "9e4932f7-97b2-3010-b942-ddd2624e4dd8",
+      "roomName": "Courtroom 01"
+    },
+    "defendantAttendance": [
+      {
+        "attendanceDays": [
+          {
+            "attendanceType": "NOT_PRESENT",
+            "day": "2024-08-18"
+          }
+        ],
+        "defendantId": "f416d8ef-0f58-471b-890f-e1430af72739"
+      }
+    ],
+    "defendantJudicialResults": [
+      {
+        "judicialResult": {
+          "alwaysPublished": true,
+          "canBeSubjectOfBreach": false,
+          "canBeSubjectOfVariation": false,
+          "category": "FINAL",
+          "courtClerk": {
+            "firstName": "Erica",
+            "lastName": "Wilson",
+            "userId": "a085e359-6069-4694-8820-7810e7dfe762"
+          },
+          "d20": false,
+          "excludedFromResults": false,
+          "isAdjournmentResult": false,
+          "isAvailableForCourtExtract": true,
+          "isConvictedResult": false,
+          "isDeleted": false,
+          "isFinancialResult": false,
+          "isNewAmendment": true,
+          "isUnscheduled": false,
+          "judicialResultId": "12079ac6-a962-4cc8-a319-f9179b338ff7",
+          "judicialResultPrompts": [
+            {
+              "courtExtract": "Y",
+              "isFinancialImposition": false,
+              "judicialResultPromptTypeId": "ee7d253a-c629-11e8-a355-529269fb1459",
+              "label": "Date to pay in full by",
+              "promptReference": "PBD",
+              "promptSequence": 100,
+              "type": "DATE",
+              "usergroups": [],
+              "value": "12/12/2024",
+              "welshLabel": "Dyddiad terfyn ar gyfer talu'r swm llawn",
+              "welshValue": "12/12/2024"
+            }
+          ],
+          "judicialResultTypeId": "bcb5a496-f7cf-11e8-8eb2-f2801f1b9fd1",
+          "label": "Pay by date",
+          "lastSharedDateTime": "2024-08-18",
+          "level": "D",
+          "lifeDuration": false,
+          "offenceId": "66ab677a-722d-418a-a670-507512e2b88d",
+          "orderedDate": "2024-08-18",
+          "orderedHearingId": "9e2b0d16-63bf-4a1f-b312-c4e3c6249f2a",
+          "parentJudicialResultId": "d6d690b4-b4bc-44da-aaa8-01a3d948fa4d",
+          "parentJudicialResultTypeId": "4fdd9548-c521-48c9-baa3-1bd2f13a4fcc",
+          "postHearingCustodyStatus": "A",
+          "publishedAsAPrompt": false,
+          "publishedForNows": false,
+          "rank": 120500,
+          "resultDefinitionGroup": "Payment terms",
+          "resultText": "PDATE - Pay by date\nPay by date. Date to pay in full by: 12/12/2024.",
+          "rollUpPrompts": false,
+          "rootJudicialResultId": "2a6c58d7-1c40-4f84-8056-95e04dc81431",
+          "rootJudicialResultTypeId": "969f150c-cd05-46b0-9dd9-30891efcc766",
+          "terminatesOffenceProceedings": false,
+          "urgent": false,
+          "usergroups": [],
+          "welshLabel": "Dyddiad terfyn ar gyfer talu"
+        },
+        "masterDefendantId": "f416d8ef-0f58-471b-890f-e1430af72739"
+      }
+    ],
+    "hasSharedResults": true,
+    "hearingDays": [
+      {
+        "courtCentreId": "f8254db1-1683-483e-afb3-b87fde5a0a26",
+        "courtRoomId": "9e4932f7-97b2-3010-b942-ddd2624e4dd8",
+        "hasSharedResults": true,
+        "isCancelled": false,
+        "listedDurationMinutes": 20,
+        "listingSequence": 0,
+        "sittingDay": "2024-08-18T22:30:00.000Z"
+      }
+    ],
+    "hearingLanguage": "ENGLISH",
+    "id": "9e2b0d16-63bf-4a1f-b312-c4e3c6249f2a",
+    "isGroupProceedings": false,
+    "jurisdictionType": "MAGISTRATES",
+    "prosecutionCases": [
+      {
+        "caseStatus": "ACTIVE",
+        "cpsOrganisation": "A30AB00",
+        "defendants": [
+          {
+            "courtProceedingsInitiated": "2024-08-18T12:39:32.620Z",
+            "id": "f416d8ef-0f58-471b-890f-e1430af72739",
+            "isYouth": false,
+            "masterDefendantId": "f416d8ef-0f58-471b-890f-e1430af72739",
+            "offences": [
+              {
+                "arrestDate": "2024-01-01",
+                "chargeDate": "2023-12-28",
+                "count": 0,
+                "endorsableFlag": false,
+                "id": "66ab677a-722d-418a-a670-507512e2b88d",
+                "isDisposed": true,
+                "judicialResults": [
+                  {
+                    "alwaysPublished": false,
+                    "canBeSubjectOfBreach": false,
+                    "canBeSubjectOfVariation": false,
+                    "category": "FINAL",
+                    "cjsCode": "1015",
+                    "courtClerk": {
+                      "firstName": "Erica",
+                      "lastName": "Wilson",
+                      "userId": "a085e359-6069-4694-8820-7810e7dfe762"
+                    },
+                    "d20": false,
+                    "excludedFromResults": false,
+                    "isAdjournmentResult": false,
+                    "isAvailableForCourtExtract": true,
+                    "isConvictedResult": true,
+                    "isDeleted": false,
+                    "isFinancialResult": true,
+                    "isNewAmendment": true,
+                    "isUnscheduled": false,
+                    "judicialResultId": "2a6c58d7-1c40-4f84-8056-95e04dc81431",
+                    "judicialResultPrompts": [
+                      {
+                        "courtExtract": "Y",
+                        "isFinancialImposition": true,
+                        "judicialResultPromptTypeId": "7cd1472f-2379-4f5b-9e67-98a43d86e122",
+                        "label": "Amount of fine",
+                        "promptReference": "AOF",
+                        "promptSequence": 100,
+                        "type": "CURR",
+                        "usergroups": [],
+                        "value": "£500.00",
+                        "welshLabel": "Swm y ddirwy",
+                        "welshValue": "£500.00"
+                      }
+                    ],
+                    "judicialResultTypeId": "969f150c-cd05-46b0-9dd9-30891efcc766",
+                    "label": "Fine",
+                    "lastSharedDateTime": "2024-08-18",
+                    "level": "O",
+                    "lifeDuration": false,
+                    "orderedDate": "2024-08-18",
+                    "orderedHearingId": "9e2b0d16-63bf-4a1f-b312-c4e3c6249f2a",
+                    "policeSubjectLineTitle": "Final Sentence",
+                    "postHearingCustodyStatus": "A",
+                    "publishedAsAPrompt": false,
+                    "publishedForNows": false,
+                    "rank": 71200,
+                    "resultDefinitionGroup": "Imposition",
+                    "resultText": "FO - Fine\nFined £500.00",
+                    "rollUpPrompts": true,
+                    "rootJudicialResultId": "2a6c58d7-1c40-4f84-8056-95e04dc81431",
+                    "rootJudicialResultTypeId": "969f150c-cd05-46b0-9dd9-30891efcc766",
+                    "terminatesOffenceProceedings": false,
+                    "urgent": false,
+                    "usergroups": [],
+                    "welshLabel": "Dirwy"
+                  }
+                ],
+                "listingNumber": 1,
+                "maxPenalty": "EW:6M &/or Ultd Fine",
+                "modeOfTrial": "Either Way",
+                "offenceCode": "TH68010",
+                "offenceDateCode": 1,
+                "offenceDefinitionId": "c8b42f54-833a-37de-982e-e62fca7540dd",
+                "offenceLegislation": "Contrary to section 1(1) and 7 of the Theft    Act 1968.",
+                "offenceLegislationWelsh": "Yn groes i adran 1(1) a 7 Deddf Dwyn 1968.",
+                "offenceTitle": "Theft from a shop",
+                "offenceTitleWelsh": "Dwyn o siop - siop-ladrad",
+                "orderIndex": 1,
+                "startDate": "2023-11-30",
+                "wording": "Shoplifting at Debenhams."
+              }
+            ],
+            "personDefendant": {
+              "arrestSummonsNumber": "D28GC01129464092",
+              "bailConditions": "",
+              "bailStatus": {
+                "code": "A",
+                "description": "Not applicable",
+                "id": "86009c70-759d-3308-8de4-194886ff9a77"
+              },
+              "driverNumber": "VANFL002222OW9PH",
+              "personDetails": {
+                "address": {
+                  "address1": "9999D9999AAAA",
+                  "address2": "Woodldne",
+                  "address3": "addressline 3",
+                  "address4": "Brcstol",
+                  "address5": "Avcn",
+                  "postcode": "YO43 3DF"
+                },
+                "contact": {
+                  "home": "0209464092",
+                  "mobile": "07779464092",
+                  "primaryEmail": "REDDY.TEST019464092@gmail.com"
+                },
+                "dateOfBirth": "1994-10-07",
+                "documentationLanguageNeeds": "ENGLISH",
+                "ethnicity": {
+                  "observedEthnicityCode": "1",
+                  "observedEthnicityDescription": "White",
+                  "observedEthnicityId": "c4ca4238-a0b9-3382-8dcc-509a6f75849b",
+                  "selfDefinedEthnicityCode": "W1",
+                  "selfDefinedEthnicityDescription": "British",
+                  "selfDefinedEthnicityId": "c4ca4238-a0b9-3382-8dcc-509a6f75849b"
+                },
+                "firstName": "Jamie",
+                "gender": "MALE",
+                "hearingLanguageNeeds": "ENGLISH",
+                "lastName": "McCullough",
+                "title": "Mr"
+              },
+              "policeBailStatus": {
+                "code": "C",
+                "description": "Custody",
+                "id": "12e69486-4d01-3403-a50a-7419ca040635"
+              }
+            },
+            "prosecutionAuthorityReference": "D28GC01129464092",
+            "prosecutionCaseId": "d038689f-2f60-465f-b69b-35707152c935"
+          }
+        ],
+        "id": "d038689f-2f60-465f-b69b-35707152c935",
+        "initiationCode": "C",
+        "originatingOrganisation": "130SU01",
+        "prosecutionCaseIdentifier": {
+          "address": {
+            "address1": "Criminal Justice Department",
+            "address2": "Derbyshire Constabulary",
+            "address3": "Butterley Hall",
+            "address4": "Ripley",
+            "address5": "Derby",
+            "postcode": "DE5 3RS"
+          },
+          "contact": {
+            "primaryEmail": "criminaldataderbyshire@derbyshire.police.uk"
+          },
+          "majorCreditorCode": "PO30",
+          "prosecutionAuthorityCode": "DERPF",
+          "prosecutionAuthorityId": "bdc190e7-c939-37ca-be4b-9f615d6ef40e",
+          "prosecutionAuthorityName": "Derbyshire Police",
+          "prosecutionAuthorityOUCode": "0300000",
+          "caseURN": "28NR9464092"
+        }
+      }
+    ],
+    "type": {
+      "description": "First hearing",
+      "id": "4a0e892d-c0c5-3c51-95b8-704d8c781776"
+    }
+  },
+  "hearingDay": "2024-08-18",
+  "sharedTime": "2024-08-18T12:40:52.655Z"
+}

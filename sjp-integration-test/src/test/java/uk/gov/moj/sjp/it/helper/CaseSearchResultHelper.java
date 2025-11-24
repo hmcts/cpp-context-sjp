@@ -1,0 +1,144 @@
+package uk.gov.moj.sjp.it.helper;
+
+import static com.jayway.jsonpath.matchers.JsonPathMatchers.isJson;
+import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
+import static java.util.UUID.randomUUID;
+import static javax.ws.rs.core.Response.Status.OK;
+import static org.hamcrest.CoreMatchers.allOf;
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.hasItem;
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.notNullValue;
+import static org.hamcrest.Matchers.hasSize;
+import static uk.gov.justice.services.test.utils.core.matchers.ResponsePayloadMatcher.payload;
+import static uk.gov.justice.services.test.utils.core.matchers.ResponseStatusMatcher.status;
+import static uk.gov.moj.sjp.it.helper.AssignmentHelper.requestCaseAssignment;
+import static uk.gov.moj.sjp.it.helper.SessionHelper.startMagistrateSessionAndConfirm;
+import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubDefaultCourtByCourtHouseOUCodeQuery;
+import static uk.gov.moj.sjp.it.test.BaseIntegrationTest.USER_ID;
+import static uk.gov.moj.sjp.it.util.DefaultRequests.searchCases;
+import static uk.gov.moj.sjp.it.util.Defaults.DEFAULT_LONDON_COURT_HOUSE_OU_CODE;
+import static uk.gov.moj.sjp.it.util.Defaults.DEFAULT_USER_ID;
+import static uk.gov.moj.sjp.it.util.RestPollerWithDefaults.pollWithDefaults;
+
+import uk.gov.justice.services.common.converter.LocalDates;
+import uk.gov.moj.cpp.sjp.domain.common.CaseStatus;
+
+import java.time.LocalDate;
+import java.util.UUID;
+import java.util.concurrent.TimeUnit;
+
+import org.hamcrest.Matcher;
+
+public class CaseSearchResultHelper {
+
+    public static final String CASE_SEARCH_RESULTS_MEDIA_TYPE = "application/vnd.sjp.query.case-search-results+json";
+
+    private final String urn;
+    private final String lastName;
+    private final LocalDate dateOfBirth;
+    private final UUID searchUserId;
+    private final String legalEntityName;
+
+    public CaseSearchResultHelper(final UUID searchUserId) {
+        this(null, null, null, searchUserId, null);
+    }
+
+    public CaseSearchResultHelper(final String urn, final String defendantLastName, final LocalDate dateOfBirth) {
+        this(urn, defendantLastName, dateOfBirth, USER_ID, null);
+    }
+
+    private CaseSearchResultHelper(final String urn, final String defendantLastName, final LocalDate dateOfBirth, final UUID searchUserId, final String legalEntityName) {
+        this.urn = urn;
+        this.lastName = defendantLastName;
+        this.dateOfBirth = dateOfBirth;
+        this.searchUserId = searchUserId;
+        this.legalEntityName = legalEntityName;
+    }
+
+    public void verifyPersonFound(final String urn, final String lastName) {
+        pollWithDefaults(searchCases(lastName, searchUserId))
+                .until(status().is(OK), payload().isJson(
+                        withJsonPath("$.results[?(@.urn=='" + urn + "')]", hasSize(1))
+                ));
+    }
+
+    public void verifyPersonNotFound(final String urn, final String lastName) {
+        pollWithDefaults(searchCases(lastName, searchUserId))
+                .timeout(5, TimeUnit.SECONDS)
+                .until(status().is(OK), payload().isJson(
+                        withJsonPath("$.results[?(@.urn=='" + urn + "')]", hasSize(0))
+                ));
+    }
+
+    public void verifyPleaReceivedDate() {
+        pollWithDefaults(searchCases(urn, searchUserId))
+                .until(status().is(OK), payload().isJson(
+                        withJsonPath("$.results[0].pleaDate", notNullValue())
+                ));
+    }
+
+    public void verifyAssignment(final boolean assigned) {
+        pollWithDefaults(searchCases(urn, searchUserId))
+                .until(status().is(OK), payload().isJson(allOf(
+                        withJsonPath("$.results[0].urn", is(urn)),
+                        withJsonPath("$.results[0].assigned", is(assigned)))));
+    }
+
+    public void verifyUrnFound(final String urn) {
+        pollWithDefaults(searchCases(urn, searchUserId))
+                .until(status().is(OK), payload().isJson(withJsonPath("$.results", hasSize(1))));
+    }
+
+    public void verifyUrnNotFound(final String urn) {
+        pollWithDefaults(searchCases(urn, searchUserId))
+                .until(status().is(OK), payload().isJson(withJsonPath("$.results", hasSize(0))));
+    }
+
+    public void verifyPersonInfoByUrn() {
+        verifyPersonInfo(urn, lastName, dateOfBirth);
+    }
+
+    public void verifyPersonInfoByLastNameAndDateOfBirth(String lastName, LocalDate dateOfBirth) {
+        verifyPersonInfo(lastName, lastName, dateOfBirth);
+    }
+
+    public void startSessionAndAssignCase() {
+        stubDefaultCourtByCourtHouseOUCodeQuery();
+
+        final UUID sessionId = randomUUID();
+
+        startMagistrateSessionAndConfirm(sessionId, DEFAULT_USER_ID, DEFAULT_LONDON_COURT_HOUSE_OU_CODE, "Alan Smith");
+        requestCaseAssignment(sessionId, DEFAULT_USER_ID);
+    }
+
+    public void verify(final String query, Matcher matcher) {
+        pollWithDefaults(searchCases(query, searchUserId))
+                .until(status().is(OK), payload().isJson(matcher));
+    }
+
+    private void verifyPersonInfo(final String query, final String lastName, final LocalDate dateOfBirth) {
+        pollWithDefaults(searchCases(query, searchUserId))
+                .until(status().is(OK), payload().isJson(allOf(
+                        withJsonPath("$.results[*]", hasItem(isJson(
+                                allOf(
+                                        withJsonPath("urn", equalTo(urn)),
+                                        withJsonPath("defendant.lastName", equalTo(lastName)),
+                                        withJsonPath("defendant.dateOfBirth", equalTo(LocalDates.to(dateOfBirth)))
+                                )))))));
+    }
+
+    public String getLastName() {
+        return lastName;
+    }
+
+    public LocalDate getDateOfBirth() {
+        return dateOfBirth;
+    }
+
+    public void verifyCaseStatus(final CaseStatus caseStatus) {
+        pollWithDefaults(searchCases(urn, searchUserId))
+                .until(status().is(OK), payload().isJson(
+                        withJsonPath("$.results[0].status", is(caseStatus.name()))));
+    }
+}

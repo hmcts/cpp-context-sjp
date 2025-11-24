@@ -1,0 +1,12 @@
+package uk.gov.moj.cpp.sjp.command.controller.accesscontrol;
+
+import uk.gov.moj.cpp.accesscontrol.drools.Outcome;
+import uk.gov.moj.cpp.accesscontrol.drools.Action;
+
+rule "Command - Request Transparency report for pending cases"
+  when
+    $outcome: Outcome();
+    $action: Action(name == "sjp.command.request-transparency-report");
+  then
+    $outcome.setSuccess(true);
+end

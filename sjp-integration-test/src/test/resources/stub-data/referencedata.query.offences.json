@@ -1,0 +1,31 @@
+{
+  "offences": [
+    {
+      "offenceId": "f8254db1-1683-483e-afb3-b87fde5a0a26",
+      "cjsOffenceCode": "PS90010",
+      "title": "Public service vehicle - passenger use altered / defaced ticket",
+      "pnldref": "H3188",
+      "offencestartdate": "2006-01-27",
+      "offenceenddate": "2020-01-27",
+      "standardoffencewording": "standar wording",
+      "standardstatementoffacts": "wording of fact",
+      "welshstandardoffencewording": "welsh offence wording",
+      "welshstandardstatementoffacts": "welsh standard stmt of facts",
+      "policeandcpschargingresponsibilities": "police and charging resp",
+      "timelimitforprosecutions": "6",
+      "misCode": "miscode",
+      "maxfinetypemagct": "3",
+      "maxfinetypecrownct": "0",
+      "legislation": "legislation",
+      "welshOffenceTitle": "welsh offence title",
+      "welshLegislation": "welsh legislation",
+      "libraCategoryCode": "CM",
+      "custodialIndicatorCode": "N",
+      "dateCreated": "2016-01-02",
+      "dateOfLastUpdate": "2016-01-03",
+      "modeoftrial": "STRAFF",
+      "modeoftrialdescription": "SUMMARY MINOR TRAFFIC",
+      "maxPenalty": "Max Penalty"
+    }
+  ]
+}

@@ -1,0 +1,20 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://justice.gov.uk/json/schemas/domains/sjp/command/sjp.command.update-partial-aocp-criteria-notification-to-prosecutor-status.json",
+  "type": "object",
+  "properties": {
+    "caseId": {
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+    },
+    "failedTime": {
+      "type": "string"
+    },
+    "sentTime": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "caseId"
+  ],
+  "additionalProperties": false
+}

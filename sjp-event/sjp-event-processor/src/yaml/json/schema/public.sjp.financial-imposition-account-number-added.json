@@ -1,0 +1,22 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://cpp.moj.gov.uk/sjp/json/schema/event/public-sjp-financial-imposition-account-number-added.json",
+  "type": "object",
+  "properties": {
+    "caseId": {
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+    },
+    "defendantId": {
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+    },
+    "accountNumber": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "caseId",
+    "defendantId",
+    "accountNumber"
+  ],
+  "additionalProperties": false
+}

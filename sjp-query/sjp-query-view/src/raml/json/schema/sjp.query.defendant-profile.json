@@ -1,0 +1,24 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://justice.gov.uk/json/schemas/domains/sjp/query/defendant-profile.json",
+  "type": "object",
+  "properties": {
+    "firstName": {
+      "type": "string"
+    },
+    "lastName": {
+      "type": "string"
+    },
+    "dateOfBirth": {
+      "$ref": "http://justice.gov.uk/json/schemas/domains/sjp/temporal.json#/definitions/date"
+    },
+    "nationalInsuranceNumber": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "firstName",
+    "lastName"
+  ],
+  "additionalItems": false
+}

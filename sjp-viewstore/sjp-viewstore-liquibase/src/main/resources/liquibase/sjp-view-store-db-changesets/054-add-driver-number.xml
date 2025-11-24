@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+         http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.3.xsd">
+
+    <changeSet id="54" author="gustavo.almagro" logicalFilePath="liquibase/sjp-view-store-db-changelog/defendant-driver-number.xml">
+        <addColumn tableName="defendant">
+            <column name="driver_number" type="text"/>
+        </addColumn>
+
+        <addColumn tableName="online_plea">
+            <column name="personal_details_driver_number" type="text"/>
+        </addColumn>
+
+        <rollback>
+            <dropColumn tableName="defendant">
+                <column name="driver_number" type="text"/>
+            </dropColumn>
+            <dropColumn tableName="online_plea">
+                <column name="personal_details_driver_number" type="text"/>
+            </dropColumn>
+        </rollback>
+
+    </changeSet>
+
+</databaseChangeLog>

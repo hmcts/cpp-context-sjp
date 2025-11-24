@@ -1,0 +1,27 @@
+{
+  "caseId": "${caseId}",
+  "sjpSessionId": "${sessionId}",
+  "decisionId": "${decisionId}",
+  "resultedOn": "${resultedOn}",
+  "offenceDecisions": [
+    {
+      "id": "%s",
+      "type": "REFER_FOR_COURT_HEARING",
+      "referralReasonId": "d10c5cc4-ec2a-41ac-bd6e-a3659c5cfeb1",
+      "listingNotes": "Listing notes",
+      "estimatedHearingDuration": 20,
+      "defendantCourtOptions": {
+        "welshHearing": false,
+        "interpreter": {
+          "needed": false
+        }
+      },
+      "offenceDecisionInformation": [
+        {
+          "offenceId": "e76ab6f5-9156-4ecd-81f4-01fb9241ad5f",
+          "verdict": "NO_VERDICT"
+        }
+      ]
+    }
+  ]
+}

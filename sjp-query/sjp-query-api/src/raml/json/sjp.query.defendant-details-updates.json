@@ -1,0 +1,42 @@
+{
+  "total": 3,
+  "defendantDetailsUpdates": [
+    {
+      "firstName": "Billy",
+      "lastName": "SMITH",
+      "caseUrn": "9012466",
+      "defendantId": "c1d922ba-20c6-4d68-ab56-3111401bbc7c",
+      "caseId": "c4d922ba-20c6-4d68-ab56-3611401bbc7c",
+      "dateOfBirth": "1991-12-01",
+      "nameUpdated": true,
+      "dateOfBirthUpdated": false,
+      "addressUpdated": false,
+      "updatedOn": "2018-08-26T16:39:15.417Z",
+      "region" : "essex"
+    }, {
+      "firstName": "Camilla",
+      "lastName": "SMITH",
+      "defendantId": "c1d922ba-20c6-4d68-ab56-3111401bbc7c",
+      "caseId": "c4d922ba-20c6-4d68-ab56-3611401bbc7c",
+      "caseUrn": "JONES",
+      "dateOfBirth": "1965-12-27",
+      "nameUpdated": true,
+      "dateOfBirthUpdated": true,
+      "addressUpdated": true,
+      "updatedOn": "2018-08-26T16:39:15.417Z",
+      "region" : "london"
+    }, {
+      "firstName": "Steven",
+      "lastName": "GERARD",
+      "defendantId": "c1d922ba-20c6-4d68-ab56-3111401bbc7c",
+      "caseId": "c4d922ba-20c6-4d68-ab56-3611401bbc7c",
+      "caseUrn": "5160991",
+      "dateOfBirth": "1965-11-27",
+      "nameUpdated": false,
+      "dateOfBirthUpdated": false,
+      "addressUpdated": true,
+      "updatedOn": "2018-08-26T16:39:15.417Z",
+      "region" : "Brighton"
+    }
+  ]
+}

@@ -1,0 +1,25 @@
+{
+  "defendantId": "50770ba9-37ea-4713-8cab-fe5bf1202716",
+  "income": {
+    "amount": 100.1,
+    "frequency": "MONTHLY"
+  },
+  "benefits": {
+    "claimed": true,
+    "type": "free text describing benefits type",
+    "deductPenaltyPreference": false
+  },
+  "employmentStatus": "EMPLOYED",
+  "outgoings": [
+    {
+      "description": "Accommodation",
+      "amount": 50
+    },
+    {
+      "description": "Council Tax",
+      "amount": 50
+    }
+  ],
+  "updatedByOnlinePlea": false,
+  "updatedDate": "2018-02-05T15:14:29.894Z"
+}

@@ -1,0 +1,22 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://cpp.moj.gov.uk/sjp/json/schemas/event/sjp.events.outstanding-fines-updated.json",
+  "type": "object",
+  "properties": {
+    "outstandingFines": {
+      "type": "boolean"
+    },
+    "caseId": {
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+    },
+    "updatedDate": {
+      "$ref": "http://justice.gov.uk/json/schemas/domains/sjp/temporal.json#/definitions/date-time"
+    }
+  },
+  "required": [
+    "outstandingFines",
+    "caseId",
+    "updatedDate"
+  ],
+  "additionalProperties": false
+}

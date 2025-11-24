@@ -1,0 +1,17 @@
+{
+  "aCase": {
+    "id": "c4ec3a35-76bf-4649-b43a-761e71c3765e",
+    "urn": "TFL34652354",
+    "prosecutingAuthority": "TVL",
+    "costs": "",
+    "postingDate": "",
+    "defendant": {
+      "offences": [
+        {
+          "id": "c4ec3a35-76bf-4649-b43a-761e71c3765e"
+        }
+      ]
+    }
+  },
+  "createdOn": "2012-02-22T02:06:58.147Z"
+}

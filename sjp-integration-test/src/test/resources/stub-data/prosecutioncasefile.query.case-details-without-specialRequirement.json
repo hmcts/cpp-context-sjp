@@ -1,0 +1,48 @@
+{
+  "caseId": "51cac7fb-387c-4d19-9c80-8963fa8cf228",
+  "prosecutionCaseReference": "TVL12353",
+  "appliedProsecutorCosts": 200,
+  "prosecutorInformant": "Adam 1111",
+  "prosecutionAuthority": "GAEAA01",
+  "originatingOrganisation" : "GAEAA01",
+  "defendants": [
+    {
+      "defendantId": "4a1e66ab-8673-4300-aed8-b2391e38d8db",
+      "documentationLanguage": "W",
+      "hearingLanguage": "E",
+      "postingDate": "2018-09-10",
+      "nationalInsuranceNumber": "NINO",
+      "personalInformation": {
+        "firstName": "Tomasz",
+        "lastName": "Powroznik",
+        "title": "Mr",
+        "address1": "armagaddon house",
+        "postcode": "M60 1NW",
+        "occupation": "worker",
+        "occupationCode": 1,
+        "secondaryEmail": "secondary-email@abv.bg",
+        "work": "+21312321312312"
+      },
+      "selfDefinedInformation": {
+        "ethnicity": "W1",
+        "nationality": "PL",
+        "gender": "MALE"
+      },
+      "offences": [
+        {
+          "offenceId": "63f61b32-0fd0-4a76-bab1-ee68fb54e93f",
+          "appliedCompensation": 200,
+          "chargeDate": "2015-04-04",
+          "offenceCode": "OFCODE12",
+          "offenceCommittedDate": "2018-09-10",
+          "offenceCommittedEndDate": "2019-01-10",
+          "offenceDateCode": 1,
+          "offenceSequenceNumber": 1,
+          "offenceWording": "TV Licence not paid",
+          "statementOfFactsWelsh": "some facts in welsh",
+          "offenceLocation": "offenceLocation"
+        }
+      ]
+    }
+  ]
+}

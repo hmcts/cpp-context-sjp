@@ -1,0 +1,30 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "type": "object",
+  "properties": {
+    "courtHouseOUCode": {
+      "type": "string"
+    },
+    "magistrate": {
+      "type": "string"
+    },
+    "legalAdviser": {
+      "$ref": "http://justice.gov.uk/core/courts/delegatedPowers.json"
+    },
+    "isAocpSession":{
+      "type": "boolean"
+    },
+    "prosecutors": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "string"
+      }
+    }
+  },
+  "required": [
+    "courtHouseOUCode",
+    "prosecutors"
+  ],
+  "additionalProperties": false
+}

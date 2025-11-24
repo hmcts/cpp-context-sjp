@@ -9,6 +9,8 @@ EVENT_TOOL_JAR=target/event-tool-${EVENT_TOOL_VERSION}-swarm.jar
 PROCESS_FILE=target/processFile
 STANDALONE_XML=src/test/resources/standalone-ds.xml
 
+ARG mavenArtifactBaseUrl
+
 echo TRANSFORMATION_JAR=${TRANSFORMATION_JAR}
 
 [[ ! -f ${TRANSFORMATION_JAR} ]] && echo "File not found: "${TRANSFORMATION_JAR} && exit

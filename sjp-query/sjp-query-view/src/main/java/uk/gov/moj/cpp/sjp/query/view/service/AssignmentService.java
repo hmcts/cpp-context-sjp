@@ -5,6 +5,7 @@ import uk.gov.moj.cpp.sjp.domain.SessionType;
 import uk.gov.moj.cpp.sjp.persistence.repository.AssignmentRepository;
 import uk.gov.moj.cpp.sjp.persistence.repository.CaseAssignmentRestrictionRepository;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
@@ -31,6 +32,6 @@ public class AssignmentService {
     }
 
     public List<String> getProsecutingAuthorityByLja(String lja) {
-        return caseAssignmentRestrictionRepository.findProsecutingAuthoritiesByLja(lja);
+        return caseAssignmentRestrictionRepository.findProsecutingAuthoritiesByLja(lja, LocalDate.now());
     }
 }

@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+         http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.3.xsd">
+
+    <changeSet id="44" author="ATCM" logicalFilePath="liquibase/sjp-view-store-db-changelog/discharge.xml">
+
+        <createTable tableName="financial_imposition">
+            <column name="case_decision_id" type="uuid">
+                <constraints primaryKey="true"/>
+            </column>
+            <column name="collection_order_made" type="boolean"/>
+            <column name="costs" type="currency"/>
+            <column name="reason_for_no_costs" type="text"/>
+            <column name="reason_for_no_victim_surcharge" type="text"/>
+            <column name="victim_surcharge" type="currency"/>
+            <column name="instalments_amount" type="currency"/>
+            <column name="instalments_period" type="text"/>
+            <column name="instalments_start_date" type="date"/>
+            <column name="lump_sum_amount" type="currency"/>
+            <column name="lump_sum_pay_by_date" type="date"/>
+            <column name="lump_sum_within_days" type="smallint"/>
+            <column name="reserve_terms" type="boolean"/>
+            <column name="payment_type" type="text"/>
+            <column name="reason_why_not_attached_or_deducted" type="text"/>
+            <column name="reason_for_deducting_from_benefits" type="text"/>
+            <column name="total_sum" type="currency"/>
+        </createTable>
+
+        <addColumn tableName="offence_decision">
+            <column name="guilty_plea_taken_into_account" type="boolean"/>
+            <column name="discharge_period_unit" type="text"/>
+            <column name="discharge_period_value" type="smallint"/>
+            <column name="compensation" type="currency"/>
+            <column name="no_compensation_reason" type="text"/>
+            <column name="discharge_type" type="text"/>
+            <column name="fine" type="currency"/>
+        </addColumn>
+
+        <rollback>
+            <dropColumn tableName="offence_decision">
+                <column name="guilty_plea_taken_into_account" />
+                <column name="discharge_period_unit" />
+                <column name="discharge_period_value" />
+                <column name="compensation"/>
+                <column name="no_compensation_reason"/>
+                <column name="discharge_type"/>
+                <column name="fine"/>
+            </dropColumn>
+        </rollback>
+
+    </changeSet>
+
+</databaseChangeLog>

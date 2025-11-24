@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+         http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.3.xsd">
+
+    <changeSet id="60" author="vijay.sidhu" logicalFilePath="liquibase/create-press-restrictable-offence-attribute.xml">
+        <addColumn tableName="offence">
+            <column name="press_restrictable" type="boolean"/>
+        </addColumn>
+
+        <rollback>
+            <dropColumn tableName="offence">
+                <column name="press_restrictable"/>
+            </dropColumn>
+        </rollback>
+
+    </changeSet>
+
+</databaseChangeLog>

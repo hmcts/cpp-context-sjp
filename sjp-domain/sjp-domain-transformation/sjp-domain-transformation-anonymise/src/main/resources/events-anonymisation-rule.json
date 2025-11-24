@@ -1,0 +1,297 @@
+{
+  "events": [
+    {
+      "eventName": "sjp.events.case-assigned",
+      "fieldsToBeIgnored": [
+        "$.caseAssignmentType"
+      ]
+    },
+    {
+      "eventName": "sjp.events.case-assignment-rejected",
+      "fieldsToBeIgnored": [
+        "$.reason"
+      ]
+    },
+    {
+      "eventName": "sjp.events.case-assignment-requested",
+      "fieldsToBeIgnored": [
+        "$.session.type",
+        "$.session.courtHouseCode"
+      ]
+    },
+    {
+      "eventName": "sjp.events.sjp-case-created",
+      "fieldsToBeIgnored": [
+        "$.urn",
+        "$.prosecutingAuthority",
+        "$.initiationCode",
+        "$.ptiUrn",
+        "$.summonsCode"
+      ]
+    },
+    {
+      "eventName": "sjp.events.case-document-added",
+      "fieldsToBeIgnored": [
+        "$.caseDocument.documentType"
+      ]
+    },
+    {
+      "eventName": "sjp.events.case-document-uploaded",
+      "fieldsToBeIgnored": [
+        "$.documentType"
+      ]
+    },
+    {
+      "eventName": "sjp.events.case-listed-in-criminal-courts",
+      "fieldsToBeIgnored": [
+        "$.hearingCourtName"
+      ]
+    },
+    {
+      "eventName": "sjp.events.case-marked-ready-for-decision",
+      "fieldsToBeIgnored": [
+        "$.reason",
+        "$.markedAt",
+        "$.sessionType",
+        "$.priority"
+      ]
+    },
+    {
+      "eventName": "sjp.events.case-note-added",
+      "fieldsToBeIgnored": [
+        "$.note.type"
+      ]
+    },
+    {
+      "eventName": "sjp.events.case-received",
+      "fieldsToBeIgnored": [
+        "$.urn",
+        "$.enterpriseId",
+        "$.prosecutingAuthority",
+        "$.defendant.offences[*].libraOffenceCode",
+        "$.defendant.gender",
+        "$.defendant.title",
+        "$.defendant.hearingLanguage"
+      ]
+    },
+    {
+      "eventName": "sjp.events.case-referred-for-court-hearing",
+      "fieldsToBeIgnored": [
+        "$.urn",
+        "$.referredOffences[*].verdict"
+      ]
+    },
+    {
+      "eventName": "sjp.events.case-unassignment-rejected",
+      "fieldsToBeIgnored": [
+        "$.reason"
+      ]
+    },
+    {
+      "eventName": "sjp.events.defendant-name-updated",
+      "fieldsToBeIgnored": [
+        "$.oldPersonalName.title",
+        "$.newPersonalName.title"
+      ]
+    },
+    {
+      "eventName": "sjp.events.defendant-details-moved-from-people",
+      "fieldsToBeIgnored": [
+        "$.title",
+        "$.gender"
+      ]
+    },
+    {
+      "eventName": "sjp.events.defendant-details-updated",
+      "fieldsToBeIgnored": [
+        "$.title",
+        "$.gender"
+      ]
+    },
+    {
+      "eventName": "sjp.events.delegated-powers-session-started",
+      "fieldsToBeIgnored": [
+        "$.courtHouseCode",
+        "$.courtHouseName",
+        "$.localJusticeAreaNationalCourtCode"
+      ]
+    },
+    {
+      "eventName": "sjp.events.financial-means-updated",
+      "fieldsToBeIgnored": [
+        "$.income.frequency",
+        "$.employmentStatus",
+        "$.outgoings[*].description"
+      ]
+    },
+    {
+      "eventName": "sjp.events.magistrate-session-started",
+      "fieldsToBeIgnored": [
+        "$.courtHouseCode",
+        "$.courtHouseName",
+        "$.localJusticeAreaNationalCourtCode"
+      ]
+    },
+    {
+      "eventName": "sjp.events.online-plea-received",
+      "fieldsToBeIgnored": [
+        "$.urn",
+        "$.interpreterLanguage",
+        "$.outgoings[*].description",
+        "$.financialMeans.employmentStatus",
+        "$.financialMeans.income.frequency"
+      ]
+    },
+    {
+      "eventName": "sjp.events.plea-updated",
+      "fieldsToBeIgnored": [
+        "$.plea",
+        "$.pleaMethod"
+      ]
+    },
+    {
+      "eventName": "sjp.events.transparency-report-generated",
+      "fieldsToBeIgnored": [
+        "$.englishReportMetadata.fileName",
+        "$.welshReportMetadata.fileName",
+        "$.pleaMethod"
+      ]
+    },
+    {
+      "eventName": "sjp.events.case-status-changed",
+      "fieldsToBeIgnored": [
+        "$.caseStatus"
+      ]
+    },
+    {
+      "eventName": "sjp.events.decision-saved",
+      "fieldsToBeIgnored": [
+        "$.offenceDecisions[*].type",
+        "$.offenceDecisions[*].offenceDecisionInformation.verdict",
+        "$.offenceDecisions[*].offenceDecisionInformation[*].verdict",
+        "$.offenceDecisions[*].defendantCourtOptions.interpreter.language",
+        "$.offenceDecisions[*].dischargeType",
+        "$.offenceDecisions[*].dischargedFor.unit",
+        "$.offenceDecisions[*].noCompensationReason",
+        "$.offenceDecisions[*].magistratesCourt",
+        "$.offenceDecisions[*].penaltyPointsReason",
+        "$.offenceDecisions[*].disqualificationType",
+        "$.offenceDecisions[*].disqualificationPeriod.unit",
+        "$.financialImposition.payment.paymentType",
+        "$.financialImposition.payment.reasonWhyNotAttachedOrDeducted",
+        "$.financialImposition.payment.reasonForDeductingFromBenefits",
+        "$.financialImposition.payment.fineTransferredTo.nationalCourtCode",
+        "$.financialImposition.payment.fineTransferredTo.nationalCourtName",
+        "$.financialImposition.payment.paymentTerms.installments.period"
+      ]
+    },
+    {
+      "eventName": "sjp.events.all-financial-means-updated",
+      "fieldsToBeIgnored": [
+        "$.income.frequency",
+        "$.employmentStatus"
+      ]
+    },
+    {
+      "eventName": "sjp.events.employment-status-updated",
+      "fieldsToBeIgnored": [
+        "$.employmentStatus"
+      ]
+    },
+    {
+      "eventName": "sjp.events.interpreter-for-defendant-updated",
+      "fieldsToBeIgnored": [
+        "$.interpreter.language"
+      ]
+    },
+    {
+      "eventName": "sjp.events.pleaded-guilty",
+      "fieldsToBeIgnored": [
+        "$.method"
+      ]
+    },
+    {
+      "eventName": "sjp.events.pleaded-guilty-court-hearing-requested",
+      "fieldsToBeIgnored": [
+        "$.method"
+      ]
+    },
+    {
+      "eventName": "sjp.events.pleaded-not-guilty",
+      "fieldsToBeIgnored": [
+        "$.method"
+      ]
+    },
+    {
+      "eventName": "sjp.events.pleas-set",
+      "fieldsToBeIgnored": [
+        "$.defendantCourtOptions.interpreter.language",
+        "$.pleas[*].pleaType"
+      ]
+    },
+    {
+      "eventName": "sjp.events.case-assignment-created",
+      "fieldsToBeIgnored": [
+        "$.caseAssignmentType"
+      ]
+    },
+    {
+      "eventName": "sjp.events.case-creation-failed-because-case-already-existed",
+      "fieldsToBeIgnored": [
+        "$.urn"
+      ]
+    },
+    {
+      "eventName": "sjp.events.case-reopened-in-libra",
+      "fieldsToBeIgnored": [
+        "$.libraCaseNumber",
+        "$.reason"
+      ]
+    },
+    {
+      "eventName": "sjp.events.case-reopened-in-libra-updated",
+      "fieldsToBeIgnored": [
+        "$.libraCaseNumber",
+        "$.reason"
+      ]
+    },
+    {
+      "eventName": "sjp.events.case-update-rejected",
+      "fieldsToBeIgnored": [
+        "$.reason"
+      ]
+    },
+    {
+      "eventName": "sjp.events.decision-rejected",
+      "fieldsToBeIgnored": [
+        "$.decision.offenceDecisions[*].type",
+        "$.decision.offenceDecisions[*].offenceDecisionInformation.verdict"
+      ]
+    },
+    {
+      "eventName": "sjp.events.plea-update-denied",
+      "fieldsToBeIgnored": [
+        "$.denialReason"
+      ]
+    },
+    {
+      "eventName": "sjp.events.case-management-status-changed",
+      "fieldsToBeIgnored": [
+        "$.caseManagementStatus"
+      ]
+    },
+    {
+      "eventName": "sjp.events.update-cases-management-status",
+      "fieldsToBeIgnored": [
+        "$.caseByManagementStatusList[*].caseManagementStatus",
+        "$.cases[*].caseManagementStatus"
+      ]
+    },
+    {
+      "eventName": "sjp.events.transparency-report-metadata-added",
+      "fieldsToBeIgnored": [
+        "$.language"
+      ]
+    }
+  ]
+}

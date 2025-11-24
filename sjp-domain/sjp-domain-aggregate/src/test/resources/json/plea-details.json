@@ -1,0 +1,87 @@
+{
+  "caseId": "c4ec3a35-76bf-4649-b43a-761e71c3765e",
+  "pleadOnline": {
+    "defendantId": "50770ba9-37ea-4713-8cab-fe5bf1202716",
+    "comeToCourt": false,
+    "offences": [
+      {
+        "mitigation": "I was drunk at the time",
+        "id": "042c541a-55b5-4f66-98f0-46b9e560f1b5",
+        "plea": "GUILTY"
+      }
+    ],
+    "personalDetails": {
+      "firstName": "Testy",
+      "lastName": "Testerson",
+      "address": {
+        "address3": "England",
+        "address2": "London",
+        "address1": "14 Tottenham Court Road",
+        "postcode": "W1T 1JY",
+        "address4": "UK",
+        "address5": "Greater London"
+      },
+      "nationalInsuranceNumber": "AB123456A",
+      "dateOfBirth": "1990-09-09",
+      "contactDetails": {
+        "mobile": "07890123123",
+        "email": "criminal@gmail.com",
+        "home": "0208000888"
+      }
+    },
+    "employer": {
+      "address": {
+        "address3": "England",
+        "address2": "London",
+        "address1": "18 Tottenham Court Road",
+        "postcode": "W1T 1JY",
+        "address4": "UK",
+        "address5": "Greater London"
+      },
+      "employeeReference": "12345",
+      "phone": "020 7998 0007",
+      "name": "Pret a manger"
+    },
+    "financialMeans": {
+      "income": {
+        "amount": 200.25,
+        "frequency": "MONTHLY"
+      },
+      "benefits": {
+        "deductPenaltyPreference": false,
+        "claimed": true,
+        "type": "jobseekers allowance"
+      },
+      "employmentStatus": "EMPLOYED"
+    },
+    "outgoings": [
+      {
+        "amount": 500.3,
+        "description": "Accommodation"
+      },
+      {
+        "amount": 120.5,
+        "description": "Council Tax"
+      },
+      {
+        "amount": 50.8,
+        "description": "Household bills"
+      },
+      {
+        "amount": 100.1,
+        "description": "Travel expenses"
+      },
+      {
+        "amount": 500.2,
+        "description": "Child maintenance"
+      },
+      {
+        "amount": 500.4,
+        "description": "Other"
+      }
+    ],
+    "pcqId": "9ec012ea-566a-4952-ad8d-b09a57030d95"
+  },
+  "createdOn": "2012-02-22T02:06:58.147Z",
+  "userId": "c4ec3a35-76bf-4649-b43a-761e71c3765e"
+}

@@ -1,0 +1,70 @@
+{
+  "fixedListCollection": [
+    {
+      "id": "d7d75420-aace-11e8-98d0-529269fb1459",
+      "version": "2020-11-20T11:38:58.162Z",
+      "startDate": "2020-11-21",
+      "elements": [
+        {
+          "code": "DB",
+          "value": "Deductions from benefit",
+          "welshValue": "Didynnu o Fudd-daliadau"
+        },
+        {
+          "code": "AEO",
+          "value": "Attachment of earnings",
+          "welshValue": "Atafaelu enillion"
+        },
+        {
+          "code": "PAY",
+          "value": "Make payments as ordered",
+          "welshValue": "Gwneud taliadau yn unol â’r gorchymyn"
+        }
+      ]
+    },
+    {
+      "id": "e555e078-5dd8-11e8-9c2d-fa7ae01bbebc",
+      "version": "2020-09-25T13:30:22.409Z",
+      "startDate": "2020-09-26",
+      "elements": [
+        {
+          "code": "WKLY",
+          "value": "weekly",
+          "welshValue": "yn wythnosol"
+        },
+        {
+          "code": "FTNLY",
+          "value": "fortnightly",
+          "welshValue": "pob pythefnos"
+        },
+        {
+          "code": "MTHLY",
+          "value": "monthly",
+          "welshValue": "yn fisol"
+        }
+      ]
+    },
+    {
+      "id": "6e5f1afe-e35f-11e8-9f32-f2801f1b9fd1",
+      "version": "2020-11-20T11:38:57.572Z",
+      "startDate": "2020-11-21",
+      "elements": [
+        {
+          "code": "TFL2",
+          "value": "Transport for London",
+          "welshValue": "Transport for London"
+        },
+        {
+          "code": "DVL2",
+          "value": "Driver and Vehicle Licensing Agency",
+          "welshValue": "Asiantaeth Trwyddedu Gyrwyr a Cherbydau"
+        },
+        {
+          "code": "TVL3",
+          "value": "Television Licensing Organisation",
+          "welshValue": "Sefydliad Trwyddedu Teledu"
+        }
+      ]
+    }
+  ]
+}

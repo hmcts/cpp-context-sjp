@@ -1,0 +1,78 @@
+{
+  "courtApplication": {
+    "id": "${APP_ID}",
+    "type": {
+      "id": "${TYPE_ID}",
+      "type": "${APPLICATION_TYPE}",
+      "code": "${APPLICATION_CODE}",
+      "categoryCode": "categoryCode123",
+      "linkType": "STANDALONE",
+      "jurisdiction": "MAGISTRATES",
+      "summonsTemplateType": "NOT_APPLICABLE",
+      "breachType": "NOT_APPLICABLE",
+      "appealFlag": false,
+      "applicantAppellantFlag": false,
+      "pleaApplicableFlag": false,
+      "commrOfOathFlag": false,
+      "courtOfAppealFlag": false,
+      "courtExtractAvlFlag": false,
+      "prosecutorThirdPartyFlag": false,
+      "spiOutApplicableFlag": false,
+      "offenceActiveOrder": "COURT_ORDER"
+    },
+    "applicationReceivedDate": "${APPLICATION_RECEIVED_DATE}",
+    "applicant": {
+      "id": "00000000-0000-0000-0000-000000000000",
+      "synonym": "a",
+      "summonsRequired": false,
+      "notificationRequired": false
+    },
+    "subject": {
+      "id": "00000000-0000-0000-0000-000000000000",
+      "synonym": "a",
+      "summonsRequired": false,
+      "notificationRequired": false
+    },
+    "applicationStatus": "DRAFT",
+    "courtOrder": {
+      "id": "88cdf36e-9324-41b0-8277-47d9dba7f06f",
+      "courtOrderSubject": "00000000-0000-0000-0000-000000000000",
+      "judicialResultTypeId": "00000000-0000-0000-0000-000000000000",
+      "label": "lablel1",
+      "orderDate": "2020-09-24",
+      "startDate": "2020-09-24",
+      "orderingCourt": {
+        "id": "00000000-0000-0000-0000-000000000000",
+        "name": "Wood Green Crown Court",
+        "welshName": "Corte de madera de corona verde",
+        "roomId": "00000000-0000-0000-0000-000000000000",
+        "roomName": "Court 12",
+        "welshRoomName": "Corte 12",
+        "address": {
+          "address1": "Woodall House",
+          "address2": "Lordship Lane",
+          "address3": "Wood Green",
+          "postcode": "N22 5LF"
+        }
+      },
+      "orderingHearingId": "00000000-0000-0000-0000-000000000000",
+      "isSJPOrder": false,
+      "canBeSubjectOfBreachProceedings": false,
+      "canBeSubjectOfVariationProceedings": false,
+      "courtOrderOffences": [
+        {
+          "offence": {
+            "id": "00000000-0000-0000-0000-000000000000",
+            "offenceDefinitionId": "00000000-0000-0000-0000-000000000000",
+            "offenceCode": "CD98072",
+            "offenceTitle": "Robbery",
+            "wording": " Euston Train Station, London robbed Alyssa Hill",
+            "startDate": "2019-10-21"
+          },
+          "prosecutionCaseId": "00000000-0000-0000-0000-000000000000",
+          "prosecutionCaseReference": "ef-098"
+        }
+      ]
+    }
+  }
+}

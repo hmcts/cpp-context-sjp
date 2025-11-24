@@ -1,0 +1,42 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://justice.gov.uk/json/schemas/domains/sjp/command/sjp.case-eligible-for-aocp.json",
+  "type": "object",
+  "properties": {
+    "caseId": {
+      "$ref": "http://justice.gov.uk/core/courts/courtsDefinitions.json#/definitions/uuid"
+    },
+    "isProsecutorAOCPApproved": {
+      "type": "boolean"
+    },
+    "surchargeAmountMin": {
+      "type": "number"
+    },
+    "surchargeAmountMax": {
+      "type": "number"
+    },
+    "surchargeFinePercentage": {
+      "type": "number"
+    },
+    "surchargeAmount": {
+      "type": "number"
+    }
+  },
+  "anyOf": [
+    {
+      "required": [
+        "caseId",
+        "isProsecutorAOCPApproved",
+        "surchargeFinePercentage"
+      ]
+    },
+    {
+      "required": [
+        "caseId",
+        "isProsecutorAOCPApproved",
+        "surchargeAmount"
+      ]
+    }
+  ],
+  "additionalProperties": false
+}

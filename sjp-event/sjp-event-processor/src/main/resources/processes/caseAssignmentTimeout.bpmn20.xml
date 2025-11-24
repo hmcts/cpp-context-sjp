@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<definitions xmlns:activiti="http://activiti.org/bpmn"
+             xmlns="http://www.omg.org/spec/BPMN/20100524/MODEL"
+             typeLanguage="http://www.w3.org/2001/XMLSchema"
+             expressionLanguage="http://www.w3.org/1999/XPath"
+             targetNamespace="http://www.activiti.org/test">
+  <process id="sjpCaseAssignmentTimeout" isExecutable="true">
+    <startEvent id="startEvent"></startEvent>
+    <endEvent id="endEvent" name="End"></endEvent>
+    <intermediateCatchEvent id="assignmentTimer">
+      <timerEventDefinition>
+        <timeDuration>${duration}</timeDuration>
+      </timerEventDefinition>
+    </intermediateCatchEvent>
+    <serviceTask id="assignmentTimedOut" name="assignmentTimedOut" activiti:delegateExpression="${assignmentTimedOutDelegate}"></serviceTask>
+    <sequenceFlow id="assignmentTimedOutToEndEvent" sourceRef="assignmentTimedOut" targetRef="endEvent"></sequenceFlow>
+    <sequenceFlow id="startEventToAssignmentTimer" sourceRef="startEvent" targetRef="assignmentTimer"></sequenceFlow>
+    <sequenceFlow id="assignmentTimerToAssignmentTimedOut" sourceRef="assignmentTimer" targetRef="assignmentTimedOut"></sequenceFlow>
+  </process>
+</definitions>

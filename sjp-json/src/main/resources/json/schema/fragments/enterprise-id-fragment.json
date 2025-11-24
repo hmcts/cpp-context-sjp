@@ -1,0 +1,7 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://justice.gov.uk/json/schemas/domains/sjp/enterprise-id.json",
+  "type": "string",
+  "minLength": 12,
+  "maxLength": 12
+}

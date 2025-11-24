@@ -1,0 +1,31 @@
+{
+  "decisionId": "fc3f8d82-d200-4cab-a492-2796e6fdf42c",
+  "sessionId": "87a321ef-ea34-47d7-865d-7f430b4775be",
+  "caseId": "0a71d4b1-e0e1-4685-beb7-97e33fb2e799",
+  "urn": "TFL34652354",
+  "defendantId": "2b71d4b1-e0e1-4685-beb7-97e33fb2e751",
+  "defendantName": "John Smith",
+  "savedAt": "2019-05-01T15:12:30.741Z",
+  "offenceDecisions": [
+    {
+      "type": "WITHDRAW",
+      "withdrawalReasonId": "7879e7b7-867f-41d9-83ce-3f21bbd8f51c",
+      "offenceDecisionInformations": [
+        {
+          "offenceId": "77fbfd34-a9b8-46bf-9c09-42b0a2ef9536",
+          "verdict": "NO_VERDICT"
+        }
+      ]
+    },
+    {
+      "type": "WITHDRAW",
+      "withdrawalReasonId": "030d4335-f9fe-39e0-ad7e-d01a0791ff87",
+      "offenceDecisionInformations": [
+        {
+          "offenceId": "b0fb4f52-43c1-424b-976a-1dd4c9792cb0",
+          "verdict": "NO_VERDICT"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,45 @@
+{
+  "caseId": "7e2f843e-d639-40b3-8611-8015f3a18958",
+  "urn": "22C22222222",
+  "enterpriseId": "2K2SLYFC743H",
+  "prosecutingAuthority": "TFL",
+  "costs": 1.23,
+  "postingDate": "2015-12-02",
+  "defendant": {
+    "id": "f06f6539-2a7c-4bc8-bca3-f1b17ebcfa47",
+    "title": "Mr",
+    "firstName": "David",
+    "lastName": "LLOYD",
+    "dateOfBirth": "1980-07-15",
+    "gender": "Male",
+    "numPreviousConvictions": 2,
+    "address": {
+      "address1": "14 Tottenham Court Road",
+      "address2": "London",
+      "address3": "England",
+      "address4": "UK",
+      "address5": "Greater London",
+      "postcode": "W1T 1JY"
+    },
+    "offences": [
+      {
+        "id": "7e2f843e-d639-40b3-8611-8015f3a18954",
+        "offenceSequenceNo": 1,
+        "libraOffenceCode": "PS00001",
+        "chargeDate": "2016-01-01",
+        "libraOffenceDateCode": 1,
+        "offenceCommittedDate": "2016-01-01",
+        "offenceWording": "Committed some offence",
+        "offenceWordingWelsh": "Welsh wording: Committed some offence",
+        "prosecutionFacts": "No ticket at the gates, forgery",
+        "witnessStatement": "Jumped over the barriers",
+        "compensation": 2.34,
+        "prosecutorOfferAOCP":true,
+        "isEligibleAOCP":true,
+        "aocpStandardPenaltyAmount":100
+      }
+    ]
+  },
+  "createdOn": "2018-01-11T16:17:15.294Z",
+  "expectedDateReady": "2015-12-30"
+}

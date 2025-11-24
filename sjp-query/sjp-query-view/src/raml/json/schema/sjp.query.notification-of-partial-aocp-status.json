@@ -1,0 +1,32 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://justice.gov.uk/json/schemas/domains/sjp/queries/notification-of-partial-aocp-status.json",
+  "type": "object",
+  "properties": {
+    "id": {
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+    },
+    "referenceId": {
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "QUEUED",
+        "FAILED",
+        "SENT"
+      ]
+    },
+    "updated": {
+      "$ref": "http://justice.gov.uk/json/schemas/domains/sjp/temporal.json#/definitions/date-time"
+    },
+    "notificationType": {
+      "type": "string",
+      "enum": [
+        "ENDORSEMENT_REMOVAL_NOTIFICATION",
+        "ENFORCEMENT_PENDING_APPLICATION_NOTIFICATION",
+        "PARTIAL_AOCP_CRITERIA_NOTIFICATION"
+      ]
+    }
+  }
+}

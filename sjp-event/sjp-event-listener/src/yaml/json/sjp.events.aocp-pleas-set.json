@@ -1,0 +1,10 @@
+{
+  "caseId":"4076c764-a3b7-47b8-9d35-8fa706c1862a",
+  "pleas":[
+    {
+      "defendantId":"bdfd0bef-b459-4272-b286-fc6534d01e7a",
+      "offenceId":"c084b814-bcd5-444e-9044-ae0b5127ecd1",
+      "pleaType":"GUILTY"
+    }
+  ]
+}

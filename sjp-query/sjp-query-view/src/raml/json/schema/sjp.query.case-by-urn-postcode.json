@@ -1,0 +1,189 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://justice.gov.uk/json/schemas/domains/sjp/query/case-by-urn-postcode.json",
+  "definitions": {
+    "offence": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "title": {
+          "type": "string"
+        },
+        "legislation": {
+          "type": "string"
+        },
+        "wording": {
+          "type": "string"
+        },
+        "wordingWelsh": {
+          "type": "string"
+        },
+        "pendingWithdrawal": {
+          "type": "boolean"
+        },
+        "plea": {
+          "$ref": "http://justice.gov.uk/json/schemas/domains/sjp/plea-type.json"
+        }
+      },
+      "additionalProperties": true,
+      "required": [
+        "id",
+        "title",
+        "legislation",
+        "wording",
+        "pendingWithdrawal"
+      ]
+    },
+    "personalDetails": {
+      "type": "object",
+      "properties": {
+        "title": {
+          "type": "string"
+        },
+        "firstName": {
+          "type": "string"
+        },
+        "lastName": {
+          "type": "string"
+        },
+        "gender": {
+          "$ref": "http://justice.gov.uk/json/schemas/domains/sjp/gender.json"
+        },
+        "dateOfBirth": {
+          "type": "string"
+        },
+        "nationalInsuranceNumber": {
+          "type": "string"
+        },
+        "driverNumber": {
+          "type": "string"
+        },
+        "driverLicenceDetails": {
+          "type": "string"
+        },
+        "contactDetails": {
+          "$ref": "http://justice.gov.uk/json/schemas/domains/sjp/contact-details.json"
+        },
+        "address": {
+          "$ref": "http://justice.gov.uk/json/schemas/domains/sjp/address.json"
+        }
+      },
+      "additionalProperties": true,
+      "required": [
+        "firstName",
+        "lastName",
+        "address"
+      ]
+    },
+    "legalEntity": {
+      "type": "object",
+      "properties": {
+        "legalEntityName": {
+          "type": "string"
+        },
+        "contactDetails": {
+          "$ref": "http://justice.gov.uk/json/schemas/domains/sjp/contact-details.json"
+        },
+        "address": {
+          "$ref": "http://justice.gov.uk/json/schemas/domains/sjp/address.json"
+        }
+      },
+      "additionalProperties": true,
+      "required": [
+        "legalEntityName",
+        "address"
+      ]
+    },
+    "defendant": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "caseId": {
+          "type": "string"
+        },
+        "numPreviousConvictions": {
+          "type": "integer"
+        },
+        "pcqId" : {
+          "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+        },
+        "personalDetails": {
+          "$ref": "#/definitions/personalDetails"
+        },
+        "interpreter": {
+          "type": "object",
+          "properties": {
+            "language": {
+              "type": "string"
+            }
+          }
+        },
+        "offences": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/offence"
+          },
+          "minItems": 1
+        }
+      },
+      "additionalProperties": true,
+      "anyOf": [
+        {
+          "required": [
+            "id",
+            "personalDetails",
+            "offences"
+          ]
+        },
+        {
+          "required": [
+            "id",
+            "legalEntity",
+            "offences"
+          ]
+        }
+      ]
+    }
+  },
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": "string"
+    },
+    "urn": {
+      "type": "string"
+    },
+    "policeFlag": {
+      "type": "boolean"
+    },
+    "postConviction": {
+      "type": "boolean"
+    },
+    "completed": {
+      "type": "boolean"
+    },
+    "assigned": {
+      "type": "boolean"
+    },
+    "status": {
+      "$ref" : "http://justice.gov.uk/json/schemas/domains/sjp/case-status.json"
+    },
+    "defendant": {
+      "$ref": "#/definitions/defendant"
+    }
+  },
+  "additionalProperties": true,
+  "required": [
+    "id",
+    "urn",
+    "completed",
+    "assigned",
+    "defendant",
+    "policeFlag",
+    "postConviction"
+  ]
+}

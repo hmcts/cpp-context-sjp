@@ -1,0 +1,21 @@
+{
+  "_metadata": {
+    "name": "sjp.events.case-referred-for-court-hearing"
+  },
+  "caseId": "c4ec3a35-76bf-4649-b43a-761e71c3765e",
+  "sessionId": "2630237f-9e36-4f0e-9e3e-cf51e0900e30",
+  "referralReasonId": "8cda35cc-8073-41d7-a160-609bfe362f47",
+  "hearingTypeId": "1b5fbb45-fe56-4405-ac53-d13802394150",
+  "estimatedHearingDuration": 30,
+  "referredAt": "2018-06-01T09:00:00.000Z",
+  "urn": "TFL34652354",
+  "convictionDate":"2019-05-01",
+  "convictionDate":"2019-05-01",
+  "defendantCourtOptions": {
+    "interpreter": {
+      "language": "French",
+      "needed": true
+    },
+    "welshHearing": false
+  }
+}

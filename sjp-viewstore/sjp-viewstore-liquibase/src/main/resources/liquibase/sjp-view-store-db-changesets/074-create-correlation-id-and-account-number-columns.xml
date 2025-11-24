@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+         http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.3.xsd">
+
+    <changeSet id="74" author="team/ATCM/gustavo.rojas">
+        <addColumn tableName="defendant">
+            <column name="correlation_id" type="uuid"/>
+            <column name="account_number" type="text"/>
+        </addColumn>
+
+        <rollback>
+            <dropColumn tableName="defendant">
+                <column name="correlation_id"/>
+                <column name="account_number"/>
+            </dropColumn>
+        </rollback>
+    </changeSet>
+
+</databaseChangeLog>

@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+         http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.3.xsd">
+
+    <changeSet id="72" author="team/ATCM/msamandi">
+
+        <createTable tableName="case_application">
+            <column name="id" type="uuid">
+                <constraints primaryKey="true"/>
+            </column>
+            <column name="parent_application_id" type="uuid">
+            </column>
+
+            <column name="application_reference" type="text"/>
+
+            <column name="application_type_id" type="uuid">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="application_code" type="text">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="application_status" type="text">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="application_type" type="text"/>
+
+            <column name="case_id" type="uuid">
+                <constraints nullable="false" foreignKeyName="fk_application_case" referencedTableName="case_details" referencedColumnNames="id"/>
+            </column>
+
+            <column name="date_received" type="date">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="out_of_time" type="boolean">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="out_of_time_reason" type="text"/>
+
+        </createTable>
+
+        <addColumn tableName="case_details">
+            <column name="current_application_id" type="uuid">
+                <constraints foreignKeyName="fk_case_current_application" referencedTableName="case_application" referencedColumnNames="id"/>
+            </column>
+        </addColumn>
+
+        <rollback>
+            <dropColumn tableName="case_details" columnName="current_application_id"/>
+            <dropTable tableName="case_application"/>
+        </rollback>
+
+    </changeSet>
+
+</databaseChangeLog>

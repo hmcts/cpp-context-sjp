@@ -1,0 +1,115 @@
+{
+  "assigned": false,
+  "caseDocuments": [],
+  "completed": false,
+  "costs": 12.0,
+  "dateTimeCreated": "2019-03-08T14:34:09.054Z",
+  "defendant": {
+    "caseId": "3dd22595-76bc-4045-8b06-3d037d32930f",
+    "id": "335322e5-c2de-45f0-b54a-3ff59c0f33d0",
+    "interpreter": {
+      "needed": false
+    },
+    "numPreviousConvictions": 2,
+    "offences": [
+      {
+        "chargeDate": "2019-02-01",
+        "cjsCode": "CA03013",
+        "compensation": 10.0,
+        "id": "ea6b810f-81b4-4dcd-ac6f-7a83565f744b",
+        "offenceCode": "CA03013",
+        "offenceSequenceNumber": 1,
+        "prosecutionFacts": "On 01/11/2017 at Chelmsford, the defendant intentionally obstructed a person authorised by BBC in the exercise of a power conferred by virtue of a search warrant issued under section 366 of the Communications Act 2003 by Chelmsford Magistrates Court on 25/10/2017",
+        "sequenceNumber": 1,
+        "startDate": "2019-01-01",
+        "wording": "On 01/11/2017 at Chelmsford intentionally obstructed a person authorised by the BBC in the exercise of a power conferred by virtue of a search warrant issued under section 366 of the Communications Act 2003 by Chelmsford Magistrates Court on 25/10/2017 ",
+        "wordingWelsh": "On 01/11/2017 at Chelmsford intentionally obstructed a person authorised by the BBC in the exercise of a power conferred by virtue of a search warrant issued under section 366 of the Communications Act 2003 by Chelmsford Magistrates Court on 25/10/2017 ",
+        "title": "Possess / control TV set with intent another use install without a licence",
+        "legislation": "Contrary to section 363(3)(b) and (4) of the Communications Act 2003."
+      },
+      {
+        "chargeDate": "2019-02-04",
+        "cjsCode": "WM85118",
+        "compensation": 30.0,
+        "id": "5d1060ae-1abd-465b-9b52-a6deb1706919",
+        "offenceCode": "WM85118",
+        "offenceSequenceNumber": 2,
+        "prosecutionFacts": "On 01/11/2017 at Chelmsford, the defendant intentionally obstructed a person authorised by BBC in the exercise of a power conferred by virtue of a search warrant issued under section 366 of the Communications Act 2003 by Chelmsford Magistrates Court on 25/10/2017",
+        "sequenceNumber": 2,
+        "startDate": "2019-01-01",
+        "wording": "On 01/11/2017 at Chelmsford intentionally obstructed a person authorised by the BBC in the exercise of a power conferred by virtue of a search warrant issued under section 366 of the Communications Act 2003 by Chelmsford Magistrates Court on 25/10/2017 ",
+        "wordingWelsh": "On 01/11/2017 at Chelmsford intentionally obstructed a person authorised by the BBC in the exercise of a power conferred by virtue of a search warrant issued under section 366 of the Communications Act 2003 by Chelmsford Magistrates Court on 25/10/2017 ",
+        "title": "Weights and measures inspector stamp equipment in contravention of Act / regulation / instrument",
+        "titleWelsh": "Arolygydd pwysau a mesurau'n stampio cyfarpar yn groes i Ddeddf / rheoliad / offeryn",
+        "legislation": "Contrary to sections 75(1)(a) and 84(6) of the Weights and Measures Act 1985",
+        "legislationWelsh": "Yn groes i adrannau 75(1)(a) a 84(6) Deddf Pwysau a Mesurau 1985"
+      },
+      {
+        "chargeDate": "2019-02-04",
+        "cjsCode": "RT88461",
+        "compensation": 10.0,
+        "id": "5d1060ae-1abd-465b-9b52-a6deb1706919",
+        "offenceCode": "RT88461",
+        "offenceSequenceNumber": 3,
+        "prosecutionFacts": "On 01/11/2017 at Chelmsford, the defendant rode a pedal cycle on a road and failed to stop when directed by a uniformed police constable",
+        "sequenceNumber": 3,
+        "startDate": "2019-01-01",
+        "wording": "On 01/11/2017 at Chelmsford, being the rider of a cycle on a road, failed to stop on being required to do so",
+        "wordingWelsh": "On 01/11/2017 at Chelmsford, being the rider of a cycle on a road, failed to stop on being required to do so",
+        "title": "Ride a pedal cycle on a road and fail to stop when directed by a uniformed police constable / traffic warden",
+        "legislation": "Contrary to section 163(3) of the Road Traffic Act 1988 and Schedule 2 to the Road Traffic Offenders Act 1988.",
+        "legislationWelsh": "Yn groes i adran 163(3) Deddf Traffig Ffyrdd 1988 ac Atodlen 2 Deddf Troseddwyr Traffig Ffyrdd 1988."
+      }
+    ],
+    "personalDetails": {
+      "address": {
+        "address1": "Flat 1, Armageddon House",
+        "address2": "13 Old Road",
+        "address3": "Giggleswick",
+        "address4": "Merton",
+        "address5": "London",
+        "postcode": "DN35 1AB"
+      },
+      "addressChanged": false,
+      "contactDetails": {
+        "email": "email_primary@ghijkl.com",
+        "home": "02099999999",
+        "mobile": "0754321007"
+      },
+      "dateOfBirth": "1968-03-20",
+      "dobChanged": false,
+      "firstName": "Brock Brock Brock",
+      "gender": "Male",
+      "lastName": "Smith",
+      "nameChanged": false,
+      "nationalInsuranceNumber": "AE123456C",
+      "title": "Mr"
+    }
+  },
+  "enterpriseId": "RSHFYMTTMFKD",
+  "id": "3dd22595-76bc-4045-8b06-3d037d32930f",
+  "listedInCriminalCourts": false,
+  "onlinePleaReceived": false,
+  "postingDate": "2019-02-08",
+  "prosecutingAuthority": "TVL",
+  "status": "NO_PLEA_RECEIVED_READY_FOR_DECISION",
+  "urn": "TVL556477M6P6",
+  "defendantDetailUpdateRequest": {
+    "firstName": "Brock Brock Brock",
+    "lastName": "Smith",
+    "dateOfBirth": "1968-03-20",
+    "legalEntityName": "COMPANY",
+    "caseId": "3dd22595-76bc-4045-8b06-3d037d32930f",
+    "address1": "Flat 1, Armageddon House",
+    "address2": "13 Old Road",
+    "address3": "Giggleswick",
+    "address4": "Merton",
+    "address5": "London",
+    "postcode": "DN35 1AB",
+    "status": "PENDING",
+    "updatedAt": "2019-02-08",
+    "nameUpdated": false,
+    "addressUpdated": true,
+    "dobUpdated": false
+  }
+}

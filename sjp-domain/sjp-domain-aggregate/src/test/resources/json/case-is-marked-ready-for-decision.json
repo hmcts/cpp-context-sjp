@@ -1,0 +1,10 @@
+{
+  "_metadata": {
+    "name": "sjp.events.case-marked-ready-for-decision"
+  },
+  "caseId": "c4ec3a35-76bf-4649-b43a-761e71c3765e",
+  "reason": "PLEADED_GUILTY",
+  "markedAt": "2019-05-31T14:37:37.597Z",
+  "sessionType": "MAGISTRATE",
+  "priority": "MEDIUM"
+}

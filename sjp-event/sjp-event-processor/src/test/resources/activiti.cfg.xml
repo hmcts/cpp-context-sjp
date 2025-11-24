@@ -1,0 +1,91 @@
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:util="http://www.springframework.org/schema/util"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans   http://www.springframework.org/schema/beans/spring-beans.xsd
+                           http://www.springframework.org/schema/util  http://www.springframework.org/schema/util/spring-util.xsd">
+
+  <bean id="processEngineConfiguration" class="org.activiti.engine.impl.cfg.StandaloneInMemProcessEngineConfiguration">
+    <property name="jobExecutorActivate" value="true"/>
+  </bean>
+
+  <bean id="assignmentTimedOutDelegate" class="uk.gov.moj.cpp.sjp.event.processor.activiti.delegates.MockedDelegate">
+    <constructor-arg value="uk.gov.moj.cpp.sjp.event.processor.activiti.delegates.AssignmentTimedOutDelegate" />
+  </bean>
+
+  <bean id="caseStartedDelegate" class="uk.gov.moj.cpp.sjp.event.processor.activiti.delegates.MockedDelegate">
+    <constructor-arg value="uk.gov.moj.cpp.sjp.event.processor.activiti.delegates.CaseStartedDelegate" />
+  </bean>
+
+  <bean id="readyCaseDelegate" class="uk.gov.moj.cpp.sjp.event.processor.activiti.delegates.MockedDelegate">
+    <constructor-arg value="uk.gov.moj.cpp.sjp.event.processor.activiti.delegates.ReadyCaseDelegate" />
+  </bean>
+
+  <bean id="pleaUpdatedDelegate" class="uk.gov.moj.cpp.sjp.event.processor.activiti.delegates.MockedDelegate">
+    <constructor-arg value="uk.gov.moj.cpp.sjp.event.processor.activiti.delegates.PleaUpdatedDelegate" />
+  </bean>
+
+  <bean id="caseAdjournmentElapsedDelegate" class="uk.gov.moj.cpp.sjp.event.processor.activiti.delegates.MockedDelegate">
+    <constructor-arg value="uk.gov.moj.cpp.sjp.event.processor.activiti.delegates.adjournment.CaseAdjournmentElapsedDelegate" />
+  </bean>
+
+  <bean id="caseAdjournedDelegate" class="uk.gov.moj.cpp.sjp.event.processor.activiti.delegates.MockedDelegate">
+    <constructor-arg value="uk.gov.moj.cpp.sjp.event.processor.activiti.delegates.adjournment.CaseAdjournedDelegate" />
+  </bean>
+
+  <bean id="sendExpirationCommandDelegate" class="uk.gov.moj.cpp.sjp.event.processor.activiti.delegates.timers.SendExpirationCommandDelegate">
+      <property name="sender">
+          <util:constant static-field="uk.gov.moj.cpp.sjp.event.processor.activiti.delegates.timers.MockSender.sender" />
+      </property>
+  </bean>
+
+  <bean id="pleaCancelledDelegate" class="uk.gov.moj.cpp.sjp.event.processor.activiti.delegates.MockedDelegate">
+    <constructor-arg value="uk.gov.moj.cpp.sjp.event.processor.activiti.delegates.PleaCancelledDelegate" />
+    <property name="variablesToRemoveOnExecution">
+      <list>
+        <value>pleaType</value>
+        <value>pleaReady</value>
+      </list>
+    </property>
+  </bean>
+
+  <bean id="caseCompletedDelegate" class="uk.gov.moj.cpp.sjp.event.processor.activiti.delegates.MockedDelegate">
+    <constructor-arg value="uk.gov.moj.cpp.sjp.event.processor.activiti.delegates.CaseCompletedDelegate" />
+  </bean>
+
+  <bean id="datesToAvoidProcessedDelegate" class="uk.gov.moj.cpp.sjp.event.processor.activiti.delegates.MockedDelegate">
+    <constructor-arg value="uk.gov.moj.cpp.sjp.event.processor.activiti.delegates.DatesToAvoidProcessedDelegate" />
+    <property name="variablesOnExecution">
+      <map>
+        <entry key="pleaReady" value="true" value-type="java.lang.Boolean"/>
+      </map>
+    </property>
+  </bean>
+
+  <bean id="withdrawalRequestCancelledDelegate" class="uk.gov.moj.cpp.sjp.event.processor.activiti.delegates.MockedDelegate">
+    <constructor-arg value="uk.gov.moj.cpp.sjp.event.processor.activiti.delegates.WithdrawalRequestCancelledDelegate" />
+    <property name="variablesToRemoveOnExecution">
+      <list>
+        <value>withdrawalRequested</value>
+      </list>
+    </property>
+  </bean>
+
+  <bean id="withdrawalRequestedDelegate" class="uk.gov.moj.cpp.sjp.event.processor.activiti.delegates.MockedDelegate">
+    <constructor-arg value="uk.gov.moj.cpp.sjp.event.processor.activiti.delegates.WithdrawalRequestedDelegate" />
+    <property name="variablesOnExecution">
+      <map>
+        <entry key="withdrawalRequested" value="true" value-type="java.lang.Boolean"/>
+      </map>
+    </property>
+  </bean>
+
+  <bean id="provedInAbsenceDelegate" class="uk.gov.moj.cpp.sjp.event.processor.activiti.delegates.MockedDelegate">
+    <constructor-arg value="uk.gov.moj.cpp.sjp.event.processor.activiti.delegates.ProvedInAbsenceDelegate" />
+    <property name="variablesOnExecution">
+      <map>
+        <entry key="provedInAbsence" value="true" value-type="java.lang.Boolean"/>
+      </map>
+    </property>
+  </bean>
+
+</beans>

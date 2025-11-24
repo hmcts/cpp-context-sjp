@@ -1,0 +1,30 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://justice.gov.uk/json/schemas/domains/sjp/events/sjp.update-cases-management-status.json",
+  "type": "object",
+  "properties": {
+    "cases" : {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "caseId": {
+            "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+          },
+          "caseManagementStatus": {
+            "$ref": "http://justice.gov.uk/json/schemas/domains/sjp/case-management-status.json"
+          }
+        },
+        "required": [
+          "caseId",
+          "caseManagementStatus"
+        ],
+        "additionalProperties": false
+      }
+    }
+  },
+  "required": [
+    "cases"
+  ],
+  "additionalProperties": false
+}

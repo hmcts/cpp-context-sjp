@@ -1,0 +1,113 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://justice.gov.uk/json/schemas/domains/sjp/queries/enriched-offence.json",
+  "type": "object",
+  "properties": {
+    "id": {
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+    },
+    "offenceCode": {
+      "type": "string"
+    },
+    "plea": {
+      "$ref": "http://justice.gov.uk/json/schemas/domains/sjp/plea-type.json"
+    },
+    "pleaMethod": {
+      "$ref": "http://justice.gov.uk/json/schemas/domains/sjp/plea-method.json"
+    },
+    "pleaDate": {
+      "$ref": "http://justice.gov.uk/json/schemas/domains/sjp/temporal.json#/definitions/date-time"
+    },
+    "offenceSequenceNumber": {
+      "type": "integer"
+    },
+    "wording": {
+      "type": "string"
+    },
+    "wordingWelsh": {
+      "type": "string"
+    },
+    "cjsCode": {
+      "type": "string"
+    },
+    "sequenceNumber": {
+      "type": "integer"
+    },
+    "startDate": {
+      "type": "string"
+    },
+    "endDate": {
+      "type": "string"
+    },
+    "chargeDate": {
+      "type": "string"
+    },
+    "pendingWithdrawal": {
+      "type": "boolean"
+    },
+    "compensation": {
+      "type": "number"
+    },
+    "prosecutionFacts": {
+      "type": "string"
+    },
+    "title":{
+      "type": "string"
+    },
+    "titleWelsh":{
+      "type": "string"
+    },
+    "legislation":{
+      "type": "string"
+    },
+    "outOfTime":{
+      "type": "boolean"
+    },
+    "notInEffect":{
+      "type": "boolean"
+    },
+    "imprisonable":{
+      "type": "boolean"
+    },
+    "maxFineLevel":{
+      "type": "string"
+    },
+    "backDuty": {
+      "type": "number"
+    },
+    "backDutyDateFrom": {
+      "type": "string"
+    },
+    "backDutyDateTo": {
+      "type": "string"
+    },
+    "vehicleMake": {
+      "type": "string"
+    },
+    "vehicleRegistrationMark": {
+      "type": "string"
+    },
+    "penaltyType": {
+      "type": "string"
+    },
+    "sentencing": {
+      "type": "string"
+    },
+    "backDutyOffence": {
+      "type": "boolean"
+    },
+    "pressRestrictable": {
+      "type": "boolean"
+    },
+    "isNonSummaryOffence": {
+      "type": "boolean"
+    },
+    "offenceDateCode": {
+      "description": "The code for the offence date to be used within the offence wording, 1 = on or in, 2 = before, 3 = after, 4 = between, 5 = on or about and 6 = on or before",
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 6
+    }
+  },
+  "additionalProperties": false
+}

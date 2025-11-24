@@ -1,0 +1,12 @@
+{
+  "cases": [
+    {
+      "caseId": "77fbfd34-a9b8-46bf-9c09-42b0a2ef9536",
+      "caseManagementStatus": "NOT_STARTED"
+    },
+    {
+      "caseId": "d10b8792-8ff0-487e-bfba-73ee77807214",
+      "caseManagementStatus": "IN_PROGRESS"
+    }
+  ]
+}

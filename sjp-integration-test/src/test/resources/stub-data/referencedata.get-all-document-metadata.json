@@ -1,0 +1,15 @@
+{
+  "documentsMetadata" : [
+    {
+      "uuid":"460f6f7a-c002-11e8-a355-529269fb1459",
+      "documentCategory":"Bail and Custody",
+      "documentType":"Magistrate's Sending sheet",
+      "documentAccess":[
+        "Legal advisors",
+        "Court Admin",
+        "Crown court clerk",
+        "Listing officer"
+      ]
+    }
+  ]
+}

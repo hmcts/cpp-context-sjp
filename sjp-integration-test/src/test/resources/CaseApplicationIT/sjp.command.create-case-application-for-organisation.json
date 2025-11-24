@@ -1,0 +1,72 @@
+{
+  "courtApplication": {
+    "courtApplicationCases": [
+      {
+        "prosecutionCaseId": "bf73207f-3ced-488a-82a0-3fba79c3ce85",
+        "prosecutionCaseIdentifier": {
+          "prosecutionAuthorityCode": "TFL",
+          "prosecutionAuthorityId": "cf73207f-3ced-488a-82a0-3fba79c3ce85",
+          "prosecutionAuthorityReference": "TFL12345-A"
+        },
+        "isSJP": true,
+        "caseStatus": "caseStatus"
+      }
+    ],
+    "id": "${APP_ID}",
+    "type": {
+      "id": "${TYPE_ID}",
+      "type": "${APPLICATION_TYPE}",
+      "code": "${APPLICATION_CODE}",
+      "categoryCode": "categoryCode123",
+      "linkType": "STANDALONE",
+      "jurisdiction": "MAGISTRATES",
+      "summonsTemplateType": "NOT_APPLICABLE",
+      "breachType": "NOT_APPLICABLE",
+      "appealFlag": false,
+      "applicantAppellantFlag": false,
+      "pleaApplicableFlag": false,
+      "commrOfOathFlag": false,
+      "courtOfAppealFlag": false,
+      "courtExtractAvlFlag": false,
+      "prosecutorThirdPartyFlag": false,
+      "spiOutApplicableFlag": false,
+      "offenceActiveOrder": "COURT_ORDER"
+    },
+    "applicationReceivedDate": "${APPLICATION_RECEIVED_DATE}",
+    "applicant": {
+      "id": "00000000-0000-0000-0000-000000000000",
+      "synonym": "a",
+      "summonsRequired": false,
+      "notificationRequired": false
+    },
+    "subject": {
+      "id": "868b5b99-bf00-4221-a5ab-b1f46e091032",
+      "masterDefendant": {
+        "masterDefendantId": "868b5b99-bf00-4221-a5ab-b1f46e091032",
+        "legalEntityDefendant": {
+          "organisation": {
+            "name": "Kellogs and Co",
+            "address": {
+              "address1": "Test One",
+              "address2": "56Police House",
+              "address3": "StreetDescription1",
+              "address4": "Locality1",
+              "address5": "Town2",
+              "postcode": "TW14 9XD"
+            }
+          }
+        },
+        "defendantCase": [
+          {
+            "defendantId": "868b5b99-bf00-4221-a5ab-b1f46e091032",
+            "caseId": "c616e871-8b3b-425e-8910-1752fbcae489",
+            "caseReference": "10GD7755900"
+          }
+        ]
+      },
+      "notificationRequired": true,
+      "summonsRequired": false
+    },
+    "applicationStatus": "${APP_STATUS}"
+  }
+}

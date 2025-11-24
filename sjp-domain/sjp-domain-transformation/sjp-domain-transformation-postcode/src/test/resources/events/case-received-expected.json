@@ -1,0 +1,56 @@
+{
+  "caseId": "039872be-2b1d-4474-9761-941c759e28ed",
+  "costs": 10.0,
+  "createdOn": "2020-04-07T07:52:16.073Z",
+  "defendant": {
+    "address": {
+      "address1": "Flat 1, Armageddon House",
+      "address2": "13 Old Road",
+      "address3": "Giggleswick",
+      "address4": "St Albans",
+      "address5": "St Albans",
+      "postcode": "LU1 1RW"
+    },
+    "contactDetails": {
+      "business": "02088888888",
+      "email": "email_primary@ghijkl.com",
+      "email2": "email_secondary@ghijkl.com",
+      "home": "02099999999",
+      "mobile": "0754321007"
+    },
+    "dateOfBirth": "1990-09-09",
+    "firstName": "Hercules Adolf Offender",
+    "gender": "Male",
+    "hearingLanguage": "W",
+    "id": "500d5b1a-d4b7-48cb-b8cd-b92ca521ab2f",
+    "lastName": "Greenback",
+    "nationalInsuranceNumber": "AE123456C",
+    "numPreviousConvictions": 2,
+    "offences": [
+      {
+        "backDuty": 0.0,
+        "backDutyDateFrom": "2018-10-31",
+        "backDutyDateTo": "2019-10-31",
+        "chargeDate": "2019-10-31",
+        "compensation": 0.0,
+        "endorsable": false,
+        "id": "bcf98559-6042-4b9d-9deb-b19cfbf14085",
+        "libraOffenceCode": "VE94015",
+        "libraOffenceDateCode": 1,
+        "offenceCommittedDate": "2019-10-31",
+        "offenceSequenceNo": 1,
+        "offenceWording": "On 2019-08-11 at Chelmsford intentionally obstructed a person authorised by the BBC in the exercise of a power conferred by virtue of a search warrant issued under section 366 of the Communications Act 2003 by Chelmsford Magistrates Court on 25/10/2017 ",
+        "offenceWordingWelsh": "On 2019-08-11 at Chelmsford intentionally obstructed a person authorised by the BBC in the exercise of a power conferred by virtue of a search warrant issued under section 366 of the Communications Act 2003 by Chelmsford Magistrates Court on 25/10/2017 ",
+        "prosecutionFacts": "On 2019-08-11 at Chelmsford, the defendant intentionally obstructed a person authorised by BBC in the exercise of a power conferred by virtue of a search warrant issued under section 366 of the Communications Act 2003 by Chelmsford Magistrates Court on 25/10/2017",
+        "vehicleMake": "OneTwoThree",
+        "vehicleRegistrationMark": "GLZ 123"
+      }
+    ],
+    "title": "Baron"
+  },
+  "enterpriseId": "QXFFBYHJSM7J",
+  "expectedDateReady": "2019-11-30",
+  "postingDate": "2019-11-02",
+  "prosecutingAuthority": "DVLA",
+  "urn": "DVLANCB30633258"
+}

@@ -1,0 +1,13 @@
+{
+  "readyCases": [
+    {
+      "caseId": "a25cea92-d3a1-421f-a2b0-00501b27dd0b",
+      "reason": "PIA"
+    },
+    {
+      "caseId": "061f6259-9dd9-42c9-92cf-b0f3104f8833",
+      "reason": "WITHDRAWAL_REQUESTED",
+      "assigneeId": "aaaa262d-ee18-4113-8c30-ea984813015"
+    }
+  ]
+}

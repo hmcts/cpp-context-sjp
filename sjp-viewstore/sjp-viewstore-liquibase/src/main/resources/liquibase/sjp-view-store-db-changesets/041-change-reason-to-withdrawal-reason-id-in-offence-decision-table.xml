@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+         http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.3.xsd">
+
+    <changeSet id="41" author="ATCM"
+               logicalFilePath="liquibase/sjp-view-store-db-changelog.xml">
+
+        <dropColumn tableName="offence_decision">
+            <column name="reason" />
+        </dropColumn>
+
+        <addColumn tableName="offence_decision">
+            <column name="withdrawal_reason_id" type="uuid" />
+        </addColumn>
+
+        <rollback>
+            <dropColumn tableName="offence_decision">
+                <column name="withdrawal_reason_id" />
+            </dropColumn>
+
+            <addColumn tableName="offence_decision">
+                <column name="reason" type="text"/>
+            </addColumn>
+        </rollback>
+
+    </changeSet>
+
+</databaseChangeLog>

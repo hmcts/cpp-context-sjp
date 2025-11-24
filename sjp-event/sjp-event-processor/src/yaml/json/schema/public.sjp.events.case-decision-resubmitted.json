@@ -1,0 +1,37 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://justice.gov.uk/json/schemas/domains/sjp/events/public.sjp.events.case-decision-resubmitted.json",
+  "type": "object",
+  "properties": {
+    "decisionSaved": {
+      "$ref": "http://justice.gov.uk/json/schemas/domains/sjp/event/decision-saved.json"
+    },
+    "resubmittedAt": {
+      "$ref": "http://justice.gov.uk/json/schemas/domains/sjp/temporal.json#/definitions/date-time"
+    },
+    "paymentTermsInfo": {
+      "type": "object",
+      "properties": {
+        "numberOfDaysToPostponeBy": {
+          "type": "number",
+          "minimum": 1
+        },
+        "resetPayByDate": {
+          "type": "boolean"
+        }
+      }
+    },
+    "accountNote": {
+      "type": "string"
+    },
+    "prosecutionCaseReference": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "decisionSaved",
+    "resubmittedAt",
+    "prosecutionCaseReference"
+  ],
+  "additionalProperties": false
+}

@@ -1,0 +1,89 @@
+{
+  "caseId": "${caseId}",
+  "sjpSessionId": "${sessionId}",
+  "decisionId": "${decisionId}",
+  "resultedOn": "${resultedOn}",
+  "offenceDecisions": [
+    {
+      "type": "FINANCIAL_PENALTY",
+      "offenceDecisionInformation": [
+        {
+          "offenceId": "${offence1Id}",
+          "verdict": "PROVED_SJP"
+        }
+      ],
+      "pressRestriction": {
+        "name": "The Child's Name",
+        "requested": true
+      }
+    },
+    {
+      "type": "DISCHARGE",
+      "offenceDecisionInformation": [
+        {
+          "offenceId": "${offence2Id}",
+          "verdict": "PROVED_SJP"
+        }
+      ],
+      "dischargeType": "ABSOLUTE",
+      "pressRestriction": {
+        "name": "Robert Robertson",
+        "requested": true
+      }
+    },
+    {
+      "type": "DISMISS",
+      "offenceDecisionInformation": [
+        {
+          "offenceId": "${offence3Id}",
+          "verdict": "FOUND_NOT_GUILTY"
+        }
+      ],
+      "pressRestriction": {
+        "name": "Robert Robertson",
+        "requested": true
+      }
+    },
+    {
+      "type": "WITHDRAW",
+      "offenceDecisionInformation": [
+        {
+          "offenceId": "${offence4Id}",
+          "verdict": "NO_VERDICT"
+        }
+      ],
+      "withdrawalReasonId": "1dbf0960-51e3-4d90-803d-d54cd8ea7d3e",
+      "pressRestriction": {
+        "name": "Robert Robertson",
+        "requested": true
+      }
+    },
+    {
+      "type": "NO_SEPARATE_PENALTY",
+      "offenceDecisionInformation": [
+        {
+          "offenceId": "${offence5Id}",
+          "verdict": "FOUND_GUILTY"
+        }
+      ],
+      "guiltyPleaTakenIntoAccount": false,
+      "licenceEndorsed": false,
+      "pressRestriction": {
+        "name": "Robert Robertson",
+        "requested": true
+      }
+    },
+    {
+      "type": "SET_ASIDE",
+      "offenceDecisionInformation": [
+        {
+          "offenceId": "${offence6Id}"
+        }
+      ],
+      "pressRestriction": {
+        "name": "Robert Set Aside",
+        "requested": true
+      }
+    }
+  ]
+}

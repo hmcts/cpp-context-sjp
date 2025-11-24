@@ -1,0 +1,145 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+         http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.3.xsd">
+
+    <changeSet id="1" author="tomaszp" logicalFilePath="liquibase/sjp-view-store-db-changelog.xml">
+
+        <createTable tableName="case_details">
+            <column name="id" type="uuid">
+                <constraints primaryKey="true"/>
+            </column>
+            <column name="urn" type="text"/>
+            <column name="enterprise_id" type="text"/>
+            <column name="initiation_code" type="text"/>
+            <column name="prosecuting_authority" type="text"/>
+            <column name="posting_date" type="date"></column>
+            <column name="completed" type="boolean" defaultValue="false"/>
+            <column name="costs" type="currency"></column>
+            <column name="pti_urn" type="text"></column>
+            <column name="summons_code" type="text"></column>
+            <column name="libra_originating_org" type="text"></column>
+            <column name="libra_case_number" type="text"/>
+            <column name="libra_hearing_location" type="text"/>
+            <column name="reopened_in_libra_reason" type="text"/>
+            <column name="reopened_date" type="date"/>
+            <column name="date_time_created" type="datetime"/>
+        </createTable>
+
+        <createIndex indexName="case_urn_idx" tableName="case_details">
+            <column name="upper(urn)" type="TEXT"/>
+        </createIndex>
+
+        <createTable tableName="defendant">
+            <column name="id" type="uuid">
+                <constraints primaryKey="true"/>
+            </column>
+            <column name="case_id" type="uuid">
+                <constraints foreignKeyName="fk_defendant_case" referencedTableName="case_details" referencedColumnNames="id"/>
+            </column>
+            <column name="person_id" type="uuid"/>
+            <column name="interpreter_needed" type="boolean"></column>
+            <column name="interpreter_language" type="text"></column>
+            <column name="num_previous_convictions" type="integer"></column>
+        </createTable>
+
+        <createTable tableName="offence">
+            <column name="id" type="uuid">
+                <constraints primaryKey="true"/>
+            </column>
+            <column name="defendant_id" type="uuid">
+                <constraints foreignKeyName="fk_offence_defendant" referencedTableName="defendant" referencedColumnNames="id"/>
+            </column>
+            <column name="seq_no" type="integer"/>
+            <column name="code" type="text"/>
+            <column name="wording" type="text"/>
+            <column name="plea" type="text"/>
+            <column name="plea_method" type="text"/>
+            <column name="order_index" type="int" defaultValue="0"/>
+            <column name="date_time_created" type="datetime"/>
+            <column name="compensation" type="currency"></column>
+            <column name="witness_statement" type="text"></column>
+            <column name="libra_offence_date_code" type="int"></column>
+            <column name="prosecution_facts" type="text"></column>
+            <column name="pending_withdrawal" type="boolean"/>
+            <column name="start_date" type="datetime"/>
+            <column name="charge_date" type="datetime"/>
+        </createTable>
+
+        <createTable tableName="employer">
+            <column name="defendant_id" type="UUID">
+                <constraints foreignKeyName="fk_employer_defendant" referencedTableName="defendant" referencedColumnNames="id"/>
+            </column>
+            <column name="employee_reference" type="TEXT"></column>
+            <column name="name" type="TEXT"></column>
+            <column name="phone" type="TEXT"></column>
+            <column name="address_1" type="TEXT"></column>
+            <column name="address_2" type="TEXT"></column>
+            <column name="address_3" type="TEXT"></column>
+            <column name="address_4" type="TEXT"></column>
+            <column name="post_code" type="TEXT"></column>
+        </createTable>
+
+        <createTable tableName="financial_means">
+            <column name="defendant_id" type="UUID">
+                <constraints foreignKeyName="fk_financial_means_defendant" referencedTableName="defendant" referencedColumnNames="id"/>
+            </column>
+            <column name="income_payment_amount" type="decimal(11,2)"/>
+            <column name="income_payment_frequency" type = "text"/>
+            <column name="benefits_claimed" type="boolean"/>
+            <column name="benefits_type" type="text"/>
+            <column name="employment_status" type="text"></column>
+        </createTable>
+
+        <createTable tableName="case_document">
+            <column name="id" type="uuid">
+                <constraints primaryKey="true"/>
+            </column>
+            <column name="case_id" type="uuid">
+                <constraints foreignKeyName="fk_financial_means_defendant" referencedTableName="case_details" referencedColumnNames="id"/>
+            </column>
+            <column name="material_id" type="uuid"/>
+            <column name="document_type" type="text"/>
+            <column name="document_number" type="integer"/>
+            <column name="added_at" type="datetime"/>
+        </createTable>
+
+        <createTable tableName="case_search_result">
+            <column name="id" type="uuid">
+                <constraints primaryKey="true"/>
+            </column>
+            <column name="case_id" type="uuid"/>
+            <column name="plea_date" type="datetime"/>
+            <column name="person_id" type="uuid"/>
+            <column name="first_name" type="text"/>
+            <column name="last_name" type="text"/>
+            <column name="date_of_birth" type="date"/>
+            <column name="post_code" type="text"/>
+            <column name="withdrawal_requested_date" type="datetime"/>
+        </createTable>
+
+        <createIndex tableName="case_search_result" indexName="last_name_idx">
+            <column name="upper(last_name)" type="text"/>
+        </createIndex>
+
+        <createIndex tableName="case_search_result" indexName="case_id_idx">
+            <column name="case_id" type="uuid"/>
+        </createIndex>
+
+        <createTable tableName="court_referral">
+            <column name="case_id" type="uuid">
+                <constraints primaryKey="true"/>
+            </column>
+            <column name="hearing_date" type="date"/>
+            <column name="actioned" type="datetime"/>
+        </createTable>
+
+        <createIndex tableName="court_referral" indexName="court_referral_actioned_hearing_date_idx">
+            <column name="actioned" type="datetime"/>
+            <column name="hearing_date" type="date"/>
+        </createIndex>
+
+    </changeSet>
+
+</databaseChangeLog>

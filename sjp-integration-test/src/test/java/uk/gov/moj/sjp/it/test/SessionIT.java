@@ -1,0 +1,134 @@
+package uk.gov.moj.sjp.it.test;
+
+import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
+import static com.jayway.jsonpath.matchers.JsonPathMatchers.withoutJsonPath;
+import static java.util.UUID.randomUUID;
+import static org.hamcrest.CoreMatchers.allOf;
+import static org.hamcrest.CoreMatchers.anyOf;
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.notNullValue;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMatcher.jsonEnvelope;
+import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMetadataMatcher.metadata;
+import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopePayloadMatcher.payloadIsJson;
+import static uk.gov.moj.cpp.sjp.domain.SessionType.DELEGATED_POWERS;
+import static uk.gov.moj.cpp.sjp.domain.SessionType.MAGISTRATE;
+import static uk.gov.moj.sjp.it.helper.SessionHelper.endSession;
+import static uk.gov.moj.sjp.it.helper.SessionHelper.pollForSession;
+import static uk.gov.moj.sjp.it.helper.SessionHelper.startDelegatedPowersSessionAsync;
+import static uk.gov.moj.sjp.it.helper.SessionHelper.startMagistrateSessionAsync;
+import static uk.gov.moj.sjp.it.util.Defaults.DEFAULT_LEGAL_ADVISER;
+
+import uk.gov.justice.services.messaging.JsonEnvelope;
+import uk.gov.moj.cpp.sjp.event.processor.SessionProcessor;
+import uk.gov.moj.sjp.it.helper.EventListener;
+import uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub;
+
+import java.util.Optional;
+import java.util.UUID;
+
+import org.hamcrest.Matcher;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
+public class SessionIT extends BaseIntegrationTest {
+
+    private final UUID sessionId = randomUUID();
+    private final UUID userId = randomUUID();
+    private final String courtHouseOUCode = "B01OK";
+    private final String courtHouseName = "Wimbledon Magistrates' Court";
+    private final String localJusticeAreaNationalCourtCode = "2577";
+
+    @BeforeEach
+    public void init() {
+        ReferenceDataServiceStub.stubCourtByCourtHouseOUCodeQuery(courtHouseOUCode, localJusticeAreaNationalCourtCode, courtHouseName);
+    }
+
+    @Test
+    public void shouldStartAndEndDelegatedPowersSessionAndCreatePublicEvent() {
+        final Optional<JsonEnvelope> sessionStartedEvent = startDelegatedPowersSessionAndWaitForEvent(sessionId, userId, courtHouseOUCode, SessionProcessor.PUBLIC_SJP_SESSION_STARTED);
+
+        assertThat(sessionStartedEvent.isPresent(), is(true));
+        assertThat(sessionStartedEvent.get(), jsonEnvelope(metadata().withName(SessionProcessor.PUBLIC_SJP_SESSION_STARTED),
+                payloadIsJson(allOf(
+                        withJsonPath("$.sessionId", equalTo(sessionId.toString())),
+                        withJsonPath("$.courtHouseCode", equalTo(courtHouseOUCode)),
+                        withJsonPath("$.courtHouseName", equalTo(courtHouseName)),
+                        withJsonPath("$.localJusticeAreaNationalCourtCode", equalTo(localJusticeAreaNationalCourtCode)),
+                        withJsonPath("$.type", equalTo(DELEGATED_POWERS.name())))
+                )));
+
+        pollForSession(sessionId, userId, new Matcher[]{
+                withJsonPath("$.sessionId", equalTo(sessionId.toString())),
+                withJsonPath("$.userId", equalTo(userId.toString())),
+                withJsonPath("$.courtHouseCode", equalTo(courtHouseOUCode)),
+                withJsonPath("$.courtHouseName", equalTo(courtHouseName)),
+                withJsonPath("$.localJusticeAreaNationalCourtCode", equalTo(localJusticeAreaNationalCourtCode)),
+                withJsonPath("$.type", equalTo(DELEGATED_POWERS.name())),
+                withoutJsonPath("$.endedAt"),
+                withoutJsonPath("$.magistrate"),
+                anyOf(allOf(
+                                withJsonPath("$.prosecutors[0]", equalTo("TFL")),
+                                withJsonPath("$.prosecutors[1]", equalTo("DVL"))),
+                        allOf(
+                                withJsonPath("$.prosecutors[1]", equalTo("TFL")),
+                                withJsonPath("$.prosecutors[0]", equalTo("DVL"))))
+
+        });
+
+        endSession(sessionId, userId);
+        pollForSession(sessionId, userId, new Matcher[]{withJsonPath("$.endedAt", notNullValue())});
+    }
+
+    @Test
+    public void shouldStartAndEndMagistrateSessionAndCreatePublicEvent() {
+        final String magistrate = "John Smith";
+
+        final Optional<JsonEnvelope> sessionStartedEvent = startMagistrateSessionAndWaitForEvent(sessionId, userId, courtHouseOUCode, magistrate, SessionProcessor.PUBLIC_SJP_SESSION_STARTED);
+
+        assertThat(sessionStartedEvent.isPresent(), is(true));
+        assertThat(sessionStartedEvent.get(), jsonEnvelope(metadata().withName(SessionProcessor.PUBLIC_SJP_SESSION_STARTED),
+                payloadIsJson(allOf(
+                        withJsonPath("$.sessionId", equalTo(sessionId.toString())),
+                        withJsonPath("$.courtHouseCode", equalTo(courtHouseOUCode)),
+                        withJsonPath("$.courtHouseName", equalTo(courtHouseName)),
+                        withJsonPath("$.localJusticeAreaNationalCourtCode", equalTo(localJusticeAreaNationalCourtCode)),
+                        withJsonPath("$.type", equalTo(MAGISTRATE.name())))
+                )));
+
+        pollForSession(sessionId, userId, new Matcher[]{
+                withJsonPath("$.sessionId", equalTo(sessionId.toString())),
+                withJsonPath("$.userId", equalTo(userId.toString())),
+                withJsonPath("$.courtHouseCode", equalTo(courtHouseOUCode)),
+                withJsonPath("$.courtHouseName", equalTo(courtHouseName)),
+                withJsonPath("$.localJusticeAreaNationalCourtCode", equalTo(localJusticeAreaNationalCourtCode)),
+                withJsonPath("$.type", equalTo(MAGISTRATE.name())),
+                withJsonPath("$.magistrate", equalTo(magistrate)),
+                anyOf(allOf(
+                                withJsonPath("$.prosecutors[0]", equalTo("TFL")),
+                                withJsonPath("$.prosecutors[1]", equalTo("DVL"))),
+                        allOf(
+                                withJsonPath("$.prosecutors[1]", equalTo("TFL")),
+                                withJsonPath("$.prosecutors[0]", equalTo("DVL"))))
+        });
+
+
+        endSession(sessionId, userId);
+        pollForSession(sessionId, userId, new Matcher[]{withJsonPath("$.endedAt", notNullValue())});
+    }
+
+    private Optional<JsonEnvelope> startDelegatedPowersSessionAndWaitForEvent(final UUID sessionId, final UUID userId, final String courtHouseOUCode, final String eventName) {
+        return new EventListener().subscribe(eventName)
+                .run(() -> startDelegatedPowersSessionAsync(sessionId, userId, courtHouseOUCode))
+                .popEvent(eventName);
+    }
+
+    private Optional<JsonEnvelope> startMagistrateSessionAndWaitForEvent(final UUID sessionId, final UUID userId, final String courtHouseOUCode, final String magistrate, final String eventName) {
+        return new EventListener().subscribe(eventName)
+                .run(() -> startMagistrateSessionAsync(sessionId, userId, courtHouseOUCode, magistrate, DEFAULT_LEGAL_ADVISER))
+                .popEvent(eventName);
+    }
+
+
+}

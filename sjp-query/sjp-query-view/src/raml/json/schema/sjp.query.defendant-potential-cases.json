@@ -1,0 +1,32 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://justice.gov.uk/json/schemas/domains/sjp/queries/defendant-potential-cases.json",
+  "type": "object",
+  "properties": {
+    "sjpOpenCases": {
+      "type": "array",
+      "items": {
+        "$ref" : "http://justice.gov.uk/json/schemas/domains/sjp/queries/case-offence-details.json"
+      }
+    },
+    "sjpClosedCases": {
+      "type": "array",
+      "items": {
+        "$ref" : "http://justice.gov.uk/json/schemas/domains/sjp/queries/case-offence-details.json"
+      }
+    },
+    "courtOpenCases": {
+      "type": "array",
+      "items": {
+        "$ref" : "http://justice.gov.uk/json/schemas/domains/sjp/queries/case-offence-details.json"
+      }
+    },
+    "courtClosedCases": {
+      "type": "array",
+      "items": {
+        "$ref" : "http://justice.gov.uk/json/schemas/domains/sjp/queries/case-offence-details.json"
+      }
+    }
+  },
+  "additionalProperties": false
+}

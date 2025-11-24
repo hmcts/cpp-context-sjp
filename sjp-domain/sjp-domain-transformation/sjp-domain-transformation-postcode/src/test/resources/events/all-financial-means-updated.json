@@ -1,0 +1,25 @@
+{
+  "defendantId": "5ad91566-86e8-4562-93de-60c75d4f81e9",
+  "income": {
+    "frequency": "MONTHLY",
+    "amount": 20000
+  },
+  "benefits": {
+    "claimed": true,
+    "type": "benefit claimed"
+  },
+  "employmentStatus": "EMPLOYED",
+  "employer": {
+    "defendantId": "5ad91566-86e8-4562-93de-60c75d4f81e9",
+    "name": "MOJ",
+    "employeeReference": "12345",
+    "phone": "02040700000",
+    "address": {
+      "address1": "101 Boleyn",
+      "address2": "Oxford street",
+      "address3": "Oxford",
+      "address4": "London",
+      "postcode": "E79QG"
+    }
+  }
+}

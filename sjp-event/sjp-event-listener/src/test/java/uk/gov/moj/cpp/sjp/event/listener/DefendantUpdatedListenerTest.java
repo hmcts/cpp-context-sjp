@@ -1,0 +1,349 @@
+package uk.gov.moj.cpp.sjp.event.listener;
+
+import static java.util.Collections.singletonList;
+import static org.apache.commons.lang3.builder.EqualsBuilder.reflectionEquals;
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.Matchers.hasSize;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
+import uk.gov.justice.json.schemas.domains.sjp.Gender;
+import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
+import uk.gov.justice.services.common.converter.ObjectToJsonObjectConverter;
+import uk.gov.justice.services.common.converter.jackson.ObjectMapperProducer;
+import uk.gov.justice.services.common.util.Clock;
+import uk.gov.justice.services.common.util.UtcClock;
+import uk.gov.justice.services.messaging.JsonEnvelope;
+import uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderFactory;
+import uk.gov.moj.cpp.sjp.domain.Address;
+import uk.gov.moj.cpp.sjp.domain.ContactDetails;
+import uk.gov.moj.cpp.sjp.domain.onlineplea.PleadOnline;
+import uk.gov.moj.cpp.sjp.event.DefendantDetailsUpdated;
+import uk.gov.moj.cpp.sjp.event.DefendantsNationalInsuranceNumberUpdated;
+import uk.gov.moj.cpp.sjp.event.listener.converter.AddressToAddressEntity;
+import uk.gov.moj.cpp.sjp.event.listener.converter.ContactDetailsToContactDetailsEntity;
+import uk.gov.moj.cpp.sjp.event.listener.handler.CaseSearchResultService;
+import uk.gov.moj.cpp.sjp.persistence.entity.CaseDetail;
+import uk.gov.moj.cpp.sjp.persistence.entity.CaseSearchResult;
+import uk.gov.moj.cpp.sjp.persistence.entity.DefendantDetail;
+import uk.gov.moj.cpp.sjp.persistence.entity.PersonalDetails;
+import uk.gov.moj.cpp.sjp.persistence.repository.CaseRepository;
+import uk.gov.moj.cpp.sjp.persistence.repository.CaseSearchResultRepository;
+
+import java.time.LocalDate;
+import java.time.ZonedDateTime;
+import java.util.List;
+import java.util.UUID;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.collect.Lists;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Answers;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
+import org.mockito.Spy;
+import org.mockito.junit.jupiter.MockitoExtension;
+
+@ExtendWith(MockitoExtension.class)
+public class DefendantUpdatedListenerTest {
+
+    private final Clock clock = new UtcClock();
+    private final ZonedDateTime now = clock.now();
+    private final String previousTitle = "previously set Title";
+    private final Gender previousGender = Gender.FEMALE;
+    private final String previousNiNumber = "previously set NI-number";
+    @InjectMocks
+    private DefendantUpdatedListener defendantUpdatedListener;
+
+    @Spy
+    @InjectMocks
+    private  CaseSearchResultService caseSearchResultService;
+    @Spy
+    @InjectMocks
+    private ObjectToJsonObjectConverter objectToJsonObjectConverter;
+
+    @Spy
+    @InjectMocks
+    private JsonObjectToObjectConverter jsonObjectToObjectConverter;
+
+    @Spy
+    private final ObjectMapper objectMapper = new ObjectMapperProducer().objectMapper();
+
+    @Mock
+    private CaseRepository caseRepository;
+
+    @Mock
+    private CaseSearchResultRepository caseSearchResultRepository;
+
+    @Mock(answer = Answers.CALLS_REAL_METHODS)
+    private ContactDetailsToContactDetailsEntity contactDetailsToContactDetailsEntity;
+
+    @Mock(answer = Answers.CALLS_REAL_METHODS)
+    private AddressToAddressEntity addressToAddressEntity;
+
+    private final CaseDetail caseDetail = new CaseDetail(UUID.randomUUID());
+
+    private DefendantDetailsUpdated.DefendantDetailsUpdatedBuilder defendantDetailsUpdatedBuilder = DefendantDetailsUpdated.DefendantDetailsUpdatedBuilder.defendantDetailsUpdated()
+            .withCaseId(caseDetail.getId())
+            .withDefendantId(caseDetail.getDefendant().getId())
+            .withContactDetails(new ContactDetails("123", "456", "789", "test@test.com", "test_email2@test.com"))
+            .withTitle("Mr")
+            .withFirstName("Mark")
+            .withLastName("Smith")
+            .withGender(Gender.MALE)
+            .withUpdatedDate(clock.now())
+            .withDateOfBirth(LocalDate.of(1960, 1, 1))
+            .withAddress(new Address("address1", "address2", "address3", "address4", "address5", "postcode"));
+
+    @Captor
+    private ArgumentCaptor<CaseDetail> actualPersonalDetailsCaptor;
+
+    @Captor
+    private ArgumentCaptor<CaseSearchResult> actualSearchResultsCaptor;
+
+    @BeforeEach
+    public void setup() {
+        MockitoAnnotations.initMocks(this);
+    }
+
+    private DefendantDetailsUpdated defendantDetailsUpdated(final boolean updateByOnlinePlea, final boolean nationalInsuranceNumberSuppliedInRequest) {
+        //WHEN
+        defendantDetailsUpdatedBuilder = defendantDetailsUpdatedBuilder.withUpdateByOnlinePlea(updateByOnlinePlea);
+        if (updateByOnlinePlea) {
+            defendantDetailsUpdatedBuilder.withUpdatedDate(now);
+        }
+        if (nationalInsuranceNumberSuppliedInRequest) {
+            defendantDetailsUpdatedBuilder.withNationalInsuranceNumber("NH42 1568G");
+        }
+
+        final DefendantDetailsUpdated defendantDetailsUpdated = defendantDetailsUpdatedBuilder.build();
+        final UUID caseId = defendantDetailsUpdated.getCaseId();
+        when(caseRepository.findBy(caseId)).thenReturn(caseDetail);
+
+        caseDetail.getDefendant().setPersonalDetails(
+                new PersonalDetails(
+                        previousTitle, "Joe", "Blogs", LocalDate.of(1965, 8, 6),
+                        previousGender, previousNiNumber, null, null));
+
+        when(caseSearchResultRepository.findByCaseId(caseId)).thenReturn(Lists.newArrayList(buildCaseSearchResult(caseDetail)));
+
+        return defendantDetailsUpdated;
+    }
+
+    private DefendantDetailsUpdated defendantDriverDetailsUpdated(final boolean updateByOnlinePlea){
+        //WHEN
+        defendantDetailsUpdatedBuilder = defendantDetailsUpdatedBuilder.withUpdateByOnlinePlea(updateByOnlinePlea);
+        if (updateByOnlinePlea) {
+            defendantDetailsUpdatedBuilder.withUpdatedDate(now);
+        }
+        defendantDetailsUpdatedBuilder.withDriverNumber("MORGA753116SM9IJ");
+        defendantDetailsUpdatedBuilder.withDriverLicenceDetails("driver_licence_details");
+
+        final DefendantDetailsUpdated defendantDetailsUpdated = defendantDetailsUpdatedBuilder.build();
+        final UUID caseId = defendantDetailsUpdated.getCaseId();
+        when(caseRepository.findBy(caseId)).thenReturn(caseDetail);
+
+        caseDetail.getDefendant().setPersonalDetails(
+                new PersonalDetails(
+                        previousTitle, "Joe", "Blogs", LocalDate.of(1965, 8, 6),
+                        previousGender, previousNiNumber, null, null));
+
+        when(caseSearchResultRepository.findByCaseId(caseId)).thenReturn(Lists.newArrayList(buildCaseSearchResult(caseDetail)));
+
+        return defendantDetailsUpdated;
+    }
+
+    // FIXME commonAssertions to be refactored
+    private void commonAssertions(final DefendantDetailsUpdated defendantDetailsUpdated, final boolean updateByOnlinePlea, final boolean nationalInsuranceNumberSupplied) {
+        final PersonalDetails expectedPersonalDetails = buildPersonalDetails(defendantDetailsUpdated, updateByOnlinePlea, nationalInsuranceNumberSupplied);
+        final List<CaseSearchResult> expectedSearchResults = singletonList(buildCaseSearchResult(defendantDetailsUpdated));
+
+        final int expectedSaveInvocations = expectedSearchResults.size() + 1; // Save invocations + 1. Update each old case search entry and create a new one (+1)
+        verify(caseRepository).save(actualPersonalDetailsCaptor.capture());
+
+        verify(caseSearchResultRepository, times(expectedSaveInvocations)).save(actualSearchResultsCaptor.capture());
+
+        final DefendantDetail defendant = actualPersonalDetailsCaptor.getValue().getDefendant();
+        assertTrue(reflectionEquals(expectedPersonalDetails, defendant.getPersonalDetails(),
+                "contactDetails", "address"));
+        assertTrue(reflectionEquals(defendantDetailsUpdated.getContactDetails().getEmail(), defendant.getContactDetails().getEmail()));
+        assertTrue(reflectionEquals(defendantDetailsUpdated.getAddress().getAddress1(), "address1"));
+        assertTrue(reflectionEquals(defendantDetailsUpdated.getAddress().getPostcode(), "postcode"));
+
+        assertThat(actualSearchResultsCaptor.getAllValues(), hasSize(expectedSaveInvocations));
+        for (int i = 0; i < expectedSearchResults.size(); i++) {
+            final CaseSearchResult actualResult = actualSearchResultsCaptor.getAllValues().get(i);
+            final CaseSearchResult expectedResult = expectedSearchResults.get(i);
+            assertThat(actualResult.getCurrentFirstName(), equalTo(expectedResult.getCurrentFirstName()));
+            assertThat(actualResult.getCurrentLastName(), equalTo(expectedResult.getCurrentLastName()));
+            assertThat(actualResult.getDateOfBirth(), equalTo(expectedResult.getDateOfBirth()));
+            assertTrue(actualResult.isDeprecated());
+        }
+        final CaseSearchResult actualRecordAdded = actualSearchResultsCaptor.getAllValues().get(expectedSearchResults.size());
+        assertThat(actualRecordAdded.getFirstName(), equalTo(defendantDetailsUpdated.getFirstName()));
+        assertThat(actualRecordAdded.getCurrentFirstName(), equalTo(defendantDetailsUpdated.getFirstName()));
+        assertThat(actualRecordAdded.getLastName(), equalTo(defendantDetailsUpdated.getLastName()));
+        assertThat(actualRecordAdded.getCurrentLastName(), equalTo(defendantDetailsUpdated.getLastName()));
+        assertThat(actualRecordAdded.getDateOfBirth(), equalTo(defendantDetailsUpdated.getDateOfBirth()));
+        assertThat(actualRecordAdded.getCaseId(), equalTo(defendantDetailsUpdated.getCaseId()));
+        assertFalse(actualRecordAdded.isDeprecated());
+    }
+
+    @Test
+    public void shouldUpdateDefendantNationalInsuranceNumberUpdated() {
+        final DefendantsNationalInsuranceNumberUpdated event = new DefendantsNationalInsuranceNumberUpdated(
+                caseDetail.getId(),
+                caseDetail.getDefendant().getId(),
+                caseDetail.getDefendant().getPersonalDetails().getNationalInsuranceNumber()
+        );
+        final UUID caseId = event.getCaseId();
+
+        caseDetail.getDefendant().setPersonalDetails(
+                new PersonalDetails(
+                        previousTitle, "Joe", "Blogs", LocalDate.of(1965, 8, 6),
+                        previousGender, previousNiNumber, null, null));
+
+        when(caseRepository.findCaseDefendant(caseId)).thenReturn(caseDetail.getDefendant());
+
+        defendantUpdatedListener.defendantNationalInsuranceNumberUpdated(command(event));
+    }
+
+    @Test
+    public void shouldListenerUpdateDefendantNotUpdatedFromOnlinePlea() {
+        // GIVEN
+        final boolean updateByOnlinePlea = false;
+        final boolean nationalInsuranceNumberSuppliedInRequest = true;
+        final DefendantDetailsUpdated defendantDetailsUpdated = defendantDetailsUpdated(updateByOnlinePlea, nationalInsuranceNumberSuppliedInRequest);
+
+        // WHEN
+        defendantUpdatedListener.defendantDetailsUpdated(command(defendantDetailsUpdated));
+
+        // THEN
+        commonAssertions(defendantDetailsUpdated, updateByOnlinePlea, nationalInsuranceNumberSuppliedInRequest);
+    }
+
+    @Test
+    public void shouldListenerUpdateDefendantUpdatedFromOnlinePlea() {
+        // GIVEN
+        final boolean updateByOnlinePlea = true;
+        final boolean nationalInsuranceNumberSuppliedInRequest = true;
+        final DefendantDetailsUpdated defendantDetailsUpdated = defendantDetailsUpdated(true, true);
+
+        // WHEN
+        defendantUpdatedListener.defendantDetailsUpdated(command(defendantDetailsUpdated));
+
+        // THEN
+        commonAssertions(defendantDetailsUpdated, updateByOnlinePlea, nationalInsuranceNumberSuppliedInRequest);
+    }
+
+    @Test
+    public void shouldListenerUpdateDefendantUpdatedFromOnlinePleaWithoutNationalInsuranceNumber() {
+        // GIVEN
+        final boolean updateByOnlinePlea = true;
+        final boolean nationalInsuranceNumberSuppliedInRequest = false;
+        final DefendantDetailsUpdated defendantDetailsUpdated = defendantDetailsUpdated(updateByOnlinePlea, nationalInsuranceNumberSuppliedInRequest);
+        // WHEN
+        defendantUpdatedListener.defendantDetailsUpdated(command(defendantDetailsUpdated));
+
+        // THEN
+        commonAssertions(defendantDetailsUpdated, updateByOnlinePlea, nationalInsuranceNumberSuppliedInRequest);
+    }
+
+    @Test
+    public void shouldListenerUpdateDefendantUpdatedFromOnlinePleaWithDriverNumber() {
+        // GIVEN
+        final boolean updateByOnlinePlea = true;
+        final DefendantDetailsUpdated defendantDetailsUpdated = defendantDriverDetailsUpdated(updateByOnlinePlea);
+        // WHEN
+        defendantUpdatedListener.defendantDetailsUpdated(command(defendantDetailsUpdated));
+
+        // THEN
+        commonAssertions(defendantDetailsUpdated, updateByOnlinePlea, false);
+    }
+
+    private JsonEnvelope command(final DefendantsNationalInsuranceNumberUpdated defendantsNationalInsuranceNumberUpdated) {
+        return JsonEnvelope.envelopeFrom(
+                MetadataBuilderFactory.metadataWithRandomUUID("sjp.events.defendant-national-insurance-number-updated"),
+                objectToJsonObjectConverter.convert(defendantsNationalInsuranceNumberUpdated)
+        );
+    }
+
+    private JsonEnvelope command(final DefendantDetailsUpdated defendantDetailsUpdated) {
+        return JsonEnvelope.envelopeFrom(
+                MetadataBuilderFactory.metadataWithRandomUUID("sjp.events.defendant-details-updated"),
+                objectToJsonObjectConverter.convert(defendantDetailsUpdated)
+        );
+    }
+
+    private JsonEnvelope command(final PleadOnline pleadOnline) {
+        return JsonEnvelope.envelopeFrom(
+                MetadataBuilderFactory.metadataWithRandomUUID("sjp.events.online-plea-received"),
+                objectToJsonObjectConverter.convert(pleadOnline)
+        );
+    }
+
+    private PersonalDetails buildPersonalDetails(final DefendantDetailsUpdated defendantDetailsUpdated, final boolean updateByOnlinePlea, final boolean onlinePleaNiNumberSupplied) {
+        String title = defendantDetailsUpdated.getTitle();
+        Gender gender = defendantDetailsUpdated.getGender();
+        String nationalInsuranceNumber = defendantDetailsUpdated.getNationalInsuranceNumber();
+        if (updateByOnlinePlea) {
+            title = previousTitle;
+            gender = previousGender;
+        }
+        if (updateByOnlinePlea && !onlinePleaNiNumberSupplied) {
+            nationalInsuranceNumber = previousNiNumber;
+        }
+        return new PersonalDetails(title, defendantDetailsUpdated.getFirstName(),
+                defendantDetailsUpdated.getLastName(), defendantDetailsUpdated.getDateOfBirth(), gender,
+                nationalInsuranceNumber, defendantDetailsUpdated.getDriverNumber(), defendantDetailsUpdated.getDriverLicenceDetails());
+    }
+
+    private CaseSearchResult buildCaseSearchResult(final CaseDetail caseDetail) {
+        return new CaseSearchResult(
+                caseDetail.getId(),
+                caseDetail.getDefendant().getId(),
+                caseDetail.getDefendant().getPersonalDetails().getFirstName(),
+                caseDetail.getDefendant().getPersonalDetails().getLastName(),
+                caseDetail.getDefendant().getPersonalDetails().getDateOfBirth(),
+                clock.now(),null
+        );
+    }
+
+    private CaseSearchResult buildCaseSearchResult(final DefendantDetailsUpdated defendantDetailsUpdated) {
+        return new CaseSearchResult(
+                defendantDetailsUpdated.getCaseId(),
+                caseDetail.getDefendant().getId(),
+                defendantDetailsUpdated.getFirstName(),
+                defendantDetailsUpdated.getLastName(),
+                defendantDetailsUpdated.getDateOfBirth(),
+                clock.now(),null);
+    }
+
+    private Address buildAddress(){
+        return new Address(
+                "address1",
+                "address2",
+                "address3",
+                "address4",
+                "address5",
+                "postcode");
+
+    }
+    private ContactDetails buildContactDetails(){
+        return new ContactDetails(
+                "0207 886432",
+                "0207 886432",
+                "07563 489883",
+                "test@test.com",
+                null);
+    }
+}

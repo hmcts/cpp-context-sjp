@@ -1,0 +1,5 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://justice.gov.uk/json/schemas/domains/sjp/event/case-reserve-failed-as-already-completed.json",
+  "$ref": "http://justice.gov.uk/json/schemas/domains/sjp/events/case-reserve-failed-as-already-completed.json"
+}

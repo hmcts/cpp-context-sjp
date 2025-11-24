@@ -1,0 +1,45 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "type": "object",
+  "properties": {
+    "caseId": {
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+    },
+    "sessionId": {
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+    },
+    "decisionId": {
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+    },
+    "defendant" : {
+      "type": "object",
+      "properties": {
+        "court" : {
+          "type": "object",
+          "properties": {
+            "nationalCourtCode": {
+              "type": "string"
+            },
+            "nationalCourtName": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "nationalCourtCode",
+            "nationalCourtName"
+          ]
+        }
+      }
+    },
+    "savedBy": {
+      "$ref": "http://justice.gov.uk/json/schemas/domains/sjp/user.json"
+    }
+  },
+  "required": [
+    "caseId",
+    "decisionId",
+    "sessionId",
+    "savedBy"
+  ],
+  "additionalProperties": false
+}

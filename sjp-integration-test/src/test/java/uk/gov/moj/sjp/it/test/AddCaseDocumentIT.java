@@ -1,0 +1,247 @@
+package uk.gov.moj.sjp.it.test;
+
+import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
+import static java.util.UUID.randomUUID;
+import static org.apache.commons.lang3.RandomStringUtils.randomAlphanumeric;
+import static org.apache.commons.lang3.RandomUtils.nextInt;
+import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.notNullValue;
+import static uk.gov.justice.json.schemas.domains.sjp.User.user;
+import static uk.gov.moj.cpp.sjp.domain.SessionType.MAGISTRATE;
+import static uk.gov.moj.cpp.sjp.domain.disability.DisabilityNeeds.NO_DISABILITY_NEEDS;
+import static uk.gov.moj.sjp.it.command.CreateCase.createCaseForPayloadBuilder;
+import static uk.gov.moj.sjp.it.helper.AssignmentHelper.requestCaseAssignmentAndConfirm;
+import static uk.gov.moj.sjp.it.helper.CaseDocumentHelper.pollForCaseDocument;
+import static uk.gov.moj.sjp.it.helper.CaseHelper.pollUntilCaseReady;
+import static uk.gov.moj.sjp.it.helper.DecisionHelper.saveDecision;
+import static uk.gov.moj.sjp.it.helper.SessionHelper.startSessionAndConfirm;
+import static uk.gov.moj.sjp.it.model.ProsecutingAuthority.DVLA;
+import static uk.gov.moj.sjp.it.model.ProsecutingAuthority.TFL;
+import static uk.gov.moj.sjp.it.model.ProsecutingAuthority.TVL;
+import static uk.gov.moj.sjp.it.stub.MaterialStub.stubAddCaseMaterial;
+import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubAnyQueryOffences;
+import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubEnforcementAreaByPostcode;
+import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubReferralReason;
+import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubRegionByPostcode;
+import static uk.gov.moj.sjp.it.stub.UsersGroupsStub.stubForUserDetails;
+import static uk.gov.moj.sjp.it.stub.UsersGroupsStub.stubGroupForUser;
+import static uk.gov.moj.sjp.it.util.Defaults.DEFAULT_LONDON_COURT_HOUSE_OU_CODE;
+import static uk.gov.moj.sjp.it.util.SjpDatabaseCleaner.cleanViewStore;
+
+import uk.gov.justice.json.schemas.domains.sjp.User;
+import uk.gov.moj.cpp.sjp.domain.DefendantCourtInterpreter;
+import uk.gov.moj.cpp.sjp.domain.DefendantCourtOptions;
+import uk.gov.moj.cpp.sjp.domain.decision.OffenceDecisionInformation;
+import uk.gov.moj.cpp.sjp.domain.decision.ReferForCourtHearing;
+import uk.gov.moj.cpp.sjp.domain.verdict.VerdictType;
+import uk.gov.moj.sjp.it.command.CreateCase;
+import uk.gov.moj.sjp.it.helper.CaseDocumentHelper;
+import uk.gov.moj.sjp.it.helper.EventListener;
+import uk.gov.moj.sjp.it.model.DecisionCommand;
+import uk.gov.moj.sjp.it.model.ProsecutingAuthority;
+import uk.gov.moj.sjp.it.stub.MaterialStub;
+import uk.gov.moj.sjp.it.stub.ProgressionServiceStub;
+import uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub;
+import uk.gov.moj.sjp.it.stub.UsersGroupsStub;
+import uk.gov.moj.sjp.it.util.CaseAssignmentRestrictionHelper;
+
+import java.util.List;
+import java.util.UUID;
+
+import com.google.common.collect.Sets;
+import org.hamcrest.Matcher;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
+public class AddCaseDocumentIT extends BaseIntegrationTest {
+
+    private static final String PROSECUTING_AUTHORITY_ACCESS_ALL = "ALL";
+
+    private final UUID caseId = randomUUID();
+    private final UUID offenceId = randomUUID();
+    private final EventListener eventListener = new EventListener();
+    private CreateCase.CreateCasePayloadBuilder createCasePayloadBuilder;
+    private static final String DEFENDANT_REGION = "croydon";
+    private static final String NATIONAL_COURT_CODE = "1080";
+
+    @BeforeEach
+    public void setUp() {
+        createCasePayloadBuilder = CreateCase
+                .CreateCasePayloadBuilder
+                .withDefaults()
+                .withId(caseId)
+                .withOffenceId(offenceId);
+
+        stubEnforcementAreaByPostcode(createCasePayloadBuilder.getDefendantBuilder().getAddressBuilder().getPostcode(), NATIONAL_COURT_CODE, "Bedfordshire Magistrates' Court");
+        stubRegionByPostcode(NATIONAL_COURT_CODE, DEFENDANT_REGION);
+    }
+
+    @Test
+    public void addMultipleCaseDocumentOfSpecificTypeAndVerifySequence() {
+        createCase();
+
+        final UUID legalAdviserId = randomUUID();
+        stubGroupForUser(legalAdviserId, UsersGroupsStub.LEGAL_ADVISERS_GROUP);
+        stubForUserDetails(legalAdviserId, PROSECUTING_AUTHORITY_ACCESS_ALL);
+
+        stubAddCaseMaterial();
+
+        try (final CaseDocumentHelper caseDocumentHelper = new CaseDocumentHelper(caseId)) {
+            caseDocumentHelper.addCaseDocumentWithDocumentType(legalAdviserId, "OTHER-TravelCard");
+            caseDocumentHelper.addCaseDocumentWithDocumentType(legalAdviserId, "OTHER-TravelCard");
+
+            Matcher[] matchers = {
+                    withJsonPath("$.caseDocuments[0].documentNumber", is(1)),
+                    withJsonPath("$.caseDocuments[0].documentType", is("OTHER-TravelCard")),
+                    withJsonPath("$.caseDocuments[0].materialId", notNullValue()),
+                    withJsonPath("$.caseDocuments[1].documentNumber", is(2)),
+                    withJsonPath("$.caseDocuments[1].documentType", is("OTHER-TravelCard")),
+                    withJsonPath("$.caseDocuments[1].materialId", notNullValue())
+            };
+
+            pollForCaseDocument(caseId, legalAdviserId, matchers);
+        }
+    }
+
+    @Test
+    public void addCaseDocumentWithDocumentFileAndVerifyDocumentAdded() {
+        createCase();
+        stubAnyQueryOffences();
+
+        try (final CaseDocumentHelper caseDocumentHelper = new CaseDocumentHelper(caseId)) {
+            caseDocumentHelper.addCaseDocument();
+            caseDocumentHelper.verifyInPublicTopic();
+            caseDocumentHelper.assertDocumentAdded();
+            caseDocumentHelper.stubGetMetadata();
+            caseDocumentHelper.assertDocumentMetadataAvailable();
+        }
+    }
+
+    @Test
+    public void addOtherDocumentAndVerifyNotVisibleForTflUser() {
+        createCase();
+        final UUID tflUserId = randomUUID();
+        stubGroupForUser(tflUserId, UsersGroupsStub.SJP_PROSECUTORS_GROUP);
+        stubForUserDetails(tflUserId, ProsecutingAuthority.TFL);
+
+        final UUID courtAdminUserId = randomUUID();
+        stubGroupForUser(courtAdminUserId, UsersGroupsStub.COURT_ADMINISTRATORS_GROUP);
+        stubForUserDetails(courtAdminUserId, PROSECUTING_AUTHORITY_ACCESS_ALL);
+
+        try (CaseDocumentHelper caseDocumentHelper = new CaseDocumentHelper(caseId)) {
+            caseDocumentHelper.addCaseDocumentWithDocumentType(courtAdminUserId, "OTHER");
+            caseDocumentHelper.assertDocumentAdded(courtAdminUserId);
+            caseDocumentHelper.verifyDocumentNotVisibleForProsecutorWhenQueryingForCaseDocuments(tflUserId);
+            caseDocumentHelper.verifyDocumentNotVisibleForProsecutorWhenQueryingForACase(tflUserId);
+        }
+    }
+
+    @Test
+    public void shouldUploadCaseDocument() {
+        final String documentType = "PLEA";
+        createCase();
+        stubAddCaseMaterial();
+
+        try (final CaseDocumentHelper caseDocumentHelper = new CaseDocumentHelper(caseId)) {
+            caseDocumentHelper.uploadDocument(documentType);
+            final UUID documentId = caseDocumentHelper.verifyCaseDocumentUploadedEventRaised();
+            final UUID materialId = MaterialStub.processMaterialAddedCommand(documentId);
+            CaseDocumentHelper.assertDocumentAdded(USER_ID, caseId, materialId, documentId, documentType);
+        }
+    }
+
+    @Test
+    public void shouldUploadCaseDocumentApplication() {
+        final String documentType = "APPLICATION";
+        createCase();
+        stubAddCaseMaterial();
+
+        try (final CaseDocumentHelper caseDocumentHelper = new CaseDocumentHelper(caseId)) {
+            caseDocumentHelper.uploadDocument(documentType);
+            final UUID documentId = caseDocumentHelper.verifyCaseDocumentUploadedEventRaised();
+            final UUID materialId = MaterialStub.processMaterialAddedCommand(documentId);
+            CaseDocumentHelper.assertDocumentAdded(USER_ID, caseId, materialId, documentId, documentType);
+        }
+    }
+
+
+    @Test
+    public void addCaseDocumentRejectsWhenCaseIsInReferToCourtHearingStatus() throws Exception {
+        final UUID referralReasonId = randomUUID();
+        stubEnforcementAreaByPostcode(createCasePayloadBuilder.getDefendantBuilder().getAddressBuilder().getPostcode(), "1080", "Bedfordshire Magistrates' Court");
+        cleanViewStore();
+        createCaseAndWaitUntilReady();
+
+        final UUID sessionId = randomUUID();
+        final UUID prosecutorId = randomUUID();
+
+        final UUID hearingTypeId = randomUUID();
+        final String listingNotes = randomAlphanumeric(20);
+        final int estimatedHearingDuration = nextInt(1, 999);
+        final String hearingCode = "PLE";
+        final User legalAdviser = user()
+                .withUserId(USER_ID)
+                .withFirstName("John")
+                .withLastName("Smith")
+                .build();
+
+        ReferenceDataServiceStub.stubDefaultCourtByCourtHouseOUCodeQuery();
+        ReferenceDataServiceStub.stubReferralReasonsQuery(referralReasonId, hearingCode, "");
+        stubReferralReason(referralReasonId.toString(), "stub-data/referencedata.referral-reason.json");
+        ReferenceDataServiceStub.stubHearingTypesQuery(hearingTypeId.toString(), hearingCode, "");
+        final ProsecutingAuthority prosecutingAuthority = createCasePayloadBuilder.getProsecutingAuthority();
+        ReferenceDataServiceStub.stubProsecutorQuery(prosecutingAuthority.name(), prosecutingAuthority.getFullName(), prosecutorId);
+        ReferenceDataServiceStub.stubQueryOffencesByCode(createCasePayloadBuilder.getOffenceBuilder().getLibraOffenceCode());
+        ReferenceDataServiceStub.stubReferralDocumentMetadataQuery(randomUUID().toString(), "SJPN");
+
+        ProgressionServiceStub.stubReferCaseToCourtCommand();
+
+        CaseAssignmentRestrictionHelper.provisionCaseAssignmentRestrictions(Sets.newHashSet(TFL, TVL, DVLA));
+
+        startSessionAndConfirm(sessionId, USER_ID, DEFAULT_LONDON_COURT_HOUSE_OU_CODE, MAGISTRATE);
+        requestCaseAssignmentAndConfirm(sessionId, USER_ID, caseId);
+
+        final DefendantCourtOptions defendantCourtOptions = new DefendantCourtOptions(new DefendantCourtInterpreter("French", true), false, NO_DISABILITY_NEEDS);
+        final ReferForCourtHearing referForCourtHearing = new ReferForCourtHearing(null, List.of(new OffenceDecisionInformation(offenceId, VerdictType.PROVED_SJP)), referralReasonId, listingNotes, estimatedHearingDuration, defendantCourtOptions, null);
+
+        final DecisionCommand decision = new DecisionCommand(sessionId, createCasePayloadBuilder.getId(), null, legalAdviser, List.of(referForCourtHearing), null);
+
+
+        eventListener
+                .subscribe("public.events.hearing.hearing-resulted")
+                .run(() -> saveDecision(decision))
+                .popEvent("public.events.hearing.hearing-resulted");
+
+        try (final CaseDocumentHelper caseDocumentHelper = new CaseDocumentHelper(caseId)) {
+            caseDocumentHelper.uploadPleaCaseDocument();
+            caseDocumentHelper.verifyUploadRejectedInPublicTopic();
+        }
+    }
+
+    @Test
+    public void addsDocumentNumberToDuplicateDocumentTypes() {
+        createCase();
+
+        final UUID userId = randomUUID();
+        stubForUserDetails(userId, PROSECUTING_AUTHORITY_ACCESS_ALL);
+
+        try (final CaseDocumentHelper caseDocumentHelper = new CaseDocumentHelper(caseId)) {
+            caseDocumentHelper.addCaseDocument();
+            caseDocumentHelper.verifyInPublicTopic();
+            pollForCaseDocument(caseId, userId, new Matcher[]{
+                    withJsonPath("$.caseDocuments[0].documentNumber", is(1)),
+                    withJsonPath("$.caseDocuments[0].documentType", is("SJPN")),
+                    withJsonPath("$.caseDocuments[0].materialId", notNullValue())
+            });
+        }
+    }
+
+    private void createCase() {
+        createCaseForPayloadBuilder(createCasePayloadBuilder);
+    }
+
+    private void createCaseAndWaitUntilReady() {
+        createCase();
+        pollUntilCaseReady(caseId);
+    }
+}

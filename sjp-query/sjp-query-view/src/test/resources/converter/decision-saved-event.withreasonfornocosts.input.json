@@ -1,0 +1,53 @@
+{
+  "caseId": "${caseId}",
+  "sjpSessionId": "${sessionId}",
+  "decisionId": "${decisionId}",
+  "resultedOn": "${resultedOn}",
+  "financialImposition": {
+    "costsAndSurcharge": {
+      "costs": 0,
+      "reasonForNoCosts": "A simple reason",
+      "collectionOrderMode": true
+    },
+    "payment": {
+      "totalSum": 107.4,
+      "paymentType": "PAY_TO_COURT",
+      "reasonWhyNotAttachedOrDeducted": "No information from defendant",
+      "paymentTerms": {
+        "reserveTerms": false,
+        "lumpSum": {
+          "amount": 107.4,
+          "withinDays": 14
+        }
+      },
+      "fineTransferredTo": {
+        "nationalCourtCode": "2576",
+        "nationalCourtName": "South London Magistrates' Court"
+      }
+    }
+  },
+  "offenceDecisions": [
+    {
+      "type": "DISMISS",
+      "offenceDecisionInformation": [
+        {
+          "offenceId": "${offence1Id}",
+          "verdict": "FOUND_NOT_GUILTY"
+        }
+      ]
+    },
+    {
+      "type": "FINANCIAL_PENALTY",
+      "compensation": 15.3,
+      "fine": 40,
+      "backDuty": 1.0,
+      "excisePenalty": 2.0,
+      "offenceDecisionInformation": [
+        {
+          "offenceId": "${offence2Id}",
+          "verdict": "FOUND_GUILTY"
+        }
+      ]
+    }
+  ]
+}

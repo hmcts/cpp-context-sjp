@@ -1,0 +1,98 @@
+{
+  "resultDefinitions": [
+    {
+      "id": "5edd3a3a-8dc7-43e4-96c4-10fed16278ac",
+      "version": "2021-02-25T12:39:30.569Z",
+      "startDate": "2021-02-26",
+      "label": "Vehicle Excise Back Duty",
+      "shortCode": "RESULT_CODE",
+      "level": "O",
+      "rank": 40200,
+      "wordGroups": [
+        {
+          "wordGroup": [
+            "FVEBD"
+          ]
+        },
+        {
+          "wordGroup": [
+            "vehicle",
+            "back-duty",
+            "excise"
+          ]
+        }
+      ],
+      "prompts": [
+        {
+          "id": "f7c7c088-f88e-4c28-917c-78571517aca1",
+          "label": "Amount of back duty",
+          "welshLabel": "Swm yr ôl-doll",
+          "resultPromptRule": "mandatory",
+          "type": "CURR",
+          "sequence": 100,
+          "financial": "Y",
+          "reference": "AOBD",
+          "wordGroup": [
+            "Amount"
+          ],
+          "userGroups": [],
+          "min": "0",
+          "max": "999999999",
+          "courtExtract": "Y",
+          "jurisdiction": "B",
+          "hidden": false,
+          "nameEmail": false,
+          "associatedWithReferenceData": false
+        }
+      ],
+      "welshLabel": "Ôl-doll Ecséis Cerbyd",
+      "financial": "Y",
+      "unscheduled": false,
+      "adjournment": "N",
+      "category": "F",
+      "urgent": false,
+      "convicted": "Y",
+      "d20": false,
+      "resultDefinitionGroup": "Imposition",
+      "cjsCode": "3014",
+      "postHearingCustodyStatus": "A",
+      "terminatesOffenceProceedings": false,
+      "lifeDuration": false,
+      "rollUpPrompts": true,
+      "publishedForNows": false,
+      "publishedAsAPrompt": false,
+      "excludedFromResults": false,
+      "alwaysPublished": false,
+      "jurisdiction": "B",
+      "lCode": "FVEBD",
+      "resultDefinitionRules": [
+        {
+          "childResultDefinitionId": "9ea0d845-5096-44f6-9ce0-8ae801141eac",
+          "ruleType": "optional"
+        },
+        {
+          "childResultDefinitionId": "615313b5-0647-4d61-b7b8-6b36265d8929",
+          "ruleType": "optional"
+        },
+        {
+          "childResultDefinitionId": "4fdd9548-c521-48c9-baa3-1bd2f13a4fcc",
+          "ruleType": "oneOf"
+        },
+        {
+          "childResultDefinitionId": "bdb32555-8d55-4dc1-b4b6-580db5132496",
+          "ruleType": "oneOf"
+        },
+        {
+          "childResultDefinitionId": "f7dfefd2-64c6-11e8-adc0-fa7ae01bbebc",
+          "ruleType": "oneOf"
+        },
+        {
+          "childResultDefinitionId": "923f8b82-d4b5-4c9b-8b54-6d1ec8e16dd6",
+          "ruleType": "optional"
+        }
+      ],
+      "isAvailableForCourtExtract": true,
+      "isBooleanResult": false
+    }
+  ]
+}

@@ -1,0 +1,98 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://justice.gov.uk/json/schemas/domains/sjp/query/case-results.json",
+  "type": "object",
+  "properties": {
+    "caseId": {
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+    },
+    "accountDivisionCode": {
+      "type": "integer"
+    },
+    "enforcingCourtCode": {
+      "type": "integer"
+    },
+    "caseDecisions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "sjpSessionId": {
+            "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+          },
+          "resultedOn": {
+            "$ref": "http://justice.gov.uk/json/schemas/domains/sjp/temporal.json#/definitions/date-time"
+          },
+          "offences": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": ["string", "null"]
+                },
+                "provedSJP": {
+                  "type": ["boolean", "null"]
+                },
+                "preConviction": {
+                  "type": ["boolean", "null"]
+                },
+                "verdict": {
+                  "$ref": "http://cpp.moj.gov.uk/core/sjp/verdict/verdict-type.json"
+                },
+                "results": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "resultDefinitionId": {
+                        "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+                      },
+                      "prompts": {
+                        "type": "array",
+                        "items": {
+                          "type": "object",
+                          "properties": {
+                            "promptDefinitionId": {
+                              "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+                            },
+                            "value": {
+                              "type": "string"
+                            }
+                          },
+                          "required": [
+                            "promptDefinitionId",
+                            "value"
+                          ],
+                          "additionalProperties": false
+                        }
+                      }
+                    },
+                    "required": [
+                      "resultDefinitionId",
+                      "prompts"
+                    ]
+                  }
+                }
+              }
+            },
+            "additionalProperties": false,
+            "required": [
+              "results"
+            ]
+          }
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "resultedOn",
+        "offences"
+      ]
+    }
+  },
+  "additionalProperties": false,
+  "required": [
+    "caseId",
+    "caseDecisions"
+  ]
+}

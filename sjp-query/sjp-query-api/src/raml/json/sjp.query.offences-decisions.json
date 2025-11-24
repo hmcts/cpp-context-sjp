@@ -1,0 +1,6 @@
+{
+  "decisions": [
+    { "offenceNumber":  1, "pleaType":  "GUILTY", "decision":  "ADJOURN" },
+    { "offenceNumber":  2, "pleaType":  "NOT_GUILTY", "decision":  "WITHDRAW" }
+  ]
+}

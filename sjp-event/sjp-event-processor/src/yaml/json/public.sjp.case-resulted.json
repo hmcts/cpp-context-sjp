@@ -1,0 +1,310 @@
+{
+  "cases": [
+    {
+      "caseId": "9dcd02e3-34f3-4c89-b59d-f7377ded3108",
+      "defendants": [
+        {
+          "defendantId": "fad4071d-33ee-47ec-ab5f-579c1908fd31",
+          "offences": [
+            {
+              "baseOffenceDetails": {
+                "alcoholLevelAmount": null,
+                "alcoholLevelMethod": null,
+                "arrestDate": null,
+                "chargeDate": {
+                  "year": 2016,
+                  "month": "JANUARY",
+                  "chronology": {
+                    "calendarType": "iso8601",
+                    "id": "ISO"
+                  },
+                  "era": "CE",
+                  "dayOfMonth": 1,
+                  "dayOfWeek": "FRIDAY",
+                  "dayOfYear": 1,
+                  "leapYear": true,
+                  "monthValue": 1
+                },
+                "locationOfOffence": null,
+                "offenceCode": "PS00001",
+                "offenceDateCode": 4,
+                "offenceEndDate": null,
+                "offenceId": "4112f423-5a8b-4200-bae9-022165de4e75",
+                "offenceSequenceNumber": 1,
+                "offenceStartDate": {
+                  "year": 2016,
+                  "month": "JANUARY",
+                  "chronology": {
+                    "calendarType": "iso8601",
+                    "id": "ISO"
+                  },
+                  "era": "CE",
+                  "dayOfMonth": 1,
+                  "dayOfWeek": "FRIDAY",
+                  "dayOfYear": 1,
+                  "leapYear": true,
+                  "monthValue": 1
+                },
+                "offenceWording": "Committed some offence",
+                "vehicleCode": null,
+                "vehicleRegistrationMark": null
+              },
+              "convictingCourt": 2572,
+              "convictionDate": {
+                "offset": {
+                  "totalSeconds": 0,
+                  "id": "Z",
+                  "rules": {
+                    "transitions": [],
+                    "fixedOffset": true,
+                    "transitionRules": []
+                  }
+                },
+                "zone": {
+                  "id": "UTC",
+                  "rules": {
+                    "transitions": [],
+                    "fixedOffset": true,
+                    "transitionRules": []
+                  }
+                },
+                "hour": 10,
+                "minute": 32,
+                "nano": 69000000,
+                "second": 13,
+                "dayOfMonth": 28,
+                "dayOfWeek": "WEDNESDAY",
+                "dayOfYear": 302,
+                "month": "OCTOBER",
+                "monthValue": 10,
+                "year": 2020,
+                "chronology": {
+                  "calendarType": "iso8601",
+                  "id": "ISO"
+                }
+              },
+              "finding": null,
+              "initiatedDate": {
+                "offset": {
+                  "totalSeconds": 0,
+                  "id": "Z",
+                  "rules": {
+                    "transitions": [],
+                    "fixedOffset": true,
+                    "transitionRules": []
+                  }
+                },
+                "zone": {
+                  "id": "UTC",
+                  "rules": {
+                    "transitions": [],
+                    "fixedOffset": true,
+                    "transitionRules": []
+                  }
+                },
+                "hour": 0,
+                "minute": 0,
+                "nano": 0,
+                "second": 0,
+                "dayOfMonth": 1,
+                "dayOfWeek": "FRIDAY",
+                "dayOfYear": 1,
+                "month": "JANUARY",
+                "monthValue": 1,
+                "year": 2016,
+                "chronology": {
+                  "calendarType": "iso8601",
+                  "id": "ISO"
+                }
+              },
+              "modeOfTrial": 1,
+              "plea": {
+                "pleaDate": null,
+                "pleaMethod": null,
+                "pleaType": null
+              },
+              "results": [
+                {
+                  "id": "969f150c-cd05-46b0-9dd9-30891efcc766",
+                  "prompts": [
+                    {
+                      "id": "7cd1472f-2379-4f5b-9e67-98a43d86e122",
+                      "value": "10"
+                    }
+                  ]
+                },
+                {
+                  "id": "29e02fa1-42ce-4eec-914e-e62508397a16",
+                  "prompts": [
+                    {
+                      "id": "e263de82-47ca-433a-bb41-cad2e1c5bb72",
+                      "value": "No compensation needed"
+                    }
+                  ]
+                },
+                {
+                  "id": "76d43772-0660-4a33-b5c6-8f8ccaf6b4e3",
+                  "prompts": [
+                    {
+                      "id": "db261fd9-c6bb-4e10-b93f-9fd98418f7b0",
+                      "value": "40"
+                    }
+                  ]
+                },
+                {
+                  "id": "e866cd11-6073-4fdf-a229-51c9d694e1d0",
+                  "prompts": [
+                    {
+                      "id": "629a971e-9d7a-4526-838d-0a4cb922b5cb",
+                      "value": "100"
+                    }
+                  ]
+                },
+                {
+                  "id": "272d1ec2-634b-11e8-adc0-fa7ae01bbebc",
+                  "prompts": [
+                    {
+                      "id": "11ba492a-e2ad-11e8-9f32-f2801f1b9fd1",
+                      "value": "370"
+                    },
+                    {
+                      "id": "1393acda-7a35-4d65-859d-6298e1470cf1",
+                      "value": "30"
+                    },
+                    {
+                      "id": "e091af2e-43d0-495d-b3b0-432010358a45",
+                      "value": "23 Jul 2019"
+                    },
+                    {
+                      "id": "fb4f761c-29d0-4a8e-a947-3debf281dab0",
+                      "value": "weekly"
+                    }
+                  ]
+                }
+              ]
+            }
+          ],
+          "parentGuardianDetails": null,
+          "prosecutorReference": "0800NP0100000000001H",
+          "individualDefendant": {
+            "bailConditions": null,
+            "bailStatus": "A",
+            "basePersonDetails": {
+              "address": {
+                "address1": "14 Tottenham Court Road",
+                "address2": "London",
+                "address3": "England",
+                "address4": "UK",
+                "address5": "Greater London",
+                "postcode": "W1T 1JY"
+              },
+              "birthDate": {
+                "offset": {
+                  "totalSeconds": 0,
+                  "id": "Z",
+                  "rules": {
+                    "transitions": [],
+                    "fixedOffset": true,
+                    "transitionRules": []
+                  }
+                },
+                "zone": {
+                  "id": "UTC",
+                  "rules": {
+                    "transitions": [],
+                    "fixedOffset": true,
+                    "transitionRules": []
+                  }
+                },
+                "hour": 0,
+                "minute": 0,
+                "nano": 0,
+                "second": 0,
+                "dayOfMonth": 15,
+                "dayOfWeek": "TUESDAY",
+                "dayOfYear": 197,
+                "month": "JULY",
+                "monthValue": 7,
+                "year": 1980,
+                "chronology": {
+                  "calendarType": "iso8601",
+                  "id": "ISO"
+                }
+              },
+              "emailAddress1": "email@email.com",
+              "emailAddress2": null,
+              "firstName": "David",
+              "gender": "MALE",
+              "lastName": "LLOYD",
+              "personTitle": "Mr",
+              "telephoneNumberBusiness": null,
+              "telephoneNumberHome": "02087654321",
+              "telephoneNumberMobile": "07123456789"
+            },
+            "personStatedNationality": "0",
+            "pncIdentifier": null,
+            "presentAtHearing": false,
+            "reasonForBailConditionsOrCustody": null
+          },
+          "corporateDefendant": null
+        }
+      ],
+      "prosecutionAuthorityCode": "TFL",
+      "urn": "TFL801410488"
+    }
+  ],
+  "session": {
+    "dateAndTimeOfSession": {
+      "offset": {
+        "totalSeconds": 0,
+        "id": "Z",
+        "rules": {
+          "transitions": [],
+          "fixedOffset": true,
+          "transitionRules": []
+        }
+      },
+      "zone": {
+        "totalSeconds": 0,
+        "id": "Z",
+        "rules": {
+          "transitions": [],
+          "fixedOffset": true,
+          "transitionRules": []
+        }
+      },
+      "hour": 10,
+      "minute": 32,
+      "nano": 668000000,
+      "second": 10,
+      "dayOfMonth": 28,
+      "dayOfWeek": "WEDNESDAY",
+      "dayOfYear": 302,
+      "month": "OCTOBER",
+      "monthValue": 10,
+      "year": 2020,
+      "chronology": {
+        "calendarType": "iso8601",
+        "id": "ISO"
+      }
+    },
+    "ouCode": "B01OK",
+    "sessionId": "64f96b50-1ed6-4389-9ea8-1ccac10d1fae",
+    "sessionLocation": {
+      "address": {
+        "address1": "176a Lavender Hill",
+        "address2": "London",
+        "address3": "address line 3",
+        "address4": "address line 4",
+        "address5": "address line 5",
+        "postcode": "SW11 1JU"
+      },
+      "courtHouseCode": "B01OK",
+      "courtId": "f8254db1-1683-483e-afb3-b87fde5a0a26",
+      "lja": "2572",
+      "name": "court house name",
+      "roomId": null,
+      "roomName": "00"
+    }
+  }
+}

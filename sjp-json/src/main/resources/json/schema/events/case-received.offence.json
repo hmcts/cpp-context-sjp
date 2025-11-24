@@ -1,0 +1,86 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://justice.gov.uk/json/schemas/domains/sjp/events/case-received.offence.json",
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": "string"
+    },
+    "offenceSequenceNo": {
+      "type": "integer"
+    },
+    "libraOffenceCode": {
+      "type": "string"
+    },
+    "chargeDate": {
+      "type": "string"
+    },
+    "libraOffenceDateCode": {
+      "type": "integer"
+    },
+    "offenceCommittedDate": {
+      "type": "string"
+    },
+    "offenceWording": {
+      "type": "string"
+    },
+    "offenceWordingWelsh": {
+      "type": "string"
+    },
+    "prosecutionFacts": {
+      "type": "string"
+    },
+    "backDuty": {
+      "type": "number"
+    },
+    "backDutyDateFrom": {
+      "$ref": "http://justice.gov.uk/json/schemas/domains/sjp/temporal.json#/definitions/date"
+    },
+    "backDutyDateTo": {
+      "$ref": "http://justice.gov.uk/json/schemas/domains/sjp/temporal.json#/definitions/date"
+    },
+    "vehicleMake": {
+      "type": "string"
+    },
+    "vehicleRegistrationMark": {
+      "type": "string"
+    },
+    "witnessStatement": {
+      "type": "string"
+    },
+    "compensation": {
+      "type": "number"
+    },
+    "endorsable": {
+      "type": "boolean"
+    },
+    "pressRestrictable" : {
+      "type": "boolean"
+    },
+    "offenceTitle": {
+      "type": "string"
+    },
+    "offenceTitleWelsh": {
+      "type": "string"
+    },
+    "prosecutorOfferAOCP" : {
+      "type": "boolean"
+    },
+    "isEligibleAOCP": {
+      "type": "boolean"
+    },
+    "aocpStandardPenaltyAmount": {
+      "type": "number"
+    }
+  },
+  "required": [
+    "id",
+    "offenceSequenceNo",
+    "libraOffenceCode",
+    "chargeDate",
+    "libraOffenceDateCode",
+    "offenceCommittedDate",
+    "offenceWording"
+  ],
+  "additionalProperties": false
+}

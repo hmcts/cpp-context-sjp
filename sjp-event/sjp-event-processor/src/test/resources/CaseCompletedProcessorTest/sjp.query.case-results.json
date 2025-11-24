@@ -1,0 +1,23 @@
+{
+  "caseId": "dd7f8562-6e2c-4472-a102-66d16202f295",
+  "accountDivisionCode": 1111,
+  "enforcingCourtCode": 2222,
+  "caseDecisions": [
+    {
+      "sjpSessionId": "be409a8f-40a9-438f-bb6b-e79ce8f21b61",
+      "resultedOn": "2021-02-01T21:19:44.054Z[UTC]",
+      "offences": [
+        {
+          "id": "f5994dce-df4f-4423-a16e-b8ee6e7ea460",
+          "verdict": "FOUND_NOT_GUILTY",
+          "results": [
+            {
+              "resultDefinitionId": "14d66587-8fbe-424f-a369-b1144f1684e3",
+              "prompts": []
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

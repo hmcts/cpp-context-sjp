@@ -1,0 +1,91 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://justice.gov.uk/json/schemas/domains/sjp/commands/defendant.json",
+  "type": "object",
+  "properties": {
+    "id": {
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+    },
+    "title": {
+      "type": "string",
+      "maxLength": 35
+    },
+    "firstName": {
+      "type": "string"
+    },
+    "lastName": {
+      "type": "string"
+    },
+    "legalEntityName": {
+      "type": "string"
+    },
+    "dateOfBirth": {
+      "type": "string"
+    },
+    "gender": {
+      "$ref": "http://justice.gov.uk/json/schemas/domains/sjp/gender.json"
+    },
+    "numPreviousConvictions": {
+      "type": "integer"
+    },
+    "driverNumber": {
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/dvlaDriverLicence"
+    },
+    "driverLicenceDetails": {
+      "type": "string"
+    },
+    "hearingLanguage": {
+      "$ref": "http://justice.gov.uk/json/schemas/domains/sjp/language.json"
+    },
+    "languageNeeds": {
+      "type": "string"
+    },
+    "nationalInsuranceNumber": {
+      "$ref": "http://justice.gov.uk/json/schemas/domains/sjp/national-insurance-number.json"
+    },
+    "address": {
+      "$ref": "http://justice.gov.uk/json/schemas/domains/sjp/address.json"
+    },
+    "contactDetails": {
+      "$ref": "http://justice.gov.uk/json/schemas/domains/sjp/contact-details.json"
+    },
+    "initiationCode": {
+      "$ref": "http://justice.gov.uk/core/courts/initiationCode.json"
+    },
+    "offences": {
+      "type": "array",
+      "items": {
+        "$ref": "http://justice.gov.uk/json/schemas/domains/sjp/commands/offence.json"
+      }
+    },
+    "region": {
+      "type": "string"
+    },
+    "asn": {
+      "type": "string",
+      "maxLength": 20
+    },
+    "pncIdentifier": {
+      "type": "string"
+    },
+    "pcqId" : {
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+    }
+  },
+  "additionalProperties": false,
+  "anyOf": [
+    {
+      "required": [
+        "firstName",
+        "lastName",
+        "address"
+      ]
+    },
+    {
+      "required": [
+        "legalEntityName",
+        "address"
+      ]
+    }
+  ]
+}

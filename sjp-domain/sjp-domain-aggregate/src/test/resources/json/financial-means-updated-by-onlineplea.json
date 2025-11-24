@@ -1,0 +1,44 @@
+{
+  "_metadata": {
+    "name": "sjp.events.financial-means-updated"
+  },
+  "defendantId": "50770ba9-37ea-4713-8cab-fe5bf1202716",
+  "income": {
+    "frequency": "MONTHLY",
+    "amount": 200.25
+  },
+  "benefits": {
+    "type": "jobseekers allowance",
+    "claimed": true,
+    "deductPenaltyPreference": false
+  },
+  "employmentStatus": "EMPLOYED",
+  "outgoings": [
+    {
+      "description": "Accommodation",
+      "amount": 500.3
+    },
+    {
+      "description": "Council Tax",
+      "amount": 120.5
+    },
+    {
+      "description": "Household bills",
+      "amount": 50.8
+    },
+    {
+      "description": "Travel expenses",
+      "amount": 100.1
+    },
+    {
+      "description": "Child maintenance",
+      "amount": 500.2
+    },
+    {
+      "description": "Other",
+      "amount": 500.4
+    }
+  ],
+  "updatedByOnlinePlea": true,
+  "updatedDate": "2012-02-22T02:06:58.147Z"
+}

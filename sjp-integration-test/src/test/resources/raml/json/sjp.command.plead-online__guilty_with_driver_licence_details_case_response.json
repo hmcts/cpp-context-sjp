@@ -1,0 +1,91 @@
+{
+  "urn": "${urn}",
+  "prosecutingAuthority": "TFL",
+  "policeFlag": false,
+  "costs": 1.23,
+  "postConviction": false,
+  "dateTimeCreated": "${dateTimeCreated}",
+  "prosecutingAuthorityName": "Transport for London",
+  "defendant": {
+    "offences": [
+      {
+        "sequenceNumber": 1,
+        "prosecutionFacts": "No ticket at the gates, forgery",
+        "offenceCode": "PS00001",
+        "cjsCode": "PS00001",
+        "pleaMethod": "ONLINE",
+        "pendingWithdrawal": false,
+        "hasFinalDecision": false,
+        "pleaDate": "${pleaDate}",
+        "compensation": 2.34,
+        "id": "${offenceId}",
+        "backDutyOffence": false,
+        "penaltyType": "",
+        "notInEffect": true,
+        "sentencing": "",
+        "maxFineLevel": "S",
+        "plea": "GUILTY",
+        "offenceSequenceNumber": 1,
+        "wording": "Committed some offence",
+        "chargeDate": "2016-01-01",
+        "startDate": "2016-01-01",
+        "title": "Postal service - convey a letter without a licence",
+        "legislation": "Contrary to section 6(2) of the Postal Services Act 2000.",
+        "backDuty": 340.3,
+        "backDutyDateTo": "2015-05-30",
+        "backDutyDateFrom": "2015-04-30",
+        "vehicleMake": "Ford",
+        "vehicleRegistrationMark": "FG59 4FD",
+        "outOfTime": false,
+        "imprisonable": true,
+        "endorsable": false
+      }
+    ],
+    "caseId": "${caseId}",
+    "numPreviousConvictions": 2,
+    "personalDetails": {
+      "driverNumber": "MORGA753116SM9IJ",
+      "firstName": "Testy",
+      "lastName": "Testerson",
+      "address": {
+        "address1": "14 Tottenham Court Road",
+        "address2": "London",
+        "address3": "England",
+        "address4": "UK",
+        "address5": "Greater London",
+        "postcode": "W1T 1JY"
+      },
+      "gender": "Male",
+      "nationalInsuranceNumber": "AB123456A",
+      "dateOfBirth": "1990-09-09",
+      "title": "Mr",
+      "contactDetails": {
+        "mobile": "07890123123",
+        "email": "criminal@gmail.com",
+        "home": "0208000888"
+      },
+      "dobChanged": true,
+      "driverLicenceDetails": "Spanish driver Licence with number AAA896745",
+      "addressChanged": false,
+      "nameChanged": true
+    },
+    "interpreter": {
+      "needed": false
+    },
+    "id": "${defendantId}",
+    "speakWelsh": false
+  },
+  "caseDocuments": [
+  ],
+  "caseDecisions": [
+  ],
+  "listedInCriminalCourts": false,
+  "postConviction": false,
+  "assigned": false,
+  "id": "${caseId}",
+  "completed": false,
+  "postingDate": "2015-12-02",
+  "enterpriseId": "${enterpriseId}",
+  "onlinePleaReceived": true,
+  "status": "${caseStatus}"
+}

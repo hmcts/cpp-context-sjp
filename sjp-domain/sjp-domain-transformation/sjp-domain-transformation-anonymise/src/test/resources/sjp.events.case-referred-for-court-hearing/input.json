@@ -1,0 +1,19 @@
+{
+  "caseId": "c3baa19b-6660-4b78-bfad-7aa92694302b",
+  "referredOffences": [
+    {
+      "offenceId": "6b11003d-5db3-4864-bc54-3d1ba3cb6fba",
+      "verdict": "NO_VERDICT"
+    },
+    {
+      "offenceId": "bc2158d5-7b40-45e0-8974-bb25bbb375f7",
+      "verdict": "NO_VERDICT"
+    }
+  ],
+  "estimatedHearingDuration": 20,
+  "referralReasonId": "d10c5cc4-ec2a-41ac-bd6e-a3659c5cfeb1",
+  "referredAt": "2020-01-08T15:10:21.032Z",
+  "decisionId": "f8573955-48fa-4742-b8d8-0353a4ee0b89",
+  "listingNotes": "My notes",
+  "urn": "TFL36757727LX"
+}

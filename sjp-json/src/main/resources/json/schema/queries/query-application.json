@@ -1,0 +1,40 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://justice.gov.uk/json/schemas/domains/sjp/queries/application.json",
+  "type": "object",
+  "properties": {
+    "applicationId": {
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+    },
+    "parentApplicationId": {
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+    },
+    "applicationReference": {
+      "type": "string"
+    },
+    "applicationStatus": {
+      "$ref": "http://justice.gov.uk/json/schemas/domains/sjp/application-status.json"
+    },
+    "typeCode": {
+      "type": "string"
+    },
+    "typeId": {
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+    },
+    "applicationType": {
+      "$ref": "http://justice.gov.uk/json/schemas/domains/sjp/application-type.json"
+    },
+    "dateReceived": {
+      "$ref": "http://justice.gov.uk/json/schemas/domains/sjp/temporal.json#/definitions/date"
+    },
+    "outOfTimeReason": {
+      "type": "string"
+    },
+    "outOfTime": {
+      "type": "boolean"
+    },
+    "applicationDecision": {
+     "$ref": "http://justice.gov.uk/json/schemas/domains/sjp/queries/query-application-decision.json"
+    }
+  }
+}

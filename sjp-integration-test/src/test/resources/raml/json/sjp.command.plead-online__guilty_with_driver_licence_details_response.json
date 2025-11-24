@@ -1,0 +1,72 @@
+{
+  "onlinePleaDetails": [
+    {
+      "offenceId": "${offenceId}",
+      "mitigation": "I was drunk at the time",
+      "offenceTitle": "Postal service - convey a letter without a licence",
+      "caseId": "${caseId}",
+      "id": "${onlinePleaDetailId}",
+      "defendantId": "${defendantId}",
+      "plea": "GUILTY"
+    }
+  ],
+  "caseId": "${caseId}",
+  "pleaDetails": {
+    "comeToCourt": false,
+    "speakWelsh": false,
+    "outstandingFines": false,
+    "interpreterRequired": false
+  },
+  "submittedOn": "${submittedOn}",
+  "personalDetails": {
+    "firstName": "Testy",
+    "lastName": "Testerson",
+    "address": {
+      "address3": "England",
+      "address2": "London",
+      "address1": "14 Tottenham Court Road",
+      "postcode": "W1T 1JY",
+      "address5": "Greater London",
+      "address4": "UK"
+    },
+    "nationalInsuranceNumber": "AB123456A",
+    "mobile": "07890123123",
+    "dateOfBirth": "1990-09-09",
+    "homeTelephone": "0208000888",
+    "email": "criminal@gmail.com",
+    "driverNumber" : "MORGA753116SM9IJ",
+    "driverLicenceDetails" : "Spanish driver Licence with number AAA896745"
+  },
+  "employer": {
+    "address": {
+      "address1": "18 Tottenham Court Road",
+      "address2": "London",
+      "address3": "England",
+      "address4": "UK",
+      "address5": "Greater London",
+      "postcode": "W1T 1JY"
+    },
+    "employeeReference": "12345",
+    "phone": "020 7998 0007",
+    "name": "Pret a manger"
+  },
+  "defendantId": "${defendantId}",
+  "employment": {
+    "benefitsClaimed": true,
+    "incomePaymentAmount": 200.25,
+    "incomePaymentFrequency": "MONTHLY",
+    "benefitsDeductPenaltyPreference": false,
+    "benefitsType": "jobseekers allowance",
+    "employmentStatus": "EMPLOYED"
+  },
+  "outgoings": {
+    "childMaintenanceAmount": 500.2,
+    "councilTaxAmount": 120.5,
+    "accommodationAmount": 500.3,
+    "otherAmount": 500.4,
+    "travelExpensesAmount": 100.1,
+    "householdBillsAmount": 50.8,
+    "monthlyAmount": 1772.3,
+    "otherDescription": "Other"
+  }
+}

@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+         http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.3.xsd">
+
+    <changeSet id="75" author="team/ATCM/cesar.zapata"
+               logicalFilePath="liquibase/sjp-view-store-db-changelog.xml">
+
+        <createTable tableName="notification_of_endorsement_status">
+
+            <column name="application_decision_id" type="uuid">
+                <constraints primaryKey="true"/>
+            </column>
+
+            <column name="file_id" type="uuid">
+                <constraints nullable="true"/>
+            </column>
+
+            <column name="status" type="text">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="updated" type="timestamp without time zone">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
+        <createIndex tableName="notification_of_endorsement_status"
+                     indexName="notification_of_endorsement_status_application_decision_id_idx">
+            <column name="application_decision_id" type="uuid"/>
+        </createIndex>
+
+        <rollback>
+            <dropIndex tableName="notification_of_endorsement_status"
+                       indexName="notification_of_endorsement_status_application_decision_id_idx"/>
+            <dropTable tableName="notification_of_endorsement_status"/>
+        </rollback>
+
+    </changeSet>
+
+</databaseChangeLog>

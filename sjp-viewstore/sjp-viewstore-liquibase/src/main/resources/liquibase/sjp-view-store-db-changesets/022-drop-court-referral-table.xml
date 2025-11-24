@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+         http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.3.xsd">
+
+    <changeSet id="22" author="ATCM/mojo" logicalFilePath="liquibase/sjp-view-store-db-changelog.xml">
+
+        <dropTable tableName="court_referral"/>
+
+        <rollback>
+            <createTable tableName="court_referral">
+                <column name="case_id" type="uuid">
+                    <constraints primaryKey="true"/>
+                </column>
+                <column name="hearing_date" type="date"/>
+                <column name="actioned" type="datetime"/>
+            </createTable>
+
+            <createIndex tableName="court_referral" indexName="court_referral_actioned_hearing_date_idx">
+                <column name="actioned" type="datetime"/>
+                <column name="hearing_date" type="date"/>
+            </createIndex>
+        </rollback>
+
+    </changeSet>
+
+</databaseChangeLog>

@@ -15,3 +15,6 @@ description = "Identify banned IDs"
 regex = '''${GITLEAKS_REGEX_BANNED_IDS}'''
 tags = ["banned-ids"]
 
+regexes = [
+    '''(?i).*referencedata\.query\.local*'''
+]

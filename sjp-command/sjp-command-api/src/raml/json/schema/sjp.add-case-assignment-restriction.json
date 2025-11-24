@@ -17,6 +17,12 @@
       "items": {
         "type": "string"
       }
+    },
+    "validFrom": {
+      "$ref": "#/definitions/isoDate"
+    },
+    "validTo": {
+      "$ref": "#/definitions/isoDate"
     }
   },
   "required": [
@@ -24,5 +30,11 @@
     "includeOnly",
     "exclude"
   ],
+  "definitions": {
+    "isoDate": {
+      "type": "string",
+      "pattern": "^\\d{4}-[01]\\d-[0-3]\\d$"
+    }
+  },
   "additionalProperties": false
 }

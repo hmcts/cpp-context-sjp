@@ -92,12 +92,16 @@ public class CaseAssignmentRestrictionHandlerTest {
     @Test
     public void shouldHandleAddCaseAssignmentRestriction() throws EventStreamException {
 
-        final CaseAssignmentRestrictionAdded caseAssignmentRestrictionAdded = new CaseAssignmentRestrictionAdded(DATE_TIME_CREATED.toString(), EXCLUDE, INCLUDE_ONLY, PROSECUTING_AUTHORITY);
+        final CaseAssignmentRestrictionAdded caseAssignmentRestrictionAdded = new CaseAssignmentRestrictionAdded(DATE_TIME_CREATED.toString(), EXCLUDE, INCLUDE_ONLY, PROSECUTING_AUTHORITY,
+                DATE_TIME_CREATED.toLocalDate().toString(), DATE_TIME_CREATED.toLocalDate().toString());
         when(eventSource.getStreamById(CaseAssignmentRestrictionHandler.CASE_ASSIGNMENT_RESTRICTION_STREAM_ID)).thenReturn(eventStream);
         when(aggregateService.get(eventStream, CaseAssignmentRestrictionAggregate.class)).thenReturn(caseAssignmentRestrictionAggregate);
-        when(caseAssignmentRestrictionAggregate.updateCaseAssignmentRestriction(PROSECUTING_AUTHORITY, INCLUDE_ONLY, EXCLUDE, DATE_TIME_CREATED.toString())).thenReturn(Stream.of(caseAssignmentRestrictionAdded));
+        when(caseAssignmentRestrictionAggregate.updateCaseAssignmentRestriction(PROSECUTING_AUTHORITY, INCLUDE_ONLY, EXCLUDE, DATE_TIME_CREATED.toString(), DATE_TIME_CREATED.toLocalDate().toString(),
+                DATE_TIME_CREATED.toLocalDate().toString()))
+                .thenReturn(Stream.of(caseAssignmentRestrictionAdded));
         when(clock.now()).thenReturn(DATE_TIME_CREATED);
-        final AddCaseAssignmentRestriction payload = new AddCaseAssignmentRestriction(EXCLUDE, INCLUDE_ONLY, PROSECUTING_AUTHORITY);
+        final AddCaseAssignmentRestriction payload = new AddCaseAssignmentRestriction(EXCLUDE, INCLUDE_ONLY, PROSECUTING_AUTHORITY,
+                DATE_TIME_CREATED.toLocalDate().toString(), DATE_TIME_CREATED.toLocalDate().toString());
         final Envelope<AddCaseAssignmentRestriction> addCaseAssignmentRestrictionCommand = envelopeFrom(metadataWithRandomUUID("sjp.command.add-case-assignment-restriction"), payload);
         caseAssignmentRestrictionHandler.addCaseAssignmentRestriction(addCaseAssignmentRestrictionCommand);
 
@@ -110,6 +114,8 @@ public class CaseAssignmentRestrictionHandlerTest {
                         payloadIsJson(allOf(
                                 withJsonPath("$.prosecutingAuthority", equalTo(PROSECUTING_AUTHORITY)),
                                 withJsonPath("$.dateTimeCreated", equalTo("2021-02-23T19:02:12Z")),
+                                withJsonPath("$.validFrom", equalTo("2021-02-23")),
+                                withJsonPath("$.validTo", equalTo("2021-02-23")),
                                 withJsonPath("$.exclude[0]", equalTo("9876")),
                                 withJsonPath("$.includeOnly[0]", equalTo("1234"))))))));
     }

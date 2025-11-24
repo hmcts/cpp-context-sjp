@@ -20,7 +20,6 @@ public class VerdictService {
                 return calculateVerdictForAdjourn(pleaType, convictionType);
             case WITHDRAW:
             case SET_ASIDE:
-            case OATS:
                 return NO_VERDICT;
             case REFER_FOR_COURT_HEARING:
                 return calculateVerdictForReferToCourtDecision(pleaType);

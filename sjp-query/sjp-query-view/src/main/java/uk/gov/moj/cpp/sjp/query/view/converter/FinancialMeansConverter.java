@@ -24,7 +24,13 @@ public class FinancialMeansConverter {
             else {
                 income = null;
             }
-            final Benefits benefit = new Benefits(entity.getBenefitsClaimed(), entity.getBenefitsType(), null);
+            final Benefits benefit;
+            if (nonNull(entity.getBenefitsClaimed()) &&  nonNull(entity.getBenefitsType())) {
+                benefit = new Benefits(entity.getBenefitsClaimed(), entity.getBenefitsType(), null);
+            }
+            else {
+                benefit = null;
+            }
 
             return new uk.gov.moj.cpp.sjp.domain.FinancialMeans(entity.getDefendantId(), income, benefit, entity.getEmploymentStatus(), null, null, null, null);
         }

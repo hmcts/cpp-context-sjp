@@ -73,7 +73,6 @@ import static uk.gov.moj.sjp.it.verifier.PersonInfoVerifier.personInfoVerifierFo
 
 import uk.gov.justice.json.schemas.domains.sjp.Gender;
 import uk.gov.justice.json.schemas.domains.sjp.User;
-import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
 import uk.gov.moj.cpp.sjp.domain.DefendantCourtInterpreter;
 import uk.gov.moj.cpp.sjp.domain.DefendantCourtOptions;
 import uk.gov.moj.cpp.sjp.domain.decision.OffenceDecisionInformation;
@@ -165,8 +164,6 @@ public class PleadOnlineIT extends BaseIntegrationTest {
             .withLastName("Smith")
             .build();
 
-    final StringToJsonObjectConverter stringToJsonObjectConverter = new StringToJsonObjectConverter();
-
     @BeforeEach
     @SuppressWarnings("squid:S2925")
     public void setUp() throws Exception {
@@ -199,94 +196,6 @@ public class PleadOnlineIT extends BaseIntegrationTest {
         }
         if (null != financialMeansHelper) {
             financialMeansHelper.close();
-        }
-    }
-
-    @Test
-    public void shouldPleadOnlineMultiOffencesWithPublicEvent() throws IOException {
-        final UUID offenceId1 = randomUUID();
-        final UUID offenceId2 = randomUUID();
-        final UUID offenceId3 = randomUUID();
-        final PleaType pleaType1 = GUILTY;
-        final PleaType pleaType2 = NOT_GUILTY;
-        final PleaType pleaType3 = GUILTY;
-        final UUID caseId = randomUUID();
-        final CreateCase.DefendantBuilder defendantBuilder = CreateCase.DefendantBuilder.withDefaults();
-        final LocalDate postingDate = now().minusDays(NOTICE_PERIOD_IN_DAYS + 1);
-        this.createCasePayloadBuilder = createCase(caseId, defendantBuilder, offenceId1, offenceId2, offenceId3, postingDate);
-        try (final PleadOnlineHelper pleadOnlineHelper = new PleadOnlineHelper(caseId, defendantBuilder.getId())) {
-            final Map<String, String> values = new HashMap<>();
-            values.put("offenceId1", offenceId1.toString());
-            values.put("offenceId2", offenceId2.toString());
-            values.put("offenceId3", offenceId3.toString());
-            values.put("plea1", pleaType1.name());
-            values.put("plea2", pleaType2.name());
-            values.put("plea3", pleaType3.name());
-            values.put("mitigation", "I was drunk at the time");
-            values.put("notGuiltyBecause", "I was forced to do it");
-            //runs plea-online
-            verifyOnlinePleaReceivedAndUpdatedCaseDetailsFlag(createCasePayloadBuilder.getId(), false);
-            final JsonPath pleadOnlinePayload = JsonPath.from(new StrSubstitutor(values).replace(getPayload(TEMPLATE_PLEA_MULTI_OFFENCE_PAYLOAD)));
-            pleadOnlineHelper.pleadOnlinePublicEvent(stringToJsonObjectConverter.convert(pleadOnlinePayload.prettify()));
-            //verify plea
-            pleadOnlineHelper.verifyInPublicTopic(createCasePayloadBuilder.getId(), offenceId1, pleaType1, null);
-            final Matcher[] pleaMatchers = {
-                    withJsonPath("defendant.offences[0].plea", is(pleaType1.name())),
-                    withJsonPath("defendant.offences[0].pleaMethod", is(PleaMethod.ONLINE.name())),
-                    withJsonPath("defendant.offences[0].pleaDate", notNullValue()),
-                    withJsonPath("defendant.offences[1].plea", is(pleaType2.name())),
-                    withJsonPath("defendant.offences[1].pleaMethod", is(PleaMethod.ONLINE.name())),
-                    withJsonPath("defendant.offences[1].pleaDate", notNullValue()),
-                    withJsonPath("defendant.offences[2].plea", is(pleaType3.name())),
-                    withJsonPath("defendant.offences[2].pleaMethod", is(PleaMethod.ONLINE.name())),
-                    withJsonPath("defendant.offences[2].pleaDate", notNullValue()),
-                    withJsonPath("onlinePleaReceived", is(true))
-            };
-            pleadOnlineHelper.verifyPleaUpdated(createCasePayloadBuilder.getId(), pleaMatchers);
-
-            final CaseSearchResultHelper caseSearchResultHelper = new CaseSearchResultHelper(
-                    createCasePayloadBuilder.getUrn(),
-                    createCasePayloadBuilder.getDefendantBuilder().getLastName(),
-                    createCasePayloadBuilder.getDefendantBuilder().getDateOfBirth());
-            caseSearchResultHelper.verifyPleaReceivedDate();
-            //verify online-plea
-            final Response response = getOnlinePlea(caseId.toString(), defendantBuilder.getId().toString(), USER_ID);
-            if (response.getStatus() != OK.getStatusCode()) {
-                fail("Polling interrupted, please fix the error before continue. Status code: " + response.getStatus());
-            }
-            verifyOnlinePleaReceivedAndUpdatedCaseDetailsFlag(createCasePayloadBuilder.getId(), true);
-
-            String pleaResponse = response.readEntity(String.class);
-            ObjectMapper objectMapper = new ObjectMapper();
-            PleasView pleasView = objectMapper.readValue(pleaResponse, PleasView.class);
-            final JSONObject defendantsPlea = new JSONObject(objectMapper.writeValueAsString(pleasView.getPleas().get(0)));
-
-            assertThat(defendantsPlea.getJSONArray("onlinePleaDetails").getJSONObject(0).get("offenceId"), equalTo(offenceId1.toString()));
-            assertThat(defendantsPlea.getJSONArray("onlinePleaDetails").getJSONObject(0).get("plea"), equalTo(pleaType1.name()));
-            assertThat(defendantsPlea.getJSONArray("onlinePleaDetails").getJSONObject(0).get("mitigation"), equalTo("I was drunk at the time"));
-            assertThat(defendantsPlea.getJSONArray("onlinePleaDetails").getJSONObject(1).get("offenceId"), equalTo(offenceId2.toString()));
-            assertThat(defendantsPlea.getJSONArray("onlinePleaDetails").getJSONObject(1).get("plea"), equalTo(pleaType2.name()));
-            assertThat(defendantsPlea.getJSONArray("onlinePleaDetails").getJSONObject(1).get("notGuiltyBecause"), equalTo("I was forced to do it"));
-            assertThat(defendantsPlea.getJSONArray("onlinePleaDetails").getJSONObject(2).get("offenceId"), equalTo(offenceId3.toString()));
-            assertThat(defendantsPlea.getJSONArray("onlinePleaDetails").getJSONObject(2).get("plea"), equalTo(pleaType3.name()));
-            assertFalse(defendantsPlea.getJSONArray("onlinePleaDetails").getJSONObject(2).has("mitigation"));
-            assertThat(defendantsPlea.getJSONObject("personalDetails").get("firstName"), equalTo("Testy"));
-            assertThat(defendantsPlea.getJSONObject("personalDetails").get("lastName"), equalTo("LLOYD"));
-            assertThat(defendantsPlea.getJSONObject("personalDetails").getJSONObject("address").get("address1"), equalTo("14 Tottenham Court Road"));
-            assertThat(defendantsPlea.getJSONObject("personalDetails").getJSONObject("address").get("address2"), equalTo("London"));
-            assertThat(defendantsPlea.getJSONObject("personalDetails").getJSONObject("address").get("address3"), equalTo("England"));
-            assertThat(defendantsPlea.getJSONObject("personalDetails").getJSONObject("address").get("address4"), equalTo("UK"));
-            assertThat(defendantsPlea.getJSONObject("personalDetails").getJSONObject("address").get("address5"), equalTo("Greater London"));
-            assertThat(defendantsPlea.getJSONObject("personalDetails").getJSONObject("address").get("postcode"), equalTo("W1T 1JY"));
-            assertTrue(defendantsPlea.getJSONObject("pleaDetails").getBoolean("outstandingFines"));
-            assertThat(defendantsPlea.getJSONObject("pleaDetails").getJSONObject("disabilityNeeds").getString("disabilityNeeds"), equalTo("Hearing aid"));
-            final JsonObject updatedDefendantDetails = getUpdatedDefendantDetails();
-            final boolean resultsContainUpdatedFirstNameValue = updatedDefendantDetails
-                    .getJsonArray("defendantDetailsUpdates")
-                    .getValuesAs(JsonObject.class)
-                    .stream()
-                    .anyMatch(e -> e.getString("firstName").equalsIgnoreCase("Testy"));
-            assertThat(resultsContainUpdatedFirstNameValue, is(false));
         }
     }
 
@@ -368,94 +277,6 @@ public class PleadOnlineIT extends BaseIntegrationTest {
             assertThat(defendantsPlea.getJSONObject("personalDetails").getJSONObject("address").get("postcode"), equalTo("W1T 1JY"));
             assertTrue(defendantsPlea.getJSONObject("pleaDetails").getBoolean("outstandingFines"));
             assertThat(defendantsPlea.getJSONObject("pleaDetails").getJSONObject("disabilityNeeds").getString("disabilityNeeds"), equalTo("Hearing aid"));
-            final JsonObject updatedDefendantDetails = getUpdatedDefendantDetails();
-            final boolean resultsContainUpdatedFirstNameValue = updatedDefendantDetails
-                    .getJsonArray("defendantDetailsUpdates")
-                    .getValuesAs(JsonObject.class)
-                    .stream()
-                    .anyMatch(e -> e.getString("firstName").equalsIgnoreCase("Testy"));
-            assertThat(resultsContainUpdatedFirstNameValue, is(false));
-        }
-    }
-
-    @Test
-    public void shouldPleadOnlineWithUnchangedPersonalDetailsWithPublicEvent() throws IOException {
-        final UUID offenceId1 = randomUUID();
-        final UUID offenceId2 = randomUUID();
-        final UUID offenceId3 = randomUUID();
-        final PleaType pleaType1 = GUILTY;
-        final PleaType pleaType2 = NOT_GUILTY;
-        final PleaType pleaType3 = GUILTY;
-        final UUID caseId = randomUUID();
-        final CreateCase.DefendantBuilder defendantBuilder = CreateCase.DefendantBuilder.withDefaults();
-        final LocalDate postingDate = now().minusDays(NOTICE_PERIOD_IN_DAYS + 1);
-        this.createCasePayloadBuilder = createCase(caseId, defendantBuilder, offenceId1, offenceId2, offenceId3, postingDate);
-        try (final PleadOnlineHelper pleadOnlineHelper = new PleadOnlineHelper(caseId, defendantBuilder.getId())) {
-            final Map<String, String> values = new HashMap<>();
-            values.put("offenceId1", offenceId1.toString());
-            values.put("offenceId2", offenceId2.toString());
-            values.put("offenceId3", offenceId3.toString());
-            values.put("plea1", pleaType1.name());
-            values.put("plea2", pleaType2.name());
-            values.put("plea3", pleaType3.name());
-            values.put("mitigation", "I was drunk at the time");
-            values.put("notGuiltyBecause", "I was forced to do it");
-            //runs plea-online
-            verifyOnlinePleaReceivedAndUpdatedCaseDetailsFlag(createCasePayloadBuilder.getId(), false);
-            final JsonPath pleadOnlinePayload = JsonPath.from(new StrSubstitutor(values).replace(getPayload(TEMPLATE_PLEA_MULTI_OFFENCE_NO_CHANGE_PERSONAL_DETAILS_PAYLOAD)));
-            pleadOnlineHelper.pleadOnlinePublicEvent(stringToJsonObjectConverter.convert(pleadOnlinePayload.prettify()));
-            //verify plea
-
-            pleadOnlineHelper.verifyInPublicTopic(createCasePayloadBuilder.getId(), offenceId1, pleaType1, null);
-
-            final Matcher[] pleaMatchers = {
-                    withJsonPath("defendant.offences[0].plea", is(pleaType1.name())),
-                    withJsonPath("defendant.offences[0].pleaMethod", is(PleaMethod.ONLINE.name())),
-                    withJsonPath("defendant.offences[0].pleaDate", notNullValue()),
-                    withJsonPath("defendant.offences[1].plea", is(pleaType2.name())),
-                    withJsonPath("defendant.offences[1].pleaMethod", is(PleaMethod.ONLINE.name())),
-                    withJsonPath("defendant.offences[1].pleaDate", notNullValue()),
-                    withJsonPath("defendant.offences[2].plea", is(pleaType3.name())),
-                    withJsonPath("defendant.offences[2].pleaMethod", is(PleaMethod.ONLINE.name())),
-                    withJsonPath("defendant.offences[2].pleaDate", notNullValue()),
-                    withJsonPath("onlinePleaReceived", is(true))
-            };
-            pleadOnlineHelper.verifyPleaUpdated(createCasePayloadBuilder.getId(), pleaMatchers);
-            final CaseSearchResultHelper caseSearchResultHelper = new CaseSearchResultHelper(
-                    createCasePayloadBuilder.getUrn(),
-                    createCasePayloadBuilder.getDefendantBuilder().getLastName(),
-                    createCasePayloadBuilder.getDefendantBuilder().getDateOfBirth());
-            caseSearchResultHelper.verifyPleaReceivedDate();
-            //verify online-plea
-            final Response response = getOnlinePlea(caseId.toString(), defendantBuilder.getId().toString(), USER_ID);
-            if (response.getStatus() != OK.getStatusCode()) {
-                fail("Polling interrupted, please fix the error before continue. Status code: " + response.getStatus());
-            }
-            verifyOnlinePleaReceivedAndUpdatedCaseDetailsFlag(createCasePayloadBuilder.getId(), true);
-
-            String pleaResponse = response.readEntity(String.class);
-            ObjectMapper objectMapper = new ObjectMapper();
-            PleasView pleasView = objectMapper.readValue(pleaResponse, PleasView.class);
-            final JSONObject defendantsPlea = new JSONObject(objectMapper.writeValueAsString(pleasView.getPleas().get(0)));
-
-            assertThat(defendantsPlea.getJSONArray("onlinePleaDetails").getJSONObject(0).get("offenceId"), equalTo(offenceId1.toString()));
-            assertThat(defendantsPlea.getJSONArray("onlinePleaDetails").getJSONObject(0).get("plea"), equalTo(pleaType1.name()));
-            assertThat(defendantsPlea.getJSONArray("onlinePleaDetails").getJSONObject(0).get("mitigation"), equalTo("I was drunk at the time"));
-            assertThat(defendantsPlea.getJSONArray("onlinePleaDetails").getJSONObject(1).get("offenceId"), equalTo(offenceId2.toString()));
-            assertThat(defendantsPlea.getJSONArray("onlinePleaDetails").getJSONObject(1).get("plea"), equalTo(pleaType2.name()));
-            assertThat(defendantsPlea.getJSONArray("onlinePleaDetails").getJSONObject(1).get("notGuiltyBecause"), equalTo("I was forced to do it"));
-            assertThat(defendantsPlea.getJSONArray("onlinePleaDetails").getJSONObject(2).get("offenceId"), equalTo(offenceId3.toString()));
-            assertThat(defendantsPlea.getJSONArray("onlinePleaDetails").getJSONObject(2).get("plea"), equalTo(pleaType3.name()));
-            assertFalse(defendantsPlea.getJSONArray("onlinePleaDetails").getJSONObject(2).has("mitigation"));
-            assertThat(defendantsPlea.getJSONObject("personalDetails").get("firstName"), equalTo("David"));
-            assertThat(defendantsPlea.getJSONObject("personalDetails").get("lastName"), equalTo("LLOYD"));
-            assertThat(defendantsPlea.getJSONObject("personalDetails").getJSONObject("address").get("address1"), equalTo("14 Tottenham Court Road"));
-            assertThat(defendantsPlea.getJSONObject("personalDetails").getJSONObject("address").get("address2"), equalTo("London"));
-            assertThat(defendantsPlea.getJSONObject("personalDetails").getJSONObject("address").get("address3"), equalTo("England"));
-            assertThat(defendantsPlea.getJSONObject("personalDetails").getJSONObject("address").get("address4"), equalTo("UK"));
-            assertThat(defendantsPlea.getJSONObject("personalDetails").getJSONObject("address").get("address5"), equalTo("Greater London"));
-            assertThat(defendantsPlea.getJSONObject("personalDetails").getJSONObject("address").get("postcode"), equalTo("W1T 1JY"));
-            assertTrue(defendantsPlea.getJSONObject("pleaDetails").getBoolean("outstandingFines"));
             final JsonObject updatedDefendantDetails = getUpdatedDefendantDetails();
             final boolean resultsContainUpdatedFirstNameValue = updatedDefendantDetails
                     .getJsonArray("defendantDetailsUpdates")
@@ -555,44 +376,6 @@ public class PleadOnlineIT extends BaseIntegrationTest {
     }
 
     @Test
-    public void shouldUpdateDefendantsCurrentPcqVisitedFlagWithPublicEvent() {
-        final UUID offenceId1 = randomUUID();
-        final UUID offenceId2 = randomUUID();
-        final UUID offenceId3 = randomUUID();
-        final UUID caseId = randomUUID();
-        //with pcqVisited = false
-        final CreateCase.DefendantBuilder defendantBuilder = CreateCase.DefendantBuilder.withDefaults(null);
-        final LocalDate postingDate = now().minusDays(NOTICE_PERIOD_IN_DAYS + 1);
-        this.createCasePayloadBuilder = createCase(caseId, defendantBuilder, offenceId1, offenceId2, offenceId3, postingDate);
-        try (final PleadOnlineHelper pleadOnlineHelper = new PleadOnlineHelper(caseId, defendantBuilder.getId())) {
-            final Map<String, String> values = new HashMap<>();
-            values.put("offenceId1", offenceId1.toString());
-            values.put("offenceId2", offenceId2.toString());
-            values.put("offenceId3", offenceId3.toString());
-            values.put("plea1", GUILTY.name());
-            values.put("plea2", NOT_GUILTY.name());
-            values.put("plea3", GUILTY.name());
-            values.put("mitigation", "I was drunk at the time");
-            values.put("notGuiltyBecause", "I was forced to do it");
-            values.put("email", "anotheremail@test.com");
-            verifyOnlinePleaReceivedAndUpdatedCaseDetailsFlag(createCasePayloadBuilder.getId(), false);
-            final JsonPath pleadOnlinePayload = JsonPath.from(new StrSubstitutor(values).replace(getPayload(TEMPLATE_PLEA_MULTI_OFFENCE_CUSTOM_V2)));
-            //online-plea is submitted here
-            pleadOnlineHelper.pleadOnlinePublicEvent(stringToJsonObjectConverter.convert(pleadOnlinePayload.prettify()));
-
-            final CaseSearchResultHelper caseSearchResultHelper = new CaseSearchResultHelper(
-                    createCasePayloadBuilder.getUrn(),
-                    createCasePayloadBuilder.getDefendantBuilder().getLastName(),
-                    createCasePayloadBuilder.getDefendantBuilder().getDateOfBirth());
-            caseSearchResultHelper.verifyPleaReceivedDate();
-            caseSearchResultHelper.verify(createCasePayloadBuilder.getUrn(), allOf(
-                    withJsonPath("$.results[*]", hasItem(isJson(allOf(
-                            withJsonPath("defendant.lastName", equalTo(defendantBuilder.getLastName()))
-                    ))))));
-        }
-    }
-
-    @Test
     public void shouldUpdateDefendantsCurrentPcqVisitedFlag() {
         final UUID offenceId1 = randomUUID();
         final UUID offenceId2 = randomUUID();
@@ -686,48 +469,6 @@ public class PleadOnlineIT extends BaseIntegrationTest {
     }
 
     @Test
-    public void shouldUpdateDefendantsCurrentFirstNameWithPublicEvent() {
-        final UUID offenceId1 = randomUUID();
-        final UUID offenceId2 = randomUUID();
-        final UUID offenceId3 = randomUUID();
-        final UUID caseId = randomUUID();
-        final CreateCase.DefendantBuilder defendantBuilder = CreateCase.DefendantBuilder.withDefaults();
-        final LocalDate postingDate = now().minusDays(NOTICE_PERIOD_IN_DAYS + 1);
-        this.createCasePayloadBuilder = createCase(caseId, defendantBuilder, offenceId1, offenceId2, offenceId3, postingDate);
-        try (final PleadOnlineHelper pleadOnlineHelper = new PleadOnlineHelper(caseId, defendantBuilder.getId())) {
-            final Map<String, String> values = new HashMap<>();
-            values.put("offenceId1", offenceId1.toString());
-            values.put("offenceId2", offenceId2.toString());
-            values.put("offenceId3", offenceId3.toString());
-            values.put("plea1", GUILTY.name());
-            values.put("plea2", NOT_GUILTY.name());
-            values.put("plea3", GUILTY.name());
-            values.put("mitigation", "I was drunk at the time");
-            values.put("notGuiltyBecause", "I was forced to do it");
-            values.put("firstName", "Anewname");
-            values.put("email", "anotheremail@test.com");
-            verifyOnlinePleaReceivedAndUpdatedCaseDetailsFlag(createCasePayloadBuilder.getId(), false);
-            final JsonPath pleadOnlinePayload = JsonPath.from(new StrSubstitutor(values).replace(getPayload(TEMPLATE_PLEA_MULTI_OFFENCE_CUSTOM_V2)));
-            pleadOnlineHelper.pleadOnlinePublicEvent(stringToJsonObjectConverter.convert(pleadOnlinePayload.prettify()));
-
-            //accept defendant updates
-            UpdateDefendantDetails.DefendantDetailsPayloadBuilder defendantPayloadBuilder =
-                    UpdateDefendantDetails.DefendantDetailsPayloadBuilder.builder().withFirstName("Anewname").withLastName("LLOYD");
-            acceptDefendantPendingChangesForCaseAndPayload(caseId, defendantBuilder.getId(), defendantPayloadBuilder);
-
-            final CaseSearchResultHelper caseSearchResultHelper = new CaseSearchResultHelper(
-                    createCasePayloadBuilder.getUrn(),
-                    createCasePayloadBuilder.getDefendantBuilder().getLastName(),
-                    createCasePayloadBuilder.getDefendantBuilder().getDateOfBirth());
-            caseSearchResultHelper.verify(createCasePayloadBuilder.getUrn(), allOf(
-                    withJsonPath("$.results[*]", hasItem(isJson(allOf(
-                            withJsonPath("defendant.firstName", equalTo("Anewname")),
-                            withJsonPath("defendant.lastName", equalTo(defendantBuilder.getLastName()))
-                    ))))));
-        }
-    }
-
-    @Test
     public void shouldUpdateDefendantsCurrentFirstName() {
         final UUID offenceId1 = randomUUID();
         final UUID offenceId2 = randomUUID();
@@ -766,90 +507,6 @@ public class PleadOnlineIT extends BaseIntegrationTest {
                             withJsonPath("defendant.firstName", equalTo("Anewname")),
                             withJsonPath("defendant.lastName", equalTo(defendantBuilder.getLastName()))
                     ))))));
-        }
-    }
-
-    @Test
-    public void shouldPleadOnlineWithChangedDriverDetailsWithPublicEvent() throws IOException {
-        final UUID offenceId1 = randomUUID();
-        final UUID offenceId2 = randomUUID();
-        final UUID offenceId3 = randomUUID();
-        final PleaType pleaType1 = GUILTY;
-        final PleaType pleaType2 = NOT_GUILTY;
-        final PleaType pleaType3 = GUILTY;
-        final UUID caseId = randomUUID();
-        final CreateCase.DefendantBuilder defendantBuilder = CreateCase.DefendantBuilder.withDefaults();
-        final LocalDate postingDate = now().minusDays(NOTICE_PERIOD_IN_DAYS + 1);
-
-        this.createCasePayloadBuilder = createCase(caseId, defendantBuilder, offenceId1, offenceId2, offenceId3, postingDate);
-
-        try (final PleadOnlineHelper pleadOnlineHelper = new PleadOnlineHelper(caseId, defendantBuilder.getId())) {
-            final Map<String, String> values = new HashMap<>();
-            values.put("offenceId1", offenceId1.toString());
-            values.put("offenceId2", offenceId2.toString());
-            values.put("offenceId3", offenceId3.toString());
-            values.put("plea1", pleaType1.name());
-            values.put("plea2", pleaType2.name());
-            values.put("plea3", pleaType3.name());
-            values.put("mitigation", "I was drunk at the time");
-            values.put("notGuiltyBecause", "I was forced to do it");
-            values.put("driverNumber", "MORGA753116SM9IV");
-            values.put("driverLicenceDetails", "update_driver_licence_details");
-
-            //runs plea-online
-            verifyOnlinePleaReceivedAndUpdatedCaseDetailsFlag(createCasePayloadBuilder.getId(), false);
-
-            final JsonPath pleadOnlinePayload = JsonPath.from(new StrSubstitutor(values).replace(getPayload(TEMPLATE_PLEA_GUILTY_PAYLOAD_WITH_DRIVER_NUMBER)));
-            pleadOnlineHelper.pleadOnlinePublicEvent(stringToJsonObjectConverter.convert(pleadOnlinePayload.prettify()));
-
-            //verify plea
-            pleadOnlineHelper.verifyInPublicTopic(createCasePayloadBuilder.getId(), offenceId1, pleaType1, null);
-
-            final Matcher[] pleaMatchers = {
-                    withJsonPath("defendant.offences[0].plea", is(pleaType1.name())),
-                    withJsonPath("defendant.offences[0].pleaMethod", is(PleaMethod.ONLINE.name())),
-                    withJsonPath("defendant.offences[0].pleaDate", notNullValue()),
-                    withJsonPath("defendant.offences[1].plea", is(pleaType2.name())),
-                    withJsonPath("defendant.offences[1].pleaMethod", is(PleaMethod.ONLINE.name())),
-                    withJsonPath("defendant.offences[1].pleaDate", notNullValue()),
-                    withJsonPath("defendant.offences[2].plea", is(pleaType3.name())),
-                    withJsonPath("defendant.offences[2].pleaMethod", is(PleaMethod.ONLINE.name())),
-                    withJsonPath("defendant.offences[2].pleaDate", notNullValue()),
-                    withJsonPath("onlinePleaReceived", is(true))
-            };
-
-            pleadOnlineHelper.verifyPleaUpdated(createCasePayloadBuilder.getId(), pleaMatchers);
-
-            final CaseSearchResultHelper caseSearchResultHelper = new CaseSearchResultHelper(
-                    createCasePayloadBuilder.getUrn(),
-                    createCasePayloadBuilder.getDefendantBuilder().getLastName(),
-                    createCasePayloadBuilder.getDefendantBuilder().getDateOfBirth());
-            caseSearchResultHelper.verifyPleaReceivedDate();
-
-            //verify online-plea
-            final Response response = getOnlinePlea(caseId.toString(), defendantBuilder.getId().toString(), USER_ID);
-            if (response.getStatus() != OK.getStatusCode()) {
-                fail("Polling interrupted, please fix the error before continue. Status code: " + response.getStatus());
-            }
-
-            verifyOnlinePleaReceivedAndUpdatedCaseDetailsFlag(createCasePayloadBuilder.getId(), true);
-
-            String pleaResponse = response.readEntity(String.class);
-            ObjectMapper objectMapper = new ObjectMapper();
-            PleasView pleasView = objectMapper.readValue(pleaResponse, PleasView.class);
-            final JSONObject defendantsPlea = new JSONObject(objectMapper.writeValueAsString(pleasView.getPleas().get(0)));
-
-            assertThat(defendantsPlea.getJSONObject("personalDetails").get("firstName"), equalTo("David"));
-            assertThat(defendantsPlea.getJSONObject("personalDetails").get("lastName"), equalTo("LLOYD"));
-            assertThat(defendantsPlea.getJSONObject("personalDetails").getJSONObject("address").get("address1"), equalTo("14 Tottenham Court Road"));
-            assertThat(defendantsPlea.getJSONObject("personalDetails").getJSONObject("address").get("address2"), equalTo("London"));
-            assertThat(defendantsPlea.getJSONObject("personalDetails").getJSONObject("address").get("address3"), equalTo("England"));
-            assertThat(defendantsPlea.getJSONObject("personalDetails").getJSONObject("address").get("address4"), equalTo("UK"));
-            assertThat(defendantsPlea.getJSONObject("personalDetails").getJSONObject("address").get("address5"), equalTo("Greater London"));
-            assertThat(defendantsPlea.getJSONObject("personalDetails").getJSONObject("address").get("postcode"), equalTo("W1T 1JY"));
-            assertTrue(defendantsPlea.getJSONObject("pleaDetails").getBoolean("outstandingFines"));
-            assertThat(defendantsPlea.getJSONObject("personalDetails").get("driverNumber"), equalTo("MORGA753116SM9IV"));
-            assertThat(defendantsPlea.getJSONObject("personalDetails").get("driverLicenceDetails"), equalTo("update_driver_licence_details"));
         }
     }
 
@@ -937,7 +594,6 @@ public class PleadOnlineIT extends BaseIntegrationTest {
         }
     }
 
-
     @Test
     public void shouldPleadNotGuiltyOnlineThenFailWithSecondPleadAttemptAsNotAllowedTwoPleasAgainstSameOffence() {
         try (final PleadOnlineHelper pleadOnlineHelper = new PleadOnlineHelper(createCasePayloadBuilder.getId())) {
@@ -986,18 +642,8 @@ public class PleadOnlineIT extends BaseIntegrationTest {
     }
 
     @Test
-    public void shouldPleadGuiltyOnlineWithPublicEvent() {
-        pleadGuiltyOnlineWithUserAndExpectedFinancesWithPublicEvent(DEFAULT_STUBBED_USER_ID, true);
-    }
-
-    @Test
     public void shouldPleadGuiltyOnline() {
         pleadGuiltyOnlineWithUserAndExpectedFinances(DEFAULT_STUBBED_USER_ID, true);
-    }
-
-    @Test
-    public void shouldPleadGuiltyOnlineLegalEntityWithPublicEvent() {
-        pleadGuiltyOnlineWithUserAndExpectedFinancesLegalEntityWithPublicEvent(DEFAULT_STUBBED_USER_ID, true);
     }
 
     @Test
@@ -1006,36 +652,14 @@ public class PleadOnlineIT extends BaseIntegrationTest {
     }
 
     @Test
-    public void shouldShowFinancesForProsecutorsWithPublicEvent() {
-        verifyGroupsCanSeeDefendantFinancesWithPublicEvent(true, asList(LEGAL_ADVISERS_GROUP, COURT_ADMINISTRATORS_GROUP));
-    }
-    @Test
     public void shouldShowFinancesForProsecutors() {
         verifyGroupsCanSeeDefendantFinances(true, asList(LEGAL_ADVISERS_GROUP, COURT_ADMINISTRATORS_GROUP));
-    }
-
-    @Test
-    public void shouldHideFinancesForProsecutorsWithPublicEvent() {
-        verifyGroupsCanSeeDefendantFinancesWithPublicEvent(false, singleton(SJP_PROSECUTORS_GROUP));
     }
 
     @Test
     public void shouldHideFinancesForProsecutors() {
         verifyGroupsCanSeeDefendantFinances(false, singleton(SJP_PROSECUTORS_GROUP));
     }
-
-    @Test
-    public void shouldPleaNotGuiltyWithoutFinancialMeansWithPublicEvent() {
-        final PleaType notGuilty = PleaType.NOT_GUILTY;
-        final JSONObject pleaPayload = getOnlinePleaPayload(notGuilty);
-        pleaPayload.remove("financialMeans");
-        assertThat(pleaPayload.has("financialMeans"), is(false));
-        assertThat(pleaPayload.has("outgoings"), is(true));
-        final JsonPath response = pleadOnlineWithPublicEvent(pleaPayload);
-        verifyResponseCase(response, TEMPLATE_PLEA_NOT_GUILTY_WITHOUT_FINANCIAL_MEANS_CASE_RESPONSE);
-        verifyResponseOnlinePlea(TEMPLATE_PLEA_NOT_GUILTY_WITHOUT_FINANCIAL_MEANS_RESPONSE, notGuilty);
-    }
-
 
     @Test
     public void shouldPleaNotGuiltyWithoutFinancialMeans() {
@@ -1050,18 +674,6 @@ public class PleadOnlineIT extends BaseIntegrationTest {
     }
 
     @Test
-    public void shouldPleaNotGuiltyWithoutOutgoingsWithPublicEvent() {
-        final PleaType notGuilty = PleaType.NOT_GUILTY;
-        final JSONObject pleaPayload = getOnlinePleaPayload(notGuilty);
-        pleaPayload.remove("outgoings");
-        assertThat(pleaPayload.has("financialMeans"), is(true));
-        assertThat(pleaPayload.has("outgoings"), is(false));
-        final JsonPath response = pleadOnlineWithPublicEvent(pleaPayload);
-        verifyResponseCase(response, TEMPLATE_PLEA_NOT_GUILTY_WITHOUT_FINANCIAL_MEANS_CASE_RESPONSE);
-        verifyResponseOnlinePlea(TEMPLATE_PLEA_NOT_GUILTY_WITHOUT_OUTGOINGS_RESPONSE, notGuilty);
-    }
-
-    @Test
     public void shouldPleaNotGuiltyWithoutOutgoings() {
         final PleaType notGuilty = PleaType.NOT_GUILTY;
         final JSONObject pleaPayload = getOnlinePleaPayload(notGuilty);
@@ -1071,22 +683,6 @@ public class PleadOnlineIT extends BaseIntegrationTest {
         final JsonPath response = pleadOnline(pleaPayload);
         verifyResponseCase(response, TEMPLATE_PLEA_NOT_GUILTY_WITHOUT_FINANCIAL_MEANS_CASE_RESPONSE);
         verifyResponseOnlinePlea(TEMPLATE_PLEA_NOT_GUILTY_WITHOUT_OUTGOINGS_RESPONSE, notGuilty);
-    }
-
-    @Test
-    public void shouldPleaNotGuiltyAndUpdateDefendantDetailsWithPublicEvent() {
-        final PleaType notGuilty = NOT_GUILTY;
-        final JSONObject pleaPayload = getOnlinePleaPayload(notGuilty);
-        pleaPayload.remove("outgoings");
-        pleaPayload.getJSONObject("personalDetails").put("firstName", "Changy");
-        pleaPayload.getJSONObject("personalDetails").put("lastName", "Testerson");
-        pleaPayload.getJSONObject("personalDetails").put("nationalInsuranceNumber", "SR569876FD");
-        assertThat(pleaPayload.has("financialMeans"), is(true));
-        assertThat(pleaPayload.has("outgoings"), is(false));
-        final JsonPath response = pleadOnlineWithPublicEvent(pleaPayload);
-
-        verifyResponseCase(response, TEMPLATE_PLEA_NOT_GUILTY_WITH_CHANGED_DETAILS_CASE_RESPONSE);
-        verifyResponseOnlinePlea(TEMPLATE_PLEA_NOT_GUILTY_WITH_CHANGED_DETAILS_RESPONSE, notGuilty);
     }
 
     @Test
@@ -1106,19 +702,6 @@ public class PleadOnlineIT extends BaseIntegrationTest {
     }
 
     @Test
-    public void shouldPleaNotGuiltyWithoutFinancialMeansAndOutgoingsWithPublicEvent() {
-        final PleaType notGuilty = PleaType.NOT_GUILTY;
-        final JSONObject pleaPayload = getOnlinePleaPayload(notGuilty);
-        pleaPayload.remove("financialMeans");
-        pleaPayload.remove("outgoings");
-        assertThat(pleaPayload.has("financialMeans"), is(false));
-        assertThat(pleaPayload.has("outgoings"), is(false));
-        final JsonPath response = pleadOnlineWithPublicEvent(pleaPayload);
-        verifyResponseCase(response, TEMPLATE_PLEA_NOT_GUILTY_WITHOUT_FINANCIAL_MEANS_CASE_RESPONSE);
-        verifyResponseOnlinePlea(TEMPLATE_PLEA_NOT_GUILTY_WITHOUT_FINANCIAL_MEANS_AND_OUTGOINGS_RESPONSE, notGuilty);
-    }
-
-    @Test
     public void shouldPleaNotGuiltyWithoutFinancialMeansAndOutgoings() {
         final PleaType notGuilty = PleaType.NOT_GUILTY;
         final JSONObject pleaPayload = getOnlinePleaPayload(notGuilty);
@@ -1129,17 +712,6 @@ public class PleadOnlineIT extends BaseIntegrationTest {
         final JsonPath response = pleadOnline(pleaPayload);
         verifyResponseCase(response, TEMPLATE_PLEA_NOT_GUILTY_WITHOUT_FINANCIAL_MEANS_CASE_RESPONSE);
         verifyResponseOnlinePlea(TEMPLATE_PLEA_NOT_GUILTY_WITHOUT_FINANCIAL_MEANS_AND_OUTGOINGS_RESPONSE, notGuilty);
-    }
-
-    @Test
-    public void shouldPleaNotGuiltyWithEmptyFinancialMeansWithPublicEvent() {
-        final PleaType notGuilty = PleaType.NOT_GUILTY;
-        final JSONObject pleaPayload = getOnlinePleaPayload(notGuilty);
-        pleaPayload.put("financialMeans", createObjectBuilder().build());
-        assertThat(pleaPayload.getJSONObject("financialMeans").keySet(), is(empty()));
-        final JsonPath response = pleadOnlineWithPublicEvent(pleaPayload);
-        verifyResponseCase(response, TEMPLATE_PLEA_NOT_GUILTY_WITHOUT_FINANCIAL_MEANS_CASE_RESPONSE);
-        verifyResponseOnlinePlea(TEMPLATE_PLEA_NOT_GUILTY_WITHOUT_FINANCIAL_MEANS_RESPONSE, notGuilty);
     }
 
     @Test
@@ -1154,16 +726,6 @@ public class PleadOnlineIT extends BaseIntegrationTest {
     }
 
     @Test
-    public void shouldPleaGuiltyWithFinancialMeansWithPublicEvent() {
-        final PleaType guilty = GUILTY;
-        final JSONObject pleaPayload = getOnlinePleaPayload(guilty);
-        assertThat(pleaPayload.has("financialMeans"), is(true));
-        final JsonPath response = pleadOnlineWithPublicEvent(pleaPayload);
-        verifyResponseCase(response, TEMPLATE_PLEA_GUILTY_WITH_FINANCIAL_MEANS_CASE_RESPONSE);
-        verifyResponseOnlinePlea(TEMPLATE_PLEA_GUILTY_WITH_FINANCIAL_MEANS_RESPONSE, guilty);
-    }
-
-    @Test
     public void shouldPleaGuiltyWithFinancialMeans() {
         final PleaType guilty = GUILTY;
         final JSONObject pleaPayload = getOnlinePleaPayload(guilty);
@@ -1171,17 +733,6 @@ public class PleadOnlineIT extends BaseIntegrationTest {
         final JsonPath response = pleadOnline(pleaPayload);
         verifyResponseCase(response, TEMPLATE_PLEA_GUILTY_WITH_FINANCIAL_MEANS_CASE_RESPONSE);
         verifyResponseOnlinePlea(TEMPLATE_PLEA_GUILTY_WITH_FINANCIAL_MEANS_RESPONSE, guilty);
-    }
-
-    @Test
-    public void shouldPleadGuiltyRequestHearingOnlineWithPublicEvent() {
-        try (final PleadOnlineHelper pleadOnlineHelper = new PleadOnlineHelper(createCasePayloadBuilder.getId())) {
-            final CaseSearchResultHelper caseSearchResultHelper = new CaseSearchResultHelper(
-                    createCasePayloadBuilder.getUrn(),
-                    createCasePayloadBuilder.getDefendantBuilder().getLastName(),
-                    createCasePayloadBuilder.getDefendantBuilder().getDateOfBirth());
-            pleadOnlineAndConfirmSuccessWithPublicEvent(PleaType.GUILTY_REQUEST_HEARING, pleadOnlineHelper, caseSearchResultHelper);
-        }
     }
 
     @Test
@@ -1221,55 +772,9 @@ public class PleadOnlineIT extends BaseIntegrationTest {
 
     }
 
-    private void pleadOnlineAndConfirmSuccessWithPublicEvent(final PleaType pleaType, final PleadOnlineHelper pleadOnlineHelper, final CaseSearchResultHelper caseSearchResultHelper) {
-        pleadOnlineAndConfirmSuccessWithPublicEvent(pleaType, pleadOnlineHelper, caseSearchResultHelper,
-                DEFAULT_STUBBED_USER_ID, true);
-    }
-
     private void pleadOnlineAndConfirmSuccess(final PleaType pleaType, final PleadOnlineHelper pleadOnlineHelper, final CaseSearchResultHelper caseSearchResultHelper) {
         pleadOnlineAndConfirmSuccess(pleaType, pleadOnlineHelper, caseSearchResultHelper,
                 DEFAULT_STUBBED_USER_ID, true);
-    }
-
-    private void pleadOnlineAndConfirmSuccessWithPublicEvent(final PleaType pleaType, final PleadOnlineHelper pleadOnlineHelper, final CaseSearchResultHelper caseSearchResultHelper,
-                                              final Collection<UUID> userIds, final boolean expectToHaveFinances) {
-        assumeThat(userIds, not(empty()));
-        //checks person-info before plead-online
-        personInfoVerifier.verifyPersonInfo();
-        //runs plea-online
-        verifyOnlinePleaReceivedAndUpdatedCaseDetailsFlag(createCasePayloadBuilder.getId(), false);
-        final JSONObject pleaPayload = getOnlinePleaPayload(pleaType);
-        pleadOnlineHelper.pleadOnlinePublicEvent(stringToJsonObjectConverter.convert(pleaPayload.toString()));
-
-        //verify plea
-        pleadOnlineHelper.verifyInPublicTopic(createCasePayloadBuilder.getId(), createCasePayloadBuilder.getOffenceId(), pleaType, null);
-
-        final Matcher[] pleaMatchers = {
-                withJsonPath("defendant.offences[0].plea", is(pleaType.name())),
-                withJsonPath("defendant.offences[0].pleaMethod", is(PleaMethod.ONLINE.name())),
-                withJsonPath("defendant.offences[0].pleaDate", notNullValue()),
-                withJsonPath("onlinePleaReceived", is(true))
-        };
-        pleadOnlineHelper.verifyPleaUpdated(createCasePayloadBuilder.getId(), pleaMatchers);
-        caseSearchResultHelper.verifyPleaReceivedDate();
-        //verify employer
-        final String defendantId = pleadOnlineHelper.getCaseDefendantId().toString();
-        EmployerHelper.pollForEmployerForDefendant(defendantId, getEmployerUpdatedPayloadMatcher(pleaPayload));
-
-        //verify financial-means
-        financialMeansHelper.getFinancialMeans(defendantId, getFinancialMeansUpdatedPayloadContentMatcher(pleaPayload, defendantId));
-
-        //verifies person-info has changed
-        final PersonalDetails expectedPersonalDetails = generateExpectedPersonDetails(pleaPayload);
-        personInfoVerifierForPersonalDetails(createCasePayloadBuilder.getId(), expectedPersonalDetails)
-                .verifyPersonInfo(true);
-        //verify online-plea
-        final Matcher expectedResult = getSavedOnlinePleaPayloadContentMatcher(pleaType, pleaPayload, createCasePayloadBuilder.getId().toString(), defendantId, expectToHaveFinances);
-        userIds.forEach(userId -> getOnlinePlea(createCasePayloadBuilder.getId().toString(),
-                createCasePayloadBuilder.getDefendantBuilder().getId().toString(),
-                expectedResult, userId));
-        verifyOnlinePleaReceivedAndUpdatedCaseDetailsFlag(createCasePayloadBuilder.getId(), true);
-        verifyNotification("criminal@gmail.com", createCasePayloadBuilder.getUrn(), ENGLISH_TEMPLATE_ID);
     }
 
     private void pleadOnlineAndConfirmSuccess(final PleaType pleaType, final PleadOnlineHelper pleadOnlineHelper, final CaseSearchResultHelper caseSearchResultHelper,
@@ -1313,41 +818,6 @@ public class PleadOnlineIT extends BaseIntegrationTest {
         verifyNotification("criminal@gmail.com", createCasePayloadBuilder.getUrn(), ENGLISH_TEMPLATE_ID);
     }
 
-    private void pleadOnlineAndConfirmSuccessLegalEntityWithPublicEvent(final PleaType pleaType, final PleadOnlineHelper pleadOnlineHelper, final CaseSearchResultHelper caseSearchResultHelper,
-                                                         final Collection<UUID> userIds, final boolean expectToHaveFinances) {
-        assumeThat(userIds, not(empty()));
-        //checks person-info before plead-online
-        personInfoVerifier.verifyPersonInfo();
-        //runs plea-online
-        verifyOnlinePleaReceivedAndUpdatedCaseDetailsFlag(createCasePayloadBuilder.getId(), false);
-        final JSONObject pleaPayload = new JSONObject(getPayload(TEMPLATE_PLEA_NOT_GUILTY_PAYLOAD_ORGANISATION));
-        //set offence.id to match setup data
-        pleaPayload.getJSONArray("offences").getJSONObject(0).put("id", createCasePayloadBuilder.getOffenceId().toString());
-        pleadOnlineHelper.pleadOnlinePublicEvent(stringToJsonObjectConverter.convert(pleaPayload.toString()));
-        //verify plea
-        pleadOnlineHelper.verifyInPublicTopic(createCasePayloadBuilder.getId(), createCasePayloadBuilder.getOffenceId(), pleaType, null);
-
-        final Matcher[] pleaMatchers = {
-                withJsonPath("defendant.offences[0].plea", is(pleaType.name())),
-                withJsonPath("defendant.offences[0].pleaMethod", is(PleaMethod.ONLINE.name())),
-                withJsonPath("defendant.offences[0].pleaDate", notNullValue()),
-                withJsonPath("onlinePleaReceived", is(true))
-        };
-        pleadOnlineHelper.verifyPleaUpdated(createCasePayloadBuilder.getId(), pleaMatchers);
-        caseSearchResultHelper.verifyPleaReceivedDate();
-        //verify employer
-        final String defendantId = pleadOnlineHelper.getCaseDefendantId().toString();
-        //verify online-plea
-        final Matcher expectedResult = getCommonFieldLegalEntityMatchers(pleaPayload, createCasePayloadBuilder.getId().toString(), defendantId, expectToHaveFinances);
-        userIds.forEach(userId -> getOnlinePlea(createCasePayloadBuilder.getId().toString(),
-                createCasePayloadBuilder.getDefendantBuilder().getId().toString(),
-                expectedResult, userId));
-        //verify financial-means
-        financialMeansHelper.getFinancialMeans(defendantId, getFinancialMeansUpdatedPayloadContentMatcher(pleaPayload, defendantId));
-        financialMeansHelper.getEventFromPublicTopic(getFinancialMeansUpdatedPayloadContentMatcher(pleaPayload, defendantId));
-        verifyOnlinePleaReceivedAndUpdatedCaseDetailsFlag(createCasePayloadBuilder.getId(), true);
-        verifyNotification("criminal@gmail.com", createCasePayloadBuilder.getUrn(), ENGLISH_TEMPLATE_ID);
-    }
 
     private void pleadOnlineAndConfirmSuccessLegalEntity(final PleaType pleaType, final PleadOnlineHelper pleadOnlineHelper, final CaseSearchResultHelper caseSearchResultHelper,
                                                          final Collection<UUID> userIds, final boolean expectToHaveFinances) {
@@ -1433,20 +903,6 @@ public class PleadOnlineIT extends BaseIntegrationTest {
         return JsonPath.from(new StrSubstitutor(values).replace(getPayload(nameFile)));
     }
 
-    private JsonPath pleadOnlineWithPublicEvent(final JSONObject pleaPayload) {
-        final PleaType pleaType = PleaType.valueOf(pleaPayload.getJSONArray("offences").getJSONObject(0).getString("plea"));
-        try (final PleadOnlineHelper pleadOnlineHelper = new PleadOnlineHelper(createCasePayloadBuilder.getId())) {
-            pleadOnlineHelper.pleadOnlinePublicEvent(stringToJsonObjectConverter.convert(pleaPayload.toString()));
-            final Matcher[] pleaMatchers = {
-                    withJsonPath("defendant.offences[0].plea", is(pleaType.name())),
-                    withJsonPath("defendant.offences[0].pleaMethod", is(PleaMethod.ONLINE.name())),
-                    withJsonPath("defendant.offences[0].pleaDate", notNullValue()),
-                    withJsonPath("onlinePleaReceived", is(true))
-            };
-            return pleadOnlineHelper.verifyPleaUpdated(createCasePayloadBuilder.getId(), pleaMatchers);
-        }
-    }
-
     private JsonPath pleadOnline(final JSONObject pleaPayload) {
         final PleaType pleaType = PleaType.valueOf(pleaPayload.getJSONArray("offences").getJSONObject(0).getString("plea"));
         try (final PleadOnlineHelper pleadOnlineHelper = new PleadOnlineHelper(createCasePayloadBuilder.getId())) {
@@ -1461,16 +917,6 @@ public class PleadOnlineIT extends BaseIntegrationTest {
         }
     }
 
-    private void verifyGroupsCanSeeDefendantFinancesWithPublicEvent(final boolean expectToHaveFinances, final Collection<String> financeProsecutors) {
-        final List<UUID> mockedUserId = financeProsecutors.stream()
-                .map(userGroup -> {
-                    UUID userId = randomUUID();
-                    UsersGroupsStub.stubGroupForUser(userId, userGroup);
-                    return userId;
-                }).collect(toList());
-        pleadGuiltyOnlineWithUserAndExpectedFinancesWithPublicEvent(mockedUserId, expectToHaveFinances);
-    }
-
     private void verifyGroupsCanSeeDefendantFinances(final boolean expectToHaveFinances, final Collection<String> financeProsecutors) {
         final List<UUID> mockedUserId = financeProsecutors.stream()
                 .map(userGroup -> {
@@ -1481,16 +927,6 @@ public class PleadOnlineIT extends BaseIntegrationTest {
         pleadGuiltyOnlineWithUserAndExpectedFinances(mockedUserId, expectToHaveFinances);
     }
 
-    private void pleadGuiltyOnlineWithUserAndExpectedFinancesWithPublicEvent(final Collection<UUID> userIds, final boolean expectToHaveFinances) {
-        try (final PleadOnlineHelper pleadOnlineHelper = new PleadOnlineHelper(createCasePayloadBuilder.getId())) {
-            final CaseSearchResultHelper caseSearchResultHelper = new CaseSearchResultHelper(
-                    createCasePayloadBuilder.getUrn(),
-                    createCasePayloadBuilder.getDefendantBuilder().getLastName(),
-                    createCasePayloadBuilder.getDefendantBuilder().getDateOfBirth());
-            pleadOnlineAndConfirmSuccessWithPublicEvent(GUILTY, pleadOnlineHelper, caseSearchResultHelper, userIds, expectToHaveFinances);
-        }
-    }
-
     private void pleadGuiltyOnlineWithUserAndExpectedFinances(final Collection<UUID> userIds, final boolean expectToHaveFinances) {
         try (final PleadOnlineHelper pleadOnlineHelper = new PleadOnlineHelper(createCasePayloadBuilder.getId())) {
             final CaseSearchResultHelper caseSearchResultHelper = new CaseSearchResultHelper(
@@ -1498,16 +934,6 @@ public class PleadOnlineIT extends BaseIntegrationTest {
                     createCasePayloadBuilder.getDefendantBuilder().getLastName(),
                     createCasePayloadBuilder.getDefendantBuilder().getDateOfBirth());
             pleadOnlineAndConfirmSuccess(GUILTY, pleadOnlineHelper, caseSearchResultHelper, userIds, expectToHaveFinances);
-        }
-    }
-
-    private void pleadGuiltyOnlineWithUserAndExpectedFinancesLegalEntityWithPublicEvent(final Collection<UUID> userIds, final boolean expectToHaveFinances) {
-        try (final PleadOnlineHelper pleadOnlineHelper = new PleadOnlineHelper(createCasePayloadBuilder.getId())) {
-            final CaseSearchResultHelper caseSearchResultHelper = new CaseSearchResultHelper(
-                    createCasePayloadBuilder.getUrn(),
-                    createCasePayloadBuilder.getDefendantBuilder().getLastName(),
-                    createCasePayloadBuilder.getDefendantBuilder().getDateOfBirth());
-            pleadOnlineAndConfirmSuccessLegalEntityWithPublicEvent(NOT_GUILTY, pleadOnlineHelper, caseSearchResultHelper, userIds, expectToHaveFinances);
         }
     }
 

@@ -64,7 +64,6 @@ import uk.gov.moj.cpp.sjp.domain.decision.Discharge;
 import uk.gov.moj.cpp.sjp.domain.decision.Dismiss;
 import uk.gov.moj.cpp.sjp.domain.decision.FinancialPenalty;
 import uk.gov.moj.cpp.sjp.domain.decision.NoSeparatePenalty;
-import uk.gov.moj.cpp.sjp.domain.decision.Oats;
 import uk.gov.moj.cpp.sjp.domain.decision.OffenceDecision;
 import uk.gov.moj.cpp.sjp.domain.decision.OffenceDecisionInformation;
 import uk.gov.moj.cpp.sjp.domain.decision.OffenceDecisionVisitor;
@@ -674,11 +673,6 @@ public class CaseDecisionHandler {
             //No conviction possible for withdraw decisions
         }
 
-        @Override
-        public void visit(final Oats oats) {
-            //No conviction possible for oats decisions
-        }
-
 
         private boolean offenceHasPreviousConviction(final OffenceDecision offenceDecision) {
             return offenceDecision.getOffenceIds()
@@ -775,7 +769,6 @@ public class CaseDecisionHandler {
             //No conviction for legacy decision types
         }
 
-
         @Override
         public void visit(final NoSeparatePenalty noSeparatePenalty) {
             if (offenceHasPreviousConviction(noSeparatePenalty)) {
@@ -853,11 +846,6 @@ public class CaseDecisionHandler {
         @Override
         public void visit(final SetAside setAside) {
             visitOffenceDecision(setAside);
-        }
-
-        @Override
-        public void visit(final Oats oats) {
-            visitOffenceDecision(oats);
         }
 
         private void visitOffenceDecision(final OffenceDecision offenceDecision) {

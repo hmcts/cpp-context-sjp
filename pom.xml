@@ -53,7 +53,7 @@
         <cpp.framework.action.mapping.enabled>true</cpp.framework.action.mapping.enabled>
         <mvn.site.url>file://${project.build.directory}/site</mvn.site.url>
         <file.alfresco.version>2.3.0</file.alfresco.version>
-        <coredomain.version>17.103.1-CCT-2415-SNAPSHOT</coredomain.version>
+        <coredomain.version>17.103.2-CCT-2415-SNAPSHOT</coredomain.version>
         <criminal-court-public-model.version>${coredomain.version}</criminal-court-public-model.version>
         <javax.el-api.version>3.0.0</javax.el-api.version>
         <joda-time.version>2.10</joda-time.version>

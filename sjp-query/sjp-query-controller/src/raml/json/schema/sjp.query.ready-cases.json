@@ -1,4 +1,0 @@
-{
-  "$schema": "http://json-schema.org/draft-04/schema#",
-  "$ref": "http://justice.gov.uk/json/schemas/domains/sjp/queries/ready-cases.json"
-}

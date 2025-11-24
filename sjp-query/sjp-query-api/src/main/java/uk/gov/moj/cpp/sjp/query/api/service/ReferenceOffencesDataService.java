@@ -1,6 +1,6 @@
 package uk.gov.moj.cpp.sjp.query.api.service;
 
-import static uk.gov.justice.services.core.annotation.Component.QUERY_CONTROLLER;
+import static uk.gov.justice.services.core.annotation.Component.QUERY_API;
 
 import uk.gov.justice.services.core.annotation.ServiceComponent;
 import uk.gov.justice.services.core.enveloper.Enveloper;
@@ -17,7 +17,7 @@ public class ReferenceOffencesDataService {
     private Enveloper enveloper;
 
     @Inject
-    @ServiceComponent(QUERY_CONTROLLER)
+    @ServiceComponent(QUERY_API)
     private Requester requester;
 
     public JsonObject getOffenceReferenceData(final JsonEnvelope envelope, final String offenceCode, final String date) {

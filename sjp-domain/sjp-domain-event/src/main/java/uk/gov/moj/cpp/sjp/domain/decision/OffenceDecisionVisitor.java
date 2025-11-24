@@ -22,6 +22,4 @@ public interface OffenceDecisionVisitor {
 
     void visit(SetAside setAside);
 
-    void visit(Oats oats);
-
 }

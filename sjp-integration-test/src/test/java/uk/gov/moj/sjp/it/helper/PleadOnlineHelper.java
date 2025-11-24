@@ -9,7 +9,6 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.is;
 import static org.junit.jupiter.api.Assertions.fail;
-import static uk.gov.justice.services.integrationtest.utils.jms.JmsMessageProducerClientProvider.newPublicJmsMessageProducerClientProvider;
 import static uk.gov.justice.services.test.utils.core.matchers.ResponsePayloadMatcher.payload;
 import static uk.gov.justice.services.test.utils.core.matchers.ResponseStatusMatcher.status;
 import static uk.gov.moj.sjp.it.Constants.PUBLIC_EVENT_SET_PLEAS;
@@ -21,7 +20,6 @@ import static uk.gov.moj.sjp.it.util.RestPollerWithDefaults.TIMEOUT_IN_SECONDS;
 import static uk.gov.moj.sjp.it.util.RestPollerWithDefaults.pollWithDefaults;
 import static uk.gov.moj.sjp.it.util.TopicUtil.retrieveMessage;
 
-import uk.gov.justice.services.integrationtest.utils.jms.JmsMessageProducerClient;
 import uk.gov.moj.cpp.sjp.domain.plea.PleaType;
 import uk.gov.moj.sjp.it.model.PleasView;
 import uk.gov.moj.sjp.it.util.HttpClientUtil;
@@ -32,8 +30,6 @@ import java.util.concurrent.TimeUnit;
 
 import javax.jms.JMSException;
 import javax.jms.MessageConsumer;
-import javax.json.Json;
-import javax.json.JsonObject;
 import javax.ws.rs.core.Response;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -50,20 +46,16 @@ public class PleadOnlineHelper implements AutoCloseable {
 
     private final UUID defendantId;
 
-    private final UUID caseId;
-
     private MessageConsumer publicEventsConsumer;
 
     public PleadOnlineHelper(final UUID caseId, final UUID defendantId) {
         this.defendantId = defendantId;
-        this.caseId = caseId;
         publicEventsConsumer = TopicUtil.publicEvents.createConsumer(PUBLIC_EVENT_SET_PLEAS);
         writeUrl = String.format("/cases/%s/defendants/%s/plead-online", caseId, defendantId);
     }
 
     public PleadOnlineHelper(final UUID caseId, final UUID defendantId, final UUID pcqId) {
         this.defendantId = defendantId;
-        this.caseId = caseId;
         publicEventsConsumer = TopicUtil.publicEvents.createConsumer(PUBLIC_EVENT_SET_PLEAS);
         writeUrl = String.format("/cases/%s/defendants/%s/plead-online-pcq-visited", caseId, defendantId);
     }
@@ -71,7 +63,6 @@ public class PleadOnlineHelper implements AutoCloseable {
     public PleadOnlineHelper(final UUID caseId) {
         publicEventsConsumer = TopicUtil.publicEvents.createConsumer(PUBLIC_EVENT_SET_PLEAS);
         defendantId = UUID.fromString(pollUntilCaseByIdIsOk(caseId).getString("defendant.id"));
-        this.caseId = caseId;
         writeUrl = String.format("/cases/%s/defendants/%s/plead-online", caseId, defendantId);
     }
 
@@ -139,16 +130,6 @@ public class PleadOnlineHelper implements AutoCloseable {
         pleadOnline(payload, "application/vnd.sjp.plead-online+json", Response.Status.ACCEPTED);
     }
 
-    public void pleadOnlinePublicEvent(final JsonObject payload){
-        final JmsMessageProducerClient publicJmsMessageProducerClient = newPublicJmsMessageProducerClientProvider()
-                .getMessageProducerClient();
-
-        final JsonObject publicEvent = Json.createObjectBuilder(payload)
-                .add("caseId", caseId.toString())
-                .add("defendantId", defendantId.toString())
-                .build();
-        publicJmsMessageProducerClient.sendMessage("public.prosecutioncasefile.sjp-plead-online", publicEvent);
-    }
     public void pleadOnlinePcqVisited(final String payload) {
         pleadOnline(payload, "application/vnd.sjp.plead-online-pcq-visited+json", Response.Status.ACCEPTED);
     }

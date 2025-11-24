@@ -1,0 +1,19 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://justice.gov.uk/json/schemas/domains/sjp/events/enterprise-id-associated.json",
+  "type": "object",
+  "properties": {
+    "caseId": {
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+    },
+    "enterpriseId": {
+      "type": "string",
+      "minLength": 12,
+      "maxLength": 12
+    }
+  },
+  "required": [
+    "caseId",
+    "enterpriseId"
+  ]
+}

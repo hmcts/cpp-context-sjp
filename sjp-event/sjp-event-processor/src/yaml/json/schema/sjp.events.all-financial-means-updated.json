@@ -1,0 +1,77 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://justice.gov.uk/json/schemas/domains/sjp/events/all-financial-means-udpated.json",
+  "type": "object",
+  "properties": {
+    "defendantId": {
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+    },
+    "income": {
+      "type": "object",
+      "properties": {
+        "frequency": {
+          "enum": [
+            "WEEKLY",
+            "MONTHLY",
+            "FORTNIGHTLY",
+            "YEARLY"
+          ]
+        },
+        "amount": {
+          "type": "number",
+          "minimum": 0
+        }
+      },
+      "additionalProperties": false
+    },
+    "benefits": {
+      "type": "object",
+      "properties": {
+        "claimed": {
+          "type": "boolean"
+        },
+        "type": {
+          "type": "string"
+        },
+        "deductPenaltyPreference": {
+          "type": "boolean"
+        }
+      },
+      "additionalProperties": false
+    } ,
+    "employmentStatus": {
+      "type": "string"
+    },
+    "employer": {
+      "type": "object",
+      "properties": {
+        "defendantId": {
+          "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+        },
+        "employeeReference": {
+          "type": "string",
+          "maxLength": 20
+        },
+        "name": {
+          "type": "string",
+          "maxLength": 35
+        },
+        "phone": {
+          "type": "string",
+          "maxLength": 20
+        },
+        "address": {
+          "$ref": "http://justice.gov.uk/json/schemas/domains/sjp/address.json"
+        }
+      },
+      "additionalProperties": false
+    }
+
+  },
+  "required": [
+    "defendantId",
+    "income",
+    "benefits"
+  ],
+  "additionalProperties": false
+}

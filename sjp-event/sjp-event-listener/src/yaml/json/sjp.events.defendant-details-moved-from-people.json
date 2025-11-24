@@ -1,0 +1,24 @@
+{
+  "caseId":"10d628dc-da5c-4a17-a50b-16b36fc1c714",
+  "personId":"20d628dc-da5c-4a17-a50b-16b36fc1c714",
+  "defendantId":"60d628dc-da5c-4a17-a50b-16b36fc1c714",
+  "title":"Dr",
+  "firstName": "David",
+  "lastName": "SMITH",
+  "dateOfBirth": "1980-07-15",
+  "gender": "Male",
+  "email": "email@email.com",
+  "address": {
+    "address1": "14 Shaftesbury Road",
+    "address2": "London",
+    "address3": "England",
+    "address4": "UK",
+    "address5": "Greater London",
+    "postcode": "W1T 1JY"
+  },
+  "contactNumber": {
+    "home": "02087654321",
+    "mobile": "07123456789"
+  },
+  "nationalInsuranceNumber": "QQ 12 34 56 C"
+}

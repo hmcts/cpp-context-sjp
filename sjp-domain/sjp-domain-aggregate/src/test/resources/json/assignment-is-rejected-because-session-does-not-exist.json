@@ -1,0 +1,6 @@
+{
+  "_metadata": {
+    "name": "sjp.events.case-assignment-rejected"
+  },
+  "reason": "SESSION_DOES_NOT_EXIST"
+}

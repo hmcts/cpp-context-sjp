@@ -1,0 +1,39 @@
+{
+  "operations": [
+    {
+      "operation": "shift",
+      "spec": {
+        "id": "caseId",
+        "urn": "caseReference",
+        "prosecutingAuthority": "prosecutingAuthority",
+        "#NO_PLEA_RECEIVED": "caseStatus",
+        "#PROSECUTION": "_case_type",
+        "postingDate": "sjpNoticeServed"
+      }
+    },
+    {
+      "operation": "modify-overwrite-beta",
+      "spec": {
+        "\\_is_sjp": [
+          "=toBoolean",
+          true
+        ],
+        "\\_is_charging": [
+          "=toBoolean",
+          false
+        ],
+        "\\_is_magistrates": [
+          "=toBoolean",
+          false
+        ],
+        "\\_is_crown": [
+          "=toBoolean",
+          false
+        ],
+        "\\_case_type": "=toUpper",
+        "caseStatus":   "=toUpper",
+        "prosecutingAuthority": "=toUpper"
+      }
+    }
+  ]
+}

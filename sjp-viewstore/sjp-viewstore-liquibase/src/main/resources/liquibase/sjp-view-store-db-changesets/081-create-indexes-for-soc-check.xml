@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+         http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.3.xsd">
+
+    <changeSet id="81" author="team/chachacha/manav.arora"
+               logicalFilePath="liquibase/sjp-view-store-db-changelog.xml">
+
+        <createIndex tableName="case_decision" indexName="case_decision_session_id_saved_at_idx">
+            <column name="session_id" type="uuid"/>
+            <column name="saved_at" type="timestamp without time zone"/>
+        </createIndex>
+
+        <createIndex tableName="session" indexName="session_user_id_lja_court_house_code_idx">
+            <column name="user_id" type="uuid"/>
+            <column name="local_justice_area_national_court_code" type="text"/>
+            <column name="court_house_name" type="text"/>
+        </createIndex>
+
+        <rollback>
+            <dropIndex indexName="case_decision_session_id_saved_at_idx" tableName="case_decision"/>
+            <dropIndex indexName="session_user_id_lja_court_house_code_idx" tableName="session"/>
+        </rollback>
+
+    </changeSet>
+</databaseChangeLog>

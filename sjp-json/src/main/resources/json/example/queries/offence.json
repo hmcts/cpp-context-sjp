@@ -1,0 +1,22 @@
+{
+  "id": "72289b9e-5403-4e5b-8219-1d6ab004bbda",
+  "offenceCode": "PS90010",
+  "modeOfTrial" : "SIMP",
+  "offenceSequenceNumber": 1,
+  "wording": "On 02/07/2015 At Threadneedle Street EC2 Being a passenger on a Public service Vehicle operated on behalf of London Bus Services Limited being used for the carriage of passengers at separate fares where the vehicle was being operated by a Driver without a Conductor did not as directed by the Driver an Inspector or a Notice displayed on the vehicle pay the fare for the journey in accordance with the direction ",
+  "wordingWelsh": "Welsh wording: On 02/07/2015 At Threadneedle Street EC2 Being a passenger on a Public service Vehicle operated on behalf of London Bus Services Limited being used for the carriage of passengers at separate fares where the vehicle was being operated by a Driver without a Conductor did not as directed by the Driver an Inspector or a Notice displayed on the vehicle pay the fare for the journey in accordance with the direction ",
+  "cjsCode": "PS90010",
+  "sequenceNumber": 1,
+  "startDate": "2017-12-29",
+  "chargeDate": "2018-01-03",
+  "compensation": 10,
+  "prosecutionFacts": "An incident took place at GREEN PARK station whereby you were spoken to by a member of London Underground staff regarding your train journey and the associated fare.The facts of this incidents are now being considered and I must advise you that legal proceedings may be initiated against you regarding this matter in accordance with the LU prosecution policy",
+  "backDuty": 340.30,
+  "backDutyDateFrom": "2018-04-30",
+  "backDutyDateTo": "2018-05-30",
+  "vehicleMake": "Ford",
+  "vehicleRegistrationMark": "FG59 4FD",
+  "backDutyOffence": true,
+  "penaltyType": "Excise penalty",
+  "sentencing": "Yes"
+}

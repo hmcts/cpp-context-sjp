@@ -1,0 +1,83 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://justice.gov.uk/json/schemas/domains/sjp/public.resulting.referenced-decisions-saved.json",
+  "type": "object",
+  "properties": {
+    "caseId": {
+      "type": "string"
+    },
+    "resultedOn": {
+      "type": "string"
+    },
+    "sjpSessionId": {
+      "type": "string"
+    },
+    "hearingDate": {
+      "type": "string"
+    },
+    "verdict": {
+      "$ref": "http://justice.gov.uk/json/schemas/domains/sjp/verdict.json"
+    },
+    "accountDivisionCode": {
+      "type": "integer"
+    },
+    "enforcingCourtCode": {
+      "type": "integer"
+    }
+  },
+  "offences": {
+    "type": "array",
+    "items": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "results": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+              },
+              "prompts": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+                    },
+                    "value": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "id",
+                    "value"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            },
+            "required": [
+              "id"
+            ]
+          }
+        }
+      },
+      "required": [
+        "results"
+      ]
+    }
+  },
+  "required": [
+    "caseId",
+    "resultedOn",
+    "sjpSessionId"
+  ]
+}

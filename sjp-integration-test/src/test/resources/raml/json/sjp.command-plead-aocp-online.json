@@ -1,0 +1,29 @@
+{
+  "personalDetails": {
+    "firstName": "Testy",
+    "lastName": "Testerson",
+    "address": {
+      "address1": "14 Tottenham Court Road",
+      "address2": "London",
+      "address3": "England",
+      "address4": "UK",
+      "address5": "Greater London",
+      "postcode": "W1T 1JY"
+    },
+    "contactDetails": {
+      "home": "0208000888",
+      "mobile": "07890123123",
+      "email": "criminal@gmail.com"
+    },
+    "dateOfBirth": "1990-09-09",
+    "nationalInsuranceNumber": "AB123456A",
+    "driverNumber": "TESTY708166G99KZ"
+  },
+  "offences": [
+    {
+      "id": "OFFENCE_ID",
+      "plea": "GUILTY"
+    }
+  ],
+  "aocpAccepted": true
+}

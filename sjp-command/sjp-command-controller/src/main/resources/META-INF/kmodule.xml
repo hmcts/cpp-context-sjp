@@ -1,0 +1,5 @@
+<kmodule xmlns="http://www.drools.org/xsd/kmodule">
+    <kbase name="COMMAND_CONTROLLER" packages="uk.gov.moj.cpp.sjp.command.controller.accesscontrol" default="false">
+        <ksession name="COMMAND_CONTROLLER_SESSION" default="false" type="stateless"/>
+    </kbase>
+</kmodule>

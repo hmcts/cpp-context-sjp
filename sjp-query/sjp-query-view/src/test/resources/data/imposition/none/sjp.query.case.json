@@ -1,0 +1,41 @@
+{
+  "id": "c342204a-cc67-423f-b302-6c641e72be95",
+  "enterpriseId": "WKSW4MJHWC5N",
+  "version": 2,
+  "dateTimeCreated": "2016-06-11T00:00Z",
+  "urn": "TFL2041200",
+  "caseType": "TFL_PROSECUTED_CASE",
+  "review-status": "Started",
+  "compensation": 1.2,
+  "defendant": {
+    "offences": [
+      {
+        "id": "88137eb7-14c1-4103-bd9a-7e8f46d4fcbe",
+        "offenceCode": "PS90020",
+        "plea": "GUILTY",
+        "offenceSequenceNumber": 1,
+        "chargeDate": "2016-02-18",
+        "wording": "On 19/01/2016 At wandsworth bridge rd SW6 Being a passenger on a Public Service Vehicle operated on behalf of London Bus Services Limited being used for the carriage of passengers at separate fares did use in relation to the journey you were taking a ticket which had been issued for use by another person on terms that it is not transferable",
+        "pendingWithdrawal": false
+      },
+      {
+        "id": "9f2ec528-5c20-4975-a649-ab1db6968f53",
+        "offenceCode": "PS90011",
+        "plea": "GUILTY",
+        "offenceSequenceNumber": 2,
+        "chargeDate": "2016-02-18",
+        "wording": "On 19/01/2016 At wandsworth bridge rd SW6 Being a passenger on a Public Service Vehicle operated on behalf of London Bus Services Limited being used for the carriage of passengers at separate fares did use in relation to the journey you were taking a ticket which had been issued for use by another person on terms that it is not transferable",
+        "pendingWithdrawal": false
+      },
+      {
+        "id": "b511eb31-c8e7-4223-8626-958c34dfb3f9",
+        "offenceCode": "PS90015",
+        "plea": "GUILTY",
+        "offenceSequenceNumber": 3,
+        "chargeDate": "2016-02-18",
+        "wording": "On 19/01/2016 At wandsworth bridge rd SW6 Being a passenger on a Public Service Vehicle operated on behalf of London Bus Services Limited being used for the carriage of passengers at separate fares did use in relation to the journey you were taking a ticket which had been issued for use by another person on terms that it is not transferable",
+        "pendingWithdrawal": false
+      }
+    ]
+  }
+}

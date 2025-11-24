@@ -1,0 +1,19 @@
+package uk.gov.moj.cpp.sjp.command.api.accesscontrol;
+
+import uk.gov.moj.cpp.accesscontrol.drools.Outcome;
+import uk.gov.moj.cpp.accesscontrol.drools.Action;
+import uk.gov.moj.cpp.sjp.command.api.accesscontrol.RuleConstants;
+
+global uk.gov.moj.cpp.accesscontrol.common.providers.UserAndGroupProvider userAndGroupProvider;
+
+rule "Command - Rule for Add Case Document"
+  when
+    $outcome: Outcome();
+    $action: Action(name == "sjp.add-case-document");
+        eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, RuleConstants.getAddCaseDocumentActionGroups()));
+  then
+    $outcome.setSuccess(true);
+end
+
+
+

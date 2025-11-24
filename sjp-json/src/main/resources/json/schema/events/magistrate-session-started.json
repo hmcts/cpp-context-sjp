@@ -1,0 +1,48 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://justice.gov.uk/json/schemas/domains/sjp/events/magistrate-session-started.json",
+  "type": "object",
+  "properties": {
+    "magistrate": {
+      "type": "string"
+    },
+    "sessionId": {
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+    },
+    "userId": {
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+    },
+    "courtHouseCode": {
+      "type": "string"
+    },
+    "courtHouseName": {
+      "type": "string"
+    },
+    "localJusticeAreaNationalCourtCode": {
+      "type": "string"
+    },
+    "startedAt": {
+      "$ref": "http://justice.gov.uk/json/schemas/domains/sjp/temporal.json#/definitions/date-time"
+    },
+    "legalAdviser": {
+      "$ref": "http://justice.gov.uk/core/courts/delegatedPowers.json"
+    },
+    "prosecutors": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "string"
+      }
+    }
+  },
+  "required": [
+    "magistrate",
+    "sessionId",
+    "userId",
+    "courtHouseCode",
+    "courtHouseName",
+    "localJusticeAreaNationalCourtCode",
+    "startedAt"
+  ],
+  "additionalProperties": false
+}

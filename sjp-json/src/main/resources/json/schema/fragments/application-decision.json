@@ -1,0 +1,32 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://justice.gov.uk/json/schemas/domains/sjp/application-decision.json",
+  "type": "object",
+  "properties":
+    {
+      "granted": {
+        "type": "boolean"
+      },
+      "outOfTime": {
+        "type": "boolean"
+      },
+      "outOfTimeReason": {
+        "type": "string"
+      },
+      "rejectionReason": {
+        "type": "string"
+      },
+      "applicationType" : {
+        "$ref": "http://justice.gov.uk/json/schemas/domains/sjp/application-type.json"
+      },
+      "previousFinalDecision" : {
+        "$ref" : "http://justice.gov.uk/json/schemas/domains/sjp/temporal.json#/definitions/date-time"
+      },
+      "session" : {
+        "$ref" :"http://justice.gov.uk/json/schemas/domains/sjp/queries/session.json"
+      }
+    },
+    "required": [
+      "granted"
+    ]
+}

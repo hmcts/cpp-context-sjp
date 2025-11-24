@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+         http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.3.xsd">
+
+    <changeSet id="09" author="jgraham" logicalFilePath="liquibase/sjp-view-store-db-changelog.xml">
+
+        <createIndex tableName="case_details" indexName="case_details_urn_without_prefix_idx">
+            <column name="UPPER(REGEXP_REPLACE(urn, '^[a-zA-Z]+', ''))" type="TEXT"/>
+        </createIndex>
+
+    </changeSet>
+
+</databaseChangeLog>

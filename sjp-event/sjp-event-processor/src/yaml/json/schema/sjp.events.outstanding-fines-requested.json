@@ -1,0 +1,11 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://justice.gov.uk/json/schemas/domains/sjp/events/sjp.events.outstanding-fines-requested.json",
+  "type": "object",
+  "properties": {
+    "hearingDate": {
+      "$ref": "http://justice.gov.uk/json/schemas/domains/sjp/temporal.json#/definitions/date"
+    }
+  },
+  "additionalProperties": false
+}

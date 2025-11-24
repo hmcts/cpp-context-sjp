@@ -1,0 +1,91 @@
+{
+  "fixedListCollection": [
+    {
+      "id": "d7d75420-aace-11e8-98d0-529269fb1459",
+      "version": "2020-11-20T11:38:58.162Z",
+      "startDate": "2020-11-21",
+      "elements": [
+        {
+          "code": "DB",
+          "value": "Deductions from benefit",
+          "welshValue": "Didynnu o Fudd-daliadau"
+        },
+        {
+          "code": "AEO",
+          "value": "Attachment of earnings",
+          "welshValue": "Atafaelu enillion"
+        },
+        {
+          "code": "PAY",
+          "value": "Make payments as ordered",
+          "welshValue": "Gwneud taliadau yn unol â’r gorchymyn"
+        }
+      ]
+    },
+    {
+      "id": "1fa26fa6-da67-48f7-9bb4-9b55d825854e",
+      "version": "2020-09-25T13:30:22.494Z",
+      "startDate": "2020-09-26",
+      "elements": [
+        {
+          "code": "CO",
+          "value": "compensation ordered",
+          "welshValue": "iawndal wedi’i orchymyn"
+        },
+        {
+          "code": "KD",
+          "value": "defendant is a known defaulter",
+          "welshValue": "mae’r diffynnydd yn ddiffygdalwr cyfarwydd"
+        },
+        {
+          "code": "DR",
+          "value": "defendant requested this",
+          "welshValue": "gofynnodd y diffynnydd am hwn"
+        }
+      ]
+    },
+    {
+      "id": "e555e078-5dd8-11e8-9c2d-fa7ae01bbebc",
+      "version": "2020-09-25T13:30:22.409Z",
+      "startDate": "2020-09-26",
+      "elements": [
+        {
+          "code": "WKLY",
+          "value": "weekly",
+          "welshValue": "yn wythnosol"
+        },
+        {
+          "code": "FTNLY",
+          "value": "fortnightly",
+          "welshValue": "pob pythefnos"
+        },
+        {
+          "code": "MTHLY",
+          "value": "monthly",
+          "welshValue": "yn fisol"
+        }
+      ]
+    },
+    {
+      "id": "6e5f1afe-e35f-11e8-9f32-f2801f1b9fd1",
+      "version": "2021-06-02T09:00:35.955Z",
+      "startDate": "2021-06-02",
+      "elements": [
+        {
+          "code": "TFL2",
+          "value": "Transport for London"
+        },
+        {
+          "code": "DVL2",
+          "value": "Driver and Vehicle Licensing Agency",
+          "welshValue": "Asiantaeth Trwyddedu Gyrwyr a Cherbydau"
+        },
+        {
+          "code": "TVL3",
+          "value": "Television Licensing Organisation",
+          "welshValue": "Sefydliad Trwyddedu Teledu"
+        }
+      ]
+    }
+  ]
+}

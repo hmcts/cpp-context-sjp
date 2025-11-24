@@ -1,0 +1,35 @@
+{
+  "resultedOn": "${resultedOn}",
+  "offences": [
+    {
+      "id": "${offenceId}",
+      "verdict": "NO_VERDICT",
+      "results": [
+        {
+          "resultDefinitionId": "600edfc3-a584-4f9f-a52e-5bb8a99646c1",
+          "prompts": [
+            {
+              "promptDefinitionId": "bca4e07c-17e0-48f1-84f4-7b6ff8bab5e2",
+              "value": "For trial"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "${offenceId2}",
+      "verdict": "PROVED_SJP",
+      "results": [
+        {
+          "resultDefinitionId": "600edfc3-a584-4f9f-a52e-5bb8a99646c1",
+          "prompts": [
+            {
+              "promptDefinitionId": "bca4e07c-17e0-48f1-84f4-7b6ff8bab5e2",
+              "value": "For trial"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,18 @@
+{
+  "caseId":"4076c764-a3b7-47b8-9d35-8fa706c1862a",
+  "costs":1.23,
+  "victimSurcharge":34.0,
+  "aocpTotalCost":137.57,
+  "defendant":{
+    "id":"bdfd0bef-b459-4272-b286-fc6534d01e7a",
+    "offences":[
+      {
+        "id":"c084b814-bcd5-444e-9044-ae0b5127ecd1",
+        "compensation":2.34,
+        "aocpStandardPenaltyAmount":100,
+        "isEligibleAOCP":true,
+        "prosecutorOfferAOCP":true
+      }
+    ]
+  }
+}

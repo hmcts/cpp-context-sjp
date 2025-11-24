@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+         http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.3.xsd">
+
+    <changeSet id="62" author="gustavo.rojas" logicalFilePath="liquibase/sjp-view-store-db-changelog/offence-decision-licence-endorsement-and-disqualification-attributes.xml">
+        <addColumn tableName="offence_decision">
+            <column name="penalty_points_imposed" type="integer"/>
+            <column name="penalty_points_reason" type="text"/>
+            <column name="additional_points_reason" type="text"/>
+            <column name="disqualification" type="boolean"/>
+            <column name="disqualification_type" type="text"/>
+            <column name="disqualification_period_value" type="integer"/>
+            <column name="disqualification_period_unit" type="text"/>
+            <column name="notional_penalty_points" type="integer"/>
+        </addColumn>
+
+        <rollback>
+            <dropColumn tableName="offence_decision">
+                <column name="penalty_points_imposed"/>
+                <column name="penalty_points_reason"/>
+                <column name="additional_points_reason"/>
+                <column name="disqualification"/>
+                <column name="disqualification_type"/>
+                <column name="disqualification_period_value"/>
+                <column name="disqualification_period_unit"/>
+                <column name="notional_penalty_points"/>
+            </dropColumn>
+        </rollback>
+
+    </changeSet>
+
+</databaseChangeLog>

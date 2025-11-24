@@ -1,0 +1,41 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://justice.gov.uk/json/schemas/domains/sjp/events/press-transparency-pdf-report-requested.json",
+  "type": "object",
+  "properties": {
+    "pressTransparencyReportId": {
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+    },
+    "format": {
+      "type": "string",
+      "enum": [
+        "PDF",
+        "JSON"
+      ]
+    },
+    "requestType": {
+      "type": "string",
+      "enum": [
+        "FULL",
+        "DELTA"
+      ]
+    },
+    "language":{
+      "enum":[
+        "ENGLISH",
+        "WELSH"
+      ]
+    },
+    "title": {
+      "type": "string"
+    },
+    "requestedAt": {
+      "$ref": "http://justice.gov.uk/json/schemas/domains/sjp/temporal.json#/definitions/date-time"
+    }
+  },
+  "required": [
+    "pressTransparencyReportId",
+    "requestedAt"
+  ],
+  "additionalProperties": false
+}

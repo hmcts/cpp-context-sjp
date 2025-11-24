@@ -1,0 +1,17 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://justice.gov.uk/json/schemas/domains/sjp/events/notification-remove-endorsements-failed.json",
+  "type": "object",
+  "properties": {
+    "applicationDecisionId": {
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+    },
+    "failedTime": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "applicationDecisionId"
+  ],
+  "additionalProperties": false
+}

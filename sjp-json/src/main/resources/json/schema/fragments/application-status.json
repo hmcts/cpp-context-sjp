@@ -1,0 +1,29 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://justice.gov.uk/json/schemas/domains/sjp/application-status.json",
+  "enum": [
+    "APPEAL_ALLOWED",
+    "IN_PROGRESS",
+    "REOPENING_PENDING",
+    "STATUTORY_DECLARATION_PENDING",
+    "STATUTORY_DECLARATION_GRANTED",
+    "STATUTORY_DECLARATION_WITHDRAWN",
+    "REOPENING_GRANTED",
+    "REOPENING_WITHDRAWN",
+    "STATUTORY_DECLARATION_REFUSED",
+    "REOPENING_REFUSED",
+    "COMPLETED",
+    "EJECTED",
+    "LISTED",
+    "FINALISED",
+    "DRAFT",
+    "UN_ALLOCATED",
+    "APPEAL_DISMISSED",
+    "APPEAL_WITHDRAWN",
+    "APPEAL_ABANDONED",
+    "APPEAL_REFUSED",
+    "APPLICATION_STATUS_NOT_KNOWN",
+    "APPLICATION_DISMISSED_SENTENCE_VARIED",
+    "APPEAL_PENDING"
+  ]
+}

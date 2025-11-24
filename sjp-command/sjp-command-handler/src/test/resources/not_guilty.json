@@ -1,0 +1,38 @@
+{
+  "personalDetails" :{
+    "detailsCorrected": {
+      "yes": false,
+      "correctDetails": "My postcode is now CR9 RD9"
+    },
+    "contactNumber":"079112121212",
+    "email":"one@gmail.com",
+    "dateOfBirth":"2004-10-05",
+    "nationalInsuranceNumber": {
+      "yes": true,
+      "NI": "VO 12 34 56 D"
+    }
+  },
+  "pleas": [
+    {
+      "offenceId": "d7a7a8f8-2e60-4bf6-90de-b2001b635718",
+      "plea": "NOT_GUILTY",
+      "notGuiltyBecause": "It wasn't me",
+      "interpreter": {
+        "yes": true,
+        "language": "Polish"
+      },
+      "prosecutorWitness": {
+        "disagree": true,
+        "details": "That guy"
+      },
+      "defenceWitness": {
+        "call": true,
+        "contactDetails": "My mum",
+        "interpreter": {
+          "yes": true,
+          "language": "Polish"
+        }
+      }
+    }
+  ]
+}

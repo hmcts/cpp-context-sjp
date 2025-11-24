@@ -1,0 +1,35 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://justice.gov.uk/json/schemas/domains/sjp/queries/case-offence-details.json",
+  "type": "object",
+  "properties": {
+    "caseId": {
+      "type": "string"
+    },
+    "caseRef": {
+      "type": "string"
+    },
+    "postingOrHearingDate": {
+      "type": "string"
+    },
+    "prosecutorName": {
+      "type": "string"
+    },
+    "expiryDate": {
+      "type": "string"
+    },
+    "offenceTitles": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    }
+  },
+  "required": [
+    "caseId",
+    "caseRef",
+    "postingOrHearingDate",
+    "offenceTitles"
+  ],
+  "additionalProperties": false
+}

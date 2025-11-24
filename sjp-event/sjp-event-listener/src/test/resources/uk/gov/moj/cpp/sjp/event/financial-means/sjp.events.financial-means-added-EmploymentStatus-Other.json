@@ -1,0 +1,38 @@
+{
+  "caseId": "4e32b0d9-e976-4212-ba55-7806523790d9",
+  "defendantId": "cf1486a3-ec8b-4ab5-b0a1-cc24dc78364b",
+  "financialMeans": {
+    "payment": {
+      "frequency": "Weekly",
+      "amount": "12"
+    },
+    "financialProblems": {
+      "yes": true,
+      "justification": "Gambling",
+      "expenses": {
+        "household": {
+          "accommodation": "12",
+          "utilityBills": "12",
+          "insurance": "12",
+          "councilTax": "12",
+          "otherContributors": true
+        },
+        "other": {
+          "televisionSubscriptions": "23",
+          "travelExpenses": "23",
+          "telephone": "2.2",
+          "loanRepayments": "232.2",
+          "countyCourtOrders": "23",
+          "fines": "23",
+          "childMaintenance": "23",
+          "otherSignificantExpenses": {
+            "yes": true,
+            "details": "Cleaning Garage",
+            "amount": "12"
+          }
+        }
+      }
+    },
+    "status": "Employed"
+  }
+}

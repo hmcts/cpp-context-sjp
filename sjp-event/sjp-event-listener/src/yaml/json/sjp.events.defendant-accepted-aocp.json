@@ -1,0 +1,35 @@
+{
+  "caseId":"4076c764-a3b7-47b8-9d35-8fa706c1862a",
+  "defendantId":"bdfd0bef-b459-4272-b286-fc6534d01e7a",
+  "offences":[
+    {
+      "id":"c084b814-bcd5-444e-9044-ae0b5127ecd1",
+      "plea":"AOCP_PENDING"
+    }
+  ],
+  "method":"ONLINE",
+  "personalDetails":{
+    "firstName":"Testy",
+    "lastName":"Testerson",
+    "address":{
+      "address1":"14 Tottenham Court Road",
+      "address2":"London",
+      "address3":"England",
+      "address4":"UK",
+      "address5":"Greater London",
+      "postcode":"W1T 1JY"
+    },
+    "contactDetails":{
+      "home":"0208000888",
+      "mobile":"07890123123",
+      "email":"criminal@gmail.com"
+    },
+    "dateOfBirth":"1990-09-09",
+    "nationalInsuranceNumber":"AB123456A",
+    "region":"croydon",
+    "driverNumber":"TESTY708166G99KZ"
+  },
+  "aocpAccepted":true,
+  "pleadDate":"2022-08-03T13:55:38.891Z",
+  "caseUrn":"TFL766120493"
+}

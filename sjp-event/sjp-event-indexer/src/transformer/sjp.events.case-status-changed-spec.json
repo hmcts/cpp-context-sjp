@@ -1,0 +1,19 @@
+{
+  "operations": [
+    {
+      "operation": "shift",
+      "spec": {
+        "#PROSECUTION": "_case_type",
+        "caseId": "caseId",
+        "caseStatus": "caseStatus"
+      }
+    },
+    {
+      "operation": "modify-overwrite-beta",
+      "spec": {
+        "\\_case_type": "=toUpper",
+        "caseStatus":   "=toUpper"
+      }
+    }
+  ]
+}

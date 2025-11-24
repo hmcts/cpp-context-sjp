@@ -1,0 +1,73 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://justice.gov.uk/mi/systemdata/query/api/sjp.query.not-guilty-plea-cases.json",
+  "type": "object",
+  "properties": {
+    "cases": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+          },
+          "urn": {
+            "type": "string"
+          },
+          "firstName": {
+            "type": "string"
+          },
+          "lastName": {
+            "type": "string"
+          },
+          "legalEntityName": {
+            "type": "string"
+          },
+          "pleaDate": {
+            "$ref": "http://justice.gov.uk/json/schemas/domains/sjp/temporal.json#/definitions/date-time"
+          },
+          "prosecutingAuthority": {
+            "type": "string"
+          },
+          "caseManagementStatus": {
+            "$ref" : "http://justice.gov.uk/json/schemas/domains/sjp/case-management-status.json"
+          }
+        },
+        "additionalProperties": false,
+        "anyOf": [
+          {
+            "required": [
+              "id",
+              "urn",
+              "firstName",
+              "lastName",
+              "prosecutingAuthority",
+              "caseManagementStatus"
+            ]
+          },
+          {
+            "required": [
+              "id",
+              "urn",
+              "legalEntityName",
+              "prosecutingAuthority",
+              "caseManagementStatus"
+            ]
+          }
+        ]
+      }
+    }
+  },
+  "results": {
+    "type": "integer"
+  },
+  "pageCount": {
+    "type": "integer"
+  },
+  "additionalProperties": false,
+  "required": [
+    "cases",
+    "results",
+    "pageCount"
+  ]
+}

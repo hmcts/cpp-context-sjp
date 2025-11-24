@@ -1,0 +1,12 @@
+package uk.gov.moj.cpp.sjp.command.controller.accesscontrol;
+
+import uk.gov.moj.cpp.accesscontrol.drools.Outcome;
+import uk.gov.moj.cpp.accesscontrol.drools.Action;
+
+rule "Command - Add financial imposition account number used by BDF only"
+  when
+    $outcome: Outcome();
+    $action: Action(name == "sjp.command.add-financial-imposition-account-number-bdf");
+  then
+    $outcome.setSuccess(true);
+end

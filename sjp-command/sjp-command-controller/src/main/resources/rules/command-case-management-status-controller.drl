@@ -1,0 +1,12 @@
+package uk.gov.moj.cpp.sjp.command.controller.accesscontrol;
+
+import uk.gov.moj.cpp.accesscontrol.drools.Outcome;
+import uk.gov.moj.cpp.accesscontrol.drools.Action;
+
+rule "Command - update cases management status"
+  when
+    $outcome: Outcome();
+    $action: Action(name == "sjp.command.update-cases-management-status");
+  then
+    $outcome.setSuccess(true);
+end

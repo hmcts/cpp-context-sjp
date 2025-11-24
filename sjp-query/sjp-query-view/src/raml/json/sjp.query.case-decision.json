@@ -1,0 +1,14 @@
+{
+  "id":"32bcbaa6-ff56-40cb-8a71-408feb5077cc",
+  "session":{
+    "sessionId":"88dc450d-7d5c-4770-85fc-2c7126bc08c0",
+    "legalAdviserUserId":"a085e359-6069-4694-8820-7810e7dfe762",
+    "courtHouseCode":"B23HS00",
+    "courtHouseName":"Leamington Spa Magistrates' Court",
+    "localJusticeAreaNationalCourtCode":"2905",
+    "magistrate":"re",
+    "startedAt":"2019-06-04T14:34:54.164Z",
+    "sessionType":"MAGISTRATE"
+  },
+  "savedAt":"2019-06-04T14:35:28.906Z"
+}

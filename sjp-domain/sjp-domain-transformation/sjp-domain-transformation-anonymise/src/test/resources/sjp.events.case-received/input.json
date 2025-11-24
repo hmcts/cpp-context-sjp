@@ -1,0 +1,42 @@
+{
+  "caseId": "812c9a80-899f-4e95-a357-a9d5c0b76014",
+  "urn": "TFL36768OKXHK",
+  "enterpriseId": "HXWRC5W69V8L",
+  "prosecutingAuthority": "TFL",
+  "costs": 10,
+  "postingDate": "2018-11-14",
+  "defendant": {
+    "id": "aad0ada0-d83f-4fd3-82ea-94a05dcdb578",
+    "title": "Mr",
+    "firstName": "Corden",
+    "lastName": "NeoNeo",
+    "dateOfBirth": "1995-12-18",
+    "gender": "Female",
+    "nationalInsuranceNumber": "NS421919D",
+    "address": {
+      "address1": "Flat 1, Armageddon House",
+      "address2": "13 Old Road",
+      "address3": "Giggleswick",
+      "address4": "Merton",
+      "postcode": "NN16 1AB"
+    },
+    "numPreviousConvictions": 2,
+    "offences": [
+      {
+        "id": "22ecca97-17bb-4722-9ca1-79396f5d61c6",
+        "offenceSequenceNo": 1,
+        "libraOffenceCode": "TR11053",
+        "chargeDate": "2018-11-11",
+        "libraOffenceDateCode": 1,
+        "offenceDate": "2018-10-28",
+        "offenceWording": "On 02/07/2015 At threadneedle street EC2 Being a passenger on a Public service Vehicle operated on behalf of London Bus Services Limited being used for the carriage of passengers at separate fares where the vehicle was being operated by a Driver without a Conductor did not as directed by the Driver an Inspector or a Notice displayed on the vehicle pay the fare for the journey in accordance with the direction ",
+        "prosecutionFacts": "An incident took place at GREEN PARK station whereby you were spoken to by a member of London Underground staff regarding your train journey and the associated fare.The facts of this incidents are now being considered and I must advise you that legal proceedings may be initiated against you regarding this matter in accordance with the LU prosecution policy",
+        "witnessStatement": "What happened in January was that I decided to take the tube home on Friday eventing from GP.Behind the gates was a Fare inspector and she asked me to show my oyster card. I pulled out my card and showed it only to realize that I was actually not holding my own oyster but my wife's student oyster. We do have several oyster cards at home for when friends visit etc and I must have picked her card as opposed to mine. We are both using our cards regularly to get to work/uni and I did not notice that I was using her card in error.",
+        "compensation": 16
+      }
+    ],
+    "hearingLanguage": "E",
+    "region": "London"
+  },
+  "createdOn": "2018-12-12T17:46:13.010Z"
+}

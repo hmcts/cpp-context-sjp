@@ -1,0 +1,49 @@
+{
+  "courtApplication": {
+    "courtApplicationCases": [
+      {
+        "prosecutionCaseId": "00000000-0000-0000-0000-000000000000",
+        "prosecutionCaseIdentifier": {
+          "prosecutionAuthorityCode": "TFL",
+          "prosecutionAuthorityId": "cf73207f-3ced-488a-82a0-3fba79c3ce85",
+          "prosecutionAuthorityReference": "TFL12345-ABC"
+        },
+        "isSJP": true
+      }
+    ],
+    "id": "00000000-0000-0000-0000-000000000000",
+    "type": {
+      "id": "00000000-0000-0000-0000-000000000000",
+      "code": "a",
+      "type": "a",
+      "categoryCode": "categoryCode123",
+      "linkType": "STANDALONE",
+      "jurisdiction": "MAGISTRATES",
+      "summonsTemplateType": "NOT_APPLICABLE",
+      "breachType": "NOT_APPLICABLE",
+      "appealFlag": false,
+      "applicantAppellantFlag": false,
+      "pleaApplicableFlag": false,
+      "commrOfOathFlag": false,
+      "courtOfAppealFlag": false,
+      "courtExtractAvlFlag": false,
+      "prosecutorThirdPartyFlag": false,
+      "spiOutApplicableFlag": false,
+      "offenceActiveOrder": "COURT_ORDER"
+    },
+    "applicationReceivedDate": "2020-09-03",
+    "applicant": {
+      "id": "00000000-0000-0000-0000-000000000000",
+      "synonym": "a",
+      "summonsRequired": false,
+      "notificationRequired": false
+    },
+    "subject": {
+      "id": "00000000-0000-0000-0000-000000000000",
+      "synonym": "a",
+      "summonsRequired": false,
+      "notificationRequired": false
+    },
+    "applicationStatus": "IN_PROGRESS"
+  }
+}

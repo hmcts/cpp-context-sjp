@@ -1,0 +1,16 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://justice.gov.uk/json/schemas/domains/sjp/event/case-status-changed.json",
+  "properties": {
+    "caseId": {
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+    },
+    "caseStatus": {
+      "$ref": "http://justice.gov.uk/json/schemas/domains/sjp/case-status.json"
+    }
+  },
+  "required": [
+    "caseId",
+    "caseStatus"
+  ]
+}

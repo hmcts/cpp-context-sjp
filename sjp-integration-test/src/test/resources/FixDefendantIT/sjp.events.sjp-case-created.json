@@ -1,0 +1,26 @@
+{
+  "id": "{caseId}",
+  "urn": "{caseUrn}",
+  "prosecutingAuthority": "TFL",
+  "personId": "{personId}",
+  "defendantId": "{defendantId}",
+  "costs": 100,
+  "numPreviousConvictions": 99,
+  "postingDate": "2018-01-07",
+  "offences": [
+    {
+      "id": "{offenceId}",
+      "offenceSequenceNo": 1,
+      "libraOffenceCode": "PS90010",
+      "chargeDate": "2016-01-01",
+      "libraOffenceDateCode": 1,
+      "offenceDate": "2015-07-02",
+      "offenceWording": "On 02/07/2015 At Threadneedle Street EC2 Being a passenger on a Public service Vehicle operated on behalf of London Bus Services Limited being used for the carriage of passengers at separate fares where the vehicle was being operated by a Driver without a Conductor did not as directed by the Driver an Inspector or a Notice displayed on the vehicle pay the fare for the journey in accordance with the direction  ",
+      "offenceWordingWelsh": "Welsh wording: On 02/07/2015 At Threadneedle Street EC2 Being a passenger on a Public service Vehicle operated on behalf of London Bus Services Limited being used for the carriage of passengers at separate fares where the vehicle was being operated by a Driver without a Conductor did not as directed by the Driver an Inspector or a Notice displayed on the vehicle pay the fare for the journey in accordance with the direction  ",
+      "prosecutionFacts": "Prosecution Facts",
+      "witnessStatement": "It is a fact - you are a crook",
+      "compensation": 101
+    }
+  ],
+  "createdOn": "2018-02-06T15:01:38.968Z"
+}

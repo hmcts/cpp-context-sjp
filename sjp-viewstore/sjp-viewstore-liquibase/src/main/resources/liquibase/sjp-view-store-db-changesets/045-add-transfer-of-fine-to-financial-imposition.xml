@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+         http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.3.xsd">
+
+    <changeSet id="45" author="ATCM" logicalFilePath="liquibase/sjp-view-store-db-changelog.xml">
+
+        <addColumn tableName="financial_imposition">
+            <column name="national_court_code" type="text"/>
+            <column name="national_court_name" type="text"/>
+        </addColumn>
+
+        <rollback>
+            <dropColumn tableName="financial_imposition">
+                <column name="national_court_code" type="text"/>
+                <column name="national_court_name" type="text"/>
+            </dropColumn>
+        </rollback>
+
+    </changeSet>
+
+</databaseChangeLog>

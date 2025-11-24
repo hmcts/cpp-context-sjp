@@ -1,0 +1,19 @@
+package uk.gov.moj.cpp.sjp.command.api.accesscontrol;
+
+import uk.gov.moj.cpp.accesscontrol.drools.Outcome;
+import uk.gov.moj.cpp.accesscontrol.drools.Action;
+import uk.gov.moj.cpp.sjp.command.api.accesscontrol.RuleConstants;
+import java.util.Arrays;
+
+global uk.gov.moj.cpp.accesscontrol.common.providers.UserAndGroupProvider userAndGroupProvider;
+
+rule "Command - Access control for upload case document"
+ when
+   $outcome: Outcome();
+   $action: Action(name == "sjp.upload-case-document");
+   eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, RuleConstants.getUploadCaseDocumentActionGroups()))
+ then
+   $outcome.setSuccess(true);
+end
+
+

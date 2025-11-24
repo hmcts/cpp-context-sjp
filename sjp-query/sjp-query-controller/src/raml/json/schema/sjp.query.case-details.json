@@ -1,0 +1,96 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://justice.gov.uk/json/schemas/domains/sjp/queries/case-details.json",
+  "type": "object",
+  "properties": {
+    "id": {
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+    },
+    "urn": {
+      "type": "string"
+    },
+    "defendant": {
+      "$ref" : "http://justice.gov.uk/json/schemas/domains/sjp/queries/defendant.json"
+    },
+    "dateTimeCreated": {
+      "type": "string"
+    },
+    "caseDocuments": {
+      "type": "array",
+      "items": {
+        "$ref" : "http://justice.gov.uk/json/schemas/domains/sjp/queries/document.json"
+      }
+    },
+    "caseDecisions": {
+      "type": "array",
+      "items": {
+        "$ref" : "http://justice.gov.uk/json/schemas/domains/sjp/queries/case-decision.json"
+      }
+    },
+    "prosecutingAuthority": {
+      "type" : "string"
+    },
+    "prosecutingAuthorityName": {
+      "type" : "string"
+    },
+    "policeFlag": {
+      "type": "boolean"
+    },
+    "postConviction": {
+      "type": "boolean"
+    },
+    "completed": {
+      "type": "boolean"
+    },
+    "assigned": {
+      "type": "boolean"
+    },
+    "costs": {
+      "type": "number"
+    },
+    "postingDate": {
+      "$ref": "http://justice.gov.uk/json/schemas/domains/sjp/temporal.json#/definitions/date"
+    },
+    "adjournedTo": {
+      "$ref": "http://justice.gov.uk/json/schemas/domains/sjp/temporal.json#/definitions/date"
+    },
+    "reopenedDate": {
+      "type": "string"
+    },
+    "libraCaseNumber": {
+      "type": "string"
+    },
+    "reopenedInLibraReason": {
+      "type": "string"
+    },
+    "enterpriseId": {
+      "$ref" : "http://justice.gov.uk/json/schemas/domains/sjp/enterprise-id.json"
+    },
+    "onlinePleaReceived": {
+      "type" : "boolean"
+    },
+    "datesToAvoid": {
+      "type" : "string"
+    },
+    "status": {
+      "$ref" : "http://justice.gov.uk/json/schemas/domains/sjp/case-status.json"
+    },
+    "listedInCriminalCourts": {
+      "type": "boolean"
+    },
+    "setAside": {
+      "type": "boolean"
+    },
+    "managedByATCM": {
+      "type": "boolean"
+    },
+    "caseApplication": {
+      "$ref" : "http://justice.gov.uk/json/schemas/domains/sjp/case-application.json"
+    }
+  },
+  "additionalProperties": true,
+  "required": [
+    "id",
+    "urn"
+  ]
+}

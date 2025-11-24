@@ -1,0 +1,162 @@
+{
+  "offenceId": "a2804f0e-ecb1-3855-947d-01ea5bb2a70b",
+  "cjsOffenceCode": "CA03011",
+  "modeOfTrial": "SNONIMP",
+  "cppDateOfLastUpdate": "2019-02-28",
+  "pnldDateOfLastUpdate": "2009-07-14",
+  "details": {
+    "document": {
+      "type": "H",
+      "codes": {
+        "dvlacode": {
+          "code": "TS30",
+          "description": "Aggravated taking of a vehicle"
+        },
+        "fptgraduated": 0,
+        "mojstatscode": "196/08",
+        "mopinoteslink": "D19586",
+        "cjsoffencecode": "CA03014",
+        "mopireviewgroup": {
+          "code": "C",
+          "description": "Group 3"
+        },
+        "notifiabletomoj": {
+          "code": "N",
+          "description": "NO"
+        },
+        "seatbeltoffence": {
+          "code": "N",
+          "description": "No"
+        },
+        "fptgraduatedhigh": 0,
+        "roadsidedeposits": {
+          "code": "N",
+          "description": "No"
+        },
+        "fptissuedbypolice": 0,
+        "pndissuedbyothers": 0,
+        "pndissuedbypolice": 0,
+        "disqualificationclass": {
+          "code": "N",
+          "description": "discretionary disqualification not endorsable"
+        },
+        "recordableonpncindicator": {
+          "code": "N",
+          "description": "NO"
+        },
+        "pndissuedbylocalauthorities": 0
+      },
+      "libra": {
+        "miscode": {
+          "code": "SNM",
+          "description": "Summary Non-Motoring"
+        },
+        "fineindicator": {
+          "code": "Y",
+          "description": "YES"
+        },
+        "libracategory": {
+          "code": "CS",
+          "description": "Summary Non-motoring"
+        },
+        "maxfinetypemagct": {
+          "code": "U",
+          "description": "Unlimited"
+        },
+        "custodialindicator": {
+          "code": "N",
+          "description": "NO"
+        }
+      },
+      "other": {
+        "penalty": "A fine not exceeding level five on the standard scale<br /><br />Time limit for prosecutions:<br />6 months<br /><br />On the 12th March 2015 the limit on fines imposed by a Magistrates‚Äô court was removed ‚Äì as such, the potential fine on summary conviction in relation to an offence committed after this date is unlimited.",
+        "modeoftrial": {
+          "code": "SNONIMP",
+          "description": "SUMMARY NON-IMPRISONABLE"
+        },
+        "powersofarrest": "Arrest without warrant",
+        "geographicregion": {
+          "code": "EWNI",
+          "description": "England, Wales and Northern Ireland"
+        },
+        "timelimitforprosecutions": "6 months"
+      },
+      "english": {
+        "title": "Fail    / refuse give assistance to person executing Communications Act search warrant",
+        "legislation": "Contrary to section 366(8)(b) and    (9) of the Communications Act 2003.",
+        "pointstoprove": "date and location<br />    intentionally<br />    obstructed<br />    a person authorised to execute a search warrant <br />    issued under s.366 of the Communications Act 2003",
+        "additionalkeywords": {
+          "additionalkeyword": [
+            "assist",
+            "\n    Obstruct",
+            "execute",
+            "executes",
+            "obstructs",
+            "Possession or control of a television receiver\n    without a licence",
+            "Communication Act 2003",
+            "public electronic communication network",
+            "tv",
+            "\n    receivers",
+            "license",
+            "colour",
+            "black and white",
+            "intend",
+            "intends",
+            "install",
+            "instal",
+            "installs"
+          ]
+        },
+        "investigatoractions": {
+          "investigatoraction": [
+            {
+              "code": "IA27",
+              "description": "Confirm proposed charge is appropriately authorised (Police or CPS)"
+            },
+            {
+              "code": "IA28",
+              "description": "Ensure compliance with investigator's obligations re disclosure"
+            },
+            {
+              "code": "IA29",
+              "description": "Consider if case suitable for referral to Financial Investigation Unit and CPS for asset recovery eg confiscation order"
+            }
+          ]
+        },
+        "standardoffencewording": "On **(..SPECIFY DATE..) at    **(..SPECIFY TOWNSHIP..), without reasonable excuse, failed to give assistance that you    were under a duty to give to a person authorised to execute a search warrant granted under    section 366 of the Communications Act 2003 by the **(..SPECIFY COURT..) on **(..SPECIFY    DATE OF SEARCH WARRANT..)",
+        "standardstatementoffacts": "On **(..SPECIFY DATE..) at    **(..SPECIFY TOWNSHIP..) the defendant, without reasonable excuse, failed to give    assistance that you were under a duty to give to a person authorised to execute a search    warrant granted under section 366 of the Communications Act 2003 by the **(..SPECIFY    COURT..) **(..SPECIFY DATE OF SEARCH WARRANT..).",
+        "policeandcpschargingresponsibilities": "D27968"
+      },
+      "pnldref": "H6212",
+      "ancillary": {
+        "groups": {
+          "code": "GP03",
+          "description": "Television & satellite"
+        },
+        "legislationcode": {
+          "link": "S509"
+        },
+        "dateoflastupdate": "2005-12-23",
+        "offencestartdate": "2004-04-01",
+        "offencewordinggroup": "Y10"
+      },
+      "indictment": {
+        "indictmentindicator": {
+          "code": "N",
+          "description": "NO"
+        },
+        "structuredindictmentindicator": {
+          "code": "N",
+          "description": "NO"
+        }
+      }
+    }
+  },
+  "title": "Possess a television set with intent to install / use without a licence",
+  "legislation": "Contrary to section 363(3)(a) and (4) of the    Communications Act 2003.",
+  "offenceStartDate": "2004-04-01",
+  "drugsOrAlcoholRelated": "N",
+  "locationRequired": "Y",
+  "prosecutionTimeLimit": "6",
+  "offenceEndDate": "2016-01-01"
+}

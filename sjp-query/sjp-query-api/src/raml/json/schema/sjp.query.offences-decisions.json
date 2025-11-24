@@ -1,0 +1,43 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://justice.gov.uk/json/schemas/domains/sjp/query/offences-decisions.json",
+  "type": "object",
+  "properties": {
+    "decisions": {
+      "type": "array",
+      "items": {
+        "id": "http://justice.gov.uk/json/schemas/domains/sjp/query/offence-decision.json",
+        "type": "object",
+        "properties": {
+          "offenceNumber" : {
+            "type": "number"
+          },
+          "pleaType" : {
+            "oneOf": [
+              { "$ref": "http://justice.gov.uk/json/schemas/domains/sjp/plea-type.json" },
+              { "type": "null" }
+            ]
+          },
+          "decision": {
+            "$ref": "http://justice.gov.uk/json/schemas/domains/sjp/queries/decision-type.json"
+          },
+          "conviction": {
+            "enum" : [
+              "PRE",
+              "POST"
+            ]
+          }
+        },
+        "required": [
+          "offenceNumber",
+          "decision",
+          "pleaType",
+          "conviction"
+        ]
+      }
+    }
+  },
+  "required": [
+    "decisions"
+  ]
+}

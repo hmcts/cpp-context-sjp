@@ -1,0 +1,173 @@
+package uk.gov.moj.sjp.it.test;
+
+import static com.jayway.jsonpath.matchers.JsonPathMatchers.isJson;
+import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
+import static java.util.UUID.randomUUID;
+import static javax.ws.rs.core.Response.Status.FORBIDDEN;
+import static javax.ws.rs.core.Response.Status.OK;
+import static org.hamcrest.Matchers.anyOf;
+import static org.hamcrest.Matchers.hasItem;
+import static org.hamcrest.Matchers.is;
+import static org.hamcrest.core.AllOf.allOf;
+import static uk.gov.justice.services.test.utils.core.matchers.ResponsePayloadMatcher.payload;
+import static uk.gov.justice.services.test.utils.core.matchers.ResponseStatusMatcher.status;
+import static uk.gov.moj.sjp.it.command.CreateCase.CreateCasePayloadBuilder.withDefaults;
+import static uk.gov.moj.sjp.it.command.CreateCase.createCaseForPayloadBuilder;
+import static uk.gov.moj.sjp.it.model.ProsecutingAuthority.DVLA;
+import static uk.gov.moj.sjp.it.model.ProsecutingAuthority.TFL;
+import static uk.gov.moj.sjp.it.model.ProsecutingAuthority.TVL;
+import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubEnforcementAreaByPostcode;
+import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubProsecutorQuery;
+import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubRegionByPostcode;
+import static uk.gov.moj.sjp.it.stub.UsersGroupsStub.stubForUserDetails;
+import static uk.gov.moj.sjp.it.util.DefaultRequests.getCaseById;
+import static uk.gov.moj.sjp.it.util.DefaultRequests.searchCases;
+import static uk.gov.moj.sjp.it.util.RestPollerWithDefaults.pollWithDefaults;
+import static uk.gov.moj.sjp.it.util.SjpDatabaseCleaner.cleanViewStore;
+
+import uk.gov.moj.sjp.it.command.CreateCase;
+import uk.gov.moj.sjp.it.command.UpdateDefendantDetails;
+import uk.gov.moj.sjp.it.helper.CaseSearchResultHelper;
+import uk.gov.moj.sjp.it.helper.DecisionHelper;
+import uk.gov.moj.sjp.it.pollingquery.CasePoller;
+import uk.gov.moj.sjp.it.util.CaseAssignmentRestrictionHelper;
+import uk.gov.moj.sjp.it.verifier.PersonInfoVerifier;
+
+import java.sql.SQLException;
+import java.util.UUID;
+
+import com.google.common.collect.Sets;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
+public class SearchCasesIT extends BaseIntegrationTest {
+
+    private CreateCase.DefendantBuilder defendantBuilder;
+
+    @BeforeEach
+    public void setUp() throws SQLException {
+        cleanViewStore();
+
+        CaseAssignmentRestrictionHelper.provisionCaseAssignmentRestrictions(Sets.newHashSet(TFL, TVL, DVLA));
+
+        defendantBuilder = CreateCase.DefendantBuilder.withDefaults();
+
+        stubProsecutorQuery(TFL.name(), TFL.getFullName(), randomUUID());
+        stubForUserDetails(USER_ID, "ALL");
+        stubEnforcementAreaByPostcode(defendantBuilder.getAddressBuilder().getPostcode(), "1080", "Bedfordshire Magistrates' Court");
+        stubRegionByPostcode("1080", "TestRegion");
+
+    }
+
+    @Test
+    public void verifyInitialSearchDetailsAndUpdateToDefendantDetails() {
+        final CreateCase.CreateCasePayloadBuilder createCasePayloadBuilder = withDefaults().withDefendantBuilder(defendantBuilder);
+
+        createCaseForPayloadBuilder(createCasePayloadBuilder);
+        final CaseSearchResultHelper caseSearchResultHelper = new CaseSearchResultHelper(
+                createCasePayloadBuilder.getUrn(),
+                createCasePayloadBuilder.getDefendantBuilder().getLastName(),
+                createCasePayloadBuilder.getDefendantBuilder().getDateOfBirth());
+
+        caseSearchResultHelper.verifyPersonInfoByUrn();
+        caseSearchResultHelper.verifyPersonInfoByLastNameAndDateOfBirth(caseSearchResultHelper.getLastName(), caseSearchResultHelper.getDateOfBirth());
+
+        final UpdateDefendantDetails.DefendantDetailsPayloadBuilder updatedDefendantPayload = UpdateDefendantDetails.DefendantDetailsPayloadBuilder.withDefaults();
+
+        final UUID caseId = createCasePayloadBuilder.getId();
+        UpdateDefendantDetails.updateDefendantDetailsForCaseAndPayload(caseId, UUID.fromString(CasePoller.pollUntilCaseByIdIsOk(caseId).getString("defendant.id")), updatedDefendantPayload);
+        UpdateDefendantDetails.acceptDefendantPendingChangesForCaseAndPayload(caseId, UUID.fromString(CasePoller.pollUntilCaseByIdIsOk(caseId).getString("defendant.id")), updatedDefendantPayload);
+        caseSearchResultHelper.verifyPersonInfoByLastNameAndDateOfBirth(updatedDefendantPayload.getLastName(), updatedDefendantPayload.getDateOfBirth());
+
+        final PersonInfoVerifier personInfoVerifier = PersonInfoVerifier.personInfoVerifierForDefendantUpdatedPayload(caseId, updatedDefendantPayload);
+        personInfoVerifier.verifyPersonInfo(true);
+    }
+
+    @Test
+    public void verifyCaseThrowForbiddenExceptionIfUserBelongsToDifferentProsecutionAuthority() {
+        stubForUserDetails(USER_ID, DVLA.name());
+        final CreateCase.CreateCasePayloadBuilder createCasePayloadBuilderForTFL = withDefaults().withDefendantBuilder(defendantBuilder);
+
+        createCaseForPayloadBuilder(createCasePayloadBuilderForTFL);
+        pollWithDefaults(getCaseById(createCasePayloadBuilderForTFL.getId()))
+                .until(anyOf(status().is(FORBIDDEN)));
+    }
+
+    @Test
+    public void findsDefendantByHistoricalLastName() {
+
+        // Given a case is created, which defendant record's name will be updated
+        final CreateCase.CreateCasePayloadBuilder historicalCaseToBeUpdated = CreateCase.CreateCasePayloadBuilder.withDefaults().withDefendantBuilder(defendantBuilder);
+        historicalCaseToBeUpdated
+                .getDefendantBuilder()
+                .withLastName("deHistorical");
+        createCaseForPayloadBuilder(historicalCaseToBeUpdated);
+
+        // and second case is created with the same defendants last name
+        final CreateCase.CreateCasePayloadBuilder historicalCaseWithoutUpdates = CreateCase.CreateCasePayloadBuilder.withDefaults();
+        historicalCaseWithoutUpdates
+                .getDefendantBuilder()
+                .withLastName("deHistorical");
+        createCaseForPayloadBuilder(historicalCaseWithoutUpdates);
+
+        // when last name is updated for the first case
+        UpdateDefendantDetails.DefendantDetailsPayloadBuilder updatedDefendantPayload = UpdateDefendantDetails.DefendantDetailsPayloadBuilder.withDefaults()
+                .withLastName("von Neumann");
+
+        final UUID caseId = historicalCaseToBeUpdated.getId();
+        UpdateDefendantDetails.updateDefendantDetailsForCaseAndPayload(caseId, UUID.fromString(CasePoller.pollUntilCaseByIdIsOk(caseId).getString("defendant.id")), updatedDefendantPayload);
+
+        // then the first case (and second) will be found and system will mark the name as outdated
+        pollWithDefaults(searchCases("deHistorical", USER_ID))
+                .until(
+                        status().is(OK),
+                        payload().isJson(
+                                allOf(
+                                        withJsonPath("foundCasesWithOutdatedDefendantsName", is(false)),
+                                        withJsonPath(
+                                                "$.results[*]", hasItem(isJson(allOf(
+                                                        withJsonPath("urn", is(historicalCaseToBeUpdated.getUrn())),
+                                                        withJsonPath("defendant.lastName", is("deHistorical")),
+                                                        withJsonPath("defendant.outdated", is(false))
+
+                                                )))
+                                        ),
+                                        withJsonPath(
+                                                "$.results[*]", hasItem(isJson(allOf(
+                                                        withJsonPath("urn", is(historicalCaseWithoutUpdates.getUrn())),
+                                                        withJsonPath("defendant.lastName", is("deHistorical")),
+                                                        withJsonPath("defendant.outdated", is(false))
+
+                                                )))
+                                        )
+                                )
+                        )
+                );
+    }
+
+    @Test
+    public void verifyCaseAssignmentIsReflected() {
+        //given case is created
+        final CreateCase.CreateCasePayloadBuilder createCasePayloadBuilder = withDefaults().withDefendantBuilder(defendantBuilder);
+        createCaseForPayloadBuilder(createCasePayloadBuilder);
+
+        final CaseSearchResultHelper caseSearchResultHelper = new CaseSearchResultHelper(
+                createCasePayloadBuilder.getUrn(),
+                createCasePayloadBuilder.getDefendantBuilder().getLastName(),
+                createCasePayloadBuilder.getDefendantBuilder().getDateOfBirth());
+        // then
+        caseSearchResultHelper.verifyAssignment(false);
+
+        // when
+        caseSearchResultHelper.startSessionAndAssignCase();
+        // then
+        caseSearchResultHelper.verifyAssignment(true);
+
+        // when
+        //TODO change to end session when it is ready (ATCM-2957)
+        DecisionHelper.saveDefaultDecision(createCasePayloadBuilder.getId(), createCasePayloadBuilder.getOffenceId());
+        // then
+        caseSearchResultHelper.verifyAssignment(false);
+    }
+
+}

@@ -1,0 +1,47 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://justice.gov.uk/json/schemas/domains/sjp/personal-details.json",
+  "type": "object",
+  "properties": {
+    "title": {
+      "type": "string"
+    },
+    "firstName": {
+      "type": "string"
+    },
+    "lastName": {
+      "type": "string"
+    },
+    "dateOfBirth": {
+      "$ref": "http://justice.gov.uk/json/schemas/domains/sjp/temporal.json#/definitions/date"
+    },
+    "nationalInsuranceNumber": {
+      "type": "string"
+    },
+    "driverNumber": {
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/dvlaDriverLicence"
+    },
+    "driverLicenceDetails" : {
+      "type" : "string"
+    },
+    "gender": {
+      "$ref": "http://justice.gov.uk/json/schemas/domains/sjp/gender.json"
+    },
+    "address": {
+      "$ref": "http://justice.gov.uk/json/schemas/domains/sjp/address.json"
+    },
+    "contactDetails": {
+      "$ref": "http://justice.gov.uk/json/schemas/domains/sjp/contact-details.json"
+    },
+    "dobChanged": {
+      "type": "boolean"
+    },
+    "addressChanged": {
+      "type": "boolean"
+    },
+    "nameChanged": {
+      "type": "boolean"
+    }
+  },
+  "additionalProperties": false
+}

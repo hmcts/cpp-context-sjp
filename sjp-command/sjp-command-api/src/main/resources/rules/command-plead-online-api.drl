@@ -1,0 +1,36 @@
+package uk.gov.moj.cpp.sjp.command.api.accesscontrol;
+
+import uk.gov.moj.cpp.accesscontrol.drools.Outcome;
+import uk.gov.moj.cpp.accesscontrol.drools.Action;
+import uk.gov.moj.cpp.sjp.command.api.accesscontrol.RuleConstants;
+
+global uk.gov.moj.cpp.accesscontrol.common.providers.UserAndGroupProvider userAndGroupProvider;
+
+rule "Command API - Rule for Plead Online"
+  when
+    $outcome: Outcome();
+    $action: Action(name == "sjp.plead-online");
+    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, RuleConstants.getPleadOnlineActionGroups()));
+
+  then
+    $outcome.setSuccess(true);
+end
+
+rule "Command API - Rule for Plead Online when PCQ visited"
+  when
+    $outcome: Outcome();
+    $action: Action(name == "sjp.plead-online-pcq-visited");
+    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, RuleConstants.getPleadOnlineActionGroups()));
+
+  then
+    $outcome.setSuccess(true);
+end
+rule "Command API - Rule for Plead AOCP Online"
+  when
+    $outcome: Outcome();
+    $action: Action(name == "sjp.plead-aocp-online");
+    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, RuleConstants.getPleadOnlineActionGroups()));
+
+  then
+    $outcome.setSuccess(true);
+end

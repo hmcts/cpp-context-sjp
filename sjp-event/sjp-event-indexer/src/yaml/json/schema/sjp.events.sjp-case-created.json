@@ -1,0 +1,99 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://justice.gov.uk/json/schemas/domains/sjp/events/sjp-case-created.json",
+  "type": "object",
+  "properties": {
+    "id": {
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+    },
+    "urn": {
+      "id": "/urn",
+      "type": "string"
+    },
+    "prosecutingAuthority": {
+      "id": "/prosecutingAuthority",
+      "type": "string",
+      "enum": [
+        "TFL",
+        "TVL",
+        "DVLA"
+      ]
+    },
+    "personId": {
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+    },
+    "defendantId": {
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+    },
+    "numPreviousConvictions": {
+      "id": "/numPreviousConvictions",
+      "type": "integer"
+    },
+    "costs": {
+      "id": "/costs",
+      "type": "number"
+    },
+    "postingDate": {
+      "$ref": "http://justice.gov.uk/json/schemas/domains/sjp/temporal.json#/definitions/date"
+    },
+    "offences": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "offenceSequenceNo": {
+            "type": "integer"
+          },
+          "libraOffenceCode": {
+            "type": "string"
+          },
+          "chargeDate": {
+            "type": "string"
+          },
+          "libraOffenceDateCode": {
+            "type": "integer"
+          },
+          "offenceDate": {
+            "type": "string"
+          },
+          "offenceWording": {
+            "type": "string"
+          },
+          "offenceWordingWelsh": {
+            "type": "string"
+          },
+          "prosecutionFacts": {
+            "type": "string"
+          },
+          "witnessStatement": {
+            "type": "string"
+          },
+          "compensation": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "id",
+          "offenceSequenceNo",
+          "libraOffenceCode",
+          "chargeDate",
+          "libraOffenceDateCode",
+          "offenceCommittedDate",
+          "offenceWording"
+        ]
+      }
+    }
+  },
+  "required": [
+    "id",
+    "urn",
+    "prosecutingAuthority",
+    "personId",
+    "defendantId",
+    "offences",
+    "postingDate"
+  ]
+}

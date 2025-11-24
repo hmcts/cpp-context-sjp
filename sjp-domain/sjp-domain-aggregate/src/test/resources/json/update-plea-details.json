@@ -1,0 +1,12 @@
+{
+  "userId": "042c541a-55b5-4f66-98f0-46b9e560f1b5",
+  "updatePleaCommand": {
+    "caseId": "6ac98e9c-66b2-4363-8a78-641dbec8bbd2",
+    "offenceId": "042c541a-55b5-4f66-98f0-46b9e560f1b5",
+    "plea": "NOT_GUILTY",
+    "interpreterRequired": true,
+    "interpreterLanguage": "Swahili",
+    "speakWelsh": false
+  },
+  "updatedOn": "2012-02-22T02:06:58.147Z"
+}

@@ -1,0 +1,64 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://justice.gov.uk/json/schemas/domains/sjp/command/sjp.update-defendant-details-api.json",
+  "type": "object",
+  "properties": {
+    "title": {
+      "type": "string",
+      "maxLength": 35
+    },
+    "firstName": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 255
+    },
+    "lastName": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 255
+    },
+    "legalEntityName": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 255
+    },
+    "dateOfBirth": {
+      "type": "string"
+    },
+    "gender": {
+      "$ref": "http://justice.gov.uk/json/schemas/domains/sjp/gender.json"
+    },
+    "email": {
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/email"
+    },
+    "address": {
+      "$ref": "http://justice.gov.uk/json/schemas/domains/sjp/address.json"
+    },
+    "contactNumber": {
+      "$ref": "http://justice.gov.uk/json/schemas/domains/sjp/contact-details.json"
+    },
+    "nationalInsuranceNumber": {
+      "type": "string"
+    },
+    "driverNumber": {
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/dvlaDriverLicence"
+    },
+    "driverLicenceDetails" : {
+      "type" : "string"
+    }
+  },
+  "anyOf": [
+    {
+      "required": [
+        "firstName",
+        "lastName",
+        "gender"
+      ]
+    },
+    {
+      "required": [
+        "legalEntityName"
+      ]
+    }
+  ]
+}

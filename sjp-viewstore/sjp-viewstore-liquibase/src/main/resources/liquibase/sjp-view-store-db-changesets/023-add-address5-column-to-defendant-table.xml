@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+         http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.3.xsd">
+
+    <changeSet id="23" author="ATCM" logicalFilePath="liquibase/sjp-view-store-db-changelog.xml">
+
+        <addColumn tableName="online_plea">
+            <column name="personal_details_address5" type="text" afterColumn="personal_details_address4" />
+            <column name="employer_address_5" type="text" afterColumn="employer_address_4"/>
+        </addColumn>
+
+        <addColumn tableName="defendant">
+            <column name="address5" type="text" afterColumn="address4" />
+        </addColumn>
+
+        <addColumn tableName="employer">
+            <column name="address_5" type="text" afterColumn="address_4" />
+        </addColumn>
+
+    </changeSet>
+
+</databaseChangeLog>

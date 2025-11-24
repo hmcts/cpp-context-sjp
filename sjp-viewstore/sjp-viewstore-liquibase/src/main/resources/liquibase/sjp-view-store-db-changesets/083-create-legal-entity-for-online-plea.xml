@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+         http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.3.xsd">
+
+    <changeSet id="83" author="team/samba/ozgur.yalcin">
+        <addColumn tableName="online_plea">
+            <column name="legal_entity_name" type="TEXT"/>
+            <column name="position_of_representative" type="TEXT"/>
+            <column name="legal_entity_details_address1" type="TEXT"/>
+            <column name="legal_entity_details_address2" type="TEXT"/>
+            <column name="legal_entity_details_address3" type="TEXT"/>
+            <column name="legal_entity_details_address4" type="TEXT"/>
+            <column name="legal_entity_details_address5" type="TEXT"/>
+            <column name="legal_entity_details_postcode" type="TEXT"/>
+            <column name="trading_more_than_twelve_months" type="BOOLEAN"/>
+            <column name="number_of_employees" type="INT"/>
+            <column name="gross_turnover_whole_pounds" type="DECIMAL(11,2)"/>
+            <column name="net_turnover_whole_pounds" type="DECIMAL(11,2)"/>
+        </addColumn>
+
+        <rollback>
+            <dropColumn tableName="online_plea">
+                <column name="legal_entity_name"/>
+                <column name="position_of_representative"/>
+                <column name="legal_entity_details_address1"/>
+                <column name="legal_entity_details_address2"/>
+                <column name="legal_entity_details_address3"/>
+                <column name="legal_entity_details_address4"/>
+                <column name="legal_entity_details_address5"/>
+                <column name="legal_entity_details_postcode"/>
+                <column name="trading_more_than_twelve_months"/>
+                <column name="gross_turnover_whole_pounds"/>
+                <column name="net_turnover_whole_pounds"/>
+            </dropColumn>
+        </rollback>
+    </changeSet>
+
+</databaseChangeLog>

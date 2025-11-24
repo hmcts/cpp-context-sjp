@@ -1,0 +1,15 @@
+{
+  "caseId" : "8861dcd8-a165-408b-be07-89737d185c82",
+  "defendantId": "3789ab16-0bb7-4ef1-87ef-c936bf0364f1",
+  "firstName": "David",
+  "lastName": "SMITH",
+  "dateOfBirth": "1980-07-15",
+  "address": {
+    "address1": "14 Shaftesbury Road",
+    "address2": "London",
+    "address3": "England",
+    "address4": "UK",
+    "address5": "Greater London",
+    "postcode": "W1T 1JY"
+  }
+}

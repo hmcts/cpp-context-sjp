@@ -1,0 +1,9 @@
+{
+  "_metadata": {
+    "name": "sjp.events.case-assigned"
+  },
+  "caseId": "c4ec3a35-76bf-4649-b43a-761e71c3765e",
+  "assigneeId": "4c8770db-02e6-4f4b-829e-2af9ea97d12f",
+  "sessionId": "828a39d2-f7e6-4566-9cee-d997454e0b83",
+  "caseAssignmentType": "for-magistrate-decision"
+}

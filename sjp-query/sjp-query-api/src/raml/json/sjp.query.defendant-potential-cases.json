@@ -1,0 +1,82 @@
+{
+  "sjpOpenCases": [
+    {
+      "caseId": "a930539d-8b82-481a-b085-4a0a8ce1aacf",
+      "postingOrHearingDate": "2022-03-12",
+      "offenceTitles": [
+        "Offence desc 1",
+        "Offence desc 2"
+      ],
+      "caseRef": "Case-Ref-1-SJP_OPEN"
+    },
+    {
+      "caseId": "af07ce15-bb5e-44a7-817b-964cb0ba29be",
+      "postingOrHearingDate": "2022-03-06",
+      "offenceTitles": [
+        "Offence desc 1",
+        "Offence desc 2"
+      ],
+      "caseRef": "Case-Ref-1-SJP_OPEN"
+    }
+  ],
+  "sjpClosedCases": [
+    {
+      "caseId": "f9dc0df9-a9b6-46dd-97f5-82fb81e0f6af",
+      "postingOrHearingDate": "2022-03-12",
+      "offenceTitles": [
+        "Offence desc 1",
+        "Offence desc 2"
+      ],
+      "caseRef": "Case-Ref-1-SJP_CLOSED"
+    },
+    {
+      "caseId": "488e8abc-ece4-47e0-bb03-070f35d82d4a",
+      "postingOrHearingDate": "2022-03-06",
+      "offenceTitles": [
+        "Offence desc 1",
+        "Offence desc 2"
+      ],
+      "caseRef": "Case-Ref-1-SJP_CLOSED"
+    }
+  ],
+  "courtOpenCases": [
+    {
+      "caseId": "7c21502b-4090-4833-80df-8066b0f1ae6d",
+      "postingOrHearingDate": "2022-03-12",
+      "offenceTitles": [
+        "Offence desc 1",
+        "Offence desc 2"
+      ],
+      "caseRef": "Case-Ref-1-COURT_CASE_OPEN"
+    },
+    {
+      "caseId": "80df5056-c57e-4492-bb39-e901a9cdd5fa",
+      "postingOrHearingDate": "2022-03-06",
+      "offenceTitles": [
+        "Offence desc 1",
+        "Offence desc 2"
+      ],
+      "caseRef": "Case-Ref-1-COURT_CASE_OPEN"
+    }
+  ],
+  "courtClosedCases": [
+    {
+      "caseId": "dbcb725c-b382-4514-9e86-a3d1ec5fb688",
+      "postingOrHearingDate": "2022-03-12",
+      "offenceTitles": [
+        "Offence desc 1",
+        "Offence desc 2"
+      ],
+      "caseRef": "Case-Ref-1-COURT_CASE_CLOSED"
+    },
+    {
+      "caseId": "dbe8e664-c656-4a46-a187-2d2fb554338a",
+      "postingOrHearingDate": "2022-03-06",
+      "offenceTitles": [
+        "Offence desc 1",
+        "Offence desc 2"
+      ],
+      "caseRef": "Case-Ref-1-COURT_CASE_CLOSED"
+    }
+  ]
+}

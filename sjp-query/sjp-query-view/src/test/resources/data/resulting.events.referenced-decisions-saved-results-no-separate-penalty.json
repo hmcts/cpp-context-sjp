@@ -1,0 +1,18 @@
+{
+  "id": "fed97cd4-4ed7-4db3-a503-33e9a0dc28e7",
+  "caseId": "c4d922ba-20c6-4d68-ab56-3611401bbc7c",
+  "sjpSessionId": "d9f1908a-148d-4c63-bf46-f2ee9571daaf",
+  "created": "2016-06-01T09:00:00Z",
+  "offences": [
+    {
+      "id": "7d566f6c-f7ac-484c-bfb6-38fde2d687da",
+      "verdict": "PROVED_SJP",
+      "results": [
+        {
+          "code": "NSP",
+          "terminalEntries": []
+        }
+      ]
+    }
+  ]
+}

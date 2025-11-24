@@ -1,0 +1,63 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://justice.gov.uk/json/schemas/domains/sjp/events/sjp.events.application-address-changed.json",
+  "type": "object",
+  "properties": {
+    "caseId" : {
+      "$ref" : "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+    },
+    "defendantId" : {
+    "$ref" : "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+  },
+    "title": {
+      "type": "string"
+    },
+    "firstName": {
+      "type": "string"
+    },
+    "lastName": {
+      "type": "string"
+    },
+    "dateOfBirth": {
+      "type": "string"
+    },
+    "gender": {
+      "$ref": "http://justice.gov.uk/json/schemas/domains/sjp/gender.json"
+    },
+    "email": {
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/email"
+    },
+    "email2": {
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/email"
+    },
+    "address": {
+      "$ref": "http://justice.gov.uk/json/schemas/domains/sjp/address.json"
+    },
+    "contactNumber": {
+      "$ref": "http://justice.gov.uk/json/schemas/domains/sjp/contact-details.json"
+    },
+    "nationalInsuranceNumber": {
+      "type": "string"
+    },
+    "region": {
+      "type": "string"
+    },
+    "driverNumber": {
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/dvlaDriverLicence"
+    },
+    "driverLicenceDetails" : {
+      "type" : "string"
+    },
+    "legalEntityName": {
+      "type": "string"
+    },
+    "addressUpdateFromApplication": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "caseId",
+    "address"
+  ],
+  "additionalProperties": false
+}

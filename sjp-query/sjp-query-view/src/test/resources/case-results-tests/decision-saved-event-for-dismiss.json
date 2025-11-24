@@ -1,0 +1,17 @@
+{
+  "caseId": "${caseId}",
+  "sjpSessionId": "${sessionId}",
+  "decisionId": "${decisionId}",
+  "resultedOn": "${resultedOn}",
+  "offenceDecisions": [
+    {
+      "type": "DISMISS",
+      "offenceDecisionInformation": [
+        {
+          "offenceId": "${offenceId}",
+          "verdict": "FOUND_NOT_GUILTY"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,25 @@
+package uk.gov.moj.cpp.sjp.event;
+
+
+import uk.gov.justice.domain.annotation.Event;
+
+import java.util.UUID;
+
+@Event("sjp.events.case-started")
+public class CaseStarted {
+
+    private UUID id;
+
+    private CaseStarted() {
+        //default constructor
+    }
+
+    public CaseStarted(UUID id) {
+        this.id = id;
+    }
+
+    public UUID getId() {
+        return id;
+    }
+
+}

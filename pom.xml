@@ -9,7 +9,7 @@
 
     <groupId>uk.gov.moj.cpp.sjp</groupId>
     <artifactId>sjp-parent</artifactId>
-    <version>17.0.139-SNAPSHOT</version>
+    <version>17.0.139-CCT-2271-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <properties>
@@ -53,7 +53,7 @@
         <cpp.framework.action.mapping.enabled>true</cpp.framework.action.mapping.enabled>
         <mvn.site.url>file://${project.build.directory}/site</mvn.site.url>
         <file.alfresco.version>2.3.0</file.alfresco.version>
-        <coredomain.version>17.102.12</coredomain.version>
+        <coredomain.version>17.102.13-CCT-2271-SNAPSHOT</coredomain.version>
         <criminal-court-public-model.version>${coredomain.version}</criminal-court-public-model.version>
         <javax.el-api.version>3.0.0</javax.el-api.version>
         <joda-time.version>2.10</joda-time.version>

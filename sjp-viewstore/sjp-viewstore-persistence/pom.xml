@@ -8,9 +8,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <artifactId>sjp-viewstore-persistence</artifactId>
-    <properties>
-        <h2.version>1.4.196</h2.version>
-    </properties>
+
     <dependencies>
         <dependency>
             <groupId>javax</groupId>
@@ -106,12 +104,7 @@
             <artifactId>sjp-domain-common</artifactId>
             <version>${project.version}</version>
         </dependency>
-        <dependency>
-            <groupId>com.h2database</groupId>
-            <artifactId>h2</artifactId>
-            <version>${h2.version}</version>
-            <scope>test</scope>
-        </dependency>
+
 
     </dependencies>
 

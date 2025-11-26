@@ -19,7 +19,7 @@
             ]
           },
           "decision": {
-            "$ref": "http://cpp.moj.gov.uk/core/sjp/decision/decision-type.json"
+            "$ref": "http://justice.gov.uk/json/schemas/domains/sjp/queries/decision-type.json"
           },
           "conviction": {
             "enum" : [

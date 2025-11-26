@@ -1,13 +1,13 @@
 #!/usr/bin/env bash
 
+ARG mavenArtifactBaseUrl
+
 TRANSFORMATION_JAR=$(echo target/sjp-domain-transformation-postcode*.jar)
 EVENT_TOOL_VERSION=6.1.1
 EVENT_TOOL_JAR=target/event-tool-${EVENT_TOOL_VERSION}-swarm.jar
 
 PROCESS_FILE=target/processFile
 STANDALONE_XML=src/test/resources/standalone-ds.xml
-
-ARG mavenArtifactBaseUrl
 
 echo TRANSFORMATION_JAR=${TRANSFORMATION_JAR}
 

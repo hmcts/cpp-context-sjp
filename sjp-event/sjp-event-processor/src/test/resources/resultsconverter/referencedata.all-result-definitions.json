@@ -6135,6 +6135,57 @@
       "canBeSubjectOfVariation": false,
       "isAvailableForCourtExtract": false,
       "isBooleanResult": false
+    },
+    {
+      "id": "3e859586-bc86-407d-bd8e-c9a01d40d147",
+      "version": "2025-10-21T12:00:06.684Z",
+      "startDate": "2025-10-21",
+      "label": "Offence not dealt with as part of application - original adjudication to stand",
+      "shortCode": "OATS",
+      "level": "O",
+      "rank": 32300,
+      "wordGroups": [
+        {
+          "wordGroup": [
+            "OATS"
+          ]
+        },
+        {
+          "wordGroup": [
+            "application",
+            "original",
+            "adjudication",
+            "stand"
+          ]
+        }
+      ],
+      "userGroups": [
+
+      ],
+      "financial": "N",
+      "unscheduled": false,
+      "adjournment": "N",
+      "category": "F",
+      "urgent": false,
+      "convicted": "N",
+      "d20": false,
+      "postHearingCustodyStatus": "A",
+      "terminatesOffenceProceedings": true,
+      "lifeDuration": false,
+      "rollUpPrompts": false,
+      "publishedForNows": false,
+      "publishedAsAPrompt": false,
+      "excludedFromResults": false,
+      "alwaysPublished": false,
+      "jurisdiction": "B",
+      "canBeSubjectOfBreach": false,
+      "canBeSubjectOfVariation": false,
+      "resultTextTemplate": "Offence not dealt with as part of application - original adjudication to stand",
+      "sentToCC": false,
+      "committedToCC": false,
+      "unpaidWorkExtensionCommunityOrdYro": false,
+      "isAvailableForCourtExtract": true,
+      "isBooleanResult": false
     }
   ]
 }

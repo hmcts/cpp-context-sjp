@@ -2,7 +2,7 @@
     <parent>
         <artifactId>sjp-parent</artifactId>
         <groupId>uk.gov.moj.cpp.sjp</groupId>
-        <version>17.0.139-CCT-2357-SNAPSHOT</version>
+        <version>17.0.140-CCT-2357-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 

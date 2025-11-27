@@ -17,6 +17,7 @@ import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.sjp.persistence.entity.CaseAssignmentRestriction;
 import uk.gov.moj.cpp.sjp.persistence.repository.CaseAssignmentRestrictionRepository;
 
+import java.time.LocalDate;
 import java.time.ZonedDateTime;
 import java.util.List;
 
@@ -61,8 +62,10 @@ public class CaseAssignmentRestrictionViewTest {
         caseAssignmentRestriction.setProsecutingAuthority(PROSECUTING_AUTHORITY);
         caseAssignmentRestriction.setExclude(OBJECT_MAPPER.writeValueAsString(EXCLUDE));
         caseAssignmentRestriction.setIncludeOnly(OBJECT_MAPPER.writeValueAsString(INCLUDE_ONLY));
+        caseAssignmentRestriction.setValidTo(LocalDate.now());
+        caseAssignmentRestriction.setValidFrom(LocalDate.now());
 
-        when(caseAssignmentRestrictionRepository.findBy(PROSECUTING_AUTHORITY)).thenReturn(caseAssignmentRestriction);
+        when(caseAssignmentRestrictionRepository.findByProsecutingAuthority(PROSECUTING_AUTHORITY, LocalDate.now())).thenReturn(List.of(caseAssignmentRestriction));
 
         final JsonObject restrictionResult = caseAssignmentRestrictionView.getCaseAssignmentRestriction(envelope).payloadAsJsonObject();
         assertThat(restrictionResult.getString("prosecutingAuthority"), equalTo(PROSECUTING_AUTHORITY));

@@ -37,10 +37,12 @@ public class CaseAssignmentRestrictionListenerTest {
 
     @Test
     public void shouldAddCaseAssignmentRestriction() throws JsonProcessingException {
-        final CaseAssignmentRestrictionAdded event = new CaseAssignmentRestrictionAdded(DATE_TIME_CREATED.toString(), EXCLUDE, INCLUDE_ONLY, PROSECUTING_AUTHORITY);
+        final CaseAssignmentRestrictionAdded event = new CaseAssignmentRestrictionAdded(DATE_TIME_CREATED.toString(), EXCLUDE, INCLUDE_ONLY, PROSECUTING_AUTHORITY,
+                DATE_TIME_CREATED.toLocalDate().toString(), DATE_TIME_CREATED.toLocalDate().toString());
         final Envelope<CaseAssignmentRestrictionAdded> caseNoteAddedEvent = envelopeFrom(metadataWithRandomUUID("sjp.events.case-assignment-restriction-added"), event);
         listener.handleCaseAssignmentRestrictionAdded(caseNoteAddedEvent);
 
-        verify(repository, times(1)).saveCaseAssignmentRestriction(PROSECUTING_AUTHORITY, "[\"9876\"]", "[\"1234\"]", DATE_TIME_CREATED);
+        verify(repository, times(1)).saveCaseAssignmentRestriction(PROSECUTING_AUTHORITY, "[\"9876\"]", "[\"1234\"]", DATE_TIME_CREATED,
+                DATE_TIME_CREATED.toLocalDate(), DATE_TIME_CREATED.toLocalDate());
     }
 }

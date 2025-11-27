@@ -1,6 +1,7 @@
 package uk.gov.moj.cpp.sjp.persistence.entity;
 
 
+import java.time.LocalDate;
 import java.time.ZonedDateTime;
 
 import javax.persistence.Column;
@@ -25,6 +26,12 @@ public class CaseAssignmentRestriction {
 
     @Column(name = "date_time_created")
     private ZonedDateTime dateTimeCreated;
+
+    @Column(name = "valid_from")
+    private LocalDate validFrom;
+
+    @Column(name = "valid_to")
+    private LocalDate validTo;
 
     public String getProsecutingAuthority() {
         return prosecutingAuthority;
@@ -56,5 +63,21 @@ public class CaseAssignmentRestriction {
 
     public void setDateTimeCreated(ZonedDateTime dateTimeCreated) {
         this.dateTimeCreated = dateTimeCreated;
+    }
+
+    public LocalDate getValidFrom() {
+        return validFrom;
+    }
+
+    public void setValidFrom(final LocalDate validFrom) {
+        this.validFrom = validFrom;
+    }
+
+    public LocalDate getValidTo() {
+        return validTo;
+    }
+
+    public void setValidTo(final LocalDate validTo) {
+        this.validTo = validTo;
     }
 }

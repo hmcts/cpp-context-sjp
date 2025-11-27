@@ -10,9 +10,11 @@ import uk.gov.justice.services.core.annotation.Handles;
 import uk.gov.justice.services.core.annotation.ServiceComponent;
 import uk.gov.justice.services.core.enveloper.Enveloper;
 import uk.gov.justice.services.messaging.JsonEnvelope;
+import uk.gov.moj.cpp.sjp.persistence.entity.CaseAssignmentRestriction;
 import uk.gov.moj.cpp.sjp.persistence.repository.CaseAssignmentRestrictionRepository;
 
 import java.io.IOException;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
@@ -40,13 +42,19 @@ public class CaseAssignmentRestrictionView {
     @Handles("sjp.query.case-assignment-restriction")
     public JsonEnvelope getCaseAssignmentRestriction(final JsonEnvelope query) {
         final String prosecutingAuthority = query.payloadAsJsonObject().getString("prosecutingAuthority");
-        final Optional<JsonObject> restriction = ofNullable(caseAssignmentRestrictionRepository.findBy(prosecutingAuthority))
-                .map(assignmentRestriction -> Json.createObjectBuilder()
-                        .add("prosecutingAuthority", assignmentRestriction.getProsecutingAuthority())
-                        .add("dateTimeCreated", assignmentRestriction.getDateTimeCreated().toString())
-                        .add("exclude", getArrayBuilder(assignmentRestriction.getExclude()))
-                        .add("includeOnly", getArrayBuilder(assignmentRestriction.getIncludeOnly()))
-                        .build());
+        final List<CaseAssignmentRestriction> caseAssignmentRestrictionList = caseAssignmentRestrictionRepository.findByProsecutingAuthority(prosecutingAuthority, LocalDate.now());
+
+        Optional<JsonObject> restriction = Optional.empty();
+
+        if(!caseAssignmentRestrictionList.isEmpty()) {
+            restriction = Optional.of(caseAssignmentRestrictionList.get(0))
+                    .map(assignmentRestriction -> Json.createObjectBuilder()
+                            .add("prosecutingAuthority", assignmentRestriction.getProsecutingAuthority())
+                            .add("dateTimeCreated", assignmentRestriction.getDateTimeCreated().toString())
+                            .add("exclude", getArrayBuilder(assignmentRestriction.getExclude()))
+                            .add("includeOnly", getArrayBuilder(assignmentRestriction.getIncludeOnly()))
+                            .build());
+        }
 
         return enveloper.withMetadataFrom(query, "sjp.query.case-assignment-restriction").apply(restriction.orElse(null));
     }

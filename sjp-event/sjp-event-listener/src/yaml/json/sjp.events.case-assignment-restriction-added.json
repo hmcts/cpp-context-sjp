@@ -3,5 +3,7 @@
   "prosecutingAuthority": "TVL",
   "includeOnly": ["1234", "3456"],
   "exclude": [],
-  "dateTimeCreated": "2020-01-01T12:12:12.111Z"
+  "dateTimeCreated": "2020-01-01T12:12:12.111Z",
+  "validFrom" : "2025-09-18",
+  "validTo" : "2026-09-18"
 }

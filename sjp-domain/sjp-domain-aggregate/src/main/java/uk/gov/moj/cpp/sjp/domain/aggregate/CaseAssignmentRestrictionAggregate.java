@@ -16,13 +16,16 @@ import java.util.stream.Stream;
 
 public class CaseAssignmentRestrictionAggregate implements Aggregate {
 
-    public Stream<Object> updateCaseAssignmentRestriction(final String prosecutingAuthority, final List<String> includeOnly, final List<String> exclude, final String dateTimeCreated) {
+    public Stream<Object> updateCaseAssignmentRestriction(final String prosecutingAuthority, final List<String> includeOnly,
+                                                          final List<String> exclude, final String dateTimeCreated, final String validFrom, final String validTo) {
 
         return apply(of(caseAssignmentRestrictionAdded()
                 .withDateTimeCreated(dateTimeCreated)
                 .withExclude(exclude)
                 .withIncludeOnly(includeOnly)
                 .withProsecutingAuthority(prosecutingAuthority)
+                .withValidFrom(validFrom)
+                .withValidTo(validTo)
                 .build()));
     }
 

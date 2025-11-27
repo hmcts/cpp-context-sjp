@@ -19,6 +19,8 @@ import uk.gov.justice.services.messaging.Envelope;
 import uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMetadataMatcher;
 import uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopePayloadMatcher;
 
+import java.time.LocalDate;
+
 import javax.json.JsonValue;
 
 import com.jayway.jsonpath.ReadContext;
@@ -60,6 +62,8 @@ public class CaseAssignmentRestrictionControllerTest {
                 withJsonPath("$.prosecutingAuthority", equalTo(PROSECUTING_AUTHORITY)),
                 withJsonPath("$.includeOnly", hasSize(0)),
                 withJsonPath("$.exclude", hasSize(1)),
+                withJsonPath("$.validFrom", equalTo(LocalDate.now().toString())),
+                withJsonPath("$.validTo", equalTo(LocalDate.now().toString())),
                 withJsonPath("$.exclude[0]", equalTo("1234")));
 
         verify(sender).send(envelopeCaptor.capture());
@@ -69,7 +73,8 @@ public class CaseAssignmentRestrictionControllerTest {
     }
 
     private static Envelope<AddCaseAssignmentRestriction> createAddCaseCaseAssignmentRestrictionCommand() {
-        final AddCaseAssignmentRestriction addCaseAssignmentRestriction = new AddCaseAssignmentRestriction(singletonList("1234"), emptyList(), PROSECUTING_AUTHORITY);
+        final AddCaseAssignmentRestriction addCaseAssignmentRestriction = new AddCaseAssignmentRestriction(
+                singletonList("1234"), emptyList(), PROSECUTING_AUTHORITY, LocalDate.now().toString(), LocalDate.now().toString());
         return Envelope.envelopeFrom(
                 metadataWithRandomUUID("sjp.command.controller.add-case-assignment-restriction"),
                 addCaseAssignmentRestriction);

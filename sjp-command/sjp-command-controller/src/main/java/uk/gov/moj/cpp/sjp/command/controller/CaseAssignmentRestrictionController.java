@@ -31,6 +31,14 @@ public class CaseAssignmentRestrictionController {
                 .add("includeOnly", getRestrictions(payload.getIncludeOnly()))
                 .add("exclude", getRestrictions(payload.getExclude()));
 
+        if (payload.getValidFrom() != null) {
+            commandPayload.add("validFrom", payload.getValidFrom());
+        }
+
+        if (payload.getValidTo() != null) {
+            commandPayload.add("validTo", payload.getValidTo());
+        }
+
         sender.send(envelop(commandPayload.build())
                 .withName("sjp.command.add-case-assignment-restriction")
                 .withMetadataFrom(command));

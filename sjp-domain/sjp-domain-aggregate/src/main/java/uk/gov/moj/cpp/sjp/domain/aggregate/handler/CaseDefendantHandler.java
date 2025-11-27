@@ -2,7 +2,7 @@ package uk.gov.moj.cpp.sjp.domain.aggregate.handler;
 
 import static java.util.Objects.nonNull;
 import static uk.gov.moj.cpp.sjp.domain.aggregate.handler.HandlerUtils.createRejectionEvents;
-import static uk.gov.moj.cpp.sjp.domain.aggregate.handler.HandlerUtils.createRejectionEventsFromCC;
+import static uk.gov.moj.cpp.sjp.domain.aggregate.handler.HandlerUtils.createRejectionEventsForDefendantUpdate;
 import static uk.gov.moj.cpp.sjp.event.DefendantDetailsUpdated.DefendantDetailsUpdatedBuilder.defendantDetailsUpdated;
 import static uk.gov.moj.cpp.sjp.event.DefendantPendingChangesAccepted.DefendantPendingChangesAcceptedBuilder.defendantPendingChangesAccepted;
 
@@ -121,7 +121,7 @@ public class CaseDefendantHandler {
                                                        final ZonedDateTime updatedDate,
                                                        final CaseAggregateState state) {
 
-        final Optional<Stream<Object>> rejectionEvents = createRejectionEventsFromCC(
+        final Optional<Stream<Object>> rejectionEvents = createRejectionEventsForDefendantUpdate(
                 "Update defendant detail from CC",
                 defendantId,
                 state
@@ -147,12 +147,21 @@ public class CaseDefendantHandler {
                                                         final ZonedDateTime updatedDate,
                                                         final CaseAggregateState state) {
 
-        return createRejectionEvents(
-                userId,
-                "Accept pending defendant changes",
+        final Optional<Stream<Object>> rejectionEvents = createRejectionEventsForDefendantUpdate(
+                "Update defendant detail from CC",
                 defendantId,
                 state
-        ).orElse(createDefendantUpdateEvent(caseId, defendantId, person, updatedDate, state));
+        );
+
+        if (rejectionEvents.isPresent()) {
+            return rejectionEvents.get();
+        }
+
+        // If Optional is empty (case not found), return empty stream (no event)
+        if (state.getCaseId() == null) {
+            return Stream.empty();
+        }
+        return createDefendantUpdateEvent(caseId, defendantId, person, updatedDate, state);
     }
 
     public Stream<Object> rejectPendingDefendantChanges(final UUID defendantId,

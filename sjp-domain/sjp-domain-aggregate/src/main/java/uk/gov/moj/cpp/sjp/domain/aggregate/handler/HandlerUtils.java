@@ -201,7 +201,7 @@ public final class HandlerUtils {
      * but does NOT check for case completed or case referred for court hearing.
      * Returns no event (empty Optional) if case is not found.
      */
-    public static Optional<Stream<Object>> createRejectionEventsFromCC(
+    public static Optional<Stream<Object>> createRejectionEventsForDefendantUpdate(
                                                                        final String action,
                                                                        final UUID defendantId,
                                                                        final CaseAggregateState state) {

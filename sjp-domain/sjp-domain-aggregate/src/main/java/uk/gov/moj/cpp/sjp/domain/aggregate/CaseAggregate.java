@@ -304,6 +304,14 @@ public class CaseAggregate implements Aggregate {
         return apply(CaseDefendantHandler.INSTANCE.acceptPendingDefendantChanges(userId, caseId, defendantId, person, updatedDate, state));
     }
 
+    public Stream<Object> acceptPendingDefendantChangesCC(final UUID caseId,
+                                                        final UUID defendantId,
+                                                        final Person person,
+                                                        final ZonedDateTime updatedDate) {
+
+        return apply(CaseDefendantHandler.INSTANCE.acceptPendingDefendantChangesCC( caseId, defendantId, person, updatedDate, state));
+    }
+
     public Stream<Object> rejectPendingDefendantChanges(final UUID defendantId,
                                                         final ZonedDateTime updatedDate) {
 

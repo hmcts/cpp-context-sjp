@@ -5,7 +5,6 @@ import static java.time.format.DateTimeFormatter.ofPattern;
 import static java.util.UUID.randomUUID;
 import static javax.json.Json.createObjectBuilder;
 import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.allOf;
 import static org.mockito.Mockito.when;
@@ -17,7 +16,6 @@ import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopePaylo
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeStreamMatcher.streamContaining;
 import static uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderFactory.metadataOf;
 
-import uk.gov.justice.json.schemas.domains.sjp.Gender;
 import uk.gov.justice.services.common.util.Clock;
 import uk.gov.justice.services.common.util.UtcClock;
 import uk.gov.justice.services.core.aggregate.AggregateService;
@@ -31,7 +29,11 @@ import uk.gov.moj.cpp.sjp.domain.Address;
 import uk.gov.moj.cpp.sjp.domain.Defendant;
 import uk.gov.moj.cpp.sjp.domain.aggregate.CaseAggregate;
 import uk.gov.moj.cpp.sjp.domain.aggregate.CaseAggregateBaseTest;
-import uk.gov.moj.cpp.sjp.event.*;
+import uk.gov.moj.cpp.sjp.event.DefendantAddressUpdated;
+import uk.gov.moj.cpp.sjp.event.DefendantDateOfBirthUpdated;
+import uk.gov.moj.cpp.sjp.event.DefendantDetailsUpdated;
+import uk.gov.moj.cpp.sjp.event.DefendantNameUpdated;
+import uk.gov.moj.cpp.sjp.event.DefendantPendingChangesAccepted;
 
 import java.time.LocalDate;
 import java.util.UUID;
@@ -47,17 +49,11 @@ import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 @ExtendWith(MockitoExtension.class)
-public class UpdateDefendantDetailsFromCCHandlerTest extends CaseAggregateBaseTest {
-
+public class AcceptPendingDefendantChangesHandlerCCTest extends CaseAggregateBaseTest {
     private static final UUID defendantId = randomUUID();
     private static final UUID caseId = randomUUID();
     private static final String firstName = "test";
     private static final String lastName = "lastName";
-    private static final String email = "email";
-    private static final String mobileNumber = "mobileNumber";
-    private static final Gender gender = Gender.MALE;
-    private static final String nationalInsuranceNumber = "nationalInsuranceNumber";
-    private static final String homeNumber = "homeNumber";
     private static final String dateOfBirth = LocalDate.parse("1980-07-15").toString();
     private static final String ADDRESS_1 = "14 Tottenham Court Road";
     private static final String ADDRESS_2 = "London";
@@ -66,15 +62,14 @@ public class UpdateDefendantDetailsFromCCHandlerTest extends CaseAggregateBaseTe
     private static final String ADDRESS_5 = "United Kingdom";
     private static final String POSTCODE = "W1T 1JY";
     private static final Address ADDRESS = new Address(ADDRESS_1, ADDRESS_2, ADDRESS_3, ADDRESS_4, ADDRESS_5, POSTCODE);
-    private static final String REGION = "REGION";
-    private static final String DRIVER_NUMBER = "MORGA753116SM9IJ";
     @Spy
     private Clock clock = new UtcClock();
     @Spy
     private Enveloper enveloper = EnveloperFactory.createEnveloperWithEvents(
-            DefendantNameUpdateRequested.class, DefendantDetailUpdateRequested.class, DefendantDetailsUpdated.class, DefendantAddressUpdateRequested.class, DefendantDateOfBirthUpdateRequested.class, DefendantDetailsUpdateRequestAccepted.class);
+            DefendantNameUpdated.class, DefendantDateOfBirthUpdated.class, DefendantAddressUpdated.class,
+            DefendantDetailsUpdated.class, DefendantPendingChangesAccepted.class);
     @InjectMocks
-    private UpdateDefendantDetailsFromCCHandler updateDefendantDetailsFromCCHandler;
+    private AcceptPendingDefendantChangesHandlerCC acceptPendingDefendantChangesHandlerCC;
     @Mock
     private EventStream eventStream;
     @Mock
@@ -94,191 +89,144 @@ public class UpdateDefendantDetailsFromCCHandlerTest extends CaseAggregateBaseTe
     }
 
     @Test
-    public void shouldUpdateDefendantDetailsFromCC() throws EventStreamException {
+    public void shouldAcceptPendingDefendantChangesFromCC() throws EventStreamException {
 
         final Defendant defendant = caseReceivedEvent.getDefendant();
         final UUID defendantId = defendant.getId();
         final UUID caseId = caseReceivedEvent.getCaseId();
 
-        final JsonEnvelope command = createUpdateDefendantDetailsFromCCCommand();
+        final JsonEnvelope command = createAcceptPendingDefendantChangesFromCCCommand();
 
         when(eventSource.getStreamById(caseId)).thenReturn(eventStream);
         when(aggregateService.get(eventStream, CaseAggregate.class)).thenReturn(caseAggregate);
 
-        updateDefendantDetailsFromCCHandler.updateDefendantDetailsFromCC(command);
+        acceptPendingDefendantChangesHandlerCC.acceptPendingDefendantChangesFromCC(command);
 
         assertThat(eventStream, eventStreamAppendedWith(
                 streamContaining(
                         jsonEnvelope(
                                 withMetadataEnvelopedFrom(command)
-                                        .withName("sjp.events.defendant-name-update-requested"),
+                                        .withName("sjp.events.defendant-name-updated"),
                                 payloadIsJson(withJsonPath("$.newPersonalName.firstName", equalTo(firstName)))),
-                        jsonEnvelope(
-                                withMetadataEnvelopedFrom(command)
-                                        .withName("sjp.events.defendant-detail-update-requested"),
-                                payloadIsJson(withJsonPath("$.nameUpdated", is(true)))),
                         jsonEnvelope(
                                 withMetadataEnvelopedFrom(command)
                                         .withName("sjp.events.defendant-details-updated"),
                                 payloadIsJson(allOf(
                                         withJsonPath("$.defendantId", equalTo(defendantId.toString())),
                                         withJsonPath("$.caseId", equalTo(caseId.toString())),
-                                        withJsonPath("$.title", equalTo(defendant.getTitle())),
-                                        withJsonPath("$.gender", equalTo(defendant.getGender().toString())),
-                                        withJsonPath("$.nationalInsuranceNumber", equalTo(defendant.getNationalInsuranceNumber())),
-                                        withJsonPath("$.contactDetails.email", equalTo(email)),
-                                        withJsonPath("$.contactDetails.home", equalTo(defendant.getContactDetails().getHome())),
-                                        withJsonPath("$.contactDetails.mobile", equalTo(defendant.getContactDetails().getMobile())),
-                                        withJsonPath("$.region", equalTo(REGION)),
-                                        withJsonPath("$.driverNumber", equalTo(DRIVER_NUMBER))))),
+                                        withJsonPath("$.firstName", equalTo(firstName)),
+                                        withJsonPath("$.lastName", equalTo(defendant.getLastName())),
+                                        withJsonPath("$.dateOfBirth", equalTo(defendant.getDateOfBirth().format(ofPattern("YYY-MM-dd"))))))),
                         jsonEnvelope(
                                 withMetadataEnvelopedFrom(command)
-                                        .withName("sjp.events.defendant-details-update-request-accepted"),
+                                        .withName("sjp.events.defendant-pending-changes-accepted"),
                                 payloadIsJson(allOf(
                                         withJsonPath("$.caseId", equalTo(caseId.toString())),
-                                        withJsonPath("$.defendantId", equalTo(defendantId.toString())),
-                                        withJsonPath("$.newPersonalName.firstName", equalTo(firstName)))))
+                                        withJsonPath("$.defendantId", equalTo(defendantId.toString())))))
                 )));
     }
 
     @Test
-    public void shouldUpdateDefendantDetailsFromCCWhenCaseIsCompleted() throws EventStreamException {
+    public void shouldAcceptPendingDefendantChangesFromCCWhenCaseIsCompleted() throws EventStreamException {
 
         final Defendant defendant = caseReceivedEvent.getDefendant();
         final UUID defendantId = defendant.getId();
         final UUID caseId = caseReceivedEvent.getCaseId();
-        final JsonEnvelope command = createUpdateDefendantDetailsFromCCCommandWithUpdatedAddress();
+        final JsonEnvelope command = createAcceptPendingDefendantChangesFromCCCommandWithUpdatedAddress();
 
         caseAggregate.getState().markCaseCompleted();
 
         when(eventSource.getStreamById(caseId)).thenReturn(eventStream);
         when(aggregateService.get(eventStream, CaseAggregate.class)).thenReturn(caseAggregate);
 
-        updateDefendantDetailsFromCCHandler.updateDefendantDetailsFromCC(command);
+        acceptPendingDefendantChangesHandlerCC.acceptPendingDefendantChangesFromCC(command);
 
         assertThat(eventStream, eventStreamAppendedWith(
                 streamContaining(
                         jsonEnvelope(
                                 withMetadataEnvelopedFrom(command)
-                                        .withName("sjp.events.defendant-address-update-requested"),
+                                        .withName("sjp.events.defendant-address-updated"),
                                 payloadIsJson(allOf(
                                         withJsonPath("$.newAddress.address1", equalTo("Flat 2")),
-                                        withJsonPath("$.newAddress.address2", equalTo("1 Oxford Road")),
                                         withJsonPath("$.newAddress.postcode", equalTo("RG2 8DS"))))),
-                        jsonEnvelope(
-                                withMetadataEnvelopedFrom(command)
-                                        .withName("sjp.events.defendant-detail-update-requested"),
-                                payloadIsJson(withJsonPath("$.addressUpdated", is(true)))),
                         jsonEnvelope(
                                 withMetadataEnvelopedFrom(command)
                                         .withName("sjp.events.defendant-details-updated"),
                                 payloadIsJson(withJsonPath("$.defendantId", equalTo(defendantId.toString())))),
                         jsonEnvelope(
                                 withMetadataEnvelopedFrom(command)
-                                        .withName("sjp.events.defendant-details-update-request-accepted"),
+                                        .withName("sjp.events.defendant-pending-changes-accepted"),
                                 payloadIsJson(allOf(
                                         withJsonPath("$.caseId", equalTo(caseId.toString())),
-                                        withJsonPath("$.defendantId", equalTo(defendantId.toString())),
-                                        withJsonPath("$.newAddress.address1", equalTo("Flat 2")),
-                                        withJsonPath("$.newAddress.postcode", equalTo("RG2 8DS")))))
+                                        withJsonPath("$.defendantId", equalTo(defendantId.toString())))))
                 )));
     }
 
     @Test
-    public void shouldUpdateDefendantDetailsFromCCWhenCaseIsReferredForCourtHearing() throws EventStreamException {
+    public void shouldAcceptPendingDefendantChangesFromCCWhenCaseIsReferredForCourtHearing() throws EventStreamException {
 
         final Defendant defendant = caseReceivedEvent.getDefendant();
         final UUID defendantId = defendant.getId();
         final UUID caseId = caseReceivedEvent.getCaseId();
-        final JsonEnvelope command = createUpdateDefendantDetailsFromCCCommandWithUpdatedAddress();
+        final JsonEnvelope command = createAcceptPendingDefendantChangesFromCCCommandWithUpdatedAddress();
 
         caseAggregate.getState().markCaseReferredForCourtHearing();
 
         when(eventSource.getStreamById(caseId)).thenReturn(eventStream);
         when(aggregateService.get(eventStream, CaseAggregate.class)).thenReturn(caseAggregate);
 
-        updateDefendantDetailsFromCCHandler.updateDefendantDetailsFromCC(command);
+        acceptPendingDefendantChangesHandlerCC.acceptPendingDefendantChangesFromCC(command);
 
         assertThat(eventStream, eventStreamAppendedWith(
                 streamContaining(
                         jsonEnvelope(
                                 withMetadataEnvelopedFrom(command)
-                                        .withName("sjp.events.defendant-address-update-requested"),
+                                        .withName("sjp.events.defendant-address-updated"),
                                 payloadIsJson(allOf(
                                         withJsonPath("$.newAddress.address1", equalTo("Flat 2")),
-                                        withJsonPath("$.newAddress.address2", equalTo("1 Oxford Road")),
                                         withJsonPath("$.newAddress.postcode", equalTo("RG2 8DS"))))),
-                        jsonEnvelope(
-                                withMetadataEnvelopedFrom(command)
-                                        .withName("sjp.events.defendant-detail-update-requested"),
-                                payloadIsJson(withJsonPath("$.addressUpdated", is(true)))),
                         jsonEnvelope(
                                 withMetadataEnvelopedFrom(command)
                                         .withName("sjp.events.defendant-details-updated"),
                                 payloadIsJson(withJsonPath("$.defendantId", equalTo(defendantId.toString())))),
                         jsonEnvelope(
                                 withMetadataEnvelopedFrom(command)
-                                        .withName("sjp.events.defendant-details-update-request-accepted"),
+                                        .withName("sjp.events.defendant-pending-changes-accepted"),
                                 payloadIsJson(allOf(
                                         withJsonPath("$.caseId", equalTo(caseId.toString())),
-                                        withJsonPath("$.defendantId", equalTo(defendantId.toString())),
-                                        withJsonPath("$.newAddress.address1", equalTo("Flat 2")),
-                                        withJsonPath("$.newAddress.postcode", equalTo("RG2 8DS")))))
+                                        withJsonPath("$.defendantId", equalTo(defendantId.toString())))))
                 )));
     }
 
-    private JsonEnvelope createUpdateDefendantDetailsFromCCCommand() {
+    private JsonEnvelope createAcceptPendingDefendantChangesFromCCCommand() {
         final Defendant defendant = caseReceivedEvent.getDefendant();
-        final JsonObject contactNumber = createObjectBuilder()
-                .add("home", defendant.getContactDetails().getHome())
-                .add("mobile", defendant.getContactDetails().getMobile())
-                .build();
 
         final JsonObjectBuilder payload = createObjectBuilder()
                 .add("defendantId", defendant.getId().toString())
                 .add("caseId", caseReceivedEvent.getCaseId().toString())
-                .add("title", defendant.getTitle())
                 .add("firstName", firstName)
                 .add("lastName", defendant.getLastName())
-                .add("dateOfBirth", defendant.getDateOfBirth().format(ofPattern("yyyy-MM-dd")))
-                .add("email", email)
-                .add("gender", defendant.getGender().toString())
-                .add("nationalInsuranceNumber", defendant.getNationalInsuranceNumber())
-                .add("contactNumber", contactNumber)
-                .add("address", toJsonObject(defendant.getAddress()))
-                .add("region", REGION)
-                .add("driverNumber", DRIVER_NUMBER);
+                .add("dateOfBirth", defendant.getDateOfBirth().format(ofPattern("YYY-MM-dd")))
+                .add("address", toJsonObject(defendant.getAddress()));
 
         return envelopeFrom(
-                metadataOf(randomUUID(), "sjp.command.update-defendant-details-from-CC"),
+                metadataOf(randomUUID(), "sjp.command.accept-pending-defendant-changes-from-CC"),
                 payload.build());
     }
 
-    private JsonEnvelope createUpdateDefendantDetailsFromCCCommandWithUpdatedAddress() {
+    private JsonEnvelope createAcceptPendingDefendantChangesFromCCCommandWithUpdatedAddress() {
         final Defendant defendant = caseReceivedEvent.getDefendant();
-        final JsonObject contactNumber = createObjectBuilder()
-                .add("home", defendant.getContactDetails().getHome())
-                .add("mobile", defendant.getContactDetails().getMobile())
-                .build();
         final Address updatedAddress = new Address("Flat 2","1 Oxford Road","","","","RG2 8DS");
         final JsonObjectBuilder payload = createObjectBuilder()
                 .add("defendantId", defendant.getId().toString())
                 .add("caseId", caseReceivedEvent.getCaseId().toString())
-                .add("title", defendant.getTitle())
                 .add("firstName", defendant.getFirstName())
                 .add("lastName", defendant.getLastName())
-                .add("dateOfBirth", defendant.getDateOfBirth().format(ofPattern("yyyy-MM-dd")))
-                .add("email", defendant.getContactDetails().getEmail())
-                .add("gender", defendant.getGender().toString())
-                .add("nationalInsuranceNumber", defendant.getNationalInsuranceNumber())
-                .add("contactNumber", contactNumber)
-                .add("address", toJsonObject(updatedAddress))
-                .add("region", defendant.getRegion())
-                .add("driverNumber", defendant.getDriverNumber())
-                .add("legalEntityName","legalEntityName");
+                .add("dateOfBirth", defendant.getDateOfBirth().format(ofPattern("YYY-MM-dd")))
+                .add("address", toJsonObject(updatedAddress));
 
         return envelopeFrom(
-                metadataOf(randomUUID(), "sjp.command.update-defendant-details-from-CC"),
+                metadataOf(randomUUID(), "sjp.command.accept-pending-defendant-changes-from-CC"),
                 payload.build());
     }
 

@@ -1,0 +1,50 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://justice.gov.uk/json/schemas/domains/sjp/events/defendant-details-update-request-accepted.json",
+  "definitions": {
+    "personalName": {
+      "type": "object",
+      "properties": {
+        "title": {
+          "type": "string"
+        },
+        "firstName": {
+          "type": "string"
+        },
+        "lastName": {
+          "type": "string"
+        }
+      }
+    }
+  },
+  "type": "object",
+  "properties": {
+    "caseId": {
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+    },
+    "defendantId": {
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+    },
+    "newPersonalName": {
+      "$ref": "#/definitions/personalName"
+    },
+    "newLegalEntityName": {
+      "type": "string"
+    },
+    "newAddress": {
+      "$ref": "http://justice.gov.uk/json/schemas/domains/sjp/address.json"
+    },
+    "newDateOfBirth": {
+      "$ref": "http://justice.gov.uk/json/schemas/domains/sjp/temporal.json#/definitions/date"
+    },
+    "updatedAt": {
+      "$ref": "http://justice.gov.uk/json/schemas/domains/sjp/temporal.json#/definitions/date-time"
+    }
+  },
+  "additionalProperties": true,
+  "required": [
+    "caseId",
+    "defendantId"
+  ]
+}
+

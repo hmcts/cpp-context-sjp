@@ -19,6 +19,7 @@ import uk.gov.moj.cpp.sjp.event.DefendantDateOfBirthUpdated;
 import uk.gov.moj.cpp.sjp.event.DefendantDetailUpdateRequested;
 import uk.gov.moj.cpp.sjp.event.DefendantDetailsUpdateFailed;
 import uk.gov.moj.cpp.sjp.event.DefendantDetailsUpdated;
+import uk.gov.moj.cpp.sjp.event.DefendantDetailsUpdateRequestAccepted;
 import uk.gov.moj.cpp.sjp.event.DefendantDetailsUpdatesAcknowledged;
 import uk.gov.moj.cpp.sjp.event.DefendantNameUpdateRequested;
 import uk.gov.moj.cpp.sjp.event.DefendantNameUpdated;
@@ -30,8 +31,10 @@ import uk.gov.moj.cpp.sjp.event.ProsecutionAuthorityAccessDenied;
 
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.apache.commons.lang3.StringUtils;
@@ -137,18 +140,60 @@ public class CaseDefendantHandler {
         }
 
         // Otherwise, proceed with creating the update event
-        return createDefendantUpdateRequestedEvent(caseId, defendantId, person, updatedDate, state, false);
+        final Stream<Object> events = createDefendantUpdateRequestedEvent(caseId, defendantId, person, updatedDate, state, false);
+
+        // Check if any of the three update-requested events were raised and add the new event
+        final List<Object> eventList = events.collect(Collectors.toList());
+        boolean hasUpdateRequestedEvent = eventList.stream().anyMatch(e ->
+            e instanceof DefendantDateOfBirthUpdateRequested ||
+            e instanceof DefendantAddressUpdateRequested ||
+            e instanceof DefendantNameUpdateRequested
+        );
+
+        if (hasUpdateRequestedEvent) {
+            // Extract changed fields from the events
+            PersonalName newPersonalName = null;
+            String newLegalEntityName = null;
+            Address newAddress = null;
+            LocalDate newDateOfBirth = null;
+
+            for (Object event : eventList) {
+                if (event instanceof DefendantDateOfBirthUpdateRequested defendantDateOfBirthUpdateRequested) {
+                    newDateOfBirth = defendantDateOfBirthUpdateRequested.getNewDateOfBirth();
+                } else if (event instanceof DefendantAddressUpdateRequested defendantAddressUpdateRequested) {
+                    newAddress = defendantAddressUpdateRequested.getNewAddress();
+                } else if (event instanceof DefendantNameUpdateRequested nameEvent) {
+                    newPersonalName = nameEvent.getNewPersonalName();
+                    newLegalEntityName = nameEvent.getNewLegalEntityName();
+                }
+            }
+
+            // Add the new event to the stream
+            return Stream.concat(
+                eventList.stream(),
+                Stream.of(new DefendantDetailsUpdateRequestAccepted(
+                    caseId,
+                    defendantId,
+                    newPersonalName,
+                    newLegalEntityName,
+                    newAddress,
+                    newDateOfBirth,
+                    updatedDate))
+            );
+        }
+
+        return eventList.stream();
     }
 
-    public Stream<Object> acceptPendingDefendantChanges(final UUID userId,
-                                                        final UUID caseId,
-                                                        final UUID defendantId,
-                                                        final Person person,
-                                                        final ZonedDateTime updatedDate,
-                                                        final CaseAggregateState state) {
+    public Stream<Object> acceptPendingDefendantChangesCC(final UUID caseId,
+                                                          final UUID defendantId,
+                                                          final Person person,
+                                                          final ZonedDateTime updatedDate,
+                                                          final CaseAggregateState state) {
+
 
         final Optional<Stream<Object>> rejectionEvents = createRejectionEventsForDefendantUpdate(
-                "Update defendant detail from CC",
+                "Accept pending defendant changes from CC",
                 defendantId,
                 state
         );
@@ -161,7 +206,24 @@ public class CaseDefendantHandler {
         if (state.getCaseId() == null) {
             return Stream.empty();
         }
+
         return createDefendantUpdateEvent(caseId, defendantId, person, updatedDate, state);
+
+    }
+
+    public Stream<Object> acceptPendingDefendantChanges(final UUID userId,
+                                                        final UUID caseId,
+                                                        final UUID defendantId,
+                                                        final Person person,
+                                                        final ZonedDateTime updatedDate,
+                                                        final CaseAggregateState state) {
+
+        return createRejectionEvents(
+                userId,
+                "Accept pending defendant changes",
+                defendantId,
+                state
+        ).orElse(createDefendantUpdateEvent(caseId, defendantId, person, updatedDate, state));
     }
 
     public Stream<Object> rejectPendingDefendantChanges(final UUID defendantId,
@@ -281,7 +343,7 @@ public class CaseDefendantHandler {
                                                             final ZonedDateTime updatedDate,
                                                             final boolean isOnlinePlea,
                                                             final CaseAggregateState state) {
-        return getDefendantUpdateRequestedEvents(person, updatedDate,isOnlinePlea,state,false);
+        return getDefendantUpdateRequestedEvents(person, updatedDate, isOnlinePlea, state, false);
     }
 
     @SuppressWarnings("squid:MethodCyclomaticComplexity")
@@ -311,7 +373,7 @@ public class CaseDefendantHandler {
             events.add(new DefendantAddressUpdateRequested(
                     state.getCaseId(),
                     person.getAddress(),
-                    updatedDate,addressUpdateFromApplication));
+                    updatedDate, addressUpdateFromApplication));
         }
 
         // Online plea doesn't update title

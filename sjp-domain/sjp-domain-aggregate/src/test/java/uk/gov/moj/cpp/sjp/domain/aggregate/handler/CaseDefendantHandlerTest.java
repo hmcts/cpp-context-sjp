@@ -11,6 +11,7 @@ import static org.mockito.Mockito.when;
 import uk.gov.moj.cpp.sjp.domain.Address;
 import uk.gov.moj.cpp.sjp.domain.Person;
 import uk.gov.moj.cpp.sjp.domain.aggregate.state.CaseAggregateState;
+import uk.gov.moj.cpp.sjp.event.CaseNotFound;
 import uk.gov.moj.cpp.sjp.event.DefendantDateOfBirthUpdateRequested;
 import uk.gov.moj.cpp.sjp.event.DefendantDetailUpdateRequested;
 import uk.gov.moj.cpp.sjp.event.DefendantDetailsUpdateFailed;
@@ -118,7 +119,7 @@ public class CaseDefendantHandlerTest {
     }
 
     @Test
-    public void shouldReturnEmptyStreamWhenAcceptPendingDefendantChangesCaseNotFound() {
+    public void shouldReturnCaseNotFoundWhenAcceptPendingDefendantChangesCaseNotFound() {
         // given
         final UUID userId = UUID.randomUUID();
         final UUID caseId = UUID.randomUUID();
@@ -132,7 +133,8 @@ public class CaseDefendantHandlerTest {
 
         // then
         final List<Object> eventList = eventStream.collect(toList());
-        assertThat(eventList.size(), is(0));
+        assertThat(eventList.size(), is(1));
+        assertThat(eventList.get(0), instanceOf(CaseNotFound.class));
     }
 
     @Test

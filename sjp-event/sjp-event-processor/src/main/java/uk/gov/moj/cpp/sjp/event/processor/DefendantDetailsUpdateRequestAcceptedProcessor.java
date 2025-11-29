@@ -71,40 +71,57 @@ public class DefendantDetailsUpdateRequestAcceptedProcessor {
                 .add(CASE_ID, eventPayload.getString(CASE_ID))
                 .add(DEFENDANT_ID, eventPayload.getString(DEFENDANT_ID));
 
-        // Add newPersonalName fields if present
-        if (eventPayload.containsKey(NEW_PERSONAL_NAME) && !eventPayload.isNull(NEW_PERSONAL_NAME)) {
-            final JsonObject newPersonalName = eventPayload.getJsonObject(NEW_PERSONAL_NAME);
-            if (newPersonalName != null) {
-                addIfPresent(payloadBuilder, newPersonalName, "firstName", "firstName");
-                addIfPresent(payloadBuilder, newPersonalName, "lastName", "lastName");
-            }
-        }
-
-        // Add newLegalEntityName if present
-        if (eventPayload.containsKey(NEW_LEGAL_ENTITY_NAME) && !eventPayload.isNull(NEW_LEGAL_ENTITY_NAME)) {
-            final String legalEntityName = eventPayload.getString(NEW_LEGAL_ENTITY_NAME, null);
-            if (legalEntityName != null) {
-                payloadBuilder.add("legalEntityName", legalEntityName);
-            }
-        }
-
-        // Add newAddress if present
-        if (eventPayload.containsKey(NEW_ADDRESS) && !eventPayload.isNull(NEW_ADDRESS)) {
-            final JsonObject newAddress = eventPayload.getJsonObject(NEW_ADDRESS);
-            if (newAddress != null) {
-                payloadBuilder.add("address", newAddress);
-            }
-        }
-
-        // Add newDateOfBirth if present
-        if (eventPayload.containsKey(NEW_DATE_OF_BIRTH) && !eventPayload.isNull(NEW_DATE_OF_BIRTH)) {
-            final String dateOfBirth = eventPayload.getString(NEW_DATE_OF_BIRTH, null);
-            if (dateOfBirth != null) {
-                payloadBuilder.add("dateOfBirth", dateOfBirth);
-            }
-        }
+        addPersonalNameIfPresent(payloadBuilder, eventPayload);
+        addLegalEntityNameIfPresent(payloadBuilder, eventPayload);
+        addAddressIfPresent(payloadBuilder, eventPayload);
+        addDateOfBirthIfPresent(payloadBuilder, eventPayload);
 
         return payloadBuilder.build();
+    }
+
+    private void addPersonalNameIfPresent(final JsonObjectBuilder payloadBuilder, final JsonObject eventPayload) {
+        if (!isPresentAndNotNull(eventPayload, NEW_PERSONAL_NAME)) {
+            return;
+        }
+        final JsonObject newPersonalName = eventPayload.getJsonObject(NEW_PERSONAL_NAME);
+        if (newPersonalName != null) {
+            addIfPresent(payloadBuilder, newPersonalName, "firstName", "firstName");
+            addIfPresent(payloadBuilder, newPersonalName, "lastName", "lastName");
+        }
+    }
+
+    private void addLegalEntityNameIfPresent(final JsonObjectBuilder payloadBuilder, final JsonObject eventPayload) {
+        if (!isPresentAndNotNull(eventPayload, NEW_LEGAL_ENTITY_NAME)) {
+            return;
+        }
+        final String legalEntityName = eventPayload.getString(NEW_LEGAL_ENTITY_NAME, null);
+        if (legalEntityName != null) {
+            payloadBuilder.add("legalEntityName", legalEntityName);
+        }
+    }
+
+    private void addAddressIfPresent(final JsonObjectBuilder payloadBuilder, final JsonObject eventPayload) {
+        if (!isPresentAndNotNull(eventPayload, NEW_ADDRESS)) {
+            return;
+        }
+        final JsonObject newAddress = eventPayload.getJsonObject(NEW_ADDRESS);
+        if (newAddress != null) {
+            payloadBuilder.add("address", newAddress);
+        }
+    }
+
+    private void addDateOfBirthIfPresent(final JsonObjectBuilder payloadBuilder, final JsonObject eventPayload) {
+        if (!isPresentAndNotNull(eventPayload, NEW_DATE_OF_BIRTH)) {
+            return;
+        }
+        final String dateOfBirth = eventPayload.getString(NEW_DATE_OF_BIRTH, null);
+        if (dateOfBirth != null) {
+            payloadBuilder.add("dateOfBirth", dateOfBirth);
+        }
+    }
+
+    private boolean isPresentAndNotNull(final JsonObject jsonObject, final String key) {
+        return jsonObject.containsKey(key) && !jsonObject.isNull(key);
     }
 
     private void addIfPresent(final JsonObjectBuilder builder, final JsonObject source,

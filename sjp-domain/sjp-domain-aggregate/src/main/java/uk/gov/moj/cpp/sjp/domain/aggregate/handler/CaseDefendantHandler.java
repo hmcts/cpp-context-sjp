@@ -358,6 +358,7 @@ public class CaseDefendantHandler {
 
         final Address defendantAddress = state.getDefendantAddress();
         if (defendantAddress != null && !defendantAddress.equals(legalEntityDefendant.getAddress())) {
+            events.add(new DefendantDetailUpdateRequested(state.getCaseId(), false, true, false));
             events.add(new DefendantAddressUpdateRequested(
                     state.getCaseId(),
                     defendantAddress,
@@ -366,6 +367,7 @@ public class CaseDefendantHandler {
 
         // Online plea doesn't update title
         if (isCompanyNameChanged(legalEntityDefendant.getName(), state)) {
+            events.add(new DefendantDetailUpdateRequested(state.getCaseId(), true, false, false));
             events.add(new DefendantNameUpdateRequested(
                     state.getCaseId(),
                     null,

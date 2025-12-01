@@ -177,16 +177,16 @@ public class PleadOnlineProcessorTest {
         shouldPleadOnlineGuilty(createObjectBuilder().build());
     }
 
+    // it should call command, command will raise a rejected event.
     @Test
-    public void shouldNotPleadOnlineWhenAlreadyPleaded() {
+    public void shouldPleadOnlineWhenAlreadyPleaded() {
         final JsonObject pleadOnline = buildPleadOnline(
                 "NOT_GUILTY",
                 caseId,
                 createObjectBuilder().build());
 
         JsonObject caseDetail = getCaseDetail("NOT_GUILTY", JsonValue.FALSE);
-        var e = assertThrows(BadRequestException.class, () -> invokePleadOnlineAndVerify(pleadOnline, caseDetail));
-        assertThat(e.getMessage(), CoreMatchers.is(PLEA_ALREADY_SUBMITTED_EXCEPTION_MESSAGE));
+        invokePleadOnlineAndVerify(pleadOnline, caseDetail);
     }
 
     @Test

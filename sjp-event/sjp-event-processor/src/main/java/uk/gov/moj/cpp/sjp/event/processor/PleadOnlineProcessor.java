@@ -147,9 +147,6 @@ public class PleadOnlineProcessor {
             return CASE_ADJOURNED_POST_CONVICTION;
         }
 
-        if (TRUE.equals(caseAlreadyPleaded(caseDetail))) {
-            return PLEA_ALREADY_SUBMITTED;
-        }
         return emptyMap();
     }
 

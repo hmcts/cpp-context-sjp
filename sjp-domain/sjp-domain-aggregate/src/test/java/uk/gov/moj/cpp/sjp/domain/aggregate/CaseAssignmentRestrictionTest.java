@@ -27,7 +27,8 @@ public class CaseAssignmentRestrictionTest {
     public void shouldUpdateCaseAssignmentRestriction() {
         final CaseAssignmentRestrictionAggregate aggregate = new CaseAssignmentRestrictionAggregate();
         final List<Object> events = aggregate
-                .updateCaseAssignmentRestriction(PROSECUTING_AUTHORITY, INCLUDE_ONLY, EXCLUDE, DATE_TIME_CREATED.toString())
+                .updateCaseAssignmentRestriction(PROSECUTING_AUTHORITY, INCLUDE_ONLY, EXCLUDE, DATE_TIME_CREATED.toString(),
+                        DATE_TIME_CREATED.toLocalDate().toString(), DATE_TIME_CREATED.toLocalDate().toString())
                 .collect(toList());
         assertThat(events.size(), equalTo(1));
         final CaseAssignmentRestrictionAdded caseAssignmentRestrictionAdded = events
@@ -39,5 +40,7 @@ public class CaseAssignmentRestrictionTest {
         assertThat(caseAssignmentRestrictionAdded.getExclude(), equalTo(EXCLUDE));
         assertThat(caseAssignmentRestrictionAdded.getIncludeOnly(), equalTo(INCLUDE_ONLY));
         assertThat(caseAssignmentRestrictionAdded.getDateTimeCreated(), equalTo(DATE_TIME_CREATED.toString()));
+        assertThat(caseAssignmentRestrictionAdded.getValidFrom(), equalTo(DATE_TIME_CREATED.toLocalDate().toString()));
+        assertThat(caseAssignmentRestrictionAdded.getValidTo(), equalTo(DATE_TIME_CREATED.toLocalDate().toString()));
     }
 }

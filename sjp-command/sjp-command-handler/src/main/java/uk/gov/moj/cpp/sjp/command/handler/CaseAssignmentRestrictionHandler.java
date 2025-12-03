@@ -51,7 +51,9 @@ public class CaseAssignmentRestrictionHandler {
                         caseAssignmentRestrictionAggregate.updateCaseAssignmentRestriction(payload.getProsecutingAuthority(),
                                 payload.getIncludeOnly(),
                                 payload.getExclude(),
-                                clock.now().toString()));
+                                clock.now().toString(),
+                                payload.getValidFrom(),
+                                payload.getValidTo()));
     }
 
     private void applyToCaseAssignmentRestrictionAggregate(final Envelope<AddCaseAssignmentRestriction> command, final Function<CaseAssignmentRestrictionAggregate, Stream<Object>> function) throws EventStreamException {

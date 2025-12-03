@@ -361,7 +361,7 @@ public class CaseDefendantHandler {
             events.add(new DefendantDetailUpdateRequested(state.getCaseId(), false, true, false));
             events.add(new DefendantAddressUpdateRequested(
                     state.getCaseId(),
-                    defendantAddress,
+                    legalEntityDefendant.getAddress(),
                     updatedDate,false));
         }
 

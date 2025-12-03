@@ -32,10 +32,7 @@ import static uk.gov.moj.cpp.sjp.domain.testutils.StoreOnlinePleaBuilder.PERSON_
 import static uk.gov.moj.cpp.sjp.domain.testutils.StoreOnlinePleaBuilder.PERSON_LAST_NAME;
 import static uk.gov.moj.cpp.sjp.domain.testutils.StoreOnlinePleaBuilder.PERSON_NI_NUMBER;
 
-import uk.gov.moj.cpp.sjp.domain.Case;
-import uk.gov.moj.cpp.sjp.domain.CaseAssignmentType;
-import uk.gov.moj.cpp.sjp.domain.Defendant;
-import uk.gov.moj.cpp.sjp.domain.Interpreter;
+import uk.gov.moj.cpp.sjp.domain.*;
 import uk.gov.moj.cpp.sjp.domain.aggregate.state.WithdrawalRequestsStatus;
 import uk.gov.moj.cpp.sjp.domain.legalentity.LegalEntityDefendant;
 import uk.gov.moj.cpp.sjp.domain.onlineplea.PleadOnline;
@@ -495,12 +492,54 @@ public class PleadOnlineTest {
         assertCommonExpectations(pleadOnline, events, now);
     }
 
-    private DefendantDetailsUpdated getDefendantDetailsUpdatedEvent(final List<Object> events) {
-        return events.stream()
-                .filter(event -> event instanceof DefendantDetailsUpdated)
-                .map(event -> (DefendantDetailsUpdated) event)
+    @Test
+    public void shouldUpdateDefendantAddressUpdateRequestedEventWithLatestLegalEntityAddress() {
+        // single offence case
+        final Case testCase = createTestCaseForLegalEntity(null, "Pandora Inc");
+        setup(testCase);
+
+        caseAggregate = new CaseAggregate();
+        final CaseReceived sjpCase = caseAggregate.receiveCase(testCase, ZonedDateTime.now())
+                .map(CaseReceived.class::cast)
                 .findFirst()
-                .get();
+                .orElseThrow(() -> new AssertionError("Case not Received " + testCase.getId()));
+        caseId = sjpCase.getCaseId();
+        defendantId = sjpCase.getDefendant().getId();
+        offenceId = sjpCase.getDefendant().getOffences().get(0).getId();
+
+        //when
+        Address address = testCase.getDefendant().getAddress();
+        final LegalEntityDefendant legalEntityDefendant = LegalEntityDefendant.legalEntityDefendant().withName("Juniper Inc")
+                .withAdddres(new Address(address.getAddress1(), address.getAddress2(), address.getAddress3(), address.getAddress4(), address.getAddress5(), "BR6 9QB"))
+                .build();
+        final PleadOnline pleadOnline = StoreOnlinePleaBuilder.generatePleadOnlineForLegalEntity(offenceId, defendantId, "French", false, false, null, legalEntityDefendant, null);
+        final List<Object> events = caseAggregate.pleadOnline(caseId, pleadOnline, now, randomUUID()).collect(toList());
+
+        //then
+        assertThat(events, containsEventsOf(
+                PleasSet.class,
+                InterpreterUpdatedForDefendant.class,
+                HearingLanguagePreferenceUpdatedForDefendant.class,
+                PleadedNotGuilty.class,
+                DatesToAvoidRequired.class,
+                TrialRequested.class,
+                DefendantDetailsUpdated.class,
+                DefendantDetailUpdateRequested.class,
+                DefendantAddressUpdateRequested.class,
+                DefendantDetailUpdateRequested.class,
+                DefendantNameUpdateRequested.class,
+                FinancialMeansUpdated.class,
+                OutstandingFinesUpdated.class,
+                OnlinePleaReceived.class,
+                CaseExpectedDateReadyChanged.class,
+                CaseStatusChanged.class
+        ));
+
+        events.forEach(e -> {
+            if (e instanceof DefendantAddressUpdateRequested) {
+                assertThat(((DefendantAddressUpdateRequested)e).getNewAddress().getPostcode(), is("BR6 9QB"));
+            }
+        });
     }
 
     @Test
@@ -716,6 +755,24 @@ public class PleadOnlineTest {
                 .withTitle(title)
                 .withFirstName(PERSON_FIRST_NAME)
                 .withLastName(PERSON_LAST_NAME)
+                .withDateOfBirth(PERSON_DOB)
+                .withNationalInsuranceNumber(PERSON_NI_NUMBER)
+                .withDriverNumber(PERSON_DRIVER_NUMBER)
+                .withAddress(PERSON_ADDRESS)
+                .withContactDetails(PERSON_CONTACT_DETAILS)
+                .withOffences(extraOffenceIds)
+                .withLegalEntityName(legalEntityName)
+                .addOffence(randomUUID())
+                .build();
+
+        return CaseBuilder.aDefaultSjpCase()
+                .withDefendant(defendant)
+                .build();
+    }
+
+    private static Case createTestCaseForLegalEntity(final String title, final String legalEntityName, final UUID... extraOffenceIds) {
+        final Defendant defendant = new DefendantBuilder()
+                .withTitle(title)
                 .withDateOfBirth(PERSON_DOB)
                 .withNationalInsuranceNumber(PERSON_NI_NUMBER)
                 .withDriverNumber(PERSON_DRIVER_NUMBER)

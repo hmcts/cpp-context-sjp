@@ -19,6 +19,7 @@ import static uk.gov.moj.sjp.it.util.Defaults.DEFAULT_NON_LONDON_LJA_NATIONAL_CO
 import static uk.gov.moj.sjp.it.util.HttpClientUtil.getReadUrl;
 import static uk.gov.moj.sjp.it.util.HttpClientUtil.makePostCall;
 import static uk.gov.moj.sjp.it.util.RestPollerWithDefaults.pollWithDefaultsUntilResponseIsJson;
+import static uk.gov.moj.sjp.it.util.RestPollerWithDefaults.pollWithNotFound;
 
 import uk.gov.justice.json.schemas.domains.sjp.User;
 import uk.gov.justice.services.common.http.HeaderConstants;
@@ -96,5 +97,13 @@ public class CaseAssignmentRestrictionHelper {
 
         return pollWithDefaultsUntilResponseIsJson(requestParams.build(),
                 allOf(matchers));
+    }
+
+    public static void pollCaseAssignmentRestriction(final String prosecutingAuthority) {
+        final String url = String.format("/case-assignment-restriction?prosecutingAuthority=%s", prosecutingAuthority);
+        final RequestParamsBuilder requestParams = requestParams(getReadUrl(url), "application/vnd.sjp.query.case-assignment-restriction+json")
+                .withHeader(HeaderConstants.USER_ID, systemUser.getUserId());
+
+        pollWithNotFound(requestParams.build());
     }
 }

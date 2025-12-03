@@ -9,6 +9,7 @@ import uk.gov.justice.services.core.annotation.ServiceComponent;
 import uk.gov.justice.services.messaging.Envelope;
 import uk.gov.moj.cpp.sjp.persistence.repository.CaseAssignmentRestrictionRepository;
 
+import java.time.LocalDate;
 import java.time.ZonedDateTime;
 
 import javax.inject.Inject;
@@ -30,6 +31,8 @@ public class CaseAssignmentRestrictionListener {
         caseAssignmentRestrictionRepository.saveCaseAssignmentRestriction(caseAssignmentRestrictionAdded.getProsecutingAuthority(),
                 OBJECT_MAPPER.writeValueAsString(caseAssignmentRestrictionAdded.getIncludeOnly()),
                 OBJECT_MAPPER.writeValueAsString(caseAssignmentRestrictionAdded.getExclude()),
-                ZonedDateTime.parse(caseAssignmentRestrictionAdded.getDateTimeCreated()));
+                ZonedDateTime.parse(caseAssignmentRestrictionAdded.getDateTimeCreated()),
+                caseAssignmentRestrictionAdded.getValidFrom()!= null ? LocalDate.parse(caseAssignmentRestrictionAdded.getValidFrom()) : null,
+                caseAssignmentRestrictionAdded.getValidTo() != null ? LocalDate.parse(caseAssignmentRestrictionAdded.getValidTo()) : null);
     }
 }

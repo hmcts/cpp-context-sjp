@@ -46,14 +46,14 @@
         <referencedata.offences.version>17.0.38</referencedata.offences.version>
         <scheduling.version>17.0.11</scheduling.version>
         <authorisation.service.version>0.1.49</authorisation.service.version>
-        <usersgroups.version>17.0.40</usersgroups.version>
-        <progression.version>17.0.206</progression.version>
+        <usersgroups.version>17.0.41</usersgroups.version>
+        <progression.version>17.0.215</progression.version>
         <prosecutioncasefile.version>17.0.66</prosecutioncasefile.version>
         <access-control-sjp-providers.version>4.1.4-ATCM</access-control-sjp-providers.version>
         <cpp.framework.action.mapping.enabled>true</cpp.framework.action.mapping.enabled>
         <mvn.site.url>file://${project.build.directory}/site</mvn.site.url>
         <file.alfresco.version>2.3.0</file.alfresco.version>
-        <coredomain.version>17.102.12</coredomain.version>
+        <coredomain.version>17.102.13</coredomain.version>
         <criminal-court-public-model.version>${coredomain.version}</criminal-court-public-model.version>
         <javax.el-api.version>3.0.0</javax.el-api.version>
         <joda-time.version>2.10</joda-time.version>

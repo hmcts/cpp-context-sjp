@@ -47,7 +47,7 @@
         <scheduling.version>17.0.11</scheduling.version>
         <authorisation.service.version>0.1.49</authorisation.service.version>
         <usersgroups.version>17.0.41</usersgroups.version>
-        <progression.version>17.0.211</progression.version>
+        <progression.version>17.0.215</progression.version>
         <prosecutioncasefile.version>17.0.66</prosecutioncasefile.version>
         <access-control-sjp-providers.version>4.1.4-ATCM</access-control-sjp-providers.version>
         <cpp.framework.action.mapping.enabled>true</cpp.framework.action.mapping.enabled>

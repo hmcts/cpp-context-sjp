@@ -27,7 +27,7 @@
                     </dependency>
                     <dependency>
                         <groupId>uk.gov.moj.cpp.sjp</groupId>
-                        <artifactId>sjp-query-controller</artifactId>
+                        <artifactId>sjp-query-view</artifactId>
                         <version>${project.version}</version>
                         <classifier>raml</classifier>
                         <exclusions>
@@ -60,6 +60,18 @@
                         <artifactId>usersgroups-query-api</artifactId>
                         <version>${usersgroups.version}</version>
                         <classifier>raml</classifier>
+                    </dependency>
+                    <dependency>
+                        <groupId>uk.gov.moj.cpp.staging.enforcement</groupId>
+                        <artifactId>stagingenforcement-query-api</artifactId>
+                        <version>${stagingenforcement.version}</version>
+                        <classifier>raml</classifier>
+                        <exclusions>
+                            <exclusion>
+                                <groupId>*</groupId>
+                                <artifactId>*</artifactId>
+                            </exclusion>
+                        </exclusions>
                     </dependency>
                 </dependencies>
             </plugin>

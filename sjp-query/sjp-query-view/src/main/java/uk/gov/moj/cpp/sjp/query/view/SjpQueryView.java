@@ -207,40 +207,43 @@ public class SjpQueryView {
     @SuppressWarnings({"squid:CallToDeprecatedMethod", "squid:S3776"})
     @Handles("sjp.query.case")
     public JsonEnvelope findCase(final JsonEnvelope envelope) {
-
-        final CaseView caseView = caseService.findCase(fromString(extract(envelope, FIELD_CASE_ID)));
-        if (caseView != null) {
-            if (!isNull(caseView.getReservedBy())) {
-                caseView.setReservedByName(caseService.getUserName(caseView.getReservedBy().toString(), envelope));
-            }
-            final String prosecutingAuthority = caseView.getProsecutingAuthority();
-            final Optional<String> userId = envelope.metadata().userId();
-            boolean hasPotentialCase = false;
-            if (nonNull(caseView.getDefendant()) && nonNull(caseView.getDefendant().getPersonalDetails())) {
-                final UUID defendantId = caseView.getDefendant().getId();
-                hasPotentialCase = defendantPotentialCaseService.
-                        hasDefendantPotentialCase(envelope, defendantId);
-            }
-            final DefendantDetailUpdateRequestView detailUpdateRequestView = caseService.findDefendantDetailUpdateRequest(fromString(extract(envelope, FIELD_CASE_ID)));
-            if (nonNull(detailUpdateRequestView)) {
-                final DefendantView defendantView = caseView.getDefendant();
-                if (nonNull(defendantView)) {
-                    defendantView.setDefendantDetailUpdateRequestView(detailUpdateRequestView);
+        if (userAndGroupsService.isSjpProsecutorUserGroupOnly(envelope)) {
+            return findCaseAndFilterOtherAndFinancialMeansDocuments(envelope);
+        } else {
+            final CaseView caseView = caseService.findCase(fromString(extract(envelope, FIELD_CASE_ID)));
+            if (caseView != null) {
+                if (!isNull(caseView.getReservedBy())) {
+                    caseView.setReservedByName(caseService.getUserName(caseView.getReservedBy().toString(), envelope));
                 }
-            }
-            caseView.setHasPotentialCase(hasPotentialCase);
-            if (userId.isPresent()) {
-                final boolean userHasProsecutingAuthorityAccess = prosecutingAuthorityProvider.userHasProsecutingAuthorityAccess(envelope, prosecutingAuthority);
-                if (userHasProsecutingAuthorityAccess || userAndGroupsService.isUserSecondLineSupport(envelope)) {
-                    return enveloper.withMetadataFrom(envelope, NAME_RESPONSE_CASE).apply(caseView);
+                final String prosecutingAuthority = caseView.getProsecutingAuthority();
+                final Optional<String> userId = envelope.metadata().userId();
+                boolean hasPotentialCase = false;
+                if (nonNull(caseView.getDefendant()) && nonNull(caseView.getDefendant().getPersonalDetails())) {
+                    final UUID defendantId = caseView.getDefendant().getId();
+                    hasPotentialCase = defendantPotentialCaseService.
+                            hasDefendantPotentialCase(envelope, defendantId);
+                }
+                final DefendantDetailUpdateRequestView detailUpdateRequestView = caseService.findDefendantDetailUpdateRequest(fromString(extract(envelope, FIELD_CASE_ID)));
+                if (nonNull(detailUpdateRequestView)) {
+                    final DefendantView defendantView = caseView.getDefendant();
+                    if (nonNull(defendantView)) {
+                        defendantView.setDefendantDetailUpdateRequestView(detailUpdateRequestView);
+                    }
+                }
+                caseView.setHasPotentialCase(hasPotentialCase);
+                if (userId.isPresent()) {
+                    final boolean userHasProsecutingAuthorityAccess = prosecutingAuthorityProvider.userHasProsecutingAuthorityAccess(envelope, prosecutingAuthority);
+                    if (userHasProsecutingAuthorityAccess || userAndGroupsService.isUserSecondLineSupport(envelope)) {
+                        return enveloper.withMetadataFrom(envelope, NAME_RESPONSE_CASE).apply(caseView);
+                    } else {
+                        throw new ForbiddenRequestException("User is not authorize to view this case");
+                    }
                 } else {
-                    throw new ForbiddenRequestException("User is not authorize to view this case");
+                    return enveloper.withMetadataFrom(envelope, NAME_RESPONSE_CASE).apply(caseView);
                 }
             } else {
                 return enveloper.withMetadataFrom(envelope, NAME_RESPONSE_CASE).apply(caseView);
             }
-        } else {
-            return enveloper.withMetadataFrom(envelope, NAME_RESPONSE_CASE).apply(caseView);
         }
     }
 
@@ -336,8 +339,13 @@ public class SjpQueryView {
 
     @Handles("sjp.query.case-documents")
     public JsonEnvelope findCaseDocuments(final JsonEnvelope envelope) {
-        return enveloper.withMetadataFrom(envelope, NAME_RESPONSE_CASE_DOCUMENTS).apply(
-                caseService.findCaseDocuments(fromString(extract(envelope, FIELD_CASE_ID))));
+        if (userAndGroupsService.isSjpProsecutorUserGroupOnly(envelope)) {
+            return enveloper.withMetadataFrom(envelope, NAME_RESPONSE_CASE_DOCUMENTS).apply(
+                    caseService.findCaseDocumentsFilterOtherAndFinancialMeans(fromString(extract(envelope, FIELD_CASE_ID))));
+        } else {
+            return enveloper.withMetadataFrom(envelope, NAME_RESPONSE_CASE_DOCUMENTS).apply(
+                    caseService.findCaseDocuments(fromString(extract(envelope, FIELD_CASE_ID))));
+        }
     }
 
     @Handles("sjp.query.case-documents-filter-other-and-financial-means")

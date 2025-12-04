@@ -158,6 +158,11 @@ public class UpdateDefendantDetails {
                     .withNationalInsuranceNumber("QQ 12 34 56 C");
         }
 
+        public static DefendantDetailsPayloadBuilder withOrganisationDefaults() {
+            return new DefendantDetailsPayloadBuilder().withLegalEntityName("Pandora Box Inc")
+                    .withContact(ContactDetailsBuilder.withDefaults().withEmail("criminal@gmail.com"));
+        }
+
         public static DefendantDetailsPayloadBuilder builder() {
             return new DefendantDetailsPayloadBuilder();
         }

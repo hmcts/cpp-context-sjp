@@ -74,6 +74,7 @@ import static uk.gov.moj.sjp.it.verifier.PersonInfoVerifier.personInfoVerifierFo
 import uk.gov.justice.json.schemas.domains.sjp.Gender;
 import uk.gov.justice.json.schemas.domains.sjp.User;
 import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
+import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.sjp.domain.DefendantCourtInterpreter;
 import uk.gov.moj.cpp.sjp.domain.DefendantCourtOptions;
 import uk.gov.moj.cpp.sjp.domain.decision.OffenceDecisionInformation;
@@ -81,12 +82,15 @@ import uk.gov.moj.cpp.sjp.domain.decision.ReferForCourtHearing;
 import uk.gov.moj.cpp.sjp.domain.plea.PleaMethod;
 import uk.gov.moj.cpp.sjp.domain.plea.PleaType;
 import uk.gov.moj.cpp.sjp.domain.verdict.VerdictType;
+import uk.gov.moj.cpp.sjp.event.CaseStatusChanged;
+import uk.gov.moj.cpp.sjp.event.CaseUpdateRejected;
 import uk.gov.moj.cpp.sjp.persistence.entity.PersonalDetails;
 import uk.gov.moj.sjp.it.command.CreateCase;
 import uk.gov.moj.sjp.it.command.UpdateDefendantDetails;
 import uk.gov.moj.sjp.it.helper.CaseSearchResultHelper;
 import uk.gov.moj.sjp.it.helper.CitizenHelper;
 import uk.gov.moj.sjp.it.helper.EmployerHelper;
+import uk.gov.moj.sjp.it.helper.EventListener;
 import uk.gov.moj.sjp.it.helper.FinancialMeansHelper;
 import uk.gov.moj.sjp.it.helper.PleadOnlineHelper;
 import uk.gov.moj.sjp.it.model.DecisionCommand;
@@ -105,6 +109,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 
@@ -954,6 +959,29 @@ public class PleadOnlineIT extends BaseIntegrationTest {
     }
 
     @Test
+    public void shouldPleadNotGuiltyOnlineThenFailWithSecondPleadAttemptAsNotAllowedTwoPleasAgainstSameOffenceWithPublicEvent() {
+        try (final PleadOnlineHelper pleadOnlineHelper = new PleadOnlineHelper(createCasePayloadBuilder.getId())) {
+            final CaseSearchResultHelper caseSearchResultHelper = new CaseSearchResultHelper(
+                    createCasePayloadBuilder.getUrn(),
+                    createCasePayloadBuilder.getDefendantBuilder().getLastName(),
+                    createCasePayloadBuilder.getDefendantBuilder().getDateOfBirth());
+            //1) First plea should be successful
+            final Optional<JsonEnvelope> caseReceivedEvent = new EventListener()
+                    .subscribe(CaseStatusChanged.EVENT_NAME)
+                    .run(() -> pleadOnlineAndConfirmSuccessWithPublicEvent(PleaType.NOT_GUILTY, pleadOnlineHelper, caseSearchResultHelper))
+                    .popEvent(CaseStatusChanged.EVENT_NAME);
+            assertTrue(caseReceivedEvent.isPresent());
+            //2) Second plea should fail as cannot plea twice
+            final JSONObject pleaPayload = getOnlinePleaPayload(PleaType.NOT_GUILTY);
+            final Optional<JsonEnvelope> caseReceivedEvent2 = new EventListener()
+                    .subscribe(CaseUpdateRejected.EVENT_NAME)
+                    .run(() -> pleadOnlineHelper.pleadOnlinePublicEvent(stringToJsonObjectConverter.convert(pleaPayload.toString())))
+                    .popEvent(CaseUpdateRejected.EVENT_NAME);
+            assertTrue(caseReceivedEvent2.isPresent());
+        }
+    }
+
+    @Test
     public void shouldPleaOnlineShouldRejectIfCaseIsInCompletedStatus() {
         saveDefaultDecision(createCasePayloadBuilder.getId(), createCasePayloadBuilder.getOffenceIds());
         final PleadOnlineHelper pleadOnlineHelper = new PleadOnlineHelper(createCasePayloadBuilder.getId());
@@ -1194,6 +1222,7 @@ public class PleadOnlineIT extends BaseIntegrationTest {
             pleadOnlineAndConfirmSuccess(PleaType.GUILTY_REQUEST_HEARING, pleadOnlineHelper, caseSearchResultHelper);
         }
     }
+
 
     private PersonalDetails generateExpectedPersonDetails(final JSONObject payload) {
         final JSONObject person = payload.getJSONObject("personalDetails");

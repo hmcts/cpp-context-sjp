@@ -354,11 +354,12 @@ public class CaseDefendantHandler {
                                                                        final CaseAggregateState state) {
 
         final Stream.Builder<Object> events = Stream.builder();
-
+        boolean isAddressChanged = false;
+        boolean isNameChanged = false;
 
         final Address defendantAddress = state.getDefendantAddress();
         if (defendantAddress != null && !defendantAddress.equals(legalEntityDefendant.getAddress())) {
-            events.add(new DefendantDetailUpdateRequested(state.getCaseId(), false, true, false));
+            isAddressChanged = true;
             events.add(new DefendantAddressUpdateRequested(
                     state.getCaseId(),
                     legalEntityDefendant.getAddress(),
@@ -367,14 +368,16 @@ public class CaseDefendantHandler {
 
         // Online plea doesn't update title
         if (isCompanyNameChanged(legalEntityDefendant.getName(), state)) {
-            events.add(new DefendantDetailUpdateRequested(state.getCaseId(), true, false, false));
+            isNameChanged = true;
             events.add(new DefendantNameUpdateRequested(
                     state.getCaseId(),
                     null,
                     legalEntityDefendant.getName(),
                     updatedDate));
         }
-
+        if (isNameChanged || isAddressChanged) {
+            events.add(new DefendantDetailUpdateRequested(state.getCaseId(), isNameChanged, isAddressChanged, false));
+        }
         return events.build();
     }
 

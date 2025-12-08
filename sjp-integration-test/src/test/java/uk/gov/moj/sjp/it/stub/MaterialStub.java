@@ -24,12 +24,14 @@ import static org.hamcrest.Matchers.not;
 import static uk.gov.justice.services.integrationtest.utils.jms.JmsMessageProducerClientProvider.newPublicJmsMessageProducerClientProvider;
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
 import static uk.gov.justice.services.messaging.JsonEnvelope.metadataFrom;
+import static uk.gov.moj.sjp.it.util.RestPollerWithDefaults.POLL_INTERVAL;
 
 import uk.gov.justice.services.common.http.HeaderConstants;
 import uk.gov.justice.services.integrationtest.utils.jms.JmsMessageProducerClient;
 import uk.gov.justice.services.messaging.DefaultJsonObjectEnvelopeConverter;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 
+import java.time.Duration;
 import java.time.ZonedDateTime;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
@@ -38,6 +40,7 @@ import javax.json.Json;
 import javax.json.JsonObject;
 
 import com.github.tomakehurst.wiremock.verification.LoggedRequest;
+import uk.gov.justice.services.test.utils.core.http.FibonacciPollWithStartAndMax;
 
 public class MaterialStub {
 
@@ -141,7 +144,7 @@ public class MaterialStub {
 
     public static void verifyCallsToStubbedEndpoint(final String url, final int numberOfCalls) {
         await().timeout(30, TimeUnit.SECONDS)
-                .pollInterval(1, TimeUnit.SECONDS)
+                .pollInterval(POLL_INTERVAL)
                 .until(
                         () -> findAll(postRequestedFor(urlMatching(url))).size(), is(numberOfCalls)
                 );

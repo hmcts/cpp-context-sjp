@@ -14,6 +14,7 @@ import static java.util.stream.Collectors.toList;
 import static javax.ws.rs.core.HttpHeaders.CONTENT_TYPE;
 import static org.apache.http.HttpStatus.SC_ACCEPTED;
 import static org.awaitility.Awaitility.await;
+import static uk.gov.moj.sjp.it.util.RestPollerWithDefaults.POLL_INTERVAL;
 import static uk.gov.moj.sjp.it.util.RestPollerWithDefaults.TIMEOUT_IN_SECONDS;
 
 import uk.gov.justice.services.common.http.HeaderConstants;
@@ -48,7 +49,8 @@ public class SysDocGeneratorStub {
     public static List<JSONObject> pollSysDocGenerationRequests(final Matcher<Collection<?>> matcher) {
         try {
 
-            return await().atMost(TIMEOUT_IN_SECONDS, SECONDS).until(() ->
+            return await().pollInterval(POLL_INTERVAL)
+                    .atMost(TIMEOUT_IN_SECONDS, SECONDS).until(() ->
                     findAll(postRequestedFor(urlPathMatching(SYS_DOC_GENERATOR_URL)))
                             .stream()
                             .map(LoggedRequest::getBodyAsString)

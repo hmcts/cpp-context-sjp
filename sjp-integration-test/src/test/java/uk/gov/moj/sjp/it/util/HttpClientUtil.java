@@ -7,6 +7,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static uk.gov.justice.services.test.utils.core.http.BaseUriProvider.getBaseUri;
 import static uk.gov.moj.sjp.it.test.BaseIntegrationTest.USER_ID;
 
+import org.jboss.resteasy.client.jaxrs.ResteasyClient;
 import uk.gov.justice.services.common.http.HeaderConstants;
 import uk.gov.justice.services.test.utils.core.rest.RestClient;
 import uk.gov.justice.services.test.utils.core.rest.ResteasyClientBuilderFactory;
@@ -36,6 +37,7 @@ public class HttpClientUtil {
 
     private static final String WRITE_BASE_URL = BASE_URI + "/sjp-command-api/command/api/rest/sjp";
     private static final String READ_BASE_URL = BASE_URI + "/sjp-query-api/query/api/rest/sjp";
+    public static final ResteasyClient RESTEASY_CLIENT = ResteasyClientBuilderFactory.clientBuilder().build();
 
     public static UUID makePostCall(final String url, final String mediaType, final String payload) {
         return makePostCall(USER_ID, url, mediaType, payload, Response.Status.ACCEPTED);
@@ -53,10 +55,11 @@ public class HttpClientUtil {
         map.add(HeaderConstants.CLIENT_CORRELATION_ID, correlationId);
 
         final String writeUrl = getWriteUrl(url);
-        final Response response = restClient.postCommand(writeUrl, mediaType, payload, map);
+        try (Response response = restClient.postCommand(writeUrl, mediaType, payload, map)) {
 
-        assertThat(format("Post returned not expected status code with body: %s", response.readEntity(String.class)),
-                response.getStatus(), is(expectedStatus.getStatusCode()));
+            assertThat(format("Post returned not expected status code with body: %s", response.readEntity(String.class)),
+                    response.getStatus(), is(expectedStatus.getStatusCode()));
+        }
 
         return correlationId;
     }
@@ -67,12 +70,14 @@ public class HttpClientUtil {
         map.add(HeaderConstants.CLIENT_CORRELATION_ID, randomUUID());
 
         final String writeUrl = getWriteUrl(url);
-        final Response response = restClient.postCommand(writeUrl, mediaType, payload, map);
-        LOGGER.info("Post call made: \n\tURL = {} \n\tMedia type = {} \n\tUser = {}\n",
-                writeUrl, mediaType, USER_ID);
-        final String responseBody = response.readEntity(String.class);
-        assertThat(format("Post returned not expected status code with body: %s", responseBody),
-                response.getStatus(), is(expectedStatus.getStatusCode()));
+        final String responseBody;
+        try (Response response = restClient.postCommand(writeUrl, mediaType, payload, map)) {
+            LOGGER.info("Post call made: \n\tURL = {} \n\tMedia type = {} \n\tUser = {}\n",
+                    writeUrl, mediaType, USER_ID);
+            responseBody = response.readEntity(String.class);
+            assertThat(format("Post returned not expected status code with body: %s", responseBody),
+                    response.getStatus(), is(expectedStatus.getStatusCode()));
+        }
 
         return responseBody;
     }
@@ -89,16 +94,15 @@ public class HttpClientUtil {
         mdo.addFormData(fileFieldName, file, MediaType.MULTIPART_FORM_DATA_TYPE, file.getName());
         final GenericEntity<MultipartFormDataOutput> entity = new GenericEntity<>(mdo) {
         };
-        final Response response = ResteasyClientBuilderFactory.clientBuilder().build().target(getWriteUrl(url)).request().headers(headers).post(
-                Entity.entity(entity, MediaType.MULTIPART_FORM_DATA_TYPE)
-        );
-        response.close();
-        assertThat(response.getStatus(), is(Response.Status.ACCEPTED.getStatusCode()));
+        try (Response response = RESTEASY_CLIENT.target(getWriteUrl(url)).request().headers(headers).post(
+                Entity.entity(entity, MediaType.MULTIPART_FORM_DATA_TYPE))) {
+            assertThat(response.getStatus(), is(Response.Status.ACCEPTED.getStatusCode()));
+        }
 
         return correlationId;
     }
 
-    public static  Response makeGetCall(final String url, final String mediaType) {
+    public static Response makeGetCall(final String url, final String mediaType) {
         return makeGetCall(url, mediaType, USER_ID);
     }
 
@@ -109,9 +113,9 @@ public class HttpClientUtil {
         map.add(HttpHeaders.ACCEPT, mediaType);
         final String readUrl = getReadUrl(url);
         LOGGER.info("Get call made:" + System.lineSeparator()
-                        + "Endpoint = {}" + System.lineSeparator()
-                        + "Media type = {}" + System.lineSeparator()
-                        + "User = {}" + System.lineSeparator(),
+                    + "Endpoint = {}" + System.lineSeparator()
+                    + "Media type = {}" + System.lineSeparator()
+                    + "User = {}" + System.lineSeparator(),
                 readUrl, mediaType, userId);
         return restClient.query(readUrl, mediaType, map);
     }

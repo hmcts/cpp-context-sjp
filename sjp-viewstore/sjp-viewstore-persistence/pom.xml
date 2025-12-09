@@ -3,7 +3,7 @@
     <parent>
         <artifactId>sjp-viewstore</artifactId>
         <groupId>uk.gov.moj.cpp.sjp</groupId>
-        <version>17.103.142-PEG-2785-SNAPSHOT</version>
+        <version>17.103.143-PEG-2785-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 

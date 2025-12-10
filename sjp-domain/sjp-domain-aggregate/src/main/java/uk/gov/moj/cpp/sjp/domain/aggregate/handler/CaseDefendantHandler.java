@@ -2,6 +2,7 @@ package uk.gov.moj.cpp.sjp.domain.aggregate.handler;
 
 import static java.util.Objects.nonNull;
 import static uk.gov.moj.cpp.sjp.domain.aggregate.handler.HandlerUtils.createRejectionEvents;
+import static uk.gov.moj.cpp.sjp.domain.aggregate.handler.HandlerUtils.createRejectionEventsFromCC;
 import static uk.gov.moj.cpp.sjp.event.DefendantDetailsUpdated.DefendantDetailsUpdatedBuilder.defendantDetailsUpdated;
 import static uk.gov.moj.cpp.sjp.event.DefendantPendingChangesAccepted.DefendantPendingChangesAcceptedBuilder.defendantPendingChangesAccepted;
 
@@ -29,6 +30,7 @@ import uk.gov.moj.cpp.sjp.event.ProsecutionAuthorityAccessDenied;
 
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Stream;
 
@@ -104,6 +106,38 @@ public class CaseDefendantHandler {
                 state,
                 isAddressUpdateFromApplication
         ).orElse(createDefendantUpdateRequestedEvent(caseId, defendantId, person, updatedDate, state, isAddressUpdateFromApplication));
+    }
+
+    /**
+     * Updates defendant details from Criminal Courts (CC) without checking for case completed
+     * or case referred for court hearing status.
+     * Returns empty stream if case is not found (no event raised).
+     */
+    public Stream<Object> updateDefendantDetailsFromCC(
+
+                                                       final UUID caseId,
+                                                       final UUID defendantId,
+                                                       final Person person,
+                                                       final ZonedDateTime updatedDate,
+                                                       final CaseAggregateState state) {
+
+        final Optional<Stream<Object>> rejectionEvents = createRejectionEventsFromCC(
+                "Update defendant detail from CC",
+                defendantId,
+                state
+        );
+
+        if (rejectionEvents.isPresent()) {
+            return rejectionEvents.get();
+        }
+
+        // If Optional is empty (case not found), return empty stream (no event)
+        if (state.getCaseId() == null) {
+            return Stream.empty();
+        }
+
+        // Otherwise, proceed with creating the update event
+        return createDefendantUpdateRequestedEvent(caseId, defendantId, person, updatedDate, state, false);
     }
 
     public Stream<Object> acceptPendingDefendantChanges(final UUID userId,

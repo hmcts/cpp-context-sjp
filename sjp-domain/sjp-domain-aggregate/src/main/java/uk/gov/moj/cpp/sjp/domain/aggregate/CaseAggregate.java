@@ -282,6 +282,19 @@ public class CaseAggregate implements Aggregate {
         return apply(CaseDefendantHandler.INSTANCE.updateDefendantDetails(userId, caseId, defendantId, person, updatedDate, state, isAddressUpdateFromApplication));
     }
 
+    /**
+     * Updates defendant details from Criminal Courts (CC) without checking for case completed
+     * or case referred for court hearing status.
+     */
+    public Stream<Object> updateDefendantDetailsFromCC(
+                                                       final UUID caseId,
+                                                       final UUID defendantId,
+                                                       final Person person,
+                                                       final ZonedDateTime updatedDate) {
+
+        return apply(CaseDefendantHandler.INSTANCE.updateDefendantDetailsFromCC(caseId, defendantId, person, updatedDate, state));
+    }
+
     public Stream<Object> acceptPendingDefendantChanges(final UUID userId,
                                                         final UUID caseId,
                                                         final UUID defendantId,

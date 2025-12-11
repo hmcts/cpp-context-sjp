@@ -17,6 +17,7 @@ import uk.gov.moj.cpp.sjp.domain.Address;
 import uk.gov.moj.cpp.sjp.domain.ContactDetails;
 import uk.gov.moj.cpp.sjp.domain.Person;
 import uk.gov.moj.cpp.sjp.domain.aggregate.CaseAggregate;
+import uk.gov.moj.cpp.sjp.domain.legalentity.LegalEntityDefendant;
 
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
@@ -65,7 +66,7 @@ public class UpdateDefendantDetailsFromCCHandler extends BasePersonInfoHandler {
         final String dateOfBirth = getStringOrNull(payload, "dateOfBirth");
         final String email = getStringOrNull(payload, "email");
         final String email2 = getStringOrNull(payload, "email2");
-        final String legalEntityName = getStringOrNull(payload, "legalEntityName");
+        String legalEntityName = getStringOrNull(payload, "legalEntityName");
 
         final JsonObject contactNumberPayload = payload.getJsonObject("contactNumber");
         final String homeNumber = contactNumberPayload != null ? getStringOrNull(contactNumberPayload, "home") : null;
@@ -79,12 +80,41 @@ public class UpdateDefendantDetailsFromCCHandler extends BasePersonInfoHandler {
 
         final CaseAggregate caseAggregate = aggregateService.get(eventStream, CaseAggregate.class);
 
-        final ContactDetails contactDetails = new ContactDetails(homeNumber, mobileNumber, businessNumber, email, email2);
-        final Person person = new Person(title, firstName, lastName, birthDate, gender, nationalInsuranceNumber, driverNumber, driverLicenceDetails, address, contactDetails, region, legalEntityName);
+        final JsonObject legalEntityDefendantPayload = payload.getJsonObject("legalEntityDefendant");
+        
+        if (legalEntityDefendantPayload != null) {
+            // Handle legal entity defendant
+            legalEntityName = getStringOrNull(legalEntityDefendantPayload, "name");
+            final Address legalEntityAddress = createAddressFrom(legalEntityDefendantPayload);
+            final String incorporationNumber = getStringOrNull(legalEntityDefendantPayload, "incorporationNumber");
+            final String position = getStringOrNull(legalEntityDefendantPayload, "position");
+            
+            final JsonObject legalEntityContactDetails = legalEntityDefendantPayload.getJsonObject("contactDetails");
+            final String legalEntityHome = legalEntityContactDetails != null ? getStringOrNull(legalEntityContactDetails, "home") : null;
+            final String legalEntityMobile = legalEntityContactDetails != null ? getStringOrNull(legalEntityContactDetails, "mobile") : null;
+            final String legalEntityBusiness = legalEntityContactDetails != null ? getStringOrNull(legalEntityContactDetails, "business") : null;
+            final String legalEntityEmail = legalEntityContactDetails != null ? getStringOrNull(legalEntityContactDetails, "email") : null;
+            final String legalEntityEmail2 = legalEntityContactDetails != null ? getStringOrNull(legalEntityContactDetails, "email2") : null;
+            
+            final ContactDetails legalEntityContact = new ContactDetails(legalEntityHome, legalEntityMobile, legalEntityBusiness, legalEntityEmail, legalEntityEmail2);
+            final LegalEntityDefendant legalEntityDefendant = LegalEntityDefendant.legalEntityDefendant()
+                    .withName(legalEntityName)
+                    .withAdddres(legalEntityAddress)
+                    .withContactDetails(legalEntityContact)
+                    .withIncorporationNumber(incorporationNumber)
+                    .withPosition(position)
+                    .build();
+            
+            final Stream<Object> events = caseAggregate.updateLegalEntityDefendantDetailsFromCC(caseId, defendantId, legalEntityDefendant, createdAt);
+            eventStream.append(events.map(toEnvelopeWithMetadataFrom(command)));
+        } else {
+            // Handle person defendant
+            final ContactDetails contactDetails = new ContactDetails(homeNumber, mobileNumber, businessNumber, email, email2);
+            final Person person = new Person(title, firstName, lastName, birthDate, gender, nationalInsuranceNumber, driverNumber, driverLicenceDetails, address, contactDetails, region, legalEntityName);
 
-        final Stream<Object> events = caseAggregate.updateDefendantDetailsFromCC(caseId, defendantId, person, createdAt);
-
-        eventStream.append(events.map(toEnvelopeWithMetadataFrom(command)));
+            final Stream<Object> events = caseAggregate.updateDefendantDetailsFromCC(caseId, defendantId, person, createdAt);
+            eventStream.append(events.map(toEnvelopeWithMetadataFrom(command)));
+        }
     }
 }
 

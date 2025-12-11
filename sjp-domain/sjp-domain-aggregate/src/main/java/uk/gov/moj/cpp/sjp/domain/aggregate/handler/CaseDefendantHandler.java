@@ -2,7 +2,7 @@ package uk.gov.moj.cpp.sjp.domain.aggregate.handler;
 
 import static java.util.Objects.nonNull;
 import static uk.gov.moj.cpp.sjp.domain.aggregate.handler.HandlerUtils.createRejectionEvents;
-import static uk.gov.moj.cpp.sjp.domain.aggregate.handler.HandlerUtils.createRejectionEventsFromCC;
+import static uk.gov.moj.cpp.sjp.domain.aggregate.handler.HandlerUtils.createRejectionEventsForDefendantUpdate;
 import static uk.gov.moj.cpp.sjp.event.DefendantDetailsUpdated.DefendantDetailsUpdatedBuilder.defendantDetailsUpdated;
 import static uk.gov.moj.cpp.sjp.event.DefendantPendingChangesAccepted.DefendantPendingChangesAcceptedBuilder.defendantPendingChangesAccepted;
 
@@ -19,6 +19,7 @@ import uk.gov.moj.cpp.sjp.event.DefendantDateOfBirthUpdated;
 import uk.gov.moj.cpp.sjp.event.DefendantDetailUpdateRequested;
 import uk.gov.moj.cpp.sjp.event.DefendantDetailsUpdateFailed;
 import uk.gov.moj.cpp.sjp.event.DefendantDetailsUpdated;
+import uk.gov.moj.cpp.sjp.event.DefendantDetailsUpdateRequestAccepted;
 import uk.gov.moj.cpp.sjp.event.DefendantDetailsUpdatesAcknowledged;
 import uk.gov.moj.cpp.sjp.event.DefendantNameUpdateRequested;
 import uk.gov.moj.cpp.sjp.event.DefendantNameUpdated;
@@ -30,8 +31,10 @@ import uk.gov.moj.cpp.sjp.event.ProsecutionAuthorityAccessDenied;
 
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.apache.commons.lang3.StringUtils;
@@ -121,7 +124,7 @@ public class CaseDefendantHandler {
                                                        final ZonedDateTime updatedDate,
                                                        final CaseAggregateState state) {
 
-        final Optional<Stream<Object>> rejectionEvents = createRejectionEventsFromCC(
+        final Optional<Stream<Object>> rejectionEvents = createRejectionEventsForDefendantUpdate(
                 "Update defendant detail from CC",
                 defendantId,
                 state
@@ -137,7 +140,142 @@ public class CaseDefendantHandler {
         }
 
         // Otherwise, proceed with creating the update event
-        return createDefendantUpdateRequestedEvent(caseId, defendantId, person, updatedDate, state, false);
+        final Stream<Object> events = createDefendantUpdateRequestedEvent(caseId, defendantId, person, updatedDate, state, false);
+
+        // Check if any of the three update-requested events were raised and add the new event
+        final List<Object> eventList = events.collect(Collectors.toList());
+        boolean hasUpdateRequestedEvent = eventList.stream().anyMatch(e ->
+            e instanceof DefendantDateOfBirthUpdateRequested ||
+            e instanceof DefendantAddressUpdateRequested ||
+            e instanceof DefendantNameUpdateRequested
+        );
+
+        if (hasUpdateRequestedEvent) {
+            // Extract changed fields from the events
+            PersonalName newPersonalName = null;
+            String newLegalEntityName = null;
+            Address newAddress = null;
+            LocalDate newDateOfBirth = null;
+
+            for (Object event : eventList) {
+                if (event instanceof DefendantDateOfBirthUpdateRequested defendantDateOfBirthUpdateRequested) {
+                    newDateOfBirth = defendantDateOfBirthUpdateRequested.getNewDateOfBirth();
+                } else if (event instanceof DefendantAddressUpdateRequested defendantAddressUpdateRequested) {
+                    newAddress = defendantAddressUpdateRequested.getNewAddress();
+                } else if (event instanceof DefendantNameUpdateRequested nameEvent) {
+                    newPersonalName = nameEvent.getNewPersonalName();
+                    newLegalEntityName = nameEvent.getNewLegalEntityName();
+                }
+            }
+
+            // Add the new event to the stream
+            return Stream.concat(
+                eventList.stream(),
+                Stream.of(new DefendantDetailsUpdateRequestAccepted(
+                    caseId,
+                    defendantId,
+                    newPersonalName,
+                    newLegalEntityName,
+                    newAddress,
+                    newDateOfBirth,
+                    updatedDate))
+            );
+        }
+
+        return eventList.stream();
+    }
+
+    /**
+     * Updates legal entity defendant details from Criminal Courts (CC) without checking for case completed
+     * or case referred for court hearing status.
+     * Returns empty stream if case is not found (no event raised).
+     */
+    public Stream<Object> updateLegalEntityDefendantDetailsFromCC(
+                                                                  final UUID caseId,
+                                                                  final UUID defendantId,
+                                                                  final LegalEntityDefendant legalEntityDefendant,
+                                                                  final ZonedDateTime updatedDate,
+                                                                  final CaseAggregateState state) {
+
+        final Optional<Stream<Object>> rejectionEvents = createRejectionEventsForDefendantUpdate(
+                "Update legal entity defendant detail from CC",
+                defendantId,
+                state
+        );
+
+        if (rejectionEvents.isPresent()) {
+            return rejectionEvents.get();
+        }
+
+        // If Optional is empty (case not found), return empty stream (no event)
+        if (state.getCaseId() == null) {
+            return Stream.empty();
+        }
+
+        // Otherwise, proceed with creating the update event
+        final Stream<Object> events = createLegalEntityDefendantUpdateRequestedEvent(caseId, defendantId, legalEntityDefendant, updatedDate, state);
+
+        // Check if any update-requested events were raised and add DefendantDetailsUpdateRequestAccepted
+        final List<Object> eventList = events.collect(Collectors.toList());
+        boolean hasUpdateRequestedEvent = eventList.stream().anyMatch(e ->
+            e instanceof DefendantAddressUpdateRequested ||
+            e instanceof DefendantNameUpdateRequested
+        );
+
+        if (hasUpdateRequestedEvent) {
+            // Extract changed fields from the events
+            String newLegalEntityName = null;
+            Address newAddress = null;
+
+            for (Object event : eventList) {
+                if (event instanceof DefendantAddressUpdateRequested defendantAddressUpdateRequested) {
+                    newAddress = defendantAddressUpdateRequested.getNewAddress();
+                } else if (event instanceof DefendantNameUpdateRequested nameEvent) {
+                    newLegalEntityName = nameEvent.getNewLegalEntityName();
+                }
+            }
+
+            // Add the new event to the stream
+            return Stream.concat(
+                eventList.stream(),
+                Stream.of(new DefendantDetailsUpdateRequestAccepted(
+                    caseId,
+                    defendantId,
+                    null, // PersonalName is null for legal entity
+                    newLegalEntityName,
+                    newAddress,
+                    null, // DateOfBirth is null for legal entity
+                    updatedDate))
+            );
+        }
+
+        return eventList.stream();
+    }
+
+    public Stream<Object> acceptPendingDefendantChangesCC(final UUID caseId,
+                                                          final UUID defendantId,
+                                                          final Person person,
+                                                          final ZonedDateTime updatedDate,
+                                                          final CaseAggregateState state) {
+
+
+        final Optional<Stream<Object>> rejectionEvents = createRejectionEventsForDefendantUpdate(
+                "Accept pending defendant changes from CC",
+                defendantId,
+                state
+        );
+
+        if (rejectionEvents.isPresent()) {
+            return rejectionEvents.get();
+        }
+
+        // If Optional is empty (case not found), return empty stream (no event)
+        if (state.getCaseId() == null) {
+            return Stream.empty();
+        }
+
+        return createDefendantUpdateEvent(caseId, defendantId, person, updatedDate, state);
+
     }
 
     public Stream<Object> acceptPendingDefendantChanges(final UUID userId,
@@ -272,7 +410,7 @@ public class CaseDefendantHandler {
                                                             final ZonedDateTime updatedDate,
                                                             final boolean isOnlinePlea,
                                                             final CaseAggregateState state) {
-        return getDefendantUpdateRequestedEvents(person, updatedDate,isOnlinePlea,state,false);
+        return getDefendantUpdateRequestedEvents(person, updatedDate, isOnlinePlea, state, false);
     }
 
     @SuppressWarnings("squid:MethodCyclomaticComplexity")
@@ -302,7 +440,7 @@ public class CaseDefendantHandler {
             events.add(new DefendantAddressUpdateRequested(
                     state.getCaseId(),
                     person.getAddress(),
-                    updatedDate,addressUpdateFromApplication));
+                    updatedDate, addressUpdateFromApplication));
         }
 
         // Online plea doesn't update title
@@ -389,25 +527,66 @@ public class CaseDefendantHandler {
 
         final Stream.Builder<Object> events = Stream.builder();
 
+        boolean isAddressChanged = false;
+        boolean isNameChanged = false;
 
         final Address defendantAddress = state.getDefendantAddress();
         if (defendantAddress != null && !defendantAddress.equals(legalEntityDefendant.getAddress())) {
-            events.add(new DefendantDetailUpdateRequested(state.getCaseId(), false, true, false));
+            isAddressChanged = true;
             events.add(new DefendantAddressUpdateRequested(
                     state.getCaseId(),
-                    defendantAddress,
+                    legalEntityDefendant.getAddress(),
                     updatedDate,false));
         }
 
         // Online plea doesn't update title
-        if (isCompanyNameChanged(legalEntityDefendant.getName(), state)) {
-            events.add(new DefendantDetailUpdateRequested(state.getCaseId(), true, false, false));
+        // For legal entity defendants, check if name changed or if state has no name but new name is provided
+        final String defendantLegalEntityName = state.getDefendantLegalEntityName();
+        if (isCompanyNameChanged(legalEntityDefendant.getName(), state) ||
+                (defendantLegalEntityName == null && legalEntityDefendant.getName() != null)) {
+            isNameChanged = true;
             events.add(new DefendantNameUpdateRequested(
                     state.getCaseId(),
                     null,
                     legalEntityDefendant.getName(),
                     updatedDate));
         }
+
+        if (isNameChanged || isAddressChanged) {
+            events.add(new DefendantDetailUpdateRequested(state.getCaseId(), isNameChanged, isAddressChanged, false));
+        }
+
+        return events.build();
+    }
+
+    private Stream<Object> createLegalEntityDefendantUpdateRequestedEvent(final UUID caseId,
+                                                                          final UUID defendantId,
+                                                                          final LegalEntityDefendant legalEntityDefendant,
+                                                                          final ZonedDateTime updatedDate,
+                                                                          final CaseAggregateState state) {
+
+        final Stream.Builder<Object> events = Stream.builder();
+
+        try {
+            validateDefendantAddress(legalEntityDefendant.getAddress(), state.getDefendantAddress());
+        } catch (IllegalArgumentException | IllegalStateException e) {
+            LOGGER.error("Legal entity defendant details update failed for ID: {} with message {} ", defendantId, e);
+            return Stream.of(new DefendantDetailsUpdateFailed(caseId, defendantId, e.getMessage()));
+        }
+
+        getLegalEntityDefendantUpdateRequestedEvents(legalEntityDefendant, updatedDate, state)
+                .forEach(events::add);
+
+        final DefendantDetailsUpdated.DefendantDetailsUpdatedBuilder defendantDetailsUpdated = defendantDetailsUpdated()
+                .withCaseId(caseId)
+                .withDefendantId(defendantId)
+                .withLegalEntityName(legalEntityDefendant.getName())
+                .withAddress(legalEntityDefendant.getAddress())
+                .withContactDetails(legalEntityDefendant.getContactDetails())
+                .withUpdateByOnlinePlea(false)
+                .withUpdatedDate(updatedDate);
+
+        events.add(defendantDetailsUpdated.build());
 
         return events.build();
     }

@@ -10,8 +10,6 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import uk.gov.moj.cpp.sjp.domain.aggregate.state.CaseAggregateState;
-import uk.gov.moj.cpp.sjp.event.CaseUpdateRejected;
-import uk.gov.moj.cpp.sjp.event.CaseUpdateRejected.RejectReason;
 import uk.gov.moj.cpp.sjp.event.DefendantNotFound;
 
 import java.util.List;
@@ -44,7 +42,7 @@ public class HandlerUtilsCreateRejectionEventsFromCCTest {
         stateWithoutCase.setCaseId(null);
 
         // when
-        final Optional<Stream<Object>> result = HandlerUtils.createRejectionEventsFromCC(
+        final Optional<Stream<Object>> result = HandlerUtils.createRejectionEventsForDefendantUpdate(
                 "Update defendant detail from CC",
                 DEFENDANT_ID,
                 stateWithoutCase
@@ -57,7 +55,7 @@ public class HandlerUtilsCreateRejectionEventsFromCCTest {
     @Test
     public void shouldReturnDefendantNotFoundWhenDefendantDoesNotExist() {
         // when
-        final Optional<Stream<Object>> result = HandlerUtils.createRejectionEventsFromCC(
+        final Optional<Stream<Object>> result = HandlerUtils.createRejectionEventsForDefendantUpdate(
                 "Update defendant detail from CC",
                 UNKNOWN_DEFENDANT_ID,
                 caseAggregateState
@@ -79,7 +77,7 @@ public class HandlerUtilsCreateRejectionEventsFromCCTest {
         caseAggregateState.markCaseCompleted();
 
         // when
-        final Optional<Stream<Object>> result = HandlerUtils.createRejectionEventsFromCC(
+        final Optional<Stream<Object>> result = HandlerUtils.createRejectionEventsForDefendantUpdate(
                 "Update defendant detail from CC",
                 DEFENDANT_ID,
                 caseAggregateState
@@ -95,7 +93,7 @@ public class HandlerUtilsCreateRejectionEventsFromCCTest {
         caseAggregateState.markCaseReferredForCourtHearing();
 
         // when
-        final Optional<Stream<Object>> result = HandlerUtils.createRejectionEventsFromCC(
+        final Optional<Stream<Object>> result = HandlerUtils.createRejectionEventsForDefendantUpdate(
                 "Update defendant detail from CC",
                 DEFENDANT_ID,
                 caseAggregateState
@@ -110,7 +108,7 @@ public class HandlerUtilsCreateRejectionEventsFromCCTest {
         // given - case exists, defendant exists, not assigned to another user, not completed, not referred
 
         // when
-        final Optional<Stream<Object>> result = HandlerUtils.createRejectionEventsFromCC(
+        final Optional<Stream<Object>> result = HandlerUtils.createRejectionEventsForDefendantUpdate(
                 "Update defendant detail from CC",
                 DEFENDANT_ID,
                 caseAggregateState
@@ -126,7 +124,7 @@ public class HandlerUtilsCreateRejectionEventsFromCCTest {
         caseAggregateState.setAssigneeId(USER_ID);
 
         // when
-        final Optional<Stream<Object>> result = HandlerUtils.createRejectionEventsFromCC(
+        final Optional<Stream<Object>> result = HandlerUtils.createRejectionEventsForDefendantUpdate(
                 "Update defendant detail from CC",
                 DEFENDANT_ID,
                 caseAggregateState

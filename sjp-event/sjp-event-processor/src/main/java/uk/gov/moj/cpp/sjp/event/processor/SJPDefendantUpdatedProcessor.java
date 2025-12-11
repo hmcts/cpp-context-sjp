@@ -26,6 +26,7 @@ public class SJPDefendantUpdatedProcessor {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(SJPDefendantUpdatedProcessor.class);
     private static final String SJP_COMMAND_UPDATE_DEFENDANT_DETAILS_FROM_CC = "sjp.command.update-defendant-details-from-CC";
+    public static final String ADDRESS = "address";
 
 
     @Inject
@@ -116,7 +117,7 @@ public class SJPDefendantUpdatedProcessor {
         addIfPresent(payloadBuilder, personDetails, "nationalInsuranceNumber", "nationalInsuranceNumber");
         addIfPresent(payloadBuilder, personDetails, "region", "region");
 
-        addAddressIfPresent(payloadBuilder, personDetails, "address");
+        addAddressIfPresent(payloadBuilder, personDetails, ADDRESS);
         addContactDetails(payloadBuilder, personDetails);
     }
 
@@ -142,15 +143,15 @@ public class SJPDefendantUpdatedProcessor {
     private void addAddressIfPresent(final JsonObjectBuilder payloadBuilder, final JsonObject source, final String key) {
         final JsonObject address = source.getJsonObject(key);
         if (address != null) {
-            payloadBuilder.add("address", address);
+            payloadBuilder.add(ADDRESS, address);
         }
     }
 
     private void addDefendantAddressIfNeeded(final JsonObjectBuilder payloadBuilder, final JsonObject personDefendant,
                                             final JsonObject defendant) {
         final JsonObject personDetailsForAddress = personDefendant.getJsonObject("personDetails");
-        if (personDetailsForAddress == null || personDetailsForAddress.getJsonObject("address") == null) {
-            addAddressIfPresent(payloadBuilder, defendant, "address");
+        if (personDetailsForAddress == null || personDetailsForAddress.getJsonObject(ADDRESS) == null) {
+            addAddressIfPresent(payloadBuilder, defendant, ADDRESS);
         }
     }
 
@@ -158,7 +159,7 @@ public class SJPDefendantUpdatedProcessor {
         final JsonObjectBuilder legalEntityBuilder = Json.createObjectBuilder();
         
         addIfPresent(legalEntityBuilder, legalEntityDefendant, "name", "name");
-        addAddressIfPresent(legalEntityBuilder, legalEntityDefendant, "address");
+        addAddressIfPresent(legalEntityBuilder, legalEntityDefendant, ADDRESS);
         
         final JsonObject contactDetails = legalEntityDefendant.getJsonObject("contactDetails");
         if (contactDetails != null) {

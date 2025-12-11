@@ -4,11 +4,11 @@ import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 import uk.gov.justice.services.common.util.Clock;
 import uk.gov.justice.services.test.utils.persistence.BaseTransactionalJunit4Test;
 import uk.gov.moj.cpp.sjp.persistence.entity.CaseAssignmentRestriction;
-
 
 import javax.inject.Inject;
 
@@ -35,9 +35,9 @@ public class CaseAssignmentRestrictionRepositoryTest extends BaseTransactionalJu
 
     @Before
     public void set() {
-        repository.saveCaseAssignmentRestriction(PROSECUTING_AUTHORITY_TVL, "[]", "[]", dateTimeCreated.now());
-        repository.saveCaseAssignmentRestriction(PROSECUTING_AUTHORITY_TFL, "[\"1234\"]", "[]", dateTimeCreated.now());
-        repository.saveCaseAssignmentRestriction(PROSECUTING_AUTHORITY_DVLA, "[]", "[\"9876\"]", dateTimeCreated.now());
+        repository.saveCaseAssignmentRestriction(PROSECUTING_AUTHORITY_TVL, "[]", "[]", dateTimeCreated.now(), dateTimeCreated.now().toLocalDate(), dateTimeCreated.now().toLocalDate());
+        repository.saveCaseAssignmentRestriction(PROSECUTING_AUTHORITY_TFL, "[\"1234\"]", "[]", dateTimeCreated.now(), null, dateTimeCreated.now().toLocalDate());
+        repository.saveCaseAssignmentRestriction(PROSECUTING_AUTHORITY_DVLA, "[]", "[\"9876\"]", dateTimeCreated.now(), dateTimeCreated.now().toLocalDate(), null);
     }
 
     @Test
@@ -47,15 +47,23 @@ public class CaseAssignmentRestrictionRepositoryTest extends BaseTransactionalJu
         assertThat(caseAssignmentRestriction.getDateTimeCreated(), equalTo(dateTimeCreated.now()));
         assertThat(caseAssignmentRestriction.getExclude(), equalTo(emptyList()));
         assertThat(caseAssignmentRestriction.getIncludeOnly(), equalTo(emptyList()));
+        assertThat(caseAssignmentRestriction.getValidFrom(), equalTo(dateTimeCreated.now().toLocalDate()));
+        assertThat(caseAssignmentRestriction.getValidTo(), equalTo(dateTimeCreated.now().toLocalDate()));
+
         caseAssignmentRestriction = repository.findBy(PROSECUTING_AUTHORITY_TFL);
         assertThat(caseAssignmentRestriction.getProsecutingAuthority(), equalTo(PROSECUTING_AUTHORITY_TFL));
         assertThat(caseAssignmentRestriction.getDateTimeCreated(), equalTo(dateTimeCreated.now()));
         assertThat(caseAssignmentRestriction.getExclude(), equalTo(emptyList()));
         assertThat(caseAssignmentRestriction.getIncludeOnly(), equalTo(singletonList("1234")));
+        assertNull(caseAssignmentRestriction.getValidFrom());
+        assertThat(caseAssignmentRestriction.getValidTo(), equalTo(dateTimeCreated.now().toLocalDate()));
+
         caseAssignmentRestriction = repository.findBy(PROSECUTING_AUTHORITY_DVLA);
         assertThat(caseAssignmentRestriction.getProsecutingAuthority(), equalTo(PROSECUTING_AUTHORITY_DVLA));
         assertThat(caseAssignmentRestriction.getDateTimeCreated(), equalTo(dateTimeCreated.now()));
         assertThat(caseAssignmentRestriction.getExclude(), equalTo(singletonList("9876")));
         assertThat(caseAssignmentRestriction.getIncludeOnly(), equalTo(emptyList()));
+        assertThat(caseAssignmentRestriction.getValidFrom(), equalTo(dateTimeCreated.now().toLocalDate()));
+        assertNull(caseAssignmentRestriction.getValidTo());
     }
 }

@@ -5,6 +5,7 @@ import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static javax.ws.rs.core.Response.Status.FORBIDDEN;
 import static javax.ws.rs.core.Response.Status.INTERNAL_SERVER_ERROR;
+import static javax.ws.rs.core.Response.Status.NOT_FOUND;
 import static javax.ws.rs.core.Response.Status.OK;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.anyOf;
@@ -53,6 +54,13 @@ public class RestPollerWithDefaults {
         }
 
         return JsonHelper.getJsonObject(responseData.getPayload());
+    }
+
+    public static void pollWithNotFound(final RequestParams requestParams) {
+        pollWithDefaults(requestParams)
+                .until(anyOf(
+                        status().is(NOT_FOUND)
+                ));
     }
 
     private RestPollerWithDefaults() {

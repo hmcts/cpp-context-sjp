@@ -1,8 +1,0 @@
-responses:
-  202:
-    description: The request has been accepted for processing, but the processing has not been completed
-    body:
-      example: |
-        {
-           "UUID":"5f347ceb-b7d2-478d-bc7a-d2e0c5a937a3"
-        }

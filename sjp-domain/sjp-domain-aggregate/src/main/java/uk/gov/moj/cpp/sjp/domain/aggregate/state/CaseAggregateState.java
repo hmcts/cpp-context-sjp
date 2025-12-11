@@ -925,7 +925,6 @@ public class CaseAggregateState implements AggregateState {
         final DefendantDetailsUpdated.DefendantDetailsUpdatedBuilder builder = defendantDetailsUpdated()
                 .withCaseId(getCaseId())
                 .withDefendantId(getDefendantId());
-
         getContactDetailsUpdateSummary(legalEntityDefendant, builder);
 
         if (builder.containsUpdate()) {

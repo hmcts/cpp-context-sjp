@@ -86,7 +86,7 @@ public class SjpQueryApiTest {
                         method("getCasesWithoutDefendantPostcode").thatHandles("sjp.query.cases-without-defendant-postcode"),
                         method("getOffencesVerdicts").thatHandles("sjp.query.offence-verdicts"),
                         method("getCaseNotes").thatHandles("sjp.query.case-notes").withRequesterPassThrough(),
-                        method("getOutstandingFines").thatHandles("sjp.query.defendant-outstanding-fines").withRequesterPassThrough()
+                        method("getOutstandingFines").thatHandles("sjp.query.defendant-outstanding-fines")
                 )));
     }
 

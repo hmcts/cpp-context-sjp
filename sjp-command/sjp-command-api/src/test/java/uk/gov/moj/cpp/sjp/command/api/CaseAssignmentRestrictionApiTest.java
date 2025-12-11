@@ -19,6 +19,7 @@ import uk.gov.justice.services.common.converter.jackson.ObjectMapperProducer;
 import uk.gov.justice.services.core.sender.Sender;
 import uk.gov.justice.services.messaging.Envelope;
 
+import java.time.LocalDate;
 import java.util.List;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -65,7 +66,8 @@ public class CaseAssignmentRestrictionApiTest {
     public void shouldRequestAddCaseAssignmentRestrictionController() {
         final List<String> exclude = singletonList("1234");
         final List<String> includeOnly = emptyList();
-        final AddCaseAssignmentRestriction envelopePayload = new AddCaseAssignmentRestriction(exclude, includeOnly, "TVL");
+        final AddCaseAssignmentRestriction envelopePayload = new AddCaseAssignmentRestriction(exclude, includeOnly,
+                "TVL", LocalDate.now().toString(), LocalDate.now().toString());
         final Envelope<AddCaseAssignmentRestriction> command = envelopeFrom(
                 metadataWithRandomUUID("sjp.command.add-case-assignment-restriction"),
                 envelopePayload);

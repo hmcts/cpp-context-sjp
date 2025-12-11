@@ -37,6 +37,7 @@ import uk.gov.moj.cpp.sjp.domain.CaseAssignmentType;
 import uk.gov.moj.cpp.sjp.domain.Defendant;
 import uk.gov.moj.cpp.sjp.domain.Interpreter;
 import uk.gov.moj.cpp.sjp.domain.aggregate.state.WithdrawalRequestsStatus;
+import uk.gov.moj.cpp.sjp.domain.legalentity.LegalEntityDefendant;
 import uk.gov.moj.cpp.sjp.domain.onlineplea.PleadOnline;
 import uk.gov.moj.cpp.sjp.domain.plea.PleaMethod;
 import uk.gov.moj.cpp.sjp.domain.plea.PleaType;
@@ -446,6 +447,48 @@ public class PleadOnlineTest {
                 OnlinePleaReceived.class,
                 CaseMarkedReadyForDecision.class,
                 CaseStatusChanged.class));
+
+        assertThat(events, not(containsEventsOf(DefendantDetailsUpdated.class)));
+
+        assertCommonExpectations(pleadOnline, events, now);
+    }
+
+
+    @Test
+    public void shouldRaiseDefendantDetailsUpdatedIfLegalEntityNameChanged() {
+        // single offence case
+        final Case testCase = createTestCase(null, "Pandora Inc");
+        setup(testCase);
+
+        caseAggregate = new CaseAggregate();
+        final CaseReceived sjpCase = caseAggregate.receiveCase(testCase, ZonedDateTime.now())
+                .map(CaseReceived.class::cast)
+                .findFirst()
+                .orElseThrow(() -> new AssertionError("Case not Received " + testCase.getId()));
+        caseId = sjpCase.getCaseId();
+        defendantId = sjpCase.getDefendant().getId();
+        offenceId = sjpCase.getDefendant().getOffences().get(0).getId();
+
+        //when
+        final LegalEntityDefendant legalEntityDefendant = LegalEntityDefendant.legalEntityDefendant().withName("Juniper Inc").build();
+        final PleadOnline pleadOnline = StoreOnlinePleaBuilder.defaultStoreOnlinePleaWithGuiltyPlea(offenceId, defendantId, true, false, false, legalEntityDefendant, null);
+        final List<Object> events = caseAggregate.pleadOnline(caseId, pleadOnline, now, randomUUID()).collect(toList());
+
+        //then
+        assertThat(events, containsEventsOf(
+                PleasSet.class,
+                HearingLanguagePreferenceUpdatedForDefendant.class,
+                PleadedGuilty.class,
+                DefendantNameUpdateRequested.class,
+                DefendantDetailUpdateRequested.class,
+                FinancialMeansUpdated.class,
+                EmployerUpdated.class,
+                EmploymentStatusUpdated.class,
+                OutstandingFinesUpdated.class,
+                OnlinePleaReceived.class,
+                CaseMarkedReadyForDecision.class,
+                CaseStatusChanged.class
+        ));
 
         assertThat(events, not(containsEventsOf(DefendantDetailsUpdated.class)));
 

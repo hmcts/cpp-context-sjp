@@ -83,37 +83,95 @@ public class UpdateDefendantDetailsFromCCHandler extends BasePersonInfoHandler {
         final JsonObject legalEntityDefendantPayload = payload.getJsonObject("legalEntityDefendant");
         
         if (legalEntityDefendantPayload != null) {
-            // Handle legal entity defendant
-            legalEntityName = getStringOrNull(legalEntityDefendantPayload, "name");
-            final Address legalEntityAddress = createAddressFrom(legalEntityDefendantPayload);
-            final String incorporationNumber = getStringOrNull(legalEntityDefendantPayload, "incorporationNumber");
-            final String position = getStringOrNull(legalEntityDefendantPayload, "position");
-            
-            final JsonObject legalEntityContactDetails = legalEntityDefendantPayload.getJsonObject("contactDetails");
-            final String legalEntityHome = legalEntityContactDetails != null ? getStringOrNull(legalEntityContactDetails, "home") : null;
-            final String legalEntityMobile = legalEntityContactDetails != null ? getStringOrNull(legalEntityContactDetails, "mobile") : null;
-            final String legalEntityBusiness = legalEntityContactDetails != null ? getStringOrNull(legalEntityContactDetails, "business") : null;
-            final String legalEntityEmail = legalEntityContactDetails != null ? getStringOrNull(legalEntityContactDetails, "email") : null;
-            final String legalEntityEmail2 = legalEntityContactDetails != null ? getStringOrNull(legalEntityContactDetails, "email2") : null;
-            
-            final ContactDetails legalEntityContact = new ContactDetails(legalEntityHome, legalEntityMobile, legalEntityBusiness, legalEntityEmail, legalEntityEmail2);
-            final LegalEntityDefendant legalEntityDefendant = LegalEntityDefendant.legalEntityDefendant()
-                    .withName(legalEntityName)
-                    .withAdddres(legalEntityAddress)
-                    .withContactDetails(legalEntityContact)
-                    .withIncorporationNumber(incorporationNumber)
-                    .withPosition(position)
-                    .build();
-            
-            final Stream<Object> events = caseAggregate.updateLegalEntityDefendantDetailsFromCC(caseId, defendantId, legalEntityDefendant, createdAt);
-            eventStream.append(events.map(toEnvelopeWithMetadataFrom(command)));
+            handleLegalEntityDefendant(command, caseId, defendantId, legalEntityDefendantPayload, caseAggregate, eventStream, createdAt);
         } else {
-            // Handle person defendant
-            final ContactDetails contactDetails = new ContactDetails(homeNumber, mobileNumber, businessNumber, email, email2);
-            final Person person = new Person(title, firstName, lastName, birthDate, gender, nationalInsuranceNumber, driverNumber, driverLicenceDetails, address, contactDetails, region, legalEntityName);
+            final PersonDefendantData personData = new PersonDefendantData(title, firstName, lastName, birthDate, gender,
+                    nationalInsuranceNumber, driverNumber, driverLicenceDetails, address, homeNumber, mobileNumber,
+                    businessNumber, email, email2, region, legalEntityName);
+            handlePersonDefendant(command, caseId, defendantId, personData, caseAggregate, eventStream, createdAt);
+        }
+    }
 
-            final Stream<Object> events = caseAggregate.updateDefendantDetailsFromCC(caseId, defendantId, person, createdAt);
-            eventStream.append(events.map(toEnvelopeWithMetadataFrom(command)));
+    private void handleLegalEntityDefendant(final JsonEnvelope command, final UUID caseId, final UUID defendantId,
+                                           final JsonObject legalEntityDefendantPayload, final CaseAggregate caseAggregate,
+                                           final EventStream eventStream, final ZonedDateTime createdAt) throws EventStreamException {
+        final String legalEntityName = getStringOrNull(legalEntityDefendantPayload, "name");
+        final Address legalEntityAddress = createAddressFrom(legalEntityDefendantPayload);
+        final String incorporationNumber = getStringOrNull(legalEntityDefendantPayload, "incorporationNumber");
+        final String position = getStringOrNull(legalEntityDefendantPayload, "position");
+        
+        final JsonObject legalEntityContactDetails = legalEntityDefendantPayload.getJsonObject("contactDetails");
+        final String legalEntityHome = legalEntityContactDetails != null ? getStringOrNull(legalEntityContactDetails, "home") : null;
+        final String legalEntityMobile = legalEntityContactDetails != null ? getStringOrNull(legalEntityContactDetails, "mobile") : null;
+        final String legalEntityBusiness = legalEntityContactDetails != null ? getStringOrNull(legalEntityContactDetails, "business") : null;
+        final String legalEntityEmail = legalEntityContactDetails != null ? getStringOrNull(legalEntityContactDetails, "email") : null;
+        final String legalEntityEmail2 = legalEntityContactDetails != null ? getStringOrNull(legalEntityContactDetails, "email2") : null;
+        
+        final ContactDetails legalEntityContact = new ContactDetails(legalEntityHome, legalEntityMobile, legalEntityBusiness, legalEntityEmail, legalEntityEmail2);
+        final LegalEntityDefendant legalEntityDefendant = LegalEntityDefendant.legalEntityDefendant()
+                .withName(legalEntityName)
+                .withAdddres(legalEntityAddress)
+                .withContactDetails(legalEntityContact)
+                .withIncorporationNumber(incorporationNumber)
+                .withPosition(position)
+                .build();
+        
+        final Stream<Object> events = caseAggregate.updateLegalEntityDefendantDetailsFromCC(caseId, defendantId, legalEntityDefendant, createdAt);
+        eventStream.append(events.map(toEnvelopeWithMetadataFrom(command)));
+    }
+
+    private void handlePersonDefendant(final JsonEnvelope command, final UUID caseId, final UUID defendantId,
+                                      final PersonDefendantData personData, final CaseAggregate caseAggregate,
+                                      final EventStream eventStream, final ZonedDateTime createdAt) throws EventStreamException {
+        final ContactDetails contactDetails = new ContactDetails(personData.homeNumber, personData.mobileNumber,
+                personData.businessNumber, personData.email, personData.email2);
+        final Person person = new Person(personData.title, personData.firstName, personData.lastName, personData.birthDate,
+                personData.gender, personData.nationalInsuranceNumber, personData.driverNumber, personData.driverLicenceDetails,
+                personData.address, contactDetails, personData.region, personData.legalEntityName);
+
+        final Stream<Object> events = caseAggregate.updateDefendantDetailsFromCC(caseId, defendantId, person, createdAt);
+        eventStream.append(events.map(toEnvelopeWithMetadataFrom(command)));
+    }
+
+    private static class PersonDefendantData {
+        final String title;
+        final String firstName;
+        final String lastName;
+        final LocalDate birthDate;
+        final Gender gender;
+        final String nationalInsuranceNumber;
+        final String driverNumber;
+        final String driverLicenceDetails;
+        final Address address;
+        final String homeNumber;
+        final String mobileNumber;
+        final String businessNumber;
+        final String email;
+        final String email2;
+        final String region;
+        final String legalEntityName;
+
+        PersonDefendantData(final String title, final String firstName, final String lastName, final LocalDate birthDate,
+                           final Gender gender, final String nationalInsuranceNumber, final String driverNumber,
+                           final String driverLicenceDetails, final Address address, final String homeNumber,
+                           final String mobileNumber, final String businessNumber, final String email, final String email2,
+                           final String region, final String legalEntityName) {
+            this.title = title;
+            this.firstName = firstName;
+            this.lastName = lastName;
+            this.birthDate = birthDate;
+            this.gender = gender;
+            this.nationalInsuranceNumber = nationalInsuranceNumber;
+            this.driverNumber = driverNumber;
+            this.driverLicenceDetails = driverLicenceDetails;
+            this.address = address;
+            this.homeNumber = homeNumber;
+            this.mobileNumber = mobileNumber;
+            this.businessNumber = businessNumber;
+            this.email = email;
+            this.email2 = email2;
+            this.region = region;
+            this.legalEntityName = legalEntityName;
         }
     }
 }

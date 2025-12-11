@@ -86,83 +86,92 @@ public class SJPDefendantUpdatedProcessor {
                 .add("defendantId", defendant.getString("id"));
 
         if (personDefendant != null) {
-            final JsonObject personDetails = personDefendant.getJsonObject("personDetails");
-            if (personDetails != null) {
-                addIfPresent(payloadBuilder, personDetails, "title", "title");
-                addIfPresent(payloadBuilder, personDetails, "firstName", "firstName");
-                addIfPresent(payloadBuilder, personDetails, "lastName", "lastName");
-                addIfPresent(payloadBuilder, personDetails, "dateOfBirth", "dateOfBirth");
-                addGenderIfPresent(payloadBuilder, personDetails);
-                addIfPresent(payloadBuilder, personDetails, "nationalInsuranceNumber", "nationalInsuranceNumber");
-                addIfPresent(payloadBuilder, personDetails, "region", "region");
-
-                // Handle address
-                final JsonObject address = personDetails.getJsonObject("address");
-                if (address != null) {
-                    payloadBuilder.add("address", address);
-                }
-
-                // Handle contact details
-                final JsonObject contact = personDetails.getJsonObject("contact");
-                if (contact != null) {
-                    final JsonObjectBuilder contactNumberBuilder = Json.createObjectBuilder();
-                    addIfPresent(contactNumberBuilder, contact, "home", "home");
-                    addIfPresent(contactNumberBuilder, contact, "mobile", "mobile");
-                    addIfPresent(contactNumberBuilder, contact, "work", "business");
-                    final JsonObject contactNumber = contactNumberBuilder.build();
-                    if (!contactNumber.isEmpty()) {
-                        payloadBuilder.add("contactNumber", contactNumber);
-                    }
-
-                    addIfPresent(payloadBuilder, contact, "primaryEmail", "email");
-                    addIfPresent(payloadBuilder, contact, "secondaryEmail", "email2");
-                }
-            }
-
-            // Handle driver number from personDefendant level
-            addIfPresent(payloadBuilder, personDefendant, "driverNumber", "driverNumber");
-
-            // Handle address from defendant level if not in personDetails
-            final JsonObject personDetailsForAddress = personDefendant.getJsonObject("personDetails");
-            if (personDetailsForAddress == null || personDetailsForAddress.getJsonObject("address") == null) {
-                final JsonObject address = defendant.getJsonObject("address");
-                if (address != null) {
-                    payloadBuilder.add("address", address);
-                }
-            }
+            addPersonDefendantData(payloadBuilder, personDefendant, defendant);
         }
 
         if (legalEntityDefendant != null) {
-            final JsonObjectBuilder legalEntityBuilder = Json.createObjectBuilder();
-            
-            // Handle name
-            addIfPresent(legalEntityBuilder, legalEntityDefendant, "name", "name");
-            
-            // Handle address
-            final JsonObject address = legalEntityDefendant.getJsonObject("address");
-            if (address != null) {
-                legalEntityBuilder.add("address", address);
-            }
-            
-            // Handle contact details
-            final JsonObject contactDetails = legalEntityDefendant.getJsonObject("contactDetails");
-            if (contactDetails != null) {
-                legalEntityBuilder.add("contactDetails", contactDetails);
-            }
-            
-            // Handle incorporation number
-            addIfPresent(legalEntityBuilder, legalEntityDefendant, "incorporationNumber", "incorporationNumber");
-            
-            // Handle position
-            addIfPresent(legalEntityBuilder, legalEntityDefendant, "position", "position");
-            
-            final JsonObject legalEntity = legalEntityBuilder.build();
-            if (!legalEntity.isEmpty()) {
-                payloadBuilder.add("legalEntityDefendant", legalEntity);
-            }
+            addLegalEntityDefendantData(payloadBuilder, legalEntityDefendant);
         }
 
         return payloadBuilder.build();
+    }
+
+    private void addPersonDefendantData(final JsonObjectBuilder payloadBuilder, final JsonObject personDefendant, 
+                                       final JsonObject defendant) {
+        final JsonObject personDetails = personDefendant.getJsonObject("personDetails");
+        if (personDetails != null) {
+            addPersonDetails(payloadBuilder, personDetails);
+        }
+
+        addIfPresent(payloadBuilder, personDefendant, "driverNumber", "driverNumber");
+        addDefendantAddressIfNeeded(payloadBuilder, personDefendant, defendant);
+    }
+
+    private void addPersonDetails(final JsonObjectBuilder payloadBuilder, final JsonObject personDetails) {
+        addIfPresent(payloadBuilder, personDetails, "title", "title");
+        addIfPresent(payloadBuilder, personDetails, "firstName", "firstName");
+        addIfPresent(payloadBuilder, personDetails, "lastName", "lastName");
+        addIfPresent(payloadBuilder, personDetails, "dateOfBirth", "dateOfBirth");
+        addGenderIfPresent(payloadBuilder, personDetails);
+        addIfPresent(payloadBuilder, personDetails, "nationalInsuranceNumber", "nationalInsuranceNumber");
+        addIfPresent(payloadBuilder, personDetails, "region", "region");
+
+        addAddressIfPresent(payloadBuilder, personDetails, "address");
+        addContactDetails(payloadBuilder, personDetails);
+    }
+
+    private void addContactDetails(final JsonObjectBuilder payloadBuilder, final JsonObject personDetails) {
+        final JsonObject contact = personDetails.getJsonObject("contact");
+        if (contact == null) {
+            return;
+        }
+
+        final JsonObjectBuilder contactNumberBuilder = Json.createObjectBuilder();
+        addIfPresent(contactNumberBuilder, contact, "home", "home");
+        addIfPresent(contactNumberBuilder, contact, "mobile", "mobile");
+        addIfPresent(contactNumberBuilder, contact, "work", "business");
+        final JsonObject contactNumber = contactNumberBuilder.build();
+        if (!contactNumber.isEmpty()) {
+            payloadBuilder.add("contactNumber", contactNumber);
+        }
+
+        addIfPresent(payloadBuilder, contact, "primaryEmail", "email");
+        addIfPresent(payloadBuilder, contact, "secondaryEmail", "email2");
+    }
+
+    private void addAddressIfPresent(final JsonObjectBuilder payloadBuilder, final JsonObject source, final String key) {
+        final JsonObject address = source.getJsonObject(key);
+        if (address != null) {
+            payloadBuilder.add("address", address);
+        }
+    }
+
+    private void addDefendantAddressIfNeeded(final JsonObjectBuilder payloadBuilder, final JsonObject personDefendant,
+                                            final JsonObject defendant) {
+        final JsonObject personDetailsForAddress = personDefendant.getJsonObject("personDetails");
+        if (personDetailsForAddress == null || personDetailsForAddress.getJsonObject("address") == null) {
+            addAddressIfPresent(payloadBuilder, defendant, "address");
+        }
+    }
+
+    private void addLegalEntityDefendantData(final JsonObjectBuilder payloadBuilder, final JsonObject legalEntityDefendant) {
+        final JsonObjectBuilder legalEntityBuilder = Json.createObjectBuilder();
+        
+        addIfPresent(legalEntityBuilder, legalEntityDefendant, "name", "name");
+        addAddressIfPresent(legalEntityBuilder, legalEntityDefendant, "address");
+        
+        final JsonObject contactDetails = legalEntityDefendant.getJsonObject("contactDetails");
+        if (contactDetails != null) {
+            legalEntityBuilder.add("contactDetails", contactDetails);
+        }
+        
+        addIfPresent(legalEntityBuilder, legalEntityDefendant, "incorporationNumber", "incorporationNumber");
+        addIfPresent(legalEntityBuilder, legalEntityDefendant, "position", "position");
+        
+        final JsonObject legalEntity = legalEntityBuilder.build();
+        if (!legalEntity.isEmpty()) {
+            payloadBuilder.add("legalEntityDefendant", legalEntity);
+        }
     }
 
     private void addIfPresent(final JsonObjectBuilder builder, final JsonObject source, 

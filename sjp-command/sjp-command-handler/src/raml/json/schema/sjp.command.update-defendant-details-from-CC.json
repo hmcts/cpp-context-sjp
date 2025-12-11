@@ -50,6 +50,33 @@
     },
     "driverLicenceDetails": {
       "type": "string"
+    },
+    "legalEntityDefendant": {
+      "id": "http://justice.gov.uk/json/schemas/domains/sjp/command/plea/legal-entity-defendant.json",
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "address": {
+          "$ref": "http://justice.gov.uk/json/schemas/domains/sjp/address.json"
+        },
+        "contactDetails": {
+          "$ref": "http://justice.gov.uk/json/schemas/domains/sjp/contact-details.json"
+        },
+        "incorporationNumber": {
+          "type": "string"
+        },
+        "position": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "name",
+        "address",
+        "contactDetails"
+      ],
+      "additionalProperties": false
     }
   },
   "required": [

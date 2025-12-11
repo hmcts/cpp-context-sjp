@@ -129,7 +129,7 @@ public class SJPDefendantUpdatedProcessorTest {
     }
 
     @Test
-    public void shouldNotSendCommandWhenPersonDefendantIsNull() {
+    public void shouldNotSendCommandWhenPersonDefendantAndLegalEntityDefendantAreNull() {
         // given
         final JsonObject defendant = createObjectBuilder()
                 .add("id", "defendant-id-123")
@@ -149,6 +149,111 @@ public class SJPDefendantUpdatedProcessorTest {
 
         // then
         verify(sender, never()).send(envelopeCaptor.capture());
+    }
+
+    @Test
+    public void shouldSendUpdateDefendantDetailsFromCCCommandWhenLegalEntityDefendantChanged() {
+        // given
+        final JsonObject legalEntityDefendant = createObjectBuilder()
+                .add("name", "Acme Corporation Ltd")
+                .add("address", createObjectBuilder()
+                        .add("address1", "456 Business Park")
+                        .add("address2", "Corporate City")
+                        .add("address3", "Business County")
+                        .add("address4", "UK")
+                        .add("address5", "England")
+                        .add("postcode", "EC1A 1BB")
+                        .build())
+                .add("contactDetails", createObjectBuilder()
+                        .add("home", "02011111111")
+                        .add("mobile", "07111111111")
+                        .add("business", "02022222222")
+                        .add("email", "contact@acme.com")
+                        .add("email2", "info@acme.com")
+                        .build())
+                .add("incorporationNumber", "INC123456")
+                .add("position", "Director")
+                .build();
+
+        final JsonObject defendant = createObjectBuilder()
+                .add("id", "defendant-id-789")
+                .add("prosecutionCaseId", "case-id-999")
+                .add("legalEntityDefendant", legalEntityDefendant)
+                .build();
+
+        final JsonObject eventPayload = createObjectBuilder()
+                .add("defendant", defendant)
+                .build();
+
+        final JsonEnvelope eventEnvelope = envelopeFrom(
+                metadataWithRandomUUID("public.progression.case-defendant-changed"),
+                eventPayload);
+
+        // when
+        processor.handleCaseDefendantChanged(eventEnvelope);
+
+        // then
+        verify(sender).send(envelopeCaptor.capture());
+        final JsonEnvelope commandEnvelope = envelopeCaptor.getValue();
+        assertThat(commandEnvelope.metadata().name(), is("sjp.command.update-defendant-details-from-CC"));
+        
+        final JsonObject commandPayload = commandEnvelope.payloadAsJsonObject();
+        assertThat(commandPayload.getString("caseId"), is("case-id-999"));
+        assertThat(commandPayload.getString("defendantId"), is("defendant-id-789"));
+        
+        final JsonObject legalEntity = commandPayload.getJsonObject("legalEntityDefendant");
+        assertThat(legalEntity.getString("name"), is("Acme Corporation Ltd"));
+        assertThat(legalEntity.getString("incorporationNumber"), is("INC123456"));
+        assertThat(legalEntity.getString("position"), is("Director"));
+        
+        final JsonObject address = legalEntity.getJsonObject("address");
+        assertThat(address.getString("address1"), is("456 Business Park"));
+        assertThat(address.getString("postcode"), is("EC1A 1BB"));
+        
+        final JsonObject contactDetails = legalEntity.getJsonObject("contactDetails");
+        assertThat(contactDetails.getString("home"), is("02011111111"));
+        assertThat(contactDetails.getString("mobile"), is("07111111111"));
+        assertThat(contactDetails.getString("business"), is("02022222222"));
+        assertThat(contactDetails.getString("email"), is("contact@acme.com"));
+        assertThat(contactDetails.getString("email2"), is("info@acme.com"));
+    }
+
+    @Test
+    public void shouldSendCommandWhenOnlyLegalEntityDefendantIsPresent() {
+        // given
+        final JsonObject legalEntityDefendant = createObjectBuilder()
+                .add("name", "Test Company Ltd")
+                .add("address", createObjectBuilder()
+                        .add("address1", "123 Test Street")
+                        .add("postcode", "SW1A 1AA")
+                        .build())
+                .add("contactDetails", createObjectBuilder()
+                        .add("email", "test@company.com")
+                        .build())
+                .build();
+
+        final JsonObject defendant = createObjectBuilder()
+                .add("id", "defendant-id-legal")
+                .add("prosecutionCaseId", "case-id-legal")
+                .add("legalEntityDefendant", legalEntityDefendant)
+                .build();
+
+        final JsonObject eventPayload = createObjectBuilder()
+                .add("defendant", defendant)
+                .build();
+
+        final JsonEnvelope eventEnvelope = envelopeFrom(
+                metadataWithRandomUUID("public.progression.case-defendant-changed"),
+                eventPayload);
+
+        // when
+        processor.handleCaseDefendantChanged(eventEnvelope);
+
+        // then
+        verify(sender).send(envelopeCaptor.capture());
+        final JsonObject commandPayload = envelopeCaptor.getValue().payloadAsJsonObject();
+        assertThat(commandPayload.containsKey("legalEntityDefendant"), is(true));
+        assertThat(commandPayload.getJsonObject("legalEntityDefendant").getString("name"), is("Test Company Ltd"));
     }
 
     @Test

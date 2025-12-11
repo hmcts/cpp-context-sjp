@@ -1,0 +1,20 @@
+{
+  "caseId": "8a2b4656-f2b8-4cdd-abb4-46376db24bbf",
+  "defendantId": "50770ba9-37ea-4713-8cab-fe5bf1202716",
+  "newPersonalName": {
+    "title": "Mr",
+    "firstName": "John",
+    "lastName": "Doe"
+  },
+  "newAddress": {
+    "address1": "123 Main Street",
+    "address2": "London",
+    "address3": "England",
+    "address4": "UK",
+    "address5": "Greater London",
+    "postcode": "SW1A 1AA"
+  },
+  "newDateOfBirth": "1990-05-15",
+  "updatedAt": "2018-02-05T15:14:29.894Z"
+}
+

@@ -28,14 +28,12 @@ import uk.gov.justice.services.eventsourcing.source.core.exception.EventStreamEx
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.test.utils.core.enveloper.EnveloperFactory;
 import uk.gov.moj.cpp.sjp.domain.Address;
+import uk.gov.moj.cpp.sjp.domain.ContactDetails;
 import uk.gov.moj.cpp.sjp.domain.Defendant;
 import uk.gov.moj.cpp.sjp.domain.aggregate.CaseAggregate;
 import uk.gov.moj.cpp.sjp.domain.aggregate.CaseAggregateBaseTest;
-import uk.gov.moj.cpp.sjp.event.DefendantAddressUpdateRequested;
-import uk.gov.moj.cpp.sjp.event.DefendantDateOfBirthUpdateRequested;
-import uk.gov.moj.cpp.sjp.event.DefendantDetailUpdateRequested;
-import uk.gov.moj.cpp.sjp.event.DefendantDetailsUpdated;
-import uk.gov.moj.cpp.sjp.event.DefendantNameUpdateRequested;
+import uk.gov.moj.cpp.sjp.domain.legalentity.LegalEntityDefendant;
+import uk.gov.moj.cpp.sjp.event.*;
 
 import java.time.LocalDate;
 import java.util.UUID;
@@ -76,7 +74,9 @@ public class UpdateDefendantDetailsFromCCHandlerTest extends CaseAggregateBaseTe
     private Clock clock = new UtcClock();
     @Spy
     private Enveloper enveloper = EnveloperFactory.createEnveloperWithEvents(
-            DefendantNameUpdateRequested.class, DefendantDetailUpdateRequested.class, DefendantDetailsUpdated.class, DefendantAddressUpdateRequested.class, DefendantDateOfBirthUpdateRequested.class);
+            DefendantNameUpdateRequested.class, DefendantDetailUpdateRequested.class, DefendantDetailsUpdated.class, 
+            DefendantAddressUpdateRequested.class, DefendantDateOfBirthUpdateRequested.class, 
+            DefendantDetailsUpdateRequestAccepted.class);
     @InjectMocks
     private UpdateDefendantDetailsFromCCHandler updateDefendantDetailsFromCCHandler;
     @Mock
@@ -134,7 +134,14 @@ public class UpdateDefendantDetailsFromCCHandlerTest extends CaseAggregateBaseTe
                                         withJsonPath("$.contactDetails.home", equalTo(defendant.getContactDetails().getHome())),
                                         withJsonPath("$.contactDetails.mobile", equalTo(defendant.getContactDetails().getMobile())),
                                         withJsonPath("$.region", equalTo(REGION)),
-                                        withJsonPath("$.driverNumber", equalTo(DRIVER_NUMBER)))))
+                                        withJsonPath("$.driverNumber", equalTo(DRIVER_NUMBER))))),
+                        jsonEnvelope(
+                                withMetadataEnvelopedFrom(command)
+                                        .withName("sjp.events.defendant-details-update-request-accepted"),
+                                payloadIsJson(allOf(
+                                        withJsonPath("$.caseId", equalTo(caseId.toString())),
+                                        withJsonPath("$.defendantId", equalTo(defendantId.toString())),
+                                        withJsonPath("$.newPersonalName.firstName", equalTo(firstName)))))
                 )));
     }
 
@@ -169,7 +176,15 @@ public class UpdateDefendantDetailsFromCCHandlerTest extends CaseAggregateBaseTe
                         jsonEnvelope(
                                 withMetadataEnvelopedFrom(command)
                                         .withName("sjp.events.defendant-details-updated"),
-                                payloadIsJson(withJsonPath("$.defendantId", equalTo(defendantId.toString()))))
+                                payloadIsJson(withJsonPath("$.defendantId", equalTo(defendantId.toString())))),
+                        jsonEnvelope(
+                                withMetadataEnvelopedFrom(command)
+                                        .withName("sjp.events.defendant-details-update-request-accepted"),
+                                payloadIsJson(allOf(
+                                        withJsonPath("$.caseId", equalTo(caseId.toString())),
+                                        withJsonPath("$.defendantId", equalTo(defendantId.toString())),
+                                        withJsonPath("$.newAddress.address1", equalTo("Flat 2")),
+                                        withJsonPath("$.newAddress.postcode", equalTo("RG2 8DS")))))
                 )));
     }
 
@@ -204,7 +219,15 @@ public class UpdateDefendantDetailsFromCCHandlerTest extends CaseAggregateBaseTe
                         jsonEnvelope(
                                 withMetadataEnvelopedFrom(command)
                                         .withName("sjp.events.defendant-details-updated"),
-                                payloadIsJson(withJsonPath("$.defendantId", equalTo(defendantId.toString()))))
+                                payloadIsJson(withJsonPath("$.defendantId", equalTo(defendantId.toString())))),
+                        jsonEnvelope(
+                                withMetadataEnvelopedFrom(command)
+                                        .withName("sjp.events.defendant-details-update-request-accepted"),
+                                payloadIsJson(allOf(
+                                        withJsonPath("$.caseId", equalTo(caseId.toString())),
+                                        withJsonPath("$.defendantId", equalTo(defendantId.toString())),
+                                        withJsonPath("$.newAddress.address1", equalTo("Flat 2")),
+                                        withJsonPath("$.newAddress.postcode", equalTo("RG2 8DS")))))
                 )));
     }
 
@@ -257,6 +280,119 @@ public class UpdateDefendantDetailsFromCCHandlerTest extends CaseAggregateBaseTe
                 .add("region", defendant.getRegion())
                 .add("driverNumber", defendant.getDriverNumber())
                 .add("legalEntityName","legalEntityName");
+
+        return envelopeFrom(
+                metadataOf(randomUUID(), "sjp.command.update-defendant-details-from-CC"),
+                payload.build());
+    }
+
+
+    @Test
+    public void shouldUpdateLegalEntityDefendantDetailsFromCCWhenAddressChanged() throws EventStreamException {
+        // given
+        final Defendant defendant = caseReceivedEvent.getDefendant();
+        final UUID defendantId = defendant.getId();
+        final UUID caseId = caseReceivedEvent.getCaseId();
+
+        // Set up state: set legal entity name to match so only address change is detected
+        caseAggregate.getState().setDefendantLegalEntityName("Acme Corporation Ltd");
+        // Set address to be different from the new one
+        final Address oldAddress = new Address("123 Old Street", "Old City", "", "", "", "SW1A 1AA");
+        caseAggregate.getState().setDefendantAddress(oldAddress);
+
+        final JsonEnvelope command = createUpdateLegalEntityDefendantDetailsFromCCCommandWithUpdatedAddress();
+
+        when(eventSource.getStreamById(caseId)).thenReturn(eventStream);
+        when(aggregateService.get(eventStream, CaseAggregate.class)).thenReturn(caseAggregate);
+
+        updateDefendantDetailsFromCCHandler.updateDefendantDetailsFromCC(command);
+
+        assertThat(eventStream, eventStreamAppendedWith(
+                streamContaining(
+                        jsonEnvelope(
+                                withMetadataEnvelopedFrom(command)
+                                        .withName("sjp.events.defendant-address-update-requested"),
+                                payloadIsJson(allOf(
+                                        withJsonPath("$.newAddress.address1", equalTo("789 New Street")),
+                                        withJsonPath("$.newAddress.postcode", equalTo("SW1B 2CC"))))),
+                        jsonEnvelope(
+                                withMetadataEnvelopedFrom(command)
+                                        .withName("sjp.events.defendant-detail-update-requested"),
+                                payloadIsJson(withJsonPath("$.addressUpdated", is(true)))),
+                        jsonEnvelope(
+                                withMetadataEnvelopedFrom(command)
+                                        .withName("sjp.events.defendant-details-updated"),
+                                payloadIsJson(withJsonPath("$.defendantId", equalTo(defendantId.toString())))),
+                        jsonEnvelope(
+                                withMetadataEnvelopedFrom(command)
+                                        .withName("sjp.events.defendant-details-update-request-accepted"),
+                                payloadIsJson(allOf(
+                                        withJsonPath("$.caseId", equalTo(caseId.toString())),
+                                        withJsonPath("$.defendantId", equalTo(defendantId.toString())),
+                                        withJsonPath("$.newAddress.address1", equalTo("789 New Street")),
+                                        withJsonPath("$.newAddress.postcode", equalTo("SW1B 2CC")))))
+                )));
+    }
+
+    private JsonEnvelope createUpdateLegalEntityDefendantDetailsFromCCCommand() {
+        final Defendant defendant = caseReceivedEvent.getDefendant();
+        final JsonObject contactDetails = createObjectBuilder()
+                .add("home", "02011111111")
+                .add("mobile", "07111111111")
+                .add("business", "02022222222")
+                .add("email", "contact@acme.com")
+                .add("email2", "info@acme.com")
+                .build();
+
+        final JsonObject address = createObjectBuilder()
+                .add("address1", "456 Business Park")
+                .add("address2", "Corporate City")
+                .add("address3", "Business County")
+                .add("address4", "UK")
+                .add("address5", "England")
+                .add("postcode", "EC1A 1BB")
+                .build();
+
+        final JsonObject legalEntityDefendant = createObjectBuilder()
+                .add("name", "Acme Corporation Ltd")
+                .add("address", address)
+                .add("contactDetails", contactDetails)
+                .add("incorporationNumber", "INC123456")
+                .add("position", "Director")
+                .build();
+
+        final JsonObjectBuilder payload = createObjectBuilder()
+                .add("defendantId", defendant.getId().toString())
+                .add("caseId", caseReceivedEvent.getCaseId().toString())
+                .add("legalEntityDefendant", legalEntityDefendant);
+
+        return envelopeFrom(
+                metadataOf(randomUUID(), "sjp.command.update-defendant-details-from-CC"),
+                payload.build());
+    }
+
+    private JsonEnvelope createUpdateLegalEntityDefendantDetailsFromCCCommandWithUpdatedAddress() {
+        final Defendant defendant = caseReceivedEvent.getDefendant();
+        final JsonObject contactDetails = createObjectBuilder()
+                .add("email", "contact@acme.com")
+                .build();
+
+        final JsonObject updatedAddress = createObjectBuilder()
+                .add("address1", "789 New Street")
+                .add("address2", "New City")
+                .add("postcode", "SW1B 2CC")
+                .build();
+
+        final JsonObject legalEntityDefendant = createObjectBuilder()
+                .add("name", "Acme Corporation Ltd")
+                .add("address", updatedAddress)
+                .add("contactDetails", contactDetails)
+                .build();
+
+        final JsonObjectBuilder payload = createObjectBuilder()
+                .add("defendantId", defendant.getId().toString())
+                .add("caseId", caseReceivedEvent.getCaseId().toString())
+                .add("legalEntityDefendant", legalEntityDefendant);
 
         return envelopeFrom(
                 metadataOf(randomUUID(), "sjp.command.update-defendant-details-from-CC"),

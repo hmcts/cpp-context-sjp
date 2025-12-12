@@ -10,6 +10,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.fail;
 import static uk.gov.moj.sjp.it.helper.PleadOnlineHelper.getOnlinePlea;
 import static uk.gov.moj.sjp.it.util.HttpClientUtil.makePostCall;
+import static uk.gov.moj.sjp.it.util.RestPollerWithDefaults.POLL_INTERVAL;
 import static uk.gov.moj.sjp.it.util.RestPollerWithDefaults.TIMEOUT_IN_SECONDS;
 import static uk.gov.moj.sjp.it.util.TopicUtil.retrieveMessageAsJsonObject;
 
@@ -68,7 +69,7 @@ public class FinancialMeansHelper implements AutoCloseable {
     }
 
     public String getFinancialMeans(final String defendantId, final Matcher<Object> jsonMatcher) {
-        return await().atMost(TIMEOUT_IN_SECONDS, SECONDS).until(() -> getFinancialMeans(defendantId).readEntity(String.class), jsonMatcher);
+        return await().pollInterval(POLL_INTERVAL).atMost(TIMEOUT_IN_SECONDS, SECONDS).until(() -> getFinancialMeans(defendantId).readEntity(String.class), jsonMatcher);
     }
 
     public String getEventFromPublicTopic(final Matcher<Object> jsonMatcher) {
@@ -103,7 +104,7 @@ public class FinancialMeansHelper implements AutoCloseable {
     }
 
     public static boolean getOnlinePleaData(final String caseId, final Matcher<Object> jsonMatcher, final UUID userId, final String defendantId) {
-        return await().atMost(20, SECONDS).until(() -> {
+        return await().pollInterval(POLL_INTERVAL).atMost(TIMEOUT_IN_SECONDS, SECONDS).until(() -> {
             final Response onlinePlea = getOnlinePlea(caseId, defendantId, userId);
             if (onlinePlea.getStatus() != OK.getStatusCode()) {
                 return false;

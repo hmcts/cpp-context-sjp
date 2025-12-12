@@ -2,6 +2,7 @@ package uk.gov.moj.sjp.it.helper;
 
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
 import static java.lang.String.format;
+import static java.util.concurrent.TimeUnit.SECONDS;
 import static javax.ws.rs.core.Response.Status.OK;
 import static org.awaitility.Awaitility.await;
 import static org.hamcrest.CoreMatchers.equalTo;
@@ -17,6 +18,7 @@ import static uk.gov.moj.sjp.it.pollingquery.CasePoller.pollUntilCaseByIdIsOk;
 import static uk.gov.moj.sjp.it.util.DefaultRequests.getCaseById;
 import static uk.gov.moj.sjp.it.util.HttpClientUtil.getPostCallResponse;
 import static uk.gov.moj.sjp.it.util.HttpClientUtil.makeGetCall;
+import static uk.gov.moj.sjp.it.util.RestPollerWithDefaults.POLL_INTERVAL;
 import static uk.gov.moj.sjp.it.util.RestPollerWithDefaults.TIMEOUT_IN_SECONDS;
 import static uk.gov.moj.sjp.it.util.RestPollerWithDefaults.pollWithDefaults;
 import static uk.gov.moj.sjp.it.util.TopicUtil.retrieveMessage;
@@ -83,7 +85,7 @@ public class PleadOnlineHelper implements AutoCloseable {
 
 
     public static String getOnlinePlea(final String caseId, final String defendantId, final Matcher<Object> jsonMatcher, final UUID userId) {
-        return await().atMost(TIMEOUT_IN_SECONDS, TimeUnit.SECONDS).until(() -> {
+        return await().pollInterval(POLL_INTERVAL).atMost(TIMEOUT_IN_SECONDS, SECONDS).until(() -> {
             final Response onlinePlea = getOnlinePlea(caseId, defendantId, userId);
             if (onlinePlea.getStatus() != OK.getStatusCode()) {
                 fail("Polling interrupted, please fix the error before continue. Status code: " + onlinePlea.getStatus());
@@ -97,7 +99,7 @@ public class PleadOnlineHelper implements AutoCloseable {
     }
 
     public static String getOnlinePleaAocpAccepted(final String caseId, final String defendantId, final Matcher<Object> jsonMatcher, final UUID userId) {
-        return await().atMost(TIMEOUT_IN_SECONDS, TimeUnit.SECONDS).until(() -> {
+        return await().pollInterval(POLL_INTERVAL).atMost(TIMEOUT_IN_SECONDS, SECONDS).until(() -> {
             final Response onlinePlea = getOnlinePlea(caseId, defendantId, userId);
             if (onlinePlea.getStatus() != OK.getStatusCode()) {
                 fail("Polling interrupted, please fix the error before continue. Status code: " + onlinePlea.getStatus());

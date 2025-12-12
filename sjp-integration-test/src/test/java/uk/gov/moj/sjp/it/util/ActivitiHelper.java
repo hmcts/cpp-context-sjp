@@ -1,12 +1,15 @@
 package uk.gov.moj.sjp.it.util;
 
 import static java.util.Optional.empty;
+import static java.util.concurrent.TimeUnit.SECONDS;
 import static javax.json.Json.createReader;
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
 import static org.awaitility.Awaitility.await;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.Matchers.not;
 import static uk.gov.justice.services.test.utils.core.http.BaseUriProvider.getBaseUri;
+import static uk.gov.moj.sjp.it.util.RestPollerWithDefaults.POLL_INTERVAL;
+import static uk.gov.moj.sjp.it.util.RestPollerWithDefaults.TIMEOUT_IN_SECONDS;
 
 import uk.gov.justice.services.common.http.HeaderConstants;
 import uk.gov.justice.services.test.utils.core.rest.RestClient;
@@ -64,11 +67,11 @@ public class ActivitiHelper {
     }
 
     public static String pollUntilProcessExists(final String processName, final String businessKey) {
-        return await().until(() -> getProcessesInstanceIds(processName, businessKey), not(equalTo(empty()))).get();
+        return await().pollInterval(POLL_INTERVAL).atMost(TIMEOUT_IN_SECONDS, SECONDS).until(() -> getProcessesInstanceIds(processName, businessKey), not(equalTo(empty()))).get();
     }
 
     public static String pollUntilAocpProcessExists(final String processName, final String businessKey) {
-        return await().until(() -> getAocpProcessesInstanceIds(processName, businessKey), not(equalTo(empty()))).get();
+        return await().pollInterval(POLL_INTERVAL).atMost(TIMEOUT_IN_SECONDS, SECONDS).until(() -> getAocpProcessesInstanceIds(processName, businessKey), not(equalTo(empty()))).get();
     }
 
     public static void executeTimerJobs(final String processInstanceId) {

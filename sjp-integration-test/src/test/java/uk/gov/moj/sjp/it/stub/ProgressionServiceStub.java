@@ -14,10 +14,13 @@ import static org.apache.http.HttpStatus.SC_ACCEPTED;
 import static org.awaitility.Awaitility.await;
 import static uk.gov.moj.sjp.it.util.JsonHelper.lenientCompare;
 import static uk.gov.moj.sjp.it.util.JsonHelper.strictCompareIgnoringSelectedData;
+import static uk.gov.moj.sjp.it.util.RestPollerWithDefaults.POLL_INTERVAL;
 import static uk.gov.moj.sjp.it.util.RestPollerWithDefaults.TIMEOUT_IN_SECONDS;
 
+import uk.gov.justice.services.test.utils.core.http.FibonacciPollWithStartAndMax;
 import uk.gov.moj.sjp.it.util.JsonHelper;
 
+import java.time.Duration;
 import java.util.List;
 
 import javax.json.JsonObject;
@@ -37,22 +40,25 @@ public class ProgressionServiceStub {
     }
 
     public static void verifyReferToCourtCommandSent(final JsonObject expectedCommandPayload) {
-        await().atMost(TIMEOUT_IN_SECONDS, SECONDS).until(() ->
-                findAll(postRequestedFor(urlPathMatching(REFER_TO_COURT_COMMAND_URL + ".*"))
-                        .withHeader(CONTENT_TYPE, WireMock.equalTo(REFER_TO_COURT_COMMAND_CONTENT)))
-                        .stream()
-                        .map(LoggedRequest::getBodyAsString)
-                        .map(JsonHelper::getJsonObject)
-                        .anyMatch(commandPayload -> lenientCompare(commandPayload, expectedCommandPayload)));
+        await().pollInterval(POLL_INTERVAL)
+                .atMost(TIMEOUT_IN_SECONDS, SECONDS).until(() ->
+                        findAll(postRequestedFor(urlPathMatching(REFER_TO_COURT_COMMAND_URL + ".*"))
+                                .withHeader(CONTENT_TYPE, WireMock.equalTo(REFER_TO_COURT_COMMAND_CONTENT)))
+                                .stream()
+                                .map(LoggedRequest::getBodyAsString)
+                                .map(JsonHelper::getJsonObject)
+                                .anyMatch(commandPayload -> lenientCompare(commandPayload, expectedCommandPayload)));
     }
 
     public static void verifyReferToCourtCommandSentStrictMode(final JsonObject expectedCommandPayload, final List<String> ignoreCompareList) {
-        await().until(() ->
-                findAll(postRequestedFor(urlPathMatching(REFER_TO_COURT_COMMAND_URL + ".*"))
-                        .withHeader(CONTENT_TYPE, WireMock.equalTo(REFER_TO_COURT_COMMAND_CONTENT)))
-                        .stream()
-                        .map(LoggedRequest::getBodyAsString)
-                        .map(JsonHelper::getJsonObject)
-                        .anyMatch(commandPayload -> strictCompareIgnoringSelectedData(commandPayload, expectedCommandPayload, ignoreCompareList)));
+        await().pollInterval(POLL_INTERVAL)
+                .atMost(TIMEOUT_IN_SECONDS, SECONDS)
+                .until(() ->
+                        findAll(postRequestedFor(urlPathMatching(REFER_TO_COURT_COMMAND_URL + ".*"))
+                                .withHeader(CONTENT_TYPE, WireMock.equalTo(REFER_TO_COURT_COMMAND_CONTENT)))
+                                .stream()
+                                .map(LoggedRequest::getBodyAsString)
+                                .map(JsonHelper::getJsonObject)
+                                .anyMatch(commandPayload -> strictCompareIgnoringSelectedData(commandPayload, expectedCommandPayload, ignoreCompareList)));
     }
 }

@@ -7,11 +7,14 @@ import static com.github.tomakehurst.wiremock.client.WireMock.postRequestedFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlPathMatching;
 import static java.util.Collections.emptyList;
+import static java.util.concurrent.TimeUnit.SECONDS;
 import static java.util.stream.Collectors.toList;
 import static javax.ws.rs.core.HttpHeaders.CONTENT_TYPE;
 import static javax.ws.rs.core.MediaType.APPLICATION_OCTET_STREAM;
 import static org.apache.http.HttpStatus.SC_OK;
 import static org.awaitility.Awaitility.await;
+import static uk.gov.moj.sjp.it.util.RestPollerWithDefaults.POLL_INTERVAL;
+import static uk.gov.moj.sjp.it.util.RestPollerWithDefaults.TIMEOUT_IN_SECONDS;
 
 import java.util.Collection;
 import java.util.List;
@@ -40,7 +43,7 @@ public class SystemDocumentGeneratorStub {
     public static List<JSONObject> pollDocumentGenerationRequests(final Matcher<Collection<?>> matcher) {
         try {
 
-            return await().pollInterval(200, TimeUnit.MILLISECONDS).
+            return await().pollInterval(POLL_INTERVAL).atMost(TIMEOUT_IN_SECONDS, SECONDS).
                     until(() ->
                     findAll(postRequestedFor(urlPathMatching(SYSTEM_DOCUMENT_GENERATOR_QUERY_URL)))
                             .stream()

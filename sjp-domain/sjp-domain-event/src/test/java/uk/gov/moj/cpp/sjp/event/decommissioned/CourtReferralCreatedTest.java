@@ -13,7 +13,7 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.UUID;
 
-import javax.json.Json;
+import uk.gov.justice.services.messaging.JsonObjects;
 import javax.json.JsonObject;
 
 import org.junit.jupiter.api.Test;
@@ -23,7 +23,7 @@ public class CourtReferralCreatedTest {
     @Test
     public void shouldDeserializeDecommissionedCourtReferralCreatedEvent() throws Exception {
         final DateTimeFormatter dtf = DateTimeFormatter.ISO_LOCAL_DATE;
-        final JsonObject oldEventPayload = Json.createObjectBuilder()
+        final JsonObject oldEventPayload = JsonObjects.createObjectBuilder()
                 .add("caseId", UUID.randomUUID().toString())
                 .add("hearingDate", LocalDate.now().format(dtf))
                 .build();

@@ -12,7 +12,7 @@ import uk.gov.moj.cpp.sjp.query.service.WithdrawalReasons;
 import java.util.UUID;
 
 import javax.inject.Inject;
-import javax.json.Json;
+import uk.gov.justice.services.messaging.JsonObjects;
 import javax.json.JsonArray;
 import javax.json.JsonArrayBuilder;
 import javax.json.JsonObject;
@@ -33,7 +33,7 @@ public class OffenceDecisionDecorator {
 
         final JsonArray caseDecisions = originalDecisions.getValuesAs(JsonObject.class).stream()
                 .map(decision -> decorateDecision(decision, envelope, withdrawalReasons))
-                .reduce(Json.createArrayBuilder(), JsonArrayBuilder::add, JsonArrayBuilder::add)
+                .reduce(JsonObjects.createArrayBuilder(), JsonArrayBuilder::add, JsonArrayBuilder::add)
                 .build();
 
         return JsonObjects.createObjectBuilder(caseView).add("caseDecisions", caseDecisions).build();
@@ -44,7 +44,7 @@ public class OffenceDecisionDecorator {
 
         final JsonArray offenceDecisions = decision.getJsonArray("offenceDecisions").getValuesAs(JsonObject.class).stream()
                 .map(offenceDecision -> decorateOffenceDecision(offenceDecision, referralReasons, withdrawalReasons))
-                .reduce(Json.createArrayBuilder(), JsonArrayBuilder::add, JsonArrayBuilder::add)
+                .reduce(JsonObjects.createArrayBuilder(), JsonArrayBuilder::add, JsonArrayBuilder::add)
                 .build();
 
         return JsonObjects.createObjectBuilder(decision).add("offenceDecisions", offenceDecisions).build();

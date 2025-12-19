@@ -1,7 +1,7 @@
 package uk.gov.moj.cpp.sjp.query.view.converter.results;
 
 import static com.google.common.collect.ImmutableList.copyOf;
-import static javax.json.Json.createArrayBuilder;
+import static uk.gov.justice.services.messaging.JsonObjects.createArrayBuilder;
 
 import uk.gov.moj.cpp.sjp.query.view.converter.Prompt;
 import uk.gov.moj.cpp.sjp.query.view.service.OffenceDataSupplier;

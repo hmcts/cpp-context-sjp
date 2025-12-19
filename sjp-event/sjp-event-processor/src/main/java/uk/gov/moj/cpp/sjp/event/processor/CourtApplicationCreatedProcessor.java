@@ -13,7 +13,7 @@ import uk.gov.justice.services.core.sender.Sender;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 
 import javax.inject.Inject;
-import javax.json.Json;
+import uk.gov.justice.services.messaging.JsonObjects;
 import javax.json.JsonObject;
 
 import static java.util.Objects.nonNull;
@@ -64,7 +64,7 @@ public class CourtApplicationCreatedProcessor {
                     applicationStatus = ApplicationStatus.APPEAL_PENDING.name();
                 }
                 if (isNotBlank(applicationStatus)) {
-                    final JsonObject applicationStatusPayload = Json.createObjectBuilder()
+                    final JsonObject applicationStatusPayload = JsonObjects.createObjectBuilder()
                             .add("caseId", sjpCaseId)
                             .add("applicationId", applicationId)
                             .add("applicationStatus", applicationStatus)
@@ -77,7 +77,7 @@ public class CourtApplicationCreatedProcessor {
 
                 }
                 LOGGER.info("Command Raised to update listedInCriminalCourts for Criminal Court Application with CaseId {} and applicationId {} for sjp case", sjpCaseId, applicationId);
-                final JsonObject listedInCCPayload = Json.createObjectBuilder()
+                final JsonObject listedInCCPayload = JsonObjects.createObjectBuilder()
                         .add("caseId", sjpCaseId)
                         .add("listedInCriminalCourts",true)
                         .build();

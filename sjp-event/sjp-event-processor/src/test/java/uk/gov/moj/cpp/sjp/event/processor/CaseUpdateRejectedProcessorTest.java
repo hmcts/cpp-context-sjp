@@ -18,7 +18,7 @@ import uk.gov.moj.cpp.sjp.event.CaseUpdateRejected;
 
 import java.util.UUID;
 
-import javax.json.Json;
+import uk.gov.justice.services.messaging.JsonObjects;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -47,7 +47,7 @@ public class CaseUpdateRejectedProcessorTest {
     public void caseUpdateRejectedPublicEvent() {
 
         final JsonEnvelope privateEvent = createEnvelope("sjp.events.case-update-rejected",
-                Json.createObjectBuilder()
+                JsonObjects.createObjectBuilder()
                         .add("caseId", CASE_ID)
                         .add("reason", CaseUpdateRejected.RejectReason.CASE_COMPLETED.name())
                         .build());

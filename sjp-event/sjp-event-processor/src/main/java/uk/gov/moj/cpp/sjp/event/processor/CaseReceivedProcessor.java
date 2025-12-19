@@ -37,7 +37,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 import javax.inject.Inject;
-import javax.json.Json;
+import uk.gov.justice.services.messaging.JsonObjects;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
 
@@ -101,7 +101,7 @@ public class CaseReceivedProcessor {
     private void resolveCaseAOCPEligibility(final JsonEnvelope event, final UUID caseId, final String prosecutingAuthority,
                                             final Defendant defendant, final LocalDate postingDate) {
 
-        final JsonObjectBuilder payloadBuilder = Json.createObjectBuilder()
+        final JsonObjectBuilder payloadBuilder = JsonObjects.createObjectBuilder()
                 .add(CASE_ID, caseId.toString());
 
         final Optional<JsonObject> prosecutorDetails = referenceDataService.getProsecutor(prosecutingAuthority, event);
@@ -121,7 +121,7 @@ public class CaseReceivedProcessor {
                 .withName(CASE_STARTED_PUBLIC_EVENT_NAME)
                 .build();
 
-        final JsonObject publicEventPayload = Json.createObjectBuilder()
+        final JsonObject publicEventPayload = JsonObjects.createObjectBuilder()
                 .add("id", caseId.toString())
                 .add("postingDate", postingDate.toString())
                 .build();
@@ -131,7 +131,7 @@ public class CaseReceivedProcessor {
     private void relayCaseToCourtStore(String caseId) {
 
         if (!caseId.isEmpty()) {
-            final JsonObjectBuilder payloadBuilder = Json.createObjectBuilder();
+            final JsonObjectBuilder payloadBuilder = JsonObjects.createObjectBuilder();
             payloadBuilder.add("CaseReference", caseId);
             try {
                 this.azureFunctionService.relayCaseOnCPP(payloadBuilder.build().toString());

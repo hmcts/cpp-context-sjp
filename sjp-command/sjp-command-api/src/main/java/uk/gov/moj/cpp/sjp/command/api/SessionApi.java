@@ -16,7 +16,7 @@ import uk.gov.moj.cpp.sjp.command.utils.UUIDHelper;
 import uk.gov.moj.cpp.sjp.domain.SessionCourt;
 
 import javax.inject.Inject;
-import javax.json.Json;
+import uk.gov.justice.services.messaging.JsonObjects;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
 
@@ -43,7 +43,7 @@ public class SessionApi {
         final SessionCourt sessionCourt = referenceDataService.getCourtByCourtHouseOUCode(courtHouseOUCode, startSessionCommand)
                 .orElseThrow(() -> new BadRequestException(String.format("Court house with ou code %s not found", courtHouseOUCode)));
 
-        final JsonObjectBuilder startSessionBuilder = Json.createObjectBuilder()
+        final JsonObjectBuilder startSessionBuilder = JsonObjects.createObjectBuilder()
                 .add(SESSION_ID, commandPayload.getString(SESSION_ID))
                 .add("courtHouseCode", courtHouseOUCode)
                 .add("courtHouseName", sessionCourt.getCourtHouseName())

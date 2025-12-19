@@ -4,8 +4,8 @@ import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
 import static java.time.ZoneOffset.UTC;
 import static java.time.ZonedDateTime.of;
 import static java.util.UUID.randomUUID;
-import static javax.json.Json.createArrayBuilder;
-import static javax.json.Json.createObjectBuilder;
+import static uk.gov.justice.services.messaging.JsonObjects.createArrayBuilder;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 import static org.apache.commons.lang3.RandomUtils.nextInt;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -51,7 +51,7 @@ import java.time.ZonedDateTime;
 import java.util.UUID;
 import java.util.stream.Stream;
 
-import javax.json.Json;
+import uk.gov.justice.services.messaging.JsonObjects;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -269,7 +269,7 @@ public class AssignmentHandlerTest {
                 metadataWithRandomUUID(ASSIGN_CASE_TO_USER_COMMAND),
                 createObjectBuilder()
                         .add("assignCase", caseToBeAssignedId.toString())
-                        .add("unassignCases", Json.createArrayBuilder()
+                        .add("unassignCases", JsonObjects.createArrayBuilder()
                                 .add(caseToBeUnassignedId1.toString())
                                 .add(caseToBeUnassignedId2.toString()))
                         .add("userId", userId.toString())

@@ -1,7 +1,7 @@
 package uk.gov.moj.cpp.sjp.query.converter;
 
-import static javax.json.Json.createArrayBuilder;
-import static javax.json.Json.createObjectBuilder;
+import static uk.gov.justice.services.messaging.JsonObjects.createArrayBuilder;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.mockito.Mockito.when;
@@ -14,7 +14,7 @@ import uk.gov.justice.services.messaging.JsonEnvelope;
 import java.time.LocalDate;
 import java.util.UUID;
 
-import javax.json.Json;
+import uk.gov.justice.services.messaging.JsonObjects;
 import javax.json.JsonObject;
 
 import org.junit.jupiter.api.Test;
@@ -177,12 +177,12 @@ public class CaseConverterTest {
 
     private JsonObject buildOffenceReferenceData(final String title, final String legislation,
                                                  final String titleWelsh, final String legislationWelsh) {
-        return Json.createObjectBuilder()
+        return JsonObjects.createObjectBuilder()
                 .add("title", title)
                 .add("legislation", legislation)
-                .add("details", Json.createObjectBuilder()
-                        .add("document", Json.createObjectBuilder()
-                                .add("welsh", Json.createObjectBuilder()
+                .add("details", JsonObjects.createObjectBuilder()
+                        .add("document", JsonObjects.createObjectBuilder()
+                                .add("welsh", JsonObjects.createObjectBuilder()
                                         .add("welshoffencetitle", titleWelsh)
                                         .add("welshlegislation", legislationWelsh)
                                 )))

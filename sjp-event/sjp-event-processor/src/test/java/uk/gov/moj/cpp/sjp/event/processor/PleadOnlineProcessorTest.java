@@ -1,8 +1,8 @@
 package uk.gov.moj.cpp.sjp.event.processor;
 
 import static java.util.Objects.nonNull;
-import static javax.json.Json.createArrayBuilder;
-import static javax.json.Json.createObjectBuilder;
+import static uk.gov.justice.services.messaging.JsonObjects.createArrayBuilder;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
@@ -27,7 +27,7 @@ import java.math.BigDecimal;
 import java.util.Optional;
 import java.util.UUID;
 
-import javax.json.Json;
+import uk.gov.justice.services.messaging.JsonObjects;
 import javax.json.JsonArray;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
@@ -297,7 +297,7 @@ public class PleadOnlineProcessorTest {
         Optional.ofNullable(plea)
                 .ifPresent(value -> offenceObjectBuilder.add("plea", plea));
 
-        final JsonArray offences = Json.createArrayBuilder().add(offenceObjectBuilder.build()).build();
+        final JsonArray offences = JsonObjects.createArrayBuilder().add(offenceObjectBuilder.build()).build();
 
         final JsonObject defendant = createObjectBuilder()
                 .add("offences", offences)
@@ -320,7 +320,7 @@ public class PleadOnlineProcessorTest {
                 .ifPresent(value ->  offenceObjectBuilder.add("conventionDate", conventionDate));
 
 
-        final JsonArray offences = Json.createArrayBuilder().add(offenceObjectBuilder.build()).build();
+        final JsonArray offences = JsonObjects.createArrayBuilder().add(offenceObjectBuilder.build()).build();
 
         final JsonObject defendant = createObjectBuilder()
                 .add("offences", offences)

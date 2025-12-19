@@ -30,7 +30,7 @@ import java.util.Map;
 import java.util.Objects;
 
 import javax.inject.Inject;
-import javax.json.Json;
+import uk.gov.justice.services.messaging.JsonObjects;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
 import javax.json.JsonReader;
@@ -143,7 +143,7 @@ public class PleadOnlineApi {
 
 
     private JsonObject getCaseDetail(final Envelope<PleadOnline> envelope) {
-        final JsonObject queryCasePayload = Json.createObjectBuilder()
+        final JsonObject queryCasePayload = JsonObjects.createObjectBuilder()
                 .add("caseId", envelope.payload().getCaseId().toString())
                 .build();
 
@@ -166,7 +166,7 @@ public class PleadOnlineApi {
     }
 
     private static JsonObject jsonFromString(final String jsonObjectStr) {
-        final JsonReader jsonReader = Json.createReader(new StringReader(jsonObjectStr));
+        final JsonReader jsonReader = JsonObjects.createReader(new StringReader(jsonObjectStr));
         final JsonObject object = jsonReader.readObject();
         jsonReader.close();
         return object;

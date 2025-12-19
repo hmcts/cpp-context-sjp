@@ -19,7 +19,7 @@ import java.time.LocalDate;
 import java.util.UUID;
 import java.util.function.Consumer;
 
-import javax.json.Json;
+import uk.gov.justice.services.messaging.JsonObjects;
 import javax.json.JsonObjectBuilder;
 
 import org.junit.jupiter.api.Test;
@@ -73,7 +73,7 @@ public class CaseReopenedProcessorTest {
 
     private void verifyCaseReopenedUndoneEventMessage(final String eventName,
                                                       final Consumer<JsonEnvelope> consumer) {
-        JsonObjectBuilder jsonObjectBuilder = Json.createObjectBuilder().add("caseId", CASE_ID);
+        JsonObjectBuilder jsonObjectBuilder = JsonObjects.createObjectBuilder().add("caseId", CASE_ID);
 
         final JsonEnvelope privateEvent = EnvelopeFactory.createEnvelope(eventName, jsonObjectBuilder.build());
 
@@ -91,7 +91,7 @@ public class CaseReopenedProcessorTest {
                                                 final String reopenedDate,
                                                 final String libraCaseNumber,
                                                 final String reason) {
-        JsonObjectBuilder jsonObjectBuilder = Json.createObjectBuilder()
+        JsonObjectBuilder jsonObjectBuilder = JsonObjects.createObjectBuilder()
                 .add("caseId", CASE_ID)
                 .add("reopenedDate", reopenedDate)
                 .add("libraCaseNumber", libraCaseNumber)

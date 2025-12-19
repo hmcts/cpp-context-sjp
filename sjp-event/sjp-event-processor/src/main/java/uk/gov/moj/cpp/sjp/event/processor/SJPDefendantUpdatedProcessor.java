@@ -27,6 +27,9 @@ public class SJPDefendantUpdatedProcessor {
     private static final Logger LOGGER = LoggerFactory.getLogger(SJPDefendantUpdatedProcessor.class);
     private static final String SJP_COMMAND_UPDATE_DEFENDANT_DETAILS_FROM_CC = "sjp.command.update-defendant-details-from-CC";
     public static final String ADDRESS = "address";
+    private static final String MOBILE = "mobile";
+    private static final String CONTACT_DETAILS = "contactDetails";
+    private static final String INCORPORATION_NUMBER = "incorporationNumber";
 
 
     @Inject
@@ -129,7 +132,7 @@ public class SJPDefendantUpdatedProcessor {
 
         final JsonObjectBuilder contactNumberBuilder = Json.createObjectBuilder();
         addIfPresent(contactNumberBuilder, contact, "home", "home");
-        addIfPresent(contactNumberBuilder, contact, "mobile", "mobile");
+        addIfPresent(contactNumberBuilder, contact, MOBILE, MOBILE);
         addIfPresent(contactNumberBuilder, contact, "work", "business");
         final JsonObject contactNumber = contactNumberBuilder.build();
         if (!contactNumber.isEmpty()) {
@@ -158,15 +161,43 @@ public class SJPDefendantUpdatedProcessor {
     private void addLegalEntityDefendantData(final JsonObjectBuilder payloadBuilder, final JsonObject legalEntityDefendant) {
         final JsonObjectBuilder legalEntityBuilder = Json.createObjectBuilder();
         
-        addIfPresent(legalEntityBuilder, legalEntityDefendant, "name", "name");
-        addAddressIfPresent(legalEntityBuilder, legalEntityDefendant, ADDRESS);
-        
-        final JsonObject contactDetails = legalEntityDefendant.getJsonObject("contactDetails");
-        if (contactDetails != null) {
-            legalEntityBuilder.add("contactDetails", contactDetails);
+        // Handle Organisation structure (legalEntityDefendant.organisation.name, etc.)
+        final JsonObject organisation = legalEntityDefendant.getJsonObject("organisation");
+        if (organisation != null) {
+            // Extract from organisation
+            addIfPresent(legalEntityBuilder, organisation, "name", "name");
+            addAddressIfPresent(legalEntityBuilder, organisation, ADDRESS);
+            
+            final JsonObject contact = organisation.getJsonObject("contact");
+            if (contact != null) {
+                // Convert ContactNumber to contactDetails format
+                final JsonObjectBuilder contactDetailsBuilder = Json.createObjectBuilder();
+                addIfPresent(contactDetailsBuilder, contact, "home", "home");
+                addIfPresent(contactDetailsBuilder, contact, MOBILE, MOBILE);
+                addIfPresent(contactDetailsBuilder, contact, "work", "business");
+                addIfPresent(contactDetailsBuilder, contact, "primaryEmail", "email");
+                addIfPresent(contactDetailsBuilder, contact, "secondaryEmail", "email2");
+                final JsonObject contactDetails = contactDetailsBuilder.build();
+                if (!contactDetails.isEmpty()) {
+                    legalEntityBuilder.add(CONTACT_DETAILS, contactDetails);
+                }
+            }
+            
+            addIfPresent(legalEntityBuilder, organisation, INCORPORATION_NUMBER, INCORPORATION_NUMBER);
+        } else {
+            // Handle flat structure (for backward compatibility)
+            addIfPresent(legalEntityBuilder, legalEntityDefendant, "name", "name");
+            addAddressIfPresent(legalEntityBuilder, legalEntityDefendant, ADDRESS);
+            
+            final JsonObject contactDetails = legalEntityDefendant.getJsonObject(CONTACT_DETAILS);
+            if (contactDetails != null) {
+                legalEntityBuilder.add(CONTACT_DETAILS, contactDetails);
+            }
+            
+            addIfPresent(legalEntityBuilder, legalEntityDefendant, INCORPORATION_NUMBER, INCORPORATION_NUMBER);
         }
         
-        addIfPresent(legalEntityBuilder, legalEntityDefendant, "incorporationNumber", "incorporationNumber");
+        // Position is at legalEntityDefendant level, not in organisation
         addIfPresent(legalEntityBuilder, legalEntityDefendant, "position", "position");
         
         final JsonObject legalEntity = legalEntityBuilder.build();

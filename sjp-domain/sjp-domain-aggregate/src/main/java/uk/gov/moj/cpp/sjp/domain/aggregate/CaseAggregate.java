@@ -299,8 +299,7 @@ public class CaseAggregate implements Aggregate {
      * Updates legal entity defendant details from Criminal Courts (CC) without checking for case completed
      * or case referred for court hearing status.
      */
-    public Stream<Object> updateLegalEntityDefendantDetailsFromCC(
-                                                                  final UUID caseId,
+    public Stream<Object> updateLegalEntityDefendantDetailsFromCC(final UUID caseId,
                                                                   final UUID defendantId,
                                                                   final uk.gov.moj.cpp.sjp.domain.legalentity.LegalEntityDefendant legalEntityDefendant,
                                                                   final ZonedDateTime updatedDate) {

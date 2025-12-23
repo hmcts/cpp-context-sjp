@@ -14,7 +14,7 @@ import uk.gov.justice.services.test.utils.core.enveloper.EnveloperFactory;
 
 import java.util.UUID;
 
-import javax.json.Json;
+import uk.gov.justice.services.messaging.JsonObjects;
 import javax.json.JsonObject;
 
 import org.junit.jupiter.api.Test;
@@ -57,8 +57,8 @@ public class ReferenceOffencesDataServiceTest {
 
         when(requester.request(any(JsonEnvelope.class))).thenReturn(response);
 
-        final JsonObject responsePayload = Json.createObjectBuilder()
-                .add("offences", Json.createArrayBuilder().add(Json.createObjectBuilder()))
+        final JsonObject responsePayload = JsonObjects.createObjectBuilder()
+                .add("offences", JsonObjects.createArrayBuilder().add(JsonObjects.createObjectBuilder()))
                 .build();
 
         when(response.payloadAsJsonObject()).thenReturn(responsePayload);
@@ -81,7 +81,7 @@ public class ReferenceOffencesDataServiceTest {
                 .with(metadataWithRandomUUID("sjp.query.case-by-urn-postcode")).build();
 
         final UUID offenceId = UUID.randomUUID();
-        final JsonObject responsePayload = Json.createObjectBuilder().add("offenceId", offenceId.toString()).build();
+        final JsonObject responsePayload = JsonObjects.createObjectBuilder().add("offenceId", offenceId.toString()).build();
 
         when(requester.request(any(JsonEnvelope.class))).thenReturn(response);
         when(response.payloadAsJsonObject()).thenReturn(responsePayload);

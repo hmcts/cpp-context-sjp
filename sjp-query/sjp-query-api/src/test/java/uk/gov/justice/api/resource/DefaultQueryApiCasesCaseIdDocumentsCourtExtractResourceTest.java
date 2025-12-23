@@ -31,7 +31,7 @@ import java.io.IOException;
 import java.util.Optional;
 import java.util.UUID;
 
-import javax.json.Json;
+import uk.gov.justice.services.messaging.JsonObjects;
 import javax.json.JsonObject;
 import javax.ws.rs.core.Response;
 
@@ -133,7 +133,7 @@ public class DefaultQueryApiCasesCaseIdDocumentsCourtExtractResourceTest {
     }
 
     private Optional<JsonObject> buildMockCourtData() {
-        return Optional.of(Json.createReader(getClass().getClassLoader().
+        return Optional.of(JsonObjects.createReader(getClass().getClassLoader().
                 getResourceAsStream("uk/gov/moj/cpp/sjp/query/court-extract/case-court-extract-data.json")).
                 readObject());
     }

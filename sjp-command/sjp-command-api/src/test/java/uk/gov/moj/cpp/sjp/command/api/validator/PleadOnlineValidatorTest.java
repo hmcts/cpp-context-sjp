@@ -38,7 +38,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
-import javax.json.Json;
+import uk.gov.justice.services.messaging.JsonObjects;
 import javax.json.JsonArray;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
@@ -183,7 +183,7 @@ public class PleadOnlineValidatorTest {
 
     private JsonObject getCaseDetail(final Boolean completed, final Boolean assigned, final CaseStatus status, final Boolean pendingWithdrawal, final Plea plea) {
 
-        final JsonObjectBuilder caseDetailBuilder = Json.createObjectBuilder()
+        final JsonObjectBuilder caseDetailBuilder = JsonObjects.createObjectBuilder()
                 .add("id", UUID.randomUUID().toString());
 
         Optional.ofNullable(completed)
@@ -195,7 +195,7 @@ public class PleadOnlineValidatorTest {
         Optional.ofNullable(status)
                 .ifPresent(value -> caseDetailBuilder.add("status", value.name()));
 
-        final JsonObjectBuilder offenceObjectBuilder = Json.createObjectBuilder();
+        final JsonObjectBuilder offenceObjectBuilder = JsonObjects.createObjectBuilder();
 
         Optional.ofNullable(pendingWithdrawal)
                 .ifPresent(value -> offenceObjectBuilder.add("pendingWithdrawal", value));
@@ -203,9 +203,9 @@ public class PleadOnlineValidatorTest {
         Optional.ofNullable(plea)
                 .ifPresent(value -> offenceObjectBuilder.add("plea", value.name()));
 
-        final JsonArray offences = Json.createArrayBuilder().add(offenceObjectBuilder.build()).build();
+        final JsonArray offences = JsonObjects.createArrayBuilder().add(offenceObjectBuilder.build()).build();
 
-        final JsonObject defendant = Json.createObjectBuilder()
+        final JsonObject defendant = JsonObjects.createObjectBuilder()
                 .add("offences", offences)
                 .build();
 

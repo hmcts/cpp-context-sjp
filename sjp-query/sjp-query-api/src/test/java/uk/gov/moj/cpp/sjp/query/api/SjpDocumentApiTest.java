@@ -35,7 +35,7 @@ import java.time.ZonedDateTime;
 import java.util.Optional;
 import java.util.UUID;
 
-import javax.json.Json;
+import uk.gov.justice.services.messaging.JsonObjects;
 import javax.json.JsonObject;
 
 import org.junit.jupiter.api.Test;
@@ -146,7 +146,7 @@ public class SjpDocumentApiTest {
     }
 
     private static JsonEnvelope documentDetails(final UUID documentId, final UUID materialId) {
-        final JsonObject caseDocument = Json.createObjectBuilder()
+        final JsonObject caseDocument = JsonObjects.createObjectBuilder()
                 .add("id", documentId.toString())
                 .add("materialId", materialId.toString())
                 .add("documentType", "OTHER-Travelcard")

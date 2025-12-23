@@ -13,7 +13,7 @@ import static org.apache.http.HttpStatus.SC_OK;
 import java.util.Optional;
 import java.util.UUID;
 
-import javax.json.Json;
+import uk.gov.justice.services.messaging.JsonObjects;
 import javax.json.JsonArrayBuilder;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
@@ -27,9 +27,9 @@ public class AssignmentStub {
     }
 
     public static void stubGetAssignmentsByDomainObjectId(final UUID caseId, final Optional<String> assignmentNature, final UUID... assignees) {
-        final JsonArrayBuilder assignments = Json.createArrayBuilder();
+        final JsonArrayBuilder assignments = JsonObjects.createArrayBuilder();
         for (final UUID assignee : assignees) {
-            final JsonObjectBuilder assignment = Json.createObjectBuilder()
+            final JsonObjectBuilder assignment = JsonObjects.createObjectBuilder()
                     .add("id", UUID.randomUUID().toString())
                     .add("version", 2)
                     .add("domainObjectId", caseId.toString())
@@ -38,7 +38,7 @@ public class AssignmentStub {
             assignments.add(assignment);
         }
 
-        final JsonObject payload = Json.createObjectBuilder().add("assignments", assignments).build();
+        final JsonObject payload = JsonObjects.createObjectBuilder().add("assignments", assignments).build();
 
         stubFor(get(urlPathEqualTo(ASSIGNMENTS_QUERY_URL))
                 .withQueryParam("domainObjectId", equalTo(caseId.toString()))

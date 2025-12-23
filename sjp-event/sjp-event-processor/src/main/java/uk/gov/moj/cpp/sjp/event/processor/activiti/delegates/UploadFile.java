@@ -15,7 +15,7 @@ import java.util.UUID;
 
 import javax.inject.Inject;
 import javax.inject.Named;
-import javax.json.Json;
+import uk.gov.justice.services.messaging.JsonObjects;
 import javax.json.JsonObject;
 
 import org.activiti.engine.delegate.DelegateExecution;
@@ -52,12 +52,12 @@ public class UploadFile implements JavaDelegate {
 
         final Metadata originalMetadata = metadataHelper.metadataFromString(metadataAsString);
 
-        final JsonObject fileUploadedEventPayload = Json.createObjectBuilder()
+        final JsonObject fileUploadedEventPayload = JsonObjects.createObjectBuilder()
                 .add("documentId", documentReference)
                 .add("caseId", caseIdAsString)
                 .build();
 
-        final JsonObject uploadFileCommandPayload = Json.createObjectBuilder()
+        final JsonObject uploadFileCommandPayload = JsonObjects.createObjectBuilder()
                 .add("materialId", UUID.randomUUID().toString())
                 .add("fileServiceId", documentReference)
                 .build();

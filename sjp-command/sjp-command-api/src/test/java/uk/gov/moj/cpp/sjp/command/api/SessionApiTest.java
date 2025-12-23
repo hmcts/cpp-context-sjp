@@ -43,7 +43,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
-import javax.json.Json;
+import uk.gov.justice.services.messaging.JsonObjects;
 import javax.json.JsonObject;
 
 import org.hamcrest.CoreMatchers;
@@ -136,8 +136,8 @@ public class SessionApiTest extends BaseDroolsAccessControlTest {
                 .withPayloadOf(sessionId.toString(), "sessionId")
                 .withPayloadOf(courtHouseOUCode, "courtHouseOUCode")
                 .withPayloadOf("Jay", "magistrate")
-                .withPayloadOf(Json.createObjectBuilder().add("userId", userId.toString()).build(), "legalAdviser")
-                .withPayloadOf(Json.createArrayBuilder().add("P1").add("P2").build(), "prosecutors")
+                .withPayloadOf(JsonObjects.createObjectBuilder().add("userId", userId.toString()).build(), "legalAdviser")
+                .withPayloadOf(JsonObjects.createArrayBuilder().add("P1").add("P2").build(), "prosecutors")
                 .build();
 
         final SessionCourt sessionCourt = new SessionCourt("Wimbledon Magistrates' Court", "2577");
@@ -190,7 +190,7 @@ public class SessionApiTest extends BaseDroolsAccessControlTest {
 
     @Test
     public void endSessionShouldValidateSessionIdIsNotNull() {
-        final JsonObject payload = Json.createObjectBuilder().addNull("sessionId").build();
+        final JsonObject payload = JsonObjects.createObjectBuilder().addNull("sessionId").build();
         final JsonEnvelope envelope = envelope().with(metadataWithRandomUUID(END_SESSION_COMMAND_NAME))
                 .withPayloadFrom(payload)
                 .build();

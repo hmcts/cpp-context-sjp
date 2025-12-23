@@ -2,7 +2,7 @@ package uk.gov.moj.cpp.sjp.query.view;
 
 
 import static java.util.Optional.ofNullable;
-import static javax.json.Json.createArrayBuilder;
+import static uk.gov.justice.services.messaging.JsonObjects.createArrayBuilder;
 
 import uk.gov.justice.services.common.converter.jackson.ObjectMapperProducer;
 import uk.gov.justice.services.core.annotation.Component;
@@ -19,7 +19,7 @@ import java.util.List;
 import java.util.Optional;
 
 import javax.inject.Inject;
-import javax.json.Json;
+import uk.gov.justice.services.messaging.JsonObjects;
 import javax.json.JsonArrayBuilder;
 import javax.json.JsonObject;
 
@@ -48,7 +48,7 @@ public class CaseAssignmentRestrictionView {
 
         if(!caseAssignmentRestrictionList.isEmpty()) {
             restriction = Optional.of(caseAssignmentRestrictionList.get(0))
-                    .map(assignmentRestriction -> Json.createObjectBuilder()
+                    .map(assignmentRestriction -> JsonObjects.createObjectBuilder()
                             .add("prosecutingAuthority", assignmentRestriction.getProsecutingAuthority())
                             .add("dateTimeCreated", assignmentRestriction.getDateTimeCreated().toString())
                             .add("exclude", getArrayBuilder(assignmentRestriction.getExclude()))

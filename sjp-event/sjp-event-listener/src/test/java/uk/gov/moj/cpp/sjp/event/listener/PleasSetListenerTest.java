@@ -23,7 +23,7 @@ import uk.gov.moj.cpp.sjp.persistence.repository.CaseRepository;
 import java.io.StringReader;
 import java.util.UUID;
 
-import javax.json.Json;
+import uk.gov.justice.services.messaging.JsonObjects;
 import javax.json.JsonObject;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -87,7 +87,7 @@ public class PleasSetListenerTest {
 
     public JsonObject convertToJsonObject(PleasSet pleasSet) throws JsonProcessingException {
         String json = objectMapper.writeValueAsString(pleasSet);
-        return Json.createReader(new StringReader(json)).readObject();
+        return JsonObjects.createReader(new StringReader(json)).readObject();
     }
 
 

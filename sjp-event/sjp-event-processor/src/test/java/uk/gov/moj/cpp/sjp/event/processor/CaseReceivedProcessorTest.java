@@ -5,7 +5,7 @@ import static java.time.LocalDate.now;
 import static java.util.Arrays.asList;
 import static java.util.Objects.nonNull;
 import static java.util.UUID.randomUUID;
-import static javax.json.Json.createObjectBuilder;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -44,7 +44,7 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.UUID;
 
-import javax.json.Json;
+import uk.gov.justice.services.messaging.JsonObjects;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
 import javax.json.JsonValue;
@@ -158,7 +158,7 @@ public class CaseReceivedProcessorTest {
                 withJsonPath("$.id", equalTo(caseId.toString())),
                 withJsonPath("$.postingDate", equalTo(postingDate.toString())))));
 
-        final JsonObjectBuilder payloadBuilder = Json.createObjectBuilder();
+        final JsonObjectBuilder payloadBuilder = JsonObjects.createObjectBuilder();
         payloadBuilder.add("CaseReference", urn);
         verify(azureFunctionService).relayCaseOnCPP(payloadBuilder.build().toString());
         verify(timerService).startTimerForDefendantResponse(caseId, expectedDateReady, privateEvent.metadata());
@@ -205,7 +205,7 @@ public class CaseReceivedProcessorTest {
                 withJsonPath("$.id", equalTo(caseId.toString())),
                 withJsonPath("$.postingDate", equalTo(postingDate.toString())))));
 
-        final JsonObjectBuilder payloadBuilder = Json.createObjectBuilder();
+        final JsonObjectBuilder payloadBuilder = JsonObjects.createObjectBuilder();
         payloadBuilder.add("CaseReference", urn);
         verify(azureFunctionService).relayCaseOnCPP(payloadBuilder.build().toString());
         verify(timerService).startTimerForDefendantResponse(caseId, expectedDateReady, privateEvent.metadata());
@@ -255,7 +255,7 @@ public class CaseReceivedProcessorTest {
                 withJsonPath("$.id", equalTo(caseId.toString())),
                 withJsonPath("$.postingDate", equalTo(postingDate.toString())))));
 
-        final JsonObjectBuilder payloadBuilder = Json.createObjectBuilder();
+        final JsonObjectBuilder payloadBuilder = JsonObjects.createObjectBuilder();
         payloadBuilder.add("CaseReference", urn);
         verify(azureFunctionService).relayCaseOnCPP(payloadBuilder.build().toString());
         verify(timerService).startTimerForDefendantResponse(caseId, expectedDateReady, privateEvent.metadata());

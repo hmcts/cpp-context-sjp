@@ -22,7 +22,7 @@ import java.util.Objects;
 import java.util.Optional;
 
 import javax.inject.Inject;
-import javax.json.Json;
+import uk.gov.justice.services.messaging.JsonObjects;
 import javax.json.JsonObject;
 
 import org.slf4j.Logger;
@@ -70,7 +70,7 @@ public class HearingResultReceivedProcessor {
     }
 
     private void sendMessage(final JsonEnvelope jsonEnvelope, final String applicationId, final String sjpCaseId, final String applicationStatus) {
-        final JsonObject applicationStatusPayload = Json.createObjectBuilder()
+        final JsonObject applicationStatusPayload = JsonObjects.createObjectBuilder()
                 .add("caseId", sjpCaseId)
                 .add("applicationId", applicationId)
                 .add("applicationStatus", applicationStatus)

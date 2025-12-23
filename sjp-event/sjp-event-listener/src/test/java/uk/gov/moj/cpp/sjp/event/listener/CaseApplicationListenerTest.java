@@ -46,7 +46,7 @@ import static uk.gov.moj.cpp.sjp.persistence.entity.ApplicationType.REOPENING;
 import static uk.gov.moj.cpp.sjp.persistence.entity.ApplicationType.STAT_DEC;
 
 import javax.inject.Inject;
-import javax.json.Json;
+import uk.gov.justice.services.messaging.JsonObjects;
 import javax.json.JsonObject;
 
 

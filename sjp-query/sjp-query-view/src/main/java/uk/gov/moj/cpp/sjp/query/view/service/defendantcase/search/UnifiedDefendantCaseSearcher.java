@@ -18,7 +18,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import javax.inject.Inject;
-import javax.json.Json;
+import uk.gov.justice.services.messaging.JsonObjects;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
 
@@ -51,7 +51,7 @@ public class UnifiedDefendantCaseSearcher implements DefendantCaseSearcher {
 
 
         while (true) {
-            final JsonObjectBuilder criteriaBuilder = Json.createObjectBuilder();
+            final JsonObjectBuilder criteriaBuilder = JsonObjects.createObjectBuilder();
             defendantQuery.getCriteria().forEach(criteriaBuilder::add);
             criteriaBuilder.add(CASES_START_FROM, page);
 

@@ -22,7 +22,7 @@ import java.nio.charset.Charset;
 import java.util.List;
 import java.util.stream.Stream;
 
-import javax.json.Json;
+import uk.gov.justice.services.messaging.JsonObjects;
 import javax.json.JsonObject;
 import javax.json.JsonReader;
 
@@ -98,7 +98,7 @@ public class CaseApplicationOffenceResultsTest extends CaseAggregateBaseTest {
         } catch (final Exception e) {
             fail("Error consuming file from location " + path);
         }
-        final JsonReader reader = Json.createReader(new StringReader(request));
+        final JsonReader reader = JsonObjects.createReader(new StringReader(request));
         return reader.readObject();
     }
 

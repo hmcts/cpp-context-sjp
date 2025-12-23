@@ -45,7 +45,6 @@
         <referencedata.version>17.0.120</referencedata.version>
         <referencedata.offences.version>17.0.38</referencedata.offences.version>
         <scheduling.version>17.0.11</scheduling.version>
-        <authorisation.service.version>0.1.49</authorisation.service.version>
         <usersgroups.version>17.0.41</usersgroups.version>
         <progression.version>17.0.215</progression.version>
         <prosecutioncasefile.version>17.0.66</prosecutioncasefile.version>

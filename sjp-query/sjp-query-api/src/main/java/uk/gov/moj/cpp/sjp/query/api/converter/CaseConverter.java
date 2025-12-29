@@ -1,7 +1,7 @@
 package uk.gov.moj.cpp.sjp.query.api.converter;
 
 
-import static javax.json.Json.createObjectBuilder;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 import static org.slf4j.LoggerFactory.getLogger;
 
 import uk.gov.justice.services.messaging.JsonEnvelope;
@@ -10,7 +10,7 @@ import uk.gov.justice.services.messaging.JsonObjects;
 import java.util.Optional;
 
 import javax.inject.Inject;
-import javax.json.Json;
+import uk.gov.justice.services.messaging.JsonObjects;
 import javax.json.JsonArray;
 import javax.json.JsonArrayBuilder;
 import javax.json.JsonNumber;
@@ -51,7 +51,7 @@ public class CaseConverter {
     }
 
     private JsonArray buildOffencesArray(final JsonEnvelope query, final JsonArray offences) {
-        final JsonArrayBuilder builder = Json.createArrayBuilder();
+        final JsonArrayBuilder builder = JsonObjects.createArrayBuilder();
         offences.getValuesAs(JsonObject.class)
                 .stream()
                 .map(offence -> buildOffenceObject(query, offence))
@@ -69,7 +69,7 @@ public class CaseConverter {
 
         final JsonNumber aocpStandardPenalty = offence.getJsonNumber("aocpStandardPenalty");
 
-        final JsonObjectBuilder builder = Json.createObjectBuilder()
+        final JsonObjectBuilder builder = JsonObjects.createObjectBuilder()
                 .add("id", offence.getString("id"))
                 .add("wording", offence.getString("wording"))
                 .add("pendingWithdrawal", offence.getBoolean("pendingWithdrawal", false))

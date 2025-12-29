@@ -8,8 +8,8 @@ import static java.util.Objects.nonNull;
 import static java.util.Optional.empty;
 import static java.util.Optional.of;
 import static java.util.UUID.fromString;
-import static javax.json.Json.createArrayBuilder;
-import static javax.json.Json.createObjectBuilder;
+import static uk.gov.justice.services.messaging.JsonObjects.createArrayBuilder;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 import static org.apache.commons.lang3.StringUtils.isEmpty;
 import static uk.gov.justice.services.core.annotation.Component.EVENT_PROCESSOR;
 import static uk.gov.justice.services.messaging.Envelope.metadataFrom;
@@ -48,7 +48,7 @@ import java.time.format.DateTimeParseException;
 import java.util.*;
 
 import javax.inject.Inject;
-import javax.json.Json;
+import uk.gov.justice.services.messaging.JsonObjects;
 import javax.json.JsonArray;
 import javax.json.JsonArrayBuilder;
 import javax.json.JsonObject;
@@ -179,7 +179,7 @@ public class PressTransparencyReportRequestedProcessor {
         LOGGER.info("publishing public event for sjp pending cases for public list in english");
         final String type = envelope.payloadAsJsonObject().getString(REQUEST_TYPE);
         final String language = envelope.payloadAsJsonObject().getString(LANGUAGE);
-        final JsonObjectBuilder pendingListEnglishBuilder = Json.createObjectBuilder()
+        final JsonObjectBuilder pendingListEnglishBuilder = JsonObjects.createObjectBuilder()
                 .add(LANGUAGE, language)
                 .add(REQUEST_TYPE, type)
                 .add("listPayload", payloadForDocumentGeneration);

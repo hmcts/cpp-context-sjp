@@ -1,5 +1,7 @@
 package uk.gov.moj.sjp.it.test.ingestor.helper;
 
+import uk.gov.justice.services.messaging.JsonObjects;
+
 import static uk.gov.justice.services.test.utils.core.messaging.JsonObjects.getJsonArray;
 import static uk.gov.moj.sjp.it.test.ingestor.helper.IngesterHelper.jsonFromString;
 

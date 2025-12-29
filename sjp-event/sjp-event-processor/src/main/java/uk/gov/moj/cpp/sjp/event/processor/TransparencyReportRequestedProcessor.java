@@ -5,8 +5,8 @@ import static java.time.LocalDateTime.now;
 import static java.util.Objects.nonNull;
 import static java.util.Optional.ofNullable;
 import static java.util.UUID.fromString;
-import static javax.json.Json.createArrayBuilder;
-import static javax.json.Json.createObjectBuilder;
+import static uk.gov.justice.services.messaging.JsonObjects.createArrayBuilder;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 import static org.apache.commons.lang3.StringUtils.capitalize;
 import static org.apache.commons.lang3.StringUtils.length;
 import static org.apache.commons.lang3.StringUtils.lowerCase;
@@ -46,7 +46,7 @@ import java.time.Period;
 import java.util.*;
 
 import javax.inject.Inject;
-import javax.json.Json;
+import uk.gov.justice.services.messaging.JsonObjects;
 import javax.json.JsonArray;
 import javax.json.JsonArrayBuilder;
 import javax.json.JsonObject;
@@ -170,7 +170,7 @@ public class TransparencyReportRequestedProcessor {
             if (LOGGER.isInfoEnabled()) {
                 LOGGER.info("publishing Sjp public event for english report {}, {}", PUBLIC_EVENT_SJP_PENDING_CASES_PUBLIC_LIST_GENERATED, payloadForPublicEventInEnglish);
             }
-            final JsonObjectBuilder pendingListEnglishBuilder = Json.createObjectBuilder()
+            final JsonObjectBuilder pendingListEnglishBuilder = JsonObjects.createObjectBuilder()
                     .add(LANGUAGE, "ENGLISH")
                     .add(LIST_PAYLOAD, payloadForPublicEventInEnglish);
             sender.send(Envelope.envelopeFrom(metadataFrom(envelope.metadata())
@@ -186,7 +186,7 @@ public class TransparencyReportRequestedProcessor {
             if (LOGGER.isInfoEnabled()) {
                 LOGGER.info("publishing Sjp public event for welsh report {}, {}", PUBLIC_EVENT_SJP_PENDING_CASES_PUBLIC_LIST_GENERATED, payloadForPublicEventInEnglish);
             }
-            final JsonObjectBuilder pendingListWelshBuilder = Json.createObjectBuilder()
+            final JsonObjectBuilder pendingListWelshBuilder = JsonObjects.createObjectBuilder()
                     .add(LANGUAGE, "WELSH")
                     .add(LIST_PAYLOAD, payloadForPublicEventInWelsh);
             sender.send(Envelope.envelopeFrom(metadataFrom(envelope.metadata())
@@ -233,7 +233,7 @@ public class TransparencyReportRequestedProcessor {
         LOGGER.info("publishing public event for sjp pending cases for public list in english");
         final String type = envelope.payloadAsJsonObject().getString(REQUEST_TYPE);
         final String language = envelope.payloadAsJsonObject().getString(LANGUAGE);
-        final JsonObjectBuilder pendingListEnglishBuilder = Json.createObjectBuilder()
+        final JsonObjectBuilder pendingListEnglishBuilder = JsonObjects.createObjectBuilder()
                 .add(LANGUAGE, language)
                 .add(REQUEST_TYPE, type)
                 .add(LIST_PAYLOAD, payloadForDocumentGeneration);

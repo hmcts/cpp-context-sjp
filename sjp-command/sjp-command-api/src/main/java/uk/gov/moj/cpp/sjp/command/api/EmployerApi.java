@@ -11,7 +11,7 @@ import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.messaging.JsonObjects;
 
 import javax.inject.Inject;
-import javax.json.Json;
+import uk.gov.justice.services.messaging.JsonObjects;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
 
@@ -42,7 +42,7 @@ public class EmployerApi {
             employerDetails.add(ADDRESS, normalizePostcodeInAddress(payloadAsJsonObject.getJsonObject(ADDRESS)));
         }
 
-        final JsonObject payload = Json.createObjectBuilder()
+        final JsonObject payload = JsonObjects.createObjectBuilder()
                 .add(CASE_ID, payloadAsJsonObject.getString(CASE_ID))
                 .add(DEFENDANT_ID, payloadAsJsonObject.getString(DEFENDANT_ID))
                 .add("employer", employerDetails)

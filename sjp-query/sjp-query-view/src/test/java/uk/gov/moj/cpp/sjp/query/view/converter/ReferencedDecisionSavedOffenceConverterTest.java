@@ -1,5 +1,7 @@
 package uk.gov.moj.cpp.sjp.query.view.converter;
 
+import uk.gov.justice.services.messaging.JsonObjects;
+
 import com.google.common.collect.ImmutableMap;
 import org.json.JSONException;
 import org.junit.jupiter.api.BeforeEach;
@@ -393,11 +395,11 @@ public class ReferencedDecisionSavedOffenceConverterTest {
                 .collect(Collectors.toList());
     }
     private JsonArray removeIdFromJsonObjects(JsonArray jsonArray) {
-        JsonArrayBuilder arrayBuilder = Json.createArrayBuilder();
+        JsonArrayBuilder arrayBuilder = JsonObjects.createArrayBuilder();
 
         for (int i = 0; i < jsonArray.size(); i++) {
             JsonObject originalObject = jsonArray.getJsonObject(i);
-            JsonObjectBuilder objectBuilder = Json.createObjectBuilder();
+            JsonObjectBuilder objectBuilder = JsonObjects.createObjectBuilder();
 
             for (String key : originalObject.keySet()) {
                 if (!"id".equals(key)) {

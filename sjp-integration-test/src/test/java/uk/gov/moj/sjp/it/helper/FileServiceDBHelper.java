@@ -1,6 +1,6 @@
 package uk.gov.moj.sjp.it.helper;
 
-import static javax.json.Json.createObjectBuilder;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 import static uk.gov.justice.services.test.utils.common.host.TestHostProvider.getHost;
 import static uk.gov.moj.sjp.it.util.FileUtil.getPayloadAsInputStream;
 

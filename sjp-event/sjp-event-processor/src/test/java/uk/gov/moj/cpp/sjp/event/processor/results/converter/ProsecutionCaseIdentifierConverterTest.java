@@ -14,7 +14,7 @@ import static uk.gov.moj.cpp.sjp.event.processor.results.converter.TestConstants
 import uk.gov.justice.core.courts.ProsecutionCaseIdentifier;
 import uk.gov.moj.cpp.sjp.event.processor.service.ReferenceDataService;
 
-import javax.json.Json;
+import uk.gov.justice.services.messaging.JsonObjects;
 import javax.json.JsonArray;
 import javax.json.JsonObject;
 
@@ -39,8 +39,8 @@ public class ProsecutionCaseIdentifierConverterTest {
     public void shouldConvertProsecutionCaseIdentifierWithPoliceFlag() {
 
 
-        JsonArray value = Json.createArrayBuilder()
-                .add(Json.createObjectBuilder()
+        JsonArray value = JsonObjects.createArrayBuilder()
+                .add(JsonObjects.createObjectBuilder()
                         .add("policeFlag", true)
                         .add("id", ID_2.toString())
                         .add("shortName", SHORT_NAME)
@@ -49,7 +49,7 @@ public class ProsecutionCaseIdentifierConverterTest {
                 )
                 .build();
 
-        JsonObject jsonObject = Json.createObjectBuilder()
+        JsonObject jsonObject = JsonObjects.createObjectBuilder()
                 .add("prosecutors", value)
                 .build();
 
@@ -68,8 +68,8 @@ public class ProsecutionCaseIdentifierConverterTest {
     public void shouldConvertProsecutionCaseIdentifierWithoutPoliceFlag() {
 
 
-        JsonArray value = Json.createArrayBuilder()
-                .add(Json.createObjectBuilder()
+        JsonArray value = JsonObjects.createArrayBuilder()
+                .add(JsonObjects.createObjectBuilder()
                         .add("policeFlag", false)
                         .add("id", ID_2.toString())
                         .add("shortName", SHORT_NAME)
@@ -78,7 +78,7 @@ public class ProsecutionCaseIdentifierConverterTest {
                 )
                 .build();
 
-        JsonObject jsonObject = Json.createObjectBuilder()
+        JsonObject jsonObject = JsonObjects.createObjectBuilder()
                 .add("prosecutors", value)
                 .build();
 

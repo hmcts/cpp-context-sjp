@@ -24,7 +24,7 @@ import java.io.StringReader;
 import java.time.ZonedDateTime;
 import java.util.UUID;
 
-import javax.json.Json;
+import uk.gov.justice.services.messaging.JsonObjects;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -78,6 +78,6 @@ public class AocpPleasSetListenerTest {
     private JsonEnvelope createJsonEnvelope(final UUID offenceId) throws JsonProcessingException {
         final AocpPleasSet pleasSet = new AocpPleasSet(randomUUID(), asList(new Plea(randomUUID(), offenceId, PleaType.GUILTY)), ZonedDateTime.now(), PleaMethod.ONLINE);
         final String json = objectMapper.writeValueAsString(pleasSet);
-        return createEnvelope("sjp.events.aocp-pleas-set", Json.createReader(new StringReader(json)).readObject());
+        return createEnvelope("sjp.events.aocp-pleas-set", JsonObjects.createReader(new StringReader(json)).readObject());
     }
 }

@@ -28,7 +28,7 @@ import uk.gov.moj.cpp.sjp.persistence.repository.OnlinePleaRepository;
 import java.time.ZonedDateTime;
 import java.util.UUID;
 
-import javax.json.Json;
+import uk.gov.justice.services.messaging.JsonObjects;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -87,7 +87,7 @@ public class InterpreterUpdatedListenerTest {
                 .with(metadataWithRandomUUID("sjp.events.interpreter-for-defendant-updated"))
                 .withPayloadOf(caseId, "caseId")
                 .withPayloadOf(defendantId, "defendantId").withPayloadOf(
-                        Json.createObjectBuilder().add("needed", true)
+                        JsonObjects.createObjectBuilder().add("needed", true)
                                 .add("language", language).build(), "interpreter")
                 .build();
 

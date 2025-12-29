@@ -21,7 +21,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-import javax.json.Json;
+import uk.gov.justice.services.messaging.JsonObjects;
 import javax.json.JsonObject;
 
 import com.google.common.collect.Lists;
@@ -65,28 +65,28 @@ public class VerdictConverterTest {
     }
 
     private List<JsonObject> allVerdictTypes() {
-        final JsonObject guiltyMagistratesJsonObject = Json.createObjectBuilder()
+        final JsonObject guiltyMagistratesJsonObject = JsonObjects.createObjectBuilder()
                 .add(ID, ID_1.toString())
                 .add("verdictCode", "G")
                 .add("category", RANDOM_TEXT_1)
                 .add("categoryType", RANDOM_TEXT_2)
                 .add("cjsVerdictCode", "GM")
                 .add("jurisdiction", "MAGISTRATES").build();
-        final JsonObject guiltyCrownJsonObject = Json.createObjectBuilder()
+        final JsonObject guiltyCrownJsonObject = JsonObjects.createObjectBuilder()
                 .add(ID, UUID.randomUUID().toString())
                 .add("verdictCode", "G")
                 .add("category", RANDOM_TEXT_1)
                 .add("categoryType", RANDOM_TEXT_2)
                 .add("cjsVerdictCode", "GC")
                 .add("jurisdiction", "CROWN").build();
-        final JsonObject nonGuiltyMagistratesJsonObject = Json.createObjectBuilder()
+        final JsonObject nonGuiltyMagistratesJsonObject = JsonObjects.createObjectBuilder()
                 .add(ID, UUID.randomUUID().toString())
                 .add("verdictCode", "NG")
                 .add("category", RANDOM_TEXT_1)
                 .add("categoryType", RANDOM_TEXT_2)
                 .add("cjsVerdictCode", "NGM")
                 .add("jurisdiction", "MAGISTRATES").build();
-        final JsonObject nonGuiltyCrownJsonObject = Json.createObjectBuilder()
+        final JsonObject nonGuiltyCrownJsonObject = JsonObjects.createObjectBuilder()
                 .add(ID, UUID.randomUUID().toString())
                 .add("verdictCode", "NG")
                 .add("category", RANDOM_TEXT_1)
@@ -97,14 +97,14 @@ public class VerdictConverterTest {
     }
 
     private List<JsonObject> allMagistrateJurisdictionTypeVerdictTypes() {
-        final JsonObject guiltyMagistratesJsonObject = Json.createObjectBuilder()
+        final JsonObject guiltyMagistratesJsonObject = JsonObjects.createObjectBuilder()
                 .add(ID, ID_1.toString())
                 .add("verdictCode", "G")
                 .add("category", RANDOM_TEXT_1)
                 .add("categoryType", RANDOM_TEXT_2)
                 .add("cjsVerdictCode", "GM")
                 .add("jurisdiction", "MAGISTRATES").build();
-        final JsonObject nonGuiltyMagistratesJsonObject = Json.createObjectBuilder()
+        final JsonObject nonGuiltyMagistratesJsonObject = JsonObjects.createObjectBuilder()
                 .add(ID, UUID.randomUUID().toString())
                 .add("verdictCode", "NG")
                 .add("category", RANDOM_TEXT_1)
@@ -115,7 +115,7 @@ public class VerdictConverterTest {
     }
 
     public static Optional<JsonObject> getVerdict() {
-        return Optional.of(Json.createObjectBuilder()
+        return Optional.of(JsonObjects.createObjectBuilder()
                 .add(ID, ID_1.toString())
                 .add("category", RANDOM_TEXT_1)
                 .add("categoryType", RANDOM_TEXT_2)

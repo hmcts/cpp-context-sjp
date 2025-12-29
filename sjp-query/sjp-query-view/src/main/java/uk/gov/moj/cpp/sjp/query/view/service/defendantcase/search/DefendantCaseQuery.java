@@ -6,7 +6,7 @@ import uk.gov.moj.cpp.sjp.persistence.entity.Address;
 import uk.gov.moj.cpp.sjp.persistence.entity.DefendantDetail;
 import uk.gov.moj.cpp.sjp.persistence.entity.PersonalDetails;
 
-import javax.json.Json;
+import uk.gov.justice.services.messaging.JsonObjects;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
 import java.time.LocalDate;
@@ -36,7 +36,7 @@ public class DefendantCaseQuery {
     }
 
     private void populateDefendantCriteria() {
-        final JsonObjectBuilder criteriaBuilder = Json.createObjectBuilder();
+        final JsonObjectBuilder criteriaBuilder = JsonObjects.createObjectBuilder();
         criteriaBuilder.add(CASES_PAGE_SIZE, CASES_DEFAULT_PAGE_SIZE);
 
         final PersonalDetails personalDetails = defendant.getPersonalDetails();

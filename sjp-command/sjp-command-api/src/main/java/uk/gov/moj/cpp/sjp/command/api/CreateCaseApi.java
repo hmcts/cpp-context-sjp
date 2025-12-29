@@ -2,7 +2,7 @@ package uk.gov.moj.cpp.sjp.command.api;
 
 import static java.util.Optional.ofNullable;
 import static uk.gov.justice.services.core.annotation.Component.COMMAND_API;
-import static javax.json.Json.createArrayBuilder;
+import static uk.gov.justice.services.messaging.JsonObjects.createArrayBuilder;
 import static java.util.Objects.nonNull;
 
 import static uk.gov.justice.services.messaging.JsonEnvelope.metadataFrom;

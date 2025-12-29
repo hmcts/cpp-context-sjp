@@ -1,8 +1,8 @@
 package uk.gov.moj.cpp.sjp.query.view.service;
 
 import static java.util.Optional.ofNullable;
-import static javax.json.Json.createArrayBuilder;
-import static javax.json.Json.createObjectBuilder;
+import static uk.gov.justice.services.messaging.JsonObjects.createArrayBuilder;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 import static org.apache.commons.lang3.BooleanUtils.isTrue;
 import static uk.gov.moj.cpp.sjp.query.view.service.ApplicationPrompt.DER_DVLA_ENDORSEMENT_CODE;
 import static uk.gov.moj.cpp.sjp.query.view.service.ApplicationPrompt.DER_DVLA_ENDORSEMENT_CODE2;

@@ -1,7 +1,7 @@
 package uk.gov.moj.cpp.sjp.event.listener;
 
 import static java.time.ZoneOffset.UTC;
-import static javax.json.Json.createObjectBuilder;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;

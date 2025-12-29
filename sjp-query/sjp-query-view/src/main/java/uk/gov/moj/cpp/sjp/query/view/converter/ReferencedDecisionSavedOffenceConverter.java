@@ -7,8 +7,8 @@ import static java.util.Collections.singletonList;
 import static java.util.Objects.nonNull;
 import static java.util.Optional.ofNullable;
 import static java.util.stream.Collectors.toList;
-import static javax.json.Json.createArrayBuilder;
-import static javax.json.Json.createObjectBuilder;
+import static uk.gov.justice.services.messaging.JsonObjects.createArrayBuilder;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 import static uk.gov.moj.cpp.sjp.domain.decision.DecisionType.DecisionName.ADJOURN;
 import static uk.gov.moj.cpp.sjp.query.view.util.CaseResultsConstants.*;
 
@@ -27,7 +27,7 @@ import java.util.Map;
 import java.util.Optional;
 
 import javax.inject.Inject;
-import javax.json.Json;
+import uk.gov.justice.services.messaging.JsonObjects;
 import javax.json.JsonArray;
 import javax.json.JsonArrayBuilder;
 import javax.json.JsonNumber;
@@ -553,7 +553,7 @@ public class ReferencedDecisionSavedOffenceConverter {
 
     private JsonArray terminalEntries(final JsonObject... terminalEntries) {
         if (nonNull(terminalEntries)) {
-            return Arrays.stream(terminalEntries).reduce(Json.createArrayBuilder(), JsonArrayBuilder::add, JsonArrayBuilder::add).build();
+            return Arrays.stream(terminalEntries).reduce(JsonObjects.createArrayBuilder(), JsonArrayBuilder::add, JsonArrayBuilder::add).build();
         }
         return createArrayBuilder().build();
     }

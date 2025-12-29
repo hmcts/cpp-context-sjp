@@ -10,7 +10,7 @@ import static java.util.Optional.ofNullable;
 import static java.util.UUID.fromString;
 import static java.util.UUID.randomUUID;
 import static java.util.stream.Collectors.toList;
-import static javax.json.Json.createObjectBuilder;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 import static uk.gov.justice.core.courts.AllocationDecision.allocationDecision;
 import static uk.gov.justice.core.courts.BailStatus.bailStatus;
 import static uk.gov.justice.services.core.enveloper.Enveloper.envelop;
@@ -39,7 +39,7 @@ import java.util.UUID;
 import java.util.stream.Stream;
 
 import javax.inject.Inject;
-import javax.json.Json;
+import uk.gov.justice.services.messaging.JsonObjects;
 import javax.json.JsonArray;
 import javax.json.JsonObject;
 import javax.json.JsonValue;
@@ -83,7 +83,7 @@ public class ReferenceDataService {
     public Optional<JsonObject> getVerdictTypes(final JsonEnvelope event,
                                                 final String verdictType) {
 
-        final JsonObject payload = Json.createObjectBuilder().build();
+        final JsonObject payload = JsonObjects.createObjectBuilder().build();
 
         final Envelope<JsonObject> jsonObjectEnvelope = envelop(payload)
                 .withName("referencedata.query.verdict-types")
@@ -99,7 +99,7 @@ public class ReferenceDataService {
 
     public List<JsonObject> getAllVerdictTypes(final JsonEnvelope envelope) {
 
-        final JsonObject payload = Json.createObjectBuilder().build();
+        final JsonObject payload = JsonObjects.createObjectBuilder().build();
 
         final Envelope<JsonObject> jsonObjectEnvelope = envelop(payload)
                 .withName("referencedata.query.verdict-types")
@@ -114,7 +114,7 @@ public class ReferenceDataService {
 
     public List<JsonObject> getAllVerdictTypesByJurisdiction(final JsonEnvelope envelope, final String jurisdiction) {
 
-        final JsonObject payload = Json.createObjectBuilder()
+        final JsonObject payload = JsonObjects.createObjectBuilder()
                 .add("jurisdiction", jurisdiction)
                 .build();
 
@@ -468,7 +468,7 @@ public class ReferenceDataService {
     }
 
     public Optional<JsonObject> getDocumentTypeAccessData(final UUID documentTypeId, final JsonEnvelope jsonEnvelope, final Requester requester) {
-        final JsonObject payload = Json.createObjectBuilder().add(ID, documentTypeId.toString()).build();
+        final JsonObject payload = JsonObjects.createObjectBuilder().add(ID, documentTypeId.toString()).build();
         final JsonEnvelope response = requester.request(envelop(payload)
                 .withName(REFERENCEDATA_GET_DOCUMENT_ACCESS)
                 .withMetadataFrom(jsonEnvelope));
@@ -498,7 +498,7 @@ public class ReferenceDataService {
 
     public List<JsonObject> getVictimSurcharges(final JsonEnvelope jsonEnvelope, final Requester requester, final String surchargeType, final String  surchargeLevel) {
 
-        final JsonObject payload = Json.createObjectBuilder()
+        final JsonObject payload = JsonObjects.createObjectBuilder()
                 .add(SURCHARGE_TYPE, surchargeType)
                 .add(SURCHARGE_LEVEL, surchargeLevel)
                 .build();

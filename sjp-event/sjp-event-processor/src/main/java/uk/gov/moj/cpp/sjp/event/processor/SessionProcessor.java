@@ -22,7 +22,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 import javax.inject.Inject;
-import javax.json.Json;
+import uk.gov.justice.services.messaging.JsonObjects;
 import javax.json.JsonObject;
 
 @ServiceComponent(EVENT_PROCESSOR)
@@ -79,7 +79,7 @@ public class SessionProcessor {
     }
 
     private void endSession(final JsonEnvelope envelope, String sessionId){
-        final JsonObject payload = Json.createObjectBuilder()
+        final JsonObject payload = JsonObjects.createObjectBuilder()
                 .add(SESSION_ID, sessionId).build();
 
         final Metadata metadata = metadataFrom(envelope.metadata())
@@ -91,13 +91,13 @@ public class SessionProcessor {
 
     private void startNewSession(final JsonEnvelope envelope){
 
-        final JsonObject payload = Json.createObjectBuilder()
+        final JsonObject payload = JsonObjects.createObjectBuilder()
                 .add(SESSION_ID, randomUUID().toString())
                 .add(COURT_HOUSE_CODE , AOCP_COURT_HOUSE_CODE)
                 .add(COURT_HOUSE_NAME, AOCP_COURT_HOUSE_NAME)
                 .add(LOCAL_JUSTICE_AREA_NATIONAL_COURT_CODE, AOCP_COURT_LJA)
                 .add("isAocpSession", true)
-                .add("prosecutors", Json.createArrayBuilder().add("TFL").add("TVL").add("DVLA").build())
+                .add("prosecutors", JsonObjects.createArrayBuilder().add("TFL").add("TVL").add("DVLA").build())
                 .build();
 
         final Metadata metadata = metadataFrom(envelope.metadata())
@@ -108,7 +108,7 @@ public class SessionProcessor {
     }
 
     private void emitPublicSessionStartedEvent(final UUID sessionId, final String courtHouseCode, final String courtHouseName, final String localJusticeAreaNationalCourtCode, final SessionType sessionType, final JsonEnvelope event) {
-        final JsonObject payload = Json.createObjectBuilder()
+        final JsonObject payload = JsonObjects.createObjectBuilder()
                 .add(SESSION_ID, sessionId.toString())
                 .add(COURT_HOUSE_CODE, courtHouseCode)
                 .add(COURT_HOUSE_NAME, courtHouseName)

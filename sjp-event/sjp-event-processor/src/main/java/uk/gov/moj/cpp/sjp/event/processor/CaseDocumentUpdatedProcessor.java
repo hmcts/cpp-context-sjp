@@ -9,7 +9,7 @@ import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.sjp.event.CaseDocumentAdded;
 
 import javax.inject.Inject;
-import javax.json.Json;
+import uk.gov.justice.services.messaging.JsonObjects;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
 
@@ -48,7 +48,7 @@ public class CaseDocumentUpdatedProcessor {
     }
 
     private JsonObject getCaseDocumentPublicEventPayload(String caseId, JsonObject caseDocument) {
-        final JsonObjectBuilder jsonObjectBuilder = Json.createObjectBuilder()
+        final JsonObjectBuilder jsonObjectBuilder = JsonObjects.createObjectBuilder()
                 .add(EventProcessorConstants.CASE_ID, caseId)
                 .add(EventProcessorConstants.ID, caseDocument.getString(EventProcessorConstants.ID))
                 .add(EventProcessorConstants.MATERIAL_ID, caseDocument.getString(EventProcessorConstants.MATERIAL_ID));

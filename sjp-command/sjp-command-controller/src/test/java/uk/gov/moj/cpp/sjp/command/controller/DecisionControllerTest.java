@@ -4,7 +4,7 @@ import static com.jayway.jsonpath.matchers.JsonPathMatchers.isJson;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
 import static java.util.Optional.of;
 import static java.util.UUID.randomUUID;
-import static javax.json.Json.createObjectBuilder;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 import static org.apache.activemq.artemis.utils.JsonLoader.createArrayBuilder;
 import static org.hamcrest.CoreMatchers.allOf;
 import static org.hamcrest.CoreMatchers.equalTo;
@@ -22,7 +22,7 @@ import static uk.gov.justice.services.test.utils.core.matchers.HandlerMethodMatc
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMetadataMatcher.withMetadataEnvelopedFrom;
 import static uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderFactory.metadataWithRandomUUID;
 
-import javax.json.Json;
+import uk.gov.justice.services.messaging.JsonObjects;
 import uk.gov.justice.services.core.enveloper.Enveloper;
 import uk.gov.justice.services.core.sender.Sender;
 import uk.gov.justice.services.messaging.Envelope;
@@ -354,7 +354,7 @@ public class DecisionControllerTest {
     }
 
     private static JsonArray createOffenceDecision() {
-        final JsonArrayBuilder offenceDecisionBuilderArray = Json.createArrayBuilder();
+        final JsonArrayBuilder offenceDecisionBuilderArray = JsonObjects.createArrayBuilder();
         final JsonObjectBuilder offenceBuilder1 = createObjectBuilder();
         offenceBuilder1.add("offenceId", randomUUID().toString());
         offenceBuilder1.add("type", "WITHDRAWN");
@@ -371,7 +371,7 @@ public class DecisionControllerTest {
     }
 
     private static JsonArray createReferToCourtOffenceDecision() {
-        final JsonArrayBuilder offenceDecisionBuilderArray = Json.createArrayBuilder();
+        final JsonArrayBuilder offenceDecisionBuilderArray = JsonObjects.createArrayBuilder();
         final JsonObjectBuilder offenceBuilder = createObjectBuilder();
         offenceBuilder.add("offenceId", randomUUID().toString());
         offenceBuilder.add("type", "REFER_FOR_COURT_HEARING");

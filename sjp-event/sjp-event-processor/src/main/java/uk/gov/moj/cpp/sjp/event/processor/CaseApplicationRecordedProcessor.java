@@ -16,7 +16,7 @@ import uk.gov.moj.cpp.sjp.event.CaseApplicationRecorded;
 import uk.gov.moj.cpp.sjp.event.processor.service.enforcementnotification.EnforcementNotificationService;
 
 import javax.inject.Inject;
-import javax.json.Json;
+import uk.gov.justice.services.messaging.JsonObjects;
 import javax.json.JsonObject;
 
 import org.slf4j.Logger;
@@ -52,7 +52,7 @@ public class CaseApplicationRecordedProcessor {
                 LOGGER.debug("Stat dec application recorded for applicationId : {}", applicationId);
             }
 
-            final JsonObject jsonObject = Json.createObjectBuilder()
+            final JsonObject jsonObject = JsonObjects.createObjectBuilder()
                     .add(APPLICATION_ID, applicationId)
                     .add(APPLICATION_REFERENCE, caseApplicationRecorded.getCourtApplication().getApplicationReference()).build();
             sender.send(enveloper.withMetadataFrom(jsonEnvelope, CASE_APPLICATION_RECORDED_PUBLIC_EVENT).apply(jsonObject));

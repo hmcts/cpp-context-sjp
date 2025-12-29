@@ -45,7 +45,7 @@ import uk.gov.moj.cpp.sjp.event.CaseStatusChanged;
 
 import java.util.stream.Stream;
 
-import javax.json.Json;
+import uk.gov.justice.services.messaging.JsonObjects;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -141,7 +141,7 @@ public class CaseReopenedHandlerTest {
         // when
         JsonEnvelope jsonEnvelope = JsonEnvelope.envelopeFrom(
                 MetadataBuilderFactory.metadataOf(CASE_ID, EventNamesHolder.CASE_REOPENED_UNDONE).build(),
-                Json.createObjectBuilder().add("caseId", CASE_ID.toString()).build());
+                JsonObjects.createObjectBuilder().add("caseId", CASE_ID.toString()).build());
 
         caseReopenedHandler.undoCaseReopenedInLibra(jsonEnvelope);
 

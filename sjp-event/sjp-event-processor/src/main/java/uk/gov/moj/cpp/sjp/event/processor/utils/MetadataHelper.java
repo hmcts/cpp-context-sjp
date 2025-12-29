@@ -14,7 +14,7 @@ import java.io.StringReader;
 import java.util.Optional;
 import java.util.function.Function;
 
-import javax.json.Json;
+import uk.gov.justice.services.messaging.JsonObjects;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
 import javax.json.JsonReader;
@@ -79,7 +79,7 @@ public class MetadataHelper {
     }
 
     private static JsonObject readJson(final String json) {
-        try (final JsonReader jsonReader = Json.createReader(new StringReader(json))) {
+        try (final JsonReader jsonReader = JsonObjects.createReader(new StringReader(json))) {
             return jsonReader.readObject();
         }
     }

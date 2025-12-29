@@ -11,7 +11,7 @@ import uk.gov.moj.cpp.sjp.query.exception.UserNotFoundException;
 import java.util.UUID;
 
 import javax.inject.Inject;
-import javax.json.Json;
+import uk.gov.justice.services.messaging.JsonObjects;
 import javax.json.JsonObject;
 import javax.json.JsonValue;
 
@@ -26,7 +26,7 @@ public class UsersGroupsService {
 
     public JsonObject getUserDetails(final UUID userId, final JsonEnvelope envelope) {
 
-        final JsonObject payload = Json.createObjectBuilder().add("userId", userId.toString()).build();
+        final JsonObject payload = JsonObjects.createObjectBuilder().add("userId", userId.toString()).build();
         final JsonEnvelope request = enveloper.withMetadataFrom(envelope, "usersgroups.get-user-details").apply(payload);
         final JsonEnvelope response = requester.requestAsAdmin(request);
         if (JsonValue.NULL.equals(response.payload())) {

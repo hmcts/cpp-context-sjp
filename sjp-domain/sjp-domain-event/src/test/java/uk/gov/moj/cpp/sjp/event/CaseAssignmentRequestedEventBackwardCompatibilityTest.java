@@ -16,7 +16,7 @@ import uk.gov.moj.cpp.sjp.event.session.CaseAssignmentRequested;
 
 import java.util.UUID;
 
-import javax.json.Json;
+import uk.gov.justice.services.messaging.JsonObjects;
 import javax.json.JsonObject;
 
 import com.fasterxml.jackson.databind.MapperFeature;
@@ -38,8 +38,8 @@ public class CaseAssignmentRequestedEventBackwardCompatibilityTest {
         final SessionType sessionType = MAGISTRATE;
         final String ljaNationalCourtCode = "2577";
 
-        final JsonObject oldEventPayload = Json.createObjectBuilder()
-                .add("session", Json.createObjectBuilder()
+        final JsonObject oldEventPayload = JsonObjects.createObjectBuilder()
+                .add("session", JsonObjects.createObjectBuilder()
                         .add("id", sessionId.toString())
                         .add("localJusticeAreaNationalCourtCode", ljaNationalCourtCode)
                         .add("type", MAGISTRATE.toString())

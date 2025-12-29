@@ -43,7 +43,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 
-import javax.json.Json;
+import uk.gov.justice.services.messaging.JsonObjects;
 import javax.json.JsonArray;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
@@ -335,21 +335,21 @@ public class PleadOnlineApiTest {
     }
 
     private JsonObject getCaseDetail(final Plea plea, final JsonValue completed) {
-        final JsonObjectBuilder caseDetailBuilder = Json.createObjectBuilder()
+        final JsonObjectBuilder caseDetailBuilder = JsonObjects.createObjectBuilder()
                 .add("id", caseId.toString())
                 .add("completed", completed)
                 .add("assigned", JsonValue.FALSE)
                 .add("status", NO_PLEA_RECEIVED_READY_FOR_DECISION.name());
 
-        final JsonObjectBuilder offenceObjectBuilder = Json.createObjectBuilder();
+        final JsonObjectBuilder offenceObjectBuilder = JsonObjects.createObjectBuilder();
         offenceObjectBuilder.add("pendingWithdrawal", JsonValue.FALSE);
 
         Optional.ofNullable(plea)
                 .ifPresent(value -> offenceObjectBuilder.add("plea", plea.name()));
 
-        final JsonArray offences = Json.createArrayBuilder().add(offenceObjectBuilder.build()).build();
+        final JsonArray offences = JsonObjects.createArrayBuilder().add(offenceObjectBuilder.build()).build();
 
-        final JsonObject defendant = Json.createObjectBuilder()
+        final JsonObject defendant = JsonObjects.createObjectBuilder()
                 .add("offences", offences)
                 .build();
 
@@ -358,11 +358,11 @@ public class PleadOnlineApiTest {
         return caseDetailBuilder.build();
     }
     private JsonObject getCaseDetailPostConvention( final String adjournedTo, final String convention,final String conventionDate) {
-        final JsonObjectBuilder caseDetailBuilder = Json.createObjectBuilder()
+        final JsonObjectBuilder caseDetailBuilder = JsonObjects.createObjectBuilder()
                 .add("id", caseId.toString())
                 .add("adjournedTo", adjournedTo);
 
-        final JsonObjectBuilder offenceObjectBuilder = Json.createObjectBuilder();
+        final JsonObjectBuilder offenceObjectBuilder = JsonObjects.createObjectBuilder();
         Optional.ofNullable(convention)
                 .ifPresent(value ->  offenceObjectBuilder.add("convention", convention));
 
@@ -370,9 +370,9 @@ public class PleadOnlineApiTest {
                 .ifPresent(value ->  offenceObjectBuilder.add("conventionDate", conventionDate));
 
 
-        final JsonArray offences = Json.createArrayBuilder().add(offenceObjectBuilder.build()).build();
+        final JsonArray offences = JsonObjects.createArrayBuilder().add(offenceObjectBuilder.build()).build();
 
-        final JsonObject defendant = Json.createObjectBuilder()
+        final JsonObject defendant = JsonObjects.createObjectBuilder()
                 .add("offences", offences)
                 .build();
 

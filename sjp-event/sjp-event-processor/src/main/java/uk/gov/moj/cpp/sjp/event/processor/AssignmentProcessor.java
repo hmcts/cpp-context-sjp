@@ -1,7 +1,7 @@
 package uk.gov.moj.cpp.sjp.event.processor;
 
 
-import static javax.json.Json.createObjectBuilder;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 import static uk.gov.justice.services.core.annotation.Component.EVENT_PROCESSOR;
 import static uk.gov.moj.cpp.sjp.event.processor.EventProcessorConstants.CASE_ID;
 import static uk.gov.moj.cpp.sjp.event.processor.EventProcessorConstants.REASON;
@@ -26,7 +26,7 @@ import java.util.List;
 import java.util.UUID;
 
 import javax.inject.Inject;
-import javax.json.Json;
+import uk.gov.justice.services.messaging.JsonObjects;
 import javax.json.JsonArrayBuilder;
 import javax.json.JsonObject;
 
@@ -124,7 +124,7 @@ public class AssignmentProcessor {
     }
 
     private void assignCase(final JsonEnvelope envelope, final UUID sessionId, final List<AssignmentCandidate> assignmentCandidates) {
-        final JsonArrayBuilder assignmentCandidatesBuilder = Json.createArrayBuilder();
+        final JsonArrayBuilder assignmentCandidatesBuilder = JsonObjects.createArrayBuilder();
         assignmentCandidates.forEach(assignmentCandidate -> assignmentCandidatesBuilder.add(createObjectBuilder()
                 .add("caseId", assignmentCandidate.getCaseId().toString())
                 .add("caseStreamVersion", assignmentCandidate.getCaseStreamVersion())));

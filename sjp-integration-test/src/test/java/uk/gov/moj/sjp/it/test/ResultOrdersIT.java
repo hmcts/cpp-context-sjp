@@ -21,7 +21,7 @@ import java.time.LocalDate;
 import java.time.ZoneOffset;
 import java.util.UUID;
 
-import javax.json.Json;
+import uk.gov.justice.services.messaging.JsonObjects;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -100,7 +100,7 @@ class ResultOrdersIT extends BaseIntegrationTest {
     private static CaseDocumentHelper createResultOrder(final UUID caseId) {
         CaseDocumentHelper caseDocumentHelper = new CaseDocumentHelper(caseId);
         caseDocumentHelper.addCaseDocument(
-                Json.createObjectBuilder().add("id", caseDocumentHelper.getDocumentId())
+                JsonObjects.createObjectBuilder().add("id", caseDocumentHelper.getDocumentId())
                         .add("materialId", UUID.randomUUID().toString())
                         .add("documentType", "RESULT_ORDER").build().toString());
         return caseDocumentHelper;

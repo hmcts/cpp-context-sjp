@@ -74,7 +74,7 @@ import java.util.UUID;
 import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
 
-import javax.json.Json;
+import uk.gov.justice.services.messaging.JsonObjects;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
 import javax.ws.rs.core.Response;
@@ -331,7 +331,7 @@ class EnforcementPendingApplicationNotificationIT extends BaseIntegrationTest {
     }
 
     public String addFinancialImposition(final UUID caseId, final UUID defendantId, final Response.Status status) {
-        final JsonObjectBuilder payload = Json.createObjectBuilder();
+        final JsonObjectBuilder payload = JsonObjects.createObjectBuilder();
         payload.add("correlationId", caseId.toString())
                 .add("accountNumber", "12345678");
 

@@ -15,7 +15,7 @@ import uk.gov.justice.services.messaging.Metadata;
 import java.util.UUID;
 
 import javax.inject.Named;
-import javax.json.Json;
+import uk.gov.justice.services.messaging.JsonObjects;
 import javax.json.JsonObject;
 
 import org.activiti.engine.delegate.DelegateExecution;
@@ -37,7 +37,7 @@ public class PleaCancelledDelegate extends AbstractCaseDelegate {
                     .withName(PLEA_CANCELLED_PUBLIC_EVENT_NAME)
                     .build();
 
-            final JsonObject publicEventPayload = Json.createObjectBuilder()
+            final JsonObject publicEventPayload = JsonObjects.createObjectBuilder()
                     .add(CASE_ID, caseId.toString())
                     .add(OFFENCE_ID, offenceId)
                     .build();

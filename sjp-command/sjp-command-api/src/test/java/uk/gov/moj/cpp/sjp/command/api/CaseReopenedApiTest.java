@@ -18,7 +18,7 @@ import java.time.LocalDate;
 import java.util.UUID;
 import java.util.function.Consumer;
 
-import javax.json.Json;
+import uk.gov.justice.services.messaging.JsonObjects;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -75,7 +75,7 @@ public class CaseReopenedApiTest {
 
     @Test
     public void shouldUndoCaseReopened() {
-        final JsonEnvelope command = EnvelopeFactory.createEnvelope(COMMAND_UNDO, Json.createObjectBuilder().build());
+        final JsonEnvelope command = EnvelopeFactory.createEnvelope(COMMAND_UNDO, JsonObjects.createObjectBuilder().build());
 
         caseReopenedApi.undoCaseReopenedInLibra(command);
 
@@ -116,7 +116,7 @@ public class CaseReopenedApiTest {
 
     private JsonEnvelope getEnvelope(final String reopenedDate, final String command) {
         return EnvelopeFactory.createEnvelope(command,
-                Json.createObjectBuilder()
+                JsonObjects.createObjectBuilder()
                         .add("caseId", caseId)
                         .add("reopenedDate", reopenedDate)
                         .add("libraCaseNumber", libraCaseId)

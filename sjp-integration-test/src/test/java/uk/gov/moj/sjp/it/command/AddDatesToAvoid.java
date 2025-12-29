@@ -5,14 +5,14 @@ import static uk.gov.moj.sjp.it.util.HttpClientUtil.makePostCall;
 
 import java.util.UUID;
 
-import javax.json.Json;
+import uk.gov.justice.services.messaging.JsonObjects;
 import javax.json.JsonObject;
 import javax.ws.rs.core.Response;
 
 public class AddDatesToAvoid {
 
     public static void addDatesToAvoid(final UUID caseId, final String datesToAvoid) {
-        final JsonObject payload = Json.createObjectBuilder()
+        final JsonObject payload = JsonObjects.createObjectBuilder()
                 .add("datesToAvoid", datesToAvoid)
                 .build();
 

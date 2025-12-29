@@ -23,7 +23,7 @@ import uk.gov.justice.services.test.utils.core.enveloper.EnveloperFactory;
 import java.util.Optional;
 import java.util.UUID;
 
-import javax.json.Json;
+import uk.gov.justice.services.messaging.JsonObjects;
 import javax.json.JsonObject;
 import javax.json.JsonValue;
 
@@ -53,7 +53,7 @@ public class ReferenceDataServiceTest {
     @InjectMocks
     private ReferenceDataService referenceDataService;
 
-    private final JsonEnvelope envelope = envelopeFrom(metadataWithRandomUUIDAndName(), Json.createObjectBuilder().build());
+    private final JsonEnvelope envelope = envelopeFrom(metadataWithRandomUUIDAndName(), JsonObjects.createObjectBuilder().build());
 
     @Test
     public void shouldReturnEnforcementAreaByPostcode() {
@@ -112,7 +112,7 @@ public class ReferenceDataServiceTest {
     @Test
     public void shouldReturnProsecutor() {
         final UUID id = randomUUID();
-        final JsonObject prosecutorJson = Json.createObjectBuilder()
+        final JsonObject prosecutorJson = JsonObjects.createObjectBuilder()
                 .add("prosecutorCode", "100")
                 .add("prosecutorName", "test").build();
 
@@ -139,7 +139,7 @@ public class ReferenceDataServiceTest {
     }
 
     private static JsonObject newEnforcementArea() {
-        return Json.createObjectBuilder()
+        return JsonObjects.createObjectBuilder()
                 .add("accountDivisionCode", "100")
                 .add("enforcingCourtCode", "1000")
                 .add("nationalPaymentPhone", "030 0790 9901")

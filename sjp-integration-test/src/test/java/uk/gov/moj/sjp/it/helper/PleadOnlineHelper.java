@@ -34,7 +34,7 @@ import java.util.concurrent.TimeUnit;
 
 import javax.jms.JMSException;
 import javax.jms.MessageConsumer;
-import javax.json.Json;
+import uk.gov.justice.services.messaging.JsonObjects;
 import javax.json.JsonObject;
 import javax.ws.rs.core.Response;
 
@@ -145,7 +145,7 @@ public class PleadOnlineHelper implements AutoCloseable {
         final JmsMessageProducerClient publicJmsMessageProducerClient = newPublicJmsMessageProducerClientProvider()
                 .getMessageProducerClient();
 
-        final JsonObject publicEvent = Json.createObjectBuilder(payload)
+        final JsonObject publicEvent = JsonObjects.createObjectBuilder(payload)
                 .add("caseId", caseId.toString())
                 .add("defendantId", defendantId.toString())
                 .build();

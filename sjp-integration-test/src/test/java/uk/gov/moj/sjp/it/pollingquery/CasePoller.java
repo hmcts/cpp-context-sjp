@@ -18,6 +18,7 @@ import static uk.gov.moj.sjp.it.util.DefaultRequests.getPotentialCasesByDefendan
 import static uk.gov.moj.sjp.it.util.DefaultRequests.getProsecutionCaseById;
 import static uk.gov.moj.sjp.it.util.RestPollerWithDefaults.pollWithDefaults;
 
+import org.hamcrest.Matchers;
 import uk.gov.justice.services.test.utils.core.http.ResponseData;
 import uk.gov.moj.cpp.sjp.domain.common.CaseStatus;
 import uk.gov.moj.sjp.it.util.JsonHelper;
@@ -83,7 +84,9 @@ public class CasePoller {
                         anyOf(
                                 allOf(
                                         status().is(OK),
-                                        payload().isJson(any(ReadContext.class))),
+                                        payload().isJson(allOf(any(ReadContext.class),
+                                                withJsonPath("$.sjpOpenCases.length()", Matchers.is(1))))
+                                ),
                                 status().is(INTERNAL_SERVER_ERROR),
                                 status().is(FORBIDDEN))
                 );

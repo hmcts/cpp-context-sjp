@@ -14,6 +14,7 @@ import static uk.gov.justice.services.test.utils.core.http.RestPoller.poll;
 import static uk.gov.justice.services.test.utils.core.matchers.ResponsePayloadMatcher.payload;
 import static uk.gov.justice.services.test.utils.core.matchers.ResponseStatusMatcher.status;
 
+import uk.gov.justice.services.test.utils.core.http.FibonacciPollWithStartAndMax;
 import uk.gov.justice.services.test.utils.core.http.RequestParams;
 import uk.gov.justice.services.test.utils.core.http.RequestParamsBuilder;
 import uk.gov.justice.services.test.utils.core.http.ResponseData;
@@ -24,21 +25,23 @@ import javax.json.JsonObject;
 import com.jayway.jsonpath.ReadContext;
 import org.hamcrest.Matcher;
 
+import java.time.Duration;
+
 public class RestPollerWithDefaults {
 
     public static final long DELAY_IN_SECONDS = 0L;
     public static final long INTERVAL_IN_SECONDS = 1L;
     public static final long TIMEOUT_IN_SECONDS = 10L;
+    public static final Duration START_INTERVAL = Duration.ofMillis(20);
+    public static final Duration MAX_INTERVAL = Duration.ofMillis(200);
+    public static final FibonacciPollWithStartAndMax POLL_INTERVAL = new FibonacciPollWithStartAndMax(START_INTERVAL, MAX_INTERVAL);
 
     public static RestPoller pollWithDefaults(final RequestParamsBuilder requestParamsBuilder) {
         return pollWithDefaults(requestParamsBuilder.build());
     }
 
     public static RestPoller pollWithDefaults(final RequestParams requestParams) {
-        return poll(requestParams)
-                .timeout(TIMEOUT_IN_SECONDS, SECONDS)
-                .pollDelay(DELAY_IN_SECONDS, MILLISECONDS)
-                .pollInterval(INTERVAL_IN_SECONDS, SECONDS);
+        return poll(requestParams, POLL_INTERVAL, Duration.ofSeconds(TIMEOUT_IN_SECONDS));
     }
 
     public static JsonObject pollWithDefaultsUntilResponseIsJson(final RequestParams requestParams, final Matcher<? super ReadContext> matcher) {

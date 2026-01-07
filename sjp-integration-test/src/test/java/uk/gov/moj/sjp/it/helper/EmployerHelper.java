@@ -1,5 +1,6 @@
 package uk.gov.moj.sjp.it.helper;
 
+import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.apache.commons.lang3.RandomStringUtils.randomAlphabetic;
 import static org.awaitility.Awaitility.await;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.isJson;
@@ -13,6 +14,8 @@ import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMetad
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopePayloadMatcher.payloadIsJson;
 import static uk.gov.moj.sjp.it.util.HttpClientUtil.makeGetCall;
 import static uk.gov.moj.sjp.it.util.HttpClientUtil.makePostCall;
+import static uk.gov.moj.sjp.it.util.RestPollerWithDefaults.POLL_INTERVAL;
+import static uk.gov.moj.sjp.it.util.RestPollerWithDefaults.TIMEOUT_IN_SECONDS;
 import static uk.gov.moj.sjp.it.util.TopicUtil.retrieveMessageAsJsonObject;
 
 import uk.gov.justice.services.messaging.DefaultJsonObjectEnvelopeConverter;
@@ -64,7 +67,7 @@ public class EmployerHelper implements AutoCloseable {
     }
 
     public static String pollForEmployerForDefendant(final String defendantId, final Matcher<Object> jsonMatcher) {
-        return await().atMost(30, TimeUnit.SECONDS).until(() -> pollForEmployerForDefendant(defendantId).readEntity(String.class), jsonMatcher);
+        return await().pollInterval(POLL_INTERVAL).atMost(TIMEOUT_IN_SECONDS, SECONDS).until(() -> pollForEmployerForDefendant(defendantId).readEntity(String.class), jsonMatcher);
     }
 
     public void deleteEmployer(final String caseId, final String defendantId) {

@@ -10,6 +10,7 @@ import static org.hamcrest.CoreMatchers.is;
 import static uk.gov.moj.sjp.it.pollingquery.CasePoller.pollUntilCaseByIdIsOk;
 import static uk.gov.moj.sjp.it.util.HttpClientUtil.makeGetCall;
 import static uk.gov.moj.sjp.it.util.HttpClientUtil.makePostCall;
+import static uk.gov.moj.sjp.it.util.RestPollerWithDefaults.POLL_INTERVAL;
 import static uk.gov.moj.sjp.it.util.RestPollerWithDefaults.TIMEOUT_IN_SECONDS;
 
 import uk.gov.justice.services.messaging.JsonEnvelope;
@@ -65,11 +66,11 @@ public class AssignmentHelper {
     }
 
     public static boolean pollUntilCaseAssignedToUser(final UUID caseId, final UUID userId) {
-        return await().atMost(TIMEOUT_IN_SECONDS, SECONDS).until(() -> isCaseAssignedToUser(caseId, userId), is(true));
+        return await().pollInterval(POLL_INTERVAL).atMost(TIMEOUT_IN_SECONDS, SECONDS).until(() -> isCaseAssignedToUser(caseId, userId), is(true));
     }
 
     public static boolean pollUntilCaseNotAssignedToUser(final UUID caseId, final UUID userId) {
-        return await().atMost(TIMEOUT_IN_SECONDS, SECONDS).until(() -> isCaseAssignedToUser(caseId, userId), is(false));
+        return await().pollInterval(POLL_INTERVAL).atMost(TIMEOUT_IN_SECONDS, SECONDS).until(() -> isCaseAssignedToUser(caseId, userId), is(false));
     }
 
     public static void pollCaseUnassigned(final UUID caseId) {

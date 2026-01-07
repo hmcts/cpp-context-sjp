@@ -16,6 +16,7 @@ import static org.awaitility.Awaitility.waitAtMost;
 import static org.hamcrest.Matchers.hasSize;
 import static uk.gov.justice.services.integrationtest.utils.jms.JmsMessageProducerClientProvider.newPublicJmsMessageProducerClientProvider;
 import static uk.gov.moj.sjp.it.Constants.PUBLIC_EVENT;
+import static uk.gov.moj.sjp.it.util.RestPollerWithDefaults.POLL_INTERVAL;
 import static uk.gov.moj.sjp.it.util.RestPollerWithDefaults.TIMEOUT_IN_SECONDS;
 
 import uk.gov.justice.services.integrationtest.utils.jms.JmsMessageProducerClient;
@@ -54,7 +55,7 @@ public class NotificationNotifyStub {
                                                                                 && commandPayload.getJSONObject("personalisation").getString("urn").equals(urn)
                                                                                 && commandPayload.getString("templateId").equals(templateId);
 
-        waitAtMost(Duration.ofSeconds(TIMEOUT_IN_SECONDS)).until(() ->
+        waitAtMost(Duration.ofSeconds(TIMEOUT_IN_SECONDS)).pollInterval(POLL_INTERVAL).until(() ->
                 findAll(postRequestedFor(urlPathMatching(COMMAND_URL + ".*"))
                         .withHeader(CONTENT_TYPE, equalTo(COMMAND_MEDIA_TYPE)))
                         .stream()
@@ -65,7 +66,7 @@ public class NotificationNotifyStub {
     }
 
     public static JsonObject verifyNotification(final UUID notificationId, final String email) {
-        final List<JsonObject> notifications = waitAtMost(Duration.ofSeconds(TIMEOUT_IN_SECONDS))
+        final List<JsonObject> notifications = waitAtMost(Duration.ofSeconds(TIMEOUT_IN_SECONDS)).pollInterval(POLL_INTERVAL)
                 .until(() -> findAll(postRequestedFor(urlPathMatching(COMMAND_URL + notificationId.toString()))
                                 .withHeader(CONTENT_TYPE, equalTo(COMMAND_MEDIA_TYPE)))
                                 .stream()

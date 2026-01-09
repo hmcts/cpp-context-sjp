@@ -143,7 +143,7 @@ public class CaseDefendantHandler {
         final Stream<Object> events = createDefendantUpdateRequestedEvent(caseId, defendantId, person, updatedDate, state, false);
 
         // Check if any of the three update-requested events were raised and add the new event
-        final List<Object> eventList = events.collect(Collectors.toList());
+        final List<Object> eventList = events.toList();
         boolean hasUpdateRequestedEvent = eventList.stream().anyMatch(e ->
             e instanceof DefendantDateOfBirthUpdateRequested ||
             e instanceof DefendantAddressUpdateRequested ||

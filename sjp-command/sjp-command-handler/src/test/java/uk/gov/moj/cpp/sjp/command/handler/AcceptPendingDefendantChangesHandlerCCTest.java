@@ -50,18 +50,13 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 @ExtendWith(MockitoExtension.class)
 public class AcceptPendingDefendantChangesHandlerCCTest extends CaseAggregateBaseTest {
-    private static final UUID defendantId = randomUUID();
-    private static final UUID caseId = randomUUID();
     private static final String FIRST_NAME = "test";
-    private static final String LAST_NAME = "lastName";
-    private static final String DATE_OF_BIRTH = LocalDate.parse("1980-07-15").toString();
     private static final String ADDRESS_1 = "14 Tottenham Court Road";
     private static final String ADDRESS_2 = "London";
     private static final String ADDRESS_3 = "Surrey";
     private static final String ADDRESS_4 = "England";
     private static final String ADDRESS_5 = "United Kingdom";
     private static final String POSTCODE = "W1T 1JY";
-    private static final Address ADDRESS = new Address(ADDRESS_1, ADDRESS_2, ADDRESS_3, ADDRESS_4, ADDRESS_5, POSTCODE);
     @Spy
     private Clock clock = new UtcClock();
     @Spy

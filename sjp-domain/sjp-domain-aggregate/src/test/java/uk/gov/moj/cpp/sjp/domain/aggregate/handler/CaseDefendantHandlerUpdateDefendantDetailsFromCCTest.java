@@ -60,7 +60,7 @@ public class CaseDefendantHandlerUpdateDefendantDetailsFromCCTest {
                 caseId, defendantId, person, updatedDate, state);
 
         // then
-        final List<Object> eventList = eventStream.collect(toList());
+        final List<Object> eventList = eventStream.toList();
         assertThat(eventList.size(), is(0));
     }
 
@@ -78,7 +78,7 @@ public class CaseDefendantHandlerUpdateDefendantDetailsFromCCTest {
                 caseId, defendantId, person, updatedDate, state);
 
         // then
-        final List<Object> eventList = eventStream.collect(toList());
+        final List<Object> eventList = eventStream.toList();
         assertThat(eventList.size(), is(1));
         assertThat(eventList.get(0), instanceOf(DefendantNotFound.class));
     }
@@ -100,7 +100,7 @@ public class CaseDefendantHandlerUpdateDefendantDetailsFromCCTest {
                 caseId, defendantId, person, updatedDate, state);
 
         // then - should succeed even though case is completed (key difference from regular update)
-        final List<Object> eventList = eventStream.collect(toList());
+        final List<Object> eventList = eventStream.toList();
         assertThat(eventList.size(), is(1));
         assertThat(eventList.get(0), instanceOf(DefendantDetailsUpdated.class));
     }
@@ -122,7 +122,7 @@ public class CaseDefendantHandlerUpdateDefendantDetailsFromCCTest {
                 caseId, defendantId, person, updatedDate, state);
 
         // then - should succeed even though case is referred (key difference from regular update)
-        final List<Object> eventList = eventStream.collect(toList());
+        final List<Object> eventList = eventStream.toList();
         assertThat(eventList.size(), is(1));
         assertThat(eventList.get(0), instanceOf(DefendantDetailsUpdated.class));
     }
@@ -143,7 +143,7 @@ public class CaseDefendantHandlerUpdateDefendantDetailsFromCCTest {
                 caseId, defendantId, person, updatedDate, state);
 
         // then
-        final List<Object> eventList = eventStream.collect(toList());
+        final List<Object> eventList = eventStream.toList();
         assertThat(eventList.size(), is(1));
         assertThat(eventList.get(0), instanceOf(DefendantDetailsUpdated.class));
     }
@@ -172,7 +172,7 @@ public class CaseDefendantHandlerUpdateDefendantDetailsFromCCTest {
                 caseId, defendantId, person, updatedDate, state);
 
         // then
-        final List<Object> eventList = eventStream.collect(toList());
+        final List<Object> eventList = eventStream.toList();
         assertThat(eventList.size(), is(greaterThanOrEqualTo(2))); // At least DefendantDateOfBirthUpdateRequested and DefendantDetailsUpdateRequestAccepted
         
         final boolean hasDobUpdateRequested = eventList.stream()
@@ -216,7 +216,7 @@ public class CaseDefendantHandlerUpdateDefendantDetailsFromCCTest {
                 caseId, defendantId, person, updatedDate, state);
 
         // then
-        final List<Object> eventList = eventStream.collect(toList());
+        final List<Object> eventList =eventStream.toList();
         assertThat(eventList.size(), is(greaterThanOrEqualTo(2))); // At least DefendantAddressUpdateRequested and DefendantDetailsUpdateRequestAccepted
         
         final boolean hasAddressUpdateRequested = eventList.stream()
@@ -260,7 +260,7 @@ public class CaseDefendantHandlerUpdateDefendantDetailsFromCCTest {
                 caseId, defendantId, person, updatedDate, state);
 
         // then
-        final List<Object> eventList = eventStream.collect(toList());
+        final List<Object> eventList = eventStream.toList();
         assertThat(eventList.size(), is(greaterThanOrEqualTo(2))); // At least DefendantNameUpdateRequested and DefendantDetailsUpdateRequestAccepted
         
         final boolean hasNameUpdateRequested = eventList.stream()
@@ -309,7 +309,7 @@ public class CaseDefendantHandlerUpdateDefendantDetailsFromCCTest {
                 caseId, defendantId, person, updatedDate, state);
 
         // then
-        final List<Object> eventList = eventStream.collect(toList());
+        final List<Object> eventList = eventStream.toList();
         assertThat(eventList.size(), is(greaterThanOrEqualTo(4))); // At least 3 update-requested events + DefendantDetailsUpdateRequestAccepted
         
         final boolean hasUpdateRequestAccepted = eventList.stream()
@@ -349,7 +349,7 @@ public class CaseDefendantHandlerUpdateDefendantDetailsFromCCTest {
                 caseId, defendantId, person, updatedDate, state);
 
         // then
-        final List<Object> eventList = eventStream.collect(toList());
+        final List<Object> eventList = eventStream.toList();
         assertThat(eventList.size(), is(1)); // Only DefendantDetailsUpdated, no update-requested events
         
         final boolean hasUpdateRequestAccepted = eventList.stream()
@@ -424,7 +424,7 @@ public class CaseDefendantHandlerUpdateDefendantDetailsFromCCTest {
                 caseId, defendantId, legalEntityDefendant, updatedDate, state);
 
         // then
-        final List<Object> eventList = eventStream.collect(toList());
+        final List<Object> eventList = eventStream.toList();
         assertThat(eventList.size(), is(greaterThanOrEqualTo(2))); // At least DefendantAddressUpdateRequested and DefendantDetailsUpdated
         
         final boolean hasAddressUpdateRequested = eventList.stream()
@@ -462,7 +462,7 @@ public class CaseDefendantHandlerUpdateDefendantDetailsFromCCTest {
                 caseId, defendantId, legalEntityDefendant, updatedDate, state);
 
         // then
-        final List<Object> eventList = eventStream.collect(toList());
+        final List<Object> eventList = eventStream.toList();
         assertThat(eventList.size(), is(0));
     }
 
@@ -485,7 +485,7 @@ public class CaseDefendantHandlerUpdateDefendantDetailsFromCCTest {
                 caseId, defendantId, legalEntityDefendant, updatedDate, state);
 
         // then
-        final List<Object> eventList = eventStream.collect(toList());
+        final List<Object> eventList = eventStream.toList();
         assertThat(eventList.size(), is(1));
         assertThat(eventList.get(0), instanceOf(DefendantNotFound.class));
     }

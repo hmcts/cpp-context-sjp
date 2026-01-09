@@ -11,7 +11,6 @@ import uk.gov.moj.cpp.sjp.event.DefendantDetailsUpdated;
 
 import java.time.ZonedDateTime;
 import java.util.List;
-import java.util.UUID;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -35,7 +34,7 @@ public class CaseAggregateUpdateDefendantDetailsFromCCTest extends CaseAggregate
         // when
         final List<Object> events = caseAggregate.updateDefendantDetailsFromCC(
                 caseId, defendantId, person, ZonedDateTime.now())
-                .collect(toList());
+                .toList();
 
         // then - should succeed even though case is completed
         assertThat(events.size(), is(1));
@@ -50,7 +49,7 @@ public class CaseAggregateUpdateDefendantDetailsFromCCTest extends CaseAggregate
         // when
         final List<Object> events = caseAggregate.updateDefendantDetailsFromCC(
                 caseId, defendantId, person, ZonedDateTime.now())
-                .collect(toList());
+                .toList();
 
         // then - should succeed even though case is referred
         assertThat(events.size(), is(1));
@@ -62,7 +61,7 @@ public class CaseAggregateUpdateDefendantDetailsFromCCTest extends CaseAggregate
         // when
         final List<Object> events = caseAggregate.updateDefendantDetailsFromCC(
                 caseId, defendantId, person, ZonedDateTime.now())
-                .collect(toList());
+                .toList();
 
         // then
         assertThat(events.size(), is(1));
@@ -81,7 +80,7 @@ public class CaseAggregateUpdateDefendantDetailsFromCCTest extends CaseAggregate
         // when
         final List<Object> events = newCaseAggregate.updateDefendantDetailsFromCC(
                 randomUUID(), randomUUID(), person, ZonedDateTime.now())
-                .collect(toList());
+                .toList();
 
         // then - should return empty stream (no event)
         assertThat(events.size(), is(0));

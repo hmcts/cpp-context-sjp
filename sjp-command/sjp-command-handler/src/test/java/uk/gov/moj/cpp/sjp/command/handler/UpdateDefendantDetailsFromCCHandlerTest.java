@@ -28,11 +28,9 @@ import uk.gov.justice.services.eventsourcing.source.core.exception.EventStreamEx
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.test.utils.core.enveloper.EnveloperFactory;
 import uk.gov.moj.cpp.sjp.domain.Address;
-import uk.gov.moj.cpp.sjp.domain.ContactDetails;
 import uk.gov.moj.cpp.sjp.domain.Defendant;
 import uk.gov.moj.cpp.sjp.domain.aggregate.CaseAggregate;
 import uk.gov.moj.cpp.sjp.domain.aggregate.CaseAggregateBaseTest;
-import uk.gov.moj.cpp.sjp.domain.legalentity.LegalEntityDefendant;
 import uk.gov.moj.cpp.sjp.event.*;
 
 import java.time.LocalDate;
@@ -51,23 +49,14 @@ import org.mockito.junit.jupiter.MockitoExtension;
 @ExtendWith(MockitoExtension.class)
 public class UpdateDefendantDetailsFromCCHandlerTest extends CaseAggregateBaseTest {
 
-    private static final UUID defendantId = randomUUID();
-    private static final UUID caseId = randomUUID();
     private static final String FIRST_NAME = "test";
-    private static final String LAST_NAME = "lastName";
     private static final String EMAIL = "email";
-    private static final String MOBILE_NUMBER = "mobileNumber";
-    private static final Gender GENDER = Gender.MALE;
-    private static final String NATIONAL_INSURANCE_NUMBER = "nationalInsuranceNumber";
-    private static final String HOME_NUMBER = "homeNumber";
-    private static final String DATE_OF_BIRTH = LocalDate.parse("1980-07-15").toString();
     private static final String ADDRESS_1 = "14 Tottenham Court Road";
     private static final String ADDRESS_2 = "London";
     private static final String ADDRESS_3 = "Surrey";
     private static final String ADDRESS_4 = "England";
     private static final String ADDRESS_5 = "United Kingdom";
     private static final String POSTCODE = "W1T 1JY";
-    private static final Address ADDRESS = new Address(ADDRESS_1, ADDRESS_2, ADDRESS_3, ADDRESS_4, ADDRESS_5, POSTCODE);
     private static final String REGION = "REGION";
     private static final String DRIVER_NUMBER = "MORGA753116SM9IJ";
     @Spy
@@ -334,42 +323,7 @@ public class UpdateDefendantDetailsFromCCHandlerTest extends CaseAggregateBaseTe
                 )));
     }
 
-    private JsonEnvelope createUpdateLegalEntityDefendantDetailsFromCCCommand() {
-        final Defendant defendant = caseReceivedEvent.getDefendant();
-        final JsonObject contactDetails = createObjectBuilder()
-                .add("home", "02011111111")
-                .add("mobile", "07111111111")
-                .add("business", "02022222222")
-                .add("email", "contact@acme.com")
-                .add("email2", "info@acme.com")
-                .build();
 
-        final JsonObject address = createObjectBuilder()
-                .add("address1", "456 Business Park")
-                .add("address2", "Corporate City")
-                .add("address3", "Business County")
-                .add("address4", "UK")
-                .add("address5", "England")
-                .add("postcode", "EC1A 1BB")
-                .build();
-
-        final JsonObject legalEntityDefendant = createObjectBuilder()
-                .add("name", "Acme Corporation Ltd")
-                .add("address", address)
-                .add("contactDetails", contactDetails)
-                .add("incorporationNumber", "INC123456")
-                .add("position", "Director")
-                .build();
-
-        final JsonObjectBuilder payload = createObjectBuilder()
-                .add("defendantId", defendant.getId().toString())
-                .add("caseId", caseReceivedEvent.getCaseId().toString())
-                .add("legalEntityDefendant", legalEntityDefendant);
-
-        return envelopeFrom(
-                metadataOf(randomUUID(), "sjp.command.update-defendant-details-from-CC"),
-                payload.build());
-    }
 
     private JsonEnvelope createUpdateLegalEntityDefendantDetailsFromCCCommandWithUpdatedAddress() {
         final Defendant defendant = caseReceivedEvent.getDefendant();

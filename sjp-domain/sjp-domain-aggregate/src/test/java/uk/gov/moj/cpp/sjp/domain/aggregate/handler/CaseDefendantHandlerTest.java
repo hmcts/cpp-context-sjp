@@ -67,7 +67,7 @@ public class CaseDefendantHandlerTest {
 
         final Stream<Object> eventStream = caseDefendantHandler.updateDefendantDetails(userId, caseId,
                 defendantId, person, updatedDate, state);
-        final List<Object> eventList = eventStream.collect(toList());
+        final List<Object> eventList = eventStream.toList();
         final Object o = eventList.get(0);
         assertThat(o, instanceOf(DefendantDetailsUpdateFailed.class));
     }
@@ -85,7 +85,7 @@ public class CaseDefendantHandlerTest {
 
         final Stream<Object> eventStream = caseDefendantHandler.updateDefendantDetails(userId, caseId,
                 defendantId, person, updatedDate, state);
-        final List<Object> eventList = eventStream.collect(toList());
+        final List<Object> eventList = eventStream.toList();
 
         assertThat(eventList.size(), is(1));
         final Object o = eventList.get(0);
@@ -97,7 +97,7 @@ public class CaseDefendantHandlerTest {
         final ZonedDateTime updatedDate = ZonedDateTime.now();
         when(person.getDateOfBirth()).thenReturn(LocalDate.of(1999, Month.APRIL, 1));
         final Stream<Object> eventStream = caseDefendantHandler.getDefendantUpdateRequestedEvents(person, updatedDate, true, state);
-        final List<Object> eventList = eventStream.collect(toList());
+        final List<Object> eventList = eventStream.toList();
         assertThat(eventList.size(), is(2));
         final Object o = eventList.get(0);
         assertThat(o, instanceOf(DefendantDateOfBirthUpdateRequested.class));
@@ -110,7 +110,7 @@ public class CaseDefendantHandlerTest {
         final ZonedDateTime updatedDate = ZonedDateTime.now();
         when(state.getDefendantDateOfBirth()).thenReturn(LocalDate.of(1999, Month.APRIL, 1));
         final Stream<Object> eventStream = caseDefendantHandler.getDefendantUpdateRequestedEvents(person, updatedDate, true, state);
-        final List<Object> eventList = eventStream.collect(toList());
+        final List<Object> eventList = eventStream.toList();
         assertThat(eventList.size(), is(2));
         final Object o = eventList.get(0);
         assertThat(o, instanceOf(DefendantDateOfBirthUpdateRequested.class));
@@ -132,7 +132,7 @@ public class CaseDefendantHandlerTest {
                 userId, caseId, defendantId, person, updatedDate, state);
 
         // then
-        final List<Object> eventList = eventStream.collect(toList());
+        final List<Object> eventList = eventStream.toList();
         assertThat(eventList.size(), is(1));
         assertThat(eventList.get(0), instanceOf(CaseNotFound.class));
     }
@@ -152,7 +152,7 @@ public class CaseDefendantHandlerTest {
                 userId, caseId, defendantId, person, updatedDate, state);
 
         // then
-        final List<Object> eventList = eventStream.collect(toList());
+        final List<Object> eventList = eventStream.toList();
         assertThat(eventList.size(), is(1));
         assertThat(eventList.get(0), instanceOf(DefendantNotFound.class));
     }
@@ -180,7 +180,7 @@ public class CaseDefendantHandlerTest {
                 userId, caseId, defendantId, person, updatedDate, state);
 
         // then
-        final List<Object> eventList = eventStream.collect(toList());
+        final List<Object> eventList = eventStream.toList();
         // Should have: DefendantNameUpdated (name changed), DefendantDateOfBirthUpdated (DOB changed), 
         // DefendantDetailsUpdated, and DefendantPendingChangesAccepted = 4 events
         assertThat(eventList.size(), is(4));
@@ -210,7 +210,7 @@ public class CaseDefendantHandlerTest {
                 userId, caseId, defendantId, person, updatedDate, state);
 
         // then - should succeed even though case is completed
-        final List<Object> eventList = eventStream.collect(toList());
+        final List<Object> eventList = eventStream.toList();
         assertThat(eventList.size(), is(greaterThanOrEqualTo(1)));
         assertThat(eventList.stream().anyMatch(e -> e instanceof DefendantDetailsUpdated), is(true));
     }
@@ -233,7 +233,7 @@ public class CaseDefendantHandlerTest {
                 userId, caseId, defendantId, person, updatedDate, state, true);
 
         // then - should succeed even though case is completed when isAddressUpdateFromApplication is true
-        final List<Object> eventList = eventStream.collect(toList());
+        final List<Object> eventList = eventStream.toList();
         assertThat(eventList.size(), is(1));
         assertThat(eventList.get(0), instanceOf(DefendantDetailsUpdated.class));
     }
@@ -256,7 +256,7 @@ public class CaseDefendantHandlerTest {
                 userId, caseId, defendantId, person, updatedDate, state, false);
 
         // then - should reject when case is completed and isAddressUpdateFromApplication is false
-        final List<Object> eventList = eventStream.collect(toList());
+        final List<Object> eventList = eventStream.toList();
         assertThat(eventList.size(), is(1));
         assertThat(eventList.get(0), instanceOf(uk.gov.moj.cpp.sjp.event.CaseUpdateRejected.class));
     }
@@ -280,7 +280,7 @@ public class CaseDefendantHandlerTest {
                 userId, caseId, defendantId, person, updatedDate, state, true);
 
         // then
-        final List<Object> eventList = eventStream.collect(toList());
+        final List<Object> eventList = eventStream.toList();
         assertThat(eventList.size(), is(greaterThanOrEqualTo(1)));
         final DefendantDetailsUpdated event = (DefendantDetailsUpdated) eventList.stream()
                 .filter(e -> e instanceof DefendantDetailsUpdated)
@@ -306,7 +306,7 @@ public class CaseDefendantHandlerTest {
                 person, updatedDate, false, state, true);
 
         // then
-        final List<Object> eventList = eventStream.collect(toList());
+        final List<Object> eventList = eventStream.toList();
         assertThat(eventList.size(), is(greaterThanOrEqualTo(1)));
         assertThat(eventList.stream().anyMatch(e -> e instanceof DefendantAddressUpdateRequested), is(true));
         final DefendantAddressUpdateRequested addressEvent = (DefendantAddressUpdateRequested) eventList.stream()

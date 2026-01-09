@@ -282,7 +282,7 @@ public class CaseDefendantHandlerTest {
         final List<Object> eventList = eventStream.toList();
         assertThat(eventList.size(), is(greaterThanOrEqualTo(1)));
         final DefendantDetailsUpdated event = (DefendantDetailsUpdated) eventList.stream()
-                .filter(e -> e instanceof DefendantDetailsUpdated)
+                .filter(DefendantDetailsUpdated.class::isInstance)
                 .findFirst()
                 .orElse(null);
         assertThat(event, is(notNullValue()));

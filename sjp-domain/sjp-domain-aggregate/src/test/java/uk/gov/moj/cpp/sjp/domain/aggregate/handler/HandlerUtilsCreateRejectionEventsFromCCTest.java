@@ -2,7 +2,6 @@ package uk.gov.moj.cpp.sjp.domain.aggregate.handler;
 
 import static com.google.common.collect.Sets.newHashSet;
 import static java.util.UUID.randomUUID;
-import static java.util.stream.Collectors.toList;
 import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
@@ -29,7 +28,7 @@ public class HandlerUtilsCreateRejectionEventsFromCCTest {
     private final CaseAggregateState caseAggregateState = new CaseAggregateState();
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         caseAggregateState.setCaseId(CASE_ID);
         caseAggregateState.addOffenceIdsForDefendant(DEFENDANT_ID, newHashSet());
     }

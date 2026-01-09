@@ -34,7 +34,6 @@ import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.apache.commons.lang3.StringUtils;
@@ -513,8 +512,8 @@ public class CaseDefendantHandler {
                     state.getCaseId(),
                     null,
                     null,
-                    person.getLegalEntityName(),
                     defendantLegalEntityName,
+                    person.getLegalEntityName(),
                     updatedDate));
         }
 

@@ -52,9 +52,9 @@ import org.mockito.junit.jupiter.MockitoExtension;
 public class AcceptPendingDefendantChangesHandlerCCTest extends CaseAggregateBaseTest {
     private static final UUID defendantId = randomUUID();
     private static final UUID caseId = randomUUID();
-    private static final String firstName = "test";
-    private static final String lastName = "lastName";
-    private static final String dateOfBirth = LocalDate.parse("1980-07-15").toString();
+    private static final String FIRST_NAME = "test";
+    private static final String LAST_NAME = "lastName";
+    private static final String DATE_OF_BIRTH = LocalDate.parse("1980-07-15").toString();
     private static final String ADDRESS_1 = "14 Tottenham Court Road";
     private static final String ADDRESS_2 = "London";
     private static final String ADDRESS_3 = "Surrey";
@@ -107,14 +107,14 @@ public class AcceptPendingDefendantChangesHandlerCCTest extends CaseAggregateBas
                         jsonEnvelope(
                                 withMetadataEnvelopedFrom(command)
                                         .withName("sjp.events.defendant-name-updated"),
-                                payloadIsJson(withJsonPath("$.newPersonalName.firstName", equalTo(firstName)))),
+                                payloadIsJson(withJsonPath("$.newPersonalName.firstName", equalTo(FIRST_NAME)))),
                         jsonEnvelope(
                                 withMetadataEnvelopedFrom(command)
                                         .withName("sjp.events.defendant-details-updated"),
                                 payloadIsJson(allOf(
                                         withJsonPath("$.defendantId", equalTo(defendantId.toString())),
                                         withJsonPath("$.caseId", equalTo(caseId.toString())),
-                                        withJsonPath("$.firstName", equalTo(firstName)),
+                                        withJsonPath("$.firstName", equalTo(FIRST_NAME)),
                                         withJsonPath("$.lastName", equalTo(defendant.getLastName())),
                                         withJsonPath("$.dateOfBirth", equalTo(defendant.getDateOfBirth().format(ofPattern("YYY-MM-dd"))))))),
                         jsonEnvelope(
@@ -204,7 +204,7 @@ public class AcceptPendingDefendantChangesHandlerCCTest extends CaseAggregateBas
         final JsonObjectBuilder payload = createObjectBuilder()
                 .add("defendantId", defendant.getId().toString())
                 .add("caseId", caseReceivedEvent.getCaseId().toString())
-                .add("firstName", firstName)
+                .add("firstName", FIRST_NAME)
                 .add("lastName", defendant.getLastName())
                 .add("dateOfBirth", defendant.getDateOfBirth().format(ofPattern("YYY-MM-dd")))
                 .add("address", toJsonObject(defendant.getAddress()));

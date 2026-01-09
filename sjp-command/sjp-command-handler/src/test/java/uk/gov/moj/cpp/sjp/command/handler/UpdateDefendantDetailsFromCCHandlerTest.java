@@ -53,14 +53,14 @@ public class UpdateDefendantDetailsFromCCHandlerTest extends CaseAggregateBaseTe
 
     private static final UUID defendantId = randomUUID();
     private static final UUID caseId = randomUUID();
-    private static final String firstName = "test";
-    private static final String lastName = "lastName";
-    private static final String email = "email";
-    private static final String mobileNumber = "mobileNumber";
-    private static final Gender gender = Gender.MALE;
-    private static final String nationalInsuranceNumber = "nationalInsuranceNumber";
-    private static final String homeNumber = "homeNumber";
-    private static final String dateOfBirth = LocalDate.parse("1980-07-15").toString();
+    private static final String FIRST_NAME = "test";
+    private static final String LAST_NAME = "lastName";
+    private static final String EMAIL = "email";
+    private static final String MOBILE_NUMBER = "mobileNumber";
+    private static final Gender GENDER = Gender.MALE;
+    private static final String NATIONAL_INSURANCE_NUMBER = "nationalInsuranceNumber";
+    private static final String HOME_NUMBER = "homeNumber";
+    private static final String DATE_OF_BIRTH = LocalDate.parse("1980-07-15").toString();
     private static final String ADDRESS_1 = "14 Tottenham Court Road";
     private static final String ADDRESS_2 = "London";
     private static final String ADDRESS_3 = "Surrey";
@@ -116,7 +116,7 @@ public class UpdateDefendantDetailsFromCCHandlerTest extends CaseAggregateBaseTe
                         jsonEnvelope(
                                 withMetadataEnvelopedFrom(command)
                                         .withName("sjp.events.defendant-name-update-requested"),
-                                payloadIsJson(withJsonPath("$.newPersonalName.firstName", equalTo(firstName)))),
+                                payloadIsJson(withJsonPath("$.newPersonalName.firstName", equalTo(FIRST_NAME)))),
                         jsonEnvelope(
                                 withMetadataEnvelopedFrom(command)
                                         .withName("sjp.events.defendant-detail-update-requested"),
@@ -130,7 +130,7 @@ public class UpdateDefendantDetailsFromCCHandlerTest extends CaseAggregateBaseTe
                                         withJsonPath("$.title", equalTo(defendant.getTitle())),
                                         withJsonPath("$.gender", equalTo(defendant.getGender().toString())),
                                         withJsonPath("$.nationalInsuranceNumber", equalTo(defendant.getNationalInsuranceNumber())),
-                                        withJsonPath("$.contactDetails.email", equalTo(email)),
+                                        withJsonPath("$.contactDetails.email", equalTo(EMAIL)),
                                         withJsonPath("$.contactDetails.home", equalTo(defendant.getContactDetails().getHome())),
                                         withJsonPath("$.contactDetails.mobile", equalTo(defendant.getContactDetails().getMobile())),
                                         withJsonPath("$.region", equalTo(REGION)),
@@ -141,7 +141,7 @@ public class UpdateDefendantDetailsFromCCHandlerTest extends CaseAggregateBaseTe
                                 payloadIsJson(allOf(
                                         withJsonPath("$.caseId", equalTo(caseId.toString())),
                                         withJsonPath("$.defendantId", equalTo(defendantId.toString())),
-                                        withJsonPath("$.newPersonalName.firstName", equalTo(firstName)))))
+                                        withJsonPath("$.newPersonalName.firstName", equalTo(FIRST_NAME)))))
                 )));
     }
 
@@ -242,10 +242,10 @@ public class UpdateDefendantDetailsFromCCHandlerTest extends CaseAggregateBaseTe
                 .add("defendantId", defendant.getId().toString())
                 .add("caseId", caseReceivedEvent.getCaseId().toString())
                 .add("title", defendant.getTitle())
-                .add("firstName", firstName)
+                .add("firstName", FIRST_NAME)
                 .add("lastName", defendant.getLastName())
                 .add("dateOfBirth", defendant.getDateOfBirth().format(ofPattern("yyyy-MM-dd")))
-                .add("email", email)
+                .add("email", EMAIL)
                 .add("gender", defendant.getGender().toString())
                 .add("nationalInsuranceNumber", defendant.getNationalInsuranceNumber())
                 .add("contactNumber", contactNumber)

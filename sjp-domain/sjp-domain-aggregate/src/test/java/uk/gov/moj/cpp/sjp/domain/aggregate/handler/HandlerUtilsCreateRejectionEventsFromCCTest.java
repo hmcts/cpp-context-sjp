@@ -23,7 +23,6 @@ import org.junit.jupiter.api.Test;
 public class HandlerUtilsCreateRejectionEventsFromCCTest {
 
     private static final UUID USER_ID = randomUUID();
-    private static final UUID OTHER_USER_ID = randomUUID();
     private static final UUID CASE_ID = randomUUID();
     private static final UUID DEFENDANT_ID = randomUUID();
     private static final UUID UNKNOWN_DEFENDANT_ID = randomUUID();
@@ -63,7 +62,7 @@ public class HandlerUtilsCreateRejectionEventsFromCCTest {
 
         // then
         assertTrue(result.isPresent());
-        final List<Object> events = result.get().collect(toList());
+        final List<Object> events = result.get().toList();
         assertThat(events.size(), is(1));
         assertThat(events.get(0), instanceOf(DefendantNotFound.class));
         final DefendantNotFound event = (DefendantNotFound) events.get(0);

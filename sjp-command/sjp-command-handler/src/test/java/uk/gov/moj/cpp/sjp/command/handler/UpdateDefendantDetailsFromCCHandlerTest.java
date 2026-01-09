@@ -17,7 +17,6 @@ import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopePaylo
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeStreamMatcher.streamContaining;
 import static uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderFactory.metadataOf;
 
-import uk.gov.justice.json.schemas.domains.sjp.Gender;
 import uk.gov.justice.services.common.util.Clock;
 import uk.gov.justice.services.common.util.UtcClock;
 import uk.gov.justice.services.core.aggregate.AggregateService;
@@ -33,7 +32,6 @@ import uk.gov.moj.cpp.sjp.domain.aggregate.CaseAggregate;
 import uk.gov.moj.cpp.sjp.domain.aggregate.CaseAggregateBaseTest;
 import uk.gov.moj.cpp.sjp.event.*;
 
-import java.time.LocalDate;
 import java.util.UUID;
 
 import javax.json.JsonObject;
@@ -51,12 +49,6 @@ public class UpdateDefendantDetailsFromCCHandlerTest extends CaseAggregateBaseTe
 
     private static final String FIRST_NAME = "test";
     private static final String EMAIL = "email";
-    private static final String ADDRESS_1 = "14 Tottenham Court Road";
-    private static final String ADDRESS_2 = "London";
-    private static final String ADDRESS_3 = "Surrey";
-    private static final String ADDRESS_4 = "England";
-    private static final String ADDRESS_5 = "United Kingdom";
-    private static final String POSTCODE = "W1T 1JY";
     private static final String REGION = "REGION";
     private static final String DRIVER_NUMBER = "MORGA753116SM9IJ";
     @Spy

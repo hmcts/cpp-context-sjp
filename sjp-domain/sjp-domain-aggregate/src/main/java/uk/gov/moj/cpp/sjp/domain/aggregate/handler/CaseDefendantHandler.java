@@ -216,7 +216,7 @@ public class CaseDefendantHandler {
         final Stream<Object> events = createLegalEntityDefendantUpdateRequestedEvent(caseId, defendantId, legalEntityDefendant, updatedDate, state);
 
         // Check if any update-requested events were raised and add DefendantDetailsUpdateRequestAccepted
-        final List<Object> eventList = events.collect(Collectors.toList());
+        final List<Object> eventList = events.toList();
         boolean hasUpdateRequestedEvent = eventList.stream().anyMatch(e ->
             e instanceof DefendantAddressUpdateRequested ||
             e instanceof DefendantNameUpdateRequested

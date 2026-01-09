@@ -1,6 +1,5 @@
 package uk.gov.moj.cpp.sjp.domain.aggregate.handler;
 
-import static java.util.stream.Collectors.toList;
 import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.greaterThanOrEqualTo;
@@ -95,7 +94,7 @@ public class CaseDefendantHandlerAcceptPendingDefendantChangesCCTest {
         // then - should succeed even though case is completed (key difference from regular acceptPendingDefendantChanges)
         final List<Object> eventList = eventStream.toList();
         assertThat(eventList.size(), is(greaterThanOrEqualTo(1)));
-        assertThat(eventList.stream().anyMatch(e -> e instanceof DefendantDetailsUpdated), is(true));
+        assertThat(eventList.stream().anyMatch(DefendantDetailsUpdated.class::isInstance), is(true));
     }
 
     @Test
@@ -117,7 +116,7 @@ public class CaseDefendantHandlerAcceptPendingDefendantChangesCCTest {
         // then - should succeed even though case is referred (key difference from regular acceptPendingDefendantChanges)
         final List<Object> eventList = eventStream.toList();
         assertThat(eventList.size(), is(greaterThanOrEqualTo(1)));
-        assertThat(eventList.stream().anyMatch(e -> e instanceof DefendantDetailsUpdated), is(true));
+        assertThat(eventList.stream().anyMatch(DefendantDetailsUpdated.class::isInstance), is(true));
     }
 
     @Test
@@ -146,8 +145,8 @@ public class CaseDefendantHandlerAcceptPendingDefendantChangesCCTest {
         // Should have: DefendantNameUpdated (name changed), DefendantDateOfBirthUpdated (DOB changed), 
         // DefendantDetailsUpdated, and DefendantPendingChangesAccepted = 4 events
         assertThat(eventList.size(), is(4));
-        assertThat(eventList.stream().anyMatch(e -> e instanceof DefendantDetailsUpdated), is(true));
-        assertThat(eventList.stream().anyMatch(e -> e instanceof DefendantPendingChangesAccepted), is(true));
+        assertThat(eventList.stream().anyMatch(DefendantDetailsUpdated.class::isInstance), is(true));
+        assertThat(eventList.stream().anyMatch(DefendantPendingChangesAccepted.class::isInstance), is(true));
     }
 
     @Test
@@ -175,8 +174,8 @@ public class CaseDefendantHandlerAcceptPendingDefendantChangesCCTest {
         // then
         final List<Object> eventList = eventStream.toList();
         assertThat(eventList.size(), is(greaterThanOrEqualTo(2))); // At least DefendantAddressUpdated and DefendantDetailsUpdated
-        assertThat(eventList.stream().anyMatch(e -> e instanceof DefendantDetailsUpdated), is(true));
-        assertThat(eventList.stream().anyMatch(e -> e instanceof DefendantPendingChangesAccepted), is(true));
+        assertThat(eventList.stream().anyMatch(DefendantDetailsUpdated.class::isInstance), is(true));
+        assertThat(eventList.stream().anyMatch(DefendantPendingChangesAccepted.class::isInstance), is(true));
     }
 }
 

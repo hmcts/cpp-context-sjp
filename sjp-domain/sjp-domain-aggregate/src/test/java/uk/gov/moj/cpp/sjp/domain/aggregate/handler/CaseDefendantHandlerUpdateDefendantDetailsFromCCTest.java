@@ -176,15 +176,15 @@ public class CaseDefendantHandlerUpdateDefendantDetailsFromCCTest {
         assertThat(eventList.size(), is(greaterThanOrEqualTo(2))); // At least DefendantDateOfBirthUpdateRequested and DefendantDetailsUpdateRequestAccepted
         
         final boolean hasDobUpdateRequested = eventList.stream()
-                .anyMatch(e -> e instanceof DefendantDateOfBirthUpdateRequested);
+                .anyMatch(DefendantDateOfBirthUpdateRequested.class::isInstance);
         assertThat(hasDobUpdateRequested, is(true));
         
         final boolean hasUpdateRequestAccepted = eventList.stream()
-                .anyMatch(e -> e instanceof DefendantDetailsUpdateRequestAccepted);
+                .anyMatch(DefendantDetailsUpdateRequestAccepted.class::isInstance);
         assertThat(hasUpdateRequestAccepted, is(true));
         
         final DefendantDetailsUpdateRequestAccepted acceptedEvent = (DefendantDetailsUpdateRequestAccepted) eventList.stream()
-                .filter(e -> e instanceof DefendantDetailsUpdateRequestAccepted)
+                .filter(DefendantDetailsUpdateRequestAccepted.class::isInstance)
                 .findFirst()
                 .orElse(null);
         assertThat(acceptedEvent, is(notNullValue()));
@@ -220,15 +220,15 @@ public class CaseDefendantHandlerUpdateDefendantDetailsFromCCTest {
         assertThat(eventList.size(), is(greaterThanOrEqualTo(2))); // At least DefendantAddressUpdateRequested and DefendantDetailsUpdateRequestAccepted
         
         final boolean hasAddressUpdateRequested = eventList.stream()
-                .anyMatch(e -> e instanceof DefendantAddressUpdateRequested);
+                .anyMatch(DefendantAddressUpdateRequested.class::isInstance);
         assertThat(hasAddressUpdateRequested, is(true));
         
         final boolean hasUpdateRequestAccepted = eventList.stream()
-                .anyMatch(e -> e instanceof DefendantDetailsUpdateRequestAccepted);
+                .anyMatch(DefendantDetailsUpdateRequestAccepted.class::isInstance);
         assertThat(hasUpdateRequestAccepted, is(true));
         
         final DefendantDetailsUpdateRequestAccepted acceptedEvent = (DefendantDetailsUpdateRequestAccepted) eventList.stream()
-                .filter(e -> e instanceof DefendantDetailsUpdateRequestAccepted)
+                .filter(DefendantDetailsUpdateRequestAccepted.class::isInstance)
                 .findFirst()
                 .orElse(null);
         assertThat(acceptedEvent, is(notNullValue()));
@@ -264,15 +264,15 @@ public class CaseDefendantHandlerUpdateDefendantDetailsFromCCTest {
         assertThat(eventList.size(), is(greaterThanOrEqualTo(2))); // At least DefendantNameUpdateRequested and DefendantDetailsUpdateRequestAccepted
         
         final boolean hasNameUpdateRequested = eventList.stream()
-                .anyMatch(e -> e instanceof DefendantNameUpdateRequested);
+                .anyMatch(DefendantNameUpdateRequested.class::isInstance);
         assertThat(hasNameUpdateRequested, is(true));
         
         final boolean hasUpdateRequestAccepted = eventList.stream()
-                .anyMatch(e -> e instanceof DefendantDetailsUpdateRequestAccepted);
+                .anyMatch(DefendantDetailsUpdateRequestAccepted.class::isInstance);
         assertThat(hasUpdateRequestAccepted, is(true));
         
         final DefendantDetailsUpdateRequestAccepted acceptedEvent = (DefendantDetailsUpdateRequestAccepted) eventList.stream()
-                .filter(e -> e instanceof DefendantDetailsUpdateRequestAccepted)
+                .filter(DefendantDetailsUpdateRequestAccepted.class::isInstance)
                 .findFirst()
                 .orElse(null);
         assertThat(acceptedEvent, is(notNullValue()));
@@ -313,7 +313,7 @@ public class CaseDefendantHandlerUpdateDefendantDetailsFromCCTest {
         assertThat(eventList.size(), is(greaterThanOrEqualTo(4))); // At least 3 update-requested events + DefendantDetailsUpdateRequestAccepted
         
         final boolean hasUpdateRequestAccepted = eventList.stream()
-                .anyMatch(e -> e instanceof DefendantDetailsUpdateRequestAccepted);
+                .anyMatch(DefendantDetailsUpdateRequestAccepted.class::isInstance);
         assertThat(hasUpdateRequestAccepted, is(true));
         
         final DefendantDetailsUpdateRequestAccepted acceptedEvent = (DefendantDetailsUpdateRequestAccepted) eventList.stream()
@@ -353,7 +353,7 @@ public class CaseDefendantHandlerUpdateDefendantDetailsFromCCTest {
         assertThat(eventList.size(), is(1)); // Only DefendantDetailsUpdated, no update-requested events
         
         final boolean hasUpdateRequestAccepted = eventList.stream()
-                .anyMatch(e -> e instanceof DefendantDetailsUpdateRequestAccepted);
+                .anyMatch(DefendantDetailsUpdateRequestAccepted.class::isInstance);
         assertThat(hasUpdateRequestAccepted, is(false));
     }
 
@@ -383,19 +383,19 @@ public class CaseDefendantHandlerUpdateDefendantDetailsFromCCTest {
                 caseId, defendantId, legalEntityDefendant, updatedDate, state);
 
         // then
-        final List<Object> eventList = eventStream.collect(toList());
+        final List<Object> eventList = eventStream.toList();
         assertThat(eventList.size(), is(greaterThanOrEqualTo(2))); // At least DefendantNameUpdateRequested and DefendantDetailsUpdated
         
         final boolean hasNameUpdateRequested = eventList.stream()
-                .anyMatch(e -> e instanceof DefendantNameUpdateRequested);
+                .anyMatch(DefendantNameUpdateRequested.class::isInstance);
         assertThat(hasNameUpdateRequested, is(true));
         
         final boolean hasDetailsUpdated = eventList.stream()
-                .anyMatch(e -> e instanceof DefendantDetailsUpdated);
+                .anyMatch(DefendantDetailsUpdated.class::isInstance);
         assertThat(hasDetailsUpdated, is(true));
         
         final boolean hasUpdateRequestAccepted = eventList.stream()
-                .anyMatch(e -> e instanceof DefendantDetailsUpdateRequestAccepted);
+                .anyMatch( DefendantDetailsUpdateRequestAccepted.class::isInstance);
         assertThat(hasUpdateRequestAccepted, is(true));
     }
 
@@ -428,15 +428,15 @@ public class CaseDefendantHandlerUpdateDefendantDetailsFromCCTest {
         assertThat(eventList.size(), is(greaterThanOrEqualTo(2))); // At least DefendantAddressUpdateRequested and DefendantDetailsUpdated
         
         final boolean hasAddressUpdateRequested = eventList.stream()
-                .anyMatch(e -> e instanceof DefendantAddressUpdateRequested);
+                .anyMatch(DefendantAddressUpdateRequested.class::isInstance);
         assertThat(hasAddressUpdateRequested, is(true));
         
         final boolean hasUpdateRequestAccepted = eventList.stream()
-                .anyMatch(e -> e instanceof DefendantDetailsUpdateRequestAccepted);
+                .anyMatch(DefendantDetailsUpdateRequestAccepted.class::isInstance);
         assertThat(hasUpdateRequestAccepted, is(true));
         
         final DefendantDetailsUpdateRequestAccepted acceptedEvent = (DefendantDetailsUpdateRequestAccepted) eventList.stream()
-                .filter(e -> e instanceof DefendantDetailsUpdateRequestAccepted)
+                .filter(DefendantDetailsUpdateRequestAccepted.class::isInstance)
                 .findFirst()
                 .orElse(null);
         assertThat(acceptedEvent, notNullValue());

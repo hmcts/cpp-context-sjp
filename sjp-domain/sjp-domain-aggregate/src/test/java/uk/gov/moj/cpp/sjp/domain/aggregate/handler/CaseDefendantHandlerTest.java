@@ -1,6 +1,5 @@
 package uk.gov.moj.cpp.sjp.domain.aggregate.handler;
 
-import static java.util.stream.Collectors.toList;
 import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
@@ -184,8 +183,8 @@ public class CaseDefendantHandlerTest {
         // Should have: DefendantNameUpdated (name changed), DefendantDateOfBirthUpdated (DOB changed), 
         // DefendantDetailsUpdated, and DefendantPendingChangesAccepted = 4 events
         assertThat(eventList.size(), is(4));
-        assertThat(eventList.stream().anyMatch(e -> e instanceof DefendantDetailsUpdated), is(true));
-        assertThat(eventList.stream().anyMatch(e -> e instanceof DefendantPendingChangesAccepted), is(true));
+        assertThat(eventList.stream().anyMatch(DefendantDetailsUpdated.class::isInstance), is(true));
+        assertThat(eventList.stream().anyMatch(DefendantPendingChangesAccepted.class::isInstance), is(true));
     }
 
     @Test
@@ -212,7 +211,7 @@ public class CaseDefendantHandlerTest {
         // then - should succeed even though case is completed
         final List<Object> eventList = eventStream.toList();
         assertThat(eventList.size(), is(greaterThanOrEqualTo(1)));
-        assertThat(eventList.stream().anyMatch(e -> e instanceof DefendantDetailsUpdated), is(true));
+        assertThat(eventList.stream().anyMatch(DefendantDetailsUpdated.class::isInstance), is(true));
     }
 
     @Test
@@ -308,9 +307,9 @@ public class CaseDefendantHandlerTest {
         // then
         final List<Object> eventList = eventStream.toList();
         assertThat(eventList.size(), is(greaterThanOrEqualTo(1)));
-        assertThat(eventList.stream().anyMatch(e -> e instanceof DefendantAddressUpdateRequested), is(true));
+        assertThat(eventList.stream().anyMatch(DefendantAddressUpdateRequested.class::isInstance), is(true));
         final DefendantAddressUpdateRequested addressEvent = (DefendantAddressUpdateRequested) eventList.stream()
-                .filter(e -> e instanceof DefendantAddressUpdateRequested)
+                .filter(DefendantAddressUpdateRequested.class::isInstance)
                 .findFirst()
                 .orElse(null);
         assertThat(addressEvent, is(notNullValue()));

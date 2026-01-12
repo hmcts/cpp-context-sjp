@@ -3,7 +3,7 @@
     <parent>
         <artifactId>sjp-event</artifactId>
         <groupId>uk.gov.moj.cpp.sjp</groupId>
-        <version>17.103.150-rel-3rd-line-2603-SNAPSHOT</version>
+        <version>17.103.151-rel-3rd-line-2603-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 

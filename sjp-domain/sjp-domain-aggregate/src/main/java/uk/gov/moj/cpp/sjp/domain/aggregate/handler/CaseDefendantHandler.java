@@ -525,7 +525,6 @@ public class CaseDefendantHandler {
                                                                        final CaseAggregateState state) {
 
         final Stream.Builder<Object> events = Stream.builder();
-
         boolean isAddressChanged = false;
         boolean isNameChanged = false;
 

@@ -3,7 +3,7 @@
     <parent>
         <artifactId>sjp-parent</artifactId>
         <groupId>uk.gov.moj.cpp.sjp</groupId>
-        <version>17.103.150-SNAPSHOT</version>
+        <version>17.103.151-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
     <modelVersion>4.0.0</modelVersion>

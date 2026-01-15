@@ -194,4 +194,28 @@ public final class HandlerUtils {
     private static boolean caseIsSetAsideDueToApplication(final CaseAggregateState state) {
         return state.isSetAside() && state.hasGrantedApplication();
     }
+
+    /**
+     * Creates rejection events for updates from Criminal Courts (CC).
+     * This method only checks for basic validation (case/defendant existence and assignment),
+     * but does NOT check for case completed or case referred for court hearing.
+     * Returns no event (empty Optional) if case is not found.
+     */
+    public static Optional<Stream<Object>> createRejectionEventsForDefendantUpdate(
+                                                                       final String action,
+                                                                       final UUID defendantId,
+                                                                       final CaseAggregateState state) {
+        if (isNull(state.getCaseId())) {
+            LOGGER.warn("Case not found: {}, returning no event", action);
+            return Optional.empty();
+        }
+
+        Object event = null;
+        if (nonNull(defendantId) && !state.hasDefendant(defendantId)) {
+            LOGGER.warn("Defendant not found: {}", action);
+            event = new DefendantNotFound(defendantId, action);
+        }
+
+        return Optional.ofNullable(event).map(Stream::of);
+    }
 }

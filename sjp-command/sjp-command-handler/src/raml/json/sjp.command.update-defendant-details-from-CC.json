@@ -1,0 +1,30 @@
+{
+  "caseId": "f06f6539-2a7c-4bc8-bca3-f1b17ebcfa47",
+  "defendantId": "a1b2c3d4-5e6f-7a8b-9c0d-1e2f3a4b5c6d",
+  "title": "Dr",
+  "firstName": "David",
+  "lastName": "SMITH",
+  "dateOfBirth": "1980-07-15",
+  "gender": "Male",
+  "email": "email@email.com",
+  "email2": "secondary@email.com",
+  "address": {
+    "address1": "14 Shaftesbury Road",
+    "address2": "London",
+    "address3": "England",
+    "address4": "UK",
+    "address5": "Greater London",
+    "postcode": "W1T 1JY"
+  },
+  "contactNumber": {
+    "home": "02087654321",
+    "business": "02087654321",
+    "mobile": "07123456789"
+  },
+  "nationalInsuranceNumber": "QQ 12 34 56 C",
+  "region": "sussex",
+  "driverNumber": "TESTY708166G99KZ",
+  "driverLicenceDetails": "Driver Licence Details",
+  "legalEntityName": "Legal Entity Name"
+}
+

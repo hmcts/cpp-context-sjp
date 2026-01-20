@@ -71,6 +71,7 @@ import uk.gov.moj.cpp.sjp.domain.plea.PleaMethod;
 import uk.gov.moj.cpp.sjp.domain.plea.SetPleas;
 import uk.gov.moj.cpp.sjp.event.ApplicationResultsRecorded;
 import uk.gov.moj.cpp.sjp.event.CCApplicationStatusCreated;
+import uk.gov.moj.cpp.sjp.event.CaseCompleted;
 import uk.gov.moj.cpp.sjp.event.CaseListedInCriminalCourtsUpdated;
 
 import javax.json.JsonObject;
@@ -561,5 +562,10 @@ public class CaseAggregate implements Aggregate {
 
     public Stream<Object> updateOffenceCode(final UUID caseId, final String offenceCode) {
         return UpdateOffenceCodeHandler.INSTANCE.updateOffenceCode(getState(), caseId, offenceCode);
+    }
+
+    public Stream<Object> caseCompletedBdf() {
+        final Stream.Builder<Object> streamBuilder = Stream.builder();
+        return apply(streamBuilder.add(new CaseCompleted(state.getCaseId(), state.getSessionIds())).build());
     }
 }

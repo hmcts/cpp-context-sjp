@@ -130,4 +130,16 @@ public class DecisionApi {
                     .build(),
                 applicationDecision));
     }
+
+
+    @Handles("sjp.case-complete-bdf")
+    public void caseCompleteBdf(final JsonEnvelope jsonEnvelope) {
+        final JsonObject jsonObject = jsonEnvelope.payloadAsJsonObject();
+        sender.send(
+                envelopeFrom(
+                        metadataFrom(jsonEnvelope.metadata())
+                                .withName("sjp.command.case-complete-bdf")
+                                .build(),
+                        jsonObject));
+    }
 }

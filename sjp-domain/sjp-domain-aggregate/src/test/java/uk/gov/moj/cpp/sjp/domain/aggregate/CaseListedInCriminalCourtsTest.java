@@ -24,6 +24,7 @@ import uk.gov.moj.cpp.sjp.domain.decision.OffenceDecision;
 import uk.gov.moj.cpp.sjp.domain.decision.OffenceDecisionInformation;
 import uk.gov.moj.cpp.sjp.domain.decision.ReferForCourtHearing;
 import uk.gov.moj.cpp.sjp.domain.verdict.VerdictType;
+import uk.gov.moj.cpp.sjp.event.CaseCompleted;
 import uk.gov.moj.cpp.sjp.event.CaseListedInCriminalCourtsV2;
 import uk.gov.moj.cpp.sjp.event.CaseOffenceListedInCriminalCourts;
 import uk.gov.moj.cpp.sjp.event.CaseReceived;
@@ -135,6 +136,14 @@ public class CaseListedInCriminalCourtsTest extends CaseAggregateBaseTest {
         final Stream<Object> eventsStream = caseAggregate.updateCaseListedInCriminalCourts(caseId, null, null, hearingId, createCourtCenter(), hearingDayList, hearingType);
         final List<Object> events = eventsStream.collect(Collectors.toList());
         assertThat(events, hasSize(0));
+    }
+
+    @Test
+    void caseCompletedBdfRaiseCorrectEvent() {
+        Stream<Object> caseCompletedBdf = caseAggregate.caseCompletedBdf();
+        final List<Object> events = caseCompletedBdf.toList();
+        assertThat(events, hasSize(1));
+        assertThat(events.get(0), instanceOf(CaseCompleted.class));
     }
 
 

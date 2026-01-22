@@ -103,6 +103,16 @@ public class DecisionController {
 
     }
 
+
+    @Handles("sjp.command.case-complete-bdf")
+    public void caseCompleteBdf(final JsonEnvelope command) {
+        final JsonObject payload = command.payloadAsJsonObject();
+        sender.send(envelop(payload)
+                .withName("sjp.command.case-complete-bdf")
+                .withMetadataFrom(command));
+
+    }
+
     private void addDefendantCourtDetails(final JsonObject payload, final JsonObjectBuilder enrichedPayload) {
         final JsonObject caseDetails = caseService.getCaseDetails(payload.getString("caseId"));
         getDefendantPostCode(caseDetails)

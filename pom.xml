@@ -9,33 +9,16 @@
 
     <groupId>uk.gov.moj.cpp.sjp</groupId>
     <artifactId>sjp-parent</artifactId>
-    <version>17.103.162-SNAPSHOT</version>
+    <version>17.103.162-SNI-8214-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <properties>
-        <sonar.jacoco.itReportPath>${project.basedir}/../target/jacoco-it.exec
-        </sonar.jacoco.itReportPath>
+        <sonar.coverage.jacoco.xmlReportPaths>**/target/site/jacoco/jacoco.xml</sonar.coverage.jacoco.xmlReportPaths>
         <sonar.report.export.path>sonar-report.json</sonar.report.export.path>
         <sonar.scm.provider>git</sonar.scm.provider>
-        <sonar.cpd.exclusions>**/uk/gov/moj/cpp/sjp/dto/**/*,
-            **/uk/gov/moj/cpp/sjp/domain/**/*,
-            **/uk/gov/moj/cpp/sjp/model/**/*,
-            **uk/gov/justice/core/courts/**/*,
-            **/uk/gov/moj/cpp/sjp/persist/entity/**/*,
-            **/uk/gov/moj/cpp/sjp/persistence/entity/**/*,
-            **/uk/gov/moj/cpp/sjp/persistence/repository/**/*,
-            **/uk/gov/moj/cpp/sjp/event/*.java,
-            **/uk/gov/moj/cpp/sjp/event/session/**/*,
-            **/uk/gov/moj/cpp/sjp/event/decision/**/*,
-            **/uk/gov/moj/cpp/sjp/event/decommissioned/**/*,
-            **/uk/gov/moj/cpp/sjp/event/transparency/**/*,
-            **/uk/gov/moj/cpp/sjp/event/casemanagement/**/*,
-            **/uk/gov/moj/cpp/sjp/repository/**/*,
-            **/uk/gov/moj/cpp/sjp/query/view/response/**/*,
-            **/uk/gov/moj/cpp/sjp/query/view/exception/**/*,
-            **/uk/gov/moj/cpp/sjp/domain/command/CancelPlea.java,
-            **/uk/gov/moj/cpp/sjp/event/AocpAcceptedEmailNotificationSent.java
-        </sonar.cpd.exclusions>
+        <sonar.cpd.exclusions>**/uk/gov/moj/cpp/sjp/dto/**/*,**/uk/gov/moj/cpp/sjp/domain/**/*,**/uk/gov/moj/cpp/sjp/model/**/*,**uk/gov/justice/core/courts/**/*,**/uk/gov/moj/cpp/sjp/persist/entity/**/*,**/uk/gov/moj/cpp/sjp/persistence/entity/**/*,**/uk/gov/moj/cpp/sjp/persistence/repository/**/*,**/uk/gov/moj/cpp/sjp/event/*.java,**/uk/gov/moj/cpp/sjp/event/session/**/*,**/uk/gov/moj/cpp/sjp/event/decision/**/*,**/uk/gov/moj/cpp/sjp/event/decommissioned/**/*,**/uk/gov/moj/cpp/sjp/event/transparency/**/*,**/uk/gov/moj/cpp/sjp/event/casemanagement/**/*,**/uk/gov/moj/cpp/sjp/repository/**/*,**/uk/gov/moj/cpp/sjp/query/view/response/**/*,**/uk/gov/moj/cpp/sjp/query/view/exception/**/*,**/uk/gov/moj/cpp/sjp/domain/command/CancelPlea.java,**/uk/gov/moj/cpp/sjp/event/AocpAcceptedEmailNotificationSent.java,**/uk/gov/moj/cpp/sjp/command/api/accesscontrol/**/*</sonar.cpd.exclusions>
+        <sonar.exclusions>**/uk/gov/moj/cpp/sjp/dto/**/*,**/uk/gov/moj/cpp/sjp/domain/**/*,**/uk/gov/moj/cpp/sjp/model/**/*,**uk/gov/justice/core/courts/**/*,**/uk/gov/moj/cpp/sjp/persist/entity/**/*,**/uk/gov/moj/cpp/sjp/persistence/entity/**/*,**/uk/gov/moj/cpp/sjp/persistence/repository/**/*,**/uk/gov/moj/cpp/sjp/event/*.java,**/uk/gov/moj/cpp/sjp/event/session/**/*,**/uk/gov/moj/cpp/sjp/event/decision/**/*,**/uk/gov/moj/cpp/sjp/event/decommissioned/**/*,**/uk/gov/moj/cpp/sjp/event/transparency/**/*,**/uk/gov/moj/cpp/sjp/event/casemanagement/**/*,**/uk/gov/moj/cpp/sjp/repository/**/*,**/uk/gov/moj/cpp/sjp/query/view/response/**/*,**/uk/gov/moj/cpp/sjp/query/view/exception/**/*,**/uk/gov/moj/cpp/sjp/domain/command/CancelPlea.java,**/uk/gov/moj/cpp/sjp/event/AocpAcceptedEmailNotificationSent.java,**/uk/gov/moj/cpp/sjp/command/api/accesscontrol/**/*</sonar.exclusions>
+        <sonar.coverage.exclusions>**/uk/gov/moj/cpp/sjp/dto/**/*,**/uk/gov/moj/cpp/sjp/domain/**/*,**/uk/gov/moj/cpp/sjp/model/**/*,**uk/gov/justice/core/courts/**/*,**/uk/gov/moj/cpp/sjp/persist/entity/**/*,**/uk/gov/moj/cpp/sjp/persistence/entity/**/*,**/uk/gov/moj/cpp/sjp/persistence/repository/**/*,**/uk/gov/moj/cpp/sjp/event/*.java,**/uk/gov/moj/cpp/sjp/event/session/**/*,**/uk/gov/moj/cpp/sjp/event/decision/**/*,**/uk/gov/moj/cpp/sjp/event/decommissioned/**/*,**/uk/gov/moj/cpp/sjp/event/transparency/**/*,**/uk/gov/moj/cpp/sjp/event/casemanagement/**/*,**/uk/gov/moj/cpp/sjp/repository/**/*,**/uk/gov/moj/cpp/sjp/query/view/response/**/*,**/uk/gov/moj/cpp/sjp/query/view/exception/**/*,**/uk/gov/moj/cpp/sjp/domain/command/CancelPlea.java,**/uk/gov/moj/cpp/sjp/event/AocpAcceptedEmailNotificationSent.java,**/uk/gov/moj/cpp/sjp/command/api/accesscontrol/**/*</sonar.coverage.exclusions>
         <mvn.site.url>file://${project.build.directory}/site</mvn.site.url>
 
         <assignment.version>6.0.0</assignment.version>
@@ -107,9 +90,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
-                <configuration>
-                    <argLine>${jvm.options}</argLine>
-                </configuration>
+                <version>3.1.2</version>
             </plugin>
             <plugin>
                 <groupId>external.atlassian.jgitflow</groupId>
@@ -128,6 +109,26 @@
                     <enableSshAgent>true</enableSshAgent>
                     <pushReleases>true</pushReleases>
                 </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.jacoco</groupId>
+                <artifactId>jacoco-maven-plugin</artifactId>
+                <version>0.8.11</version>
+                <executions>
+                    <execution>
+                        <id>prepare-agent</id>
+                        <goals>
+                            <goal>prepare-agent</goal>
+                        </goals>
+                    </execution>
+                    <execution>
+                        <id>report</id>
+                        <phase>verify</phase>
+                        <goals>
+                            <goal>report</goal>
+                        </goals>
+                    </execution>
+                </executions>
             </plugin>
         </plugins>
     </build>

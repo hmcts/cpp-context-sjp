@@ -1,7 +1,12 @@
 package uk.gov.moj.cpp.sjp.event.processor;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import static java.util.Objects.nonNull;
+import static org.apache.commons.lang3.StringUtils.isNotBlank;
+import static uk.gov.justice.services.core.annotation.Component.EVENT_PROCESSOR;
+import static uk.gov.justice.services.messaging.Envelope.metadataFrom;
+import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
+
 import uk.gov.justice.core.courts.CourtApplication;
 import uk.gov.justice.core.courts.CourtApplicationCase;
 import uk.gov.justice.core.courts.LinkType;
@@ -13,16 +18,12 @@ import uk.gov.justice.services.core.sender.Sender;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 
 import javax.inject.Inject;
-import javax.json.Json;
 import javax.json.JsonObject;
 
-import static java.util.Objects.nonNull;
-import static org.apache.commons.lang3.StringUtils.isNotBlank;
-import static uk.gov.justice.services.core.annotation.Component.EVENT_PROCESSOR;
-import static uk.gov.justice.services.messaging.Envelope.metadataFrom;
-import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-@SuppressWarnings({"squid:S1188","squid:S3776"})
+@SuppressWarnings({"squid:S1188", "squid:S3776"})
 @ServiceComponent(EVENT_PROCESSOR)
 public class CourtApplicationCreatedProcessor {
 
@@ -64,7 +65,7 @@ public class CourtApplicationCreatedProcessor {
                     applicationStatus = ApplicationStatus.APPEAL_PENDING.name();
                 }
                 if (isNotBlank(applicationStatus)) {
-                    final JsonObject applicationStatusPayload = Json.createObjectBuilder()
+                    final JsonObject applicationStatusPayload = createObjectBuilder()
                             .add("caseId", sjpCaseId)
                             .add("applicationId", applicationId)
                             .add("applicationStatus", applicationStatus)
@@ -77,9 +78,9 @@ public class CourtApplicationCreatedProcessor {
 
                 }
                 LOGGER.info("Command Raised to update listedInCriminalCourts for Criminal Court Application with CaseId {} and applicationId {} for sjp case", sjpCaseId, applicationId);
-                final JsonObject listedInCCPayload = Json.createObjectBuilder()
+                final JsonObject listedInCCPayload = createObjectBuilder()
                         .add("caseId", sjpCaseId)
-                        .add("listedInCriminalCourts",true)
+                        .add("listedInCriminalCourts", true)
                         .build();
                 final JsonEnvelope envelopeToSend = envelopeFrom(
                         metadataFrom(jsonEnvelope.metadata()).withName("sjp.command.update-case-listed-in-cc"),
@@ -88,5 +89,5 @@ public class CourtApplicationCreatedProcessor {
             });
         }
 
-   }
+    }
 }

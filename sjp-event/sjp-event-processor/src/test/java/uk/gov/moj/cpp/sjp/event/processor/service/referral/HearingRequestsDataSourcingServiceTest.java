@@ -3,7 +3,6 @@ package uk.gov.moj.cpp.sjp.event.processor.service.referral;
 import static java.time.ZonedDateTime.now;
 import static java.util.Collections.singletonList;
 import static java.util.UUID.randomUUID;
-import static javax.json.Json.createObjectBuilder;
 import static javax.json.JsonValue.NULL;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
@@ -11,6 +10,7 @@ import static org.mockito.Mockito.when;
 import static uk.gov.justice.json.schemas.domains.sjp.queries.CaseDecision.caseDecision;
 import static uk.gov.justice.json.schemas.domains.sjp.queries.CaseDetails.caseDetails;
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 import static uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderFactory.metadataWithRandomUUIDAndName;
 import static uk.gov.moj.cpp.sjp.event.CaseReferredForCourtHearing.caseReferredForCourtHearing;
 
@@ -31,7 +31,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-import javax.json.Json;
 import javax.json.JsonObject;
 
 import org.junit.jupiter.api.Test;
@@ -140,7 +139,7 @@ public class HearingRequestsDataSourcingServiceTest {
         final String subReason = "No need for defendant to attend";
         final String welshSubReason = "Diffynnydd i fynychu";
 
-        final JsonObject payload = Json.createObjectBuilder()
+        final JsonObject payload = createObjectBuilder()
                 .add("id", id.toString())
                 .add("seqId", seqId)
                 .add("hearingCode", hearingCode)

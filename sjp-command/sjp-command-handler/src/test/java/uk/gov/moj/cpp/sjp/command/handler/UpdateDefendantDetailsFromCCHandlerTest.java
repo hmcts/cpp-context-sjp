@@ -3,13 +3,13 @@ package uk.gov.moj.cpp.sjp.command.handler;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
 import static java.time.format.DateTimeFormatter.ofPattern;
 import static java.util.UUID.randomUUID;
-import static javax.json.Json.createObjectBuilder;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.allOf;
 import static org.mockito.Mockito.when;
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 import static uk.gov.justice.services.test.utils.core.matchers.EventStreamMatcher.eventStreamAppendedWith;
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMatcher.jsonEnvelope;
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMetadataMatcher.withMetadataEnvelopedFrom;
@@ -30,7 +30,12 @@ import uk.gov.moj.cpp.sjp.domain.Address;
 import uk.gov.moj.cpp.sjp.domain.Defendant;
 import uk.gov.moj.cpp.sjp.domain.aggregate.CaseAggregate;
 import uk.gov.moj.cpp.sjp.domain.aggregate.CaseAggregateBaseTest;
-import uk.gov.moj.cpp.sjp.event.*;
+import uk.gov.moj.cpp.sjp.event.DefendantAddressUpdateRequested;
+import uk.gov.moj.cpp.sjp.event.DefendantDateOfBirthUpdateRequested;
+import uk.gov.moj.cpp.sjp.event.DefendantDetailUpdateRequested;
+import uk.gov.moj.cpp.sjp.event.DefendantDetailsUpdateRequestAccepted;
+import uk.gov.moj.cpp.sjp.event.DefendantDetailsUpdated;
+import uk.gov.moj.cpp.sjp.event.DefendantNameUpdateRequested;
 
 import java.util.UUID;
 

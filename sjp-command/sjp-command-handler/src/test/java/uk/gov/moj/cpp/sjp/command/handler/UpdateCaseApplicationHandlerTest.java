@@ -1,16 +1,26 @@
 package uk.gov.moj.cpp.sjp.command.handler;
 
-import org.hamcrest.Matchers;
-import org.hamcrest.core.AllOf;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.ArgumentCaptor;
-import org.mockito.Captor;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.Spy;
-import org.mockito.junit.jupiter.MockitoExtension;
+import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
+import static java.util.UUID.randomUUID;
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.allOf;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
+import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMatcher.jsonEnvelope;
+import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMetadataMatcher.metadata;
+import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMetadataMatcher.withMetadataEnvelopedFrom;
+import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopePayloadMatcher.payloadIsJson;
+import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeStreamMatcher.streamContaining;
+import static uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderFactory.metadataOf;
+import static uk.gov.moj.cpp.sjp.domain.common.CaseStatus.APPEALED;
+import static uk.gov.moj.cpp.sjp.domain.common.CaseStatus.RELISTED;
+import static uk.gov.moj.cpp.sjp.domain.util.DefaultTestData.CASE_ID;
+
 import uk.gov.justice.json.schemas.domains.sjp.ApplicationStatus;
 import uk.gov.justice.services.common.util.Clock;
 import uk.gov.justice.services.common.util.UtcClock;
@@ -27,30 +37,22 @@ import uk.gov.moj.cpp.sjp.event.CCApplicationStatusCreated;
 import uk.gov.moj.cpp.sjp.event.CCApplicationStatusUpdated;
 import uk.gov.moj.cpp.sjp.event.CaseStatusChanged;
 
-import javax.json.JsonObjectBuilder;
 import java.util.UUID;
 import java.util.stream.Stream;
 
-import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
-import static java.util.UUID.randomUUID;
-import static javax.json.Json.createObjectBuilder;
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.allOf;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
-import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMatcher.jsonEnvelope;
-import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMetadataMatcher.metadata;
-import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMetadataMatcher.withMetadataEnvelopedFrom;
-import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopePayloadMatcher.payloadIsJson;
-import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeStreamMatcher.streamContaining;
-import static uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderFactory.metadataOf;
-import static uk.gov.moj.cpp.sjp.domain.common.CaseStatus.APPEALED;
-import static uk.gov.moj.cpp.sjp.domain.common.CaseStatus.RELISTED;
-import static uk.gov.moj.cpp.sjp.domain.util.DefaultTestData.CASE_ID;
+import javax.json.JsonObjectBuilder;
+
+import org.hamcrest.Matchers;
+import org.hamcrest.core.AllOf;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.Spy;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 @ExtendWith(MockitoExtension.class)
 public class UpdateCaseApplicationHandlerTest {

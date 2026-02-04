@@ -1,7 +1,7 @@
 package uk.gov.moj.cpp.sjp.query.api.service;
 
-import static javax.json.Json.createObjectBuilder;
 import static uk.gov.justice.services.core.annotation.Component.QUERY_API;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 import static uk.gov.moj.cpp.sjp.query.api.helper.JsonHelper.getPayload;
 
 import uk.gov.justice.services.core.annotation.ServiceComponent;

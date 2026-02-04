@@ -2,8 +2,6 @@ package uk.gov.moj.cpp.sjp.query.view.service.defendantcase;
 
 import static com.fasterxml.jackson.annotation.JsonCreator.Mode.PROPERTIES;
 import static java.util.UUID.randomUUID;
-import static javax.json.Json.createArrayBuilder;
-import static javax.json.Json.createObjectBuilder;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -16,6 +14,8 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 import static uk.gov.justice.services.messaging.JsonEnvelope.metadataBuilder;
+import static uk.gov.justice.services.messaging.JsonObjects.createArrayBuilder;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 import static uk.gov.justice.services.test.utils.core.reflection.ReflectionUtil.setField;
 import static uk.gov.moj.cpp.sjp.domain.common.CaseStatus.REFERRED_FOR_COURT_HEARING;
 import static uk.gov.moj.cpp.sjp.query.view.service.ProgressionService.CASE_STATUS_FIELD_NAME;
@@ -32,7 +32,6 @@ import static uk.gov.moj.cpp.sjp.query.view.service.defendantcase.search.Defenda
 import static uk.gov.moj.cpp.sjp.query.view.service.defendantcase.search.DefendantCaseQuery.DOB_QUERY_PARAM;
 import static uk.gov.moj.cpp.sjp.query.view.service.defendantcase.search.DefendantCaseQuery.FIRSTNAME_QUERY_PARAM;
 import static uk.gov.moj.cpp.sjp.query.view.service.defendantcase.search.DefendantCaseQuery.LASTNAME_QUERY_PARAM;
-import static uk.gov.moj.cpp.sjp.query.view.service.defendantcase.search.DefendantCaseQuery.PARTY_NAME_QUERY_PARAM;
 import static uk.gov.moj.cpp.sjp.query.view.service.defendantcase.search.DefendantCaseQuery.POSTCODE_QUERY_PARAM;
 
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;

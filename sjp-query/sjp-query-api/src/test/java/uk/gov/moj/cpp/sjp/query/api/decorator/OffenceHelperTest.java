@@ -3,12 +3,12 @@ package uk.gov.moj.cpp.sjp.query.api.decorator;
 import static java.lang.String.format;
 import static java.time.LocalDate.now;
 import static java.util.Objects.nonNull;
-import static javax.json.Json.createArrayBuilder;
-import static javax.json.Json.createObjectBuilder;
 import static org.hamcrest.CoreMatchers.equalTo;
-import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static uk.gov.justice.services.messaging.JsonObjects.createArrayBuilder;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 import static uk.gov.moj.cpp.sjp.query.api.util.FileUtil.getFileContentAsJson;
 
 import uk.gov.moj.cpp.sjp.query.service.OffenceFineLevels;

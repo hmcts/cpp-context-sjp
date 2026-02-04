@@ -2,11 +2,12 @@ package uk.gov.moj.sjp.it.util;
 
 import static java.util.Optional.empty;
 import static java.util.concurrent.TimeUnit.SECONDS;
-import static javax.json.Json.createReader;
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
 import static org.awaitility.Awaitility.await;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.Matchers.not;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
+import static uk.gov.justice.services.messaging.JsonObjects.createReader;
 import static uk.gov.justice.services.test.utils.core.http.BaseUriProvider.getBaseUri;
 import static uk.gov.moj.sjp.it.util.RestPollerWithDefaults.POLL_INTERVAL;
 import static uk.gov.moj.sjp.it.util.RestPollerWithDefaults.TIMEOUT_IN_SECONDS;
@@ -21,7 +22,6 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.IntStream;
 
-import javax.json.Json;
 import javax.json.JsonObject;
 import javax.ws.rs.client.Entity;
 import javax.ws.rs.core.MediaType;
@@ -102,7 +102,7 @@ public class ActivitiHelper {
 
     private static void executeJob(final String jobId) {
         final String url = ACTIVITI_BASE_PATH + "management/jobs/" + jobId;
-        sendPostRequest(url, Json.createObjectBuilder().add("action", "execute").build());
+        sendPostRequest(url, createObjectBuilder().add("action", "execute").build());
     }
 
     private static Response sendPostRequest(final String url, final JsonObject payload) {

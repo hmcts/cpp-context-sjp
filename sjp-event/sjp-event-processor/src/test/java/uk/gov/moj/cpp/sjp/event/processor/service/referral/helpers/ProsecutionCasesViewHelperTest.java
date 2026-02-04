@@ -7,8 +7,6 @@ import static java.util.Collections.singletonList;
 import static java.util.Objects.nonNull;
 import static java.util.Optional.ofNullable;
 import static java.util.UUID.randomUUID;
-import static javax.json.Json.createArrayBuilder;
-import static javax.json.Json.createObjectBuilder;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasSize;
@@ -23,6 +21,8 @@ import static uk.gov.justice.json.schemas.domains.sjp.queries.CaseDetails.caseDe
 import static uk.gov.justice.json.schemas.domains.sjp.queries.Defendant.defendant;
 import static uk.gov.justice.json.schemas.domains.sjp.queries.PressRestriction.pressRestriction;
 import static uk.gov.justice.json.schemas.domains.sjp.queries.QueryOffenceDecision.queryOffenceDecision;
+import static uk.gov.justice.services.messaging.JsonObjects.createArrayBuilder;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 import static uk.gov.moj.cpp.sjp.domain.disability.DisabilityNeeds.disabilityNeedsOf;
 import static uk.gov.moj.cpp.sjp.event.CaseReferredForCourtHearing.caseReferredForCourtHearing;
 

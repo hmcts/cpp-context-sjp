@@ -10,9 +10,9 @@ import static java.util.UUID.fromString;
 import static java.util.stream.Collectors.groupingBy;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toMap;
-import static javax.json.Json.createArrayBuilder;
-import static javax.json.Json.createObjectBuilder;
 import static org.apache.commons.lang3.StringUtils.isNotEmpty;
+import static uk.gov.justice.services.messaging.JsonObjects.createArrayBuilder;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 import static uk.gov.moj.cpp.sjp.query.view.ExportType.PUBLIC;
 
 import uk.gov.justice.services.common.converter.ListToJsonArrayConverter;
@@ -149,10 +149,10 @@ public class CaseService {
 
     public DefendantDetailUpdateRequestView findDefendantDetailUpdateRequest(final UUID caseId) {
         try {
-        return ofNullable(defendantDetailUpdateRequestRepository.findBy(caseId))
-                .map(DefendantDetailUpdateRequestView::new)
-                .orElse(null);
-        }catch (NoResultException e) {
+            return ofNullable(defendantDetailUpdateRequestRepository.findBy(caseId))
+                    .map(DefendantDetailUpdateRequestView::new)
+                    .orElse(null);
+        } catch (NoResultException e) {
             LOGGER.debug("No defendant detail update request found with caseId='{}'", caseId, e);
             return null;
         }

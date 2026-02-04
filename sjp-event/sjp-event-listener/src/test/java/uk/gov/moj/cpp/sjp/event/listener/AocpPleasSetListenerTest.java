@@ -5,6 +5,7 @@ import static java.util.UUID.randomUUID;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static uk.gov.justice.services.messaging.JsonObjects.createReader;
 import static uk.gov.justice.services.test.utils.core.enveloper.EnvelopeFactory.createEnvelope;
 
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
@@ -23,8 +24,6 @@ import uk.gov.moj.cpp.sjp.persistence.repository.CaseRepository;
 import java.io.StringReader;
 import java.time.ZonedDateTime;
 import java.util.UUID;
-
-import javax.json.Json;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -62,7 +61,7 @@ public class AocpPleasSetListenerTest {
         offenceDetail.setId(offenceId);
         offenceDetail.setSequenceNumber(1);
 
-        final DefendantDetail defendantDetail =new DefendantDetail();
+        final DefendantDetail defendantDetail = new DefendantDetail();
         defendantDetail.setOffences(asList(offenceDetail));
 
         final CaseDetail caseDetail = new CaseDetail();
@@ -78,6 +77,6 @@ public class AocpPleasSetListenerTest {
     private JsonEnvelope createJsonEnvelope(final UUID offenceId) throws JsonProcessingException {
         final AocpPleasSet pleasSet = new AocpPleasSet(randomUUID(), asList(new Plea(randomUUID(), offenceId, PleaType.GUILTY)), ZonedDateTime.now(), PleaMethod.ONLINE);
         final String json = objectMapper.writeValueAsString(pleasSet);
-        return createEnvelope("sjp.events.aocp-pleas-set", Json.createReader(new StringReader(json)).readObject());
+        return createEnvelope("sjp.events.aocp-pleas-set", createReader(new StringReader(json)).readObject());
     }
 }

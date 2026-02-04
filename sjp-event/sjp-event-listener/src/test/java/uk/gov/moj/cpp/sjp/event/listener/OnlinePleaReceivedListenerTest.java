@@ -2,20 +2,16 @@ package uk.gov.moj.cpp.sjp.event.listener;
 
 import static java.time.ZonedDateTime.now;
 import static java.util.UUID.randomUUID;
-import static javax.json.Json.createObjectBuilder;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.justice.services.messaging.JsonEnvelope.metadataBuilder;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 import static uk.gov.justice.services.test.utils.core.messaging.JsonEnvelopeBuilder.envelope;
 
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
 import uk.gov.justice.services.common.converter.jackson.ObjectMapperProducer;
 import uk.gov.justice.services.messaging.JsonEnvelope;
-import uk.gov.moj.cpp.sjp.domain.Address;
-import uk.gov.moj.cpp.sjp.domain.ContactDetails;
-import uk.gov.moj.cpp.sjp.domain.legalentity.LegalEntityDefendant;
-import uk.gov.moj.cpp.sjp.domain.onlineplea.PleadOnline;
 import uk.gov.moj.cpp.sjp.event.listener.converter.DefendantToDefendantDetails;
 import uk.gov.moj.cpp.sjp.persistence.entity.CaseDetail;
 import uk.gov.moj.cpp.sjp.persistence.entity.OnlinePlea;

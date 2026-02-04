@@ -9,14 +9,14 @@ import static com.github.tomakehurst.wiremock.client.WireMock.urlPathEqualTo;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlPathMatching;
 import static java.lang.String.format;
 import static java.util.UUID.randomUUID;
-import static javax.json.Json.createArrayBuilder;
-import static javax.json.Json.createObjectBuilder;
 import static javax.ws.rs.core.HttpHeaders.CONTENT_TYPE;
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
 import static javax.ws.rs.core.Response.Status.OK;
 import static org.apache.http.HttpHeaders.ACCEPT;
 import static org.apache.http.HttpStatus.SC_OK;
 import static uk.gov.justice.services.common.http.HeaderConstants.ID;
+import static uk.gov.justice.services.messaging.JsonObjects.createArrayBuilder;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 import static uk.gov.moj.sjp.it.Constants.DEFAULT_OFFENCE_CODE;
 import static uk.gov.moj.sjp.it.util.Defaults.DEFAULT_AOCP_COURT_HOUSE_OU_CODE;
 import static uk.gov.moj.sjp.it.util.Defaults.DEFAULT_AOCP_LJA_NATIONAL_COURT_CODE;
@@ -36,7 +36,6 @@ import java.util.Arrays;
 import java.util.Map;
 import java.util.UUID;
 
-import javax.json.Json;
 import javax.json.JsonArray;
 import javax.json.JsonArrayBuilder;
 import javax.json.JsonObject;
@@ -285,7 +284,7 @@ public class ReferenceDataServiceStub {
     public static void stubWithdrawalReasonsQuery(final Map<UUID, String> withdrawalReasons) {
         final JsonArray withdrawalReasonsArray = withdrawalReasons.entrySet().stream()
                 .map(e -> createObjectBuilder().add("id", e.getKey().toString()).add("reasonCodeDescription", e.getValue()))
-                .reduce(Json.createArrayBuilder(), JsonArrayBuilder::add, JsonArrayBuilder::add).build();
+                .reduce(createArrayBuilder(), JsonArrayBuilder::add, JsonArrayBuilder::add).build();
 
         final JsonObject response = createObjectBuilder().add("offenceWithdrawRequestReasons", withdrawalReasonsArray).build();
 

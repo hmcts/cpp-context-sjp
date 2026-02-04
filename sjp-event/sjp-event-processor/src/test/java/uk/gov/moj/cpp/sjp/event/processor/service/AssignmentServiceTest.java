@@ -3,17 +3,17 @@ package uk.gov.moj.cpp.sjp.event.processor.service;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withoutJsonPath;
 import static java.util.UUID.randomUUID;
-import static javax.json.Json.createArrayBuilder;
-import static javax.json.Json.createObjectBuilder;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasSize;
-import static org.mockito.hamcrest.MockitoHamcrest.argThat;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.mockito.hamcrest.MockitoHamcrest.argThat;
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
+import static uk.gov.justice.services.messaging.JsonObjects.createArrayBuilder;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMatcher.jsonEnvelope;
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMetadataMatcher.withMetadataEnvelopedFrom;
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopePayloadMatcher.payloadIsJson;
@@ -22,7 +22,6 @@ import static uk.gov.moj.cpp.sjp.domain.SessionType.DELEGATED_POWERS;
 import static uk.gov.moj.cpp.sjp.domain.SessionType.MAGISTRATE;
 import static uk.gov.moj.cpp.sjp.event.processor.EventProcessorConstants.CASE_ID;
 
-import javax.json.JsonArray;
 import uk.gov.justice.services.core.enveloper.Enveloper;
 import uk.gov.justice.services.core.requester.Requester;
 import uk.gov.justice.services.core.sender.Sender;
@@ -36,7 +35,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
-import javax.json.Json;
+import javax.json.JsonArray;
 
 import com.google.common.collect.ImmutableMap;
 import org.hamcrest.CustomTypeSafeMatcher;
@@ -82,7 +81,7 @@ public class AssignmentServiceTest {
         final JsonEnvelope sourceCommand = envelopeFrom(metadataWithRandomUUID(SESSION_STARTED_EVENT), createObjectBuilder().build());
 
         final JsonEnvelope assignmentCandidatesResponse = envelopeFrom(metadataWithRandomUUID(ASSIGNMENT_CANDIDATES_QUERY), createObjectBuilder()
-                .add("assignmentCandidates", Json.createArrayBuilder()
+                .add("assignmentCandidates", createArrayBuilder()
                         .add(createObjectBuilder()
                                 .add("caseId", assignmentCandidate1.getCaseId().toString())
                                 .add("caseStreamVersion", assignmentCandidate1.getCaseStreamVersion())
@@ -123,7 +122,7 @@ public class AssignmentServiceTest {
         final JsonEnvelope sourceCommand = envelopeFrom(metadataWithRandomUUID(SESSION_STARTED_EVENT), createObjectBuilder().build());
 
         final JsonEnvelope assignmentCandidatesResponse = envelopeFrom(metadataWithRandomUUID(ASSIGNMENT_CANDIDATES_QUERY), createObjectBuilder()
-                .add("assignmentCandidates", Json.createArrayBuilder()
+                .add("assignmentCandidates", createArrayBuilder()
                         .add(createObjectBuilder()
                                 .add("caseId", assignmentCandidate1.getCaseId().toString())
                                 .add("caseStreamVersion", assignmentCandidate1.getCaseStreamVersion())
@@ -161,7 +160,7 @@ public class AssignmentServiceTest {
         final JsonEnvelope sourceCommand = envelopeFrom(metadataWithRandomUUID(SESSION_STARTED_EVENT), createObjectBuilder().build());
 
         final JsonEnvelope assignmentCandidatesResponse = envelopeFrom(metadataWithRandomUUID(ASSIGNMENT_CANDIDATES_QUERY), createObjectBuilder()
-                .add("assignmentCandidates", Json.createArrayBuilder())
+                .add("assignmentCandidates", createArrayBuilder())
                 .build());
 
         when(assignmentConfiguration.getAssignmentCandidatesLimit()).thenReturn(assignmentCandidatesLimit);

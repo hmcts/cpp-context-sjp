@@ -1,11 +1,11 @@
 package uk.gov.moj.cpp.sjp.event.processor;
 
-import static javax.json.Json.createObjectBuilder;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 import static uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderFactory.metadataWithRandomUUID;
 import static uk.gov.moj.cpp.sjp.event.processor.results.converter.TestConstants.COURT_CENTRE_CODE;
 import static uk.gov.moj.cpp.sjp.event.processor.results.converter.TestConstants.FULL_NAME;

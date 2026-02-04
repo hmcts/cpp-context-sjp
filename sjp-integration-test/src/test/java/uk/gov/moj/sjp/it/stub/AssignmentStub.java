@@ -9,11 +9,12 @@ import static com.github.tomakehurst.wiremock.client.WireMock.urlPathEqualTo;
 import static javax.ws.rs.core.HttpHeaders.CONTENT_TYPE;
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
 import static org.apache.http.HttpStatus.SC_OK;
+import static uk.gov.justice.services.messaging.JsonObjects.createArrayBuilder;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 
 import java.util.Optional;
 import java.util.UUID;
 
-import javax.json.Json;
 import javax.json.JsonArrayBuilder;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
@@ -27,9 +28,9 @@ public class AssignmentStub {
     }
 
     public static void stubGetAssignmentsByDomainObjectId(final UUID caseId, final Optional<String> assignmentNature, final UUID... assignees) {
-        final JsonArrayBuilder assignments = Json.createArrayBuilder();
+        final JsonArrayBuilder assignments = createArrayBuilder();
         for (final UUID assignee : assignees) {
-            final JsonObjectBuilder assignment = Json.createObjectBuilder()
+            final JsonObjectBuilder assignment = createObjectBuilder()
                     .add("id", UUID.randomUUID().toString())
                     .add("version", 2)
                     .add("domainObjectId", caseId.toString())
@@ -38,7 +39,7 @@ public class AssignmentStub {
             assignments.add(assignment);
         }
 
-        final JsonObject payload = Json.createObjectBuilder().add("assignments", assignments).build();
+        final JsonObject payload = createObjectBuilder().add("assignments", assignments).build();
 
         stubFor(get(urlPathEqualTo(ASSIGNMENTS_QUERY_URL))
                 .withQueryParam("domainObjectId", equalTo(caseId.toString()))

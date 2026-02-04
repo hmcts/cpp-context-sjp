@@ -1,7 +1,7 @@
 package uk.gov.moj.cpp.sjp.query.view.converter.results;
 
 import static java.util.stream.Collectors.toList;
-import static javax.json.Json.createArrayBuilder;
+import static uk.gov.justice.services.messaging.JsonObjects.createArrayBuilder;
 import static uk.gov.moj.cpp.sjp.query.view.util.CaseResultsConstants.INDEX;
 import static uk.gov.moj.cpp.sjp.query.view.util.CaseResultsConstants.TERMINAL_ENTRIES;
 

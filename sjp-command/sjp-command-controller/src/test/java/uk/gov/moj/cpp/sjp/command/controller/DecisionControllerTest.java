@@ -4,25 +4,24 @@ import static com.jayway.jsonpath.matchers.JsonPathMatchers.isJson;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
 import static java.util.Optional.of;
 import static java.util.UUID.randomUUID;
-import static javax.json.Json.createObjectBuilder;
-import static org.apache.activemq.artemis.utils.JsonLoader.createArrayBuilder;
 import static org.hamcrest.CoreMatchers.allOf;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.notNullValue;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.collection.IsCollectionWithSize.hasSize;
-import static org.hamcrest.MatcherAssert.assertThat;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.justice.services.core.annotation.Component.COMMAND_CONTROLLER;
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
+import static uk.gov.justice.services.messaging.JsonObjects.createArrayBuilder;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 import static uk.gov.justice.services.test.utils.core.matchers.HandlerClassMatcher.isHandlerClass;
 import static uk.gov.justice.services.test.utils.core.matchers.HandlerMethodMatcher.method;
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMetadataMatcher.withMetadataEnvelopedFrom;
 import static uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderFactory.metadataWithRandomUUID;
 
-import javax.json.Json;
 import uk.gov.justice.services.core.enveloper.Enveloper;
 import uk.gov.justice.services.core.sender.Sender;
 import uk.gov.justice.services.messaging.Envelope;
@@ -103,12 +102,12 @@ public class DecisionControllerTest {
             .add("id", caseId.toString())
             .add("urn", "TFL6754")
             .add("defendant", createObjectBuilder()
-                .add("id", randomUUID().toString())
-                .add("personalDetails", createObjectBuilder()
-                    .add("address", createObjectBuilder()
-                        .add("postcode", "SE1 8HA")
+                    .add("id", randomUUID().toString())
+                    .add("personalDetails", createObjectBuilder()
+                            .add("address", createObjectBuilder()
+                                    .add("postcode", "SE1 8HA")
+                            )
                     )
-                )
             ).build();
 
     private final JsonObject caseDetailsWithoutPostcode = createObjectBuilder()
@@ -127,8 +126,8 @@ public class DecisionControllerTest {
             .add("enforcingCourtCode", 2222)
             .add("accountDivisionCode", 1111)
             .add("localJusticeArea", createObjectBuilder()
-                .add("nationalCourtCode", "1080")
-                .add("name", "Bedfordshire Magistrates' Court")
+                    .add("nationalCourtCode", "1080")
+                    .add("name", "Bedfordshire Magistrates' Court")
             ).build();
 
     private final JsonObjectBuilder referralReasonBuilder = createObjectBuilder()
@@ -137,10 +136,10 @@ public class DecisionControllerTest {
             .add("reason", "Critical")
             .add("reasonCode", "PLR")
             .add("welshReason", "Ple amhendant")
-            .add("welshSubReason","Diffynnydd i fynychu i gadarnhau ple")
-            .add("hearingCode","CTL")
-            .add("validFrom","2017-08-01")
-            .add("validTo","2017-08-01");
+            .add("welshSubReason", "Diffynnydd i fynychu i gadarnhau ple")
+            .add("hearingCode", "CTL")
+            .add("validFrom", "2017-08-01")
+            .add("validTo", "2017-08-01");
 
     @Test
     public void shouldHandleDecisionCommands() {
@@ -172,7 +171,7 @@ public class DecisionControllerTest {
     @Test
     public void shouldEnrichSaveDecisionCommandWithReferralReasonAndSubReason() {
         final JsonEnvelope saveDecisionCommand = createReferralSaveDecisionCommand();
-        referralReasonBuilder.add("subReason","Defendant has to attend");
+        referralReasonBuilder.add("subReason", "Defendant has to attend");
         when(userService.getCallingUserDetails(saveDecisionCommand)).thenReturn(userDetails);
         when(caseService.getCaseDetails(caseId.toString())).thenReturn(caseDetails);
         when(referenceDataService.getReferralReason(REFERRAL_REASON_ID.toString())).thenReturn(of(referralReasonBuilder.build()));
@@ -243,7 +242,7 @@ public class DecisionControllerTest {
                 withJsonPath("$.offenceDecisions[0].referralReasonId", equalTo(REFERRAL_REASON_ID.toString())),
                 withJsonPath("$.offenceDecisions[0].referralReason", equalTo(reasonForReferral)
 
-        ))));
+                ))));
     }
 
     private void verifySaveDecisionCommand(final JsonEnvelope envelope) {
@@ -354,7 +353,7 @@ public class DecisionControllerTest {
     }
 
     private static JsonArray createOffenceDecision() {
-        final JsonArrayBuilder offenceDecisionBuilderArray = Json.createArrayBuilder();
+        final JsonArrayBuilder offenceDecisionBuilderArray = createArrayBuilder();
         final JsonObjectBuilder offenceBuilder1 = createObjectBuilder();
         offenceBuilder1.add("offenceId", randomUUID().toString());
         offenceBuilder1.add("type", "WITHDRAWN");
@@ -371,7 +370,7 @@ public class DecisionControllerTest {
     }
 
     private static JsonArray createReferToCourtOffenceDecision() {
-        final JsonArrayBuilder offenceDecisionBuilderArray = Json.createArrayBuilder();
+        final JsonArrayBuilder offenceDecisionBuilderArray = createArrayBuilder();
         final JsonObjectBuilder offenceBuilder = createObjectBuilder();
         offenceBuilder.add("offenceId", randomUUID().toString());
         offenceBuilder.add("type", "REFER_FOR_COURT_HEARING");

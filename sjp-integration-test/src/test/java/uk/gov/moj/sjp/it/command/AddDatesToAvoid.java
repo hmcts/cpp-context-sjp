@@ -1,18 +1,18 @@
 package uk.gov.moj.sjp.it.command;
 
 import static java.lang.String.format;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 import static uk.gov.moj.sjp.it.util.HttpClientUtil.makePostCall;
 
 import java.util.UUID;
 
-import javax.json.Json;
 import javax.json.JsonObject;
 import javax.ws.rs.core.Response;
 
 public class AddDatesToAvoid {
 
     public static void addDatesToAvoid(final UUID caseId, final String datesToAvoid) {
-        final JsonObject payload = Json.createObjectBuilder()
+        final JsonObject payload = createObjectBuilder()
                 .add("datesToAvoid", datesToAvoid)
                 .build();
 

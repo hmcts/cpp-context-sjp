@@ -2,7 +2,6 @@
 package uk.gov.justice.api.resource;
 
 import static java.util.UUID.randomUUID;
-import static javax.json.Json.createObjectBuilder;
 import static javax.ws.rs.core.HttpHeaders.CONTENT_TYPE;
 import static javax.ws.rs.core.Response.Status.NOT_FOUND;
 import static javax.ws.rs.core.Response.Status.OK;
@@ -11,6 +10,7 @@ import static javax.ws.rs.core.Response.status;
 import static uk.gov.justice.services.core.interceptor.InterceptorContext.interceptorContextWithInput;
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
 import static uk.gov.justice.services.messaging.JsonEnvelope.metadataBuilder;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 
 import uk.gov.justice.services.core.annotation.Adapter;
 import uk.gov.justice.services.core.annotation.Component;
@@ -23,7 +23,6 @@ import java.util.UUID;
 
 import javax.ejb.Stateless;
 import javax.inject.Inject;
-import javax.json.Json;
 import javax.json.JsonObject;
 import javax.json.JsonValue;
 import javax.ws.rs.WebApplicationException;
@@ -87,7 +86,7 @@ public class DefaultQueryApiCasesCaseIdDocumentsDocumentIdContentResource implem
 
             if (OK.equals(documentContentResponseStatus)) {
                 final String url = documentContentResponse.readEntity(String.class);
-                final JsonObject jsonObject = Json.createObjectBuilder()
+                final JsonObject jsonObject = createObjectBuilder()
                         .add("url", url)
                         .build();
 

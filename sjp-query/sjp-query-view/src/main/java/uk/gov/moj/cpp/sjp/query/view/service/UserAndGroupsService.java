@@ -2,12 +2,12 @@ package uk.gov.moj.cpp.sjp.query.view.service;
 
 import static java.util.Arrays.asList;
 import static java.util.UUID.randomUUID;
-import static javax.json.Json.createObjectBuilder;
 import static org.slf4j.LoggerFactory.getLogger;
 import static uk.gov.justice.services.core.annotation.Component.QUERY_VIEW;
 import static uk.gov.justice.services.messaging.Envelope.metadataBuilder;
 import static uk.gov.justice.services.messaging.Envelope.metadataFrom;
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 
 import uk.gov.justice.services.core.annotation.ServiceComponent;
 import uk.gov.justice.services.core.enveloper.Enveloper;
@@ -24,7 +24,6 @@ import java.util.Optional;
 import java.util.UUID;
 
 import javax.inject.Inject;
-import javax.json.Json;
 import javax.json.JsonArray;
 import javax.json.JsonObject;
 
@@ -108,7 +107,7 @@ public class UserAndGroupsService {
             return false;
         }
         final JsonEnvelope requestEnvelope = enveloper.withMetadataFrom(originalEnvelope, "usersgroups.get-groups-by-user")
-                .apply(Json.createObjectBuilder().add(USER_ID, userId.get()).build());
+                .apply(createObjectBuilder().add(USER_ID, userId.get()).build());
 
         final JsonEnvelope responseEnvelope = requester.requestAsAdmin(requestEnvelope);
 

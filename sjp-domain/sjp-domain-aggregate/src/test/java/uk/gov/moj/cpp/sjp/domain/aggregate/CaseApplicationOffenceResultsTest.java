@@ -7,6 +7,7 @@ import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.junit.Assert.fail;
+import static uk.gov.justice.services.messaging.JsonObjects.createReader;
 import static uk.gov.justice.services.test.utils.core.reflection.ReflectionUtil.setField;
 
 import uk.gov.justice.core.courts.Hearing;
@@ -22,7 +23,6 @@ import java.nio.charset.Charset;
 import java.util.List;
 import java.util.stream.Stream;
 
-import javax.json.Json;
 import javax.json.JsonObject;
 import javax.json.JsonReader;
 
@@ -43,6 +43,7 @@ public class CaseApplicationOffenceResultsTest extends CaseAggregateBaseTest {
     @InjectMocks
     private CaseAggregate caseAggregate;
     private CaseAggregateState caseAggregateState;
+
     @BeforeEach
     @Override
     public void setUp() {
@@ -51,12 +52,12 @@ public class CaseApplicationOffenceResultsTest extends CaseAggregateBaseTest {
         final JsonObject hearingPayload = getPayload(TEMPLATE_PAYLOAD_APPLICATION_HEARING_IN_AGGREGATE);
         final Hearing hearingObject = jsonObjectToObjectConverter.convert((JsonObject) hearingPayload.get("hearing"), Hearing.class);
         caseAggregateState.setApplicationResults(new ApplicationResultsRecorded(hearingObject, "2024-09-27", false, null, now()));
-        setField(caseAggregate,"state", caseAggregateState);
+        setField(caseAggregate, "state", caseAggregateState);
         super.setUp();
     }
 
     @Test
-    public void saveApplicationOffencesResults(){
+    public void saveApplicationOffencesResults() {
         final JsonObject hearingPayload = getPayload(TEMPLATE_PAYLOAD_HEARING);
         final Hearing hearingObject = jsonObjectToObjectConverter.convert((JsonObject) hearingPayload.get("hearing"), Hearing.class);
         final ApplicationOffencesResults applicationOffencesResults =
@@ -77,8 +78,8 @@ public class CaseApplicationOffenceResultsTest extends CaseAggregateBaseTest {
     }
 
     @Test
-    public void shouldNotSaveApplicationOffencesResults_applicationResultsEmptyInState(){
-        setField(caseAggregate,"state", new CaseAggregateState());
+    public void shouldNotSaveApplicationOffencesResults_applicationResultsEmptyInState() {
+        setField(caseAggregate, "state", new CaseAggregateState());
         final JsonObject hearingPayload = getPayload(TEMPLATE_PAYLOAD_HEARING);
         final Hearing hearingObject = jsonObjectToObjectConverter.convert((JsonObject) hearingPayload.get("hearing"), Hearing.class);
         final ApplicationOffencesResults applicationOffencesResults =
@@ -98,7 +99,7 @@ public class CaseApplicationOffenceResultsTest extends CaseAggregateBaseTest {
         } catch (final Exception e) {
             fail("Error consuming file from location " + path);
         }
-        final JsonReader reader = Json.createReader(new StringReader(request));
+        final JsonReader reader = createReader(new StringReader(request));
         return reader.readObject();
     }
 

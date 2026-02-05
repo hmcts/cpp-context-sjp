@@ -1,8 +1,8 @@
 package uk.gov.moj.cpp.sjp.query.view.util;
 
 import static com.google.common.io.Resources.getResource;
-import static javax.json.Json.createReader;
 import static org.apache.commons.io.FileUtils.readFileToString;
+import static uk.gov.justice.services.messaging.JsonObjects.createReader;
 
 import uk.gov.justice.services.common.converter.jackson.ObjectMapperProducer;
 

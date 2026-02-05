@@ -1,6 +1,7 @@
 package uk.gov.moj.cpp.sjp.query.api.service;
 
 import static uk.gov.justice.services.core.annotation.Component.QUERY_API;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 
 import uk.gov.justice.services.core.annotation.ServiceComponent;
 import uk.gov.justice.services.core.enveloper.Enveloper;
@@ -8,7 +9,6 @@ import uk.gov.justice.services.core.requester.Requester;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 
 import javax.inject.Inject;
-import javax.json.Json;
 import javax.json.JsonObject;
 
 public class ReferenceOffencesDataService {
@@ -23,7 +23,7 @@ public class ReferenceOffencesDataService {
     public JsonObject getOffenceReferenceData(final JsonEnvelope envelope, final String offenceCode, final String date) {
         final JsonEnvelope request = enveloper
                 .withMetadataFrom(envelope, "referencedataoffences.query.offences-list")
-                .apply(Json.createObjectBuilder()
+                .apply(createObjectBuilder()
                         .add("cjsoffencecode", offenceCode)
                         .add("date", date)
                         .build());
@@ -34,7 +34,7 @@ public class ReferenceOffencesDataService {
     public JsonObject getOffenceReferenceDataByOffenceId(final JsonEnvelope envelope, final String offenceId) {
         final JsonEnvelope request = enveloper
                 .withMetadataFrom(envelope, "referencedataoffences.query.offence")
-                .apply(Json.createObjectBuilder()
+                .apply(createObjectBuilder()
                         .add("offenceId", offenceId)
                         .build());
         final JsonEnvelope response = requester.request(request);

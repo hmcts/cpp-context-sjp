@@ -5,6 +5,8 @@ import static java.util.UUID.randomUUID;
 import static uk.gov.justice.services.core.annotation.Component.EVENT_PROCESSOR;
 import static uk.gov.justice.services.messaging.Envelope.envelopeFrom;
 import static uk.gov.justice.services.messaging.JsonEnvelope.metadataFrom;
+import static uk.gov.justice.services.messaging.JsonObjects.createArrayBuilder;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 
 import uk.gov.justice.services.core.annotation.Handles;
 import uk.gov.justice.services.core.annotation.ServiceComponent;
@@ -18,11 +20,9 @@ import uk.gov.moj.cpp.sjp.event.session.DelegatedPowersSessionStarted;
 import uk.gov.moj.cpp.sjp.event.session.MagistrateSessionStarted;
 import uk.gov.moj.cpp.sjp.event.session.ResetAocpSession;
 
-import java.util.Optional;
 import java.util.UUID;
 
 import javax.inject.Inject;
-import javax.json.Json;
 import javax.json.JsonObject;
 
 @ServiceComponent(EVENT_PROCESSOR)
@@ -71,15 +71,15 @@ public class SessionProcessor {
 
     @Handles(ResetAocpSession.EVENT_NAME)
     public void aocpSessionResetRequested(final JsonEnvelope envelope) {
-        final JsonObject response= sjpService.getLatestAocpSessionDetails(envelope);
-        if(nonNull(response)) {
+        final JsonObject response = sjpService.getLatestAocpSessionDetails(envelope);
+        if (nonNull(response)) {
             endSession(envelope, response.getString(SESSION_ID));
         }
         startNewSession(envelope);
     }
 
-    private void endSession(final JsonEnvelope envelope, String sessionId){
-        final JsonObject payload = Json.createObjectBuilder()
+    private void endSession(final JsonEnvelope envelope, String sessionId) {
+        final JsonObject payload = createObjectBuilder()
                 .add(SESSION_ID, sessionId).build();
 
         final Metadata metadata = metadataFrom(envelope.metadata())
@@ -89,15 +89,15 @@ public class SessionProcessor {
         sender.send(envelopeFrom(metadata, payload));
     }
 
-    private void startNewSession(final JsonEnvelope envelope){
+    private void startNewSession(final JsonEnvelope envelope) {
 
-        final JsonObject payload = Json.createObjectBuilder()
+        final JsonObject payload = createObjectBuilder()
                 .add(SESSION_ID, randomUUID().toString())
-                .add(COURT_HOUSE_CODE , AOCP_COURT_HOUSE_CODE)
+                .add(COURT_HOUSE_CODE, AOCP_COURT_HOUSE_CODE)
                 .add(COURT_HOUSE_NAME, AOCP_COURT_HOUSE_NAME)
                 .add(LOCAL_JUSTICE_AREA_NATIONAL_COURT_CODE, AOCP_COURT_LJA)
                 .add("isAocpSession", true)
-                .add("prosecutors", Json.createArrayBuilder().add("TFL").add("TVL").add("DVLA").build())
+                .add("prosecutors", createArrayBuilder().add("TFL").add("TVL").add("DVLA").build())
                 .build();
 
         final Metadata metadata = metadataFrom(envelope.metadata())
@@ -108,7 +108,7 @@ public class SessionProcessor {
     }
 
     private void emitPublicSessionStartedEvent(final UUID sessionId, final String courtHouseCode, final String courtHouseName, final String localJusticeAreaNationalCourtCode, final SessionType sessionType, final JsonEnvelope event) {
-        final JsonObject payload = Json.createObjectBuilder()
+        final JsonObject payload = createObjectBuilder()
                 .add(SESSION_ID, sessionId.toString())
                 .add(COURT_HOUSE_CODE, courtHouseCode)
                 .add(COURT_HOUSE_NAME, courtHouseName)

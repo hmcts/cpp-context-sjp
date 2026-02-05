@@ -13,7 +13,6 @@ import static com.github.tomakehurst.wiremock.client.WireMock.urlPathEqualTo;
 import static java.lang.String.format;
 import static java.util.Optional.empty;
 import static java.util.UUID.randomUUID;
-import static javax.json.Json.createObjectBuilder;
 import static javax.ws.rs.core.HttpHeaders.CONTENT_TYPE;
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
 import static org.apache.http.HttpStatus.SC_ACCEPTED;
@@ -24,6 +23,7 @@ import static org.hamcrest.Matchers.not;
 import static uk.gov.justice.services.integrationtest.utils.jms.JmsMessageProducerClientProvider.newPublicJmsMessageProducerClientProvider;
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
 import static uk.gov.justice.services.messaging.JsonEnvelope.metadataFrom;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 import static uk.gov.moj.sjp.it.util.RestPollerWithDefaults.POLL_INTERVAL;
 
 import uk.gov.justice.services.common.http.HeaderConstants;
@@ -31,16 +31,13 @@ import uk.gov.justice.services.integrationtest.utils.jms.JmsMessageProducerClien
 import uk.gov.justice.services.messaging.DefaultJsonObjectEnvelopeConverter;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 
-import java.time.Duration;
 import java.time.ZonedDateTime;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
-import javax.json.Json;
 import javax.json.JsonObject;
 
 import com.github.tomakehurst.wiremock.verification.LoggedRequest;
-import uk.gov.justice.services.test.utils.core.http.FibonacciPollWithStartAndMax;
 
 public class MaterialStub {
 
@@ -90,7 +87,7 @@ public class MaterialStub {
     }
 
     public static void stubMaterialMetadata(final UUID materialId, final String fileName, final String mimeType, final ZonedDateTime addedAt) {
-        final JsonObject metadata = Json.createObjectBuilder()
+        final JsonObject metadata = createObjectBuilder()
                 .add("materialId", materialId.toString())
                 .add("fileName", fileName)
                 .add("mimeType", mimeType)

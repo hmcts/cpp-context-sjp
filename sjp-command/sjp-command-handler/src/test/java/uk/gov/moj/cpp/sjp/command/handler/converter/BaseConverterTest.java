@@ -1,13 +1,13 @@
 package uk.gov.moj.cpp.sjp.command.handler.converter;
 
 import static org.mockito.Mockito.when;
+import static uk.gov.justice.services.messaging.JsonObjects.createReader;
 
 import uk.gov.justice.services.messaging.JsonEnvelope;
 
 import java.io.IOException;
 import java.io.InputStream;
 
-import javax.json.Json;
 import javax.json.JsonObject;
 import javax.json.JsonReader;
 
@@ -25,7 +25,7 @@ public abstract class BaseConverterTest {
 
     protected void givenPayload(String filePath) throws IOException {
         try (InputStream inputStream = getClass().getResourceAsStream(filePath)) {
-            JsonReader jsonReader = Json.createReader(inputStream);
+            JsonReader jsonReader = createReader(inputStream);
             payload = jsonReader.readObject();
         }
         when(command.payloadAsJsonObject()).thenReturn(payload);

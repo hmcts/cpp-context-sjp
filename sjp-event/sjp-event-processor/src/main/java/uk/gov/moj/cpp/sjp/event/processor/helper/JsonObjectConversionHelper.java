@@ -1,7 +1,7 @@
 package uk.gov.moj.cpp.sjp.event.processor.helper;
 
-import static javax.json.Json.createReader;
 import static org.apache.commons.io.Charsets.UTF_8;
+import static uk.gov.justice.services.messaging.JsonObjects.createReader;
 
 import uk.gov.justice.services.common.converter.jackson.ObjectMapperProducer;
 

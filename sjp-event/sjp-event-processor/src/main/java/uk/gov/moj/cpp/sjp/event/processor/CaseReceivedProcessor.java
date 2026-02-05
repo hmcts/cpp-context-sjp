@@ -5,14 +5,15 @@ import static org.apache.commons.lang3.StringUtils.isNotEmpty;
 import static uk.gov.justice.services.core.annotation.Component.EVENT_PROCESSOR;
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
 import static uk.gov.justice.services.messaging.JsonEnvelope.metadataFrom;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 import static uk.gov.justice.services.messaging.JsonObjects.getBoolean;
 import static uk.gov.moj.cpp.sjp.event.processor.EventProcessorConstants.CASE_ID;
 import static uk.gov.moj.cpp.sjp.event.processor.EventProcessorConstants.DEFENDANT;
 import static uk.gov.moj.cpp.sjp.event.processor.EventProcessorConstants.EXPECTED_DATE_READY;
 import static uk.gov.moj.cpp.sjp.event.processor.EventProcessorConstants.POSTING_DATE;
-import static uk.gov.moj.cpp.sjp.event.processor.EventProcessorConstants.URN;
 import static uk.gov.moj.cpp.sjp.event.processor.EventProcessorConstants.PROSECUTING_AUTHORITY;
 import static uk.gov.moj.cpp.sjp.event.processor.EventProcessorConstants.PROSECUTOR_AOCP_APPROVED;
+import static uk.gov.moj.cpp.sjp.event.processor.EventProcessorConstants.URN;
 
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
 import uk.gov.justice.services.core.annotation.Component;
@@ -37,7 +38,6 @@ import java.util.Optional;
 import java.util.UUID;
 
 import javax.inject.Inject;
-import javax.json.Json;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
 
@@ -87,7 +87,7 @@ public class CaseReceivedProcessor {
         final LocalDate postingDate = LocalDate.parse(event.payloadAsJsonObject().getString(POSTING_DATE));
         final LocalDate expectedDateReady = LocalDate.parse(event.payloadAsJsonObject().getString(EXPECTED_DATE_READY));
         final String prosecutingAuthority = event.payloadAsJsonObject().getString(PROSECUTING_AUTHORITY);
-        final Defendant defendant =  jsonObjectConverter.convert(event.payloadAsJsonObject().getJsonObject(DEFENDANT), Defendant.class);
+        final Defendant defendant = jsonObjectConverter.convert(event.payloadAsJsonObject().getJsonObject(DEFENDANT), Defendant.class);
 
         resolveCaseAOCPEligibility(event, caseId, prosecutingAuthority, defendant, postingDate);
 
@@ -101,7 +101,7 @@ public class CaseReceivedProcessor {
     private void resolveCaseAOCPEligibility(final JsonEnvelope event, final UUID caseId, final String prosecutingAuthority,
                                             final Defendant defendant, final LocalDate postingDate) {
 
-        final JsonObjectBuilder payloadBuilder = Json.createObjectBuilder()
+        final JsonObjectBuilder payloadBuilder = createObjectBuilder()
                 .add(CASE_ID, caseId.toString());
 
         final Optional<JsonObject> prosecutorDetails = referenceDataService.getProsecutor(prosecutingAuthority, event);
@@ -121,7 +121,7 @@ public class CaseReceivedProcessor {
                 .withName(CASE_STARTED_PUBLIC_EVENT_NAME)
                 .build();
 
-        final JsonObject publicEventPayload = Json.createObjectBuilder()
+        final JsonObject publicEventPayload = createObjectBuilder()
                 .add("id", caseId.toString())
                 .add("postingDate", postingDate.toString())
                 .build();
@@ -131,13 +131,13 @@ public class CaseReceivedProcessor {
     private void relayCaseToCourtStore(String caseId) {
 
         if (!caseId.isEmpty()) {
-            final JsonObjectBuilder payloadBuilder = Json.createObjectBuilder();
+            final JsonObjectBuilder payloadBuilder = createObjectBuilder();
             payloadBuilder.add("CaseReference", caseId);
             try {
                 this.azureFunctionService.relayCaseOnCPP(payloadBuilder.build().toString());
             } catch (IOException ex) {
-                LOGGER.error("Error relaying case to court store.",ex);
-           }
+                LOGGER.error("Error relaying case to court store.", ex);
+            }
         }
     }
 

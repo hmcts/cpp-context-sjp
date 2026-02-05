@@ -4,6 +4,7 @@ import static java.util.Objects.isNull;
 import static org.skyscreamer.jsonassert.JSONCompare.compareJSON;
 import static org.skyscreamer.jsonassert.JSONCompareMode.LENIENT;
 import static org.skyscreamer.jsonassert.JSONCompareMode.STRICT;
+import static uk.gov.justice.services.messaging.JsonObjects.createReader;
 
 import uk.gov.justice.services.common.converter.jackson.ObjectMapperProducer;
 
@@ -13,7 +14,6 @@ import java.io.StringWriter;
 import java.io.UncheckedIOException;
 import java.util.List;
 
-import javax.json.Json;
 import javax.json.JsonObject;
 import javax.json.JsonReader;
 
@@ -30,7 +30,7 @@ public class JsonHelper {
     private static final Logger LOGGER = LoggerFactory.getLogger(JsonHelper.class);
 
     public static JsonObject getJsonObject(final String json) {
-        try (final JsonReader reader = Json.createReader(new StringReader(json))) {
+        try (final JsonReader reader = createReader(new StringReader(json))) {
             return reader.readObject();
         }
     }

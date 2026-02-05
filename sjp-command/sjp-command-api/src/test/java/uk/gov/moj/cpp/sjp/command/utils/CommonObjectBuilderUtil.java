@@ -1,13 +1,13 @@
 package uk.gov.moj.cpp.sjp.command.utils;
 
 import static java.util.Collections.singletonList;
-import static javax.json.Json.createArrayBuilder;
-import static javax.json.Json.createObjectBuilder;
 import static uk.gov.justice.json.schemas.domains.sjp.Address.address;
 import static uk.gov.justice.json.schemas.domains.sjp.command.Employer.employer;
 import static uk.gov.justice.json.schemas.domains.sjp.command.PersonalDetails.personalDetails;
-import static uk.gov.justice.json.schemas.domains.sjp.command.PleadOnline.pleadOnline;
 import static uk.gov.justice.json.schemas.domains.sjp.command.PleadAocpOnline.pleadAocpOnline;
+import static uk.gov.justice.json.schemas.domains.sjp.command.PleadOnline.pleadOnline;
+import static uk.gov.justice.services.messaging.JsonObjects.createArrayBuilder;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 
 import uk.gov.justice.json.schemas.domains.sjp.Address;
 import uk.gov.justice.json.schemas.domains.sjp.command.Employer;

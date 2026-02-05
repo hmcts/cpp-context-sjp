@@ -1,17 +1,13 @@
 package uk.gov.moj.cpp.sjp.event.processor;
 
+import static java.time.LocalDate.now;
 import static java.util.UUID.randomUUID;
-import static javax.json.Json.createObjectBuilder;
 import static uk.gov.justice.services.core.annotation.Component.EVENT_PROCESSOR;
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
 import static uk.gov.justice.services.messaging.JsonEnvelope.metadataFrom;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 import static uk.gov.moj.cpp.sjp.event.processor.service.NotificationNotifyDocumentType.AOCP_ACCEPTED_EMAIL_NOTIFICATION;
-import static java.time.LocalDate.now;
 
-import java.time.LocalDate;
-import java.time.ZonedDateTime;
-import javax.inject.Inject;
-import javax.json.JsonObject;
 import uk.gov.justice.services.common.configuration.Value;
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
 import uk.gov.justice.services.core.annotation.Handles;
@@ -25,6 +21,12 @@ import uk.gov.moj.cpp.sjp.event.processor.service.Country;
 import uk.gov.moj.cpp.sjp.event.processor.service.ReferenceDataService;
 import uk.gov.moj.cpp.sjp.event.processor.service.SystemIdMapperService;
 import uk.gov.moj.cpp.sjp.event.processor.service.timers.TimerService;
+
+import java.time.LocalDate;
+import java.time.ZonedDateTime;
+
+import javax.inject.Inject;
+import javax.json.JsonObject;
 
 @ServiceComponent(EVENT_PROCESSOR)
 public class DefendantAcceptedAocpProcessor {

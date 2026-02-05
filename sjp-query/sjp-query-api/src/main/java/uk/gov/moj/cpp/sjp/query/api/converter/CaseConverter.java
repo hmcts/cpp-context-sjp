@@ -1,16 +1,17 @@
 package uk.gov.moj.cpp.sjp.query.api.converter;
 
 
-import static javax.json.Json.createObjectBuilder;
 import static org.slf4j.LoggerFactory.getLogger;
+import static uk.gov.justice.services.messaging.JsonObjects.createArrayBuilder;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.messaging.JsonObjects;
+import uk.gov.moj.cpp.sjp.query.api.service.ReferenceOffencesDataService;
 
 import java.util.Optional;
 
 import javax.inject.Inject;
-import javax.json.Json;
 import javax.json.JsonArray;
 import javax.json.JsonArrayBuilder;
 import javax.json.JsonNumber;
@@ -18,7 +19,6 @@ import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
 
 import org.slf4j.Logger;
-import uk.gov.moj.cpp.sjp.query.api.service.ReferenceOffencesDataService;
 
 @SuppressWarnings("WeakerAccess")
 public class CaseConverter {
@@ -51,7 +51,7 @@ public class CaseConverter {
     }
 
     private JsonArray buildOffencesArray(final JsonEnvelope query, final JsonArray offences) {
-        final JsonArrayBuilder builder = Json.createArrayBuilder();
+        final JsonArrayBuilder builder = createArrayBuilder();
         offences.getValuesAs(JsonObject.class)
                 .stream()
                 .map(offence -> buildOffenceObject(query, offence))
@@ -69,7 +69,7 @@ public class CaseConverter {
 
         final JsonNumber aocpStandardPenalty = offence.getJsonNumber("aocpStandardPenalty");
 
-        final JsonObjectBuilder builder = Json.createObjectBuilder()
+        final JsonObjectBuilder builder = createObjectBuilder()
                 .add("id", offence.getString("id"))
                 .add("wording", offence.getString("wording"))
                 .add("pendingWithdrawal", offence.getBoolean("pendingWithdrawal", false))
@@ -95,8 +95,7 @@ public class CaseConverter {
                     .ifPresent(titleWelsh -> builder.add("titleWelsh", titleWelsh));
             Optional.ofNullable(welsh.getString("welshlegislation", null))
                     .ifPresent(legislationWelsh -> builder.add("legislationWelsh", legislationWelsh));
-        }
-        else {
+        } else {
             LOGGER.warn("No referencedata offence welsh translations for offenceCode: {}", offenceCode);
         }
 
@@ -114,9 +113,9 @@ public class CaseConverter {
 
         final JsonNumber aocpTotalCost = caseDetails.getJsonNumber("aocpTotalCost");
 
-        final Optional<Boolean> resultedThroughAocp= JsonObjects.getBoolean(caseDetails, "resultedThroughAocp");
+        final Optional<Boolean> resultedThroughAocp = JsonObjects.getBoolean(caseDetails, "resultedThroughAocp");
 
-        final Optional<Boolean> defendantAcceptedAocp= JsonObjects.getBoolean(caseDetails, "defendantAcceptedAocp");
+        final Optional<Boolean> defendantAcceptedAocp = JsonObjects.getBoolean(caseDetails, "defendantAcceptedAocp");
 
         final JsonObjectBuilder builder = createObjectBuilder()
                 .add("id", caseDetails.getString("id"))

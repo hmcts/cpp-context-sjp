@@ -3,11 +3,11 @@ package uk.gov.moj.cpp.sjp.command.api.validator.decisionvalidator;
 import static java.math.BigDecimal.ONE;
 import static java.math.BigDecimal.TEN;
 import static java.math.BigDecimal.ZERO;
-import static javax.json.Json.createArrayBuilder;
-import static javax.json.Json.createObjectBuilder;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static uk.gov.justice.services.messaging.JsonObjects.createArrayBuilder;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 import static uk.gov.moj.cpp.sjp.command.api.validator.decisionvalidator.FinancialImpositionValidator.validateFinancialImposition;
 import static uk.gov.moj.cpp.sjp.domain.decision.DecisionType.DecisionName.DISCHARGE;
 import static uk.gov.moj.cpp.sjp.domain.decision.DecisionType.DecisionName.FINANCIAL_PENALTY;
@@ -21,9 +21,7 @@ import java.time.LocalDate;
 import javax.json.JsonArrayBuilder;
 import javax.json.JsonObject;
 
-import org.junit.Rule;
 import org.junit.jupiter.api.Test;
-import org.junit.rules.ExpectedException;
 
 public class FinancialImpositionValidatorTest {
 

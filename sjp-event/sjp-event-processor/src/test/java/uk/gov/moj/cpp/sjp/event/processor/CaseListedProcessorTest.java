@@ -1,13 +1,13 @@
 package uk.gov.moj.cpp.sjp.event.processor;
 
 import static java.util.UUID.randomUUID;
-import static javax.json.Json.createArrayBuilder;
-import static javax.json.Json.createObjectBuilder;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static uk.gov.justice.services.messaging.JsonObjects.createArrayBuilder;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 import static uk.gov.justice.services.test.utils.core.enveloper.EnvelopeFactory.createEnvelope;
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMetadataMatcher.withMetadataEnvelopedFrom;
 import static uk.gov.moj.cpp.sjp.event.processor.EventProcessorConstants.CASE_ID;
@@ -29,7 +29,6 @@ import java.util.List;
 import java.util.UUID;
 import java.util.function.Function;
 
-import javax.json.Json;
 import javax.json.JsonArray;
 import javax.json.JsonValue;
 
@@ -93,7 +92,7 @@ public class CaseListedProcessorTest {
         final JsonEnvelope privateEvent = createEnvelope(PRIVATE_CASE_LISTED_IN_REFER_TO_COURT_EVENT,
                 createObjectBuilder()
                         .add(CASE_ID, caseId.toString())
-                        .add("courtCentre", Json.createObjectBuilder()
+                        .add("courtCentre", createObjectBuilder()
                                 .add("id", "cf73207f-3ced-488a-82a0-3fba79c2ce04")
                                 .add("name", "Carmarthen Magistrates' Court")
                                 .add("roomId", "d7020fe0-cd97-4ce0-84c2-fd00ff0bc48a")
@@ -128,7 +127,7 @@ public class CaseListedProcessorTest {
         final JsonEnvelope privateEvent = createEnvelope(PRIVATE_CASE_LISTED_IN_REFER_TO_COURT_EVENT,
                 createObjectBuilder()
                         .add(CASE_ID, caseId.toString())
-                        .add("courtCentre", Json.createObjectBuilder()
+                        .add("courtCentre", createObjectBuilder()
                                 .add("id", "cf73207f-3ced-488a-82a0-3fba79c2ce04")
                                 .add("name", "Carmarthen Magistrates' Court")
                                 .add("roomId", "d7020fe0-cd97-4ce0-84c2-fd00ff0bc48a")

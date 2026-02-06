@@ -56,8 +56,13 @@ public class HttpClientUtil {
 
         final String writeUrl = getWriteUrl(url);
         try (Response response = restClient.postCommand(writeUrl, mediaType, payload, map)) {
-
-            assertThat(format("Post returned not expected status code with body: %s", response.readEntity(String.class)),
+            String responseBody = "";
+            try {
+                responseBody = response.readEntity(String.class);
+            } catch (IllegalStateException e) {
+                //no-op in case of no response
+            }
+            assertThat(format("Post returned not expected status code with body: %s", responseBody),
                     response.getStatus(), is(expectedStatus.getStatusCode()));
         }
 
@@ -70,11 +75,15 @@ public class HttpClientUtil {
         map.add(HeaderConstants.CLIENT_CORRELATION_ID, randomUUID());
 
         final String writeUrl = getWriteUrl(url);
-        final String responseBody;
+        String responseBody = "";
         try (Response response = restClient.postCommand(writeUrl, mediaType, payload, map)) {
             LOGGER.info("Post call made: \n\tURL = {} \n\tMedia type = {} \n\tUser = {}\n",
                     writeUrl, mediaType, USER_ID);
-            responseBody = response.readEntity(String.class);
+            try {
+                responseBody = response.readEntity(String.class);
+            } catch (IllegalStateException e) {
+                //no-op in case of no response
+            }
             assertThat(format("Post returned not expected status code with body: %s", responseBody),
                     response.getStatus(), is(expectedStatus.getStatusCode()));
         }

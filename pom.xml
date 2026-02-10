@@ -66,7 +66,7 @@
         <argLine>-Djava.locale.providers=CLDR</argLine>
         <elasticsearch-maven-plugin.version>6.13</elasticsearch-maven-plugin.version>
         <elasticsearch.embedded.version>7.16.2</elasticsearch.embedded.version>
-        <stagingenforcement.version>17.0.64</stagingenforcement.version>
+        <stagingenforcement.version>17.103.73</stagingenforcement.version>
         <unifiedsearch.version>17.0.26</unifiedsearch.version>
         <jsonassert.version>1.5.0</jsonassert.version>
         <junit4.version>4.13.1</junit4.version>

@@ -5,7 +5,6 @@ import static java.util.Objects.nonNull;
 import static java.util.Optional.ofNullable;
 import static java.util.UUID.randomUUID;
 import static javax.json.Json.createArrayBuilder;
-import static javax.json.Json.createObjectBuilder;
 import static uk.gov.justice.services.core.annotation.Component.COMMAND_CONTROLLER;
 import static uk.gov.justice.services.core.enveloper.Enveloper.envelop;
 import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
@@ -22,6 +21,7 @@ import uk.gov.moj.cpp.sjp.command.service.UserService;
 import java.util.Optional;
 
 import javax.inject.Inject;
+import javax.json.Json;
 import javax.json.JsonArray;
 import javax.json.JsonArrayBuilder;
 import javax.json.JsonObject;
@@ -58,7 +58,7 @@ public class DecisionController {
 
         final JsonObjectBuilder enrichedPayload = createObjectBuilder(payload)
                 .add("decisionId", randomUUID().toString())
-                .add("savedBy", createObjectBuilder()
+                .add("savedBy", Json.createObjectBuilder()
                         .add(USER_ID, userDetails.getJsonString(USER_ID))
                         .add(FIRST_NAME, userDetails.getString(FIRST_NAME))
                         .add(LAST_NAME, userDetails.getString(LAST_NAME)));
@@ -84,7 +84,7 @@ public class DecisionController {
         final JsonObject userDetails = userService.getCallingUserDetails(command);
         final JsonObjectBuilder enrichedPayload = createObjectBuilder(payload)
                 .add("decisionId", randomUUID().toString())
-                .add("savedBy", createObjectBuilder()
+                .add("savedBy", Json.createObjectBuilder()
                         .add(USER_ID, userDetails.getJsonString(USER_ID))
                         .add(FIRST_NAME, userDetails.getString(FIRST_NAME))
                         .add(LAST_NAME, userDetails.getString(LAST_NAME)));
@@ -109,7 +109,7 @@ public class DecisionController {
                 .map(defendantPostCode -> referenceDataService.getEnforcementArea(defendantPostCode))
                 .map(this::getDefendantCourtDetails)
                 .ifPresent(defendantCourtDetails -> {
-                    final JsonObjectBuilder defendantDetails = createObjectBuilder();
+                    final JsonObjectBuilder defendantDetails = Json.createObjectBuilder();
                     defendantDetails.add("court", defendantCourtDetails);
                     enrichedPayload.add("defendant", defendantDetails);
                 });
@@ -118,7 +118,7 @@ public class DecisionController {
     private JsonObject getDefendantCourtDetails(final Optional<JsonObject> enforcementArea) {
         return enforcementArea
                 .map(value -> value.getJsonObject("localJusticeArea"))
-                .map(localJusticeArea -> createObjectBuilder()
+                .map(localJusticeArea -> Json.createObjectBuilder()
                         .add("nationalCourtCode", localJusticeArea.getString("nationalCourtCode"))
                         .add("nationalCourtName", localJusticeArea.getString("name"))
                         .build())

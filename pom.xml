@@ -4,7 +4,7 @@
     <parent>
         <groupId>uk.gov.moj.cpp.common</groupId>
         <artifactId>service-parent-pom</artifactId>
-        <version>17.103.5</version>
+        <version>17.103.9-M2</version>
     </parent>
 
     <groupId>uk.gov.moj.cpp.sjp</groupId>
@@ -65,9 +65,9 @@
         <apache.pdfbox.version>2.0.11</apache.pdfbox.version>
         <argLine>-Djava.locale.providers=CLDR</argLine>
         <elasticsearch-maven-plugin.version>6.13</elasticsearch-maven-plugin.version>
-        <elasticsearch.embedded.version>7.16.2</elasticsearch.embedded.version>
+        <elasticsearch.embedded.version>9.2.2</elasticsearch.embedded.version>
         <stagingenforcement.version>17.103.73</stagingenforcement.version>
-        <unifiedsearch.version>17.0.26</unifiedsearch.version>
+        <unifiedsearch.version>17.103.2-DD-41592-SNAPSHOT</unifiedsearch.version>
         <jsonassert.version>1.5.0</jsonassert.version>
         <junit4.version>4.13.1</junit4.version>
         <maven.cucumber.reporting.version>2.0.0</maven.cucumber.reporting.version>

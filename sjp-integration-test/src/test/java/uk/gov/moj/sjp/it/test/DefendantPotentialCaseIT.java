@@ -24,7 +24,7 @@ import java.time.LocalDate;
 import java.util.Optional;
 import java.util.UUID;
 
-import javax.json.Json;
+import uk.gov.justice.services.messaging.JsonObjects;
 import javax.json.JsonArray;
 import javax.json.JsonObject;
 
@@ -108,6 +108,6 @@ public class DefendantPotentialCaseIT extends BaseIntegrationTest {
     }
 
     private JsonObject responseToJsonObject(String response) {
-        return Json.createReader(new StringReader(response)).readObject();
+        return JsonObjects.createReader(new StringReader(response)).readObject();
     }
 }

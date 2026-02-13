@@ -9,7 +9,7 @@ public class PressTransparencyReportMetadataView {
 
     private final List<PressTransparencyReportMetaDataView> reportsMetadata = new ArrayList<>();
 
-    public static PressTransparencyReportMetaDataView.Builder pressTransparencyReportMetaDataBuilder() {
+    public static PressTransparencyReportMetaDataView.Builder pressTranspare    ncyReportMetaDataBuilder() {
         return new PressTransparencyReportMetaDataView.Builder();
     }
 

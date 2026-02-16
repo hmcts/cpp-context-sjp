@@ -142,7 +142,7 @@ public class CaseListedInCriminalCourtsTest extends CaseAggregateBaseTest {
     void caseCompletedBdfRaiseCorrectEvent() {
         Stream<Object> caseCompletedBdf = caseAggregate.caseCompletedBdf();
         final List<Object> events = caseCompletedBdf.toList();
-        assertThat(events, hasSize(1));
+        assertThat(events, hasSize(2));
         assertThat(events.get(0), instanceOf(CaseCompleted.class));
     }
 

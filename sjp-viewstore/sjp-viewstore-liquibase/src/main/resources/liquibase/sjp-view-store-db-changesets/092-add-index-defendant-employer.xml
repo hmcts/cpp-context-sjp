@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+         http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.3.xsd">
+
+    <changeSet id="092" author="sevket.arisu" logicalFilePath="092-add-index-defendant-employer.xml">
+        <sql>
+            CREATE INDEX defendant_correlation_id_idx
+            ON defendant (correlation_id NULLS LAST);
+        </sql>
+
+        <createIndex indexName="employer_defendant_id_idx" tableName="employer">
+            <column name="defendant_id"/>
+        </createIndex>
+
+        <rollback>
+            DROP INDEX IF EXISTS defendant_correlation_id_idx;
+            DROP INDEX IF EXISTS employer_defendant_id_idx;
+        </rollback>
+    </changeSet>
+</databaseChangeLog>

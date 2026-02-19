@@ -31,7 +31,9 @@ import uk.gov.moj.cpp.sjp.query.view.converter.ProsecutingAuthorityAccessFilterC
 import uk.gov.moj.cpp.sjp.query.view.response.CasesPendingDatesToAvoidView;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 
@@ -80,7 +82,7 @@ public class DatesToAvoidServiceTest {
                 new PendingDatesToAvoid(createCaseDetailsWithRegionAndLegalEntityDetails("  ")),
                 new PendingDatesToAvoid(createCaseDetailsWithRegionAndLegalEntityDetails(null))
         );
-        when(pendingDatesToAvoidRepository.findCasesPendingDatesToAvoid(any())).thenReturn(pendingCases);
+        when(pendingDatesToAvoidRepository.findCasesPendingDatesToAvoid(any(), any())).thenReturn(pendingCases);
         when(referenceDataService.getRegionalOrganisations(any())).thenReturn(REGIONS);
     }
     @Test
@@ -93,9 +95,9 @@ public class DatesToAvoidServiceTest {
                 new PendingDatesToAvoid(createCaseDetailsWithRegionAndPersonalDetails("  ")),
                 new PendingDatesToAvoid(createCaseDetailsWithRegionAndPersonalDetails(null))
         );
-        when(pendingDatesToAvoidRepository.findCasesPendingDatesToAvoid(any())).thenReturn(pendingCases);
+        when(pendingDatesToAvoidRepository.findCasesPendingDatesToAvoid(any(), any())).thenReturn(pendingCases);
         final JsonEnvelope envelope = createEnvelope();
-        final ProsecutingAuthorityAccess prosecutingAuthorityAccess = ProsecutingAuthorityAccess.of("TFL");
+        final ProsecutingAuthorityAccess prosecutingAuthorityAccess = ProsecutingAuthorityAccess.of("TFL", new ArrayList<>());
         final String prosecutingAuthorityFilterValue = "TFL";
         final CaseDetail caseDetail = new CaseDetail(UUID.randomUUID());
         caseDetail.getDefendant().setAddress(new Address());
@@ -103,7 +105,7 @@ public class DatesToAvoidServiceTest {
 
         when(prosecutingAuthorityProvider.getCurrentUsersProsecutingAuthorityAccess(envelope)).thenReturn(prosecutingAuthorityAccess);
         when(prosecutingAuthorityAccessFilterConverter.convertToProsecutingAuthorityAccessFilter(prosecutingAuthorityAccess)).thenReturn(prosecutingAuthorityFilterValue);
-        when(pendingDatesToAvoidRepository.findCasesPendingDatesToAvoid(prosecutingAuthorityFilterValue)).thenReturn(pendingDatesToAvoidList);
+        when(pendingDatesToAvoidRepository.findCasesPendingDatesToAvoid(prosecutingAuthorityFilterValue, Collections.emptyList())).thenReturn(pendingDatesToAvoidList);
 
         final CasesPendingDatesToAvoidView datesToAvoidsView = datesToAvoidService.findCasesPendingDatesToAvoid(envelope);
 
@@ -122,9 +124,12 @@ public class DatesToAvoidServiceTest {
                 new PendingDatesToAvoid(createCaseDetailsWithRegionAndPersonalDetails("  ")),
                 new PendingDatesToAvoid(createCaseDetailsWithRegionAndPersonalDetails(null))
         );
-        when(pendingDatesToAvoidRepository.findCasesPendingDatesToAvoid(any())).thenReturn(pendingCases);
+        when(pendingDatesToAvoidRepository.findCasesPendingDatesToAvoid(any(), any())).thenReturn(pendingCases);
         when(referenceDataService.getRegionalOrganisations(any())).thenReturn(REGIONS);
         final JsonEnvelope envelope = createEnvelope(LONDON_REGION_ID);
+
+        final ProsecutingAuthorityAccess prosecutingAuthorityAccess = ProsecutingAuthorityAccess.of("TFL", new ArrayList<>());
+        when(prosecutingAuthorityProvider.getCurrentUsersProsecutingAuthorityAccess(envelope)).thenReturn(prosecutingAuthorityAccess);
 
         final CasesPendingDatesToAvoidView datesToAvoidsView = datesToAvoidService.findCasesPendingDatesToAvoid(envelope);
 
@@ -140,6 +145,9 @@ public class DatesToAvoidServiceTest {
     public void shouldFilterPendingCasesByRegionIdWithLegalEntityDetails() {
         setUpForLegalEntityDetails();
         final JsonEnvelope envelope = createEnvelope(LONDON_REGION_ID);
+        final ProsecutingAuthorityAccess prosecutingAuthorityAccess = ProsecutingAuthorityAccess.of("TFL", new ArrayList<>());
+
+        when(prosecutingAuthorityProvider.getCurrentUsersProsecutingAuthorityAccess(envelope)).thenReturn(prosecutingAuthorityAccess);
 
         final CasesPendingDatesToAvoidView datesToAvoidsView = datesToAvoidService.findCasesPendingDatesToAvoid(envelope);
 
@@ -160,8 +168,11 @@ public class DatesToAvoidServiceTest {
                 new PendingDatesToAvoid(createCaseDetailsWithRegionAndPersonalDetails("  ")),
                 new PendingDatesToAvoid(createCaseDetailsWithRegionAndPersonalDetails(null))
         );
-        when(pendingDatesToAvoidRepository.findCasesPendingDatesToAvoid(any())).thenReturn(pendingCases);
+        when(pendingDatesToAvoidRepository.findCasesPendingDatesToAvoid(any(), any())).thenReturn(pendingCases);
         final JsonEnvelope envelope = createEnvelope();
+
+        final ProsecutingAuthorityAccess prosecutingAuthorityAccess = ProsecutingAuthorityAccess.of("TFL", new ArrayList<>());
+        when(prosecutingAuthorityProvider.getCurrentUsersProsecutingAuthorityAccess(envelope)).thenReturn(prosecutingAuthorityAccess);
 
         final CasesPendingDatesToAvoidView datesToAvoidsView = datesToAvoidService.findCasesPendingDatesToAvoid(envelope);
 
@@ -186,8 +197,11 @@ public class DatesToAvoidServiceTest {
                 new PendingDatesToAvoid(createCaseDetailsWithRegionAndPersonalDetails("  ")),
                 new PendingDatesToAvoid(createCaseDetailsWithRegionAndPersonalDetails(null))
         );
-        when(pendingDatesToAvoidRepository.findCasesPendingDatesToAvoid(any())).thenReturn(pendingCases);
+        when(pendingDatesToAvoidRepository.findCasesPendingDatesToAvoid(any(), any())).thenReturn(pendingCases);
         final JsonEnvelope envelope = createEnvelope("UNKNOWN");
+
+        final ProsecutingAuthorityAccess prosecutingAuthorityAccess = ProsecutingAuthorityAccess.of("TFL", new ArrayList<>());
+        when(prosecutingAuthorityProvider.getCurrentUsersProsecutingAuthorityAccess(envelope)).thenReturn(prosecutingAuthorityAccess);
 
         final CasesPendingDatesToAvoidView datesToAvoidsView = datesToAvoidService.findCasesPendingDatesToAvoid(envelope);
 

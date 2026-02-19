@@ -53,7 +53,8 @@ public class OffenceWithdrawalRequestHandler extends CaseCommandHandler {
                 UUID.fromString(command.metadata().userId().get()),
                 clock.now(),
                 offencesWithdrawalRequestsStatus,
-                prosecutingAuthorityAccess.getProsecutingAuthority()));
+                prosecutingAuthorityAccess.getProsecutingAuthority(),
+                prosecutingAuthorityAccess.getAgentProsecutorAuthorityAccess()));
     }
 
 }

@@ -131,7 +131,7 @@ class CaseDefendantHandlerComprehensiveTest {
 
         // when
         final Stream<Object> eventStream = caseDefendantHandler.acknowledgeDefendantDetailsUpdates(
-                defendantId, acknowledgedAt, state, userProsecutingAuthority);
+                defendantId, acknowledgedAt, state, userProsecutingAuthority, null);
 
         // then
         final List<Object> eventList = eventStream.toList();
@@ -153,7 +153,7 @@ class CaseDefendantHandlerComprehensiveTest {
 
         // when
         final Stream<Object> eventStream = caseDefendantHandler.acknowledgeDefendantDetailsUpdates(
-                defendantId, acknowledgedAt, state, userProsecutingAuthority);
+                defendantId, acknowledgedAt, state, userProsecutingAuthority, null);
 
         // then
         final List<Object> eventList = eventStream.toList();
@@ -173,7 +173,7 @@ class CaseDefendantHandlerComprehensiveTest {
 
         // when
         final Stream<Object> eventStream = caseDefendantHandler.acknowledgeDefendantDetailsUpdates(
-                defendantId, acknowledgedAt, state, userProsecutingAuthority);
+                defendantId, acknowledgedAt, state, userProsecutingAuthority, null);
 
         // then
         final List<Object> eventList = eventStream.toList();
@@ -194,7 +194,7 @@ class CaseDefendantHandlerComprehensiveTest {
 
         // when
         final Stream<Object> eventStream = caseDefendantHandler.acknowledgeDefendantDetailsUpdates(
-                defendantId, acknowledgedAt, state, userProsecutingAuthority);
+                defendantId, acknowledgedAt, state, userProsecutingAuthority, null);
 
         // then
         final List<Object> eventList = eventStream.toList();
@@ -215,7 +215,7 @@ class CaseDefendantHandlerComprehensiveTest {
 
         // when
         final Stream<Object> eventStream = caseDefendantHandler.acknowledgeDefendantDetailsUpdates(
-                defendantId, acknowledgedAt, state, userProsecutingAuthority);
+                defendantId, acknowledgedAt, state, userProsecutingAuthority, null);
 
         // then
         final List<Object> eventList = eventStream.toList();
@@ -234,7 +234,7 @@ class CaseDefendantHandlerComprehensiveTest {
 
         // when
         final Stream<Object> eventStream = caseDefendantHandler.acknowledgeDefendantDetailsUpdates(
-                null, acknowledgedAt, state, userProsecutingAuthority);
+                null, acknowledgedAt, state, userProsecutingAuthority, null);
 
         // then
         final List<Object> eventList = eventStream.toList();

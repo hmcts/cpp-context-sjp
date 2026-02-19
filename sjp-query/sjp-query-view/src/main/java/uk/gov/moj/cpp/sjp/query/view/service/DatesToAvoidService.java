@@ -39,7 +39,8 @@ public class DatesToAvoidService {
         final ProsecutingAuthorityAccess prosecutingAuthorityAccess = prosecutingAuthorityProvider.getCurrentUsersProsecutingAuthorityAccess(envelope);
         final String prosecutingAuthorityFilterValue = prosecutingAuthorityAccessFilterConverter.convertToProsecutingAuthorityAccessFilter(prosecutingAuthorityAccess);
 
-        List<PendingDatesToAvoid> pendingCases = pendingDatesToAvoidRepository.findCasesPendingDatesToAvoid(prosecutingAuthorityFilterValue);
+        List<PendingDatesToAvoid> pendingCases = pendingDatesToAvoidRepository.findCasesPendingDatesToAvoid(prosecutingAuthorityFilterValue,
+                prosecutingAuthorityAccess.getAgentProsecutorAuthorityAccess());
         final int total = pendingCases.size();
         final String regionFilter = getRegionFilterCriteria(envelope);
 

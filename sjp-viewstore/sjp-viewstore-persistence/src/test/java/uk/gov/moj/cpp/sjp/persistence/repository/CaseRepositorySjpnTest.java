@@ -64,7 +64,7 @@ public class CaseRepositorySjpnTest extends BaseTransactionalJunit4Test {
 
     @Test
     public void findCasesMissingSjpnForTflProsecutors() {
-        final List<CaseDetail> actualCases = caseRepository.findCasesMissingSjpn(TFL_PROSECUTOR_FILTER_VALUE).getResultList();
+        final List<CaseDetail> actualCases = caseRepository.findCasesMissingSjpn(TFL_PROSECUTOR_FILTER_VALUE, Collections.emptyList()).getResultList();
         final List<UUID> actualCaseIds = extractCaseIds(actualCases);
 
         assertThat(actualCaseIds, equalTo(extractCaseIds(tflCases.uncompletedSjpCasesWithoutSjpn)));
@@ -72,7 +72,7 @@ public class CaseRepositorySjpnTest extends BaseTransactionalJunit4Test {
 
     @Test
     public void findCasesMissingSjpnForCourtAdmin() {
-        final List<CaseDetail> actualCases = caseRepository.findCasesMissingSjpn(COURT_ADMIN_FILTER_VALUE).getResultList();
+        final List<CaseDetail> actualCases = caseRepository.findCasesMissingSjpn(COURT_ADMIN_FILTER_VALUE, Collections.emptyList()).getResultList();
         final List<UUID> actualCaseIds = extractCaseIds(actualCases);
 
         assertThat(actualCaseIds, equalTo(extractCaseIds(allCases.uncompletedSjpCasesWithoutSjpn)));
@@ -82,7 +82,7 @@ public class CaseRepositorySjpnTest extends BaseTransactionalJunit4Test {
     public void findCasesMissingSjpnWithLimitForTflProsecutors() {
         int limit = 3;
 
-        final List<CaseDetail> actualCases = caseRepository.findCasesMissingSjpn(TFL_PROSECUTOR_FILTER_VALUE).maxResults(limit).getResultList();
+        final List<CaseDetail> actualCases = caseRepository.findCasesMissingSjpn(TFL_PROSECUTOR_FILTER_VALUE, Collections.emptyList()).maxResults(limit).getResultList();
         final List<UUID> actualCaseIds = extractCaseIds(actualCases);
 
         assertThat(actualCaseIds, hasSize(limit));
@@ -95,7 +95,7 @@ public class CaseRepositorySjpnTest extends BaseTransactionalJunit4Test {
     public void findCasesMissingSjpnWithLimitForCourtAdmin() {
         int limit = 3;
 
-        final List<CaseDetail> actualCases = caseRepository.findCasesMissingSjpn(COURT_ADMIN_FILTER_VALUE).maxResults(limit).getResultList();
+        final List<CaseDetail> actualCases = caseRepository.findCasesMissingSjpn(COURT_ADMIN_FILTER_VALUE, Collections.emptyList()).maxResults(limit).getResultList();
         final List<UUID> actualCaseIds = extractCaseIds(actualCases);
 
         assertThat(actualCaseIds, hasSize(limit));
@@ -106,14 +106,14 @@ public class CaseRepositorySjpnTest extends BaseTransactionalJunit4Test {
 
     @Test
     public void countCasesMissingSjpnForTflProsecutors() {
-        final int actualCaseCount = caseRepository.countCasesMissingSjpn(TFL_PROSECUTOR_FILTER_VALUE);
+        final int actualCaseCount = caseRepository.countCasesMissingSjpn(TFL_PROSECUTOR_FILTER_VALUE, Collections.emptyList());
 
         assertThat(actualCaseCount, equalTo(tflCases.uncompletedSjpCasesWithoutSjpn.size()));
     }
 
     @Test
     public void countCasesMissingSjpnForCourAdmin() {
-        final int actualCaseCount = caseRepository.countCasesMissingSjpn(COURT_ADMIN_FILTER_VALUE);
+        final int actualCaseCount = caseRepository.countCasesMissingSjpn(COURT_ADMIN_FILTER_VALUE, Collections.emptyList());
 
         assertThat(actualCaseCount, equalTo(allCases.uncompletedSjpCasesWithoutSjpn.size()));
     }
@@ -123,7 +123,7 @@ public class CaseRepositorySjpnTest extends BaseTransactionalJunit4Test {
         int sjpCasesMissingSjpnCount = tflCases.uncompletedSjpCasesWithoutSjpn.size();
         for (int i = 0; i < sjpCasesMissingSjpnCount; i++) {
             final LocalDate postingDate = LocalDate.now().minusDays(i);
-            final int actualCaseCount = caseRepository.countCasesMissingSjpn(TFL_PROSECUTOR_FILTER_VALUE, postingDate);
+            final int actualCaseCount = caseRepository.countCasesMissingSjpn(TFL_PROSECUTOR_FILTER_VALUE, postingDate, Collections.emptyList());
             assertThat(actualCaseCount, equalTo(sjpCasesMissingSjpnCount - i));
         }
     }
@@ -133,7 +133,7 @@ public class CaseRepositorySjpnTest extends BaseTransactionalJunit4Test {
         int sjpCasesMissingSjpnCount = allCases.uncompletedSjpCasesWithoutSjpn.size();
         for (int i = 0; i < sjpCasesMissingSjpnCount / NUMBER_OF_PROSECUTING_AUTHORITIES; i++) {
             final LocalDate postingDate = LocalDate.now().minusDays(i);
-            final int actualCaseCount = caseRepository.countCasesMissingSjpn(COURT_ADMIN_FILTER_VALUE, postingDate);
+            final int actualCaseCount = caseRepository.countCasesMissingSjpn(COURT_ADMIN_FILTER_VALUE, postingDate, Collections.emptyList());
             assertThat(actualCaseCount, equalTo(sjpCasesMissingSjpnCount - (i * NUMBER_OF_PROSECUTING_AUTHORITIES)));
         }
     }

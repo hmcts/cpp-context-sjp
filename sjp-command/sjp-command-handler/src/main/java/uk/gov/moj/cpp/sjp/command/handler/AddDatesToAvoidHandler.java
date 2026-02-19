@@ -23,7 +23,8 @@ public class AddDatesToAvoidHandler extends CaseCommandHandler {
         final JsonObject payload = command.payloadAsJsonObject();
         final String datesToAvoid = payload.getString("datesToAvoid");
         final ProsecutingAuthorityAccess prosecutingAuthorityAccess = prosecutingAuthorityProvider.getCurrentUsersProsecutingAuthorityAccess(command);
-        applyToCaseAggregate(command, aggregate -> aggregate.addDatesToAvoid(datesToAvoid, prosecutingAuthorityAccess.getProsecutingAuthority()));
+        applyToCaseAggregate(command, aggregate -> aggregate.addDatesToAvoid(datesToAvoid, prosecutingAuthorityAccess.getProsecutingAuthority(),
+                prosecutingAuthorityAccess.getAgentProsecutorAuthorityAccess()));
     }
 
     @Handles("sjp.command.expire-dates-to-avoid-timer")

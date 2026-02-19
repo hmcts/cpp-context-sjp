@@ -20,14 +20,14 @@ public class CaseAcknowledgeDefendantDetailsUpdatesTest extends CaseAggregateBas
 
     @Test
     public void shouldAcknowledgeDefendantDetailsUpdates() {
-        when(caseAggregate.acknowledgeDefendantDetailsUpdates(defendantId, clock.now(), ALL))
+        when(caseAggregate.acknowledgeDefendantDetailsUpdates(defendantId, clock.now(), ALL, null))
                 .thenExpect(new DefendantDetailsUpdatesAcknowledged(caseId, defendantId, clock.now()));
     }
 
     @Test
     public void shouldNotAcknowledgeDefendantDetailsUpdatesWhenDefendantNotFound() {
         final UUID anotherDefendantId = randomUUID();
-        when(caseAggregate.acknowledgeDefendantDetailsUpdates(anotherDefendantId, clock.now(), ALL))
+        when(caseAggregate.acknowledgeDefendantDetailsUpdates(anotherDefendantId, clock.now(), ALL, null))
                 .thenExpect(new DefendantNotFound(anotherDefendantId, "Acknowledge defendant details updates"));
     }
 
@@ -37,7 +37,7 @@ public class CaseAcknowledgeDefendantDetailsUpdatesTest extends CaseAggregateBas
 
         defendantId = randomUUID();
 
-        when(caseAggregate.acknowledgeDefendantDetailsUpdates(defendantId, clock.now(), ALL))
+        when(caseAggregate.acknowledgeDefendantDetailsUpdates(defendantId, clock.now(), ALL, null))
                 .thenExpect(new CaseNotFound(caseId, "Acknowledge defendant details updates"));
     }
 

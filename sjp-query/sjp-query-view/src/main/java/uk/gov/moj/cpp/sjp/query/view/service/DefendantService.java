@@ -6,6 +6,7 @@ import static java.util.stream.Collectors.toList;
 import static org.apache.commons.lang3.StringUtils.isBlank;
 
 import uk.gov.justice.services.messaging.JsonEnvelope;
+import uk.gov.moj.cpp.accesscontrol.sjp.providers.ProsecutingAuthorityAccess;
 import uk.gov.moj.cpp.accesscontrol.sjp.providers.ProsecutingAuthorityProvider;
 import uk.gov.moj.cpp.sjp.domain.DefendantOutstandingFineRequest;
 import uk.gov.moj.cpp.sjp.domain.DefendantOutstandingFineRequestsQueryResult;
@@ -41,14 +42,17 @@ public class DefendantService {
     private ReferenceDataService referenceDataService;
 
     public DefendantDetailsUpdatesView findDefendantDetailUpdates(final JsonEnvelope envelope) {
+        final ProsecutingAuthorityAccess prosecutingAuthorityAccess = prosecutingAuthorityProvider
+                .getCurrentUsersProsecutingAuthorityAccess(envelope);
         final String prosecutingAuthorityFilterValue = prosecutingAuthorityAccessFilterConverter
-                .convertToProsecutingAuthorityAccessFilter(prosecutingAuthorityProvider
-                        .getCurrentUsersProsecutingAuthorityAccess(envelope));
+                .convertToProsecutingAuthorityAccessFilter(prosecutingAuthorityAccess);
+        final List<String> agentProsecutorAuthorityAccessFilterValue = prosecutingAuthorityAccess.getAgentProsecutorAuthorityAccess();
 
         final List<UpdatedDefendantDetails> updatedDefendantDetails = defendantRepository.findUpdatedByCaseProsecutingAuthority(
                 prosecutingAuthorityFilterValue,
                 ZonedDateTime.now().minusDays(UPDATES_DAYS_HISTORY),
-                ZonedDateTime.now());
+                ZonedDateTime.now(),
+                agentProsecutorAuthorityAccessFilterValue);
 
         List<UpdatedDefendantDetails> results = updatedDefendantDetails;
 

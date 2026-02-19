@@ -19,9 +19,10 @@ public abstract class PendingDatesToAvoidRepository implements EntityRepository<
 
     @Query(value = "SELECT pda FROM PendingDatesToAvoid as pda INNER JOIN pda.caseDetail as cd " +
             "WHERE cd.datesToAvoid IS NULL AND cd.assigneeId IS NULL AND cd.completed = false " +
-            "AND cd.prosecutingAuthority like :prosecutingAuthority " +
+            "AND (cd.prosecutingAuthority like :prosecutingAuthority OR cd.prosecutingAuthority IN :agentProsecutorAuthorityAccess ) " +
             "ORDER BY pda.pleaDate ASC")
-    public abstract List<PendingDatesToAvoid> findCasesPendingDatesToAvoid(@QueryParam("prosecutingAuthority") String prosecutingAuthority);
+    public abstract List<PendingDatesToAvoid> findCasesPendingDatesToAvoid(@QueryParam("prosecutingAuthority") String prosecutingAuthority,
+                                                                           @QueryParam("agentProsecutorAuthorityAccess") List<String> agentProsecutorAuthorityAccess);
 
     public void removeByCaseId(final UUID caseId) {
         Optional.ofNullable(this.findBy(caseId)).ifPresent(this::remove);

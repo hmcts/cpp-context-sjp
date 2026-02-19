@@ -35,7 +35,8 @@ public final class HandlerUtils {
                                                                  final String action,
                                                                  final UUID defendantId,
                                                                  final CaseAggregateState state,
-                                                                 final String userProsecutingAuthority) {
+                                                                 final String userProsecutingAuthority,
+                                                                 final List<String> agentProsecutorAuthorityAccess) {
         Object event = null;
         if (isNull(state.getCaseId())) {
             LOGGER.warn("Case not found: {}", action);
@@ -52,8 +53,10 @@ public final class HandlerUtils {
         } else if (state.isCaseReferredForCourtHearing()) {
             LOGGER.warn("Update rejected because case is referred to court for hearing: {}", action);
             event = new CaseUpdateRejected(state.getCaseId(), CaseUpdateRejected.RejectReason.CASE_REFERRED_FOR_COURT_HEARING);
-        } else if (!(state.getProsecutingAuthority().toUpperCase().startsWith(userProsecutingAuthority) || "ALL".equalsIgnoreCase(userProsecutingAuthority))) {
-            event = new ProsecutionAuthorityAccessDenied(userProsecutingAuthority, state.getProsecutingAuthority());
+        } else if (!(state.getProsecutingAuthority().toUpperCase().startsWith(userProsecutingAuthority) ||
+                "ALL".equalsIgnoreCase(userProsecutingAuthority) ||
+                (agentProsecutorAuthorityAccess != null && agentProsecutorAuthorityAccess.stream().anyMatch(s-> s.equalsIgnoreCase(state.getProsecutingAuthority()))))) {
+            event = new ProsecutionAuthorityAccessDenied(userProsecutingAuthority, state.getProsecutingAuthority(), agentProsecutorAuthorityAccess);
         }
 
         return Optional.ofNullable(event).map(Stream::of);

@@ -21,9 +21,9 @@ import static uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderF
 import static uk.gov.moj.cpp.sjp.persistence.builder.UpdatedDefendantDetailsBuilder.anUpdatedDefendantDetails;
 import static uk.gov.moj.cpp.sjp.query.view.response.DefendantDetailsUpdatesView.DefendantDetailsUpdate;
 
-import org.mockito.ArgumentMatchers;
 import uk.gov.justice.json.schemas.domains.sjp.Gender;
 import uk.gov.justice.services.messaging.JsonEnvelope;
+import uk.gov.moj.cpp.accesscontrol.sjp.providers.ProsecutingAuthorityAccess;
 import uk.gov.moj.cpp.accesscontrol.sjp.providers.ProsecutingAuthorityProvider;
 import uk.gov.moj.cpp.sjp.domain.DefendantOutstandingFineRequestsQueryResult;
 import uk.gov.moj.cpp.sjp.persistence.builder.CaseDetailBuilder;
@@ -37,6 +37,7 @@ import uk.gov.moj.cpp.sjp.query.view.converter.ProsecutingAuthorityAccessFilterC
 import uk.gov.moj.cpp.sjp.query.view.response.DefendantDetailsUpdatesView;
 
 import java.time.ZonedDateTime;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
@@ -108,8 +109,12 @@ public class DefendantServiceTest {
         when(defendantRepository.findUpdatedByCaseProsecutingAuthority(
                 any(),
                 any(),
+                any(),
                 any()))
                 .thenReturn(updatedDefendantDetails);
+
+        final ProsecutingAuthorityAccess prosecutingAuthorityAccess = ProsecutingAuthorityAccess.of("TFL", new ArrayList<>());
+        when(prosecutingAuthorityProvider.getCurrentUsersProsecutingAuthorityAccess(envelope)).thenReturn(prosecutingAuthorityAccess);
 
         final DefendantDetailsUpdatesView defendantDetailUpdates = defendantService.findDefendantDetailUpdates(envelope);
 
@@ -133,8 +138,12 @@ public class DefendantServiceTest {
         when(defendantRepository.findUpdatedByCaseProsecutingAuthority(
                 any(),
                 any(),
+                any(),
                 any()))
                 .thenReturn(updatedDefendantDetails);
+
+        final ProsecutingAuthorityAccess prosecutingAuthorityAccess = ProsecutingAuthorityAccess.of("TFL", new ArrayList<>());
+        when(prosecutingAuthorityProvider.getCurrentUsersProsecutingAuthorityAccess(envelope)).thenReturn(prosecutingAuthorityAccess);
 
         final DefendantDetailsUpdatesView defendantDetailUpdates = defendantService.findDefendantDetailUpdates(envelope);
 
@@ -172,8 +181,12 @@ public class DefendantServiceTest {
         when(defendantRepository.findUpdatedByCaseProsecutingAuthority(
                 any(),
                 any(),
+                any(),
                 any()))
                 .thenReturn(updatedDefendantDetails);
+
+        final ProsecutingAuthorityAccess prosecutingAuthorityAccess = ProsecutingAuthorityAccess.of("TFL", new ArrayList<>());
+        when(prosecutingAuthorityProvider.getCurrentUsersProsecutingAuthorityAccess(envelope)).thenReturn(prosecutingAuthorityAccess);
 
         final DefendantDetailsUpdatesView defendantDetailUpdates = defendantService.findDefendantDetailUpdates(envelope);
 
@@ -194,8 +207,12 @@ public class DefendantServiceTest {
         when(defendantRepository.findUpdatedByCaseProsecutingAuthority(
                 any(),
                 any(),
+                any(),
                 any()))
                 .thenReturn(updatedDefendantDetails);
+
+        final ProsecutingAuthorityAccess prosecutingAuthorityAccess = ProsecutingAuthorityAccess.of("TFL", new ArrayList<>());
+        when(prosecutingAuthorityProvider.getCurrentUsersProsecutingAuthorityAccess(envelope)).thenReturn(prosecutingAuthorityAccess);
 
         final DefendantDetailsUpdatesView defendantDetailUpdates = defendantService.findDefendantDetailUpdates(envelope);
 
@@ -210,8 +227,12 @@ public class DefendantServiceTest {
         when(defendantRepository.findUpdatedByCaseProsecutingAuthority(
                 any(),
                 any(),
+                any(),
                 any()))
                 .thenReturn(updatedDefendantDetails);
+
+        final ProsecutingAuthorityAccess prosecutingAuthorityAccess = ProsecutingAuthorityAccess.of("TFL", new ArrayList<>());
+        when(prosecutingAuthorityProvider.getCurrentUsersProsecutingAuthorityAccess(envelope)).thenReturn(prosecutingAuthorityAccess);
 
         final DefendantDetailsUpdatesView defendantDetailUpdates = defendantService.findDefendantDetailUpdates(envelope);
 
@@ -232,8 +253,12 @@ public class DefendantServiceTest {
         final UpdatedDefendantDetails update3 = anUpdatedDefendantDetails().withUpdateTime(ZonedDateTime.now().minusDays(2)).withRegion("").build();
         when(defendantRepository.findUpdatedByCaseProsecutingAuthority(any(),
                 any(),
+                any(),
                 any()))
                 .thenReturn(asList(update3, update2, update1));
+
+        final ProsecutingAuthorityAccess prosecutingAuthorityAccess = ProsecutingAuthorityAccess.of("TFL", new ArrayList<>());
+        when(prosecutingAuthorityProvider.getCurrentUsersProsecutingAuthorityAccess(envelope)).thenReturn(prosecutingAuthorityAccess);
 
         final DefendantDetailsUpdatesView defendantDetailUpdates = defendantService.findDefendantDetailUpdates(envelope);
 

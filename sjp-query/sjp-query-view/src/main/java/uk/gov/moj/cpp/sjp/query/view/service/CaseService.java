@@ -17,6 +17,7 @@ import static uk.gov.moj.cpp.sjp.query.view.ExportType.PUBLIC;
 
 import uk.gov.justice.services.common.converter.ListToJsonArrayConverter;
 import uk.gov.justice.services.messaging.JsonEnvelope;
+import uk.gov.moj.cpp.accesscontrol.sjp.providers.ProsecutingAuthorityAccess;
 import uk.gov.moj.cpp.accesscontrol.sjp.providers.ProsecutingAuthorityProvider;
 import uk.gov.moj.cpp.sjp.domain.common.CaseManagementStatus;
 import uk.gov.moj.cpp.sjp.persistence.entity.CaseDetail;
@@ -177,19 +178,23 @@ public class CaseService {
                                                      final Optional<LocalDate> postedBefore) {
 
         final List<CaseDetail> casesDetails;
-
+        final ProsecutingAuthorityAccess prosecutingAuthorityAccess = prosecutingAuthorityProvider
+                .getCurrentUsersProsecutingAuthorityAccess(envelope);
         final String prosecutingAuthorityFilterValue = prosecutingAuthorityAccessFilterConverter
-                .convertToProsecutingAuthorityAccessFilter(prosecutingAuthorityProvider
-                        .getCurrentUsersProsecutingAuthorityAccess(envelope));
+                .convertToProsecutingAuthorityAccessFilter(prosecutingAuthorityAccess);
+        final List<String> agentProsecutorAuthorityAccessFilterValue = prosecutingAuthorityAccess.getAgentProsecutorAuthorityAccess();
 
         if (limit.isPresent() && limit.get() < 1) {
             casesDetails = Collections.emptyList();
         } else {
             QueryResult<CaseDetail> caseDetailsResult;
+
             if (postedBefore.isPresent()) {
-                caseDetailsResult = caseRepository.findCasesMissingSjpn(prosecutingAuthorityFilterValue, postedBefore.get());
+                caseDetailsResult = caseRepository.findCasesMissingSjpn(prosecutingAuthorityFilterValue, postedBefore.get(),
+                        agentProsecutorAuthorityAccessFilterValue);
             } else {
-                caseDetailsResult = caseRepository.findCasesMissingSjpn(prosecutingAuthorityFilterValue);
+                caseDetailsResult = caseRepository.findCasesMissingSjpn(prosecutingAuthorityFilterValue,
+                        agentProsecutorAuthorityAccessFilterValue);
             }
 
             if (limit.isPresent()) {
@@ -206,8 +211,8 @@ public class CaseService {
                 .map(CaseSummaryView::new).collect(toList());
 
         final int casesCount = postedBefore
-                .map(localDate -> caseRepository.countCasesMissingSjpn(prosecutingAuthorityFilterValue, localDate))
-                .orElseGet(() -> caseRepository.countCasesMissingSjpn(prosecutingAuthorityFilterValue));
+                .map(localDate -> caseRepository.countCasesMissingSjpn(prosecutingAuthorityFilterValue, localDate, agentProsecutorAuthorityAccessFilterValue))
+                .orElseGet(() -> caseRepository.countCasesMissingSjpn(prosecutingAuthorityFilterValue, agentProsecutorAuthorityAccessFilterValue));
 
         return new CasesMissingSjpnView(casesIds, cases, casesCount);
     }

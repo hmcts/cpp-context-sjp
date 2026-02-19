@@ -37,7 +37,7 @@ public abstract class DefendantRepository implements EntityRepository<DefendantD
             "dd.legalEntityDetails.legalEntityName"+
             ") FROM DefendantDetail dd " +
             "INNER JOIN dd.caseDetail cd " +
-            "WHERE cd.prosecutingAuthority LIKE :prosecutingAuthority " +
+            "WHERE (cd.prosecutingAuthority LIKE :prosecutingAuthority OR cd.prosecutingAuthority IN :agentProsecutorAuthorityAccess) " +
             "AND (((dd.addressUpdatedAt BETWEEN :fromDate and :toDate) AND (dd.addressUpdatedAt IS NOT NULL AND dd.updatesAcknowledgedAt is NULL OR dd.addressUpdatedAt > dd.updatesAcknowledgedAt)) " +
             "OR ((dd.personalDetails.dateOfBirthUpdatedAt BETWEEN :fromDate and :toDate) AND (dd.personalDetails.dateOfBirthUpdatedAt IS NOT NULL AND dd.updatesAcknowledgedAt IS NULL OR dd.personalDetails.dateOfBirthUpdatedAt > dd.updatesAcknowledgedAt)) " +
             "OR ((dd.nameUpdatedAt BETWEEN :fromDate and :toDate) AND (dd.nameUpdatedAt IS NOT NULL AND dd.updatesAcknowledgedAt IS NULL OR dd.nameUpdatedAt > dd.updatesAcknowledgedAt)))";
@@ -47,11 +47,13 @@ public abstract class DefendantRepository implements EntityRepository<DefendantD
     public List<UpdatedDefendantDetails> findUpdatedByCaseProsecutingAuthority(
             String prosecutingAuthority,
             ZonedDateTime fromDate,
-            ZonedDateTime toDate) {
+            ZonedDateTime toDate,
+            List<String> agentProsecutorAuthorityAccess) {
 
         final javax.persistence.Query query = entityManager.createQuery(UPDATED_DEFENDANT_DETAILS);
 
         query.setParameter("prosecutingAuthority", prosecutingAuthority);
+        query.setParameter("agentProsecutorAuthorityAccess", agentProsecutorAuthorityAccess);
         query.setParameter("fromDate", fromDate);
         query.setParameter("toDate", toDate);
 

@@ -19,6 +19,7 @@ import javax.inject.Inject;
 
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
+import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 
@@ -49,7 +50,7 @@ public class DefendantRepositoryTest extends BaseTransactionalJunit4Test {
 
         final UpdatedDefendantDetails defendant = createCaseDetail(personalDetails, "TVL", null,null,null);
 
-        final List<UpdatedDefendantDetails> defendantDetails = defendantRepository.findUpdatedByCaseProsecutingAuthority("TVL", now().minusDays(10), now());
+        final List<UpdatedDefendantDetails> defendantDetails = defendantRepository.findUpdatedByCaseProsecutingAuthority("TVL", now().minusDays(10), now(), Collections.emptyList());
 
         assertThat(defendantDetails, iterableWithSize(1));
         assertThat(defendantDetails, contains(defendant));
@@ -62,7 +63,7 @@ public class DefendantRepositoryTest extends BaseTransactionalJunit4Test {
 
         final UpdatedDefendantDetails defendant = createCaseDetail(personalDetails, "TVL", now().minusDays(2),null,null);
 
-        final List<UpdatedDefendantDetails> defendantDetails = defendantRepository.findUpdatedByCaseProsecutingAuthority("TVL", now().minusDays(10), now());
+        final List<UpdatedDefendantDetails> defendantDetails = defendantRepository.findUpdatedByCaseProsecutingAuthority("TVL", now().minusDays(10), now(), Collections.emptyList());
 
         assertThat(defendantDetails, iterableWithSize(1));
         assertThat(defendantDetails, contains(defendant));
@@ -75,7 +76,7 @@ public class DefendantRepositoryTest extends BaseTransactionalJunit4Test {
 
         createCaseDetail(personalDetails, "TVL", now(UTC),null,null);
 
-        final List<UpdatedDefendantDetails> defendantDetails = defendantRepository.findUpdatedByCaseProsecutingAuthority("TVL", now().minusDays(10), now());
+        final List<UpdatedDefendantDetails> defendantDetails = defendantRepository.findUpdatedByCaseProsecutingAuthority("TVL", now().minusDays(10), now(), Collections.emptyList());
 
         assertThat(defendantDetails, iterableWithSize(0));
     }
@@ -86,7 +87,7 @@ public class DefendantRepositoryTest extends BaseTransactionalJunit4Test {
 
         final UpdatedDefendantDetails defendant = createCaseDetail(personalDetails, "TVL", null,now(UTC),null);
 
-        final List<UpdatedDefendantDetails> defendantDetails = defendantRepository.findUpdatedByCaseProsecutingAuthority("TVL", now().minusDays(10), now());
+        final List<UpdatedDefendantDetails> defendantDetails = defendantRepository.findUpdatedByCaseProsecutingAuthority("TVL", now().minusDays(10), now(), Collections.emptyList());
 
         assertThat(defendantDetails, iterableWithSize(1));
         assertThat(defendantDetails.get(0), is(defendant));
@@ -98,7 +99,7 @@ public class DefendantRepositoryTest extends BaseTransactionalJunit4Test {
 
         createCaseDetail(personalDetails, "TVL", null, now(UTC).minusDays(15), null);
 
-        final List<UpdatedDefendantDetails> defendantDetails = defendantRepository.findUpdatedByCaseProsecutingAuthority("TVL", now().minusDays(10), now());
+        final List<UpdatedDefendantDetails> defendantDetails = defendantRepository.findUpdatedByCaseProsecutingAuthority("TVL", now().minusDays(10), now(), Collections.emptyList());
 
         assertThat(defendantDetails, iterableWithSize(0));
     }
@@ -109,7 +110,7 @@ public class DefendantRepositoryTest extends BaseTransactionalJunit4Test {
 
         final UpdatedDefendantDetails defendant = createCaseDetail(personalDetails, "TVL", now(UTC).minusDays(2), now(UTC), null);
 
-        final List<UpdatedDefendantDetails> defendantDetails = defendantRepository.findUpdatedByCaseProsecutingAuthority("TVL", now().minusDays(10), now());
+        final List<UpdatedDefendantDetails> defendantDetails = defendantRepository.findUpdatedByCaseProsecutingAuthority("TVL", now().minusDays(10), now(), Collections.emptyList());
 
         assertThat(defendantDetails, iterableWithSize(1));
         assertThat(defendantDetails.get(0), is(defendant));
@@ -121,7 +122,7 @@ public class DefendantRepositoryTest extends BaseTransactionalJunit4Test {
 
         createCaseDetail(personalDetails, "TVL", now(UTC), now(UTC).minusDays(2), null);
 
-        final List<UpdatedDefendantDetails> defendantDetails = defendantRepository.findUpdatedByCaseProsecutingAuthority("TVL", now().minusDays(10), now());
+        final List<UpdatedDefendantDetails> defendantDetails = defendantRepository.findUpdatedByCaseProsecutingAuthority("TVL", now().minusDays(10), now(), Collections.emptyList());
 
         assertThat(defendantDetails, iterableWithSize(0));
     }
@@ -132,7 +133,7 @@ public class DefendantRepositoryTest extends BaseTransactionalJunit4Test {
 
         final UpdatedDefendantDetails defendant = createCaseDetail(personalDetails, "TVL", null, null, now(UTC));
 
-        final List<UpdatedDefendantDetails> defendantDetails = defendantRepository.findUpdatedByCaseProsecutingAuthority("TVL", now().minusDays(10), now());
+        final List<UpdatedDefendantDetails> defendantDetails = defendantRepository.findUpdatedByCaseProsecutingAuthority("TVL", now().minusDays(10), now(), Collections.emptyList());
 
         assertThat(defendantDetails, iterableWithSize(1));
         assertThat(defendantDetails.get(0), is(defendant));
@@ -144,7 +145,7 @@ public class DefendantRepositoryTest extends BaseTransactionalJunit4Test {
 
         final UpdatedDefendantDetails defendant = createCaseDetail(personalDetails, "TVL", now(UTC).minusDays(2), null, now(UTC));
 
-        final List<UpdatedDefendantDetails> defendantDetails = defendantRepository.findUpdatedByCaseProsecutingAuthority("TVL", now().minusDays(10), now());
+        final List<UpdatedDefendantDetails> defendantDetails = defendantRepository.findUpdatedByCaseProsecutingAuthority("TVL", now().minusDays(10), now(), Collections.emptyList());
 
         assertThat(defendantDetails, iterableWithSize(1));
         assertThat(defendantDetails.get(0), is(defendant));
@@ -156,7 +157,7 @@ public class DefendantRepositoryTest extends BaseTransactionalJunit4Test {
 
         createCaseDetail(personalDetails, "TVL", now(UTC), null, now(UTC).minusDays(2));
 
-        final List<UpdatedDefendantDetails> defendantDetails = defendantRepository.findUpdatedByCaseProsecutingAuthority("TVL", now().minusDays(10), now());
+        final List<UpdatedDefendantDetails> defendantDetails = defendantRepository.findUpdatedByCaseProsecutingAuthority("TVL", now().minusDays(10), now(), Collections.emptyList());
 
         assertThat(defendantDetails, iterableWithSize(0));
     }
@@ -165,7 +166,7 @@ public class DefendantRepositoryTest extends BaseTransactionalJunit4Test {
     public void shouldIgnoreDefendantWithNoDetailChanges() {
         createCaseDetail(new PersonalDetails(), "TVL", null, null, null);
 
-        final List<UpdatedDefendantDetails> defendantDetails = defendantRepository.findUpdatedByCaseProsecutingAuthority("TVL", now().minusDays(10), now());
+        final List<UpdatedDefendantDetails> defendantDetails = defendantRepository.findUpdatedByCaseProsecutingAuthority("TVL", now().minusDays(10), now(), Collections.emptyList());
 
         assertThat(defendantDetails, iterableWithSize(0));
     }
@@ -174,7 +175,7 @@ public class DefendantRepositoryTest extends BaseTransactionalJunit4Test {
     public void shouldIgnoreDefendantForOtherAuthorityGroup() {
         createCaseDetail(null, "TVL", null, null, null);
 
-        final List<UpdatedDefendantDetails> defendantDetails = defendantRepository.findUpdatedByCaseProsecutingAuthority("TFL", now().minusDays(10), now());
+        final List<UpdatedDefendantDetails> defendantDetails = defendantRepository.findUpdatedByCaseProsecutingAuthority("TFL", now().minusDays(10), now(), Collections.emptyList());
 
         assertThat(defendantDetails, iterableWithSize(0));
     }

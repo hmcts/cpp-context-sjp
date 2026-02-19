@@ -89,6 +89,7 @@
         <module>sjp-healthchecks</module>
     </modules>
 
+
     <build>
         <plugins>
             <plugin>

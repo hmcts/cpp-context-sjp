@@ -15,7 +15,9 @@ import uk.gov.moj.cpp.sjp.event.CaseNotFound;
 import uk.gov.moj.cpp.sjp.event.CaseUpdateRejected;
 import uk.gov.moj.cpp.sjp.event.DatesToAvoidAdded;
 import uk.gov.moj.cpp.sjp.event.DatesToAvoidUpdated;
+import uk.gov.moj.cpp.sjp.event.ProsecutionAuthorityAccessDenied;
 
+import java.util.Arrays;
 import java.util.List;
 
 import org.junit.jupiter.api.Test;
@@ -112,4 +114,36 @@ public class AddDatesToAvoidTest extends CaseAggregateBaseTest {
         assertThat(datesToAvoidReceived.getDescription(), equalTo("Add dates to avoid"));
     }
 
+    @Test
+    public void prosecutionAuthorityAccessAllowedForAgent() {
+        //given an assigned case
+        caseAggregate.assignCase(randomUUID(), clock.now(), CaseAssignmentType.DELEGATED_POWERS_DECISION);
+        caseAggregate.getState().setAssigneeId(null);
+
+        //when
+        final List<Object> events = caseAggregate.addDatesToAvoid(DATES_TO_AVOID, "TVL", Arrays.asList("TFL")).collect(toList());
+
+        //then
+        assertThat(events, hasSize(1));
+        final DatesToAvoidAdded datesToAvoidAdded = (DatesToAvoidAdded) events.get(0);
+        assertThat(datesToAvoidAdded.getCaseId(), equalTo(caseId));
+        assertThat(datesToAvoidAdded.getDatesToAvoid(), equalTo(DATES_TO_AVOID));
+    }
+
+    @Test
+    public void prosecutionAuthorityAccessDenied() {
+        //given an assigned case
+        caseAggregate.assignCase(randomUUID(), clock.now(), CaseAssignmentType.DELEGATED_POWERS_DECISION);
+        caseAggregate.getState().setAssigneeId(null);
+
+        //when
+        final List<Object> events = caseAggregate.addDatesToAvoid(DATES_TO_AVOID, "TVL", Arrays.asList("XYZ")).collect(toList());
+
+        //then
+        assertThat(events, hasSize(1));
+        final ProsecutionAuthorityAccessDenied prosecutionAuthorityAccessDenied = (ProsecutionAuthorityAccessDenied) events.get(0);
+        assertThat(prosecutionAuthorityAccessDenied.getUserAuthority(), equalTo("TVL"));
+        assertThat(prosecutionAuthorityAccessDenied.getCaseAuthority(), equalTo("TFL"));
+        assertThat(prosecutionAuthorityAccessDenied.getAgentProsecutorAuthorityAccess().get(0), equalTo("XYZ"));
+    }
 }

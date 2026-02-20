@@ -4,6 +4,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.isIn;
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
+import static uk.gov.justice.services.messaging.JsonObjects.createReader;
 import static uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderFactory.metadataWithRandomUUID;
 import static uk.gov.justice.tools.eventsourcing.transformation.api.Action.NO_ACTION;
 import static uk.gov.justice.tools.eventsourcing.transformation.api.Action.TRANSFORM;
@@ -15,7 +16,6 @@ import java.io.StringReader;
 import java.util.Map;
 import java.util.stream.Stream;
 
-import javax.json.Json;
 import javax.json.JsonObject;
 
 public class EventTransformerTestHelper {
@@ -41,7 +41,7 @@ public class EventTransformerTestHelper {
 
 
     private JsonEnvelope buildEnvelopeFromJsonResource(final String fileName) {
-        final JsonObject payload = Json.createReader(CaseReceivedEventTransformerTest.class
+        final JsonObject payload = createReader(CaseReceivedEventTransformerTest.class
                 .getResourceAsStream("/events/" + fileName)).readObject();
         return envelopeFrom(metadataWithRandomUUID(eventTransformer.getEventName()), payload);
     }

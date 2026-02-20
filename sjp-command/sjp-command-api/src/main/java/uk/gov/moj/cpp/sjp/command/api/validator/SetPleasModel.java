@@ -3,7 +3,6 @@ package uk.gov.moj.cpp.sjp.command.api.validator;
 import static java.util.Collections.EMPTY_LIST;
 import static java.util.Optional.ofNullable;
 
-import uk.gov.justice.services.messaging.JsonObjects;
 import uk.gov.moj.cpp.sjp.domain.DefendantCourtInterpreter;
 import uk.gov.moj.cpp.sjp.domain.DefendantCourtOptions;
 

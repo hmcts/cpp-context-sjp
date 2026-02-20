@@ -17,7 +17,6 @@ import uk.gov.justice.services.test.utils.core.enveloper.EnvelopeFactory;
 
 import java.util.UUID;
 
-import javax.json.Json;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

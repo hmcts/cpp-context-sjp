@@ -1,11 +1,11 @@
 package uk.gov.moj.cpp.sjp;
 
 import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilderWithFilter;
+import static uk.gov.justice.services.messaging.JsonObjects.getString;
 import static uk.gov.moj.cpp.sjp.service.AddressService.isPostcodeNormalized;
 import static uk.gov.moj.cpp.sjp.service.AddressService.normalizePostcode;
 
 import uk.gov.justice.services.core.enveloper.Enveloper;
-import uk.gov.justice.services.messaging.JsonObjects;
 import uk.gov.justice.tools.eventsourcing.transformation.api.EventTransformation;
 
 import javax.json.JsonObject;
@@ -51,11 +51,11 @@ public abstract class BaseEventTransformer implements EventTransformation {
     }
 
     protected boolean containsAddressWithPostcodeToTransform(final String addressName, final String objectName, final JsonObject rootObject) {
-        return JsonObjects.getString(rootObject, objectName, addressName, POSTCODE).map(e -> !isPostcodeNormalized(e)).orElse(false);
+        return getString(rootObject, objectName, addressName, POSTCODE).map(e -> !isPostcodeNormalized(e)).orElse(false);
     }
 
     protected boolean containsPostcodeToTransform(final String addressField, final JsonObject jsonObject) {
-        return JsonObjects.getString(jsonObject, addressField, POSTCODE).map(e -> !isPostcodeNormalized(e)).orElse(false);
+        return getString(jsonObject, addressField, POSTCODE).map(e -> !isPostcodeNormalized(e)).orElse(false);
     }
 
     @Override

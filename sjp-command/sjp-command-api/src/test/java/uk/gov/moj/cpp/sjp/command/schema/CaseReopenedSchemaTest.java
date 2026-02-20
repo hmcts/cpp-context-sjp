@@ -18,7 +18,6 @@ import org.junit.jupiter.params.provider.MethodSource;
 import uk.gov.justice.services.adapter.rest.exception.BadRequestException;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 
-import javax.json.Json;
 import javax.json.JsonValue;
 
 import org.junit.jupiter.api.BeforeAll;

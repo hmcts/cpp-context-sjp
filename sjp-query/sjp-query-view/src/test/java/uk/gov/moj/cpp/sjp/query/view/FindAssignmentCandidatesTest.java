@@ -34,7 +34,6 @@ import java.util.Collections;
 import java.util.Set;
 import java.util.UUID;
 
-import javax.json.Json;
 import javax.json.JsonObjectBuilder;
 
 import org.junit.jupiter.api.Test;

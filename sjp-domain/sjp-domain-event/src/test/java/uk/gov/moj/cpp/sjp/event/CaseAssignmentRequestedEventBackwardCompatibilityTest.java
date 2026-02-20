@@ -5,7 +5,7 @@ import static org.hamcrest.Matchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.fail;
 import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilderWithFilter;
-import static uk.gov.justice.services.test.utils.core.messaging.JsonObjects.createObjectBuilder;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 import static uk.gov.moj.cpp.sjp.domain.SessionType.MAGISTRATE;
 
 import uk.gov.justice.domain.annotation.Event;
@@ -15,8 +15,6 @@ import uk.gov.moj.cpp.sjp.domain.SessionType;
 import uk.gov.moj.cpp.sjp.event.session.CaseAssignmentRequested;
 
 import java.util.UUID;
-
-import javax.json.Json;
 import javax.json.JsonObject;
 
 import com.fasterxml.jackson.databind.MapperFeature;
@@ -38,8 +36,8 @@ public class CaseAssignmentRequestedEventBackwardCompatibilityTest {
         final SessionType sessionType = MAGISTRATE;
         final String ljaNationalCourtCode = "2577";
 
-        final JsonObject oldEventPayload = Json.createObjectBuilder()
-                .add("session", Json.createObjectBuilder()
+        final JsonObject oldEventPayload = createObjectBuilder()
+                .add("session", createObjectBuilder()
                         .add("id", sessionId.toString())
                         .add("localJusticeAreaNationalCourtCode", ljaNationalCourtCode)
                         .add("type", MAGISTRATE.toString())

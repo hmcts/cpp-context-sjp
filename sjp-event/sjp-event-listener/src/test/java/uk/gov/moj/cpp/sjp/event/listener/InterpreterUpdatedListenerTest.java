@@ -28,8 +28,6 @@ import uk.gov.moj.cpp.sjp.persistence.repository.OnlinePleaRepository;
 import java.time.ZonedDateTime;
 import java.util.UUID;
 
-import javax.json.Json;
-
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

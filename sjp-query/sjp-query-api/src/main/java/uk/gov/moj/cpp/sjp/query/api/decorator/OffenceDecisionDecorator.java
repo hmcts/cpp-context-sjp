@@ -1,9 +1,10 @@
 package uk.gov.moj.cpp.sjp.query.api.decorator;
 
 import static java.util.UUID.fromString;
+import static uk.gov.justice.services.messaging.JsonObjects.createArrayBuilder;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 
 import uk.gov.justice.services.messaging.JsonEnvelope;
-import uk.gov.justice.services.messaging.JsonObjects;
 import uk.gov.moj.cpp.sjp.domain.decision.DecisionType;
 import uk.gov.moj.cpp.sjp.query.service.ReferenceDataService;
 import uk.gov.moj.cpp.sjp.query.service.ReferralReasons;
@@ -12,7 +13,6 @@ import uk.gov.moj.cpp.sjp.query.service.WithdrawalReasons;
 import java.util.UUID;
 
 import javax.inject.Inject;
-import javax.json.Json;
 import javax.json.JsonArray;
 import javax.json.JsonArrayBuilder;
 import javax.json.JsonObject;
@@ -33,10 +33,10 @@ public class OffenceDecisionDecorator {
 
         final JsonArray caseDecisions = originalDecisions.getValuesAs(JsonObject.class).stream()
                 .map(decision -> decorateDecision(decision, envelope, withdrawalReasons))
-                .reduce(Json.createArrayBuilder(), JsonArrayBuilder::add, JsonArrayBuilder::add)
+                .reduce(createArrayBuilder(), JsonArrayBuilder::add, JsonArrayBuilder::add)
                 .build();
 
-        return JsonObjects.createObjectBuilder(caseView).add("caseDecisions", caseDecisions).build();
+        return createObjectBuilder(caseView).add("caseDecisions", caseDecisions).build();
     }
 
     private JsonObject decorateDecision(final JsonObject decision, final JsonEnvelope envelope, final WithdrawalReasons withdrawalReasons) {
@@ -44,10 +44,10 @@ public class OffenceDecisionDecorator {
 
         final JsonArray offenceDecisions = decision.getJsonArray("offenceDecisions").getValuesAs(JsonObject.class).stream()
                 .map(offenceDecision -> decorateOffenceDecision(offenceDecision, referralReasons, withdrawalReasons))
-                .reduce(Json.createArrayBuilder(), JsonArrayBuilder::add, JsonArrayBuilder::add)
+                .reduce(createArrayBuilder(), JsonArrayBuilder::add, JsonArrayBuilder::add)
                 .build();
 
-        return JsonObjects.createObjectBuilder(decision).add("offenceDecisions", offenceDecisions).build();
+        return createObjectBuilder(decision).add("offenceDecisions", offenceDecisions).build();
     }
 
     private static JsonObject decorateOffenceDecision(final JsonObject offenceDecision,

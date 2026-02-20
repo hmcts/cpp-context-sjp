@@ -43,7 +43,6 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
-import javax.json.Json;
 import javax.json.JsonObject;
 
 import org.hamcrest.CoreMatchers;

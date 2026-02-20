@@ -18,8 +18,6 @@ import java.time.LocalDate;
 import java.util.UUID;
 import java.util.function.Consumer;
 
-import javax.json.Json;
-
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;

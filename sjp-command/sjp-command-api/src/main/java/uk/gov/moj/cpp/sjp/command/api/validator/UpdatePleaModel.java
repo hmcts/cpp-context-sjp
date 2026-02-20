@@ -1,6 +1,5 @@
 package uk.gov.moj.cpp.sjp.command.api.validator;
 
-import uk.gov.justice.services.messaging.JsonObjects;
 
 import javax.json.JsonObject;
 

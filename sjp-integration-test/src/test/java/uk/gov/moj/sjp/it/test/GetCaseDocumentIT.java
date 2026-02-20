@@ -34,7 +34,6 @@ import uk.gov.moj.sjp.it.stub.MaterialStub;
 import java.time.ZonedDateTime;
 import java.util.UUID;
 
-import javax.json.Json;
 import javax.json.JsonObject;
 import javax.ws.rs.core.Response;
 

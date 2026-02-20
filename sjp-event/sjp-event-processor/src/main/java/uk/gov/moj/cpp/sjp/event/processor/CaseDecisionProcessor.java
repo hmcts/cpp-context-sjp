@@ -25,7 +25,6 @@ import uk.gov.moj.cpp.sjp.event.processor.results.converter.SjpToHearingConverte
 import uk.gov.moj.cpp.sjp.event.processor.service.SjpService;
 
 import javax.inject.Inject;
-import javax.json.Json;
 import javax.json.JsonArrayBuilder;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
@@ -45,8 +44,8 @@ import static java.time.temporal.ChronoUnit.DAYS;
 import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
 import static java.util.Optional.ofNullable;
-import static javax.json.Json.createArrayBuilder;
-import static javax.json.Json.createObjectBuilder;
+import static uk.gov.justice.services.messaging.JsonObjects.createArrayBuilder;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 import static uk.gov.justice.core.courts.DefendantJudicialResult.defendantJudicialResult;
 import static uk.gov.justice.hearing.courts.HearingResulted.hearingResulted;
 import static uk.gov.justice.services.core.enveloper.Enveloper.envelop;

@@ -28,7 +28,6 @@ import static uk.gov.moj.cpp.sjp.event.processor.results.converter.TestConstants
 
 import java.util.Optional;
 
-import javax.json.Json;
 import javax.json.JsonObject;
 
 import org.junit.jupiter.api.Test;

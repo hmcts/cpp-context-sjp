@@ -9,7 +9,6 @@ import uk.gov.justice.services.messaging.JsonEnvelope;
 import java.util.UUID;
 
 import javax.inject.Inject;
-import javax.json.Json;
 import javax.json.JsonObject;
 
 public class UsersGroupsService {

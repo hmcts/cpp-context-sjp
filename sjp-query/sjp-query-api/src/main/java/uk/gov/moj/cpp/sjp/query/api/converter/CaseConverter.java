@@ -1,16 +1,17 @@
 package uk.gov.moj.cpp.sjp.query.api.converter;
 
 
-import static javax.json.Json.createObjectBuilder;
+import static uk.gov.justice.services.messaging.JsonObjects.createArrayBuilder;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 import static org.slf4j.LoggerFactory.getLogger;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilderWithFilter;
+import static uk.gov.justice.services.messaging.JsonObjects.getBoolean;
 
 import uk.gov.justice.services.messaging.JsonEnvelope;
-import uk.gov.justice.services.messaging.JsonObjects;
 
 import java.util.Optional;
 
 import javax.inject.Inject;
-import javax.json.Json;
 import javax.json.JsonArray;
 import javax.json.JsonArrayBuilder;
 import javax.json.JsonNumber;
@@ -45,13 +46,13 @@ public class CaseConverter {
         final JsonObject defendant = caseDetails.getJsonObject("defendant");
         final JsonArray decoratedOffences = buildOffencesArray(query, defendant.getJsonArray("offences"));
 
-        final JsonObjectBuilder defendantBuilder = JsonObjects.createObjectBuilderWithFilter(defendant, field -> !"offences".equals(field));
+        final JsonObjectBuilder defendantBuilder = createObjectBuilderWithFilter(defendant, field -> !"offences".equals(field));
         defendantBuilder.add("offences", decoratedOffences);
         return defendantBuilder.build();
     }
 
     private JsonArray buildOffencesArray(final JsonEnvelope query, final JsonArray offences) {
-        final JsonArrayBuilder builder = Json.createArrayBuilder();
+        final JsonArrayBuilder builder = createArrayBuilder();
         offences.getValuesAs(JsonObject.class)
                 .stream()
                 .map(offence -> buildOffenceObject(query, offence))
@@ -69,7 +70,7 @@ public class CaseConverter {
 
         final JsonNumber aocpStandardPenalty = offence.getJsonNumber("aocpStandardPenalty");
 
-        final JsonObjectBuilder builder = Json.createObjectBuilder()
+        final JsonObjectBuilder builder = createObjectBuilder()
                 .add("id", offence.getString("id"))
                 .add("wording", offence.getString("wording"))
                 .add("pendingWithdrawal", offence.getBoolean("pendingWithdrawal", false))
@@ -114,9 +115,9 @@ public class CaseConverter {
 
         final JsonNumber aocpTotalCost = caseDetails.getJsonNumber("aocpTotalCost");
 
-        final Optional<Boolean> resultedThroughAocp= JsonObjects.getBoolean(caseDetails, "resultedThroughAocp");
+        final Optional<Boolean> resultedThroughAocp= getBoolean(caseDetails, "resultedThroughAocp");
 
-        final Optional<Boolean> defendantAcceptedAocp= JsonObjects.getBoolean(caseDetails, "defendantAcceptedAocp");
+        final Optional<Boolean> defendantAcceptedAocp= getBoolean(caseDetails, "defendantAcceptedAocp");
 
         final JsonObjectBuilder builder = createObjectBuilder()
                 .add("id", caseDetails.getString("id"))

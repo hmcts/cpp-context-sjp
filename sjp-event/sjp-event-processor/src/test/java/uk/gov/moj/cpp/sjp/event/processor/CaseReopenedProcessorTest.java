@@ -19,7 +19,6 @@ import java.time.LocalDate;
 import java.util.UUID;
 import java.util.function.Consumer;
 
-import javax.json.Json;
 import javax.json.JsonObjectBuilder;
 
 import org.junit.jupiter.api.Test;

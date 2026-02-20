@@ -1,8 +1,8 @@
 package uk.gov.moj.cpp.sjp.event.processor;
 
 import static java.util.UUID.randomUUID;
-import static javax.json.Json.createArrayBuilder;
-import static javax.json.Json.createObjectBuilder;
+import static uk.gov.justice.services.messaging.JsonObjects.createArrayBuilder;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
@@ -29,7 +29,6 @@ import java.util.List;
 import java.util.UUID;
 import java.util.function.Function;
 
-import javax.json.Json;
 import javax.json.JsonArray;
 import javax.json.JsonValue;
 

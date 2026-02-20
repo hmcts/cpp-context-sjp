@@ -31,7 +31,7 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 import static java.util.Collections.emptyList;
-import static javax.json.Json.createObjectBuilder;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 
 @SuppressWarnings("squid:S107")
 public class ProsecutionCasesDataSourcingService {

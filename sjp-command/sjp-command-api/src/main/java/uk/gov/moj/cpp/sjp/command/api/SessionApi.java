@@ -10,13 +10,11 @@ import uk.gov.justice.services.core.annotation.ServiceComponent;
 import uk.gov.justice.services.core.enveloper.Enveloper;
 import uk.gov.justice.services.core.sender.Sender;
 import uk.gov.justice.services.messaging.JsonEnvelope;
-import uk.gov.justice.services.messaging.JsonObjects;
 import uk.gov.moj.cpp.sjp.command.api.service.ReferenceDataService;
 import uk.gov.moj.cpp.sjp.command.utils.UUIDHelper;
 import uk.gov.moj.cpp.sjp.domain.SessionCourt;
 
 import javax.inject.Inject;
-import javax.json.Json;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
 

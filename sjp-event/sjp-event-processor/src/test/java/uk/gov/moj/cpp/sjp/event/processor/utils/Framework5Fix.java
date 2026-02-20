@@ -10,7 +10,6 @@ import uk.gov.justice.services.messaging.spi.DefaultJsonEnvelopeProvider;
 import java.io.StringReader;
 import java.util.List;
 
-import javax.json.Json;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 

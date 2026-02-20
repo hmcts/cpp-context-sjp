@@ -27,7 +27,6 @@ import uk.gov.moj.cpp.sjp.event.processor.service.SjpService;
 import java.util.Optional;
 import java.util.UUID;
 
-import javax.json.Json;
 import javax.json.JsonObject;
 
 import org.junit.jupiter.api.Test;

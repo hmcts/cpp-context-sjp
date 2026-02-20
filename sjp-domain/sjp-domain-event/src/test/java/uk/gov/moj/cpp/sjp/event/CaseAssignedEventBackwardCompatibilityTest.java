@@ -5,6 +5,7 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.fail;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilderWithFilter;
 
 import uk.gov.justice.domain.annotation.Event;
@@ -14,7 +15,6 @@ import uk.gov.moj.cpp.sjp.event.session.CaseAssigned;
 
 import java.util.UUID;
 
-import javax.json.Json;
 import javax.json.JsonObject;
 
 import com.fasterxml.jackson.databind.MapperFeature;
@@ -35,7 +35,7 @@ public class CaseAssignedEventBackwardCompatibilityTest {
         final UUID assigneeId = randomUUID();
         final CaseAssignmentType caseAssignmentType = CaseAssignmentType.MAGISTRATE_DECISION;
 
-        final JsonObject oldEventPayload = Json.createObjectBuilder()
+        final JsonObject oldEventPayload = createObjectBuilder()
                 .add("assigneeId", assigneeId.toString())
                 .add("caseAssignmentType", caseAssignmentType.toString())
                 .add("caseId", caseId.toString())

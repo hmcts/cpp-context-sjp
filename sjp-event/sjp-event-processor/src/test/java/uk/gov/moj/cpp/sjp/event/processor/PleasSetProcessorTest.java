@@ -22,7 +22,6 @@ import uk.gov.moj.cpp.sjp.event.PleasSet;
 import java.io.StringReader;
 import java.util.UUID;
 
-import javax.json.Json;
 import javax.json.JsonObject;
 import javax.json.JsonValue;
 

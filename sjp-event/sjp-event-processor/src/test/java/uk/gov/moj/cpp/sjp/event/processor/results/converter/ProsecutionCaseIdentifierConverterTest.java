@@ -14,7 +14,6 @@ import static uk.gov.moj.cpp.sjp.event.processor.results.converter.TestConstants
 import uk.gov.justice.core.courts.ProsecutionCaseIdentifier;
 import uk.gov.moj.cpp.sjp.event.processor.service.ReferenceDataService;
 
-import javax.json.Json;
 import javax.json.JsonArray;
 import javax.json.JsonObject;
 

@@ -22,7 +22,6 @@ import java.util.Objects;
 import java.util.Optional;
 
 import javax.inject.Inject;
-import javax.json.Json;
 import javax.json.JsonObject;
 
 import org.slf4j.Logger;

@@ -22,7 +22,6 @@ import java.nio.charset.Charset;
 import java.util.List;
 import java.util.stream.Stream;
 
-import javax.json.Json;
 import javax.json.JsonObject;
 import javax.json.JsonReader;
 

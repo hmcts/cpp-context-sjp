@@ -23,7 +23,6 @@ import javax.jms.MessageConsumer;
 import javax.jms.Session;
 import javax.jms.TextMessage;
 import javax.jms.Topic;
-import javax.json.Json;
 import javax.json.JsonObject;
 
 import io.restassured.path.json.JsonPath;

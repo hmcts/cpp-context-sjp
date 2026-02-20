@@ -18,7 +18,6 @@ import uk.gov.moj.cpp.sjp.event.CaseUpdateRejected;
 
 import java.util.UUID;
 
-import javax.json.Json;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

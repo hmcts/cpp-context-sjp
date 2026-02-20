@@ -18,7 +18,6 @@ import uk.gov.moj.sjp.it.model.ProsecutingAuthority;
 
 import java.util.UUID;
 
-import javax.json.Json;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
 

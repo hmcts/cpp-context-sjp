@@ -58,7 +58,6 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.UUID;
 
-import javax.json.Json;
 import javax.json.JsonArrayBuilder;
 import javax.json.JsonObjectBuilder;
 import javax.json.JsonValue;

@@ -4,7 +4,6 @@ import static java.util.Arrays.asList;
 import static java.util.Optional.ofNullable;
 import static org.apache.commons.lang3.StringUtils.EMPTY;
 
-import uk.gov.justice.services.messaging.JsonObjects;
 import uk.gov.moj.cpp.sjp.domain.decision.DecisionType;
 import uk.gov.moj.cpp.sjp.query.service.OffenceFineLevels;
 import uk.gov.moj.cpp.sjp.query.service.WithdrawalReasons;

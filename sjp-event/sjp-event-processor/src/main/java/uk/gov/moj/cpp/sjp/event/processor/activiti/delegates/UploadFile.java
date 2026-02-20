@@ -15,7 +15,6 @@ import java.util.UUID;
 
 import javax.inject.Inject;
 import javax.inject.Named;
-import javax.json.Json;
 import javax.json.JsonObject;
 
 import org.activiti.engine.delegate.DelegateExecution;

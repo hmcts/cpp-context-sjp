@@ -45,7 +45,6 @@ import uk.gov.moj.cpp.sjp.event.CaseStatusChanged;
 
 import java.util.stream.Stream;
 
-import javax.json.Json;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

@@ -6,7 +6,6 @@ import java.io.StringReader;
 import java.nio.charset.Charset;
 import java.util.Map;
 
-import javax.json.Json;
 import javax.json.JsonObject;
 import javax.json.JsonReader;
 

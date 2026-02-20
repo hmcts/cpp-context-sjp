@@ -5,7 +5,8 @@ import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
 import static java.util.Optional.empty;
 import static java.util.UUID.fromString;
-import static javax.json.Json.createObjectBuilder;
+import static uk.gov.justice.services.messaging.JsonObjects.createArrayBuilder;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 import static uk.gov.justice.services.messaging.Envelope.metadataFrom;
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
 import static uk.gov.moj.cpp.sjp.persistence.entity.EmailNotification.NotificationNotifyDocumentType.PARTIAL_AOCP_CRITERIA_NOTIFICATION;
@@ -74,7 +75,6 @@ import java.util.Set;
 import java.util.UUID;
 
 import javax.inject.Inject;
-import javax.json.Json;
 import javax.json.JsonArrayBuilder;
 import javax.json.JsonObject;
 import javax.persistence.NoResultException;
@@ -560,7 +560,7 @@ public class SjpQueryView {
             return enveloper.withMetadataFrom(envelope, "sjp.query.outstanding-fine-requests").apply(result);
         } catch (final NoResultException nre) {
             LOGGER.error("### No defendant found ");
-            return envelopeFrom(envelope.metadata(), Json.createObjectBuilder().build());
+            return envelopeFrom(envelope.metadata(), createObjectBuilder().build());
         }
     }
 
@@ -568,7 +568,7 @@ public class SjpQueryView {
     public JsonEnvelope findApplication(final JsonEnvelope envelope) {
         return caseApplicationService.findApplication(fromString(extract(envelope, FIELD_APPLICATION_ID)))
                 .map(app -> enveloper.withMetadataFrom(envelope, NAME_APPLICATION_RESPONSE_CASE).apply(app))
-                .orElse(envelopeFrom(envelope.metadata(), Json.createObjectBuilder().build()));
+                .orElse(envelopeFrom(envelope.metadata(), createObjectBuilder().build()));
 
     }
 
@@ -645,7 +645,7 @@ public class SjpQueryView {
 
         final Set<String> prosecutingAuthorities = new HashSet<>(assignmentService.getProsecutingAuthorityByLja(ljaCode));
 
-        final JsonArrayBuilder prosecutorsBuilder = Json.createArrayBuilder();
+        final JsonArrayBuilder prosecutorsBuilder = createArrayBuilder();
         prosecutingAuthorities.forEach(prosecutorsBuilder::add);
 
         final JsonObject prosecutingAuthoritiesForLja = createObjectBuilder()

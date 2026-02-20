@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+         http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.3.xsd">
+
+    <changeSet id="093" author="sevket.arisu" logicalFilePath="093-add-index-employer.xml">
+        <preConditions onFail="MARK_RAN" onError="HALT">
+            <not>
+                <indexExists indexName="employer_defendant_id_idx"
+                             tableName="employer"/>
+            </not>
+        </preConditions>
+
+        <createIndex indexName="employer_defendant_id_idx"
+                     tableName="employer">
+            <column name="defendant_id"/>
+        </createIndex>
+
+        <rollback>
+            DROP INDEX IF EXISTS employer_defendant_id_idx;
+        </rollback>
+    </changeSet>
+</databaseChangeLog>

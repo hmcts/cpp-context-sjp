@@ -9,7 +9,7 @@
 
     <groupId>uk.gov.moj.cpp.sjp</groupId>
     <artifactId>sjp-parent</artifactId>
-    <version>17.103.164-SNAPSHOT</version>
+    <version>17.103.164-DD-41687-index-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <properties>
@@ -42,7 +42,7 @@
         <access-control-sjp-providers.version>4.1.4-ATCM</access-control-sjp-providers.version>
         <material.version>17.0.57</material.version>
         <notification.notify.version>17.0.1</notification.notify.version>
-        <referencedata.version>17.103.122</referencedata.version>
+        <referencedata.version>17.103.124</referencedata.version>
         <referencedata.offences.version>17.0.38</referencedata.offences.version>
         <scheduling.version>17.0.11</scheduling.version>
         <authorisation.service.version>0.1.49</authorisation.service.version>

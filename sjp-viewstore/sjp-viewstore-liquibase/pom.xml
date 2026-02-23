@@ -5,7 +5,7 @@
     <parent>
         <groupId>uk.gov.moj.cpp.sjp</groupId>
         <artifactId>sjp-viewstore</artifactId>
-        <version>17.103.164-DD-41687-index-SNAPSHOT</version>
+        <version>17.103.165-DD-41687-index-SNAPSHOT</version>
     </parent>
 
     <artifactId>sjp-viewstore-liquibase</artifactId>

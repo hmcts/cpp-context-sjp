@@ -12,6 +12,7 @@ import uk.gov.moj.cpp.sjp.event.CaseUpdateRejected;
 import uk.gov.moj.cpp.sjp.event.DefendantNotFound;
 import uk.gov.moj.cpp.sjp.event.OffenceNotFound;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -35,8 +36,8 @@ public final class HandlerUtils {
                                                                  final String action,
                                                                  final UUID defendantId,
                                                                  final CaseAggregateState state,
-                                                                 final String userProsecutingAuthority,
-                                                                 final List<String> agentProsecutorAuthorityAccess) {
+                                                                 final String userProsecutingAuthority, // initial
+                                                                 final List<String> agentProsecutorAuthorityAccess) { // new
         Object event = null;
         if (isNull(state.getCaseId())) {
             LOGGER.warn("Case not found: {}", action);
@@ -56,7 +57,14 @@ public final class HandlerUtils {
         } else if (!(state.getProsecutingAuthority().toUpperCase().startsWith(userProsecutingAuthority) ||
                 "ALL".equalsIgnoreCase(userProsecutingAuthority) ||
                 (agentProsecutorAuthorityAccess != null && agentProsecutorAuthorityAccess.stream().anyMatch(s-> s.equalsIgnoreCase(state.getProsecutingAuthority()))))) {
-            event = new ProsecutionAuthorityAccessDenied(userProsecutingAuthority, state.getProsecutingAuthority(), agentProsecutorAuthorityAccess);
+
+            final List<String> agents = agentProsecutorAuthorityAccess != null ? new ArrayList<>(agentProsecutorAuthorityAccess) : new ArrayList<>();
+
+            if (!agents.contains(userProsecutingAuthority)) {
+                agents.add(userProsecutingAuthority);
+            }
+
+            event = new ProsecutionAuthorityAccessDenied(state.getProsecutingAuthority(), agents);
         }
 
         return Optional.ofNullable(event).map(Stream::of);

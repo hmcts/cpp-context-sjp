@@ -95,17 +95,17 @@ public class DatesToAvoidServiceTest {
                 new PendingDatesToAvoid(createCaseDetailsWithRegionAndPersonalDetails("  ")),
                 new PendingDatesToAvoid(createCaseDetailsWithRegionAndPersonalDetails(null))
         );
-        when(pendingDatesToAvoidRepository.findCasesPendingDatesToAvoid(any(), any())).thenReturn(pendingCases);
         final JsonEnvelope envelope = createEnvelope();
         final ProsecutingAuthorityAccess prosecutingAuthorityAccess = ProsecutingAuthorityAccess.of("TFL", new ArrayList<>());
         final String prosecutingAuthorityFilterValue = "TFL";
         final CaseDetail caseDetail = new CaseDetail(UUID.randomUUID());
         caseDetail.getDefendant().setAddress(new Address());
         final List<PendingDatesToAvoid> pendingDatesToAvoidList = Arrays.asList(new PendingDatesToAvoid(caseDetail));
+        final List<String> agentProsecutorAuthorityAccess = Arrays.asList("DUMMY_VALUE");
 
         when(prosecutingAuthorityProvider.getCurrentUsersProsecutingAuthorityAccess(envelope)).thenReturn(prosecutingAuthorityAccess);
         when(prosecutingAuthorityAccessFilterConverter.convertToProsecutingAuthorityAccessFilter(prosecutingAuthorityAccess)).thenReturn(prosecutingAuthorityFilterValue);
-        when(pendingDatesToAvoidRepository.findCasesPendingDatesToAvoid(prosecutingAuthorityFilterValue, Collections.emptyList())).thenReturn(pendingDatesToAvoidList);
+        when(pendingDatesToAvoidRepository.findCasesPendingDatesToAvoid(prosecutingAuthorityFilterValue, agentProsecutorAuthorityAccess)).thenReturn(pendingDatesToAvoidList);
 
         final CasesPendingDatesToAvoidView datesToAvoidsView = datesToAvoidService.findCasesPendingDatesToAvoid(envelope);
 

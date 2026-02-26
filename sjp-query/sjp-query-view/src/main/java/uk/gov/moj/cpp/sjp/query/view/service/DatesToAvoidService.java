@@ -11,6 +11,7 @@ import uk.gov.moj.cpp.sjp.persistence.repository.PendingDatesToAvoidRepository;
 import uk.gov.moj.cpp.sjp.query.view.converter.ProsecutingAuthorityAccessFilterConverter;
 import uk.gov.moj.cpp.sjp.query.view.response.CasesPendingDatesToAvoidView;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -38,9 +39,17 @@ public class DatesToAvoidService {
     public CasesPendingDatesToAvoidView findCasesPendingDatesToAvoid(final JsonEnvelope envelope) {
         final ProsecutingAuthorityAccess prosecutingAuthorityAccess = prosecutingAuthorityProvider.getCurrentUsersProsecutingAuthorityAccess(envelope);
         final String prosecutingAuthorityFilterValue = prosecutingAuthorityAccessFilterConverter.convertToProsecutingAuthorityAccessFilter(prosecutingAuthorityAccess);
+        final List<String> agentProsecutorAuthorityAccess;
+
+        if (prosecutingAuthorityAccess.getAgentProsecutorAuthorityAccess() == null || prosecutingAuthorityAccess.getAgentProsecutorAuthorityAccess().isEmpty()) {
+            agentProsecutorAuthorityAccess = Arrays.asList("DUMMY_VALUE");
+        } else {
+            agentProsecutorAuthorityAccess = prosecutingAuthorityAccess.getAgentProsecutorAuthorityAccess();
+        }
 
         List<PendingDatesToAvoid> pendingCases = pendingDatesToAvoidRepository.findCasesPendingDatesToAvoid(prosecutingAuthorityFilterValue,
-                prosecutingAuthorityAccess.getAgentProsecutorAuthorityAccess());
+                agentProsecutorAuthorityAccess);
+
         final int total = pendingCases.size();
         final String regionFilter = getRegionFilterCriteria(envelope);
 

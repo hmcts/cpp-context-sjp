@@ -53,6 +53,8 @@ import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -182,7 +184,13 @@ public class CaseService {
                 .getCurrentUsersProsecutingAuthorityAccess(envelope);
         final String prosecutingAuthorityFilterValue = prosecutingAuthorityAccessFilterConverter
                 .convertToProsecutingAuthorityAccessFilter(prosecutingAuthorityAccess);
-        final List<String> agentProsecutorAuthorityAccessFilterValue = prosecutingAuthorityAccess.getAgentProsecutorAuthorityAccess();
+
+        final List<String> agentProsecutorAuthorityAccessFilterValue;
+        if (prosecutingAuthorityAccess.getAgentProsecutorAuthorityAccess() == null || prosecutingAuthorityAccess.getAgentProsecutorAuthorityAccess().isEmpty()){
+            agentProsecutorAuthorityAccessFilterValue = Arrays.asList("DUMMY_VALUE");
+        } else {
+            agentProsecutorAuthorityAccessFilterValue = prosecutingAuthorityAccess.getAgentProsecutorAuthorityAccess();
+        }
 
         if (limit.isPresent() && limit.get() < 1) {
             casesDetails = Collections.emptyList();

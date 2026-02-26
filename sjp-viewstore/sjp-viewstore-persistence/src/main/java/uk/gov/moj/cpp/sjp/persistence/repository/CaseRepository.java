@@ -101,23 +101,23 @@ public abstract class CaseRepository extends AbstractEntityRepository<CaseDetail
     public abstract List<CaseDetail> findByDefendantId(@QueryParam("defendantId") final UUID defendantId);
 
     @Query(value = "SELECT cd FROM CaseDetail cd LEFT OUTER JOIN cd.caseDocuments cdocs ON cdocs.documentType = 'SJPN' " +
-            "WHERE cdocs IS NULL AND cd.completed IS NOT true AND ( cd.prosecutingAuthority LIKE :prosecutingAuthorityFilter OR cd.prosecutingAuthority IN :agentProsecutorAuthorityAccess)")
+            "WHERE cdocs IS NULL AND cd.completed IS NOT true AND ( cd.prosecutingAuthority LIKE :prosecutingAuthorityFilter OR cd.prosecutingAuthority IN (:agentProsecutorAuthorityAccess))")
     public abstract QueryResult<CaseDetail> findCasesMissingSjpn(@QueryParam("prosecutingAuthorityFilter") String prosecutingAuthorityFilter,
                                                                  @QueryParam("agentProsecutorAuthorityAccess") List<String> agentProsecutorAuthorityAccess);
 
     @Query(value = "SELECT cd FROM CaseDetail cd LEFT OUTER JOIN cd.caseDocuments cdocs ON cdocs.documentType = 'SJPN' " +
             "WHERE cdocs IS NULL AND cd.postingDate < :postedBefore AND cd.completed IS NOT true AND ( cd.prosecutingAuthority LIKE :prosecutingAuthorityFilter " +
-            "OR cd.prosecutingAuthority IN :agentProsecutorAuthorityAccess)")
+            "OR cd.prosecutingAuthority IN (:agentProsecutorAuthorityAccess))")
     public abstract QueryResult<CaseDetail> findCasesMissingSjpn(@QueryParam("prosecutingAuthorityFilter") String prosecutingAuthorityFilter, @QueryParam("postedBefore") final LocalDate postedBefore,
                                                                  @QueryParam("agentProsecutorAuthorityAccess") List<String> agentProsecutorAuthorityAccess);
 
     @Query(value = "SELECT COUNT(cd) FROM CaseDetail cd LEFT OUTER JOIN cd.caseDocuments cdocs ON cdocs.documentType = 'SJPN' " +
-            "WHERE cdocs IS NULL AND cd.completed IS NOT true AND ( cd.prosecutingAuthority LIKE :prosecutingAuthorityFilter OR cd.prosecutingAuthority IN :agentProsecutorAuthorityAccess )")
+            "WHERE cdocs IS NULL AND cd.completed IS NOT true AND ( cd.prosecutingAuthority LIKE :prosecutingAuthorityFilter OR cd.prosecutingAuthority IN (:agentProsecutorAuthorityAccess) )")
     public abstract int countCasesMissingSjpn(@QueryParam("prosecutingAuthorityFilter") String prosecutingAuthorityFilter,
                                               @QueryParam("agentProsecutorAuthorityAccess") List<String> agentProsecutorAuthorityAccess);
 
     @Query(value = "SELECT COUNT(cd) FROM CaseDetail cd LEFT OUTER JOIN cd.caseDocuments cdocs ON cdocs.documentType = 'SJPN' " +
-            "WHERE cdocs IS NULL AND cd.postingDate < :postedBefore AND cd.completed IS NOT true AND ( cd.prosecutingAuthority LIKE :prosecutingAuthorityFilter OR cd.prosecutingAuthority IN :agentProsecutorAuthorityAccess)")
+            "WHERE cdocs IS NULL AND cd.postingDate < :postedBefore AND cd.completed IS NOT true AND ( cd.prosecutingAuthority LIKE :prosecutingAuthorityFilter OR cd.prosecutingAuthority IN (:agentProsecutorAuthorityAccess))")
     public abstract int countCasesMissingSjpn(@QueryParam("prosecutingAuthorityFilter") String prosecutingAuthorityFilter, @QueryParam("postedBefore") final LocalDate postedBefore,
                                               @QueryParam("agentProsecutorAuthorityAccess") List<String> agentProsecutorAuthorityAccess);
 

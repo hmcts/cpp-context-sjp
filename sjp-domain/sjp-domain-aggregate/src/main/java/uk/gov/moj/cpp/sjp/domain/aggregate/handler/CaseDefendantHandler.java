@@ -31,6 +31,7 @@ import uk.gov.moj.cpp.sjp.event.ProsecutionAuthorityAccessDenied;
 
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -79,7 +80,13 @@ public class CaseDefendantHandler {
         } else if (!(state.getProsecutingAuthority().toUpperCase().startsWith(userProsecutingAuthority) ||
                 "ALL".equalsIgnoreCase(userProsecutingAuthority) ||
                 (agentProsecutorAuthorityAccess != null && agentProsecutorAuthorityAccess.stream().anyMatch(s-> s.equalsIgnoreCase(state.getProsecutingAuthority()))))) {
-            event = new ProsecutionAuthorityAccessDenied(userProsecutingAuthority, state.getProsecutingAuthority(), agentProsecutorAuthorityAccess);
+
+            final List<String> agents = agentProsecutorAuthorityAccess != null ? new ArrayList<>(agentProsecutorAuthorityAccess) : new ArrayList<>();
+
+            if (!agents.contains(userProsecutingAuthority)) {
+                agents.add(userProsecutingAuthority);
+            }
+            event = new ProsecutionAuthorityAccessDenied(state.getProsecutingAuthority(), agents);
         } else {
             event = new DefendantDetailsUpdatesAcknowledged(state.getCaseId(), defendantId, acknowledgedAt);
         }

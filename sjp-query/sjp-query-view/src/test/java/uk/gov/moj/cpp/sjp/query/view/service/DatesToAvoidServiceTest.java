@@ -50,6 +50,7 @@ public class DatesToAvoidServiceTest {
     private static final UUID OXFORD_REGION_ID = UUID.randomUUID();
     private static final UUID LEICESTER_REGION_ID = UUID.randomUUID();
     private static final String TITLE = "title";
+    private static final String REGION = "region";
     private static final String FIRST_NAME = "firstname";
     private static final String LAST_NAME = "lastname";
     private static final LocalDate DATE_OF_BIRTH = now().minusYears(50);
@@ -142,6 +143,32 @@ public class DatesToAvoidServiceTest {
     }
 
     @Test
+    public void shouldFilterPendingCasesByProsecutingAuthority() {
+        pendingCases = Arrays.asList(
+                new PendingDatesToAvoid(createCaseDetailsWithProsecutingAuthority("TFL")),
+                new PendingDatesToAvoid(createCaseDetailsWithProsecutingAuthority("TVL")),
+                new PendingDatesToAvoid(createCaseDetailsWithProsecutingAuthority("TFL")),
+                new PendingDatesToAvoid(createCaseDetailsWithProsecutingAuthority("TVL")),
+                new PendingDatesToAvoid(createCaseDetailsWithProsecutingAuthority("TFL")),
+                new PendingDatesToAvoid(createCaseDetailsWithProsecutingAuthority("TVL"))
+        );
+        when(pendingDatesToAvoidRepository.findCasesPendingDatesToAvoid(any(), any())).thenReturn(pendingCases);
+        final JsonEnvelope envelope = createEnvelopeWithProsecutingAuthority("TFL");
+
+        final ProsecutingAuthorityAccess prosecutingAuthorityAccess = ProsecutingAuthorityAccess.of("TFL", new ArrayList<>());
+        when(prosecutingAuthorityProvider.getCurrentUsersProsecutingAuthorityAccess(envelope)).thenReturn(prosecutingAuthorityAccess);
+
+        final CasesPendingDatesToAvoidView datesToAvoidsView = datesToAvoidService.findCasesPendingDatesToAvoid(envelope);
+
+        assertThat(datesToAvoidsView.getCases(), hasSize(3));
+        assertThat(datesToAvoidsView.getCases(), hasItem(hasProperty("region", equalTo("region"))));
+        assertEquals(FIRST_NAME, datesToAvoidsView.getCases().get(0).getFirstName());
+        assertEquals(LAST_NAME, datesToAvoidsView.getCases().get(0).getLastName());
+        assertEquals(DATE_OF_BIRTH, datesToAvoidsView.getCases().get(0).getDateOfBirth());
+        assertThat(datesToAvoidsView.getCount(), is(pendingCases.size()));
+    }
+
+    @Test
     public void shouldFilterPendingCasesByRegionIdWithLegalEntityDetails() {
         setUpForLegalEntityDetails();
         final JsonEnvelope envelope = createEnvelope(LONDON_REGION_ID);
@@ -225,6 +252,13 @@ public class DatesToAvoidServiceTest {
                 .build();
     }
 
+    private JsonEnvelope createEnvelopeWithProsecutingAuthority(final String prosecutingAuthority) {
+        return envelope()
+                .with(metadataWithRandomUUID("sjp.pending-dates-to-avoid"))
+                .withPayloadOf(prosecutingAuthority, "prosecutingAuthority")
+                .build();
+    }
+
     private JsonEnvelope createEnvelope() {
         return envelope()
                 .with(metadataWithRandomUUID("sjp.pending-dates-to-avoid"))
@@ -241,7 +275,23 @@ public class DatesToAvoidServiceTest {
                                 .withLastName(LAST_NAME)
                                 .withDateOfBirth(DATE_OF_BIRTH)
                                 .build())
-                        .build()).build();
+                        .build())
+                .build();
+    }
+
+    private CaseDetail createCaseDetailsWithProsecutingAuthority(final String prosecutingAuthority) {
+        return CaseDetailBuilder.aCase().withDefendantDetail(
+                        DefendantDetailBuilder.aDefendantDetail()
+                                .withRegion(REGION)
+                                .withPersonalDetails(buildPersonalDetails()
+                                        .withTitle(TITLE)
+                                        .withFirstName(FIRST_NAME)
+                                        .withLastName(LAST_NAME)
+                                        .withDateOfBirth(DATE_OF_BIRTH)
+                                        .build())
+                                .build())
+                .withProsecutingAuthority(prosecutingAuthority)
+                .build();
     }
 
     private CaseDetail createCaseDetailsWithRegionAndLegalEntityDetails(final String region) {

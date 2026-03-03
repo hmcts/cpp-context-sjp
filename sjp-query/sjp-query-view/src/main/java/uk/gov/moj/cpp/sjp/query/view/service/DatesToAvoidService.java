@@ -61,11 +61,21 @@ public class DatesToAvoidService {
             pendingCases = filterByRegionId(envelope, pendingCases, regionFilter);
         }
 
+        final String prosecutingAuthorityFilter = getProsecutingAuthorityFilterCriteria(envelope);
+
+        if (isFilterByProsecutingAuthority(prosecutingAuthorityFilter)) {
+            pendingCases = filterByProsecutingAuthority(pendingCases, prosecutingAuthorityFilter);
+        }
+
         return new CasesPendingDatesToAvoidView(pendingCases, total);
     }
 
     private String getRegionFilterCriteria(final JsonEnvelope envelope) {
         return envelope.payloadAsJsonObject().getString("regionId", null);
+    }
+
+    private String getProsecutingAuthorityFilterCriteria(final JsonEnvelope envelope) {
+        return envelope.payloadAsJsonObject().getString("prosecutingAuthority", null);
     }
 
     private boolean isFilterByUnknownRegion(final String regionFilter) {
@@ -78,6 +88,10 @@ public class DatesToAvoidService {
 
     private boolean isFilterByRegionId(final String regionFilter) {
         return nonNull(regionFilter) && !isBlankRegion(regionFilter);
+    }
+
+    private boolean isFilterByProsecutingAuthority(final String prosecutingAuthority) {
+        return nonNull(prosecutingAuthority);
     }
 
     private List<PendingDatesToAvoid> filterByRegionId(final JsonEnvelope envelope, final List<PendingDatesToAvoid> pendingCases, final String regionFilter) {
@@ -94,6 +108,13 @@ public class DatesToAvoidService {
         return pendingCases
                 .stream()
                 .filter(line -> isBlank(line.getCaseDetail().getDefendant().getRegion()))
+                .collect(Collectors.toList());
+    }
+
+    private List<PendingDatesToAvoid> filterByProsecutingAuthority(final List<PendingDatesToAvoid> pendingCases, final String prosecutingAuthorityFilter) {
+        return pendingCases
+                .stream()
+                .filter(pendingCase -> prosecutingAuthorityFilter.equalsIgnoreCase(pendingCase.getCaseDetail().getProsecutingAuthority()))
                 .collect(Collectors.toList());
     }
 

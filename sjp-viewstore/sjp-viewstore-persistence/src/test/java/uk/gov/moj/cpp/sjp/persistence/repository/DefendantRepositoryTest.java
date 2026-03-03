@@ -240,7 +240,8 @@ public class DefendantRepositoryTest extends BaseTransactionalJunit4Test {
                 defendant.getCaseDetail().getUrn(),
                 defendant.getCaseDetail().getId(),
                 defendant.getRegion(),
-                null);
+                null,
+                "TVL");
     }
 
 }

@@ -11,6 +11,7 @@ import uk.gov.moj.cpp.accesscontrol.sjp.providers.ProsecutingAuthorityProvider;
 import uk.gov.moj.cpp.sjp.domain.DefendantOutstandingFineRequest;
 import uk.gov.moj.cpp.sjp.domain.DefendantOutstandingFineRequestsQueryResult;
 import uk.gov.moj.cpp.sjp.persistence.entity.DefendantDetail;
+import uk.gov.moj.cpp.sjp.persistence.entity.PendingDatesToAvoid;
 import uk.gov.moj.cpp.sjp.persistence.entity.view.UpdatedDefendantDetails;
 import uk.gov.moj.cpp.sjp.persistence.repository.DefendantRepository;
 import uk.gov.moj.cpp.sjp.query.view.converter.ProsecutingAuthorityAccessFilterConverter;
@@ -66,6 +67,12 @@ public class DefendantService {
             results = filterByRegionId(envelope, updatedDefendantDetails, filterCriteria);
         }
 
+        final String prosecutingAuthorityFilter = getProsecutingAuthorityFilterCriteria(envelope);
+
+        if (isFilterByProsecutingAuthority(prosecutingAuthorityFilter)) {
+            results = filterByProsecutingAuthority(results, prosecutingAuthorityFilter);
+        }
+
         return DefendantDetailsUpdatesView.of(updatedDefendantDetails.size(), sortByMostRecentUpdated(envelope, results));
     }
 
@@ -81,8 +88,19 @@ public class DefendantService {
         return sortedDefendantDetailsResult;
     }
 
+    private List<UpdatedDefendantDetails> filterByProsecutingAuthority(final List<UpdatedDefendantDetails> updatedDefendantDetails, final String prosecutingAuthorityFilter) {
+        return updatedDefendantDetails
+                .stream()
+                .filter(updatedDefendantDetail -> prosecutingAuthorityFilter.equalsIgnoreCase(updatedDefendantDetail.getProsecutingAuthority()))
+                .collect(Collectors.toList());
+    }
+
     private boolean isFilterByRegionId(final String filterCriteria) {
         return !isBlankRegion(filterCriteria) && nonNull(filterCriteria);
+    }
+
+    private boolean isFilterByProsecutingAuthority(final String prosecutingAuthority) {
+        return nonNull(prosecutingAuthority);
     }
 
     private List<UpdatedDefendantDetails> filterByUnknownRegion(final List<UpdatedDefendantDetails> updatedDefendantDetails) {
@@ -98,6 +116,10 @@ public class DefendantService {
 
     private String getRegionFilterCriteria(final JsonEnvelope envelope) {
         return envelope.payloadAsJsonObject().getString("regionId", null);
+    }
+
+    private String getProsecutingAuthorityFilterCriteria(final JsonEnvelope envelope) {
+        return envelope.payloadAsJsonObject().getString("prosecutingAuthority", null);
     }
 
     private List<UpdatedDefendantDetails> sortByMostRecentUpdated(final JsonEnvelope envelope, final List<UpdatedDefendantDetails> updatedDefendantDetails) {

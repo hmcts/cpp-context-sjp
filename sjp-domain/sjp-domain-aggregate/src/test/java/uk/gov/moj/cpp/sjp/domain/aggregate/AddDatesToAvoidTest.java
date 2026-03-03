@@ -15,7 +15,9 @@ import uk.gov.moj.cpp.sjp.event.CaseNotFound;
 import uk.gov.moj.cpp.sjp.event.CaseUpdateRejected;
 import uk.gov.moj.cpp.sjp.event.DatesToAvoidAdded;
 import uk.gov.moj.cpp.sjp.event.DatesToAvoidUpdated;
+import uk.gov.moj.cpp.sjp.event.ProsecutionAuthorityAccessDenied;
 
+import java.util.Arrays;
 import java.util.List;
 
 import org.junit.jupiter.api.Test;
@@ -32,7 +34,7 @@ public class AddDatesToAvoidTest extends CaseAggregateBaseTest {
     @Test
     public void datesToAvoidAddedEvent() {
         //when
-        final List<Object> events = caseAggregate.addDatesToAvoid(DATES_TO_AVOID, ALL).collect(toList());
+        final List<Object> events = caseAggregate.addDatesToAvoid(DATES_TO_AVOID, ALL, null).collect(toList());
         final DatesToAvoidAdded datesToAvoidAdded = (DatesToAvoidAdded) events.get(0);
 
         //then
@@ -45,7 +47,7 @@ public class AddDatesToAvoidTest extends CaseAggregateBaseTest {
         datesToAvoidAddedEvent(DATES_TO_AVOID);
 
         //when
-        final List<Object> datesToAvoidUpdatedEvents = caseAggregate.addDatesToAvoid(DATES_TO_AVOID_UPDATED, ALL).collect(toList());
+        final List<Object> datesToAvoidUpdatedEvents = caseAggregate.addDatesToAvoid(DATES_TO_AVOID_UPDATED, ALL, null).collect(toList());
         final DatesToAvoidUpdated datesToAvoidUpdated = (DatesToAvoidUpdated) datesToAvoidUpdatedEvents.get(0);
 
         //then
@@ -65,7 +67,7 @@ public class AddDatesToAvoidTest extends CaseAggregateBaseTest {
     }
 
     private DatesToAvoidAdded datesToAvoidAddedEvent(final String datesToAvoid) {
-        final List<Object> datesToAvoidAddedEvents = caseAggregate.addDatesToAvoid(datesToAvoid, ALL).collect(toList());
+        final List<Object> datesToAvoidAddedEvents = caseAggregate.addDatesToAvoid(datesToAvoid, ALL, null).collect(toList());
         return (DatesToAvoidAdded) datesToAvoidAddedEvents.get(0);
     }
 
@@ -76,7 +78,7 @@ public class AddDatesToAvoidTest extends CaseAggregateBaseTest {
         AggregateHelper.saveDecision(caseAggregate, aCase, session, VerdictType.FOUND_NOT_GUILTY);
 
         //when
-        final List<Object> events = caseAggregate.addDatesToAvoid(DATES_TO_AVOID, ALL).collect(toList());
+        final List<Object> events = caseAggregate.addDatesToAvoid(DATES_TO_AVOID, ALL, null).collect(toList());
 
         //then
         assertThat(events, hasSize(1));
@@ -91,7 +93,7 @@ public class AddDatesToAvoidTest extends CaseAggregateBaseTest {
         caseAggregate.assignCase(randomUUID(), clock.now(), CaseAssignmentType.DELEGATED_POWERS_DECISION);
 
         //when
-        final List<Object> events = caseAggregate.addDatesToAvoid(DATES_TO_AVOID, ALL).collect(toList());
+        final List<Object> events = caseAggregate.addDatesToAvoid(DATES_TO_AVOID, ALL, null).collect(toList());
 
         //then
         assertThat(events, hasSize(1));
@@ -103,7 +105,7 @@ public class AddDatesToAvoidTest extends CaseAggregateBaseTest {
     @Test
     public void caseNotFound() {
         //when
-        final List<Object> events = new CaseAggregate().addDatesToAvoid(DATES_TO_AVOID, ALL).collect(toList());
+        final List<Object> events = new CaseAggregate().addDatesToAvoid(DATES_TO_AVOID, ALL, null).collect(toList());
 
         //then
         assertThat(events, hasSize(1));
@@ -112,4 +114,38 @@ public class AddDatesToAvoidTest extends CaseAggregateBaseTest {
         assertThat(datesToAvoidReceived.getDescription(), equalTo("Add dates to avoid"));
     }
 
+    @Test
+    public void prosecutionAuthorityAccessAllowedForAgent() {
+        //given an assigned case
+        caseAggregate.assignCase(randomUUID(), clock.now(), CaseAssignmentType.DELEGATED_POWERS_DECISION);
+        caseAggregate.getState().setAssigneeId(null);
+
+        //when
+        final List<Object> events = caseAggregate.addDatesToAvoid(DATES_TO_AVOID, "TVL", Arrays.asList("TFL")).collect(toList());
+
+        //then
+        assertThat(events, hasSize(1));
+        final DatesToAvoidAdded datesToAvoidAdded = (DatesToAvoidAdded) events.get(0);
+        assertThat(datesToAvoidAdded.getCaseId(), equalTo(caseId));
+        assertThat(datesToAvoidAdded.getDatesToAvoid(), equalTo(DATES_TO_AVOID));
+    }
+
+    @Test
+    public void prosecutionAuthorityAccessDenied() {
+        //given an assigned case
+        caseAggregate.assignCase(randomUUID(), clock.now(), CaseAssignmentType.DELEGATED_POWERS_DECISION);
+        caseAggregate.getState().setAssigneeId(null);
+
+        //when
+        final List<Object> events = caseAggregate.addDatesToAvoid(DATES_TO_AVOID, "TVL", Arrays.asList("XYZ")).collect(toList());
+
+        //then
+        assertThat(events, hasSize(1));
+        final ProsecutionAuthorityAccessDenied prosecutionAuthorityAccessDenied = (ProsecutionAuthorityAccessDenied) events.get(0);
+
+        assertThat(prosecutionAuthorityAccessDenied.getCaseAuthority(), equalTo("TFL"));
+        assertThat(prosecutionAuthorityAccessDenied.getAgentProsecutorAuthorityAccess().size(), equalTo(2));
+        assertThat(prosecutionAuthorityAccessDenied.getAgentProsecutorAuthorityAccess().get(0), equalTo("XYZ"));
+        assertThat(prosecutionAuthorityAccessDenied.getAgentProsecutorAuthorityAccess().get(1), equalTo("TVL"));
+    }
 }

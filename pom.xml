@@ -145,7 +145,7 @@
     </dependencies>
 
     <distributionManagement>
-         <site>
+        <site>
             <id>site</id>
             <url>${mvn.site.url}</url>
         </site>

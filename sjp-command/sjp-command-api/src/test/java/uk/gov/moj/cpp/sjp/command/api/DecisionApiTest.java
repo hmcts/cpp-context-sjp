@@ -425,6 +425,28 @@ public class DecisionApiTest {
         ));
     }
 
+
+    @Test
+    void shouldCompleteCaseViaBdf() {
+        final UUID caseId = randomUUID();
+        final JsonEnvelope envelope = createCaseCompleteBdfPayload(caseId);
+        decisionApi.caseCompleteBdf(envelope);
+        verify(sender).send(envelopeCaptor.capture());
+        final Envelope sentEnvelope = envelopeCaptor.getValue();
+        assertThat(sentEnvelope.metadata().name(), is("sjp.command.case-complete-bdf"));
+        assertThat(sentEnvelope.payload().toString(), isJson(
+                allOf(
+                        withJsonPath("$.caseId", is(caseId.toString()))
+                )
+        ));
+    }
+
+    private JsonEnvelope createCaseCompleteBdfPayload(final UUID caseId) {
+        final JsonObjectBuilder applicationBuilder = createObjectBuilder()
+                .add("caseId", caseId.toString());
+        return envelopeFrom(metadataWithRandomUUID("sjp.command.case-complete-bdf"), applicationBuilder.build());
+    }
+
     private JsonEnvelope createApplicationDecisionCommand(final boolean granted, final String rejectionReason,
                                                           final boolean outOfTime, final String outOfTimeReason) {
 

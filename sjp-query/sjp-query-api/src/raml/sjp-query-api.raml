@@ -134,6 +134,10 @@ baseUri: http://localhost:8080/sjp-query-api/query/api/rest/sjp
         description: The defendant's region.
         type: string
         required: false
+      prosecutingAuthority:
+        description: The prosecuting authority
+        type: string
+        required: false
 
     responses:
         200:
@@ -376,6 +380,10 @@ baseUri: http://localhost:8080/sjp-query-api/query/api/rest/sjp
     queryParameters:
      regionId:
             description: The defendant's region id.
+            type: string
+            required: false
+     prosecutingAuthority:
+            description: The prosecuting authority
             type: string
             required: false
     responses:

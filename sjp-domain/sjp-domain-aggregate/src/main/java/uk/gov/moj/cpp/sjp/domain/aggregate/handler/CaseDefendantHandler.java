@@ -81,12 +81,15 @@ public class CaseDefendantHandler {
                 "ALL".equalsIgnoreCase(userProsecutingAuthority) ||
                 (agentProsecutorAuthorityAccess != null && agentProsecutorAuthorityAccess.stream().anyMatch(s-> s.equalsIgnoreCase(state.getProsecutingAuthority()))))) {
 
-            final List<String> agents = agentProsecutorAuthorityAccess != null ? new ArrayList<>(agentProsecutorAuthorityAccess) : new ArrayList<>();
+            final List<String> prosecutorAuthorityAccess = new ArrayList<>();
 
-            if (!agents.contains(userProsecutingAuthority)) {
-                agents.add(userProsecutingAuthority);
+            if(agentProsecutorAuthorityAccess != null && agentProsecutorAuthorityAccess.size() > 1) {
+                prosecutorAuthorityAccess.addAll(agentProsecutorAuthorityAccess);
+            } else {
+                prosecutorAuthorityAccess.add(userProsecutingAuthority);
             }
-            event = new ProsecutionAuthorityAccessDenied(state.getProsecutingAuthority(), agents);
+
+            event = new ProsecutionAuthorityAccessDenied(state.getProsecutingAuthority(), prosecutorAuthorityAccess);
         } else {
             event = new DefendantDetailsUpdatesAcknowledged(state.getCaseId(), defendantId, acknowledgedAt);
         }

@@ -10,22 +10,22 @@ public class ProsecutionAuthorityAccessDenied  implements Serializable {
     private static final long serialVersionUID = 1L;
 
     private final String caseAuthority;
-    private final List<String> agentProsecutorAuthorityAccess;
+    private final List<String> prosecutorAuthorityAccess;
 
     public static final String EVENT_NAME = "sjp.events.prosecution-authority-access-denied";
 
 
     public ProsecutionAuthorityAccessDenied(final String caseAuthority,
-                                            final List<String> agentProsecutorAuthorityAccess) {
+                                            final List<String> prosecutorAuthorityAccess) {
         this.caseAuthority = caseAuthority;
-        this.agentProsecutorAuthorityAccess = agentProsecutorAuthorityAccess;
+        this.prosecutorAuthorityAccess = prosecutorAuthorityAccess;
     }
 
     public String getCaseAuthority() {
         return caseAuthority;
     }
 
-    public List<String> getAgentProsecutorAuthorityAccess() {
-        return agentProsecutorAuthorityAccess;
+    public List<String> getProsecutorAuthorityAccess() {
+        return prosecutorAuthorityAccess;
     }
 }

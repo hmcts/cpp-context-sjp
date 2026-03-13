@@ -137,15 +137,15 @@ public class AddDatesToAvoidTest extends CaseAggregateBaseTest {
         caseAggregate.getState().setAssigneeId(null);
 
         //when
-        final List<Object> events = caseAggregate.addDatesToAvoid(DATES_TO_AVOID, "TVL", Arrays.asList("XYZ")).collect(toList());
+        final List<Object> events = caseAggregate.addDatesToAvoid(DATES_TO_AVOID, "TVL", Arrays.asList("XYZ", "TVL")).collect(toList());
 
         //then
         assertThat(events, hasSize(1));
         final ProsecutionAuthorityAccessDenied prosecutionAuthorityAccessDenied = (ProsecutionAuthorityAccessDenied) events.get(0);
 
         assertThat(prosecutionAuthorityAccessDenied.getCaseAuthority(), equalTo("TFL"));
-        assertThat(prosecutionAuthorityAccessDenied.getAgentProsecutorAuthorityAccess().size(), equalTo(2));
-        assertThat(prosecutionAuthorityAccessDenied.getAgentProsecutorAuthorityAccess().get(0), equalTo("XYZ"));
-        assertThat(prosecutionAuthorityAccessDenied.getAgentProsecutorAuthorityAccess().get(1), equalTo("TVL"));
+        assertThat(prosecutionAuthorityAccessDenied.getProsecutorAuthorityAccess().size(), equalTo(2));
+        assertThat(prosecutionAuthorityAccessDenied.getProsecutorAuthorityAccess().get(0), equalTo("XYZ"));
+        assertThat(prosecutionAuthorityAccessDenied.getProsecutorAuthorityAccess().get(1), equalTo("TVL"));
     }
 }

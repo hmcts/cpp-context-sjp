@@ -203,7 +203,7 @@ class CaseDefendantHandlerComprehensiveTest {
     }
 
     @Test
-    void shouldReturnProsecutionAuthorityAccessDeniedWhenAgentIsAcknowledgingWithWrongAuthority() {
+    void shouldReturnProsecutionAuthorityAccessDeniedWhenAgentWithMultipleProsecutorsIsAcknowledgingWithWrongAuthority() {
         // given
         final UUID defendantId = UUID.randomUUID();
         final UUID caseId = UUID.randomUUID();
@@ -216,6 +216,27 @@ class CaseDefendantHandlerComprehensiveTest {
         // when
         final Stream<Object> eventStream = caseDefendantHandler.acknowledgeDefendantDetailsUpdates(
                 defendantId, acknowledgedAt, state, userProsecutingAuthority, List.of("TFL", "XYZ"));
+
+        // then
+        final List<Object> eventList = eventStream.toList();
+        assertThat(eventList.size(), is(1));
+        assertThat(eventList.get(0), instanceOf(ProsecutionAuthorityAccessDenied.class));
+    }
+
+    @Test
+    void shouldReturnProsecutionAuthorityAccessDeniedWhenAgentIsAcknowledgingWithWrongAuthority() {
+        // given
+        final UUID defendantId = UUID.randomUUID();
+        final UUID caseId = UUID.randomUUID();
+        final ZonedDateTime acknowledgedAt = ZonedDateTime.now();
+        final String userProsecutingAuthority = "TFL";
+        when(state.getCaseId()).thenReturn(caseId);
+        when(state.hasDefendant(defendantId)).thenReturn(true);
+        when(state.getProsecutingAuthority()).thenReturn("POLICE");
+
+        // when
+        final Stream<Object> eventStream = caseDefendantHandler.acknowledgeDefendantDetailsUpdates(
+                defendantId, acknowledgedAt, state, userProsecutingAuthority, List.of("TFL"));
 
         // then
         final List<Object> eventList = eventStream.toList();

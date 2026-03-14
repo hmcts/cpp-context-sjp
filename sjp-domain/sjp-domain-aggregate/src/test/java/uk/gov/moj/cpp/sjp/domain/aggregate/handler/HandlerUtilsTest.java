@@ -69,7 +69,7 @@ public class HandlerUtilsTest {
     }
 
     @Test
-    public void updateShouldBeRejectedWhenTheAgentIsNotAuthorised() {
+    void updateShouldBeRejectedWhenTheAgenWithMultipleProsecutorsIsNotAuthorised() {
 
         final List<OffenceDecision> offenceDecisions = Arrays.asList(
                 adjournOffenceDecision(OFFENCE_ID_1, PROVED_SJP),
@@ -82,12 +82,33 @@ public class HandlerUtilsTest {
         caseAggregateState.updateOffenceConvictionDetails(ZonedDateTime.now().plusDays(7), offenceDecisions, null);
         caseAggregateState.setProsecutingAuthority("XYZ");
 
-        final List<Object> results = HandlerUtils.createRejectionEvents(USER_ID, "action", DEFENDANT_ID, caseAggregateState,  "TFL", List.of("TFL", "TVL")).get().collect(toList());
+        final List<Object> results = HandlerUtils.createRejectionEvents(USER_ID, "action", DEFENDANT_ID, caseAggregateState,  "TFL", List.of("TFL", "TVL")).get().toList();
 
         final ProsecutionAuthorityAccessDenied prosecutionAuthorityAccessDenied = (ProsecutionAuthorityAccessDenied) results.get(0);
         assertEquals("XYZ", prosecutionAuthorityAccessDenied.getCaseAuthority());
         assertEquals("TFL", prosecutionAuthorityAccessDenied.getProsecutorAuthorityAccess().get(0));
         assertEquals("TVL", prosecutionAuthorityAccessDenied.getProsecutorAuthorityAccess().get(1));
+    }
+
+    @Test
+    void updateShouldBeRejectedWhenTheAgentIsNotAuthorised() {
+
+        final List<OffenceDecision> offenceDecisions = Arrays.asList(
+                adjournOffenceDecision(OFFENCE_ID_1, PROVED_SJP),
+                withdrawOffenceDecision(OFFENCE_ID_2),
+                withdrawOffenceDecision(OFFENCE_ID_3)
+        );
+        final List<Plea> pleas = singletonList(new Plea(DEFENDANT_ID, OFFENCE_ID_1, PleaType.GUILTY));
+        caseAggregateState.setPleas(pleas);
+        caseAggregateState.updateOffenceDecisions(offenceDecisions, randomUUID());
+        caseAggregateState.updateOffenceConvictionDetails(ZonedDateTime.now().plusDays(7), offenceDecisions, null);
+        caseAggregateState.setProsecutingAuthority("XYZ");
+
+        final List<Object> results = HandlerUtils.createRejectionEvents(USER_ID, "action", DEFENDANT_ID, caseAggregateState,  "TFL", List.of("TFL")).get().toList();
+
+        final ProsecutionAuthorityAccessDenied prosecutionAuthorityAccessDenied = (ProsecutionAuthorityAccessDenied) results.get(0);
+        assertEquals("XYZ", prosecutionAuthorityAccessDenied.getCaseAuthority());
+        assertEquals("TFL", prosecutionAuthorityAccessDenied.getProsecutorAuthorityAccess().get(0));
     }
 
     @Test

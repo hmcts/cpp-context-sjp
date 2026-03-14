@@ -20,6 +20,7 @@ import uk.gov.moj.cpp.sjp.domain.plea.PleaType;
 import uk.gov.moj.cpp.sjp.domain.verdict.VerdictType;
 import uk.gov.moj.cpp.sjp.event.CaseUpdateRejected;
 import uk.gov.moj.cpp.sjp.event.CaseUpdateRejected.RejectReason;
+import uk.gov.moj.cpp.sjp.event.ProsecutionAuthorityAccessDenied;
 
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
@@ -65,6 +66,28 @@ public class HandlerUtilsTest {
 
         final List<CaseUpdateRejected> expected = singletonList(new CaseUpdateRejected(CASE_ID, RejectReason.OFFENCE_HAS_CONVICTION));
         assertEquals(expected, results);
+    }
+
+    @Test
+    public void updateShouldBeRejectedWhenTheAgentIsNotAuthorised() {
+
+        final List<OffenceDecision> offenceDecisions = Arrays.asList(
+                adjournOffenceDecision(OFFENCE_ID_1, PROVED_SJP),
+                withdrawOffenceDecision(OFFENCE_ID_2),
+                withdrawOffenceDecision(OFFENCE_ID_3)
+        );
+        final List<Plea> pleas = singletonList(new Plea(DEFENDANT_ID, OFFENCE_ID_1, PleaType.GUILTY));
+        caseAggregateState.setPleas(pleas);
+        caseAggregateState.updateOffenceDecisions(offenceDecisions, randomUUID());
+        caseAggregateState.updateOffenceConvictionDetails(ZonedDateTime.now().plusDays(7), offenceDecisions, null);
+        caseAggregateState.setProsecutingAuthority("XYZ");
+
+        final List<Object> results = HandlerUtils.createRejectionEvents(USER_ID, "action", DEFENDANT_ID, caseAggregateState,  "TFL", List.of("TFL", "TVL")).get().collect(toList());
+
+        final ProsecutionAuthorityAccessDenied prosecutionAuthorityAccessDenied = (ProsecutionAuthorityAccessDenied) results.get(0);
+        assertEquals("XYZ", prosecutionAuthorityAccessDenied.getCaseAuthority());
+        assertEquals("TFL", prosecutionAuthorityAccessDenied.getProsecutorAuthorityAccess().get(0));
+        assertEquals("TVL", prosecutionAuthorityAccessDenied.getProsecutorAuthorityAccess().get(1));
     }
 
     @Test

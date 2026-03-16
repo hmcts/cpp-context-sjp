@@ -23,6 +23,7 @@ import java.io.StringReader;
 import java.time.LocalDate;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 
 import javax.json.Json;
 import javax.json.JsonArray;
@@ -64,7 +65,7 @@ public class DefendantPotentialCaseIT extends BaseIntegrationTest {
     }
 
     @Test
-    public void shouldFindPotentialCases() {
+    public void shouldFindPotentialCases() throws InterruptedException {
         UUID caseId = randomCaseId;
         UUID defendantId = randomUUID();
 
@@ -80,6 +81,8 @@ public class DefendantPotentialCaseIT extends BaseIntegrationTest {
                 .run(() -> createCaseForPayloadBuilder(createCase))
                 .popEvent(CaseReceived.EVENT_NAME);
         assertTrue(caseReceivedEvent.isPresent());
+
+        TimeUnit.SECONDS.sleep(2);
 
         final String potentialCasesResponsePayload = pollUntilPotentialCasesByDefendantIdIsOk(defendantId);
         final JsonObject potentialCases = responseToJsonObject(potentialCasesResponsePayload);

@@ -9,6 +9,7 @@ import static uk.gov.moj.sjp.it.command.CreateCase.CreateCasePayloadBuilder.defa
 import static uk.gov.moj.sjp.it.command.CreateCase.createCaseForPayloadBuilder;
 import static uk.gov.moj.sjp.it.model.ProsecutingAuthority.TFL;
 import static uk.gov.moj.sjp.it.pollingquery.CasePoller.pollForCase;
+import static uk.gov.moj.sjp.it.pollingquery.CasePoller.pollUntilCaseByIdIsOk;
 import static uk.gov.moj.sjp.it.pollingquery.CasePoller.pollUntilPotentialCasesByDefendantIdIsOk;
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubProsecutorQuery;
 import static uk.gov.moj.sjp.it.stub.UnifiedSearchStub.stubUnifiedSearchQueryForCases;
@@ -65,7 +66,7 @@ public class DefendantPotentialCaseIT extends BaseIntegrationTest {
     }
 
     @Test
-    public void shouldFindPotentialCases() throws InterruptedException {
+    public void shouldFindPotentialCases(){
         UUID caseId = randomCaseId;
         UUID defendantId = randomUUID();
 
@@ -82,7 +83,7 @@ public class DefendantPotentialCaseIT extends BaseIntegrationTest {
                 .popEvent(CaseReceived.EVENT_NAME);
         assertTrue(caseReceivedEvent.isPresent());
 
-        TimeUnit.SECONDS.sleep(2);
+        pollUntilCaseByIdIsOk(caseId);
 
         final String potentialCasesResponsePayload = pollUntilPotentialCasesByDefendantIdIsOk(defendantId);
         final JsonObject potentialCases = responseToJsonObject(potentialCasesResponsePayload);

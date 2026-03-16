@@ -5,6 +5,7 @@ import static javax.json.Json.createObjectBuilder;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.when;
 
 import uk.gov.justice.services.core.requester.Requester;
@@ -28,7 +29,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-@ExtendWith(MockitoExtension.class)
+@ExtendWith({MockitoExtension.class})
 public class ProgressionServiceTest {
 
     @Mock
@@ -45,8 +46,9 @@ public class ProgressionServiceTest {
     @BeforeEach
     public void setup() {
         defaultDefendant = createDefaultDefendantDetail();
-        when(envelope.payloadAsJsonObject()).thenReturn(createProsecutionCase(defaultDefendant.getPersonalDetails()));
+        lenient().when(envelope.payloadAsJsonObject()).thenReturn(createProsecutionCase(defaultDefendant.getPersonalDetails()));
         when(requester.requestAsAdmin(any())).thenReturn(envelope);
+        when(envelope.payloadIsNull()).thenReturn(false);
     }
 
     @Test
@@ -58,6 +60,15 @@ public class ProgressionServiceTest {
         expectedOffences.add("Offence-1");
         expectedOffences.add("Offence-2");
         assertEquals(expectedOffences, defendantOffences);
+    }
+
+    @Test
+    public void shouldNotFindMatchingDefendantOffencesFromEmptyProsecutionCase() {
+        when(envelope.payloadIsNull()).thenReturn(true);
+        final DefendantDetail defendantDetail = createDefaultDefendantDetail();
+        final List<String> defendantOffences =
+                progressionService.findDefendantOffences(UUID.randomUUID(), defendantDetail);
+        assertEquals(defendantOffences.size(), 0);
     }
 
     @Test

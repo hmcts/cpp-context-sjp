@@ -63,12 +63,12 @@ public class ProgressionServiceTest {
     }
 
     @Test
-    public void shouldNotFindMatchingDefendantOffencesFromEmptyProsecutionCase() {
+    void shouldNotFindMatchingDefendantOffencesFromEmptyProsecutionCase() {
         when(envelope.payloadIsNull()).thenReturn(true);
         final DefendantDetail defendantDetail = createDefaultDefendantDetail();
         final List<String> defendantOffences =
                 progressionService.findDefendantOffences(UUID.randomUUID(), defendantDetail);
-        assertEquals(defendantOffences.size(), 0);
+        assertEquals(0, defendantOffences.size());
     }
 
     @Test

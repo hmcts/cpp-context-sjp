@@ -5,7 +5,7 @@
     <parent>
         <groupId>uk.gov.moj.cpp.sjp</groupId>
         <artifactId>sjp-domain</artifactId>
-        <version>17.103.165-CIMD-3294-SNAPSHOT</version>
+        <version>17.103.166-CIMD-3294-SNAPSHOT</version>
     </parent>
 
     <artifactId>sjp-domain-aggregate</artifactId>

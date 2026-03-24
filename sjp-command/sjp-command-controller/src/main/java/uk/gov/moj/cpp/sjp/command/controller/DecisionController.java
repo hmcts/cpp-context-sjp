@@ -4,16 +4,16 @@ import static java.lang.String.format;
 import static java.util.Objects.nonNull;
 import static java.util.Optional.ofNullable;
 import static java.util.UUID.randomUUID;
-import static javax.json.Json.createArrayBuilder;
-import static javax.json.Json.createObjectBuilder;
 import static uk.gov.justice.services.core.annotation.Component.COMMAND_CONTROLLER;
 import static uk.gov.justice.services.core.enveloper.Enveloper.envelop;
+import static uk.gov.justice.services.messaging.JsonObjects.*;
 import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 
 import uk.gov.justice.services.core.annotation.Handles;
 import uk.gov.justice.services.core.annotation.ServiceComponent;
 import uk.gov.justice.services.core.sender.Sender;
 import uk.gov.justice.services.messaging.JsonEnvelope;
+import uk.gov.justice.services.messaging.JsonObjects;
 import uk.gov.moj.cpp.sjp.command.service.CaseService;
 import uk.gov.moj.cpp.sjp.command.service.ReferenceDataService;
 import uk.gov.moj.cpp.sjp.command.service.SessionService;
@@ -143,7 +143,7 @@ public class DecisionController {
     }
 
     private JsonArrayBuilder addOffenceDecisionId(JsonArray offenceDecisions) {
-        final JsonArrayBuilder decisionsWithIdBuilder = createArrayBuilder();
+        final JsonArrayBuilder decisionsWithIdBuilder = JsonObjects.createArrayBuilder();
         offenceDecisions.getValuesAs(JsonObject.class).forEach(offenceDecision ->
                 decisionsWithIdBuilder.add(createObjectBuilder(offenceDecision)
                         .add("id", randomUUID().toString())
@@ -153,7 +153,7 @@ public class DecisionController {
     }
 
     private JsonArrayBuilder addReferralReason(final JsonArray offenceDecisions) {
-        final JsonArrayBuilder decisionsBuilder = createArrayBuilder();
+        final JsonArrayBuilder decisionsBuilder = JsonObjects.createArrayBuilder();
         offenceDecisions.getValuesAs(JsonObject.class)
                 .forEach(offenceDecision -> {
                     final String type = offenceDecision.getString("type");

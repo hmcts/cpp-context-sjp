@@ -345,14 +345,22 @@ public class CaseService {
 
     public CaseSearchResultsView searchCases(final JsonEnvelope envelope, final String query) {
 
-        final String prosecutingAuthorityFilterValue = prosecutingAuthorityAccessFilterConverter.convertToProsecutingAuthorityAccessFilter(prosecutingAuthorityProvider.getCurrentUsersProsecutingAuthorityAccess(envelope));
+        final ProsecutingAuthorityAccess prosecutingAuthorityAccess = prosecutingAuthorityProvider.getCurrentUsersProsecutingAuthorityAccess(envelope);
+        final String prosecutingAuthorityFilterValue = prosecutingAuthorityAccessFilterConverter.convertToProsecutingAuthorityAccessFilter(prosecutingAuthorityAccess);
 
-        List<CaseSearchResult> searchResults = caseSearchResultRepository.findByUrn(prosecutingAuthorityFilterValue, query);
+        final List<String> agentProsecutorAuthorityAccessFilterValue;
+        if (prosecutingAuthorityAccess.getAgentProsecutorAuthorityAccess() == null || prosecutingAuthorityAccess.getAgentProsecutorAuthorityAccess().isEmpty()){
+            agentProsecutorAuthorityAccessFilterValue = Arrays.asList("DUMMY_VALUE");
+        } else {
+            agentProsecutorAuthorityAccessFilterValue = prosecutingAuthorityAccess.getAgentProsecutorAuthorityAccess();
+        }
+
+        List<CaseSearchResult> searchResults = caseSearchResultRepository.findByUrn(prosecutingAuthorityFilterValue, query, agentProsecutorAuthorityAccessFilterValue);
         if (searchResults.isEmpty()) {
-            searchResults = caseSearchResultRepository.findByLastName(prosecutingAuthorityFilterValue, query);
+            searchResults = caseSearchResultRepository.findByLastName(prosecutingAuthorityFilterValue, query, agentProsecutorAuthorityAccessFilterValue);
         }
         if (searchResults.isEmpty()) {
-            searchResults = caseSearchResultRepository.findByLegalEntityName(prosecutingAuthorityFilterValue, query);
+            searchResults = caseSearchResultRepository.findByLegalEntityName(prosecutingAuthorityFilterValue, query, agentProsecutorAuthorityAccessFilterValue);
         }
 
         return new CaseSearchResultsView(searchResults);

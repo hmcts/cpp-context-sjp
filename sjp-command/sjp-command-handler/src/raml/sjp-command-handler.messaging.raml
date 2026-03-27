@@ -62,6 +62,10 @@ version: v1
         schema: !include json/schema/sjp.command.update-defendant-details.json
         example: !include json/sjp.command.update-defendant-details.json
 
+      application/vnd.sjp.command.update-defendant-details-from-CC+json:
+        schema: !include json/schema/sjp.command.update-defendant-details-from-CC.json
+        example: !include json/sjp.command.update-defendant-details-from-CC.json
+
       application/vnd.sjp.command.update-hearing-requirements+json:
         schema: !include json/schema/sjp.command.update-hearing-requirements.json
         example: !include json/sjp.command.update-hearing-requirements.json
@@ -316,6 +320,10 @@ version: v1
         example: !include json/sjp.command.accept-pending-defendant-changes.json
         schema: !include json/schema/sjp.command.accept-pending-defendant-changes.json
 
+      application/vnd.sjp.command.accept-pending-defendant-changes-from-CC+json:
+        example: !include json/sjp.command.accept-pending-defendant-changes.json
+        schema: !include json/schema/sjp.command.accept-pending-defendant-changes.json
+
       application/vnd.sjp.command.reject-pending-defendant-changes+json:
         example: !include json/sjp.command.reject-pending-defendant-changes.json
         schema: !include json/schema/sjp.command.reject-pending-defendant-changes.json
@@ -326,3 +334,6 @@ version: v1
 
       application/vnd.sjp.command.update-offence-code+json:
         schema: !include json/schema/sjp.command.update-offence-code.json
+
+      application/vnd.sjp.command.case-complete-bdf+json:
+        schema: !include json/schema/sjp.command.case-complete-bdf.json

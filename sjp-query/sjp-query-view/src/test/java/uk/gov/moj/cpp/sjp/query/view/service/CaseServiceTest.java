@@ -720,12 +720,15 @@ public class CaseServiceTest {
         final String query = URN;
         final ProsecutingAuthorityAccess prosecutingAuthorityAccess = mock(ProsecutingAuthorityAccess.class);
         final String prosecutingAuthorityAccessFilterValue = "SOME_FILTER";
+        final List<String> agents = Arrays.asList("AGENT");
 
+        when(prosecutingAuthorityAccess.getAgentProsecutorAuthorityAccess())
+                .thenReturn(agents);
         when(prosecutingAuthorityProvider.getCurrentUsersProsecutingAuthorityAccess(envelope))
                 .thenReturn(prosecutingAuthorityAccess);
         when(prosecutingAuthorityAccessFilterConverter.convertToProsecutingAuthorityAccessFilter(prosecutingAuthorityAccess))
                 .thenReturn(prosecutingAuthorityAccessFilterValue);
-        when(caseSearchResultRepository.findByUrn(prosecutingAuthorityAccessFilterValue, query))
+        when(caseSearchResultRepository.findByUrn(prosecutingAuthorityAccessFilterValue, query, agents))
                 .thenReturn(singletonList(createCaseSearchResult()));
 
         final CaseSearchResultsView cases = service.searchCases(envelope, query);
@@ -740,15 +743,18 @@ public class CaseServiceTest {
         final String query = LAST_NAME;
         final ProsecutingAuthorityAccess prosecutingAuthorityAccess = mock(ProsecutingAuthorityAccess.class);
         final String prosecutingAuthorityAccessFilterValue = "SOME_FILTER";
+        final List<String> agents = Arrays.asList("AGENT");
 
+        when(prosecutingAuthorityAccess.getAgentProsecutorAuthorityAccess())
+                .thenReturn(agents);
         when(prosecutingAuthorityProvider.getCurrentUsersProsecutingAuthorityAccess(envelope))
                 .thenReturn(prosecutingAuthorityAccess);
         when(prosecutingAuthorityAccessFilterConverter.convertToProsecutingAuthorityAccessFilter(prosecutingAuthorityAccess))
                 .thenReturn(prosecutingAuthorityAccessFilterValue);
 
-        when(caseSearchResultRepository.findByUrn(prosecutingAuthorityAccessFilterValue, query))
+        when(caseSearchResultRepository.findByUrn(prosecutingAuthorityAccessFilterValue, query, agents))
                 .thenReturn(emptyList());
-        when(caseSearchResultRepository.findByLastName(prosecutingAuthorityAccessFilterValue, query))
+        when(caseSearchResultRepository.findByLastName(prosecutingAuthorityAccessFilterValue, query, agents))
                 .thenReturn(singletonList(createCaseSearchResult()));
 
         final CaseSearchResultsView cases = service.searchCases(envelope, query);

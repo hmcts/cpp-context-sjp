@@ -9,7 +9,7 @@
 
     <groupId>uk.gov.moj.cpp.sjp</groupId>
     <artifactId>sjp-parent</artifactId>
-    <version>17.103.152-PEG-2848-SNAPSHOT</version>
+    <version>17.103.153-PEG-2848-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <properties>
@@ -47,7 +47,7 @@
         <scheduling.version>17.0.11</scheduling.version>
         <authorisation.service.version>0.1.49</authorisation.service.version>
         <usersgroups.version>17.104.46</usersgroups.version>
-        <progression.version>17.0.224</progression.version>
+        <progression.version>17.0.246</progression.version>
         <prosecutioncasefile.version>17.0.66</prosecutioncasefile.version>
         <access-control-sjp-providers.version>4.1.4-ATCM</access-control-sjp-providers.version>
         <cpp.framework.action.mapping.enabled>true</cpp.framework.action.mapping.enabled>
@@ -66,7 +66,7 @@
         <argLine>-Djava.locale.providers=CLDR</argLine>
         <elasticsearch-maven-plugin.version>6.13</elasticsearch-maven-plugin.version>
         <elasticsearch.embedded.version>7.16.2</elasticsearch.embedded.version>
-        <stagingenforcement.version>17.103.74</stagingenforcement.version>
+        <stagingenforcement.version>17.103.76</stagingenforcement.version>
         <unifiedsearch.version>17.0.26</unifiedsearch.version>
         <jsonassert.version>1.5.0</jsonassert.version>
         <junit4.version>4.13.1</junit4.version>

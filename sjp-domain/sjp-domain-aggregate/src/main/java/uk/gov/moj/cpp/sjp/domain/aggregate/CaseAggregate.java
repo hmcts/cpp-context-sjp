@@ -62,6 +62,7 @@ import uk.gov.moj.cpp.sjp.domain.aggregate.state.CaseAggregateState;
 import uk.gov.moj.cpp.sjp.domain.aggregate.state.WithdrawalRequestsStatus;
 import uk.gov.moj.cpp.sjp.domain.common.CaseManagementStatus;
 import uk.gov.moj.cpp.sjp.domain.common.CaseState;
+import uk.gov.moj.cpp.sjp.domain.common.CaseStatus;
 import uk.gov.moj.cpp.sjp.domain.decision.AocpDecision;
 import uk.gov.moj.cpp.sjp.domain.decision.Decision;
 import uk.gov.moj.cpp.sjp.domain.onlineplea.PleadAocpOnline;
@@ -69,9 +70,7 @@ import uk.gov.moj.cpp.sjp.domain.onlineplea.PleadOnline;
 import uk.gov.moj.cpp.sjp.domain.onlineplea.PleadOnlinePcqVisited;
 import uk.gov.moj.cpp.sjp.domain.plea.PleaMethod;
 import uk.gov.moj.cpp.sjp.domain.plea.SetPleas;
-import uk.gov.moj.cpp.sjp.event.ApplicationResultsRecorded;
-import uk.gov.moj.cpp.sjp.event.CCApplicationStatusCreated;
-import uk.gov.moj.cpp.sjp.event.CaseListedInCriminalCourtsUpdated;
+import uk.gov.moj.cpp.sjp.event.*;
 
 import javax.json.JsonObject;
 import java.math.BigDecimal;
@@ -282,6 +281,31 @@ public class CaseAggregate implements Aggregate {
         return apply(CaseDefendantHandler.INSTANCE.updateDefendantDetails(userId, caseId, defendantId, person, updatedDate, state, isAddressUpdateFromApplication));
     }
 
+    /**
+     * Updates defendant details from Criminal Courts (CC) without checking for case completed
+     * or case referred for court hearing status.
+     */
+    public Stream<Object> updateDefendantDetailsFromCC(
+                                                       final UUID caseId,
+                                                       final UUID defendantId,
+                                                       final Person person,
+                                                       final ZonedDateTime updatedDate) {
+
+        return apply(CaseDefendantHandler.INSTANCE.updateDefendantDetailsFromCC(caseId, defendantId, person, updatedDate, state));
+    }
+
+    /**
+     * Updates legal entity defendant details from Criminal Courts (CC) without checking for case completed
+     * or case referred for court hearing status.
+     */
+    public Stream<Object> updateLegalEntityDefendantDetailsFromCC(final UUID caseId,
+                                                                  final UUID defendantId,
+                                                                  final uk.gov.moj.cpp.sjp.domain.legalentity.LegalEntityDefendant legalEntityDefendant,
+                                                                  final ZonedDateTime updatedDate) {
+
+        return apply(CaseDefendantHandler.INSTANCE.updateLegalEntityDefendantDetailsFromCC(caseId, defendantId, legalEntityDefendant, updatedDate, state));
+    }
+
     public Stream<Object> acceptPendingDefendantChanges(final UUID userId,
                                                         final UUID caseId,
                                                         final UUID defendantId,
@@ -289,6 +313,14 @@ public class CaseAggregate implements Aggregate {
                                                         final ZonedDateTime updatedDate) {
 
         return apply(CaseDefendantHandler.INSTANCE.acceptPendingDefendantChanges(userId, caseId, defendantId, person, updatedDate, state));
+    }
+
+    public Stream<Object> acceptPendingDefendantChangesCC(final UUID caseId,
+                                                        final UUID defendantId,
+                                                        final Person person,
+                                                        final ZonedDateTime updatedDate) {
+
+        return apply(CaseDefendantHandler.INSTANCE.acceptPendingDefendantChangesCC( caseId, defendantId, person, updatedDate, state));
     }
 
     public Stream<Object> rejectPendingDefendantChanges(final UUID defendantId,
@@ -528,5 +560,12 @@ public class CaseAggregate implements Aggregate {
 
     public Stream<Object> updateOffenceCode(final UUID caseId, final String offenceCode) {
         return UpdateOffenceCodeHandler.INSTANCE.updateOffenceCode(getState(), caseId, offenceCode);
+    }
+
+    public Stream<Object> caseCompletedBdf() {
+        final Stream.Builder<Object> streamBuilder = Stream.builder();
+        return apply(streamBuilder.add(new CaseCompleted(state.getCaseId(), state.getSessionIds()))
+                .add(new CaseStatusChanged(state.getCaseId(), CaseStatus.COMPLETED))
+                .build());
     }
 }

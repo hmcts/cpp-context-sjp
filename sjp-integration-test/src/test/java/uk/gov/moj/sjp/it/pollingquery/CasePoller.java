@@ -83,7 +83,7 @@ public class CasePoller {
                         anyOf(
                                 allOf(
                                         status().is(OK),
-                                        payload().isJson(any(ReadContext.class))),
+                                        payload().isJson(withJsonPath("$.sjpOpenCases[0]"))),
                                 status().is(INTERNAL_SERVER_ERROR),
                                 status().is(FORBIDDEN))
                 );

@@ -14,7 +14,7 @@ import static uk.gov.moj.sjp.it.pollingquery.CasePoller.pollUntilPotentialCasesB
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubProsecutorQuery;
 import static uk.gov.moj.sjp.it.stub.UnifiedSearchStub.stubUnifiedSearchQueryForCases;
 
-import org.junit.Ignore;
+import org.junit.jupiter.api.Disabled;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.sjp.event.CaseReceived;
 import uk.gov.moj.sjp.it.command.CreateCase;
@@ -65,7 +65,7 @@ public class DefendantPotentialCaseIT extends BaseIntegrationTest {
     }
 
     @Test
-    @Ignore("Ignored as failing in pipeline. will be reverted back before merging to main")
+    @Disabled("Ignored as failing in pipeline. will be reverted back before merging to main")
     public void shouldFindPotentialCases() {
         UUID caseId = randomCaseId;
         UUID defendantId = randomUUID();

@@ -15,7 +15,9 @@ import uk.gov.justice.services.eventsourcing.source.core.EventStream;
 import uk.gov.justice.services.eventsourcing.source.core.exception.EventStreamException;
 import uk.gov.justice.services.messaging.Envelope;
 import uk.gov.moj.cpp.sjp.domain.ApplicationOffencesResults;
+import uk.gov.moj.cpp.sjp.domain.CaseCompleteBdf;
 import uk.gov.moj.cpp.sjp.domain.GrantedApplicationResults;
+import uk.gov.moj.cpp.sjp.domain.aggregate.CaseAggregate;
 import uk.gov.moj.cpp.sjp.domain.aggregate.Session;
 import uk.gov.moj.cpp.sjp.domain.decision.Decision;
 
@@ -70,6 +72,13 @@ public class DecisionHandler extends CaseCommandHandler {
         if(caseId.isPresent()) {
             applyToCaseAggregate(caseId.get(), command, aCase -> aCase.saveApplicationOffencesResults(payload));
         }
+    }
+
+
+    @Handles("sjp.command.case-complete-bdf")
+    public void caseCompleteBdf(final Envelope<CaseCompleteBdf> command) throws EventStreamException {
+        final CaseCompleteBdf payload = command.payload();
+        applyToCaseAggregate(payload.getCaseId(), command, CaseAggregate::caseCompletedBdf);
     }
 
 }

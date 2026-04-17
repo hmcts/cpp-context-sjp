@@ -220,6 +220,20 @@ public class DecisionControllerTest {
     }
 
 
+    @Test
+    public void shouldRaiseCaseCompleteBdfCommand() {
+        final JsonObjectBuilder builder = createObjectBuilder()
+                .add("caseId", caseId.toString());
+        JsonEnvelope jsonEnvelope = envelopeFrom(
+                metadataWithRandomUUID("sjp.command.case-complete-bdf")
+                        .withUserId(userId.toString())
+                , builder.build());
+        decisionController.caseCompleteBdf(jsonEnvelope);
+        verify(sender).send(envelopeCaptor.capture());
+        final Envelope<JsonValue> commandSent = envelopeCaptor.getValue();
+        assertThat(commandSent.metadata(), withMetadataEnvelopedFrom(jsonEnvelope).withName("sjp.command.case-complete-bdf"));
+    }
+
     private void verifyReferralSaveDecisionCommand(final JsonEnvelope envelope, final String reasonForReferral) {
         verify(sender).send(envelopeCaptor.capture());
         final Envelope<JsonValue> commandSent = envelopeCaptor.getValue();

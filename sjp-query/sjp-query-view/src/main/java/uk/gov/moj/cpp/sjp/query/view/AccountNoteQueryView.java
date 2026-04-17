@@ -1,7 +1,7 @@
 package uk.gov.moj.cpp.sjp.query.view;
 
 
-import static javax.json.Json.createObjectBuilder;
+import static jakarta.json.Json.createObjectBuilder;
 import static uk.gov.justice.services.messaging.Envelope.metadataFrom;
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
 
@@ -15,9 +15,9 @@ import uk.gov.moj.cpp.sjp.persistence.repository.CaseAccountNoteRepository;
 
 import java.util.List;
 
-import javax.inject.Inject;
-import javax.json.JsonObject;
-import javax.json.JsonObjectBuilder;
+import jakarta.inject.Inject;
+import jakarta.json.JsonObject;
+import jakarta.json.JsonObjectBuilder;
 
 @ServiceComponent(Component.QUERY_VIEW)
 public class AccountNoteQueryView {

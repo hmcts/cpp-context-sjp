@@ -1,6 +1,6 @@
 package uk.gov.moj.cpp.sjp.query.api;
 
-import static javax.json.Json.createObjectBuilder;
+import static jakarta.json.Json.createObjectBuilder;
 import static uk.gov.moj.cpp.sjp.query.api.helper.JsonHelper.getPayload;
 
 import uk.gov.justice.services.core.annotation.Component;
@@ -13,8 +13,8 @@ import uk.gov.moj.cpp.sjp.query.api.service.DocumentMetadataService;
 
 import java.util.UUID;
 
-import javax.inject.Inject;
-import javax.json.JsonObject;
+import jakarta.inject.Inject;
+import jakarta.json.JsonObject;
 
 @ServiceComponent(Component.QUERY_API)
 public class SjpDocumentApi {

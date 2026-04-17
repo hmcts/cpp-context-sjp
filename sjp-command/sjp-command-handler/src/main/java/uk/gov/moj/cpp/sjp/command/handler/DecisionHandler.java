@@ -22,7 +22,7 @@ import uk.gov.moj.cpp.sjp.domain.decision.Decision;
 import java.util.Optional;
 import java.util.UUID;
 
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 
 @ServiceComponent(COMMAND_HANDLER)
 public class DecisionHandler extends CaseCommandHandler {

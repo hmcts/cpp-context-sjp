@@ -2,7 +2,7 @@ package uk.gov.moj.cpp.sjp.event.processor.activiti.delegates;
 
 import static uk.gov.moj.cpp.sjp.event.processor.activiti.CaseStateService.PROVED_IN_ABSENCE_VARIABLE;
 
-import javax.inject.Named;
+import jakarta.inject.Named;
 
 import org.activiti.engine.delegate.DelegateExecution;
 import org.activiti.engine.delegate.JavaDelegate;

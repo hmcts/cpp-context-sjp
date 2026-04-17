@@ -1,7 +1,7 @@
 package uk.gov.moj.cpp.sjp.query.view.converter.results;
 
 import static com.google.common.collect.ImmutableList.copyOf;
-import static javax.json.Json.createArrayBuilder;
+import static jakarta.json.Json.createArrayBuilder;
 
 import uk.gov.moj.cpp.sjp.query.view.converter.Prompt;
 import uk.gov.moj.cpp.sjp.query.view.service.OffenceDataSupplier;
@@ -9,8 +9,8 @@ import uk.gov.moj.cpp.sjp.query.view.service.OffenceDataSupplier;
 import java.util.Arrays;
 import java.util.List;
 
-import javax.json.JsonArrayBuilder;
-import javax.json.JsonObject;
+import jakarta.json.JsonArrayBuilder;
+import jakarta.json.JsonObject;
 
 public class NCOLLOResultCodeConverter extends ResultCodeConverter {
 

@@ -2,7 +2,7 @@ package uk.gov.moj.cpp.sjp.command.utils;
 
 import org.apache.commons.lang3.Validate;
 
-import javax.json.JsonObject;
+import jakarta.json.JsonObject;
 import java.util.Objects;
 
 public class NullSafeJsonObjectHelper {

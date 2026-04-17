@@ -1,6 +1,6 @@
 package uk.gov.moj.cpp.sjp.event.processor.activiti.delegates;
 
-import static javax.json.Json.createObjectBuilder;
+import static jakarta.json.Json.createObjectBuilder;
 import static org.apache.commons.lang3.BooleanUtils.isTrue;
 import static uk.gov.moj.cpp.sjp.event.processor.EventProcessorConstants.CASE_ID;
 import static uk.gov.moj.cpp.sjp.event.processor.EventProcessorConstants.MARKED_AT;
@@ -22,8 +22,8 @@ import java.time.LocalDate;
 import java.util.Optional;
 import java.util.UUID;
 
-import javax.inject.Inject;
-import javax.inject.Named;
+import jakarta.inject.Inject;
+import jakarta.inject.Named;
 
 import org.activiti.engine.delegate.DelegateExecution;
 import org.apache.commons.lang3.EnumUtils;

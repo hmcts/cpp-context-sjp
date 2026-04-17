@@ -8,8 +8,8 @@ import uk.gov.justice.services.core.enveloper.Enveloper;
 import uk.gov.justice.services.messaging.JsonObjects;
 import uk.gov.justice.tools.eventsourcing.transformation.api.EventTransformation;
 
-import javax.json.JsonObject;
-import javax.json.JsonObjectBuilder;
+import jakarta.json.JsonObject;
+import jakarta.json.JsonObjectBuilder;
 
 public abstract class BaseEventTransformer implements EventTransformation {
 

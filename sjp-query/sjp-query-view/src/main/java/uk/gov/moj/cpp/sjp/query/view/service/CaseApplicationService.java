@@ -1,8 +1,8 @@
 package uk.gov.moj.cpp.sjp.query.view.service;
 
 import static java.util.Optional.ofNullable;
-import static javax.json.Json.createArrayBuilder;
-import static javax.json.Json.createObjectBuilder;
+import static jakarta.json.Json.createArrayBuilder;
+import static jakarta.json.Json.createObjectBuilder;
 import static org.apache.commons.lang3.BooleanUtils.isTrue;
 import static uk.gov.moj.cpp.sjp.query.view.service.ApplicationPrompt.DER_DVLA_ENDORSEMENT_CODE;
 import static uk.gov.moj.cpp.sjp.query.view.service.ApplicationPrompt.DER_DVLA_ENDORSEMENT_CODE2;
@@ -52,11 +52,11 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-import javax.inject.Inject;
-import javax.json.JsonArrayBuilder;
-import javax.json.JsonObject;
-import javax.json.JsonObjectBuilder;
-import javax.json.JsonValue;
+import jakarta.inject.Inject;
+import jakarta.json.JsonArrayBuilder;
+import jakarta.json.JsonObject;
+import jakarta.json.JsonObjectBuilder;
+import jakarta.json.JsonValue;
 
 public class CaseApplicationService {
 

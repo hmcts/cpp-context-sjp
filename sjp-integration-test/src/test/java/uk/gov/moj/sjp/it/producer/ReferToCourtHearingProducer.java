@@ -7,7 +7,7 @@ import uk.gov.justice.services.integrationtest.utils.jms.JmsMessageProducerClien
 
 import java.util.UUID;
 
-import javax.json.JsonObject;
+import jakarta.json.JsonObject;
 
 import com.google.common.collect.ImmutableMap;
 

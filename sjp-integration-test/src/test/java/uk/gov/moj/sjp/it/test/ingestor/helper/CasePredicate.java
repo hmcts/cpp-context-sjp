@@ -7,8 +7,8 @@ import uk.gov.moj.cpp.sjp.domain.common.CaseStatus;
 
 import java.util.function.Predicate;
 
-import javax.json.JsonObject;
-import javax.json.JsonString;
+import jakarta.json.JsonObject;
+import jakarta.json.JsonString;
 
 public class CasePredicate {
     private CasePredicate() {

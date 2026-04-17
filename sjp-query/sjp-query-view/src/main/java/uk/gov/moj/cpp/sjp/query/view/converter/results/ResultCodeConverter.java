@@ -1,7 +1,7 @@
 package uk.gov.moj.cpp.sjp.query.view.converter.results;
 
 import static java.util.stream.Collectors.toList;
-import static javax.json.Json.createArrayBuilder;
+import static jakarta.json.Json.createArrayBuilder;
 import static uk.gov.moj.cpp.sjp.query.view.util.CaseResultsConstants.INDEX;
 import static uk.gov.moj.cpp.sjp.query.view.util.CaseResultsConstants.TERMINAL_ENTRIES;
 
@@ -10,8 +10,8 @@ import uk.gov.moj.cpp.sjp.query.view.service.OffenceDataSupplier;
 
 import java.util.List;
 
-import javax.json.JsonArrayBuilder;
-import javax.json.JsonObject;
+import jakarta.json.JsonArrayBuilder;
+import jakarta.json.JsonObject;
 
 public abstract class ResultCodeConverter {
 

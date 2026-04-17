@@ -13,8 +13,8 @@ import uk.gov.justice.core.courts.LjaDetails;
 
 import java.util.Optional;
 
-import javax.json.Json;
-import javax.json.JsonObject;
+import jakarta.json.Json;
+import jakarta.json.JsonObject;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

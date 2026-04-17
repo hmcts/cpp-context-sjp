@@ -7,7 +7,7 @@ import uk.gov.justice.core.courts.LegalEntityDefendant;
 import uk.gov.justice.core.courts.Organisation;
 import uk.gov.justice.json.schemas.domains.sjp.LegalEntityDetails;
 
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 
 public class LegalEntityDefendantConverter {
 

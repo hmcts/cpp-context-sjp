@@ -1,7 +1,7 @@
 package uk.gov.moj.cpp.sjp.command.service;
 
 import static java.lang.String.format;
-import static javax.json.Json.createObjectBuilder;
+import static jakarta.json.Json.createObjectBuilder;
 import static uk.gov.justice.services.core.annotation.Component.COMMAND_CONTROLLER;
 
 import uk.gov.justice.services.core.annotation.ServiceComponent;
@@ -11,8 +11,8 @@ import uk.gov.justice.services.messaging.JsonEnvelope;
 
 import java.util.UUID;
 
-import javax.inject.Inject;
-import javax.json.JsonObject;
+import jakarta.inject.Inject;
+import jakarta.json.JsonObject;
 
 public class UserService {
 

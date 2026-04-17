@@ -10,7 +10,7 @@ import uk.gov.justice.services.messaging.JsonEnvelope;
 
 import java.lang.annotation.Repeatable;
 
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 
 /**
  * Controller what directly forwards the payload from the API to the Handler TODO: refactor once

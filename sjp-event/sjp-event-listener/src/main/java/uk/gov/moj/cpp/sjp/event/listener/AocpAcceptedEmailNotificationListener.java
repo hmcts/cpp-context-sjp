@@ -5,8 +5,8 @@ import static uk.gov.justice.services.core.annotation.Component.EVENT_LISTENER;
 
 
 import java.time.ZonedDateTime;
-import javax.inject.Inject;
-import javax.transaction.Transactional;
+import jakarta.inject.Inject;
+import jakarta.transaction.Transactional;
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
 import uk.gov.justice.services.core.annotation.Handles;
 import uk.gov.justice.services.core.annotation.ServiceComponent;

@@ -25,8 +25,8 @@ import uk.gov.moj.cpp.sjp.persistence.entity.ReadyCase;
 import uk.gov.moj.cpp.sjp.persistence.entity.ReserveCase;
 import uk.gov.moj.cpp.sjp.persistence.entity.StreamStatus;
 
-import javax.inject.Inject;
-import javax.persistence.EntityManager;
+import jakarta.inject.Inject;
+import jakarta.persistence.EntityManager;
 
 import java.time.LocalDate;
 import java.time.ZonedDateTime;

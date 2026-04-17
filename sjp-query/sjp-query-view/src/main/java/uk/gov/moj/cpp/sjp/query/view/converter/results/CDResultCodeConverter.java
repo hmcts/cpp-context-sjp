@@ -2,8 +2,8 @@ package uk.gov.moj.cpp.sjp.query.view.converter.results;
 
 import static com.google.common.collect.ImmutableList.copyOf;
 import static java.util.Optional.ofNullable;
-import static javax.json.Json.createArrayBuilder;
-import static javax.json.Json.createObjectBuilder;
+import static jakarta.json.Json.createArrayBuilder;
+import static jakarta.json.Json.createObjectBuilder;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
 import static uk.gov.moj.cpp.sjp.query.view.util.CaseResultsConstants.DAY;
 import static uk.gov.moj.cpp.sjp.query.view.util.CaseResultsConstants.DAYS;
@@ -29,8 +29,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
-import javax.json.JsonArrayBuilder;
-import javax.json.JsonObject;
+import jakarta.json.JsonArrayBuilder;
+import jakarta.json.JsonObject;
 
 import org.apache.commons.collections.MapUtils;
 

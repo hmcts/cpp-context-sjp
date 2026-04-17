@@ -8,8 +8,8 @@ import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.UUID;
 
-import javax.inject.Inject;
-import javax.persistence.EntityManager;
+import jakarta.inject.Inject;
+import jakarta.persistence.EntityManager;
 
 import org.apache.deltaspike.data.api.EntityRepository;
 import org.apache.deltaspike.data.api.Query;
@@ -49,7 +49,7 @@ public abstract class DefendantRepository implements EntityRepository<DefendantD
             ZonedDateTime fromDate,
             ZonedDateTime toDate) {
 
-        final javax.persistence.Query query = entityManager.createQuery(UPDATED_DEFENDANT_DETAILS);
+        final jakarta.persistence.Query query = entityManager.createQuery(UPDATED_DEFENDANT_DETAILS);
 
         query.setParameter("prosecutingAuthority", prosecutingAuthority);
         query.setParameter("fromDate", fromDate);

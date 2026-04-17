@@ -20,7 +20,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.function.BiFunction;
 
-import javax.json.JsonObject;
+import jakarta.json.JsonObject;
 
 import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.tuple.Pair;

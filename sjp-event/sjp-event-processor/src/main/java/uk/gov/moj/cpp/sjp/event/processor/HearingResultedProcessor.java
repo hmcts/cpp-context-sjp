@@ -21,9 +21,9 @@ import uk.gov.moj.cpp.sjp.event.processor.utils.ApplicationResultStatusResolver;
 import java.util.Objects;
 import java.util.Optional;
 
-import javax.inject.Inject;
-import javax.json.Json;
-import javax.json.JsonObject;
+import jakarta.inject.Inject;
+import jakarta.json.Json;
+import jakarta.json.JsonObject;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

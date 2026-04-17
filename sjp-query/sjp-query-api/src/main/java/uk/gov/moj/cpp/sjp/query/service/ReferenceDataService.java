@@ -1,6 +1,6 @@
 package uk.gov.moj.cpp.sjp.query.service;
 
-import static javax.json.Json.createObjectBuilder;
+import static jakarta.json.Json.createObjectBuilder;
 import static uk.gov.justice.services.core.annotation.Component.QUERY_API;
 
 import uk.gov.justice.services.core.annotation.ServiceComponent;
@@ -11,8 +11,8 @@ import uk.gov.moj.cpp.sjp.query.exception.OffenceNotFoundException;
 
 import java.util.List;
 
-import javax.inject.Inject;
-import javax.json.JsonObject;
+import jakarta.inject.Inject;
+import jakarta.json.JsonObject;
 
 public class ReferenceDataService {
 

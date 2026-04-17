@@ -13,9 +13,9 @@ import uk.gov.justice.services.core.enveloper.Enveloper;
 import uk.gov.justice.services.core.sender.Sender;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 
-import javax.inject.Inject;
-import javax.json.JsonObject;
-import javax.ws.rs.BadRequestException;
+import jakarta.inject.Inject;
+import jakarta.json.JsonObject;
+import jakarta.ws.rs.BadRequestException;
 
 @ServiceComponent(COMMAND_API)
 public class CaseNoteApi {

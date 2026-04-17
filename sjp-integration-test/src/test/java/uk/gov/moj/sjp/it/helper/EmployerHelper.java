@@ -5,7 +5,7 @@ import static org.awaitility.Awaitility.await;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.isJson;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
 import static java.lang.String.format;
-import static javax.json.Json.createObjectBuilder;
+import static jakarta.json.Json.createObjectBuilder;
 import static org.hamcrest.CoreMatchers.allOf;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMatcher.jsonEnvelope;
@@ -22,10 +22,10 @@ import uk.gov.moj.sjp.it.util.TopicUtil;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
-import javax.jms.JMSException;
-import javax.jms.MessageConsumer;
-import javax.json.JsonObject;
-import javax.ws.rs.core.Response;
+import jakarta.jms.JMSException;
+import jakarta.jms.MessageConsumer;
+import jakarta.json.JsonObject;
+import jakarta.ws.rs.core.Response;
 
 import com.jayway.jsonpath.ReadContext;
 import org.hamcrest.Matcher;

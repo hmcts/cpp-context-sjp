@@ -4,7 +4,7 @@ import uk.gov.justice.services.common.converter.Converter;
 import uk.gov.moj.cpp.sjp.event.CaseReceived;
 import uk.gov.moj.cpp.sjp.persistence.entity.CaseDetail;
 
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 
 public class CaseReceivedToCase implements Converter<CaseReceived, CaseDetail> {
 

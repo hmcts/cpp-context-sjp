@@ -5,8 +5,8 @@ import static java.util.Optional.ofNullable;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.sjp.event.processor.service.ReferenceDataService;
 
-import javax.inject.Inject;
-import javax.json.JsonObject;
+import jakarta.inject.Inject;
+import jakarta.json.JsonObject;
 
 public class EnforcementAreaService {
 

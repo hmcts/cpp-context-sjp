@@ -3,15 +3,15 @@ package uk.gov.moj.cpp.indexer.jolt.helper;
 
 import static java.nio.file.Files.readAllBytes;
 import static java.nio.file.Paths.get;
-import static javax.json.Json.createReader;
+import static jakarta.json.Json.createReader;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UncheckedIOException;
 
-import javax.json.JsonObject;
-import javax.json.JsonReader;
+import jakarta.json.JsonObject;
+import jakarta.json.JsonReader;
 
 public class JsonHelper {
     public static JsonObject readJson(final String filePath) {

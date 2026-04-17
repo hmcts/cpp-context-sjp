@@ -2,10 +2,10 @@ package uk.gov.moj.cpp.sjp.persistence.entity;
 
 import uk.gov.moj.cpp.sjp.domain.decision.discharge.PeriodUnit;
 
-import javax.persistence.Column;
-import javax.persistence.Embeddable;
-import javax.persistence.EnumType;
-import javax.persistence.Enumerated;
+import jakarta.persistence.Column;
+import jakarta.persistence.Embeddable;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 
 @Embeddable
 public class DischargePeriod {

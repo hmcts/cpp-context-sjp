@@ -2,8 +2,8 @@ package uk.gov.moj.cpp.sjp.event.processor.results.converter;
 
 import static java.util.Optional.ofNullable;
 import static java.util.UUID.fromString;
-import static javax.json.Json.createObjectBuilder;
-import static javax.json.JsonValue.NULL;
+import static jakarta.json.Json.createObjectBuilder;
+import static jakarta.json.JsonValue.NULL;
 import static uk.gov.justice.core.courts.CourtApplicationParty.courtApplicationParty;
 import static uk.gov.justice.core.courts.HearingLanguage.ENGLISH;
 import static uk.gov.justice.core.courts.JurisdictionType.MAGISTRATES;
@@ -48,8 +48,8 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-import javax.inject.Inject;
-import javax.json.JsonObject;
+import jakarta.inject.Inject;
+import jakarta.json.JsonObject;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

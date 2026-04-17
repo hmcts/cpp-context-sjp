@@ -4,7 +4,7 @@ package uk.gov.moj.cpp.sjp.command.api.service;
 import static java.lang.Boolean.FALSE;
 import static java.util.Arrays.asList;
 import static java.util.Objects.nonNull;
-import static javax.json.Json.createObjectBuilder;
+import static jakarta.json.Json.createObjectBuilder;
 import static org.apache.commons.lang3.StringUtils.isNotEmpty;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -14,8 +14,8 @@ import static uk.gov.moj.cpp.sjp.command.api.service.AddressService.normalizePos
 import java.util.List;
 import java.util.stream.Stream;
 
-import javax.json.JsonObject;
-import javax.json.JsonObjectBuilder;
+import jakarta.json.JsonObject;
+import jakarta.json.JsonObjectBuilder;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;

@@ -17,8 +17,8 @@ import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-import javax.json.JsonObject;
-import javax.json.JsonString;
+import jakarta.json.JsonObject;
+import jakarta.json.JsonString;
 
 @ServiceComponent(Component.COMMAND_HANDLER)
 public class UpdateCaseListedInCriminalCourtsHandler extends CaseCommandHandler {

@@ -4,7 +4,7 @@ import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.tools.eventsourcing.transformation.api.Action;
 import uk.gov.justice.tools.eventsourcing.transformation.api.annotation.Transformation;
 
-import javax.json.JsonObject;
+import jakarta.json.JsonObject;
 import java.util.stream.Stream;
 
 import static java.util.stream.Stream.of;

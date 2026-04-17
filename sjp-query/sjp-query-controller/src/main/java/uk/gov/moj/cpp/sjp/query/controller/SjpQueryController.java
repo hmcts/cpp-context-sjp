@@ -12,13 +12,13 @@ import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.sjp.query.controller.response.DefendantProfilingView;
 import uk.gov.moj.cpp.sjp.query.controller.service.UserAndGroupsService;
 
-import javax.inject.Inject;
-import javax.json.JsonObject;
-import javax.json.JsonObjectBuilder;
+import jakarta.inject.Inject;
+import jakarta.json.JsonObject;
+import jakarta.json.JsonObjectBuilder;
 import java.util.Objects;
 
-import static javax.json.Json.createArrayBuilder;
-import static javax.json.Json.createObjectBuilder;
+import static jakarta.json.Json.createArrayBuilder;
+import static jakarta.json.Json.createObjectBuilder;
 
 @SuppressWarnings("WeakerAccess")
 @ServiceComponent(Component.QUERY_CONTROLLER)

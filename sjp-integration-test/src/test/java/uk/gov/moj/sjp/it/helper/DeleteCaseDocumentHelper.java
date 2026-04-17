@@ -1,6 +1,6 @@
 package uk.gov.moj.sjp.it.helper;
 
-import static javax.json.Json.createObjectBuilder;
+import static jakarta.json.Json.createObjectBuilder;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static uk.gov.moj.sjp.it.Constants.PUBLIC_EVENT_SELECTOR_DELETE_CASE_DOCUMENT_REQUEST_ACCEPTED;
@@ -12,8 +12,8 @@ import uk.gov.moj.sjp.it.util.TopicUtil;
 
 import java.util.UUID;
 
-import javax.jms.MessageConsumer;
-import javax.ws.rs.core.Response;
+import jakarta.jms.MessageConsumer;
+import jakarta.ws.rs.core.Response;
 
 import io.restassured.path.json.JsonPath;
 import org.slf4j.Logger;

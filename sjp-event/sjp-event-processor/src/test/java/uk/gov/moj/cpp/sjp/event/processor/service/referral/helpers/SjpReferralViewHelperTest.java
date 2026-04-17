@@ -3,7 +3,7 @@ package uk.gov.moj.cpp.sjp.event.processor.service.referral.helpers;
 import static com.google.common.collect.Lists.newArrayList;
 import static java.lang.String.format;
 import static java.util.Collections.singletonList;
-import static javax.json.Json.createObjectBuilder;
+import static jakarta.json.Json.createObjectBuilder;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 
@@ -17,7 +17,7 @@ import uk.gov.moj.cpp.sjp.event.processor.model.referral.SjpReferralView;
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
 
-import javax.json.JsonObject;
+import jakarta.json.JsonObject;
 
 import org.junit.jupiter.api.Test;
 

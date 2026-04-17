@@ -4,7 +4,7 @@ import static uk.gov.justice.services.core.annotation.Component.EVENT_LISTENER;
 
 
 import java.util.List;
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 import uk.gov.justice.services.core.annotation.Handles;
 import uk.gov.justice.services.core.annotation.ServiceComponent;
 import uk.gov.justice.services.messaging.Envelope;

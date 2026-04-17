@@ -24,8 +24,8 @@ import uk.gov.moj.cpp.sjp.persistence.entity.CaseDetail;
 
 import java.time.LocalDate;
 
-import javax.inject.Inject;
-import javax.json.JsonObject;
+import jakarta.inject.Inject;
+import jakarta.json.JsonObject;
 
 
 @ServiceComponent(EVENT_LISTENER)

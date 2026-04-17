@@ -15,8 +15,8 @@ import uk.gov.moj.cpp.sjp.command.api.validator.SetPleasValidator;
 import java.util.List;
 import java.util.Map;
 
-import javax.inject.Inject;
-import javax.json.JsonObject;
+import jakarta.inject.Inject;
+import jakarta.json.JsonObject;
 
 @ServiceComponent(COMMAND_API)
 public class SetPleasApi {

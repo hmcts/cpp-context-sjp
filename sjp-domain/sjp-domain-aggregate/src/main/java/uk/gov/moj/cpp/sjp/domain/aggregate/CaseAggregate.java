@@ -72,7 +72,7 @@ import uk.gov.moj.cpp.sjp.event.ApplicationResultsRecorded;
 import uk.gov.moj.cpp.sjp.event.CCApplicationStatusCreated;
 import uk.gov.moj.cpp.sjp.event.CaseListedInCriminalCourtsUpdated;
 
-import javax.json.JsonObject;
+import jakarta.json.JsonObject;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
@@ -84,7 +84,7 @@ import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import javax.json.JsonObject;
+import jakarta.json.JsonObject;
 
 @SuppressWarnings({"WeakerAccess", "squid:S1133"})
 public class CaseAggregate implements Aggregate {

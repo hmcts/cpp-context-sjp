@@ -8,7 +8,7 @@ import uk.gov.moj.cpp.sjp.query.view.response.CaseView;
 
 import java.util.Optional;
 
-import javax.json.JsonObject;
+import jakarta.json.JsonObject;
 
 public class OffenceDataSupplier {
     private final JsonEnvelope sourceEnvelope;

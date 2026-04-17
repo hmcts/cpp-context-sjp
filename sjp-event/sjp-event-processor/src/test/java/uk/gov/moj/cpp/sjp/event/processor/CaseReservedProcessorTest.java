@@ -1,7 +1,7 @@
 package uk.gov.moj.cpp.sjp.event.processor;
 
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
-import static javax.json.Json.createObjectBuilder;
+import static jakarta.json.Json.createObjectBuilder;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.Matchers.allOf;
 import static org.mockito.ArgumentMatchers.any;
@@ -15,7 +15,7 @@ import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopePaylo
 
 import java.time.ZonedDateTime;
 import java.util.UUID;
-import javax.json.JsonValue;
+import jakarta.json.JsonValue;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;

@@ -3,7 +3,7 @@ package uk.gov.moj.cpp.sjp.event.processor.service;
 import static java.util.UUID.fromString;
 import static java.util.function.Function.identity;
 import static java.util.stream.Collectors.toMap;
-import static javax.json.Json.createObjectBuilder;
+import static jakarta.json.Json.createObjectBuilder;
 
 import uk.gov.justice.services.core.annotation.Component;
 import uk.gov.justice.services.core.annotation.ServiceComponent;
@@ -17,8 +17,8 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 
-import javax.inject.Inject;
-import javax.json.JsonObject;
+import jakarta.inject.Inject;
+import jakarta.json.JsonObject;
 
 public class ReferenceDataOffencesService {
 

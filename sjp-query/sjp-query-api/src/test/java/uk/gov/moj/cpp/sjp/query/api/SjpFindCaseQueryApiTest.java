@@ -15,14 +15,14 @@ import uk.gov.moj.cpp.sjp.query.api.decorator.OffenceDecorator;
 import uk.gov.moj.cpp.sjp.query.service.OffenceFineLevels;
 import uk.gov.moj.cpp.sjp.query.service.WithdrawalReasons;
 
-import javax.json.JsonObject;
-import javax.json.JsonValue;
+import jakarta.json.JsonObject;
+import jakarta.json.JsonValue;
 import java.time.LocalDate;
 import java.util.UUID;
 
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
 import static java.util.UUID.randomUUID;
-import static javax.json.Json.createObjectBuilder;
+import static jakarta.json.Json.createObjectBuilder;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.MatcherAssert.assertThat;

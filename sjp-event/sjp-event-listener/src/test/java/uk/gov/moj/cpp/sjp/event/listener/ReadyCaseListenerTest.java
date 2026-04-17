@@ -2,7 +2,7 @@ package uk.gov.moj.cpp.sjp.event.listener;
 
 import static java.time.LocalDate.now;
 import static java.util.UUID.randomUUID;
-import static javax.json.Json.createObjectBuilder;
+import static jakarta.json.Json.createObjectBuilder;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.mockito.Mockito.never;
@@ -31,7 +31,7 @@ import java.time.ZoneOffset;
 import java.util.Optional;
 import java.util.UUID;
 
-import javax.json.JsonObjectBuilder;
+import jakarta.json.JsonObjectBuilder;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

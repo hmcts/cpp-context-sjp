@@ -2,8 +2,8 @@ package uk.gov.moj.cpp.sjp.event.processor;
 
 import static java.time.ZonedDateTime.now;
 import static java.util.UUID.randomUUID;
-import static javax.json.Json.createArrayBuilder;
-import static javax.json.Json.createObjectBuilder;
+import static jakarta.json.Json.createArrayBuilder;
+import static jakarta.json.Json.createObjectBuilder;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.mockito.Mockito.verify;
@@ -27,8 +27,8 @@ import uk.gov.justice.services.test.utils.core.enveloper.EnveloperFactory;
 
 import java.util.UUID;
 
-import javax.json.Json;
-import javax.json.JsonArray;
+import jakarta.json.Json;
+import jakarta.json.JsonArray;
 
 import com.google.common.collect.ImmutableMap;
 import org.junit.jupiter.api.Test;

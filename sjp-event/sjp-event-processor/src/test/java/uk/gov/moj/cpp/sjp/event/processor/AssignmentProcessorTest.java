@@ -2,8 +2,8 @@ package uk.gov.moj.cpp.sjp.event.processor;
 
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
 import static java.util.UUID.randomUUID;
-import static javax.json.Json.createArrayBuilder;
-import static javax.json.Json.createObjectBuilder;
+import static jakarta.json.Json.createArrayBuilder;
+import static jakarta.json.Json.createObjectBuilder;
 import static org.apache.commons.lang3.RandomStringUtils.randomAlphanumeric;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.core.AllOf.allOf;
@@ -25,7 +25,7 @@ import static uk.gov.moj.cpp.sjp.event.processor.EventProcessorConstants.REASON;
 import static uk.gov.moj.cpp.sjp.event.processor.EventProcessorConstants.SESSION_ID;
 
 
-import javax.json.JsonArray;
+import jakarta.json.JsonArray;
 import uk.gov.justice.services.core.enveloper.Enveloper;
 import uk.gov.justice.services.core.sender.Sender;
 import uk.gov.justice.services.messaging.JsonEnvelope;

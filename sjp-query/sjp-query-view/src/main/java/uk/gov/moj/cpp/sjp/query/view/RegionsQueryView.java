@@ -16,7 +16,7 @@ import uk.gov.moj.cpp.sjp.query.view.service.RegionalOrganisation;
 
 import java.util.List;
 
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 
 @ServiceComponent(Component.QUERY_VIEW)
 public class RegionsQueryView {

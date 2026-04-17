@@ -1,15 +1,15 @@
 package uk.gov.moj.sjp.it.util;
 
-import static javax.jms.Session.AUTO_ACKNOWLEDGE;
+import static jakarta.jms.Session.AUTO_ACKNOWLEDGE;
 import static uk.gov.justice.services.test.utils.core.messaging.QueueUriProvider.queueUri;
 
 import uk.gov.justice.services.messaging.JsonEnvelope;
 
-import javax.jms.Connection;
-import javax.jms.JMSException;
-import javax.jms.MessageProducer;
-import javax.jms.Session;
-import javax.jms.TextMessage;
+import jakarta.jms.Connection;
+import jakarta.jms.JMSException;
+import jakarta.jms.MessageProducer;
+import jakarta.jms.Session;
+import jakarta.jms.TextMessage;
 
 import org.apache.activemq.artemis.jms.client.ActiveMQConnectionFactory;
 

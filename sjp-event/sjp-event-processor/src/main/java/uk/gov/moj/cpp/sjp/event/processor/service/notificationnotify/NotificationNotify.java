@@ -1,6 +1,6 @@
 package uk.gov.moj.cpp.sjp.event.processor.service.notificationnotify;
 
-import static javax.json.Json.createObjectBuilder;
+import static jakarta.json.Json.createObjectBuilder;
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
 
 import uk.gov.justice.services.core.annotation.Component;
@@ -9,8 +9,8 @@ import uk.gov.justice.services.core.enveloper.Enveloper;
 import uk.gov.justice.services.core.sender.Sender;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 
-import javax.inject.Inject;
-import javax.json.JsonObjectBuilder;
+import jakarta.inject.Inject;
+import jakarta.json.JsonObjectBuilder;
 
 public class NotificationNotify {
     private static final String COMMAND_NAME = "notificationnotify.send-email-notification";

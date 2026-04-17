@@ -28,8 +28,8 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.function.BiConsumer;
 
-import javax.inject.Inject;
-import javax.transaction.Transactional;
+import jakarta.inject.Inject;
+import jakarta.transaction.Transactional;
 
 @SuppressWarnings("squid:S1133")
 @ServiceComponent(EVENT_LISTENER)

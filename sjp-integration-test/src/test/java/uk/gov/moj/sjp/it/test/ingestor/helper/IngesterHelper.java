@@ -1,7 +1,7 @@
 package uk.gov.moj.sjp.it.test.ingestor.helper;
 
 import static java.util.UUID.randomUUID;
-import static javax.json.Json.createReader;
+import static jakarta.json.Json.createReader;
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
 import static uk.gov.justice.services.messaging.JsonEnvelope.metadataBuilder;
 
@@ -11,8 +11,8 @@ import uk.gov.justice.services.messaging.MetadataBuilder;
 import java.io.StringReader;
 import java.util.Random;
 
-import javax.json.JsonObject;
-import javax.json.JsonReader;
+import jakarta.json.JsonObject;
+import jakarta.json.JsonReader;
 
 public class IngesterHelper {
 

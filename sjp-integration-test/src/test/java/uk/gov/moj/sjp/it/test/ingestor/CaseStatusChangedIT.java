@@ -24,7 +24,7 @@ import uk.gov.moj.sjp.it.test.BaseIntegrationTest;
 
 import java.util.UUID;
 
-import javax.json.JsonObject;
+import jakarta.json.JsonObject;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;

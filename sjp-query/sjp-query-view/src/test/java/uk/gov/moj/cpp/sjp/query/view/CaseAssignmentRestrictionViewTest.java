@@ -3,7 +3,7 @@ package uk.gov.moj.cpp.sjp.query.view;
 import static java.time.ZonedDateTime.now;
 import static java.util.Collections.singletonList;
 import static java.util.stream.Collectors.toList;
-import static javax.json.Json.createObjectBuilder;
+import static jakarta.json.Json.createObjectBuilder;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.mockito.Mockito.when;
@@ -20,8 +20,8 @@ import uk.gov.moj.cpp.sjp.persistence.repository.CaseAssignmentRestrictionReposi
 import java.time.ZonedDateTime;
 import java.util.List;
 
-import javax.json.JsonObject;
-import javax.json.JsonString;
+import jakarta.json.JsonObject;
+import jakarta.json.JsonString;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;

@@ -1,7 +1,7 @@
 package uk.gov.moj.cpp.sjp.query.api.service;
 
-import static javax.json.Json.createArrayBuilder;
-import static javax.json.Json.createObjectBuilder;
+import static jakarta.json.Json.createArrayBuilder;
+import static jakarta.json.Json.createObjectBuilder;
 
 import uk.gov.moj.cpp.sjp.domain.decision.DecisionType;
 import uk.gov.moj.cpp.sjp.domain.plea.PleaType;
@@ -9,8 +9,8 @@ import uk.gov.moj.cpp.sjp.domain.verdict.ConvictionType;
 import uk.gov.moj.cpp.sjp.domain.verdict.VerdictService;
 import uk.gov.moj.cpp.sjp.domain.verdict.VerdictType;
 
-import javax.json.JsonArrayBuilder;
-import javax.json.JsonObject;
+import jakarta.json.JsonArrayBuilder;
+import jakarta.json.JsonObject;
 
 public class SjpVerdictService {
 

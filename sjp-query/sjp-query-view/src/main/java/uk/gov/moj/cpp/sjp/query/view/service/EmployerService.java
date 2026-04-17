@@ -7,7 +7,7 @@ import uk.gov.moj.cpp.sjp.query.view.converter.EmployerConverter;
 import java.util.Optional;
 import java.util.UUID;
 
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 
 public class EmployerService {
 

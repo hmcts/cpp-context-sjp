@@ -19,7 +19,7 @@ import uk.gov.justice.services.messaging.Envelope;
 import uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMetadataMatcher;
 import uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopePayloadMatcher;
 
-import javax.json.JsonValue;
+import jakarta.json.JsonValue;
 
 import com.jayway.jsonpath.ReadContext;
 import org.hamcrest.Matcher;

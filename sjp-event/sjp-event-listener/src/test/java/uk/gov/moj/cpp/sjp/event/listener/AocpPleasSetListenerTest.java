@@ -24,7 +24,7 @@ import java.io.StringReader;
 import java.time.ZonedDateTime;
 import java.util.UUID;
 
-import javax.json.Json;
+import jakarta.json.Json;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;

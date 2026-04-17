@@ -9,7 +9,7 @@ import uk.gov.justice.services.test.utils.core.http.RequestParamsBuilder;
 
 import java.util.UUID;
 
-import javax.json.JsonObject;
+import jakarta.json.JsonObject;
 
 import com.jayway.jsonpath.ReadContext;
 import org.hamcrest.Matcher;

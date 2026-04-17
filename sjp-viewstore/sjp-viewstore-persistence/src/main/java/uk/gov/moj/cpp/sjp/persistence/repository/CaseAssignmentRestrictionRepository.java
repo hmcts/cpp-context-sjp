@@ -5,9 +5,9 @@ import uk.gov.moj.cpp.sjp.persistence.entity.CaseAssignmentRestriction;
 import java.time.ZonedDateTime;
 import java.util.List;
 
-import javax.inject.Inject;
-import javax.persistence.EntityManager;
-import javax.persistence.Query;
+import jakarta.inject.Inject;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.Query;
 
 import org.apache.deltaspike.data.api.EntityRepository;
 import org.apache.deltaspike.data.api.Repository;

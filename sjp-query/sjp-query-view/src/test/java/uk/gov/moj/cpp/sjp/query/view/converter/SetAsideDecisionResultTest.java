@@ -10,7 +10,7 @@ import static uk.gov.moj.cpp.sjp.query.view.util.results.ResultsMatchers.isOffen
 import uk.gov.moj.cpp.sjp.query.view.util.builders.OffenceDecisionBuilder;
 import uk.gov.moj.cpp.sjp.query.view.util.fakes.FakeCachedReferenceData;
 
-import javax.json.JsonObject;
+import jakarta.json.JsonObject;
 
 import org.junit.jupiter.api.Test;
 

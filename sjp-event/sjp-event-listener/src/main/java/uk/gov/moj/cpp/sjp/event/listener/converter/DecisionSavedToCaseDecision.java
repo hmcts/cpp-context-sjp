@@ -24,8 +24,8 @@ import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
-import javax.inject.Inject;
-import javax.persistence.EntityManager;
+import jakarta.inject.Inject;
+import jakarta.persistence.EntityManager;
 
 public class DecisionSavedToCaseDecision implements Converter<DecisionSaved, CaseDecision> {
 

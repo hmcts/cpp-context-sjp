@@ -1,7 +1,7 @@
 package uk.gov.moj.cpp.sjp.query.api.converter;
 
 
-import static javax.json.Json.createObjectBuilder;
+import static jakarta.json.Json.createObjectBuilder;
 import static org.slf4j.LoggerFactory.getLogger;
 
 import uk.gov.justice.services.messaging.JsonEnvelope;
@@ -9,13 +9,13 @@ import uk.gov.justice.services.messaging.JsonObjects;
 
 import java.util.Optional;
 
-import javax.inject.Inject;
-import javax.json.Json;
-import javax.json.JsonArray;
-import javax.json.JsonArrayBuilder;
-import javax.json.JsonNumber;
-import javax.json.JsonObject;
-import javax.json.JsonObjectBuilder;
+import jakarta.inject.Inject;
+import jakarta.json.Json;
+import jakarta.json.JsonArray;
+import jakarta.json.JsonArrayBuilder;
+import jakarta.json.JsonNumber;
+import jakarta.json.JsonObject;
+import jakarta.json.JsonObjectBuilder;
 
 import org.slf4j.Logger;
 import uk.gov.moj.cpp.sjp.query.api.service.ReferenceOffencesDataService;

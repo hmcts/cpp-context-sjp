@@ -21,9 +21,9 @@ import uk.gov.moj.cpp.sjp.event.session.ResetAocpSession;
 import java.util.Optional;
 import java.util.UUID;
 
-import javax.inject.Inject;
-import javax.json.Json;
-import javax.json.JsonObject;
+import jakarta.inject.Inject;
+import jakarta.json.Json;
+import jakarta.json.JsonObject;
 
 @ServiceComponent(EVENT_PROCESSOR)
 public class SessionProcessor {

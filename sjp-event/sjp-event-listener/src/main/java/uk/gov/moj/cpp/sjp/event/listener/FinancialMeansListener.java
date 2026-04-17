@@ -21,7 +21,7 @@ import uk.gov.moj.cpp.sjp.persistence.repository.OnlinePleaRepository;
 
 import java.util.UUID;
 
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 
 @ServiceComponent(EVENT_LISTENER)
 public class FinancialMeansListener {

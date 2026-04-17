@@ -1,6 +1,6 @@
 package uk.gov.moj.cpp.sjp.event.processor;
 
-import static javax.json.Json.createObjectBuilder;
+import static jakarta.json.Json.createObjectBuilder;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.mockito.Mockito.verify;
 import static uk.gov.justice.services.core.annotation.Component.EVENT_PROCESSOR;
@@ -19,7 +19,7 @@ import uk.gov.moj.cpp.sjp.event.processor.activiti.CaseStateService;
 
 import java.util.UUID;
 
-import javax.json.JsonValue;
+import jakarta.json.JsonValue;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;

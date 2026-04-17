@@ -1,16 +1,16 @@
 package uk.gov.moj.sjp.it.helper;
 
 import static java.util.Optional.ofNullable;
-import static javax.json.Json.createObjectBuilder;
+import static jakarta.json.Json.createObjectBuilder;
 
 import uk.gov.moj.sjp.it.util.HttpClientUtil;
 import uk.gov.moj.sjp.it.util.TopicUtil;
 
 import java.util.UUID;
 
-import javax.jms.MessageConsumer;
-import javax.json.JsonObject;
-import javax.json.JsonObjectBuilder;
+import jakarta.jms.MessageConsumer;
+import jakarta.json.JsonObject;
+import jakarta.json.JsonObjectBuilder;
 
 public class UpdateHearingRequirementsHelper implements AutoCloseable {
 

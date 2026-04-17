@@ -11,8 +11,8 @@ import uk.gov.moj.cpp.sjp.query.view.response.TransparencyReportsMetadataView;
 
 import java.util.List;
 
-import javax.inject.Inject;
-import javax.persistence.NoResultException;
+import jakarta.inject.Inject;
+import jakarta.persistence.NoResultException;
 
 import org.slf4j.Logger;
 

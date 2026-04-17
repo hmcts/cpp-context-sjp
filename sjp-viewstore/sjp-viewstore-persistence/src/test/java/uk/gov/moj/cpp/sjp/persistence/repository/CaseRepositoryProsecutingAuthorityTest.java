@@ -9,7 +9,7 @@ import static uk.gov.moj.cpp.sjp.persistence.builder.CaseDetailBuilder.aCase;
 import uk.gov.justice.services.test.utils.persistence.BaseTransactionalJunit4Test;
 import uk.gov.moj.cpp.sjp.persistence.entity.CaseDetail;
 
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 
 import org.apache.deltaspike.testcontrol.api.junit.CdiTestRunner;
 import org.junit.Before;

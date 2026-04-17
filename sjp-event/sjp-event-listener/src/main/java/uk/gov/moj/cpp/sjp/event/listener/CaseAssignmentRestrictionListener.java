@@ -11,7 +11,7 @@ import uk.gov.moj.cpp.sjp.persistence.repository.CaseAssignmentRestrictionReposi
 
 import java.time.ZonedDateTime;
 
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;

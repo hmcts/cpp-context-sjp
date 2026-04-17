@@ -1,7 +1,7 @@
 package uk.gov.moj.cpp.sjp.query.view;
 
 
-import static javax.json.Json.createObjectBuilder;
+import static jakarta.json.Json.createObjectBuilder;
 import static uk.gov.justice.services.messaging.Envelope.metadataFrom;
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
 import static uk.gov.justice.services.messaging.JsonObjects.toJsonArray;
@@ -19,10 +19,10 @@ import uk.gov.moj.cpp.sjp.query.view.service.UserAndGroupsService;
 
 import java.util.UUID;
 
-import javax.inject.Inject;
-import javax.json.JsonArray;
-import javax.json.JsonObjectBuilder;
-import javax.json.JsonValue;
+import jakarta.inject.Inject;
+import jakarta.json.JsonArray;
+import jakarta.json.JsonObjectBuilder;
+import jakarta.json.JsonValue;
 
 @ServiceComponent(Component.QUERY_VIEW)
 public class CaseNotesQueryView {

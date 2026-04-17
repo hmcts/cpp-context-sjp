@@ -8,7 +8,7 @@ import static uk.gov.moj.cpp.sjp.command.utils.NullSafeJsonObjectHelper.notNull;
 import java.math.BigDecimal;
 import java.util.Optional;
 
-import javax.json.JsonObject;
+import jakarta.json.JsonObject;
 
 public class CommonDecisionValidator {
     private CommonDecisionValidator() {

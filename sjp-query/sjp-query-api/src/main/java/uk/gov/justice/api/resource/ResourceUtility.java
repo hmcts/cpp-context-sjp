@@ -1,9 +1,9 @@
 package uk.gov.justice.api.resource;
 
-import static javax.ws.rs.core.HttpHeaders.CONTENT_DISPOSITION;
-import static javax.ws.rs.core.HttpHeaders.CONTENT_TYPE;
-import static javax.ws.rs.core.Response.Status.OK;
-import static javax.ws.rs.core.Response.status;
+import static jakarta.ws.rs.core.HttpHeaders.CONTENT_DISPOSITION;
+import static jakarta.ws.rs.core.HttpHeaders.CONTENT_TYPE;
+import static jakarta.ws.rs.core.Response.Status.OK;
+import static jakarta.ws.rs.core.Response.status;
 import static uk.gov.justice.api.resource.DefaultQueryApiTransparencyReportContentFileIdResource.PDF_CONTENT_TYPE;
 
 import uk.gov.justice.services.fileservice.api.FileRetriever;
@@ -15,7 +15,7 @@ import java.io.InputStream;
 import java.util.Optional;
 import java.util.UUID;
 
-import javax.ws.rs.core.Response;
+import jakarta.ws.rs.core.Response;
 
 public class ResourceUtility {
 

@@ -10,9 +10,9 @@ import static java.util.Collections.singletonList;
 import static java.util.UUID.fromString;
 import static java.util.UUID.randomUUID;
 import static java.util.stream.Collectors.toList;
-import static javax.json.Json.createObjectBuilder;
-import static javax.json.Json.createReader;
-import static javax.ws.rs.core.Response.Status.OK;
+import static jakarta.json.Json.createObjectBuilder;
+import static jakarta.json.Json.createReader;
+import static jakarta.ws.rs.core.Response.Status.OK;
 import static org.apache.commons.lang3.RandomStringUtils.randomAlphanumeric;
 import static org.apache.commons.lang3.RandomUtils.nextInt;
 import static org.hamcrest.CoreMatchers.allOf;
@@ -107,8 +107,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
-import javax.json.JsonObject;
-import javax.ws.rs.core.Response;
+import jakarta.json.JsonObject;
+import jakarta.ws.rs.core.Response;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Sets;

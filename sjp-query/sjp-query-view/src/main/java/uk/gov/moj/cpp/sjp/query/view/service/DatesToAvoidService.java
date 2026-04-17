@@ -14,7 +14,7 @@ import uk.gov.moj.cpp.sjp.query.view.response.CasesPendingDatesToAvoidView;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 
 public class DatesToAvoidService {
 

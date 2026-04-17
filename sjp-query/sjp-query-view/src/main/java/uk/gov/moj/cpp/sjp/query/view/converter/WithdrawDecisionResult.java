@@ -8,8 +8,8 @@ import uk.gov.moj.cpp.sjp.query.view.service.CachedReferenceData;
 
 import java.util.UUID;
 
-import javax.json.JsonObject;
-import javax.json.JsonObjectBuilder;
+import jakarta.json.JsonObject;
+import jakarta.json.JsonObjectBuilder;
 
 public class WithdrawDecisionResult extends AbstractOffenceDecisionResult {
 

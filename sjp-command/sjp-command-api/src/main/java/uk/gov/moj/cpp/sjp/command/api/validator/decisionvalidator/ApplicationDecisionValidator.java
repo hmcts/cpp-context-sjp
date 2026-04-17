@@ -4,7 +4,7 @@ import static org.apache.commons.lang3.StringUtils.isEmpty;
 
 import uk.gov.justice.services.adapter.rest.exception.BadRequestException;
 
-import javax.json.JsonObject;
+import jakarta.json.JsonObject;
 
 public class ApplicationDecisionValidator {
 

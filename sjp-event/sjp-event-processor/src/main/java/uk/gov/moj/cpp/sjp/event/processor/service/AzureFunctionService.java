@@ -4,7 +4,7 @@ import uk.gov.moj.cpp.sjp.event.processor.helper.HttpConnectionHelper;
 
 import java.io.IOException;
 
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 
 public class AzureFunctionService {
 

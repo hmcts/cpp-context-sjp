@@ -22,10 +22,10 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
-import javax.inject.Inject;
-import javax.json.JsonObject;
-import javax.json.JsonString;
-import javax.transaction.Transactional;
+import jakarta.inject.Inject;
+import jakarta.json.JsonObject;
+import jakarta.json.JsonString;
+import jakarta.transaction.Transactional;
 
 import org.apache.commons.collections.CollectionUtils;
 

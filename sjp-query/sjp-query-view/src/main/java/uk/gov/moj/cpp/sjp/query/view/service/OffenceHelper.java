@@ -3,8 +3,8 @@ package uk.gov.moj.cpp.sjp.query.view.service;
 import static java.lang.String.format;
 import static java.util.Objects.nonNull;
 import static java.util.Optional.of;
-import static javax.json.Json.createArrayBuilder;
-import static javax.json.Json.createObjectBuilder;
+import static jakarta.json.Json.createArrayBuilder;
+import static jakarta.json.Json.createObjectBuilder;
 import static org.slf4j.LoggerFactory.getLogger;
 import static uk.gov.moj.cpp.sjp.query.view.converter.ResultCode.RSJP;
 import static uk.gov.moj.cpp.sjp.query.view.util.CaseResultsConstants.VERDICT;
@@ -16,11 +16,11 @@ import uk.gov.moj.cpp.sjp.query.view.response.CaseView;
 
 import java.util.Optional;
 
-import javax.inject.Inject;
-import javax.json.JsonArray;
-import javax.json.JsonArrayBuilder;
-import javax.json.JsonObject;
-import javax.json.JsonObjectBuilder;
+import jakarta.inject.Inject;
+import jakarta.json.JsonArray;
+import jakarta.json.JsonArrayBuilder;
+import jakarta.json.JsonObject;
+import jakarta.json.JsonObjectBuilder;
 
 import org.slf4j.Logger;
 

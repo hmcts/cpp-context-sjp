@@ -23,7 +23,7 @@ import uk.gov.moj.sjp.it.helper.FinancialMeansHelper;
 
 import java.util.UUID;
 
-import javax.json.JsonObject;
+import jakarta.json.JsonObject;
 
 import org.hamcrest.Matcher;
 import org.junit.jupiter.api.AfterEach;

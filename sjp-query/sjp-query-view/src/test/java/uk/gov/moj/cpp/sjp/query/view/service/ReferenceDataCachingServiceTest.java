@@ -1,6 +1,6 @@
 package uk.gov.moj.cpp.sjp.query.view.service;
 
-import static javax.json.Json.createReader;
+import static jakarta.json.Json.createReader;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -11,8 +11,8 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 
-import javax.json.JsonArray;
-import javax.json.JsonObject;
+import jakarta.json.JsonArray;
+import jakarta.json.JsonObject;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

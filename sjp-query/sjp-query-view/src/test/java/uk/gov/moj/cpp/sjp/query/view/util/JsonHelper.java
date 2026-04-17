@@ -1,7 +1,7 @@
 package uk.gov.moj.cpp.sjp.query.view.util;
 
 import static com.google.common.io.Resources.getResource;
-import static javax.json.Json.createReader;
+import static jakarta.json.Json.createReader;
 import static org.apache.commons.io.FileUtils.readFileToString;
 
 import uk.gov.justice.services.common.converter.jackson.ObjectMapperProducer;
@@ -11,8 +11,8 @@ import java.io.IOException;
 import java.io.StringReader;
 import java.net.URISyntaxException;
 
-import javax.json.JsonObject;
-import javax.json.JsonReader;
+import jakarta.json.JsonObject;
+import jakarta.json.JsonReader;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 

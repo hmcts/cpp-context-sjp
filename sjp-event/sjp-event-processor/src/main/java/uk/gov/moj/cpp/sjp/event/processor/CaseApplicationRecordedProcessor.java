@@ -15,9 +15,9 @@ import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.sjp.event.CaseApplicationRecorded;
 import uk.gov.moj.cpp.sjp.event.processor.service.enforcementnotification.EnforcementNotificationService;
 
-import javax.inject.Inject;
-import javax.json.Json;
-import javax.json.JsonObject;
+import jakarta.inject.Inject;
+import jakarta.json.Json;
+import jakarta.json.JsonObject;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

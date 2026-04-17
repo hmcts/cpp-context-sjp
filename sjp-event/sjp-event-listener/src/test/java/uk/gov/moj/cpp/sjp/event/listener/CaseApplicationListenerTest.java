@@ -45,9 +45,9 @@ import static uk.gov.moj.cpp.sjp.persistence.entity.ApplicationStatus.*;
 import static uk.gov.moj.cpp.sjp.persistence.entity.ApplicationType.REOPENING;
 import static uk.gov.moj.cpp.sjp.persistence.entity.ApplicationType.STAT_DEC;
 
-import javax.inject.Inject;
-import javax.json.Json;
-import javax.json.JsonObject;
+import jakarta.inject.Inject;
+import jakarta.json.Json;
+import jakarta.json.JsonObject;
 
 
 @ExtendWith(MockitoExtension.class)

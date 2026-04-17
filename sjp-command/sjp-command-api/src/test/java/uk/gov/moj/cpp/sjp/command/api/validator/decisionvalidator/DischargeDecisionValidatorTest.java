@@ -4,9 +4,9 @@ import org.junit.jupiter.api.Test;
 import uk.gov.justice.services.adapter.rest.exception.BadRequestException;
 import uk.gov.moj.cpp.sjp.domain.decision.discharge.DischargeType;
 
-import javax.json.JsonObject;
+import jakarta.json.JsonObject;
 
-import static javax.json.Json.createObjectBuilder;
+import static jakarta.json.Json.createObjectBuilder;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;

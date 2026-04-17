@@ -13,8 +13,8 @@ import uk.gov.justice.services.messaging.JsonEnvelope;
 import java.time.LocalDate;
 import java.util.UUID;
 
-import javax.inject.Inject;
-import javax.json.JsonObject;
+import jakarta.inject.Inject;
+import jakarta.json.JsonObject;
 
 @ServiceComponent(Component.COMMAND_HANDLER)
 public class CaseAdjournmentHandler extends CaseCommandHandler {

@@ -1,7 +1,7 @@
 package uk.gov.moj.cpp.sjp.event.processor.service.notification;
 
 import static java.util.Optional.ofNullable;
-import static javax.json.Json.createObjectBuilder;
+import static jakarta.json.Json.createObjectBuilder;
 import static uk.gov.moj.cpp.sjp.event.processor.helper.JsonObjectConversionHelper.jsonObjectAsByteArray;
 
 import uk.gov.justice.json.schemas.domains.sjp.queries.Offence;
@@ -25,8 +25,8 @@ import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-import javax.inject.Inject;
-import javax.json.JsonObject;
+import jakarta.inject.Inject;
+import jakarta.json.JsonObject;
 
 @SuppressWarnings({"squid:S3655"}) // Suppress Optional.get without .isPresent().
 public class EndorsementRemovalNotificationService {

@@ -1,7 +1,7 @@
 package uk.gov.moj.cpp.sjp.query.api;
 
 import static java.util.Optional.ofNullable;
-import static javax.json.Json.createObjectBuilder;
+import static jakarta.json.Json.createObjectBuilder;
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
 import static uk.gov.justice.services.messaging.JsonEnvelope.metadataFrom;
 
@@ -27,11 +27,11 @@ import uk.gov.moj.cpp.sjp.query.service.WithdrawalReasons;
 import java.util.List;
 import java.util.Map;
 
-import javax.inject.Inject;
-import javax.json.JsonObject;
-import javax.json.JsonObjectBuilder;
-import javax.json.JsonValue;
-import javax.ws.rs.NotFoundException;
+import jakarta.inject.Inject;
+import jakarta.json.JsonObject;
+import jakarta.json.JsonObjectBuilder;
+import jakarta.json.JsonValue;
+import jakarta.ws.rs.NotFoundException;
 
 @SuppressWarnings("WeakerAccess")
 @ServiceComponent(Component.QUERY_API)

@@ -15,10 +15,10 @@ import uk.gov.moj.cpp.sjp.command.api.service.ReferenceDataService;
 import uk.gov.moj.cpp.sjp.command.utils.UUIDHelper;
 import uk.gov.moj.cpp.sjp.domain.SessionCourt;
 
-import javax.inject.Inject;
-import javax.json.Json;
-import javax.json.JsonObject;
-import javax.json.JsonObjectBuilder;
+import jakarta.inject.Inject;
+import jakarta.json.Json;
+import jakarta.json.JsonObject;
+import jakarta.json.JsonObjectBuilder;
 
 @ServiceComponent(COMMAND_API)
 public class SessionApi {

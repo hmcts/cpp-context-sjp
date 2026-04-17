@@ -1,6 +1,6 @@
 package uk.gov.moj.cpp.sjp.event.processor.service;
 
-import javax.json.JsonObject;
+import jakarta.json.JsonObject;
 
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;

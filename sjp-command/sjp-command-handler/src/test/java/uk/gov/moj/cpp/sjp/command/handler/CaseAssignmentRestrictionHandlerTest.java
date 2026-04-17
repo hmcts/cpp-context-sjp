@@ -40,7 +40,7 @@ import java.util.List;
 import java.util.stream.Stream;
 
 
-import javax.json.JsonValue;
+import jakarta.json.JsonValue;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

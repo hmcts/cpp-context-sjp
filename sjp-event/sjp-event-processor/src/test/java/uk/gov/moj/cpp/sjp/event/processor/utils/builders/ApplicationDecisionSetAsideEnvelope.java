@@ -5,7 +5,7 @@ import uk.gov.justice.services.test.utils.core.enveloper.EnvelopeFactory;
 import uk.gov.moj.cpp.sjp.event.decision.ApplicationDecisionSetAside;
 import uk.gov.moj.cpp.sjp.event.processor.utils.JsonHelper;
 
-import javax.json.JsonObject;
+import jakarta.json.JsonObject;
 
 public class ApplicationDecisionSetAsideEnvelope {
 

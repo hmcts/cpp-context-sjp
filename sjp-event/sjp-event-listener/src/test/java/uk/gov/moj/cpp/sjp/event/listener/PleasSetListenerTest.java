@@ -23,8 +23,8 @@ import uk.gov.moj.cpp.sjp.persistence.repository.CaseRepository;
 import java.io.StringReader;
 import java.util.UUID;
 
-import javax.json.Json;
-import javax.json.JsonObject;
+import jakarta.json.Json;
+import jakarta.json.JsonObject;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;

@@ -1,8 +1,8 @@
 package uk.gov.moj.sjp.it.util;
 
 import static java.util.Optional.empty;
-import static javax.json.Json.createReader;
-import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
+import static jakarta.json.Json.createReader;
+import static jakarta.ws.rs.core.MediaType.APPLICATION_JSON;
 import static org.awaitility.Awaitility.await;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.Matchers.not;
@@ -18,13 +18,13 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.IntStream;
 
-import javax.json.Json;
-import javax.json.JsonObject;
-import javax.ws.rs.client.Entity;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.MultivaluedHashMap;
-import javax.ws.rs.core.MultivaluedMap;
-import javax.ws.rs.core.Response;
+import jakarta.json.Json;
+import jakarta.json.JsonObject;
+import jakarta.ws.rs.client.Entity;
+import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.MultivaluedHashMap;
+import jakarta.ws.rs.core.MultivaluedMap;
+import jakarta.ws.rs.core.Response;
 
 import io.restassured.path.json.JsonPath;
 

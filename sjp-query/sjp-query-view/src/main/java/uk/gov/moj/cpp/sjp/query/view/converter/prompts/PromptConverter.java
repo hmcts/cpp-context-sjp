@@ -1,7 +1,7 @@
 package uk.gov.moj.cpp.sjp.query.view.converter.prompts;
 
 import static java.util.Optional.ofNullable;
-import static javax.json.Json.createObjectBuilder;
+import static jakarta.json.Json.createObjectBuilder;
 import static uk.gov.moj.cpp.sjp.query.view.util.CaseResultsConstants.PROMPT_DEFINITION_ID;
 
 import uk.gov.moj.cpp.sjp.query.view.converter.Prompt;
@@ -10,8 +10,8 @@ import uk.gov.moj.cpp.sjp.query.view.service.OffenceDataSupplier;
 import java.util.Optional;
 import java.util.UUID;
 
-import javax.json.JsonArrayBuilder;
-import javax.json.JsonObject;
+import jakarta.json.JsonArrayBuilder;
+import jakarta.json.JsonObject;
 
 public class PromptConverter {
 

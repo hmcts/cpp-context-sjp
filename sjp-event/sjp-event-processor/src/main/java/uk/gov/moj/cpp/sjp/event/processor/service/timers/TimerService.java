@@ -7,7 +7,7 @@ import uk.gov.moj.cpp.sjp.event.processor.activiti.TimerExpirationProcess;
 import java.time.LocalDate;
 import java.util.UUID;
 
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 
 public class TimerService {
 

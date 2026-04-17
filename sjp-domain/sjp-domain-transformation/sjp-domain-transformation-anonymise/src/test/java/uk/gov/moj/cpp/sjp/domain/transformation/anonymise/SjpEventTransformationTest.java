@@ -13,9 +13,9 @@ import uk.gov.justice.tools.eventsourcing.anonymization.util.FileUtil;
 import java.io.StringReader;
 import java.util.stream.Stream;
 
-import javax.json.Json;
-import javax.json.JsonObject;
-import javax.json.JsonReader;
+import jakarta.json.Json;
+import jakarta.json.JsonObject;
+import jakarta.json.JsonReader;
 
 import io.restassured.path.json.JsonPath;
 import org.junit.jupiter.api.Test;

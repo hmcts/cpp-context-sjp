@@ -11,8 +11,8 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
 
-import javax.inject.Inject;
-import javax.persistence.EntityManager;
+import jakarta.inject.Inject;
+import jakarta.persistence.EntityManager;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.deltaspike.data.api.AbstractEntityRepository;

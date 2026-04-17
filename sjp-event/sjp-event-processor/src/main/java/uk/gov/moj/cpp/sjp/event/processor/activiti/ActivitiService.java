@@ -4,8 +4,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
-import javax.ejb.Startup;
-import javax.inject.Inject;
+import jakarta.ejb.Startup;
+import jakarta.inject.Inject;
 
 import org.activiti.engine.RuntimeService;
 import org.activiti.engine.runtime.Execution;

@@ -10,7 +10,7 @@ import uk.gov.justice.tools.eventsourcing.transformation.api.Action;
 
 import java.util.stream.Stream;
 
-import javax.json.JsonObject;
+import jakarta.json.JsonObject;
 
 public abstract class TopLevelAddressEventTransformer extends BaseEventTransformer {
 

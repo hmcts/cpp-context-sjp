@@ -2,7 +2,7 @@ package uk.gov.moj.cpp.sjp.event.processor.service.enforcementnotification;
 
 import static java.lang.String.format;
 import static java.util.Objects.nonNull;
-import static javax.json.Json.createObjectBuilder;
+import static jakarta.json.Json.createObjectBuilder;
 import static org.apache.commons.collections.CollectionUtils.isNotEmpty;
 import static uk.gov.justice.json.schemas.domains.sjp.ApplicationType.REOPENING;
 import static uk.gov.justice.json.schemas.domains.sjp.ApplicationType.STAT_DEC;
@@ -27,8 +27,8 @@ import uk.gov.moj.cpp.sjp.event.processor.service.systemdocgenerator.TemplateIde
 import java.io.ByteArrayInputStream;
 import java.util.UUID;
 
-import javax.inject.Inject;
-import javax.json.JsonObject;
+import jakarta.inject.Inject;
+import jakarta.json.JsonObject;
 
 @SuppressWarnings({"squid:S3655"}) // Suppress Optional.get without .isPresent().
 public class EnforcementEmailAttachmentService {

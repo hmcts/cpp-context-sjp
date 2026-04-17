@@ -1,6 +1,6 @@
 package uk.gov.moj.cpp.sjp.event.processor.activiti.delegates;
 
-import static javax.json.Json.createObjectBuilder;
+import static jakarta.json.Json.createObjectBuilder;
 import static uk.gov.moj.cpp.sjp.event.processor.DatesToAvoidProcessor.DATES_TO_AVOID_ADDED_PUBLIC_EVENT_NAME;
 import static uk.gov.moj.cpp.sjp.event.processor.EventProcessorConstants.CASE_ID;
 import static uk.gov.moj.cpp.sjp.event.processor.EventProcessorConstants.DATES_TO_AVOID;
@@ -13,7 +13,7 @@ import uk.gov.moj.cpp.sjp.domain.plea.PleaType;
 
 import java.util.UUID;
 
-import javax.inject.Named;
+import jakarta.inject.Named;
 
 import org.activiti.engine.delegate.DelegateExecution;
 

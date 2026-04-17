@@ -2,7 +2,7 @@ package uk.gov.moj.cpp.sjp.query.view;
 
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
 import static java.math.BigDecimal.ROUND_DOWN;
-import static javax.json.Json.createObjectBuilder;
+import static jakarta.json.Json.createObjectBuilder;
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.mockito.Mockito.when;
@@ -40,7 +40,7 @@ import org.mockito.Mock;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import javax.json.JsonObject;
+import jakarta.json.JsonObject;
 
 @ExtendWith(MockitoExtension.class)
 public class CaseDocumentsRestrictionTests {

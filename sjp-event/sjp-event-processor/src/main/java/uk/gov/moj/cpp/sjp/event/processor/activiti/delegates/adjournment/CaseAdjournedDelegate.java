@@ -7,7 +7,7 @@ import uk.gov.moj.cpp.sjp.event.processor.activiti.delegates.AbstractCaseDelegat
 
 import java.util.UUID;
 
-import javax.inject.Named;
+import jakarta.inject.Named;
 
 import org.activiti.engine.delegate.DelegateExecution;
 

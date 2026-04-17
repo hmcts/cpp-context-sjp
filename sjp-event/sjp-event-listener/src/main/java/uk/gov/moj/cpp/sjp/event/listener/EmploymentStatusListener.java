@@ -11,9 +11,9 @@ import uk.gov.moj.cpp.sjp.persistence.repository.FinancialMeansRepository;
 
 import java.util.UUID;
 
-import javax.inject.Inject;
-import javax.json.JsonObject;
-import javax.transaction.Transactional;
+import jakarta.inject.Inject;
+import jakarta.json.JsonObject;
+import jakarta.transaction.Transactional;
 
 @ServiceComponent(EVENT_LISTENER)
 public class EmploymentStatusListener {

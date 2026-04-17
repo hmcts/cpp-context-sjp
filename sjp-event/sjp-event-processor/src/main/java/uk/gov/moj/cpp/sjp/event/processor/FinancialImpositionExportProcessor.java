@@ -13,7 +13,7 @@ import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.sjp.event.FinancialImpositionAccountNumberAdded;
 import uk.gov.moj.cpp.sjp.event.processor.service.enforcementnotification.EnforcementNotificationService;
 
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 
 @ServiceComponent(EVENT_PROCESSOR)
 public class FinancialImpositionExportProcessor {

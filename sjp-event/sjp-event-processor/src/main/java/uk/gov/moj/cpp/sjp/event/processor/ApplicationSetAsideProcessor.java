@@ -16,7 +16,7 @@ import uk.gov.moj.cpp.sjp.event.processor.service.SjpService;
 import uk.gov.moj.cpp.sjp.event.processor.service.models.CaseDetailsDecorator;
 import uk.gov.moj.cpp.sjp.event.processor.service.notification.EndorsementRemovalNotificationService;
 
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

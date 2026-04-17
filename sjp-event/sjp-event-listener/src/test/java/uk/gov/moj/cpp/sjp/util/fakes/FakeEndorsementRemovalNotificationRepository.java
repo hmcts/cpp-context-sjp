@@ -9,7 +9,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
-import javax.persistence.metamodel.SingularAttribute;
+import jakarta.persistence.metamodel.SingularAttribute;
 
 public abstract class FakeEndorsementRemovalNotificationRepository implements EndorsementRemovalNotificationRepository {
 

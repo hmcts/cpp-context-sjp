@@ -1,7 +1,7 @@
 package uk.gov.moj.cpp.sjp.command.api;
 
 import static java.util.UUID.randomUUID;
-import static javax.json.Json.createObjectBuilder;
+import static jakarta.json.Json.createObjectBuilder;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.mockito.Mockito.verify;
 import static uk.gov.justice.services.core.annotation.Component.COMMAND_API;
@@ -21,7 +21,7 @@ import uk.gov.moj.cpp.sjp.command.api.service.CaseService;
 
 import java.time.ZonedDateTime;
 
-import javax.json.JsonObjectBuilder;
+import jakarta.json.JsonObjectBuilder;
 
 import org.junit.Rule;
 import org.junit.jupiter.api.Test;

@@ -2,8 +2,8 @@ package uk.gov.moj.cpp.sjp.event.processor;
 
 import static java.lang.String.format;
 import static java.util.UUID.randomUUID;
-import static javax.json.Json.createObjectBuilder;
-import static javax.json.JsonValue.NULL;
+import static jakarta.json.Json.createObjectBuilder;
+import static jakarta.json.JsonValue.NULL;
 import static uk.gov.justice.services.core.annotation.Component.EVENT_PROCESSOR;
 import static uk.gov.justice.services.messaging.Envelope.envelopeFrom;
 import static uk.gov.justice.services.messaging.JsonEnvelope.metadataFrom;
@@ -23,9 +23,9 @@ import uk.gov.moj.cpp.sjp.event.processor.service.UsersGroupsService;
 import java.time.ZonedDateTime;
 import java.util.UUID;
 
-import javax.inject.Inject;
-import javax.json.JsonObject;
-import javax.json.JsonObjectBuilder;
+import jakarta.inject.Inject;
+import jakarta.json.JsonObject;
+import jakarta.json.JsonObjectBuilder;
 
 @ServiceComponent(EVENT_PROCESSOR)
 public class CaseLegalSocCheckedProcessor {

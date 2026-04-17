@@ -1,15 +1,15 @@
 package uk.gov.moj.cpp.sjp.query.view.converter;
 
-import static javax.json.Json.createArrayBuilder;
-import static javax.json.Json.createObjectBuilder;
+import static jakarta.json.Json.createArrayBuilder;
+import static jakarta.json.Json.createObjectBuilder;
 import static uk.gov.moj.cpp.sjp.query.view.converter.ResultCode.D45;
 import static uk.gov.moj.cpp.sjp.query.view.converter.ResultCode.DPR;
 
 import uk.gov.moj.cpp.sjp.query.view.service.CachedReferenceData;
 
-import javax.json.JsonArrayBuilder;
-import javax.json.JsonObject;
-import javax.json.JsonObjectBuilder;
+import jakarta.json.JsonArrayBuilder;
+import jakarta.json.JsonObject;
+import jakarta.json.JsonObjectBuilder;
 
 public class PressRestrictionResult {
 

@@ -1,7 +1,7 @@
 package uk.gov.moj.cpp.sjp.query.view.util.fakes;
 
 import static java.util.stream.Collectors.toList;
-import static javax.json.Json.createObjectBuilder;
+import static jakarta.json.Json.createObjectBuilder;
 
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.sjp.query.view.converter.ResultCode;
@@ -15,7 +15,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
-import javax.json.JsonObject;
+import jakarta.json.JsonObject;
 
 public class FakeReferenceDataService extends ReferenceDataService {
 

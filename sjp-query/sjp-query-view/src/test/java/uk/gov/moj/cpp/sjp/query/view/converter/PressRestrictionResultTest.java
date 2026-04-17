@@ -1,6 +1,6 @@
 package uk.gov.moj.cpp.sjp.query.view.converter;
 
-import static javax.json.Json.createObjectBuilder;
+import static jakarta.json.Json.createObjectBuilder;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.mockito.Mockito.when;
 import static uk.gov.moj.cpp.sjp.query.view.converter.ResultCode.D45;
@@ -10,7 +10,7 @@ import static uk.gov.moj.cpp.sjp.query.view.util.results.ResultsMatchers.DPR;
 
 import uk.gov.moj.cpp.sjp.query.view.service.CachedReferenceData;
 
-import javax.json.JsonObject;
+import jakarta.json.JsonObject;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

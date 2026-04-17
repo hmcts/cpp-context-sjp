@@ -4,7 +4,7 @@ import uk.gov.justice.services.common.converter.Converter;
 import uk.gov.moj.cpp.sjp.domain.Person;
 import uk.gov.moj.cpp.sjp.persistence.entity.PersonalDetails;
 
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 
 public class PersonToPersonalDetailsEntity<P extends Person> implements Converter<P, PersonalDetails> {
 

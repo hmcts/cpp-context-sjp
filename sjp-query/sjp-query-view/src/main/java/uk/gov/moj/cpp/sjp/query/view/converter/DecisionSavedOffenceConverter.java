@@ -2,8 +2,8 @@ package uk.gov.moj.cpp.sjp.query.view.converter;
 
 import static java.util.Objects.nonNull;
 import static java.util.Optional.ofNullable;
-import static javax.json.Json.createArrayBuilder;
-import static javax.json.Json.createObjectBuilder;
+import static jakarta.json.Json.createArrayBuilder;
+import static jakarta.json.Json.createObjectBuilder;
 import static uk.gov.moj.cpp.sjp.query.view.util.CaseResultsConstants.ADDITIONAL_POINTS_REASON;
 import static uk.gov.moj.cpp.sjp.query.view.util.CaseResultsConstants.ADJOURN_TO;
 import static uk.gov.moj.cpp.sjp.query.view.util.CaseResultsConstants.AMOUNT;
@@ -63,8 +63,8 @@ import uk.gov.moj.cpp.sjp.query.view.response.DisqualificationPeriodView;
 import uk.gov.moj.cpp.sjp.query.view.response.FinancialImpositionView;
 import uk.gov.moj.cpp.sjp.query.view.response.OffenceDecisionView;
 
-import javax.json.JsonObject;
-import javax.json.JsonObjectBuilder;
+import jakarta.json.JsonObject;
+import jakarta.json.JsonObjectBuilder;
 
 public class DecisionSavedOffenceConverter {
 

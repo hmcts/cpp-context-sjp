@@ -15,8 +15,8 @@ import java.io.StringReader;
 import java.util.Map;
 import java.util.stream.Stream;
 
-import javax.json.Json;
-import javax.json.JsonObject;
+import jakarta.json.Json;
+import jakarta.json.JsonObject;
 
 public class EventTransformerTestHelper {
 

@@ -9,7 +9,7 @@ import static org.junit.jupiter.api.Assertions.fail;
 import java.io.InputStream;
 import java.util.Map;
 
-import javax.json.JsonObject;
+import jakarta.json.JsonObject;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.text.StrSubstitutor;

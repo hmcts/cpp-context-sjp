@@ -175,4 +175,20 @@ public class StoreOnlinePleaBuilder {
         return new PleadOnline(defendantId, offences, UNAVAILABILITY, interpreterLanguage, speakWelsh,
                 WITNESS_DETAILS, WITNESS_DISPUTE, outstandingFines, person, financialMeans, employer, outgoings, comeToCourt, DISABILITY_NEEDS, legalEntityDefendant, legalEntityFinancialMeans);
     }
+
+
+    public static PleadOnline generatePleadOnlineForLegalEntity(final UUID offenceId, final UUID defendantId,
+                                                                final String interpreterLanguage,
+                                                   final Boolean speakWelsh,
+                                                   final Boolean comeToCourt, final DisabilityNeeds disabilityNeeds, final LegalEntityDefendant legalEntityDefendant, final LegalEntityFinancialMeans legalEntityFinancialMeans) {
+
+        final List<Offence> offences = singletonList(
+                new Offence(offenceId, NOT_GUILTY, null, NOT_GUILTY_BECAUSE)
+        );
+        final List<Outgoing> outgoings = singletonList(
+                new Outgoing(OUTGOING_DESCRIPTION, OUTGOING_AMOUNT)
+        );
+            return new PleadOnline(defendantId, offences, null, interpreterLanguage, speakWelsh,
+                    null, null, false, null, null, null, outgoings, comeToCourt, disabilityNeeds, legalEntityDefendant, legalEntityFinancialMeans);
+    }
 }

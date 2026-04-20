@@ -6,10 +6,7 @@ import static java.nio.charset.Charset.defaultCharset;
 import static java.util.UUID.fromString;
 import static java.util.UUID.randomUUID;
 import static javax.json.JsonValue.NULL;
-import static org.hamcrest.CoreMatchers.allOf;
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.CoreMatchers.notNullValue;
+import static org.hamcrest.CoreMatchers.*;
 import static org.hamcrest.collection.IsCollectionWithSize.hasSize;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.mockito.Mockito.verify;
@@ -24,12 +21,14 @@ import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMetad
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopePayloadMatcher.payloadIsJson;
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeStreamMatcher.streamContaining;
 import static uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderFactory.metadataWithRandomUUID;
+import static uk.gov.justice.services.test.utils.core.reflection.ReflectionUtil.setField;
 import static uk.gov.moj.cpp.sjp.domain.decision.Discharge.createDischarge;
 import static uk.gov.moj.cpp.sjp.domain.decision.FinancialPenalty.createFinancialPenalty;
 import static uk.gov.moj.cpp.sjp.domain.decision.OffenceDecisionInformation.createOffenceDecisionInformation;
 import static uk.gov.moj.cpp.sjp.domain.decision.discharge.DischargeType.ABSOLUTE;
 import static uk.gov.moj.cpp.sjp.domain.verdict.VerdictType.FOUND_GUILTY;
 
+import com.google.common.collect.Sets;
 import uk.gov.justice.json.schemas.domains.sjp.User;
 import uk.gov.justice.json.schemas.domains.sjp.commands.SaveApplicationDecision;
 import uk.gov.justice.json.schemas.domains.sjp.events.ApplicationDecisionRejected;
@@ -46,15 +45,18 @@ import uk.gov.justice.services.eventsourcing.source.core.exception.EventStreamEx
 import uk.gov.justice.services.messaging.Envelope;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.sjp.domain.ApplicationOffencesResults;
+import uk.gov.moj.cpp.sjp.domain.CaseCompleteBdf;
 import uk.gov.moj.cpp.sjp.domain.SessionType;
 import uk.gov.moj.cpp.sjp.domain.aggregate.CaseAggregate;
 import uk.gov.moj.cpp.sjp.domain.aggregate.Session;
+import uk.gov.moj.cpp.sjp.domain.aggregate.state.CaseAggregateState;
 import uk.gov.moj.cpp.sjp.domain.decision.Decision;
 import uk.gov.moj.cpp.sjp.domain.decision.Dismiss;
 import uk.gov.moj.cpp.sjp.domain.decision.OffenceDecision;
 import uk.gov.moj.cpp.sjp.domain.decision.Withdraw;
 import uk.gov.moj.cpp.sjp.domain.verdict.VerdictType;
 import uk.gov.moj.cpp.sjp.event.ApplicationOffenceResultsSaved;
+import uk.gov.moj.cpp.sjp.event.CaseCompleted;
 import uk.gov.moj.cpp.sjp.event.decision.DecisionSaved;
 
 import java.math.BigDecimal;
@@ -106,7 +108,8 @@ public class DecisionHandlerTest {
             DecisionSaved.class,
             ApplicationDecisionSaved.class,
             ApplicationDecisionRejected.class,
-            ApplicationOffenceResultsSaved.class);
+            ApplicationOffenceResultsSaved.class,
+            CaseCompleted.class);
 
     @InjectMocks
     private DecisionHandler decisionHandler;
@@ -383,6 +386,32 @@ public class DecisionHandlerTest {
                                 withJsonPath("$.hearing.courtApplications",notNullValue())
                                 ))))));
 
+    }
+
+    @Test
+    void shouldCompleteCaseViaBdfRaiseCaseCompletedEvent() throws EventStreamException {
+        final UUID sessionId = randomUUID();
+        final UUID caseId = fromString("d8158346-54a6-439b-add3-91778b2027ac");
+        mockCalls(caseId, sessionId);
+
+        final CaseCompleteBdf caseCompleteBdf = new CaseCompleteBdf(caseId);
+        final Envelope<CaseCompleteBdf> envelope = envelopeFrom(
+                metadataWithRandomUUID("sjp.command.case-complete-bdf"),
+                caseCompleteBdf);
+        CaseAggregateState caseAggregateState = new CaseAggregateState();
+        caseAggregateState.setCaseId(caseId);
+        setField(caseAggregate,"state", caseAggregateState);
+        CaseCompleted caseCompleted = new CaseCompleted(caseId, Sets.newHashSet(sessionId));
+        when(caseAggregate.caseCompletedBdf()).thenReturn(Stream.of(caseCompleted));
+        decisionHandler.caseCompleteBdf(envelope);
+        verify(eventStream).append(argumentCaptor.capture());
+        assertThat(argumentCaptor.getValue(), is(streamContaining(
+                jsonEnvelope(
+                        withMetadataEnvelopedFrom(JsonEnvelope.envelopeFrom(envelope.metadata(), NULL))
+                                .withName("sjp.events.case-completed"),
+                        payloadIsJson(anyOf(
+                                withJsonPath("$.caseId", is(caseId.toString()))
+                        ))))));
     }
 
     private static JsonObject getJsonPayload(final String fileName) {

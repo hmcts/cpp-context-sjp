@@ -2,7 +2,7 @@
     <parent>
         <artifactId>sjp-parent</artifactId>
         <groupId>uk.gov.moj.cpp.sjp</groupId>
-        <version>17.103.154-PEG-2848-R-SNAPSHOT</version>
+        <version>17.103.155-PEG-2848-R-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 

@@ -31,6 +31,7 @@ import uk.gov.moj.cpp.sjp.event.ProsecutionAuthorityAccessDenied;
 
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -66,7 +67,8 @@ public class CaseDefendantHandler {
             final UUID defendantId,
             final ZonedDateTime acknowledgedAt,
             final CaseAggregateState state,
-            final String userProsecutingAuthority) {
+            final String userProsecutingAuthority,
+            final List<String> agentProsecutorAuthorityAccess) {
 
         Object event;
         if (state.getCaseId() == null) {
@@ -75,8 +77,19 @@ public class CaseDefendantHandler {
         } else if (defendantId != null && !state.hasDefendant(defendantId)) {
             LOGGER.warn("Defendant not found: {}", defendantId);
             event = new DefendantNotFound(defendantId, "Acknowledge defendant details updates");
-        } else if (!(state.getProsecutingAuthority().toUpperCase().startsWith(userProsecutingAuthority) || "ALL".equalsIgnoreCase(userProsecutingAuthority))) {
-            event = new ProsecutionAuthorityAccessDenied(userProsecutingAuthority, state.getProsecutingAuthority());
+        } else if (!(state.getProsecutingAuthority().toUpperCase().startsWith(userProsecutingAuthority) ||
+                "ALL".equalsIgnoreCase(userProsecutingAuthority) ||
+                (agentProsecutorAuthorityAccess != null && agentProsecutorAuthorityAccess.stream().anyMatch(s-> s.equalsIgnoreCase(state.getProsecutingAuthority()))))) {
+
+            final List<String> prosecutorAuthorityAccess = new ArrayList<>();
+
+            if(agentProsecutorAuthorityAccess != null && agentProsecutorAuthorityAccess.size() > 1) {
+                prosecutorAuthorityAccess.addAll(agentProsecutorAuthorityAccess);
+            } else {
+                prosecutorAuthorityAccess.add(userProsecutingAuthority);
+            }
+
+            event = new ProsecutionAuthorityAccessDenied(state.getProsecutingAuthority(), prosecutorAuthorityAccess);
         } else {
             event = new DefendantDetailsUpdatesAcknowledged(state.getCaseId(), defendantId, acknowledgedAt);
         }

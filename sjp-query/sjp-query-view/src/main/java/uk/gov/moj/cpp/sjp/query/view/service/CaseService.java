@@ -17,6 +17,7 @@ import static uk.gov.moj.cpp.sjp.query.view.ExportType.PUBLIC;
 
 import uk.gov.justice.services.common.converter.ListToJsonArrayConverter;
 import uk.gov.justice.services.messaging.JsonEnvelope;
+import uk.gov.moj.cpp.accesscontrol.sjp.providers.ProsecutingAuthorityAccess;
 import uk.gov.moj.cpp.accesscontrol.sjp.providers.ProsecutingAuthorityProvider;
 import uk.gov.moj.cpp.sjp.domain.common.CaseManagementStatus;
 import uk.gov.moj.cpp.sjp.persistence.entity.CaseDetail;
@@ -52,6 +53,7 @@ import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -177,19 +179,29 @@ public class CaseService {
                                                      final Optional<LocalDate> postedBefore) {
 
         final List<CaseDetail> casesDetails;
-
+        final ProsecutingAuthorityAccess prosecutingAuthorityAccess = prosecutingAuthorityProvider
+                .getCurrentUsersProsecutingAuthorityAccess(envelope);
         final String prosecutingAuthorityFilterValue = prosecutingAuthorityAccessFilterConverter
-                .convertToProsecutingAuthorityAccessFilter(prosecutingAuthorityProvider
-                        .getCurrentUsersProsecutingAuthorityAccess(envelope));
+                .convertToProsecutingAuthorityAccessFilter(prosecutingAuthorityAccess);
+
+        final List<String> agentProsecutorAuthorityAccessFilterValue;
+        if (prosecutingAuthorityAccess.getAgentProsecutorAuthorityAccess() == null || prosecutingAuthorityAccess.getAgentProsecutorAuthorityAccess().isEmpty()){
+            agentProsecutorAuthorityAccessFilterValue = Arrays.asList("DUMMY_VALUE");
+        } else {
+            agentProsecutorAuthorityAccessFilterValue = prosecutingAuthorityAccess.getAgentProsecutorAuthorityAccess();
+        }
 
         if (limit.isPresent() && limit.get() < 1) {
             casesDetails = Collections.emptyList();
         } else {
             QueryResult<CaseDetail> caseDetailsResult;
+
             if (postedBefore.isPresent()) {
-                caseDetailsResult = caseRepository.findCasesMissingSjpn(prosecutingAuthorityFilterValue, postedBefore.get());
+                caseDetailsResult = caseRepository.findCasesMissingSjpn(prosecutingAuthorityFilterValue, postedBefore.get(),
+                        agentProsecutorAuthorityAccessFilterValue);
             } else {
-                caseDetailsResult = caseRepository.findCasesMissingSjpn(prosecutingAuthorityFilterValue);
+                caseDetailsResult = caseRepository.findCasesMissingSjpn(prosecutingAuthorityFilterValue,
+                        agentProsecutorAuthorityAccessFilterValue);
             }
 
             if (limit.isPresent()) {
@@ -206,8 +218,8 @@ public class CaseService {
                 .map(CaseSummaryView::new).collect(toList());
 
         final int casesCount = postedBefore
-                .map(localDate -> caseRepository.countCasesMissingSjpn(prosecutingAuthorityFilterValue, localDate))
-                .orElseGet(() -> caseRepository.countCasesMissingSjpn(prosecutingAuthorityFilterValue));
+                .map(localDate -> caseRepository.countCasesMissingSjpn(prosecutingAuthorityFilterValue, localDate, agentProsecutorAuthorityAccessFilterValue))
+                .orElseGet(() -> caseRepository.countCasesMissingSjpn(prosecutingAuthorityFilterValue, agentProsecutorAuthorityAccessFilterValue));
 
         return new CasesMissingSjpnView(casesIds, cases, casesCount);
     }
@@ -333,14 +345,22 @@ public class CaseService {
 
     public CaseSearchResultsView searchCases(final JsonEnvelope envelope, final String query) {
 
-        final String prosecutingAuthorityFilterValue = prosecutingAuthorityAccessFilterConverter.convertToProsecutingAuthorityAccessFilter(prosecutingAuthorityProvider.getCurrentUsersProsecutingAuthorityAccess(envelope));
+        final ProsecutingAuthorityAccess prosecutingAuthorityAccess = prosecutingAuthorityProvider.getCurrentUsersProsecutingAuthorityAccess(envelope);
+        final String prosecutingAuthorityFilterValue = prosecutingAuthorityAccessFilterConverter.convertToProsecutingAuthorityAccessFilter(prosecutingAuthorityAccess);
 
-        List<CaseSearchResult> searchResults = caseSearchResultRepository.findByUrn(prosecutingAuthorityFilterValue, query);
+        final List<String> agentProsecutorAuthorityAccessFilterValue;
+        if (prosecutingAuthorityAccess.getAgentProsecutorAuthorityAccess() == null || prosecutingAuthorityAccess.getAgentProsecutorAuthorityAccess().isEmpty()){
+            agentProsecutorAuthorityAccessFilterValue = Arrays.asList("DUMMY_VALUE");
+        } else {
+            agentProsecutorAuthorityAccessFilterValue = prosecutingAuthorityAccess.getAgentProsecutorAuthorityAccess();
+        }
+
+        List<CaseSearchResult> searchResults = caseSearchResultRepository.findByUrn(prosecutingAuthorityFilterValue, query, agentProsecutorAuthorityAccessFilterValue);
         if (searchResults.isEmpty()) {
-            searchResults = caseSearchResultRepository.findByLastName(prosecutingAuthorityFilterValue, query);
+            searchResults = caseSearchResultRepository.findByLastName(prosecutingAuthorityFilterValue, query, agentProsecutorAuthorityAccessFilterValue);
         }
         if (searchResults.isEmpty()) {
-            searchResults = caseSearchResultRepository.findByLegalEntityName(prosecutingAuthorityFilterValue, query);
+            searchResults = caseSearchResultRepository.findByLegalEntityName(prosecutingAuthorityFilterValue, query, agentProsecutorAuthorityAccessFilterValue);
         }
 
         return new CaseSearchResultsView(searchResults);

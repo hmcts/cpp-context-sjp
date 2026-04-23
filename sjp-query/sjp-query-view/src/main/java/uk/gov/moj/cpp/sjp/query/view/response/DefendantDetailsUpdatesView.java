@@ -116,6 +116,8 @@ public class DefendantDetailsUpdatesView {
          */
         private  String legalEntityName;
 
+        private String prosecutingAuthority;
+
         @SuppressWarnings("squid:S00107")
         public DefendantDetailsUpdate(
                 final String firstName,
@@ -129,7 +131,8 @@ public class DefendantDetailsUpdatesView {
                 final boolean addressUpdated,
                 final String updatedOn,
                 final String region,
-                final String legalEntityName) {
+                final String legalEntityName,
+                final String prosecutingAuthority) {
 
             this.firstName = firstName;
             this.lastName = lastName;
@@ -143,6 +146,7 @@ public class DefendantDetailsUpdatesView {
             this.updatedOn = updatedOn;
             this.region = region;
             this.legalEntityName = legalEntityName;
+            this.prosecutingAuthority = prosecutingAuthority;
         }
 
         public String getLastName() {
@@ -197,6 +201,10 @@ public class DefendantDetailsUpdatesView {
             this.legalEntityName = legalEntityName;
         }
 
+        public String getProsecutingAuthority() {
+            return prosecutingAuthority;
+        }
+
         public static DefendantDetailsUpdate of(UpdatedDefendantDetails defendantDetail) {
             return new DefendantDetailsUpdate(
                     defendantDetail.getFirstName(),
@@ -214,7 +222,8 @@ public class DefendantDetailsUpdatesView {
                             .map(DateTimeFormatter.ISO_LOCAL_DATE::format)
                             .orElse(DateTimeFormatter.ISO_LOCAL_DATE.format(ZonedDateTime.now())),
                     defendantDetail.getRegion(),
-                    defendantDetail.getLegalEntityName());
+                    defendantDetail.getLegalEntityName(),
+                    defendantDetail.getProsecutingAuthority());
         }
 
         @Override

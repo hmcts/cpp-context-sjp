@@ -21,25 +21,12 @@ import static uk.gov.justice.services.test.utils.core.matchers.HandlerMethodMatc
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopePayloadMatcher.payloadIsJson;
 import static uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderFactory.metadataWithRandomUUID;
 import static uk.gov.justice.services.test.utils.core.reflection.ReflectionUtil.setField;
-import static uk.gov.moj.cpp.sjp.event.processor.utils.ApplicationResult.AACA;
-import static uk.gov.moj.cpp.sjp.event.processor.utils.ApplicationResult.AACD;
-import static uk.gov.moj.cpp.sjp.event.processor.utils.ApplicationResult.AASA;
-import static uk.gov.moj.cpp.sjp.event.processor.utils.ApplicationResult.AASD;
-import static uk.gov.moj.cpp.sjp.event.processor.utils.ApplicationResult.ACSD;
-import static uk.gov.moj.cpp.sjp.event.processor.utils.ApplicationResult.APA;
-import static uk.gov.moj.cpp.sjp.event.processor.utils.ApplicationResult.ASV;
-import static uk.gov.moj.cpp.sjp.event.processor.utils.ApplicationResult.AW;
-import static uk.gov.moj.cpp.sjp.event.processor.utils.ApplicationResult.G;
-import static uk.gov.moj.cpp.sjp.event.processor.utils.ApplicationResult.RFSD;
-import static uk.gov.moj.cpp.sjp.event.processor.utils.ApplicationResult.ROPENED;
-import static uk.gov.moj.cpp.sjp.event.processor.utils.ApplicationResult.STDEC;
-import static uk.gov.moj.cpp.sjp.event.processor.utils.ApplicationResult.WDRN;
-import static uk.gov.moj.cpp.sjp.event.processor.utils.SjpApplicationTypes.APPEAL_AGAINST_CONVICTION;
-import static uk.gov.moj.cpp.sjp.event.processor.utils.SjpApplicationTypes.APPEAL_AGAINST_SENTENCE;
-import static uk.gov.moj.cpp.sjp.event.processor.utils.SjpApplicationTypes.APPEAL_AGAINST_SENTENCE_AND_CONVICTION;
-import static uk.gov.moj.cpp.sjp.event.processor.utils.SjpApplicationTypes.APPEARANCE_TO_MAKE_STATUTORY_DECLARATION_SJP;
-import static uk.gov.moj.cpp.sjp.event.processor.utils.SjpApplicationTypes.APPLICATION_TO_REOPEN_CASE;
+import static uk.gov.moj.cpp.sjp.event.processor.utils.ApplicationResult.*;
+import static uk.gov.moj.cpp.sjp.event.processor.utils.ApplicationResult.DISM;
+import static uk.gov.moj.cpp.sjp.event.processor.utils.SjpApplicationTypes.*;
+import static uk.gov.moj.cpp.sjp.event.processor.utils.SjpApplicationTypes.APPEARANCE_TO_MAKE_STATUTORY_DECLARATION_OTHER_THAN_SJP;
 
+import com.microsoft.applicationinsights.core.dependencies.apachecommons.lang3.StringUtils;
 import uk.gov.justice.core.courts.CourtApplication;
 import uk.gov.justice.core.courts.CourtApplicationCase;
 import uk.gov.justice.core.courts.CourtApplicationType;
@@ -111,8 +98,8 @@ public class HearingResultReceivedProcessorTest {
                 .withProsecutionCaseId(caseId)
                 .build();
         CourtApplicationType courtApplicationType = new CourtApplicationType.Builder()
-                .withType(applicationType)
-
+                .withType(applicationType.startsWith("MC80") ? StringUtils.EMPTY : applicationType)
+                .withCode(applicationType.startsWith("MC80") ? applicationType : StringUtils.EMPTY)
                 .build();
         CourtApplication courtApplication = courtApplication()
                 .withId(randomUUID())
@@ -133,7 +120,6 @@ public class HearingResultReceivedProcessorTest {
                 objectToJsonObjectConverter.convert(publicHearingResulted));
         return hearingJsonEnvelope;
     }
-
 
     private void runTest(String applicationType, String resultDefinitionId, ApplicationStatus applicationStatus) {
         JsonEnvelope hearingJsonEnvelope = populateHearing(applicationType, caseId, true, resultDefinitionId);
@@ -291,5 +277,63 @@ public class HearingResultReceivedProcessorTest {
                 .with(method("handleCaseReceivedEvent").thatHandles(CaseReceived.EVENT_NAME)));
     }
 
+    @Test
+    public void shouldHandleJudicialResultsMatchingApplicationCodeForStatDecApplication() throws IOException {
+
+        runTest(APPEARANCE_TO_MAKE_STATUTORY_DECLARATION_SJP.getApplicationCode(), G.getResultId(), ApplicationStatus.STATUTORY_DECLARATION_GRANTED);
+        runTest(APPEARANCE_TO_MAKE_STATUTORY_DECLARATION_SJP.getApplicationCode(), STDEC.getResultId(), ApplicationStatus.STATUTORY_DECLARATION_GRANTED);
+        runTest(APPEARANCE_TO_MAKE_STATUTORY_DECLARATION_SJP.getApplicationCode(), RFSD.getResultId(), ApplicationStatus.STATUTORY_DECLARATION_REFUSED);
+        runTest(APPEARANCE_TO_MAKE_STATUTORY_DECLARATION_SJP.getApplicationCode(), WDRN.getResultId(), ApplicationStatus.STATUTORY_DECLARATION_WITHDRAWN);
+
+        runTest(APPEARANCE_TO_MAKE_STATUTORY_DECLARATION_SJP.getApplicationCode() , G.getResultId(), ApplicationStatus.STATUTORY_DECLARATION_GRANTED);
+        runTest(APPEARANCE_TO_MAKE_STATUTORY_DECLARATION_SJP.getApplicationCode() , STDEC.getResultId(), ApplicationStatus.STATUTORY_DECLARATION_GRANTED);
+        runTest(APPEARANCE_TO_MAKE_STATUTORY_DECLARATION_SJP.getApplicationCode() , RFSD.getResultId(), ApplicationStatus.STATUTORY_DECLARATION_REFUSED);
+        runTest(APPEARANCE_TO_MAKE_STATUTORY_DECLARATION_SJP.getApplicationCode() , WDRN.getResultId(), ApplicationStatus.STATUTORY_DECLARATION_WITHDRAWN);
+
+        runTest(APPEARANCE_TO_MAKE_STATUTORY_DECLARATION_OTHER_THAN_SJP.getApplicationCode() , G.getResultId(), ApplicationStatus.STATUTORY_DECLARATION_GRANTED);
+        runTest(APPEARANCE_TO_MAKE_STATUTORY_DECLARATION_OTHER_THAN_SJP.getApplicationCode() , STDEC.getResultId(), ApplicationStatus.STATUTORY_DECLARATION_GRANTED);
+        runTest(APPEARANCE_TO_MAKE_STATUTORY_DECLARATION_OTHER_THAN_SJP.getApplicationCode() , RFSD.getResultId(), ApplicationStatus.STATUTORY_DECLARATION_REFUSED);
+        runTest(APPEARANCE_TO_MAKE_STATUTORY_DECLARATION_OTHER_THAN_SJP.getApplicationCode() , WDRN.getResultId(), ApplicationStatus.STATUTORY_DECLARATION_WITHDRAWN);
+    }
+
+    @Test
+    public void shouldHandleJudicialResultsMatchingApplicationCodeForAppealApplication() throws IOException {
+
+        runTest(APPEAL_AGAINST_SENTENCE_BY_MAGISTRATE_TO_CROWN_COURT.getApplicationCode(), AACA.getResultId(), ApplicationStatus.APPEAL_ALLOWED);
+        runTest(APPEAL_AGAINST_SENTENCE_BY_MAGISTRATE_TO_CROWN_COURT.getApplicationCode(), AASA.getResultId(), ApplicationStatus.APPEAL_ALLOWED);
+        runTest(APPEAL_AGAINST_SENTENCE_BY_MAGISTRATE_TO_CROWN_COURT.getApplicationCode(), AACD.getResultId(), ApplicationStatus.APPEAL_DISMISSED);
+        runTest(APPEAL_AGAINST_SENTENCE_BY_MAGISTRATE_TO_CROWN_COURT.getApplicationCode(), AASD.getResultId(), ApplicationStatus.APPEAL_DISMISSED);
+        runTest(APPEAL_AGAINST_SENTENCE_BY_MAGISTRATE_TO_CROWN_COURT.getApplicationCode(), ACSD.getResultId(), ApplicationStatus.APPEAL_DISMISSED);
+        runTest(APPEAL_AGAINST_SENTENCE_BY_MAGISTRATE_TO_CROWN_COURT.getApplicationCode(), DISM.getResultId(), ApplicationStatus.APPEAL_DISMISSED);
+        runTest(APPEAL_AGAINST_SENTENCE_BY_MAGISTRATE_TO_CROWN_COURT.getApplicationCode(), WDRN.getResultId(), ApplicationStatus.APPEAL_WITHDRAWN);
+        runTest(APPEAL_AGAINST_SENTENCE_BY_MAGISTRATE_TO_CROWN_COURT.getApplicationCode(), AW.getResultId(), ApplicationStatus.APPEAL_WITHDRAWN);
+
+        runTest(APPEAL_AGAINST_CONVICTION_AND_SENTENCE_BY_MAGISTRATE_TO_CROWN_COURT.getApplicationCode(), AACA.getResultId(), ApplicationStatus.APPEAL_ALLOWED);
+        runTest(APPEAL_AGAINST_CONVICTION_AND_SENTENCE_BY_MAGISTRATE_TO_CROWN_COURT.getApplicationCode(), AASA.getResultId(), ApplicationStatus.APPEAL_ALLOWED);
+        runTest(APPEAL_AGAINST_CONVICTION_AND_SENTENCE_BY_MAGISTRATE_TO_CROWN_COURT.getApplicationCode(), AACD.getResultId(), ApplicationStatus.APPEAL_DISMISSED);
+        runTest(APPEAL_AGAINST_CONVICTION_AND_SENTENCE_BY_MAGISTRATE_TO_CROWN_COURT.getApplicationCode(), AASD.getResultId(), ApplicationStatus.APPEAL_DISMISSED);
+        runTest(APPEAL_AGAINST_CONVICTION_AND_SENTENCE_BY_MAGISTRATE_TO_CROWN_COURT.getApplicationCode(), ACSD.getResultId(), ApplicationStatus.APPEAL_DISMISSED);
+        runTest(APPEAL_AGAINST_CONVICTION_AND_SENTENCE_BY_MAGISTRATE_TO_CROWN_COURT.getApplicationCode(), DISM.getResultId(), ApplicationStatus.APPEAL_DISMISSED);
+        runTest(APPEAL_AGAINST_CONVICTION_AND_SENTENCE_BY_MAGISTRATE_TO_CROWN_COURT.getApplicationCode(), WDRN.getResultId(), ApplicationStatus.APPEAL_WITHDRAWN);
+        runTest(APPEAL_AGAINST_CONVICTION_AND_SENTENCE_BY_MAGISTRATE_TO_CROWN_COURT.getApplicationCode(), AW.getResultId(), ApplicationStatus.APPEAL_WITHDRAWN);
+
+        runTest(APPEAL_AGAINST_CONVICTION_BY_MAGISTRATE_TO_CROWN_COURT.getApplicationCode(), AACA.getResultId(), ApplicationStatus.APPEAL_ALLOWED);
+        runTest(APPEAL_AGAINST_CONVICTION_BY_MAGISTRATE_TO_CROWN_COURT.getApplicationCode(), AASA.getResultId(), ApplicationStatus.APPEAL_ALLOWED);
+        runTest(APPEAL_AGAINST_CONVICTION_BY_MAGISTRATE_TO_CROWN_COURT.getApplicationCode(), AACD.getResultId(), ApplicationStatus.APPEAL_DISMISSED);
+        runTest(APPEAL_AGAINST_CONVICTION_BY_MAGISTRATE_TO_CROWN_COURT.getApplicationCode(), AASD.getResultId(), ApplicationStatus.APPEAL_DISMISSED);
+        runTest(APPEAL_AGAINST_CONVICTION_BY_MAGISTRATE_TO_CROWN_COURT.getApplicationCode(), ACSD.getResultId(), ApplicationStatus.APPEAL_DISMISSED);
+        runTest(APPEAL_AGAINST_CONVICTION_BY_MAGISTRATE_TO_CROWN_COURT.getApplicationCode(), DISM.getResultId(), ApplicationStatus.APPEAL_DISMISSED);
+        runTest(APPEAL_AGAINST_CONVICTION_BY_MAGISTRATE_TO_CROWN_COURT.getApplicationCode(), WDRN.getResultId(), ApplicationStatus.APPEAL_WITHDRAWN);
+        runTest(APPEAL_AGAINST_CONVICTION_BY_MAGISTRATE_TO_CROWN_COURT.getApplicationCode(), AW.getResultId(), ApplicationStatus.APPEAL_WITHDRAWN);
+    }
+
+    @Test
+    public void shouldHandleJudicialResultsMatchingApplicationCodeForReopenApplication() throws IOException {
+
+        runTest(APPLICATION_TO_REOPEN_CASE.getApplicationCode(), G.getResultId(), ApplicationStatus.REOPENING_GRANTED);
+        runTest(APPLICATION_TO_REOPEN_CASE.getApplicationCode(), ROPENED.getResultId(), ApplicationStatus.REOPENING_GRANTED);
+        runTest(APPLICATION_TO_REOPEN_CASE.getApplicationCode(), RFSD.getResultId(), ApplicationStatus.REOPENING_REFUSED);
+        runTest(APPLICATION_TO_REOPEN_CASE.getApplicationCode(), WDRN.getResultId(), ApplicationStatus.REOPENING_WITHDRAWN);
+    }
 
 }

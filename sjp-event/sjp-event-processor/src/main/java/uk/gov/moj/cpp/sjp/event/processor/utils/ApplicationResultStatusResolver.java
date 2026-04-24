@@ -8,14 +8,19 @@ import static uk.gov.moj.cpp.sjp.event.processor.utils.ApplicationResult.ACSD;
 import static uk.gov.moj.cpp.sjp.event.processor.utils.ApplicationResult.APA;
 import static uk.gov.moj.cpp.sjp.event.processor.utils.ApplicationResult.ASV;
 import static uk.gov.moj.cpp.sjp.event.processor.utils.ApplicationResult.AW;
+import static uk.gov.moj.cpp.sjp.event.processor.utils.ApplicationResult.DISM;
 import static uk.gov.moj.cpp.sjp.event.processor.utils.ApplicationResult.G;
 import static uk.gov.moj.cpp.sjp.event.processor.utils.ApplicationResult.RFSD;
 import static uk.gov.moj.cpp.sjp.event.processor.utils.ApplicationResult.ROPENED;
 import static uk.gov.moj.cpp.sjp.event.processor.utils.ApplicationResult.STDEC;
 import static uk.gov.moj.cpp.sjp.event.processor.utils.ApplicationResult.WDRN;
 import static uk.gov.moj.cpp.sjp.event.processor.utils.SjpApplicationTypes.APPEAL_AGAINST_CONVICTION;
+import static uk.gov.moj.cpp.sjp.event.processor.utils.SjpApplicationTypes.APPEAL_AGAINST_CONVICTION_AND_SENTENCE_BY_MAGISTRATE_TO_CROWN_COURT;
+import static uk.gov.moj.cpp.sjp.event.processor.utils.SjpApplicationTypes.APPEAL_AGAINST_CONVICTION_BY_MAGISTRATE_TO_CROWN_COURT;
 import static uk.gov.moj.cpp.sjp.event.processor.utils.SjpApplicationTypes.APPEAL_AGAINST_SENTENCE;
 import static uk.gov.moj.cpp.sjp.event.processor.utils.SjpApplicationTypes.APPEAL_AGAINST_SENTENCE_AND_CONVICTION;
+import static uk.gov.moj.cpp.sjp.event.processor.utils.SjpApplicationTypes.APPEAL_AGAINST_SENTENCE_BY_MAGISTRATE_TO_CROWN_COURT;
+import static uk.gov.moj.cpp.sjp.event.processor.utils.SjpApplicationTypes.APPEARANCE_TO_MAKE_STATUTORY_DECLARATION_OTHER_THAN_SJP;
 import static uk.gov.moj.cpp.sjp.event.processor.utils.SjpApplicationTypes.APPEARANCE_TO_MAKE_STATUTORY_DECLARATION_SJP;
 import static uk.gov.moj.cpp.sjp.event.processor.utils.SjpApplicationTypes.APPLICATION_TO_REOPEN_CASE;
 
@@ -23,11 +28,13 @@ import uk.gov.justice.json.schemas.domains.sjp.ApplicationStatus;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 
 public class ApplicationResultStatusResolver {
 
     private static final Map<String, ApplicationStatus> resultToActionMap = new HashMap();
+    private static final Map<String, ApplicationStatus> resultToActionByCodeMap = new HashMap();
 
     static {
 
@@ -81,14 +88,58 @@ public class ApplicationResultStatusResolver {
         resultToActionMap.put(APPEAL_AGAINST_SENTENCE.getApplicationType() + APA.getResultId(), ApplicationStatus.APPEAL_ABANDONED);
         resultToActionMap.put(APPEAL_AGAINST_SENTENCE_AND_CONVICTION.getApplicationType() + APA.getResultId(), ApplicationStatus.APPEAL_ABANDONED);
 
+        //Code mapper
+        resultToActionByCodeMap.put(APPEAL_AGAINST_SENTENCE_BY_MAGISTRATE_TO_CROWN_COURT.getApplicationCode() + AACA.getResultId(), ApplicationStatus.APPEAL_ALLOWED);
+        resultToActionByCodeMap.put(APPEAL_AGAINST_SENTENCE_BY_MAGISTRATE_TO_CROWN_COURT.getApplicationCode() + AASA.getResultId(), ApplicationStatus.APPEAL_ALLOWED);
+        resultToActionByCodeMap.put(APPEAL_AGAINST_SENTENCE_BY_MAGISTRATE_TO_CROWN_COURT.getApplicationCode() + AACD.getResultId(), ApplicationStatus.APPEAL_DISMISSED);
+        resultToActionByCodeMap.put(APPEAL_AGAINST_SENTENCE_BY_MAGISTRATE_TO_CROWN_COURT.getApplicationCode() + AASD.getResultId(), ApplicationStatus.APPEAL_DISMISSED);
+        resultToActionByCodeMap.put(APPEAL_AGAINST_SENTENCE_BY_MAGISTRATE_TO_CROWN_COURT.getApplicationCode() + ACSD.getResultId(), ApplicationStatus.APPEAL_DISMISSED);
+        resultToActionByCodeMap.put(APPEAL_AGAINST_SENTENCE_BY_MAGISTRATE_TO_CROWN_COURT.getApplicationCode() + DISM.getResultId(), ApplicationStatus.APPEAL_DISMISSED);
+        resultToActionByCodeMap.put(APPEAL_AGAINST_SENTENCE_BY_MAGISTRATE_TO_CROWN_COURT.getApplicationCode() + WDRN.getResultId(), ApplicationStatus.APPEAL_WITHDRAWN);
+        resultToActionByCodeMap.put(APPEAL_AGAINST_SENTENCE_BY_MAGISTRATE_TO_CROWN_COURT.getApplicationCode() + AW.getResultId(), ApplicationStatus.APPEAL_WITHDRAWN);
+
+        resultToActionByCodeMap.put(APPEAL_AGAINST_CONVICTION_AND_SENTENCE_BY_MAGISTRATE_TO_CROWN_COURT.getApplicationCode() + AACA.getResultId(), ApplicationStatus.APPEAL_ALLOWED);
+        resultToActionByCodeMap.put(APPEAL_AGAINST_CONVICTION_AND_SENTENCE_BY_MAGISTRATE_TO_CROWN_COURT.getApplicationCode() + AASA.getResultId(), ApplicationStatus.APPEAL_ALLOWED);
+        resultToActionByCodeMap.put(APPEAL_AGAINST_CONVICTION_AND_SENTENCE_BY_MAGISTRATE_TO_CROWN_COURT.getApplicationCode() + AACD.getResultId(), ApplicationStatus.APPEAL_DISMISSED);
+        resultToActionByCodeMap.put(APPEAL_AGAINST_CONVICTION_AND_SENTENCE_BY_MAGISTRATE_TO_CROWN_COURT.getApplicationCode() + AASD.getResultId(), ApplicationStatus.APPEAL_DISMISSED);
+        resultToActionByCodeMap.put(APPEAL_AGAINST_CONVICTION_AND_SENTENCE_BY_MAGISTRATE_TO_CROWN_COURT.getApplicationCode() + ACSD.getResultId(), ApplicationStatus.APPEAL_DISMISSED);
+        resultToActionByCodeMap.put(APPEAL_AGAINST_CONVICTION_AND_SENTENCE_BY_MAGISTRATE_TO_CROWN_COURT.getApplicationCode() + DISM.getResultId(), ApplicationStatus.APPEAL_DISMISSED);
+        resultToActionByCodeMap.put(APPEAL_AGAINST_CONVICTION_AND_SENTENCE_BY_MAGISTRATE_TO_CROWN_COURT.getApplicationCode() + WDRN.getResultId(), ApplicationStatus.APPEAL_WITHDRAWN);
+        resultToActionByCodeMap.put(APPEAL_AGAINST_CONVICTION_AND_SENTENCE_BY_MAGISTRATE_TO_CROWN_COURT.getApplicationCode() + AW.getResultId(), ApplicationStatus.APPEAL_WITHDRAWN);
+
+        resultToActionByCodeMap.put(APPEAL_AGAINST_CONVICTION_BY_MAGISTRATE_TO_CROWN_COURT.getApplicationCode() + AACA.getResultId(), ApplicationStatus.APPEAL_ALLOWED);
+        resultToActionByCodeMap.put(APPEAL_AGAINST_CONVICTION_BY_MAGISTRATE_TO_CROWN_COURT.getApplicationCode() + AASA.getResultId(), ApplicationStatus.APPEAL_ALLOWED);
+        resultToActionByCodeMap.put(APPEAL_AGAINST_CONVICTION_BY_MAGISTRATE_TO_CROWN_COURT.getApplicationCode() + AACD.getResultId(), ApplicationStatus.APPEAL_DISMISSED);
+        resultToActionByCodeMap.put(APPEAL_AGAINST_CONVICTION_BY_MAGISTRATE_TO_CROWN_COURT.getApplicationCode() + AASD.getResultId(), ApplicationStatus.APPEAL_DISMISSED);
+        resultToActionByCodeMap.put(APPEAL_AGAINST_CONVICTION_BY_MAGISTRATE_TO_CROWN_COURT.getApplicationCode() + ACSD.getResultId(), ApplicationStatus.APPEAL_DISMISSED);
+        resultToActionByCodeMap.put(APPEAL_AGAINST_CONVICTION_BY_MAGISTRATE_TO_CROWN_COURT.getApplicationCode() + DISM.getResultId(), ApplicationStatus.APPEAL_DISMISSED);
+        resultToActionByCodeMap.put(APPEAL_AGAINST_CONVICTION_BY_MAGISTRATE_TO_CROWN_COURT.getApplicationCode() + WDRN.getResultId(), ApplicationStatus.APPEAL_WITHDRAWN);
+        resultToActionByCodeMap.put(APPEAL_AGAINST_CONVICTION_BY_MAGISTRATE_TO_CROWN_COURT.getApplicationCode() + AW.getResultId(), ApplicationStatus.APPEAL_WITHDRAWN);
+
+        resultToActionByCodeMap.put(APPEARANCE_TO_MAKE_STATUTORY_DECLARATION_SJP.getApplicationCode() + G.getResultId(), ApplicationStatus.STATUTORY_DECLARATION_GRANTED);
+        resultToActionByCodeMap.put(APPEARANCE_TO_MAKE_STATUTORY_DECLARATION_SJP.getApplicationCode() + STDEC.getResultId(), ApplicationStatus.STATUTORY_DECLARATION_GRANTED);
+        resultToActionByCodeMap.put(APPEARANCE_TO_MAKE_STATUTORY_DECLARATION_SJP.getApplicationCode() + RFSD.getResultId(), ApplicationStatus.STATUTORY_DECLARATION_REFUSED);
+        resultToActionByCodeMap.put(APPEARANCE_TO_MAKE_STATUTORY_DECLARATION_SJP.getApplicationCode() + WDRN.getResultId(), ApplicationStatus.STATUTORY_DECLARATION_WITHDRAWN);
+
+        resultToActionByCodeMap.put(APPEARANCE_TO_MAKE_STATUTORY_DECLARATION_OTHER_THAN_SJP.getApplicationCode() + G.getResultId(), ApplicationStatus.STATUTORY_DECLARATION_GRANTED);
+        resultToActionByCodeMap.put(APPEARANCE_TO_MAKE_STATUTORY_DECLARATION_OTHER_THAN_SJP.getApplicationCode() + STDEC.getResultId(), ApplicationStatus.STATUTORY_DECLARATION_GRANTED);
+        resultToActionByCodeMap.put(APPEARANCE_TO_MAKE_STATUTORY_DECLARATION_OTHER_THAN_SJP.getApplicationCode() + RFSD.getResultId(), ApplicationStatus.STATUTORY_DECLARATION_REFUSED);
+        resultToActionByCodeMap.put(APPEARANCE_TO_MAKE_STATUTORY_DECLARATION_OTHER_THAN_SJP.getApplicationCode() + WDRN.getResultId(), ApplicationStatus.STATUTORY_DECLARATION_WITHDRAWN);
+
+        resultToActionByCodeMap.put(APPLICATION_TO_REOPEN_CASE.getApplicationCode() + G.getResultId(), ApplicationStatus.REOPENING_GRANTED);
+        resultToActionByCodeMap.put(APPLICATION_TO_REOPEN_CASE.getApplicationCode() + ROPENED.getResultId(), ApplicationStatus.REOPENING_GRANTED);
+        resultToActionByCodeMap.put(APPLICATION_TO_REOPEN_CASE.getApplicationCode() + RFSD.getResultId(), ApplicationStatus.REOPENING_REFUSED);
+        resultToActionByCodeMap.put(APPLICATION_TO_REOPEN_CASE.getApplicationCode() + WDRN.getResultId(), ApplicationStatus.REOPENING_WITHDRAWN);
+
     }
 
     private ApplicationResultStatusResolver() {
     }
 
-    public static String getApplicationStatus(String courtApplicationType, UUID resultDefinitionId) {
+    public static String getApplicationStatus(String courtApplicationType, UUID resultDefinitionId, String courtApplicationCode) {
 
-        final ApplicationStatus applicationStatus = resultToActionMap.get(courtApplicationType + resultDefinitionId.toString());
+        final ApplicationStatus applicationStatus = Optional.ofNullable(resultToActionMap.get(courtApplicationType + resultDefinitionId.toString())).
+                orElse(resultToActionByCodeMap.get(courtApplicationCode + resultDefinitionId.toString()));
 
         return applicationStatus == null ? ApplicationStatus.APPLICATION_STATUS_NOT_KNOWN.toString() : String.valueOf(applicationStatus);
     }

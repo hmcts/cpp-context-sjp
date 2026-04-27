@@ -41,7 +41,7 @@ import static uk.gov.moj.cpp.sjp.event.processor.utils.SjpApplicationTypes.APPEA
 import static uk.gov.moj.cpp.sjp.event.processor.utils.SjpApplicationTypes.APPEARANCE_TO_MAKE_STATUTORY_DECLARATION_SJP;
 import static uk.gov.moj.cpp.sjp.event.processor.utils.SjpApplicationTypes.APPLICATION_TO_REOPEN_CASE;
 
-public class ApplicationResultStatusResolverTest {
+class ApplicationResultStatusResolverTest {
 
     private static Stream<Arguments> statdecApplicationTypes() {
         return Stream.of(Arguments.of(APPEARANCE_TO_MAKE_STATUTORY_DECLARATION_SJP, G, STATUTORY_DECLARATION_GRANTED),

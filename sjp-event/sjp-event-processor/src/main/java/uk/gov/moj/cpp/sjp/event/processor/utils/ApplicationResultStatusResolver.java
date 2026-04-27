@@ -1,7 +1,9 @@
 package uk.gov.moj.cpp.sjp.event.processor.utils;
 
+import static uk.gov.justice.json.schemas.domains.sjp.ApplicationStatus.APPEAL_ABANDONED;
 import static uk.gov.justice.json.schemas.domains.sjp.ApplicationStatus.APPEAL_ALLOWED;
 import static uk.gov.justice.json.schemas.domains.sjp.ApplicationStatus.APPEAL_DISMISSED;
+import static uk.gov.justice.json.schemas.domains.sjp.ApplicationStatus.APPEAL_REFUSED;
 import static uk.gov.justice.json.schemas.domains.sjp.ApplicationStatus.APPEAL_WITHDRAWN;
 import static uk.gov.justice.json.schemas.domains.sjp.ApplicationStatus.REOPENING_GRANTED;
 import static uk.gov.justice.json.schemas.domains.sjp.ApplicationStatus.REOPENING_REFUSED;
@@ -41,8 +43,9 @@ import java.util.Optional;
 import java.util.UUID;
 
 public class ApplicationResultStatusResolver {
-
+    //retaining the existing behaviour of using  applicationType to look up the result for backward compatibility.
     private static final Map<String, ApplicationStatus> resultToActionMap = new HashMap();
+    //using applicationTypeCode to look up the result instead of type where code exists.
     private static final Map<String, ApplicationStatus> resultToActionByCodeMap = new ApplicationStatusByCodeMapBuilder()
             .add(APPEAL_AGAINST_SENTENCE_BY_MAGISTRATE_TO_CROWN_COURT, AACA, APPEAL_ALLOWED)
             .add(APPEAL_AGAINST_SENTENCE_BY_MAGISTRATE_TO_CROWN_COURT, AASA, APPEAL_ALLOWED)
@@ -52,6 +55,8 @@ public class ApplicationResultStatusResolver {
             .add(APPEAL_AGAINST_SENTENCE_BY_MAGISTRATE_TO_CROWN_COURT, DISM, APPEAL_DISMISSED)
             .add(APPEAL_AGAINST_SENTENCE_BY_MAGISTRATE_TO_CROWN_COURT, WDRN, APPEAL_WITHDRAWN)
             .add(APPEAL_AGAINST_SENTENCE_BY_MAGISTRATE_TO_CROWN_COURT, AW, APPEAL_WITHDRAWN)
+            .add(APPEAL_AGAINST_SENTENCE_BY_MAGISTRATE_TO_CROWN_COURT, RFSD, APPEAL_REFUSED)
+            .add(APPEAL_AGAINST_SENTENCE_BY_MAGISTRATE_TO_CROWN_COURT, APA, APPEAL_ABANDONED)
             .add(APPEAL_AGAINST_CONVICTION_AND_SENTENCE_BY_MAGISTRATE_TO_CROWN_COURT, AACA, APPEAL_ALLOWED)
             .add(APPEAL_AGAINST_CONVICTION_AND_SENTENCE_BY_MAGISTRATE_TO_CROWN_COURT, AASA, APPEAL_ALLOWED)
             .add(APPEAL_AGAINST_CONVICTION_AND_SENTENCE_BY_MAGISTRATE_TO_CROWN_COURT, AACD, APPEAL_DISMISSED)
@@ -60,6 +65,8 @@ public class ApplicationResultStatusResolver {
             .add(APPEAL_AGAINST_CONVICTION_AND_SENTENCE_BY_MAGISTRATE_TO_CROWN_COURT, DISM, APPEAL_DISMISSED)
             .add(APPEAL_AGAINST_CONVICTION_AND_SENTENCE_BY_MAGISTRATE_TO_CROWN_COURT, WDRN, APPEAL_WITHDRAWN)
             .add(APPEAL_AGAINST_CONVICTION_AND_SENTENCE_BY_MAGISTRATE_TO_CROWN_COURT, AW, APPEAL_WITHDRAWN)
+            .add(APPEAL_AGAINST_CONVICTION_AND_SENTENCE_BY_MAGISTRATE_TO_CROWN_COURT, RFSD, APPEAL_REFUSED)
+            .add(APPEAL_AGAINST_CONVICTION_AND_SENTENCE_BY_MAGISTRATE_TO_CROWN_COURT, APA, APPEAL_ABANDONED)
             .add(APPEAL_AGAINST_CONVICTION_BY_MAGISTRATE_TO_CROWN_COURT, AACA, APPEAL_ALLOWED)
             .add(APPEAL_AGAINST_CONVICTION_BY_MAGISTRATE_TO_CROWN_COURT, AASA, APPEAL_ALLOWED)
             .add(APPEAL_AGAINST_CONVICTION_BY_MAGISTRATE_TO_CROWN_COURT, AACD, APPEAL_DISMISSED)
@@ -68,6 +75,8 @@ public class ApplicationResultStatusResolver {
             .add(APPEAL_AGAINST_CONVICTION_BY_MAGISTRATE_TO_CROWN_COURT, DISM, APPEAL_DISMISSED)
             .add(APPEAL_AGAINST_CONVICTION_BY_MAGISTRATE_TO_CROWN_COURT, WDRN, APPEAL_WITHDRAWN)
             .add(APPEAL_AGAINST_CONVICTION_BY_MAGISTRATE_TO_CROWN_COURT, AW, APPEAL_WITHDRAWN)
+            .add(APPEAL_AGAINST_CONVICTION_BY_MAGISTRATE_TO_CROWN_COURT, RFSD, APPEAL_REFUSED)
+            .add(APPEAL_AGAINST_CONVICTION_BY_MAGISTRATE_TO_CROWN_COURT, APA, APPEAL_ABANDONED)
             .add(APPEARANCE_TO_MAKE_STATUTORY_DECLARATION_SJP, G, STATUTORY_DECLARATION_GRANTED)
             .add(APPEARANCE_TO_MAKE_STATUTORY_DECLARATION_SJP, STDEC, STATUTORY_DECLARATION_GRANTED)
             .add(APPEARANCE_TO_MAKE_STATUTORY_DECLARATION_SJP, RFSD, STATUTORY_DECLARATION_REFUSED)
@@ -130,9 +139,9 @@ public class ApplicationResultStatusResolver {
         resultToActionMap.put(APPEAL_AGAINST_SENTENCE_AND_CONVICTION.getApplicationType() + ASV.getResultId(), ApplicationStatus.APPLICATION_DISMISSED_SENTENCE_VARIED);
 
         // APPEAL ABANDONED
-        resultToActionMap.put(APPEAL_AGAINST_CONVICTION.getApplicationType() + APA.getResultId(), ApplicationStatus.APPEAL_ABANDONED);
-        resultToActionMap.put(APPEAL_AGAINST_SENTENCE.getApplicationType() + APA.getResultId(), ApplicationStatus.APPEAL_ABANDONED);
-        resultToActionMap.put(APPEAL_AGAINST_SENTENCE_AND_CONVICTION.getApplicationType() + APA.getResultId(), ApplicationStatus.APPEAL_ABANDONED);
+        resultToActionMap.put(APPEAL_AGAINST_CONVICTION.getApplicationType() + APA.getResultId(), APPEAL_ABANDONED);
+        resultToActionMap.put(APPEAL_AGAINST_SENTENCE.getApplicationType() + APA.getResultId(), APPEAL_ABANDONED);
+        resultToActionMap.put(APPEAL_AGAINST_SENTENCE_AND_CONVICTION.getApplicationType() + APA.getResultId(), APPEAL_ABANDONED);
     }
 
     private ApplicationResultStatusResolver() {

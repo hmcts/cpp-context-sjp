@@ -91,6 +91,7 @@ public class ApplicationResultStatusResolver {
             .add(APPLICATION_TO_REOPEN_CASE, WDRN, REOPENING_WITHDRAWN)
             .build();
 
+    // mapping by application type for backward compatibility.
     static {
 
         resultToActionMap.put(APPEARANCE_TO_MAKE_STATUTORY_DECLARATION_SJP.getApplicationType() + G.getResultId(), STATUTORY_DECLARATION_GRANTED);

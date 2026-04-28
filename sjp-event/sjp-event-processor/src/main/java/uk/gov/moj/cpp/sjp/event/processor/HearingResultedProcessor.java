@@ -65,15 +65,16 @@ public class HearingResultedProcessor {
 
         hearing.getCourtApplications().stream().forEach(courtApplication -> {
             final String applicationType = courtApplication.getType().getType();
+            final String applicationCode = courtApplication.getType().getCode();
             final String applicationId = courtApplication.getId().toString();
-            if(courtApplication.getCourtApplicationCases() != null ) {
+            if(courtApplication.getCourtApplicationCases() != null && courtApplication.getJudicialResults() != null) {
                 courtApplication
                         .getCourtApplicationCases()
                         .stream()
                         .filter(CourtApplicationCase::getIsSJP)
                         .forEach(courtApplicationCase -> {
                             final String sjpCaseId = courtApplicationCase.getProsecutionCaseId().toString();
-                            final String applicationStatus = getApplicationStatus(courtApplication, applicationType);
+                            final String applicationStatus = getApplicationStatus(courtApplication, applicationType, applicationCode);
                             sendMessage(jsonEnvelope, applicationId, sjpCaseId, applicationStatus);
                         });
             }
@@ -93,13 +94,13 @@ public class HearingResultedProcessor {
         sender.send(envelopeToSend);
     }
 
-    private String getApplicationStatus(final CourtApplication courtApplication, final String applicationType) {
+    private String getApplicationStatus(final CourtApplication courtApplication, final String applicationType, final String applicationCode) {
 
         final Optional<String> applicationStatus =
                 courtApplication
                         .getJudicialResults()
                         .stream()
-                        .map(judicialResult -> ApplicationResultStatusResolver.getApplicationStatus(applicationType, judicialResult.getJudicialResultTypeId()))
+                        .map(judicialResult -> ApplicationResultStatusResolver.getApplicationStatus(applicationType, judicialResult.getJudicialResultTypeId(), applicationCode))
                         .filter(Objects::nonNull)
                         .findFirst();
 

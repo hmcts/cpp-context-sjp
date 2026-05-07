@@ -185,9 +185,6 @@ subscriptions_descriptor:
         - name: sjp.events.financial-imposition-account-number-added
           schema_uri: http://justice.gov.uk/json/schemas/domains/sjp/events/financial-imposition-account-number-added.json
 
-        - name: sjp.events.notification-remove-endorsements-generated
-          schema_uri: http://justice.gov.uk/json/schemas/domains/sjp/events/notification-remove-endorsements-generated.json
-
         - name: sjp.events.aocp-criteria-matched-partially
           schema_uri: http://justice.gov.uk/json/schemas/domains/sjp/event/aocp-criteria-matched-partially.json
 

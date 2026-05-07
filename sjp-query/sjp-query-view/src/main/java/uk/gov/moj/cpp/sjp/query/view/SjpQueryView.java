@@ -37,7 +37,6 @@ import uk.gov.moj.cpp.sjp.persistence.repository.AocpAcceptedEmailNotificationSt
 import uk.gov.moj.cpp.sjp.persistence.repository.AocpOnlinePleaRepository;
 import uk.gov.moj.cpp.sjp.persistence.repository.CaseRepository;
 import uk.gov.moj.cpp.sjp.persistence.repository.EmailNotificationRepository;
-import uk.gov.moj.cpp.sjp.persistence.repository.EndorsementRemovalNotificationRepository;
 import uk.gov.moj.cpp.sjp.persistence.repository.EnforcementPendingApplicationNotificationStatusRepository;
 import uk.gov.moj.cpp.sjp.persistence.repository.OffenceRepository;
 import uk.gov.moj.cpp.sjp.persistence.repository.OnlinePleaDetailRepository;
@@ -179,9 +178,6 @@ public class SjpQueryView {
 
     @Inject
     private ReferenceDataService referenceDataService;
-
-    @Inject
-    private EndorsementRemovalNotificationRepository endorsementRemovalNotificationRepository;
 
     @Inject
     private EnforcementPendingApplicationNotificationStatusRepository enforcementPendingApplicationNotificationStatusRepository;
@@ -570,13 +566,6 @@ public class SjpQueryView {
                 .map(app -> enveloper.withMetadataFrom(envelope, NAME_APPLICATION_RESPONSE_CASE).apply(app))
                 .orElse(envelopeFrom(envelope.metadata(), Json.createObjectBuilder().build()));
 
-    }
-
-    @Handles("sjp.query.notification-of-endorsement-status")
-    public JsonEnvelope getNotificationOfEndorsementStatus(final JsonEnvelope envelope) {
-        final NotificationOfEndorsementStatus notificationStatus = endorsementRemovalNotificationRepository.findBy(getApplicationDecisionId(envelope));
-        return enveloper.withMetadataFrom(envelope, "sjp.query.notification-of-endorsement-status-response")
-                .apply(notificationStatus);
     }
 
     @SuppressWarnings("deprecation")

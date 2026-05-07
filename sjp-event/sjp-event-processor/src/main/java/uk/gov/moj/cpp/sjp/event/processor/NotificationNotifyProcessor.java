@@ -7,7 +7,6 @@ import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
 import static uk.gov.justice.services.messaging.JsonEnvelope.metadataFrom;
 import static uk.gov.moj.cpp.sjp.event.processor.EventProcessorConstants.CASE_ID;
 import static uk.gov.moj.cpp.sjp.event.processor.service.NotificationNotifyDocumentType.AOCP_ACCEPTED_EMAIL_NOTIFICATION;
-import static uk.gov.moj.cpp.sjp.event.processor.service.NotificationNotifyDocumentType.ENDORSEMENT_REMOVAL_NOTIFICATION;
 import static uk.gov.moj.cpp.sjp.event.processor.service.NotificationNotifyDocumentType.ENFORCEMENT_PENDING_APPLICATION_NOTIFICATION;
 import static uk.gov.moj.cpp.sjp.event.processor.service.NotificationNotifyDocumentType.PARTIAL_AOCP_CRITERIA_NOTIFICATION;
 
@@ -17,9 +16,7 @@ import uk.gov.justice.services.core.sender.Sender;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.sjp.event.processor.service.AocpAcceptedEmailNotificationStatus;
 import uk.gov.moj.cpp.sjp.event.processor.service.EnforcementPendingApplicationNotificationStatus;
-import uk.gov.moj.cpp.sjp.event.processor.service.NotificationNotifyDocumentType;
-import uk.gov.moj.cpp.sjp.event.processor.service.NotificationOfEndorsementStatus;
-import uk.gov.moj.cpp.sjp.event.processor.service.NotificationOfPartialAocpStatus;
+import uk.gov.moj.cpp.sjp.event.processor.service.NotificationNotifyDocumentType;import uk.gov.moj.cpp.sjp.event.processor.service.NotificationOfPartialAocpStatus;
 import uk.gov.moj.cpp.sjp.event.processor.service.SjpService;
 import uk.gov.moj.cpp.sjp.event.processor.service.SystemIdMapperService;
 import uk.gov.moj.cpp.systemidmapper.client.SystemIdMapping;
@@ -43,8 +40,6 @@ public class NotificationNotifyProcessor {
 
     private static final String FAIL_ENFORCEMENT_PENDING_EMAIL_NOTIFICATION_COMMAND_NAME = "sjp.command.enforcement-pending-application-fail-notification";
     private static final String SEND_ENFORCEMENT_PENDING_EMAIL_NOTIFICATION_COMMAND_NAME = "sjp.command.enforcement-pending-application-send-notification";
-    private static final String FAIL_ENDORCEMENT_REMOVAL_EMAIL_NOTIFICATION_COMMAND_NAME = "sjp.command.endorsement-removal-notification-failed";
-    private static final String SEND_ENDORCEMENT_REMOVAL_EMAIL_NOTIFICATION_COMMAND_NAME = "sjp.command.endorsement-removal-notification-sent";
 
     private static final String SENT_TIME = "sentTime";
     private static final String FAILED_TIME = "failedTime";
@@ -67,9 +62,6 @@ public class NotificationNotifyProcessor {
         if (systemIdMapping.isPresent()) {
             final String sourceType = systemIdMapping.get().getSourceType();
             final NotificationNotifyDocumentType documentType = NotificationNotifyDocumentType.fromString(sourceType);
-            if (documentType.equals(ENDORSEMENT_REMOVAL_NOTIFICATION)) {
-                sendEndorsementRemovalNotification(envelope, getSentTime(envelope));
-            }
             if (documentType.equals(ENFORCEMENT_PENDING_APPLICATION_NOTIFICATION)) {
                 sendEnforcementPendingNotification(envelope, getSentTime(envelope));
             }
@@ -89,9 +81,6 @@ public class NotificationNotifyProcessor {
         if (systemIdMapping.isPresent()) {
             final String sourceType = systemIdMapping.get().getSourceType();
             final NotificationNotifyDocumentType documentType = NotificationNotifyDocumentType.fromString(sourceType);
-            if (documentType.equals(ENDORSEMENT_REMOVAL_NOTIFICATION)) {
-                failEndorsementRemovalNotification(envelope, getFailedTime(envelope));
-            }
             if (documentType.equals(ENFORCEMENT_PENDING_APPLICATION_NOTIFICATION)) {
                 failEnforcementPendingNotification(envelope, getFailedTime(envelope));
             }
@@ -102,24 +91,6 @@ public class NotificationNotifyProcessor {
                 failAocpAcceptedEmailNotification(envelope, getFailedTime(envelope));
             }
         }
-    }
-
-    private void sendEndorsementRemovalNotification(final JsonEnvelope envelope,
-                                                    final ZonedDateTime sentTime) {
-        final UUID applicationDecisionId = getNotificationId(envelope);
-
-        final Optional<NotificationOfEndorsementStatus> notificationOfEndorsementStatus =
-                sjpService.getNotificationOfEndorsementStatus(applicationDecisionId, envelope);
-
-        notificationOfEndorsementStatus.ifPresent(value ->
-                sender.send(envelopeFrom(
-                        metadataFrom(envelope.metadata())
-                                .withName(SEND_ENDORCEMENT_REMOVAL_EMAIL_NOTIFICATION_COMMAND_NAME)
-                                .build(),
-                        createObjectBuilder()
-                                .add("applicationDecisionId", applicationDecisionId.toString())
-                                .add(SENT_TIME, sentTime.toString())
-                                .build())));
     }
 
     private void sendPartialAocpNotification(final JsonEnvelope envelope,
@@ -140,26 +111,6 @@ public class NotificationNotifyProcessor {
                                 .add(SENT_TIME, sentTime.toString())
                                 .build())));
 
-    }
-
-    private void failEndorsementRemovalNotification(JsonEnvelope envelope,
-                                                    final ZonedDateTime failedTime) {
-        final UUID applicationDecisionId = getNotificationId(envelope);
-
-        final Optional<NotificationOfEndorsementStatus> notificationOfEndorsementStatus =
-                sjpService.getNotificationOfEndorsementStatus(applicationDecisionId, envelope);
-
-        notificationOfEndorsementStatus.ifPresent(value ->
-                sender.send(envelopeFrom(
-                        metadataFrom(envelope.metadata())
-                                .withName(FAIL_ENDORCEMENT_REMOVAL_EMAIL_NOTIFICATION_COMMAND_NAME)
-                                .build(),
-                        createObjectBuilder()
-                                .add("applicationDecisionId", applicationDecisionId.toString())
-                                .add(FAILED_TIME, failedTime.toString())
-                                .build()
-                ))
-        );
     }
 
     private void failPartialAocpNotification(JsonEnvelope envelope,

@@ -16,7 +16,6 @@ import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.sjp.event.processor.service.ReferenceDataService;
 import uk.gov.moj.cpp.sjp.event.processor.service.SjpService;
 import uk.gov.moj.cpp.sjp.event.processor.service.SystemIdMapperService;
-import uk.gov.moj.cpp.sjp.event.processor.service.notification.EndorsementRemovalNotificationService;
 import uk.gov.moj.cpp.sjp.event.processor.service.notificationnotify.EmailNotification;
 import uk.gov.moj.cpp.sjp.event.processor.service.notificationnotify.NotificationNotify;
 
@@ -51,9 +50,6 @@ public class PartialAocpCriteriaNotificationProcessor {
 
     @Inject
     private SjpService sjpService;
-
-    @Inject
-    private EndorsementRemovalNotificationService endorsementRemovalNotificationService;
 
     @Inject
     private Sender sender;

@@ -5,7 +5,6 @@ import static java.lang.String.format;
 import java.util.stream.Stream;
 
 public enum NotificationNotifyDocumentType {
-    ENDORSEMENT_REMOVAL_NOTIFICATION,
     ENFORCEMENT_PENDING_APPLICATION_NOTIFICATION,
     PARTIAL_AOCP_CRITERIA_NOTIFICATION,
     AOCP_ACCEPTED_EMAIL_NOTIFICATION;

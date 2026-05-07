@@ -803,27 +803,6 @@ baseUri: http://localhost:8080/sjp-query-view/query/view/rest/sjp
           application/vnd.sjp.query.application+json:
             schema: !include json/schema/sjp.query.case-application.json
 
-
-/notification-of-endorsement-status/{applicationDecisionId}:
-  description: returns a notification of endorsement status
-  uriParameters:
-    applicationDecisionId:
-      description: The application decision Id
-      type: string
-  get:
-    description: |
-      ...
-      (mapping):
-          responseType: application/vnd.sjp.query.notification-of-endorsement-status+json
-          name: sjp.query.notification-of-endorsement-status
-      ...
-    responses:
-      200:
-        body:
-          application/vnd.sjp.query.notification-of-endorsement-status+json:
-            schema: !include json/schema/sjp.query.notification-of-endorsement-status.json
-
-
 /notification-of-partial-aocp/{caseId}:
   description: returns a notification of partial aocp status
   uriParameters:

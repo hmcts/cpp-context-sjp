@@ -2,7 +2,6 @@ package uk.gov.moj.cpp.sjp.event.processor.service.systemdocgenerator;
 
 public enum TemplateIdentifier {
     ENFORCEMENT_PENDING_APPLICATION_NOTIFICATION("EnforcementPendingApplicationNotification"),
-    NOTIFICATION_TO_DVLA_TO_REMOVE_ENDORSEMENT("NotificationToDvlaToRemoveEndorsement"),
     TRANSPARENCY_REPORT_ENGLISH("PendingCasesFullEnglish"),
     TRANSPARENCY_REPORT_ENGLISH_DELTA("PendingCasesDeltaEnglish"),
     TRANSPARENCY_REPORT_WELSH("PendingCasesFullWelsh"),

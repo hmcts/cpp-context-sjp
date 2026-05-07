@@ -161,18 +161,6 @@ public class SjpService {
         ));
     }
 
-    public Optional<NotificationOfEndorsementStatus> getNotificationOfEndorsementStatus(final UUID applicationDecisionId, final JsonEnvelope envelope) {
-        final JsonEnvelope request = envelopeFrom(metadataFrom(envelope.metadata())
-                        .withName("sjp.query.notification-of-endorsement-status"),
-                createObjectBuilder()
-                        .add("applicationDecisionId", applicationDecisionId.toString())
-                        .build());
-
-        final Envelope<NotificationOfEndorsementStatus> responseEnvelope = requester.request(request, NotificationOfEndorsementStatus.class);
-
-        return Optional.ofNullable(responseEnvelope.payload());
-    }
-
     public Optional<NotificationOfPartialAocpStatus> getNotificationOfPartialAocpStatus(final UUID caseId, final JsonEnvelope envelope) {
         final JsonEnvelope request = envelopeFrom(metadataFrom(envelope.metadata())
                         .withName("sjp.query.notification-of-partial-aocp-status"),

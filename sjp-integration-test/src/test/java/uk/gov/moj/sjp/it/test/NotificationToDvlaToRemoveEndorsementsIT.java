@@ -120,18 +120,7 @@ public class NotificationToDvlaToRemoveEndorsementsIT extends BaseIntegrationTes
         stubAddMapping();
 
         // No new ENDORSEMENT_REMOVAL_NOTIFICATION are generated https://tools.hmcts.net/jira/browse/DD-42331
-        assertThat(pollSysDocGenerationRequests(hasSize(1)), empty());
-
-        final UUID documentFileServiceId = randomUUID();
-        final UUID sourceCorrelationId = fromString(applicationDecisionId);
-        sendSysDocGeneratorDocumentAvailablePublicEvent(
-                sourceCorrelationId, documentFileServiceId
-        );
-
-        final JsonObject notification = verifyNotification(sourceCorrelationId, dvlaEmailAddress);
-        assertEmailSubject(notification);
-
-        assertStatusUpdatedInViewstore(sourceCorrelationId, documentFileServiceId, QUEUED);
+        assertThat(pollSysDocGenerationRequests(hasSize(1)).isEmpty(), is(true));
     }
 
     @Test

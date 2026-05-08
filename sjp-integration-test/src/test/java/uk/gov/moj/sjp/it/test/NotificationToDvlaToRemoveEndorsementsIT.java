@@ -119,6 +119,7 @@ public class NotificationToDvlaToRemoveEndorsementsIT extends BaseIntegrationTes
                 "CASE_ID", "7242d476-9ca3-454a-93ee-78bf148602bf");
         stubAddMapping();
 
+        // No new ENDORSEMENT_REMOVAL_NOTIFICATION are generated https://tools.hmcts.net/jira/browse/DD-42331
         assertThat(pollSysDocGenerationRequests(hasSize(1)), empty());
 
         final UUID documentFileServiceId = randomUUID();

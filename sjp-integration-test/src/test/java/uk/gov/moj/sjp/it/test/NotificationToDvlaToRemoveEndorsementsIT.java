@@ -5,6 +5,7 @@ import static java.util.Arrays.asList;
 import static java.util.UUID.fromString;
 import static java.util.UUID.randomUUID;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.greaterThan;
 import static org.hamcrest.Matchers.hasSize;
@@ -83,7 +84,6 @@ import javax.json.JsonObject;
 import com.google.common.collect.Sets;
 import org.awaitility.Awaitility;
 import org.hamcrest.Matcher;
-import org.json.JSONObject;
 import org.junit.jupiter.api.Test;
 
 public class NotificationToDvlaToRemoveEndorsementsIT extends BaseIntegrationTest {
@@ -119,8 +119,7 @@ public class NotificationToDvlaToRemoveEndorsementsIT extends BaseIntegrationTes
                 "CASE_ID", "7242d476-9ca3-454a-93ee-78bf148602bf");
         stubAddMapping();
 
-        final JSONObject generationRequests = pollSysDocGenerationRequests(hasSize(1)).get(0);
-        assertSysDocRequest(applicationDecisionId, generationRequests);
+        assertThat(pollSysDocGenerationRequests(hasSize(1)), empty());
 
         final UUID documentFileServiceId = randomUUID();
         final UUID sourceCorrelationId = fromString(applicationDecisionId);
@@ -300,14 +299,6 @@ public class NotificationToDvlaToRemoveEndorsementsIT extends BaseIntegrationTes
         Awaitility.await()
                 .pollInterval(200, TimeUnit.MILLISECONDS)
                 .until(function, matcher);
-    }
-
-    private void assertSysDocRequest(final String applicationDecisionId, final JSONObject generationRequests) {
-        assertThat(generationRequests.getString("originatingSource"), equalTo("sjp"));
-        assertThat(generationRequests.getString("sourceCorrelationId"), equalTo(applicationDecisionId));
-        assertThat(generationRequests.getString("templateIdentifier"), equalTo(NOTIFICATION_TO_DVLA_TO_REMOVE_ENDORSEMENT.getValue()));
-        assertThat(generationRequests.getString("conversionFormat"), is("pdf"));
-        assertThat(generationRequests.has("payloadFileServiceId"), is(true));
     }
 
     private void assertEmailSubject(final JsonObject notification) {

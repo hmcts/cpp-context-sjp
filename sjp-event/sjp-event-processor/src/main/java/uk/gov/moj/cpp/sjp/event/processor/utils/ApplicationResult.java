@@ -22,7 +22,9 @@ public enum ApplicationResult {
     APA("48b8ff83-2d5d-4891-bab1-b0f5edcd3822"),
 
     // Appeal withdrawn
-    AW("453539d1-c1a0-475d-9a02-16a659e6bc34");
+    AW("453539d1-c1a0-475d-9a02-16a659e6bc34"),
+
+    DISM("14d66587-8fbe-424f-a369-b1144f1684e3");
 
     private final String resultId;
 
@@ -33,6 +35,5 @@ public enum ApplicationResult {
     public String getResultId() {
         return resultId;
     }
-
 
 }

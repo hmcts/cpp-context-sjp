@@ -80,6 +80,60 @@ public class ProgressionServiceTest {
         assertTrue(defendantOffences.isEmpty());
     }
 
+    @Test
+    public void shouldReturnNoOffencesWhenFirstNameIsMissingInJson() {
+        final DefendantDetail defendantDetail = createDefaultDefendantDetail();
+        lenient().when(envelope.payloadAsJsonObject()).thenReturn(createProsecutionCaseWithMissingField("firstName"));
+        final List<String> defendantOffences =
+                progressionService.findDefendantOffences(UUID.randomUUID(), defendantDetail);
+        assertTrue(defendantOffences.isEmpty());
+    }
+
+    @Test
+    public void shouldReturnNoOffencesWhenLastNameIsMissingInJson() {
+        final DefendantDetail defendantDetail = createDefaultDefendantDetail();
+        lenient().when(envelope.payloadAsJsonObject()).thenReturn(createProsecutionCaseWithMissingField("lastName"));
+        final List<String> defendantOffences =
+                progressionService.findDefendantOffences(UUID.randomUUID(), defendantDetail);
+        assertTrue(defendantOffences.isEmpty());
+    }
+
+    @Test
+    public void shouldReturnNoOffencesWhenDateOfBirthIsMissingInJson() {
+        final DefendantDetail defendantDetail = createDefaultDefendantDetail();
+        lenient().when(envelope.payloadAsJsonObject()).thenReturn(createProsecutionCaseWithMissingField("dateOfBirth"));
+        final List<String> defendantOffences =
+                progressionService.findDefendantOffences(UUID.randomUUID(), defendantDetail);
+        assertTrue(defendantOffences.isEmpty());
+    }
+
+    @Test
+    public void shouldReturnNoOffencesWhenAddressLine1IsMissingInJson() {
+        final DefendantDetail defendantDetail = createDefaultDefendantDetail();
+        lenient().when(envelope.payloadAsJsonObject()).thenReturn(createProsecutionCaseWithMissingAddressField("address1"));
+        final List<String> defendantOffences =
+                progressionService.findDefendantOffences(UUID.randomUUID(), defendantDetail);
+        assertTrue(defendantOffences.isEmpty());
+    }
+
+    @Test
+    public void shouldReturnNoOffencesWhenPostcodeIsMissingInJson() {
+        final DefendantDetail defendantDetail = createDefaultDefendantDetail();
+        lenient().when(envelope.payloadAsJsonObject()).thenReturn(createProsecutionCaseWithMissingAddressField("postcode"));
+        final List<String> defendantOffences =
+                progressionService.findDefendantOffences(UUID.randomUUID(), defendantDetail);
+        assertTrue(defendantOffences.isEmpty());
+    }
+
+    @Test
+    public void shouldReturnNoOffencesWhenEntireAddressObjectIsMissingInJson() {
+        final DefendantDetail defendantDetail = createDefaultDefendantDetail();
+        lenient().when(envelope.payloadAsJsonObject()).thenReturn(createProsecutionCaseWithNoAddressObject());
+        final List<String> defendantOffences =
+                progressionService.findDefendantOffences(UUID.randomUUID(), defendantDetail);
+        assertTrue(defendantOffences.isEmpty());
+    }
+
     private DefendantDetail createDefaultDefendantDetail() {
         final DefendantDetail defendantDetail = new DefendantDetail(UUID.randomUUID());
 
@@ -126,6 +180,82 @@ public class ProgressionServiceTest {
 
 
 
+        return createObjectBuilder().add("prosecutionCase",
+                                         createObjectBuilder().add("defendants", defendants)).build();
+    }
+
+    private JsonObject createProsecutionCaseWithMissingField(String omittedPersonField) {
+        final JsonArray offences = createArrayBuilder().
+                                     add(createObjectBuilder().add("wording", "Offence-1").build()).
+                                   build();
+        final PersonalDetails pd = defaultDefendant.getPersonalDetails();
+        javax.json.JsonObjectBuilder personDetailsBuilder = createObjectBuilder();
+        if (!omittedPersonField.equals("firstName"))   personDetailsBuilder.add("firstName", pd.getFirstName());
+        if (!omittedPersonField.equals("lastName"))    personDetailsBuilder.add("lastName", pd.getLastName());
+        if (!omittedPersonField.equals("dateOfBirth")) personDetailsBuilder.add("dateOfBirth", pd.getDateOfBirth().toString());
+        personDetailsBuilder.add("address", createObjectBuilder().
+                                              add("address1", defaultDefendant.getAddress().getAddress1()).
+                                              add("postcode", defaultDefendant.getAddress().getPostcode()).
+                                            build());
+        final JsonObject personDefendant = createObjectBuilder().
+                add("personDetails", personDetailsBuilder.build()).
+                build();
+        final JsonArray defendants = createArrayBuilder().
+                                       add(createObjectBuilder().
+                                               add("offences", offences).
+                                               add("personDefendant", personDefendant).
+                                           build()).
+                                     build();
+        return createObjectBuilder().add("prosecutionCase",
+                                         createObjectBuilder().add("defendants", defendants)).build();
+    }
+
+    private JsonObject createProsecutionCaseWithNoAddressObject() {
+        final JsonArray offences = createArrayBuilder().
+                                     add(createObjectBuilder().add("wording", "Offence-1").build()).
+                                   build();
+        final PersonalDetails pd = defaultDefendant.getPersonalDetails();
+        final JsonObject personDetails = createObjectBuilder().
+                add("firstName", pd.getFirstName()).
+                add("lastName", pd.getLastName()).
+                add("dateOfBirth", pd.getDateOfBirth().toString()).
+                build();
+        final JsonObject personDefendant = createObjectBuilder().
+                add("personDetails", personDetails).
+                build();
+        final JsonArray defendants = createArrayBuilder().
+                                       add(createObjectBuilder().
+                                               add("offences", offences).
+                                               add("personDefendant", personDefendant).
+                                           build()).
+                                     build();
+        return createObjectBuilder().add("prosecutionCase",
+                                         createObjectBuilder().add("defendants", defendants)).build();
+    }
+
+    private JsonObject createProsecutionCaseWithMissingAddressField(String omittedAddressField) {
+        final JsonArray offences = createArrayBuilder().
+                                     add(createObjectBuilder().add("wording", "Offence-1").build()).
+                                   build();
+        final PersonalDetails pd = defaultDefendant.getPersonalDetails();
+        javax.json.JsonObjectBuilder addressBuilder = createObjectBuilder();
+        if (!omittedAddressField.equals("address1")) addressBuilder.add("address1", defaultDefendant.getAddress().getAddress1());
+        if (!omittedAddressField.equals("postcode"))  addressBuilder.add("postcode", defaultDefendant.getAddress().getPostcode());
+        final JsonObject personDetails = createObjectBuilder().
+                add("firstName", pd.getFirstName()).
+                add("lastName", pd.getLastName()).
+                add("dateOfBirth", pd.getDateOfBirth().toString()).
+                add("address", addressBuilder.build()).
+                build();
+        final JsonObject personDefendant = createObjectBuilder().
+                add("personDetails", personDetails).
+                build();
+        final JsonArray defendants = createArrayBuilder().
+                                       add(createObjectBuilder().
+                                               add("offences", offences).
+                                               add("personDefendant", personDefendant).
+                                           build()).
+                                     build();
         return createObjectBuilder().add("prosecutionCase",
                                          createObjectBuilder().add("defendants", defendants)).build();
     }

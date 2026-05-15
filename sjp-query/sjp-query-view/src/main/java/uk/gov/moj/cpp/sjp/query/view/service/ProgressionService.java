@@ -90,12 +90,13 @@ public class ProgressionService {
     private boolean defendantMatch(JsonObject caseDefendant, DefendantDetail defendant) {
         final JsonObject personDefendant = caseDefendant.getJsonObject(PERSON_DEFENDANT_FIELD_NAME);
         final JsonObject caseDefendantPersonalDetails = personDefendant.getJsonObject(PERSON_DETAILS_FIELD_NAME);
-        final String firstName = caseDefendantPersonalDetails.getString(FIRSTNAME_FIELD_NAME);
-        final String lastName = caseDefendantPersonalDetails.getString(LASTNAME_FIELD_NAME);
-        final String dateOfBirth = caseDefendantPersonalDetails.getString(DOB_FIELD_NAME);
-        final JsonObject address = caseDefendantPersonalDetails.getJsonObject(ADDRESS_FIELD_NAME);
-        final String addressLine1 = address.getString(ADDRESS1_FIELD_NAME);
-        final String postCode = address.getString(POSTCODE_FIELD_NAME);
+        final String firstName = caseDefendantPersonalDetails.getString(FIRSTNAME_FIELD_NAME, null);
+        final String lastName = caseDefendantPersonalDetails.getString(LASTNAME_FIELD_NAME, null);
+        final String dateOfBirth = caseDefendantPersonalDetails.getString(DOB_FIELD_NAME, null);
+        final JsonObject address =  caseDefendantPersonalDetails.containsKey(ADDRESS_FIELD_NAME) ?
+                caseDefendantPersonalDetails.getJsonObject(ADDRESS_FIELD_NAME) : createObjectBuilder().build();
+        final String addressLine1 = address.getString(ADDRESS1_FIELD_NAME, null);
+        final String postCode = address.getString(POSTCODE_FIELD_NAME, null);
 
         final PersonalDetails personalDetails = defendant.getPersonalDetails();
 
@@ -106,3 +107,4 @@ public class ProgressionService {
                    Objects.equals(postCode, defendant.getAddress().getPostcode());
     }
 }
+

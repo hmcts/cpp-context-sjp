@@ -92,7 +92,7 @@ public class TransparencyReportListenerTest {
                         .build());
         when(transparencyReportMetadataRepository.findBy(transparencyReportId)).thenReturn(transparencyReportMetadata);
         transparencyReportListener.handlePDFReportMetadataIsAdded(eventEnvelope);
-        assertThat(transparencyReportMetadata.getFileServiceId(), is(welshReportFileId));
+        assertThat(transparencyReportMetadata.getBlobFileId(), is(welshReportFileId));
         assertThat(transparencyReportMetadata.getNumberOfPages(), is(welshReportNumberOfPages));
         assertThat(transparencyReportMetadata.getSizeInBytes(), is(welshPdfSizeInBytes));
 

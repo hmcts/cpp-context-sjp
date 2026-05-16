@@ -28,8 +28,9 @@ import uk.gov.justice.services.core.annotation.FrameworkComponent;
 import uk.gov.justice.services.core.annotation.Handles;
 import uk.gov.justice.services.core.annotation.ServiceComponent;
 import uk.gov.justice.services.core.sender.Sender;
-import uk.gov.justice.services.fileservice.api.FileServiceException;
-import uk.gov.justice.services.fileservice.api.FileStorer;
+import uk.gov.moj.cpp.sjp.filestore.azure.FileStorer;
+import uk.gov.moj.cpp.sjp.filestore.azure.SasUriGenerator;
+import uk.gov.moj.cpp.sjp.filestore.azure.StoragePath;
 import uk.gov.justice.services.messaging.Envelope;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.messaging.JsonObjects;
@@ -43,6 +44,7 @@ import uk.gov.moj.cpp.sjp.event.transparency.PressTransparencyJSONReportRequeste
 import uk.gov.moj.cpp.sjp.event.transparency.PressTransparencyPDFReportRequested;
 
 import java.io.ByteArrayInputStream;
+import java.net.URI;
 import java.time.LocalDate;
 import java.time.format.DateTimeParseException;
 import java.util.*;
@@ -100,6 +102,8 @@ public class PressTransparencyReportRequestedProcessor {
     @Inject
     private FileStorer fileStorer;
     @Inject
+    private SasUriGenerator sasUriGenerator;
+    @Inject
     private SjpService sjpService;
     @Inject
     private ReferenceDataOffencesService referenceDataOffencesService;
@@ -117,7 +121,6 @@ public class PressTransparencyReportRequestedProcessor {
 
     @Handles(PressTransparencyPDFReportRequested.EVENT_NAME)
     @Transactional
-    @SuppressWarnings("squid:S00112")
     public void handlePressTransparencyPDFReportRequest(final JsonEnvelope envelope) {
         payloadHelper.initCache();
 
@@ -126,14 +129,10 @@ public class PressTransparencyReportRequestedProcessor {
         final UUID reportId = fromString(eventPayload.getString(PRESS_TRANSPARENCY_REPORT_ID));
         final String language = envelope.payloadAsJsonObject().getString(LANGUAGE);
         final boolean isWelsh = WELSH.name().equalsIgnoreCase(language);
-        try {
-            LOGGER.info("generating press transparency PDF report for press report {}", reportId);
-            final JsonObject payloadForDocumentGeneration = buildPayload(pendingCasesFromViewStore, false, envelope, isWelsh);
-            requestDocumentGeneration(envelope, reportId, payloadForDocumentGeneration);
-            storeReportMetadata(envelope, reportId, pendingCasesFromViewStore);
-        } catch (FileServiceException e) {
-            throw new RuntimeException("IO Exception happened during press transparency report generation", e);
-        }
+        LOGGER.info("generating press transparency PDF report for press report {}", reportId);
+        final JsonObject payloadForDocumentGeneration = buildPayload(pendingCasesFromViewStore, false, envelope, isWelsh);
+        requestDocumentGeneration(envelope, reportId, payloadForDocumentGeneration);
+        storeReportMetadata(envelope, reportId, pendingCasesFromViewStore);
     }
 
     @Handles(PressTransparencyJSONReportRequested.EVENT_NAME)
@@ -158,21 +157,17 @@ public class PressTransparencyReportRequestedProcessor {
     @Deprecated(forRemoval = true)
     @Handles("sjp.events.press-transparency-report-requested")
     @Transactional
-    @SuppressWarnings({"squid:S00112", "squid:S1133"})
+    @SuppressWarnings("squid:S1133")
     public void handlePressTransparencyRequest(final JsonEnvelope envelope) {
         payloadHelper.initCache();
 
         final List<JsonObject> pendingCasesFromViewStore = getPendingCasesFromViewStore(envelope);
         final JsonObject eventPayload = envelope.payloadAsJsonObject();
         final UUID reportId = fromString(eventPayload.getString(PRESS_TRANSPARENCY_REPORT_ID));
-        try {
-            final JsonObject payloadForDocumentGeneration = buildPayload(pendingCasesFromViewStore, false, envelope, false);
-            requestDocumentGeneration(envelope, reportId, payloadForDocumentGeneration);
-            sendPublicEvent(envelope, buildPayload(pendingCasesFromViewStore, true, envelope, false));
-            storeReportMetadata(envelope, reportId, pendingCasesFromViewStore);
-        } catch (FileServiceException e) {
-            throw new RuntimeException("IO Exception happened during press transparency report generation", e);
-        }
+        final JsonObject payloadForDocumentGeneration = buildPayload(pendingCasesFromViewStore, false, envelope, false);
+        requestDocumentGeneration(envelope, reportId, payloadForDocumentGeneration);
+        sendPublicEvent(envelope, buildPayload(pendingCasesFromViewStore, true, envelope, false));
+        storeReportMetadata(envelope, reportId, pendingCasesFromViewStore);
     }
 
     private void sendPublicEvent(final JsonEnvelope envelope, final JsonObject payloadForDocumentGeneration) {
@@ -227,33 +222,28 @@ public class PressTransparencyReportRequestedProcessor {
         return caseIdsBuilder;
     }
 
-    private void requestDocumentGeneration(final JsonEnvelope envelope, final UUID reportId, final JsonObject payload) throws FileServiceException {
+    private void requestDocumentGeneration(final JsonEnvelope envelope, final UUID reportId, final JsonObject payload) {
         final String payloadFileName = String.format("press-transparency-report-template-parameters.%s.json", reportId.toString());
         String type = envelope.payloadAsJsonObject().getString(REQUEST_TYPE).toLowerCase();
         type = type.substring(0, 1).toUpperCase() + type.substring(1);
         String language = envelope.payloadAsJsonObject().getString(LANGUAGE).toLowerCase();
         language = language.substring(0, 1).toUpperCase() + language.substring(1);
-        final UUID payloadFileId = storeDocumentGeneratorPayload(payload, payloadFileName, type, language);
-        sendDocumentGenerationRequest(envelope, reportId, payloadFileId, type, language);
+        final UUID payloadFileId = storeDocumentGeneratorPayload(payload, payloadFileName, reportId);
+        final URI payloadSourceUri = sasUriGenerator.generateReadUri(StoragePath.published("sdg-payloads"), payloadFileId);
+        sendDocumentGenerationRequest(envelope, reportId, payloadFileId, payloadSourceUri, type, language);
     }
 
-    @SuppressWarnings("squid:S2629")
-    private UUID storeDocumentGeneratorPayload(final JsonObject documentGeneratorPayload, final String fileName, final String type, final String language) throws FileServiceException {
+    private UUID storeDocumentGeneratorPayload(final JsonObject documentGeneratorPayload, final String fileName, final UUID correlationId) {
         final byte[] jsonPayloadInBytes = jsonObjectAsByteArray(documentGeneratorPayload);
-
-        final JsonObject metadata = createObjectBuilder()
-                .add("fileName", fileName)
-                .add("conversionFormat", CONVERSION_FORMAT)
-                .add("templateName", getTemplateIdentifier(type, language))
-                .add("numberOfPages", 1)
-                .add("fileSize", jsonPayloadInBytes.length)
-                .build();
-        return fileStorer.store(metadata, new ByteArrayInputStream(jsonPayloadInBytes));
+        return fileStorer.store(StoragePath.published("sdg-payloads"), correlationId, fileName, new ByteArrayInputStream(jsonPayloadInBytes));
     }
 
     private void sendDocumentGenerationRequest(final JsonEnvelope eventEnvelope,
                                                final UUID reportId,
-                                               final UUID payloadFileServiceUUID, final String type, final String language) {
+                                               final UUID payloadFileServiceUUID,
+                                               final URI payloadSourceUri,
+                                               final String type,
+                                               final String language) {
 
         final JsonObject docGeneratorPayload = createObjectBuilder()
                 .add("originatingSource", "sjp")
@@ -261,6 +251,11 @@ public class PressTransparencyReportRequestedProcessor {
                 .add("conversionFormat", CONVERSION_FORMAT)
                 .add("sourceCorrelationId", reportId.toString())
                 .add("payloadFileServiceId", payloadFileServiceUUID.toString())
+                .add("additionalInformation", Json.createArrayBuilder()
+                        .add(createObjectBuilder()
+                                .add("propertyName", "payloadSourceUri")
+                                .add("propertyValue", payloadSourceUri.toString()))
+                        .build())
                 .build();
 
         sender.sendAsAdmin(

@@ -12,6 +12,7 @@ import uk.gov.justice.services.core.sender.Sender;
 import uk.gov.justice.services.messaging.Envelope;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 
+import java.net.URI;
 import java.util.UUID;
 
 import javax.json.JsonObject;
@@ -36,14 +37,16 @@ public class SystemDocGeneratorTest {
     private ArgumentCaptor<Envelope<JsonObject>> argumentCaptor;
 
     @Test
-    public void originatingSourceShouldBeSjp() {
+    public void shouldSendGenerateDocumentCommandWithPayloadSourceUri() {
         final String sourceCorrelationId = randomUUID().toString();
         final UUID payloadFileServiceId = randomUUID();
+        final URI payloadSourceUri = URI.create("https://devstoreaccount1.blob.core.windows.net/sjp-files/published/sdg-payloads/" + payloadFileServiceId + "?sv=2021");
         final DocumentGenerationRequest request = new DocumentGenerationRequest(
                 TemplateIdentifier.NOTIFICATION_TO_DVLA_TO_REMOVE_ENDORSEMENT,
                 ConversionFormat.PDF,
                 sourceCorrelationId,
-                payloadFileServiceId
+                payloadFileServiceId,
+                payloadSourceUri
         );
 
         systemDocGenerator.generateDocument(request, envelope());
@@ -56,6 +59,8 @@ public class SystemDocGeneratorTest {
         assertThat(actual.payload().getString("conversionFormat"), equalTo("pdf"));
         assertThat(actual.payload().getString("sourceCorrelationId"), equalTo(sourceCorrelationId));
         assertThat(actual.payload().getString("payloadFileServiceId"), equalTo(payloadFileServiceId.toString()));
+        assertThat(actual.payload().getJsonArray("additionalInformation").getJsonObject(0).getString("propertyName"), equalTo("payloadSourceUri"));
+        assertThat(actual.payload().getJsonArray("additionalInformation").getJsonObject(0).getString("propertyValue"), equalTo(payloadSourceUri.toString()));
     }
 
     private JsonEnvelope envelope() {

@@ -1,13 +1,12 @@
 package uk.gov.moj.cpp.sjp.event.processor.service.notification;
 
 import static java.util.Optional.ofNullable;
-import static javax.json.Json.createObjectBuilder;
 import static uk.gov.moj.cpp.sjp.event.processor.helper.JsonObjectConversionHelper.jsonObjectAsByteArray;
+
+import java.io.ByteArrayInputStream;
 
 import uk.gov.justice.json.schemas.domains.sjp.queries.Offence;
 import uk.gov.justice.services.common.converter.ObjectToJsonObjectConverter;
-import uk.gov.justice.services.fileservice.api.FileServiceException;
-import uk.gov.justice.services.fileservice.api.FileStorer;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.sjp.event.processor.service.ReferenceDataOffencesService;
 import uk.gov.moj.cpp.sjp.event.processor.service.ReferenceDataService;
@@ -19,8 +18,11 @@ import uk.gov.moj.cpp.sjp.event.processor.service.systemdocgenerator.ConversionF
 import uk.gov.moj.cpp.sjp.event.processor.service.systemdocgenerator.DocumentGenerationRequest;
 import uk.gov.moj.cpp.sjp.event.processor.service.systemdocgenerator.SystemDocGenerator;
 import uk.gov.moj.cpp.sjp.event.processor.service.systemdocgenerator.TemplateIdentifier;
+import uk.gov.moj.cpp.sjp.filestore.azure.FileStorer;
+import uk.gov.moj.cpp.sjp.filestore.azure.SasUriGenerator;
+import uk.gov.moj.cpp.sjp.filestore.azure.StoragePath;
 
-import java.io.ByteArrayInputStream;
+import java.net.URI;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -42,6 +44,8 @@ public class EndorsementRemovalNotificationService {
     @Inject
     private FileStorer fileStorer;
     @Inject
+    private SasUriGenerator sasUriGenerator;
+    @Inject
     private SystemDocGenerator systemDocGenerator;
 
     public boolean hasEndorsementsToBeRemoved(final CaseDetailsDecorator caseDetails) {
@@ -50,7 +54,7 @@ public class EndorsementRemovalNotificationService {
                 .orElse(false);
     }
 
-    public void generateNotification(final CaseDetailsDecorator caseDetails, final JsonEnvelope envelope) throws FileServiceException {
+    public void generateNotification(final CaseDetailsDecorator caseDetails, final JsonEnvelope envelope) {
         final UUID correlationId = caseDetails.getCurrentApplicationDecision()
                 .orElseThrow(IllegalStateException::new)
                 .getId();
@@ -58,7 +62,8 @@ public class EndorsementRemovalNotificationService {
         final EndorsementRemovalNotificationTemplateData templatePayload = createTemplatePayload(caseDetails, envelope);
 
         final UUID fileId = storeEmailAttachmentTemplatePayload(correlationId, templatePayload);
-        requestEmailAttachmentGeneration(correlationId.toString(), fileId, envelope);
+        final URI payloadSourceUri = sasUriGenerator.generateReadUri(StoragePath.published("sdg-payloads"), fileId);
+        requestEmailAttachmentGeneration(correlationId.toString(), fileId, payloadSourceUri, envelope);
     }
 
     public String buildEmailSubject(final ApplicationDecisionDecorator applicationDecision, final JsonEnvelope envelope) {
@@ -98,37 +103,25 @@ public class EndorsementRemovalNotificationService {
     }
 
     private UUID storeEmailAttachmentTemplatePayload(final UUID correlationId,
-                                                     final EndorsementRemovalNotificationTemplateData templateData) throws FileServiceException {
-        final JsonObject metadata = metadata(fileName(correlationId));
-        return fileStorer.store(metadata, toInputStream(templateData));
+                                                     final EndorsementRemovalNotificationTemplateData templateData) {
+        final byte[] payloadBytes = jsonObjectAsByteArray(objectToJsonObjectConverter.convert(templateData));
+        return fileStorer.store(StoragePath.published("sdg-payloads"), correlationId, fileName(correlationId), new ByteArrayInputStream(payloadBytes));
     }
 
-    private void requestEmailAttachmentGeneration(final String sourceCorrelationId, final UUID fileId, final JsonEnvelope envelope) {
+    private void requestEmailAttachmentGeneration(final String sourceCorrelationId, final UUID fileId, final URI payloadSourceUri, final JsonEnvelope envelope) {
         final DocumentGenerationRequest request = new DocumentGenerationRequest(
                 TemplateIdentifier.NOTIFICATION_TO_DVLA_TO_REMOVE_ENDORSEMENT,
                 ConversionFormat.PDF,
                 sourceCorrelationId,
-                fileId
+                fileId,
+                payloadSourceUri
         );
 
         systemDocGenerator.generateDocument(request, envelope);
     }
 
-    private JsonObject metadata(final String fileName) {
-        return createObjectBuilder()
-                .add("fileName", fileName)
-                .add("conversionFormat", "pdf")
-                .add("templateName", TemplateIdentifier.NOTIFICATION_TO_DVLA_TO_REMOVE_ENDORSEMENT.getValue())
-                .build();
-    }
-
     private String fileName(final UUID correlationId) {
         return String.format("notification-to-dvla-to-remove-endorsement-%s.pdf", correlationId);
-    }
-
-    private ByteArrayInputStream toInputStream(final EndorsementRemovalNotificationTemplateData templateData) {
-        final byte[] jsonPayloadInBytes = jsonObjectAsByteArray(objectToJsonObjectConverter.convert(templateData));
-        return new ByteArrayInputStream(jsonPayloadInBytes);
     }
 
     private boolean hasEndorsementsToBeRemoved(final ApplicationDecisionDecorator applicationDecision) {

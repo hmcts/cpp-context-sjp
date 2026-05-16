@@ -27,7 +27,6 @@ import uk.gov.justice.json.schemas.domains.sjp.queries.QueryOffenceDecision;
 import uk.gov.justice.json.schemas.domains.sjp.queries.Session;
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
 import uk.gov.justice.services.core.sender.Sender;
-import uk.gov.justice.services.fileservice.api.FileServiceException;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.sjp.event.decision.ApplicationDecisionSetAside;
 import uk.gov.moj.cpp.sjp.event.processor.service.SjpService;
@@ -97,7 +96,7 @@ public class ApplicationSetAsideProcessorTest {
     }
 
     @Test
-    public void shouldPublishPublicEventOnApplicationSetAside() throws FileServiceException {
+    public void shouldPublishPublicEventOnApplicationSetAside() {
         final JsonObject payload = createObjectBuilder()
                 .add("caseId", caseId.toString())
                 .add("applicationID", applicationDecisionId.toString())
@@ -115,7 +114,7 @@ public class ApplicationSetAsideProcessorTest {
     }
 
     @Test
-    public void shouldRequestFileGenerationWhenThereAreEndorsementsToBeRemoved() throws FileServiceException {
+    public void shouldRequestFileGenerationWhenThereAreEndorsementsToBeRemoved() {
         givenCaseWithEndorsementsToBeRemoved();
         final CaseDetailsDecorator decoratedCaseDetails = new CaseDetailsDecorator(caseDetails);
         when(endorsementRemovalNotificationService.hasEndorsementsToBeRemoved(decoratedCaseDetails)).thenReturn(true);
@@ -126,7 +125,7 @@ public class ApplicationSetAsideProcessorTest {
     }
 
     @Test
-    public void shouldNotRequestFileGenerationWhenThereAreNoEndorsementsToBeRemoved() throws FileServiceException {
+    public void shouldNotRequestFileGenerationWhenThereAreNoEndorsementsToBeRemoved() {
         givenCaseWithoutEndorsementsToBeRemoved();
         when(endorsementRemovalNotificationService.hasEndorsementsToBeRemoved(new CaseDetailsDecorator(caseDetails))).thenReturn(false);
 

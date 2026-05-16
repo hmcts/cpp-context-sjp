@@ -9,7 +9,6 @@ import static uk.gov.justice.services.messaging.JsonEnvelope.metadataBuilder;
 import uk.gov.justice.services.core.annotation.Adapter;
 import uk.gov.justice.services.core.annotation.Component;
 import uk.gov.justice.services.core.interceptor.InterceptorChainProcessor;
-import uk.gov.justice.services.fileservice.api.FileRetriever;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 
 import java.util.UUID;
@@ -17,6 +16,8 @@ import java.util.UUID;
 import javax.ejb.Stateless;
 import javax.inject.Inject;
 import javax.ws.rs.core.Response;
+
+import com.azure.storage.blob.BlobContainerClient;
 
 @SuppressWarnings({"squid:S00112"})
 @Stateless
@@ -27,7 +28,7 @@ public class DefaultQueryApiTransparencyReportContentFileIdResource implements Q
     public static final String PDF_CONTENT_TYPE = "application/pdf";
 
     @Inject
-    private FileRetriever fileRetriever;
+    private BlobContainerClient blobContainerClient;
 
     @Inject
     private InterceptorChainProcessor interceptorChainProcessor;
@@ -48,7 +49,7 @@ public class DefaultQueryApiTransparencyReportContentFileIdResource implements Q
 
         interceptorChainProcessor.process(interceptorContextWithInput(envelope));
 
-        return ResourceUtility.getResponse(fileRetriever, fileId, "attachment;filename=TransparencyReport_");
+        return ResourceUtility.getResponse(blobContainerClient, fileId, "attachment;filename=TransparencyReport_");
     }
 
 }

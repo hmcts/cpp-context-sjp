@@ -15,7 +15,7 @@ import org.apache.deltaspike.data.api.Repository;
 public interface TransparencyReportMetadataRepository extends EntityRepository<TransparencyReportMetadata, UUID> {
 
     @Query(value = "SELECT trmd FROM TransparencyReportMetadata trmd " +
-            "WHERE trmd.fileServiceId is not null and trmd.generatedAt > :fromDate " +
+            "WHERE trmd.blobFileId is not null and trmd.generatedAt > :fromDate " +
             "ORDER BY trmd.generatedAt DESC")
     List<TransparencyReportMetadata> findLatestTransparencyReportMetadata(@QueryParam("fromDate") LocalDateTime fromDate);
 

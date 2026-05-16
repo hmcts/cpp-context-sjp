@@ -126,6 +126,7 @@ class DatesToAvoidIT extends BaseIntegrationTest {
 
         addDatesToAvoid(tflCaseBuilder.getId(), DATE_TO_AVOID);
         assertThatNumberOfCasesPendingDatesToAvoidIsAccurate(tflUserId, tflInitialPendingDatesToAvoidCount);
+        pollUntilCaseHasStatus(tflCaseBuilder.getId(), PLEA_RECEIVED_READY_FOR_DECISION);
 
         completeCase(tflCaseBuilder);
 

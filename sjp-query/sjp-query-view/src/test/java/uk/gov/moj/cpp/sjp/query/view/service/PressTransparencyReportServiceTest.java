@@ -39,7 +39,7 @@ public class PressTransparencyReportServiceTest {
     public void shouldReturnMetadata() {
 
         final PressTransparencyReportMetadata pressTransparencyReportMetadata = new PressTransparencyReportMetadata();
-        pressTransparencyReportMetadata.setFileServiceId(fromString("ad90576d-9d0d-4dd4-b670-28d61a3136f9"));
+        pressTransparencyReportMetadata.setBlobFileId(fromString("ad90576d-9d0d-4dd4-b670-28d61a3136f9"));
         pressTransparencyReportMetadata.setGeneratedAt(LocalDateTime.of(of(2020, 10, 10), LocalTime.of(11, 30)));
         pressTransparencyReportMetadata.setNumberOfPages(3);
         pressTransparencyReportMetadata.setSizeInBytes(712);

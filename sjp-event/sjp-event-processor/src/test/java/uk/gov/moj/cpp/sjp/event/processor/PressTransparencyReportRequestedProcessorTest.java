@@ -36,8 +36,6 @@ import static uk.gov.moj.cpp.sjp.domain.DocumentRequestType.FULL;
 import static uk.gov.moj.cpp.sjp.event.processor.helper.JsonObjectConversionHelper.streamToJsonObject;
 
 import uk.gov.justice.services.core.sender.Sender;
-import uk.gov.justice.services.fileservice.api.FileServiceException;
-import uk.gov.justice.services.fileservice.api.FileStorer;
 import uk.gov.justice.services.messaging.Envelope;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.messaging.spi.DefaultEnvelope;
@@ -47,6 +45,9 @@ import uk.gov.moj.cpp.sjp.event.processor.service.ReferenceDataOffencesService;
 import uk.gov.moj.cpp.sjp.event.processor.service.ReferenceDataService;
 import uk.gov.moj.cpp.sjp.event.processor.service.SjpService;
 import uk.gov.moj.cpp.sjp.event.processor.utils.PayloadHelper;
+import uk.gov.moj.cpp.sjp.event.processor.utils.fake.FakeSasUriGenerator;
+import uk.gov.moj.cpp.sjp.filestore.azure.FileStorer;
+import uk.gov.moj.cpp.sjp.filestore.azure.StoragePath;
 
 import java.io.InputStream;
 import java.time.DayOfWeek;
@@ -75,6 +76,7 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 @ExtendWith(MockitoExtension.class)
@@ -136,12 +138,18 @@ public class PressTransparencyReportRequestedProcessorTest {
                     .add("language", "ENGLISH")
                     .build()
     );
+    private static final String FAKE_PAYLOAD_SOURCE_URI = "https://fake.blob.core.windows.net/sjp-files/published/sdg-payloads/" + PAYLOAD_DOCUMENT_GENERATOR_FILE_ID + "?sv=fake";
     private static final JsonObject EXPECTED_DOC_GENERATION_PAYLOAD_DELTA = createObjectBuilder()
             .add("originatingSource", "sjp")
             .add("templateIdentifier", EXPECTED_TEMPLATE_NAME_DELTA)
             .add("conversionFormat", "pdf")
             .add("sourceCorrelationId", REPORT_ID.toString())
             .add("payloadFileServiceId", PAYLOAD_DOCUMENT_GENERATOR_FILE_ID.toString())
+            .add("additionalInformation", createArrayBuilder()
+                    .add(createObjectBuilder()
+                            .add("propertyName", "payloadSourceUri")
+                            .add("propertyValue", FAKE_PAYLOAD_SOURCE_URI))
+                    .build())
             .build();
     private static final JsonObject EXPECTED_DOC_GENERATION_PAYLOAD_FULL = createObjectBuilder()
             .add("originatingSource", "sjp")
@@ -149,11 +157,18 @@ public class PressTransparencyReportRequestedProcessorTest {
             .add("conversionFormat", "pdf")
             .add("sourceCorrelationId", REPORT_ID.toString())
             .add("payloadFileServiceId", PAYLOAD_DOCUMENT_GENERATOR_FILE_ID.toString())
+            .add("additionalInformation", createArrayBuilder()
+                    .add(createObjectBuilder()
+                            .add("propertyName", "payloadSourceUri")
+                            .add("propertyValue", FAKE_PAYLOAD_SOURCE_URI))
+                    .build())
             .build();
     @InjectMocks
     private PressTransparencyReportRequestedProcessor processor;
     @Mock
     private FileStorer fileStorer;
+    @Spy
+    private FakeSasUriGenerator sasUriGenerator;
     @Mock
     private ReferenceDataOffencesService referenceDataOffencesService;
     @Mock
@@ -181,9 +196,9 @@ public class PressTransparencyReportRequestedProcessorTest {
         when(payloadHelper.getStartDate(eq(false))).thenReturn("15 January 2024");
     }
 
-    private void mockCommon(final List<JsonObject> sjpService, final List<JsonObject> pendingCasesList) throws FileServiceException {
+    private void mockCommon(final List<JsonObject> sjpService, final List<JsonObject> pendingCasesList) {
         mockSjpService(sjpService, pendingCasesList);
-        when(fileStorer.store(any(), any())).thenReturn(PAYLOAD_DOCUMENT_GENERATOR_FILE_ID);
+        when(fileStorer.store(any(StoragePath.class), any(UUID.class), any(String.class), any(InputStream.class))).thenReturn(PAYLOAD_DOCUMENT_GENERATOR_FILE_ID);
         when(payloadHelper.buildDefendantName(any())).thenReturn("John DOE");
     }
 
@@ -193,7 +208,7 @@ public class PressTransparencyReportRequestedProcessorTest {
 
     @Test
     @SuppressWarnings("deprecation")
-    public void shouldCreatePressTransparencyReport() throws FileServiceException {
+    public void shouldCreatePressTransparencyReport() {
 
         final String defendantDateOfBirth = "1980-06-12";
 
@@ -219,7 +234,7 @@ public class PressTransparencyReportRequestedProcessorTest {
     }
 
     @Test
-    public void shouldCreatePressTransparencyPDFReportDelta() throws FileServiceException {
+    public void shouldCreatePressTransparencyPDFReportDelta() {
 
         final String defendantDateOfBirth = "1980-06-12";
 
@@ -249,7 +264,7 @@ public class PressTransparencyReportRequestedProcessorTest {
     }
 
     @Test
-    public void shouldCreatePressTransparencyPDFReportFull() throws FileServiceException {
+    public void shouldCreatePressTransparencyPDFReportFull() {
 
         final String defendantDateOfBirth = "1980-06-12";
 
@@ -334,16 +349,15 @@ public class PressTransparencyReportRequestedProcessorTest {
         });
     }
 
-    private JsonObject getDocumentGeneratorPayloadFromFileStorer() throws FileServiceException {
-        verify(fileStorer).store(any(JsonObject.class), payloadForDocumentGenerationCaptor.capture());
+    private JsonObject getDocumentGeneratorPayloadFromFileStorer() {
+        verify(fileStorer).store(any(StoragePath.class), any(UUID.class), any(String.class), payloadForDocumentGenerationCaptor.capture());
 
-        final InputStream payloadBytes = payloadForDocumentGenerationCaptor.getValue();
-        return streamToJsonObject(payloadBytes);
+        return streamToJsonObject(payloadForDocumentGenerationCaptor.getValue());
     }
 
     @Test
     @SuppressWarnings("deprecation")
-    public void shouldCreatePressTransparencyWhenNoDateOfBirthReport() throws FileServiceException {
+    public void shouldCreatePressTransparencyWhenNoDateOfBirthReport() {
 
         final String defendantDateOfBirth = "";
 
@@ -362,7 +376,7 @@ public class PressTransparencyReportRequestedProcessorTest {
 
     @Test
     @SuppressWarnings("deprecation")
-    public void shouldExcludeYouthDefendants() throws FileServiceException {
+    public void shouldExcludeYouthDefendants() {
 
         final String defendantDateOfBirth = "1980-06-12";
 
@@ -372,15 +386,14 @@ public class PressTransparencyReportRequestedProcessorTest {
 
         processor.handlePressTransparencyRequest(PRIVATE_EVENT_PDF_ENVELOPE_DELTA);
 
-        verify(fileStorer).store(any(JsonObject.class), payloadForDocumentGenerationCaptor.capture());
+        verify(fileStorer).store(any(StoragePath.class), any(UUID.class), any(String.class), payloadForDocumentGenerationCaptor.capture());
 
-        final InputStream payloadBytes = payloadForDocumentGenerationCaptor.getValue();
-        final JsonObject payloadForDocumentGenerator = streamToJsonObject(payloadBytes);
+        final JsonObject payloadForDocumentGenerator = streamToJsonObject(payloadForDocumentGenerationCaptor.getValue());
 
     }
 
     @Test
-    public void shouldCreatePressTransparencyPDFWhenNoDateOfBirthReport() throws FileServiceException {
+    public void shouldCreatePressTransparencyPDFWhenNoDateOfBirthReport() {
 
         final String defendantDateOfBirth = "";
 
@@ -397,7 +410,7 @@ public class PressTransparencyReportRequestedProcessorTest {
     }
 
     @Test
-    public void shouldExcludeYouthDefendantsPDF() throws FileServiceException {
+    public void shouldExcludeYouthDefendantsPDF() {
 
         final String defendantDateOfBirth = "1980-06-12";
 
@@ -407,10 +420,9 @@ public class PressTransparencyReportRequestedProcessorTest {
 
         processor.handlePressTransparencyPDFReportRequest(PRIVATE_EVENT_PDF_ENVELOPE_DELTA);
 
-        verify(fileStorer).store(any(JsonObject.class), payloadForDocumentGenerationCaptor.capture());
+        verify(fileStorer).store(any(StoragePath.class), any(UUID.class), any(String.class), payloadForDocumentGenerationCaptor.capture());
 
-        final InputStream payloadBytes = payloadForDocumentGenerationCaptor.getValue();
-        final JsonObject payloadForDocumentGenerator = streamToJsonObject(payloadBytes);
+        final JsonObject payloadForDocumentGenerator = streamToJsonObject(payloadForDocumentGenerationCaptor.getValue());
 
         assertRootValuesOfPayloadForDocumentGenerator(payloadForDocumentGenerator, NUMBER_OF_PENDING_CASES_FOR_EXPORT / 2);
 

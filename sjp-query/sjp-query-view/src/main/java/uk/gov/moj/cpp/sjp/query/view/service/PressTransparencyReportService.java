@@ -44,7 +44,7 @@ public class PressTransparencyReportService {
                 .withReportIn(language.charAt(0) + language.substring(1).toLowerCase())
                 .withPages(latestPressTransparencyReportMetadata.getNumberOfPages())
                 .withSize(latestPressTransparencyReportMetadata.getSizeInBytes().toString())
-                .withFileId(latestPressTransparencyReportMetadata.getFileServiceId().toString())
+                .withFileId(latestPressTransparencyReportMetadata.getBlobFileId().toString())
                 .withTitle(latestPressTransparencyReportMetadata.getTitle()).build();
     }
 

@@ -36,7 +36,6 @@ import uk.gov.justice.json.schemas.domains.sjp.queries.Session;
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
 import uk.gov.justice.services.common.converter.ObjectToJsonObjectConverter;
 import uk.gov.justice.services.common.converter.jackson.ObjectMapperProducer;
-import uk.gov.justice.services.fileservice.api.FileServiceException;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.sjp.event.decision.ApplicationDecisionSetAside;
 import uk.gov.moj.cpp.sjp.event.processor.helper.JsonObjectConversionHelper;
@@ -48,9 +47,10 @@ import uk.gov.moj.cpp.sjp.event.processor.service.systemdocgenerator.ConversionF
 import uk.gov.moj.cpp.sjp.event.processor.service.systemdocgenerator.DocumentGenerationRequest;
 import uk.gov.moj.cpp.sjp.event.processor.utils.builders.ApplicationDecisionSetAsideEnvelope;
 import uk.gov.moj.cpp.sjp.event.processor.utils.fake.FakeFileStorer;
+import uk.gov.moj.cpp.sjp.event.processor.utils.fake.FakeSasUriGenerator;
 import uk.gov.moj.cpp.sjp.event.processor.utils.fake.FakeSystemDocGenerator;
 
-import java.io.InputStream;
+import java.io.ByteArrayInputStream;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.ZoneId;
@@ -62,7 +62,6 @@ import java.util.UUID;
 import javax.json.JsonObject;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.apache.commons.lang3.tuple.Pair;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -94,6 +93,8 @@ public class EndorsementRemovalNotificationServiceTest {
     private JsonObjectToObjectConverter jsonObjectToObjectConverter = new JsonObjectToObjectConverter(objectMapper);
     @Spy
     private FakeFileStorer fileStorer;
+    @Spy
+    private FakeSasUriGenerator sasUriGenerator;
     @Spy
     private JsonObjectToObjectConverter converter = createJsonObjectToObjectConverter();
     @Spy
@@ -127,7 +128,7 @@ public class EndorsementRemovalNotificationServiceTest {
     }
 
     @Test
-    public void shouldStoreMetadataInFileServer() throws FileServiceException {
+    public void shouldStoreMetadataInFileServer() {
         givenCaseWithEndorsementsToBeRemoved();
         givenEnforcementAreaPresentInReferenceData();
         givenOffenceMetadataIsPresentInReferenceData();
@@ -135,15 +136,14 @@ public class EndorsementRemovalNotificationServiceTest {
         service.generateNotification(caseDetails, envelope);
 
         assertThat(fileStorer.getAll(), hasSize(1));
-        final JsonObject metadata = fileStorer.getAll().get(0).getKey();
-        assertThat(metadata.size(), is(3));
-        assertThat(metadata.getString("fileName"), equalTo(format("notification-to-dvla-to-remove-endorsement-%s.pdf", applicationDecisionId)));
-        assertThat(metadata.getString("conversionFormat"), equalTo("pdf"));
-        assertThat(metadata.getString("templateName"), equalTo(NOTIFICATION_TO_DVLA_TO_REMOVE_ENDORSEMENT.getValue()));
+        final FakeFileStorer.StoredFile stored = fileStorer.getAll().get(0);
+        assertThat(stored.getStoragePath().prefix(), equalTo("published/sdg-payloads"));
+        assertThat(stored.getCorrelationId(), equalTo(applicationDecisionId));
+        assertThat(stored.getFilename(), equalTo(format("notification-to-dvla-to-remove-endorsement-%s.pdf", applicationDecisionId)));
     }
 
     @Test
-    public void shouldStoreTemplateDataForNoticeGenerationFileServer() throws FileServiceException {
+    public void shouldStoreTemplateDataForNoticeGenerationFileServer() {
         givenCaseWithEndorsementsToBeRemoved();
         givenEnforcementAreaPresentInReferenceData();
         givenOffenceMetadataIsPresentInReferenceData();
@@ -171,7 +171,7 @@ public class EndorsementRemovalNotificationServiceTest {
     }
 
     @Test
-    public void shouldStoreTemplateDataForNoticeGenerationFileServerWithUnknownDefendantDateOfBirth() throws FileServiceException {
+    public void shouldStoreTemplateDataForNoticeGenerationFileServerWithUnknownDefendantDateOfBirth() {
         final Defendant.Builder defendant = Defendant.defendant().withPersonalDetails(PersonalDetails.personalDetails()
                 .withFirstName("Robert")
                 .withLastName("Robertson")
@@ -188,7 +188,7 @@ public class EndorsementRemovalNotificationServiceTest {
     }
 
     @Test
-    public void shouldGetConvictionDateFromOffenceDecisionSavedAtIfConvictionDateIsNotPresentInTheOffence() throws FileServiceException {
+    public void shouldGetConvictionDateFromOffenceDecisionSavedAtIfConvictionDateIsNotPresentInTheOffence() {
         givenCaseWithEndorsementsToBeRemovedAndNoPreviousConvictionDate();
         givenEnforcementAreaPresentInReferenceData();
         givenOffenceMetadataIsPresentInReferenceData();
@@ -202,7 +202,7 @@ public class EndorsementRemovalNotificationServiceTest {
     }
 
     @Test
-    public void shouldNotSendOffencesWithNoPenaltyPointsApplied() throws FileServiceException {
+    public void shouldNotSendOffencesWithNoPenaltyPointsApplied() {
         givenCaseWithLicenceEndorsements();
         givenEnforcementAreaPresentInReferenceData();
         givenOffenceMetadataIsPresentInReferenceData();
@@ -216,7 +216,7 @@ public class EndorsementRemovalNotificationServiceTest {
 
 
     @Test
-    public void shouldSendDvlaCodeForEachOffencesWithDisqualificationBasedOnDisqualificationType() throws FileServiceException {
+    public void shouldSendDvlaCodeForEachOffencesWithDisqualificationBasedOnDisqualificationType() {
         givenCaseWithDisqualifications();
         givenEnforcementAreaPresentInReferenceData();
         givenOffenceMetadataIsPresentInReferenceData();
@@ -231,7 +231,7 @@ public class EndorsementRemovalNotificationServiceTest {
     }
 
     @Test
-    public void shouldHandleMultipleApplicationDecisionsSendingEndorsementsForTheLatestOnly() throws FileServiceException {
+    public void shouldHandleMultipleApplicationDecisionsSendingEndorsementsForTheLatestOnly() {
         givenCaseWithEndorsementsInMultipleApplications();
         givenEnforcementAreaPresentInReferenceData();
         givenOffenceMetadataIsPresentInReferenceData();
@@ -244,7 +244,7 @@ public class EndorsementRemovalNotificationServiceTest {
     }
 
     @Test
-    public void shouldRequestPdfGenerationOnSystemDocGenerator() throws FileServiceException {
+    public void shouldRequestPdfGenerationOnSystemDocGenerator() {
         givenCaseWithEndorsementsToBeRemoved();
         givenEnforcementAreaPresentInReferenceData();
         givenOffenceMetadataIsPresentInReferenceData();
@@ -530,8 +530,8 @@ public class EndorsementRemovalNotificationServiceTest {
 
     }
 
-    private EndorsementRemovalNotificationTemplateData getTemplateData(final Pair<JsonObject, InputStream> fileStoreEntry) {
-        final JsonObject fileContent = JsonObjectConversionHelper.streamToJsonObject(fileStoreEntry.getValue());
+    private EndorsementRemovalNotificationTemplateData getTemplateData(final FakeFileStorer.StoredFile storedFile) {
+        final JsonObject fileContent = JsonObjectConversionHelper.streamToJsonObject(new ByteArrayInputStream(storedFile.getContent()));
         return jsonObjectToObjectConverter.convert(fileContent, EndorsementRemovalNotificationTemplateData.class);
     }
 }

@@ -206,6 +206,11 @@ public class NoActionController {
         send(envelope);
     }
 
+    @Handles("sjp.command.ingest-file")
+    public void ingestFile(final JsonEnvelope envelope) {
+        send(envelope);
+    }
+
     private void send(final Envelope<?> envelope) {
         sender.send(envelope);
     }

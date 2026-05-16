@@ -8,16 +8,17 @@ import static java.util.UUID.fromString;
 import static java.util.UUID.randomUUID;
 import static java.util.stream.Collectors.toList;
 import static javax.json.Json.createObjectBuilder;
+import static org.apache.commons.io.IOUtils.toByteArray;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.text.IsEqualCompressingWhiteSpace.equalToCompressingWhiteSpace;
+import static uk.gov.justice.services.test.utils.common.host.TestHostProvider.getHost;
 import static uk.gov.moj.sjp.it.Constants.NOTICE_PERIOD_IN_DAYS;
 import static uk.gov.moj.sjp.it.command.CreateCase.CreateCasePayloadBuilder;
 import static uk.gov.moj.sjp.it.command.CreateCase.DefendantBuilder.defaultDefendant;
 import static uk.gov.moj.sjp.it.command.CreateCase.createCaseForPayloadBuilder;
 import static uk.gov.moj.sjp.it.helper.CaseHelper.pollUntilCaseReady;
-import static uk.gov.moj.sjp.it.helper.FileServiceDBHelper.createStubFile;
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubAllIndividualProsecutorsQueries;
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubAllReferenceData;
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubAnyQueryOffences;
@@ -26,10 +27,12 @@ import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubProsecutorQuer
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubRegionByPostcode;
 import static uk.gov.moj.sjp.it.stub.SysDocGeneratorStub.pollSysDocGenerationRequests;
 import static uk.gov.moj.sjp.it.stub.SysDocGeneratorStub.stubGenerateDocumentEndPoint;
+import static uk.gov.moj.sjp.it.util.FileUtil.getPayloadAsInputStream;
 import static uk.gov.moj.sjp.it.util.SjpDatabaseCleaner.cleanViewStore;
 import static uk.gov.moj.sjp.it.util.SysDocGeneratorHelper.publishDocumentAvailablePublicEvent;
 
 import uk.gov.justice.services.messaging.JsonEnvelope;
+import uk.gov.moj.cpp.sjp.filestore.test.BlobStoreTestHelper;
 import uk.gov.moj.sjp.it.command.CreateCase;
 import uk.gov.moj.sjp.it.helper.EventListener;
 import uk.gov.moj.sjp.it.helper.TransparencyReportHelper;
@@ -39,7 +42,6 @@ import uk.gov.moj.sjp.it.util.SysDocGeneratorHelper;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.time.LocalDate;
-import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -155,7 +157,14 @@ public class TransparencyReportIT extends BaseIntegrationTest {
         final List<JSONObject> documentGenerationRequests = pollSysDocGenerationRequests(hasSize(1));
         validateDocumentGenerationRequest(documentGenerationRequests.get(0), transparencyReportId);
 
-        final UUID generatedDocumentId = createStubFile("transparency-report-delta-english.pdf", ZonedDateTime.now());
+        final BlobStoreTestHelper blobStoreTestHelper = BlobStoreTestHelper.forLocalAzurite(
+                getHost(), "sjp-it-sdg-docs");
+        final byte[] pdfBytes = toByteArray(getPayloadAsInputStream("documents/scrooge-full.pdf"));
+        final UUID generatedDocumentId = blobStoreTestHelper.upload("published", "transparency-report.pdf", pdfBytes);
+        final String sourceUri = blobStoreTestHelper.generateDockerAccessibleSasUri(
+                "published", generatedDocumentId,
+                "http://" + getHost() + ":10000/devstoreaccount1",
+                "http://cpp-azurite:10000/devstoreaccount1");
 
         final EventListener metadataAddedEventListener = new EventListener()
                 .withMaxWaitTime(50000)
@@ -163,7 +172,8 @@ public class TransparencyReportIT extends BaseIntegrationTest {
                 .run(() -> publishDocumentAvailablePublicEvent(
                         fromString(transparencyReportId),
                         TEMPLATE_NAME_FULL,
-                        generatedDocumentId)
+                        generatedDocumentId,
+                        sourceUri)
                 );
 
         final Optional<JsonEnvelope> metadataAdded = metadataAddedEventListener.popEvent(SJP_EVENTS_TRANSPARENCY_REPORT_METADATA_ADDED);

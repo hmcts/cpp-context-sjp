@@ -4,7 +4,7 @@
     <parent>
         <groupId>uk.gov.moj.cpp.sjp</groupId>
         <artifactId>sjp-parent</artifactId>
-        <version>17.103.170-SNAPSHOT</version>
+        <version>17.104.1-SNAPSHOT</version>
     </parent>
 
     <modelVersion>4.0.0</modelVersion>
@@ -260,6 +260,12 @@
         <dependency>
             <groupId>uk.gov.moj.cpp.common.library.utils</groupId>
             <artifactId>cpp-platform-test-utils</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>uk.gov.moj.cpp.sjp</groupId>
+            <artifactId>sjp-file-store-test-utils</artifactId>
+            <version>${project.version}</version>
             <scope>test</scope>
         </dependency>
     </dependencies>

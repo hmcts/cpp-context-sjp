@@ -1,5 +1,6 @@
 package uk.gov.moj.cpp.sjp.event.processor.service.systemdocgenerator;
 
+import java.net.URI;
 import java.util.UUID;
 
 import org.apache.commons.lang3.builder.EqualsBuilder;
@@ -14,15 +15,18 @@ public class DocumentGenerationRequest {
     private ConversionFormat conversionFormat;
     private String sourceCorrelationId;
     private UUID payloadFileServiceId;
+    private URI payloadSourceUri;
 
     public DocumentGenerationRequest(final TemplateIdentifier templateIdentifier,
                                      final ConversionFormat conversionFormat,
                                      final String sourceCorrelationId,
-                                     final UUID payloadFileServiceId) {
+                                     final UUID payloadFileServiceId,
+                                     final URI payloadSourceUri) {
         this.templateIdentifier = templateIdentifier;
         this.conversionFormat = conversionFormat;
         this.sourceCorrelationId = sourceCorrelationId;
         this.payloadFileServiceId = payloadFileServiceId;
+        this.payloadSourceUri = payloadSourceUri;
     }
 
     public String getOriginatingSource() {
@@ -43,6 +47,10 @@ public class DocumentGenerationRequest {
 
     public UUID getPayloadFileServiceId() {
         return payloadFileServiceId;
+    }
+
+    public URI getPayloadSourceUri() {
+        return payloadSourceUri;
     }
 
     @Override

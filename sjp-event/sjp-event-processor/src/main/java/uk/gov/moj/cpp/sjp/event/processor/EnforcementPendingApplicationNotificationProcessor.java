@@ -17,7 +17,6 @@ import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
 import uk.gov.justice.services.core.annotation.Handles;
 import uk.gov.justice.services.core.annotation.ServiceComponent;
 import uk.gov.justice.services.core.sender.Sender;
-import uk.gov.justice.services.fileservice.api.FileServiceException;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.sjp.event.EnforcementPendingApplicationNotificationGenerated;
 import uk.gov.moj.cpp.sjp.event.EnforcementPendingApplicationNotificationRequired;
@@ -68,7 +67,7 @@ public class EnforcementPendingApplicationNotificationProcessor {
     private SystemIdMapperService systemIdMapperService;
 
     @Handles(EnforcementPendingApplicationNotificationRequired.EVENT_NAME)
-    public void initiateEmailToNotificationNotify(final JsonEnvelope envelope) throws FileServiceException {
+    public void initiateEmailToNotificationNotify(final JsonEnvelope envelope) {
         final EnforcementPendingApplicationNotificationRequired event = jsonObjectToObjectConverter.convert(
                 envelope.payloadAsJsonObject(),
                 EnforcementPendingApplicationNotificationRequired.class);

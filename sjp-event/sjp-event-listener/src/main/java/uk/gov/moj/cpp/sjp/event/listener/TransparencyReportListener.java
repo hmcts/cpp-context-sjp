@@ -117,11 +117,11 @@ public class TransparencyReportListener {
         final TransparencyReportMetadata transparencyReportMetadata = transparencyReportMetadataRepository.findBy(transparencyReportId);
         if (transparencyReportMetadata != null) {
             if (language.equals(ENGLISH)) {
-                transparencyReportMetadata.setEnglishFileServiceId(fromString(metadata.getString(FILE_ID)));
+                transparencyReportMetadata.setEnglishBlobFileId(fromString(metadata.getString(FILE_ID)));
                 transparencyReportMetadata.setEnglishNumberOfPages(metadata.getInt(NUMBER_OF_PAGES));
                 transparencyReportMetadata.setEnglishSizeInBytes(metadata.getInt(FILE_SIZE));
             } else if (language.equals(WELSH)) {
-                transparencyReportMetadata.setWelshFileServiceId(fromString(metadata.getString(FILE_ID)));
+                transparencyReportMetadata.setWelshBlobFileId(fromString(metadata.getString(FILE_ID)));
                 transparencyReportMetadata.setWelshNumberOfPages(metadata.getInt(NUMBER_OF_PAGES));
                 transparencyReportMetadata.setWelshSizeInBytes(metadata.getInt(FILE_SIZE));
             }
@@ -133,7 +133,7 @@ public class TransparencyReportListener {
         final JsonObject metadata = metadataAddedPayload.getJsonObject(METADATA);
         final TransparencyReportMetadata transparencyReportMetadata = transparencyReportMetadataRepository.findBy(transparencyReportId);
         if (transparencyReportMetadata != null) {
-            transparencyReportMetadata.setFileServiceId(fromString(metadata.getString(FILE_ID)));
+            transparencyReportMetadata.setBlobFileId(fromString(metadata.getString(FILE_ID)));
             transparencyReportMetadata.setNumberOfPages(metadata.getInt(NUMBER_OF_PAGES));
             transparencyReportMetadata.setSizeInBytes(metadata.getInt(FILE_SIZE));
         }

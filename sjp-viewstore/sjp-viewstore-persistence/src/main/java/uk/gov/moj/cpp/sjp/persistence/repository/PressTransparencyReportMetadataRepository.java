@@ -15,7 +15,7 @@ import org.apache.deltaspike.data.api.Repository;
 public interface PressTransparencyReportMetadataRepository extends EntityRepository<PressTransparencyReportMetadata, UUID> {
 
     @Query(value = "SELECT ptrmd FROM PressTransparencyReportMetadata ptrmd " +
-            "WHERE ptrmd.fileServiceId is not null and ptrmd.generatedAt > :fromDate " +
+            "WHERE ptrmd.blobFileId is not null and ptrmd.generatedAt > :fromDate " +
             "ORDER BY ptrmd.generatedAt DESC")
     List<PressTransparencyReportMetadata> findLatestPressTransparencyReportMetadata(@QueryParam("fromDate") LocalDateTime fromDate);
 }

@@ -2,18 +2,20 @@ package uk.gov.moj.cpp.sjp.event.processor.service.enforcementnotification;
 
 import static java.lang.String.format;
 import static java.util.Objects.nonNull;
-import static javax.json.Json.createObjectBuilder;
 import static org.apache.commons.collections.CollectionUtils.isNotEmpty;
 import static uk.gov.justice.json.schemas.domains.sjp.ApplicationType.REOPENING;
 import static uk.gov.justice.json.schemas.domains.sjp.ApplicationType.STAT_DEC;
 import static uk.gov.moj.cpp.sjp.event.processor.helper.JsonObjectConversionHelper.jsonObjectAsByteArray;
 
+import java.io.ByteArrayInputStream;
+
 import uk.gov.justice.json.schemas.domains.sjp.ApplicationType;
 import uk.gov.justice.json.schemas.domains.sjp.queries.CaseDetails;
 import uk.gov.justice.json.schemas.domains.sjp.queries.Session;
 import uk.gov.justice.services.common.converter.ObjectToJsonObjectConverter;
-import uk.gov.justice.services.fileservice.api.FileServiceException;
-import uk.gov.justice.services.fileservice.api.FileStorer;
+import uk.gov.moj.cpp.sjp.filestore.azure.FileStorer;
+import uk.gov.moj.cpp.sjp.filestore.azure.SasUriGenerator;
+import uk.gov.moj.cpp.sjp.filestore.azure.StoragePath;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.sjp.event.EnforcementPendingApplicationNotificationRequired;
 import uk.gov.moj.cpp.sjp.event.processor.service.ReferenceDataOffencesService;
@@ -24,11 +26,10 @@ import uk.gov.moj.cpp.sjp.event.processor.service.systemdocgenerator.DocumentGen
 import uk.gov.moj.cpp.sjp.event.processor.service.systemdocgenerator.SystemDocGenerator;
 import uk.gov.moj.cpp.sjp.event.processor.service.systemdocgenerator.TemplateIdentifier;
 
-import java.io.ByteArrayInputStream;
+import java.net.URI;
 import java.util.UUID;
 
 import javax.inject.Inject;
-import javax.json.JsonObject;
 
 @SuppressWarnings({"squid:S3655"}) // Suppress Optional.get without .isPresent().
 public class EnforcementEmailAttachmentService {
@@ -53,6 +54,8 @@ public class EnforcementEmailAttachmentService {
     @Inject
     private FileStorer fileStorer;
     @Inject
+    private SasUriGenerator sasUriGenerator;
+    @Inject
     private SystemDocGenerator systemDocGenerator;
 
     @Inject
@@ -60,12 +63,13 @@ public class EnforcementEmailAttachmentService {
 
 
     public void generateNotification(final EnforcementPendingApplicationNotificationRequired enforcementPendingApplicationNotificationInitiated,
-                                     final JsonEnvelope envelope) throws FileServiceException {
+                                     final JsonEnvelope envelope) {
         final EnforcementPendingApplicationNotificationTemplateData templatePayload = createTemplatePayload(enforcementPendingApplicationNotificationInitiated, envelope);
 
         final UUID applicationId = enforcementPendingApplicationNotificationInitiated.getApplicationId();
         final UUID fileId = storeEmailAttachmentTemplatePayload(applicationId, templatePayload);
-        requestEmailAttachmentGeneration(applicationId.toString(), fileId, envelope);
+        final URI payloadSourceUri = sasUriGenerator.generateReadUri(StoragePath.published("sdg-payloads"), fileId);
+        requestEmailAttachmentGeneration(applicationId.toString(), fileId, payloadSourceUri, envelope);
     }
 
     public String getEmailSubject(final ApplicationType applicationType) {
@@ -122,36 +126,24 @@ public class EnforcementEmailAttachmentService {
     }
 
     private UUID storeEmailAttachmentTemplatePayload(final UUID applicationId,
-                                                     final EnforcementPendingApplicationNotificationTemplateData templateData) throws FileServiceException {
-        final JsonObject metadata = metadata(fileName(applicationId));
-        return fileStorer.store(metadata, toInputStream(templateData));
+                                                     final EnforcementPendingApplicationNotificationTemplateData templateData) {
+        final byte[] payloadBytes = jsonObjectAsByteArray(objectToJsonObjectConverter.convert(templateData));
+        return fileStorer.store(StoragePath.published("sdg-payloads"), applicationId, fileName(applicationId), new ByteArrayInputStream(payloadBytes));
     }
 
-    private void requestEmailAttachmentGeneration(final String applicationId, final UUID fileId, final JsonEnvelope envelope) {
+    private void requestEmailAttachmentGeneration(final String applicationId, final UUID fileId, final URI payloadSourceUri, final JsonEnvelope envelope) {
         final DocumentGenerationRequest request = new DocumentGenerationRequest(
                 TemplateIdentifier.ENFORCEMENT_PENDING_APPLICATION_NOTIFICATION,
                 ConversionFormat.PDF,
                 applicationId,
-                fileId
+                fileId,
+                payloadSourceUri
         );
 
         systemDocGenerator.generateDocument(request, envelope);
     }
 
-    private JsonObject metadata(final String fileName) {
-        return createObjectBuilder()
-                .add("fileName", fileName)
-                .add("conversionFormat", "pdf")
-                .add("templateName", TemplateIdentifier.ENFORCEMENT_PENDING_APPLICATION_NOTIFICATION.getValue())
-                .build();
-    }
-
     private String fileName(final UUID applicationId) {
         return format("enforcement-pending-application-%s.pdf", applicationId);
-    }
-
-    private ByteArrayInputStream toInputStream(final EnforcementPendingApplicationNotificationTemplateData templateData) {
-        final byte[] jsonPayloadInBytes = jsonObjectAsByteArray(objectToJsonObjectConverter.convert(templateData));
-        return new ByteArrayInputStream(jsonPayloadInBytes);
     }
 }

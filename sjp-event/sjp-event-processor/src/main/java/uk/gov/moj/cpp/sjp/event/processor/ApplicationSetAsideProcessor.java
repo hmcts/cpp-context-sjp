@@ -9,7 +9,6 @@ import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
 import uk.gov.justice.services.core.annotation.Handles;
 import uk.gov.justice.services.core.annotation.ServiceComponent;
 import uk.gov.justice.services.core.sender.Sender;
-import uk.gov.justice.services.fileservice.api.FileServiceException;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.sjp.event.decision.ApplicationDecisionSetAside;
 import uk.gov.moj.cpp.sjp.event.processor.service.SjpService;
@@ -38,7 +37,7 @@ public class ApplicationSetAsideProcessor {
     private EndorsementRemovalNotificationService endorsementRemovalNotificationService;
 
     @Handles(ApplicationDecisionSetAside.EVENT_NAME)
-    public void handleApplicationDecisionSetAside(final JsonEnvelope envelope) throws FileServiceException {
+    public void handleApplicationDecisionSetAside(final JsonEnvelope envelope) {
         sendApplicationSetAsidePublicEvent(envelope);
         sendNotificationToDvlaToRemoveEndorsements(envelope);
     }
@@ -48,7 +47,7 @@ public class ApplicationSetAsideProcessor {
         sender.send(envelopeFrom(metadataFrom(envelope.metadata()).withName(PUBLIC_APPLICATION_SET_ASIDE_EVENT), envelope.payload()));
     }
 
-    private void sendNotificationToDvlaToRemoveEndorsements(final JsonEnvelope envelope) throws FileServiceException {
+    private void sendNotificationToDvlaToRemoveEndorsements(final JsonEnvelope envelope) {
         final ApplicationDecisionSetAside decision = converter.convert(envelope.payloadAsJsonObject(), ApplicationDecisionSetAside.class);
         final CaseDetails caseDetails = sjpService.getCaseDetails(decision.getCaseId(), envelope);
         final CaseDetailsDecorator caseDetailsDecorator = new CaseDetailsDecorator(caseDetails);

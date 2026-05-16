@@ -43,7 +43,7 @@ public class TransparencyReportService {
                 .withReportIn(language.charAt(0) + language.substring(1).toLowerCase())
                 .withPages(latestTransparencyReportMetadata.getNumberOfPages())
                 .withSize(latestTransparencyReportMetadata.getSizeInBytes().toString())
-                .withFileId(latestTransparencyReportMetadata.getFileServiceId().toString())
+                .withFileId(latestTransparencyReportMetadata.getBlobFileId().toString())
                 .withTitle(latestTransparencyReportMetadata.getTitle()).build();
     }
 }

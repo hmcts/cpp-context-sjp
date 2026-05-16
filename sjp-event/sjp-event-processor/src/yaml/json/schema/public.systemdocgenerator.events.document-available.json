@@ -32,6 +32,12 @@
     "originatingSource": {
       "type": "string"
     },
+    "blobFileId": {
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+    },
+    "sourceUri": {
+      "type": "string"
+    },
     "additionalInformation": {
       "type": "array",
       "minItems": 0,
@@ -55,11 +61,9 @@
   },
   "additionalProperties": false,
   "required": [
-    "payloadFileServiceId",
     "templateIdentifier",
     "conversionFormat",
     "requestedTime",
-    "documentFileServiceId",
     "generatedTime",
     "generateVersion"
   ]

@@ -255,26 +255,28 @@ public class PleadOnlineIT extends BaseIntegrationTest {
                     createCasePayloadBuilder.getDefendantBuilder().getDateOfBirth());
             caseSearchResultHelper.verifyPleaReceivedDate();
             //verify online-plea
+            verifyOnlinePleaReceivedAndUpdatedCaseDetailsFlag(createCasePayloadBuilder.getId(), true);
             final Response response = getOnlinePlea(caseId.toString(), defendantBuilder.getId().toString(), USER_ID);
             if (response.getStatus() != OK.getStatusCode()) {
                 fail("Polling interrupted, please fix the error before continue. Status code: " + response.getStatus());
             }
-            verifyOnlinePleaReceivedAndUpdatedCaseDetailsFlag(createCasePayloadBuilder.getId(), true);
 
             String pleaResponse = response.readEntity(String.class);
             ObjectMapper objectMapper = new ObjectMapper();
             PleasView pleasView = objectMapper.readValue(pleaResponse, PleasView.class);
             final JSONObject defendantsPlea = new JSONObject(objectMapper.writeValueAsString(pleasView.getPleas().get(0)));
 
-            assertThat(defendantsPlea.getJSONArray("onlinePleaDetails").getJSONObject(0).get("offenceId"), equalTo(offenceId1.toString()));
-            assertThat(defendantsPlea.getJSONArray("onlinePleaDetails").getJSONObject(0).get("plea"), equalTo(pleaType1.name()));
-            assertThat(defendantsPlea.getJSONArray("onlinePleaDetails").getJSONObject(0).get("mitigation"), equalTo("I was drunk at the time"));
-            assertThat(defendantsPlea.getJSONArray("onlinePleaDetails").getJSONObject(1).get("offenceId"), equalTo(offenceId2.toString()));
-            assertThat(defendantsPlea.getJSONArray("onlinePleaDetails").getJSONObject(1).get("plea"), equalTo(pleaType2.name()));
-            assertThat(defendantsPlea.getJSONArray("onlinePleaDetails").getJSONObject(1).get("notGuiltyBecause"), equalTo("I was forced to do it"));
-            assertThat(defendantsPlea.getJSONArray("onlinePleaDetails").getJSONObject(2).get("offenceId"), equalTo(offenceId3.toString()));
-            assertThat(defendantsPlea.getJSONArray("onlinePleaDetails").getJSONObject(2).get("plea"), equalTo(pleaType3.name()));
-            assertFalse(defendantsPlea.getJSONArray("onlinePleaDetails").getJSONObject(2).has("mitigation"));
+            final Map<String, JSONObject> pleaDetailsByOffenceId = new HashMap<>();
+            for (int i = 0; i < defendantsPlea.getJSONArray("onlinePleaDetails").length(); i++) {
+                final JSONObject detail = defendantsPlea.getJSONArray("onlinePleaDetails").getJSONObject(i);
+                pleaDetailsByOffenceId.put(detail.getString("offenceId"), detail);
+            }
+            assertThat(pleaDetailsByOffenceId.get(offenceId1.toString()).get("plea"), equalTo(pleaType1.name()));
+            assertThat(pleaDetailsByOffenceId.get(offenceId1.toString()).get("mitigation"), equalTo("I was drunk at the time"));
+            assertThat(pleaDetailsByOffenceId.get(offenceId2.toString()).get("plea"), equalTo(pleaType2.name()));
+            assertThat(pleaDetailsByOffenceId.get(offenceId2.toString()).get("notGuiltyBecause"), equalTo("I was forced to do it"));
+            assertThat(pleaDetailsByOffenceId.get(offenceId3.toString()).get("plea"), equalTo(pleaType3.name()));
+            assertFalse(pleaDetailsByOffenceId.get(offenceId3.toString()).has("mitigation"));
             assertThat(defendantsPlea.getJSONObject("personalDetails").get("firstName"), equalTo("Testy"));
             assertThat(defendantsPlea.getJSONObject("personalDetails").get("lastName"), equalTo("LLOYD"));
             assertThat(defendantsPlea.getJSONObject("personalDetails").getJSONObject("address").get("address1"), equalTo("14 Tottenham Court Road"));
@@ -343,26 +345,28 @@ public class PleadOnlineIT extends BaseIntegrationTest {
                     createCasePayloadBuilder.getDefendantBuilder().getDateOfBirth());
             caseSearchResultHelper.verifyPleaReceivedDate();
             //verify online-plea
+            verifyOnlinePleaReceivedAndUpdatedCaseDetailsFlag(createCasePayloadBuilder.getId(), true);
             final Response response = getOnlinePlea(caseId.toString(), defendantBuilder.getId().toString(), USER_ID);
             if (response.getStatus() != OK.getStatusCode()) {
                 fail("Polling interrupted, please fix the error before continue. Status code: " + response.getStatus());
             }
-            verifyOnlinePleaReceivedAndUpdatedCaseDetailsFlag(createCasePayloadBuilder.getId(), true);
 
             String pleaResponse = response.readEntity(String.class);
             ObjectMapper objectMapper = new ObjectMapper();
             PleasView pleasView = objectMapper.readValue(pleaResponse, PleasView.class);
             final JSONObject defendantsPlea = new JSONObject(objectMapper.writeValueAsString(pleasView.getPleas().get(0)));
 
-            assertThat(defendantsPlea.getJSONArray("onlinePleaDetails").getJSONObject(0).get("offenceId"), equalTo(offenceId1.toString()));
-            assertThat(defendantsPlea.getJSONArray("onlinePleaDetails").getJSONObject(0).get("plea"), equalTo(pleaType1.name()));
-            assertThat(defendantsPlea.getJSONArray("onlinePleaDetails").getJSONObject(0).get("mitigation"), equalTo("I was drunk at the time"));
-            assertThat(defendantsPlea.getJSONArray("onlinePleaDetails").getJSONObject(1).get("offenceId"), equalTo(offenceId2.toString()));
-            assertThat(defendantsPlea.getJSONArray("onlinePleaDetails").getJSONObject(1).get("plea"), equalTo(pleaType2.name()));
-            assertThat(defendantsPlea.getJSONArray("onlinePleaDetails").getJSONObject(1).get("notGuiltyBecause"), equalTo("I was forced to do it"));
-            assertThat(defendantsPlea.getJSONArray("onlinePleaDetails").getJSONObject(2).get("offenceId"), equalTo(offenceId3.toString()));
-            assertThat(defendantsPlea.getJSONArray("onlinePleaDetails").getJSONObject(2).get("plea"), equalTo(pleaType3.name()));
-            assertFalse(defendantsPlea.getJSONArray("onlinePleaDetails").getJSONObject(2).has("mitigation"));
+            final Map<String, JSONObject> pleaDetailsByOffenceId = new HashMap<>();
+            for (int i = 0; i < defendantsPlea.getJSONArray("onlinePleaDetails").length(); i++) {
+                final JSONObject detail = defendantsPlea.getJSONArray("onlinePleaDetails").getJSONObject(i);
+                pleaDetailsByOffenceId.put(detail.getString("offenceId"), detail);
+            }
+            assertThat(pleaDetailsByOffenceId.get(offenceId1.toString()).get("plea"), equalTo(pleaType1.name()));
+            assertThat(pleaDetailsByOffenceId.get(offenceId1.toString()).get("mitigation"), equalTo("I was drunk at the time"));
+            assertThat(pleaDetailsByOffenceId.get(offenceId2.toString()).get("plea"), equalTo(pleaType2.name()));
+            assertThat(pleaDetailsByOffenceId.get(offenceId2.toString()).get("notGuiltyBecause"), equalTo("I was forced to do it"));
+            assertThat(pleaDetailsByOffenceId.get(offenceId3.toString()).get("plea"), equalTo(pleaType3.name()));
+            assertFalse(pleaDetailsByOffenceId.get(offenceId3.toString()).has("mitigation"));
             assertThat(defendantsPlea.getJSONObject("personalDetails").get("firstName"), equalTo("Testy"));
             assertThat(defendantsPlea.getJSONObject("personalDetails").get("lastName"), equalTo("LLOYD"));
             assertThat(defendantsPlea.getJSONObject("personalDetails").getJSONObject("address").get("address1"), equalTo("14 Tottenham Court Road"));
@@ -432,26 +436,28 @@ public class PleadOnlineIT extends BaseIntegrationTest {
                     createCasePayloadBuilder.getDefendantBuilder().getDateOfBirth());
             caseSearchResultHelper.verifyPleaReceivedDate();
             //verify online-plea
+            verifyOnlinePleaReceivedAndUpdatedCaseDetailsFlag(createCasePayloadBuilder.getId(), true);
             final Response response = getOnlinePlea(caseId.toString(), defendantBuilder.getId().toString(), USER_ID);
             if (response.getStatus() != OK.getStatusCode()) {
                 fail("Polling interrupted, please fix the error before continue. Status code: " + response.getStatus());
             }
-            verifyOnlinePleaReceivedAndUpdatedCaseDetailsFlag(createCasePayloadBuilder.getId(), true);
 
             String pleaResponse = response.readEntity(String.class);
             ObjectMapper objectMapper = new ObjectMapper();
             PleasView pleasView = objectMapper.readValue(pleaResponse, PleasView.class);
             final JSONObject defendantsPlea = new JSONObject(objectMapper.writeValueAsString(pleasView.getPleas().get(0)));
 
-            assertThat(defendantsPlea.getJSONArray("onlinePleaDetails").getJSONObject(0).get("offenceId"), equalTo(offenceId1.toString()));
-            assertThat(defendantsPlea.getJSONArray("onlinePleaDetails").getJSONObject(0).get("plea"), equalTo(pleaType1.name()));
-            assertThat(defendantsPlea.getJSONArray("onlinePleaDetails").getJSONObject(0).get("mitigation"), equalTo("I was drunk at the time"));
-            assertThat(defendantsPlea.getJSONArray("onlinePleaDetails").getJSONObject(1).get("offenceId"), equalTo(offenceId2.toString()));
-            assertThat(defendantsPlea.getJSONArray("onlinePleaDetails").getJSONObject(1).get("plea"), equalTo(pleaType2.name()));
-            assertThat(defendantsPlea.getJSONArray("onlinePleaDetails").getJSONObject(1).get("notGuiltyBecause"), equalTo("I was forced to do it"));
-            assertThat(defendantsPlea.getJSONArray("onlinePleaDetails").getJSONObject(2).get("offenceId"), equalTo(offenceId3.toString()));
-            assertThat(defendantsPlea.getJSONArray("onlinePleaDetails").getJSONObject(2).get("plea"), equalTo(pleaType3.name()));
-            assertFalse(defendantsPlea.getJSONArray("onlinePleaDetails").getJSONObject(2).has("mitigation"));
+            final Map<String, JSONObject> pleaDetailsByOffenceId = new HashMap<>();
+            for (int i = 0; i < defendantsPlea.getJSONArray("onlinePleaDetails").length(); i++) {
+                final JSONObject detail = defendantsPlea.getJSONArray("onlinePleaDetails").getJSONObject(i);
+                pleaDetailsByOffenceId.put(detail.getString("offenceId"), detail);
+            }
+            assertThat(pleaDetailsByOffenceId.get(offenceId1.toString()).get("plea"), equalTo(pleaType1.name()));
+            assertThat(pleaDetailsByOffenceId.get(offenceId1.toString()).get("mitigation"), equalTo("I was drunk at the time"));
+            assertThat(pleaDetailsByOffenceId.get(offenceId2.toString()).get("plea"), equalTo(pleaType2.name()));
+            assertThat(pleaDetailsByOffenceId.get(offenceId2.toString()).get("notGuiltyBecause"), equalTo("I was forced to do it"));
+            assertThat(pleaDetailsByOffenceId.get(offenceId3.toString()).get("plea"), equalTo(pleaType3.name()));
+            assertFalse(pleaDetailsByOffenceId.get(offenceId3.toString()).has("mitigation"));
             assertThat(defendantsPlea.getJSONObject("personalDetails").get("firstName"), equalTo("David"));
             assertThat(defendantsPlea.getJSONObject("personalDetails").get("lastName"), equalTo("LLOYD"));
             assertThat(defendantsPlea.getJSONObject("personalDetails").getJSONObject("address").get("address1"), equalTo("14 Tottenham Court Road"));
@@ -520,26 +526,28 @@ public class PleadOnlineIT extends BaseIntegrationTest {
                     createCasePayloadBuilder.getDefendantBuilder().getDateOfBirth());
             caseSearchResultHelper.verifyPleaReceivedDate();
             //verify online-plea
+            verifyOnlinePleaReceivedAndUpdatedCaseDetailsFlag(createCasePayloadBuilder.getId(), true);
             final Response response = getOnlinePlea(caseId.toString(), defendantBuilder.getId().toString(), USER_ID);
             if (response.getStatus() != OK.getStatusCode()) {
                 fail("Polling interrupted, please fix the error before continue. Status code: " + response.getStatus());
             }
-            verifyOnlinePleaReceivedAndUpdatedCaseDetailsFlag(createCasePayloadBuilder.getId(), true);
 
             String pleaResponse = response.readEntity(String.class);
             ObjectMapper objectMapper = new ObjectMapper();
             PleasView pleasView = objectMapper.readValue(pleaResponse, PleasView.class);
             final JSONObject defendantsPlea = new JSONObject(objectMapper.writeValueAsString(pleasView.getPleas().get(0)));
 
-            assertThat(defendantsPlea.getJSONArray("onlinePleaDetails").getJSONObject(0).get("offenceId"), equalTo(offenceId1.toString()));
-            assertThat(defendantsPlea.getJSONArray("onlinePleaDetails").getJSONObject(0).get("plea"), equalTo(pleaType1.name()));
-            assertThat(defendantsPlea.getJSONArray("onlinePleaDetails").getJSONObject(0).get("mitigation"), equalTo("I was drunk at the time"));
-            assertThat(defendantsPlea.getJSONArray("onlinePleaDetails").getJSONObject(1).get("offenceId"), equalTo(offenceId2.toString()));
-            assertThat(defendantsPlea.getJSONArray("onlinePleaDetails").getJSONObject(1).get("plea"), equalTo(pleaType2.name()));
-            assertThat(defendantsPlea.getJSONArray("onlinePleaDetails").getJSONObject(1).get("notGuiltyBecause"), equalTo("I was forced to do it"));
-            assertThat(defendantsPlea.getJSONArray("onlinePleaDetails").getJSONObject(2).get("offenceId"), equalTo(offenceId3.toString()));
-            assertThat(defendantsPlea.getJSONArray("onlinePleaDetails").getJSONObject(2).get("plea"), equalTo(pleaType3.name()));
-            assertFalse(defendantsPlea.getJSONArray("onlinePleaDetails").getJSONObject(2).has("mitigation"));
+            final Map<String, JSONObject> pleaDetailsByOffenceId = new HashMap<>();
+            for (int i = 0; i < defendantsPlea.getJSONArray("onlinePleaDetails").length(); i++) {
+                final JSONObject detail = defendantsPlea.getJSONArray("onlinePleaDetails").getJSONObject(i);
+                pleaDetailsByOffenceId.put(detail.getString("offenceId"), detail);
+            }
+            assertThat(pleaDetailsByOffenceId.get(offenceId1.toString()).get("plea"), equalTo(pleaType1.name()));
+            assertThat(pleaDetailsByOffenceId.get(offenceId1.toString()).get("mitigation"), equalTo("I was drunk at the time"));
+            assertThat(pleaDetailsByOffenceId.get(offenceId2.toString()).get("plea"), equalTo(pleaType2.name()));
+            assertThat(pleaDetailsByOffenceId.get(offenceId2.toString()).get("notGuiltyBecause"), equalTo("I was forced to do it"));
+            assertThat(pleaDetailsByOffenceId.get(offenceId3.toString()).get("plea"), equalTo(pleaType3.name()));
+            assertFalse(pleaDetailsByOffenceId.get(offenceId3.toString()).has("mitigation"));
             assertThat(defendantsPlea.getJSONObject("personalDetails").get("firstName"), equalTo("David"));
             assertThat(defendantsPlea.getJSONObject("personalDetails").get("lastName"), equalTo("LLOYD"));
             assertThat(defendantsPlea.getJSONObject("personalDetails").getJSONObject("address").get("address1"), equalTo("14 Tottenham Court Road"));
@@ -951,9 +959,9 @@ public class PleadOnlineIT extends BaseIntegrationTest {
                     createCasePayloadBuilder.getDefendantBuilder().getLastName(),
                     createCasePayloadBuilder.getDefendantBuilder().getDateOfBirth());
             //1) First plea should be successful
-            pleadOnlineAndConfirmSuccess(PleaType.NOT_GUILTY, pleadOnlineHelper, caseSearchResultHelper);
+            pleadOnlineAndConfirmSuccess(NOT_GUILTY, pleadOnlineHelper, caseSearchResultHelper);
             //2) Second plea should fail as cannot plea twice
-            final JSONObject pleaPayload = getOnlinePleaPayload(PleaType.NOT_GUILTY);
+            final JSONObject pleaPayload = getOnlinePleaPayload(NOT_GUILTY);
             pleadOnlineHelper.pleadOnline(pleaPayload.toString(), Response.Status.BAD_REQUEST);
         }
     }
@@ -968,11 +976,11 @@ public class PleadOnlineIT extends BaseIntegrationTest {
             //1) First plea should be successful
             final Optional<JsonEnvelope> caseReceivedEvent = new EventListener()
                     .subscribe(CaseStatusChanged.EVENT_NAME)
-                    .run(() -> pleadOnlineAndConfirmSuccessWithPublicEvent(PleaType.NOT_GUILTY, pleadOnlineHelper, caseSearchResultHelper))
+                    .run(() -> pleadOnlineAndConfirmSuccessWithPublicEvent(NOT_GUILTY, pleadOnlineHelper, caseSearchResultHelper))
                     .popEvent(CaseStatusChanged.EVENT_NAME);
             assertTrue(caseReceivedEvent.isPresent());
             //2) Second plea should fail as cannot plea twice
-            final JSONObject pleaPayload = getOnlinePleaPayload(PleaType.NOT_GUILTY);
+            final JSONObject pleaPayload = getOnlinePleaPayload(NOT_GUILTY);
             final Optional<JsonEnvelope> caseReceivedEvent2 = new EventListener()
                     .subscribe(CaseUpdateRejected.EVENT_NAME)
                     .run(() -> pleadOnlineHelper.pleadOnlinePublicEvent(stringToJsonObjectConverter.convert(pleaPayload.toString())))
@@ -985,7 +993,7 @@ public class PleadOnlineIT extends BaseIntegrationTest {
     public void shouldPleaOnlineShouldRejectIfCaseIsInCompletedStatus() {
         saveDefaultDecision(createCasePayloadBuilder.getId(), createCasePayloadBuilder.getOffenceIds());
         final PleadOnlineHelper pleadOnlineHelper = new PleadOnlineHelper(createCasePayloadBuilder.getId());
-        final JSONObject pleaPayload = getOnlinePleaPayload(PleaType.NOT_GUILTY);
+        final JSONObject pleaPayload = getOnlinePleaPayload(NOT_GUILTY);
         pleadOnlineHelper.pleadOnline(pleaPayload.toString(), Response.Status.BAD_REQUEST);
     }
 
@@ -1009,7 +1017,7 @@ public class PleadOnlineIT extends BaseIntegrationTest {
         saveDecision(decision);
         pollUntilCaseHasStatus(createCasePayloadBuilder.getId(), REFERRED_FOR_COURT_HEARING);
         final PleadOnlineHelper pleadOnlineHelper = new PleadOnlineHelper(createCasePayloadBuilder.getId());
-        final JSONObject pleaPayload = getOnlinePleaPayload(PleaType.NOT_GUILTY);
+        final JSONObject pleaPayload = getOnlinePleaPayload(NOT_GUILTY);
         pleadOnlineHelper.pleadOnline(pleaPayload.toString(), Response.Status.BAD_REQUEST);
     }
 
@@ -1054,7 +1062,7 @@ public class PleadOnlineIT extends BaseIntegrationTest {
 
     @Test
     public void shouldPleaNotGuiltyWithoutFinancialMeansWithPublicEvent() {
-        final PleaType notGuilty = PleaType.NOT_GUILTY;
+        final PleaType notGuilty = NOT_GUILTY;
         final JSONObject pleaPayload = getOnlinePleaPayload(notGuilty);
         pleaPayload.remove("financialMeans");
         assertThat(pleaPayload.has("financialMeans"), is(false));
@@ -1067,7 +1075,7 @@ public class PleadOnlineIT extends BaseIntegrationTest {
 
     @Test
     public void shouldPleaNotGuiltyWithoutFinancialMeans() {
-        final PleaType notGuilty = PleaType.NOT_GUILTY;
+        final PleaType notGuilty = NOT_GUILTY;
         final JSONObject pleaPayload = getOnlinePleaPayload(notGuilty);
         pleaPayload.remove("financialMeans");
         assertThat(pleaPayload.has("financialMeans"), is(false));
@@ -1079,7 +1087,7 @@ public class PleadOnlineIT extends BaseIntegrationTest {
 
     @Test
     public void shouldPleaNotGuiltyWithoutOutgoingsWithPublicEvent() {
-        final PleaType notGuilty = PleaType.NOT_GUILTY;
+        final PleaType notGuilty = NOT_GUILTY;
         final JSONObject pleaPayload = getOnlinePleaPayload(notGuilty);
         pleaPayload.remove("outgoings");
         assertThat(pleaPayload.has("financialMeans"), is(true));
@@ -1091,7 +1099,7 @@ public class PleadOnlineIT extends BaseIntegrationTest {
 
     @Test
     public void shouldPleaNotGuiltyWithoutOutgoings() {
-        final PleaType notGuilty = PleaType.NOT_GUILTY;
+        final PleaType notGuilty = NOT_GUILTY;
         final JSONObject pleaPayload = getOnlinePleaPayload(notGuilty);
         pleaPayload.remove("outgoings");
         assertThat(pleaPayload.has("financialMeans"), is(true));
@@ -1119,8 +1127,7 @@ public class PleadOnlineIT extends BaseIntegrationTest {
 
     @Test
     public void shouldPleaNotGuiltyAndUpdateDefendantDetails() {
-        final PleaType notGuilty = NOT_GUILTY;
-        final JSONObject pleaPayload = getOnlinePleaPayload(notGuilty);
+        final JSONObject pleaPayload = getOnlinePleaPayload(NOT_GUILTY);
         pleaPayload.remove("outgoings");
         pleaPayload.getJSONObject("personalDetails").put("firstName", "Changy");
         pleaPayload.getJSONObject("personalDetails").put("lastName", "Testerson");
@@ -1130,49 +1137,46 @@ public class PleadOnlineIT extends BaseIntegrationTest {
         final JsonPath response = pleadOnline(pleaPayload);
 
         verifyResponseCase(response, TEMPLATE_PLEA_NOT_GUILTY_WITH_CHANGED_DETAILS_CASE_RESPONSE);
-        verifyResponseOnlinePlea(TEMPLATE_PLEA_NOT_GUILTY_WITH_CHANGED_DETAILS_RESPONSE, notGuilty);
+        verifyResponseOnlinePlea(TEMPLATE_PLEA_NOT_GUILTY_WITH_CHANGED_DETAILS_RESPONSE, NOT_GUILTY);
     }
 
     @Test
     public void shouldPleaNotGuiltyWithoutFinancialMeansAndOutgoingsWithPublicEvent() {
-        final PleaType notGuilty = PleaType.NOT_GUILTY;
-        final JSONObject pleaPayload = getOnlinePleaPayload(notGuilty);
+        final JSONObject pleaPayload = getOnlinePleaPayload(NOT_GUILTY);
         pleaPayload.remove("financialMeans");
         pleaPayload.remove("outgoings");
         assertThat(pleaPayload.has("financialMeans"), is(false));
         assertThat(pleaPayload.has("outgoings"), is(false));
         final JsonPath response = pleadOnlineWithPublicEvent(pleaPayload);
         verifyResponseCase(response, TEMPLATE_PLEA_NOT_GUILTY_WITHOUT_FINANCIAL_MEANS_CASE_RESPONSE);
-        verifyResponseOnlinePlea(TEMPLATE_PLEA_NOT_GUILTY_WITHOUT_FINANCIAL_MEANS_AND_OUTGOINGS_RESPONSE, notGuilty);
+        verifyResponseOnlinePlea(TEMPLATE_PLEA_NOT_GUILTY_WITHOUT_FINANCIAL_MEANS_AND_OUTGOINGS_RESPONSE, NOT_GUILTY);
     }
 
     @Test
     public void shouldPleaNotGuiltyWithoutFinancialMeansAndOutgoings() {
-        final PleaType notGuilty = PleaType.NOT_GUILTY;
-        final JSONObject pleaPayload = getOnlinePleaPayload(notGuilty);
+        final JSONObject pleaPayload = getOnlinePleaPayload(NOT_GUILTY);
         pleaPayload.remove("financialMeans");
         pleaPayload.remove("outgoings");
         assertThat(pleaPayload.has("financialMeans"), is(false));
         assertThat(pleaPayload.has("outgoings"), is(false));
         final JsonPath response = pleadOnline(pleaPayload);
         verifyResponseCase(response, TEMPLATE_PLEA_NOT_GUILTY_WITHOUT_FINANCIAL_MEANS_CASE_RESPONSE);
-        verifyResponseOnlinePlea(TEMPLATE_PLEA_NOT_GUILTY_WITHOUT_FINANCIAL_MEANS_AND_OUTGOINGS_RESPONSE, notGuilty);
+        verifyResponseOnlinePlea(TEMPLATE_PLEA_NOT_GUILTY_WITHOUT_FINANCIAL_MEANS_AND_OUTGOINGS_RESPONSE, NOT_GUILTY);
     }
 
     @Test
     public void shouldPleaNotGuiltyWithEmptyFinancialMeansWithPublicEvent() {
-        final PleaType notGuilty = PleaType.NOT_GUILTY;
-        final JSONObject pleaPayload = getOnlinePleaPayload(notGuilty);
+        final JSONObject pleaPayload = getOnlinePleaPayload(NOT_GUILTY);
         pleaPayload.put("financialMeans", createObjectBuilder().build());
         assertThat(pleaPayload.getJSONObject("financialMeans").keySet(), is(empty()));
         final JsonPath response = pleadOnlineWithPublicEvent(pleaPayload);
         verifyResponseCase(response, TEMPLATE_PLEA_NOT_GUILTY_WITHOUT_FINANCIAL_MEANS_CASE_RESPONSE);
-        verifyResponseOnlinePlea(TEMPLATE_PLEA_NOT_GUILTY_WITHOUT_FINANCIAL_MEANS_RESPONSE, notGuilty);
+        verifyResponseOnlinePlea(TEMPLATE_PLEA_NOT_GUILTY_WITHOUT_FINANCIAL_MEANS_RESPONSE, NOT_GUILTY);
     }
 
     @Test
     public void shouldPleaNotGuiltyWithEmptyFinancialMeans() {
-        final PleaType notGuilty = PleaType.NOT_GUILTY;
+        final PleaType notGuilty = NOT_GUILTY;
         final JSONObject pleaPayload = getOnlinePleaPayload(notGuilty);
         pleaPayload.put("financialMeans", createObjectBuilder().build());
         assertThat(pleaPayload.getJSONObject("financialMeans").keySet(), is(empty()));
@@ -1435,12 +1439,16 @@ public class PleadOnlineIT extends BaseIntegrationTest {
         JSONAssert.assertEquals(expectedResponse.prettify(), response.prettify(), false);
     }
 
-    private void verifyResponseCase(final JsonPath response, final String templatePath) {
-        final String dateTimeCreated = response.getString("dateTimeCreated");
-        final String defendantId = response.getString("defendant.id");
-        final String offenceId = response.getString("defendant.offences[0].id");
-        final String pleaDate = response.getString("defendant.offences[0].pleaDate");
-        final String caseStatus = response.getString("status");
+    private void verifyResponseCase(final JsonPath ignoredResponse, final String templatePath) {
+        final boolean expectedReadyForDecision = getPayload(templatePath).contains("\"readyForDecision\": true");
+        final JsonPath settledResponse = pollUntilCaseByIdIsOk(
+                createCasePayloadBuilder.getId(),
+                withJsonPath("readyForDecision", is(expectedReadyForDecision)));
+        final String dateTimeCreated = settledResponse.getString("dateTimeCreated");
+        final String defendantId = settledResponse.getString("defendant.id");
+        final String offenceId = settledResponse.getString("defendant.offences[0].id");
+        final String pleaDate = settledResponse.getString("defendant.offences[0].pleaDate");
+        final String caseStatus = settledResponse.getString("status");
         final Map<String, String> expectedParams = new HashMap<>();
         expectedParams.put("dateTimeCreated", dateTimeCreated);
         expectedParams.put("offenceId", offenceId);
@@ -1449,9 +1457,9 @@ public class PleadOnlineIT extends BaseIntegrationTest {
         expectedParams.put("pleaDate", pleaDate);
         expectedParams.put("caseStatus", caseStatus);
         expectedParams.put("speakWelsh", "false");
-        expectedParams.put("pcqId", response.getString("defendant.pcqId"));
+        expectedParams.put("pcqId", settledResponse.getString("defendant.pcqId"));
         final JsonPath expectedResponse = fillTemplate(templatePath, expectedParams);
-        JSONAssert.assertEquals(expectedResponse.prettify(), response.prettify(), false);
+        JSONAssert.assertEquals(expectedResponse.prettify(), settledResponse.prettify(), false);
     }
 
     private JsonPath fillTemplate(final String nameFile, final Map<String, String> values) {
@@ -1552,7 +1560,7 @@ public class PleadOnlineIT extends BaseIntegrationTest {
 
     private JSONObject getOnlinePleaPayload(final PleaType pleaType) {
         String templateRequest = null;
-        if (pleaType.equals(PleaType.NOT_GUILTY)) {
+        if (pleaType.equals(NOT_GUILTY)) {
             templateRequest = getPayload(TEMPLATE_PLEA_NOT_GUILTY_PAYLOAD);
         } else if (pleaType.equals(GUILTY)) {
             templateRequest = getPayload(TEMPLATE_PLEA_GUILTY_PAYLOAD);
@@ -1599,7 +1607,7 @@ public class PleadOnlineIT extends BaseIntegrationTest {
     private Matcher getSavedOnlinePleaPayloadContentMatcher(final PleaType pleaType, final JSONObject onlinePleaPayload, final String caseId, final String defendantId, final boolean expectToHaveFinances) {
         final List<Matcher> fieldMatchers = getCommonFieldMatchers(onlinePleaPayload, caseId, defendantId, expectToHaveFinances);
         final List<Matcher> extraMatchers;
-        if (PleaType.NOT_GUILTY.equals(pleaType)) {
+        if (NOT_GUILTY.equals(pleaType)) {
             extraMatchers = getNotGuiltyMatchers(onlinePleaPayload);
         } else if (GUILTY.equals(pleaType)) {
             extraMatchers = getGuiltyMatchers(onlinePleaPayload, expectToHaveFinances);
@@ -1692,7 +1700,7 @@ public class PleadOnlineIT extends BaseIntegrationTest {
         final JSONObject offence = onlinePleaPayload.getJSONArray("offences").getJSONObject(0);
         return asList(
                 //plea-details
-                withJsonPath("$.onlinePleaDetails[0].plea", equalTo(PleaType.NOT_GUILTY.name())),
+                withJsonPath("$.onlinePleaDetails[0].plea", equalTo(NOT_GUILTY.name())),
                 withJsonPath("$.pleaDetails.comeToCourt", equalTo(true)),
                 withJsonPath("$.onlinePleaDetails[0].notGuiltyBecause", equalTo(offence.getString("notGuiltyBecause"))),
                 withJsonPath("$.pleaDetails.witnessDispute", equalTo(onlinePleaPayload.getString("witnessDispute"))),

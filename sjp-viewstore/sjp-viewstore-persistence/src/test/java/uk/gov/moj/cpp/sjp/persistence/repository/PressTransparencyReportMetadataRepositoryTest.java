@@ -49,7 +49,7 @@ public class PressTransparencyReportMetadataRepositoryTest extends BaseTransacti
         assertThat(latestTransparencyReportMetadataFromDB.getId(), is(latestReportId));
         assertThat(latestTransparencyReportMetadataFromDB.getSizeInBytes(), is(13));
         assertThat(latestTransparencyReportMetadataFromDB.getNumberOfPages(), is(3));
-        assertThat(latestTransparencyReportMetadataFromDB.getFileServiceId(), is(latestReportServiceId));
+        assertThat(latestTransparencyReportMetadataFromDB.getBlobFileId(), is(latestReportServiceId));
     }
 
     private PressTransparencyReportMetadata populatePressTransparencyMetadata(final UUID id,
@@ -63,7 +63,7 @@ public class PressTransparencyReportMetadataRepositoryTest extends BaseTransacti
         pressTransparencyReportMetadata.setSizeInBytes(sizeInBytes);
         pressTransparencyReportMetadata.setNumberOfPages(numberOfPages);
         pressTransparencyReportMetadata.setNumberOfPages(numberOfPages);
-        pressTransparencyReportMetadata.setFileServiceId(serviceId);
+        pressTransparencyReportMetadata.setBlobFileId(serviceId);
         pressTransparencyReportMetadata.setDocumentFormat(PDF.name());
         pressTransparencyReportMetadata.setDocumentRequestType(DELTA.name());
         pressTransparencyReportMetadata.setTitle("Press Transparency Report");

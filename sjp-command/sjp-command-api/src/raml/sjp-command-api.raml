@@ -1010,3 +1010,28 @@ baseUri: http://localhost:8080/sjp-command-api/command/api/rest/sjp
         description: Internal Server Error
       202:
         description: Accepted
+
+/files/{fileId}:
+  uriParameters:
+    fileId:
+      description: The ID to assign to the ingested file in SJP's own container
+      type: string
+  post:
+    description: |
+      Ingest a file from a source SAS URI into SJP's Azure Blob container (UC2 receiver).
+      ...
+      (mapping):
+          requestType: application/vnd.sjp.ingest-file+json
+          name: sjp.ingest-file
+      ...
+    body:
+      application/vnd.sjp.ingest-file+json:
+        example:
+          !include json/sjp.ingest-file.json
+        schema:
+          !include json/schema/sjp.ingest-file.json
+    responses:
+      500:
+        description: Internal Server Error
+      202:
+        description: Accepted

@@ -1,37 +1,54 @@
 package uk.gov.moj.cpp.sjp.event.processor.utils.fake;
 
-import uk.gov.justice.services.fileservice.api.FileServiceException;
-import uk.gov.justice.services.fileservice.api.FileStorer;
+import static java.util.UUID.randomUUID;
 
+import uk.gov.moj.cpp.sjp.filestore.azure.FileStorer;
+import uk.gov.moj.cpp.sjp.filestore.azure.StoragePath;
+
+import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 
-import javax.json.JsonObject;
+public class FakeFileStorer extends FileStorer {
 
-import org.apache.commons.lang3.tuple.ImmutablePair;
-import org.apache.commons.lang3.tuple.Pair;
+    public static class StoredFile {
+        private final StoragePath storagePath;
+        private final UUID correlationId;
+        private final String filename;
+        private final byte[] content;
+        private final UUID fileId;
 
-public class FakeFileStorer implements FileStorer {
+        public StoredFile(final StoragePath storagePath, final UUID correlationId, final String filename, final byte[] content, final UUID fileId) {
+            this.storagePath = storagePath;
+            this.correlationId = correlationId;
+            this.filename = filename;
+            this.content = content;
+            this.fileId = fileId;
+        }
 
-    private Map<UUID, Pair<JsonObject, InputStream>> storage = new HashMap<>();
-
-    @Override
-    public UUID store(final JsonObject metadata, final InputStream fileContentStream) throws FileServiceException {
-        final UUID fileId = UUID.randomUUID();
-        this.storage.put(fileId, new ImmutablePair<>(metadata, fileContentStream));
-        return fileId;
+        public StoragePath getStoragePath() { return storagePath; }
+        public UUID getCorrelationId() { return correlationId; }
+        public String getFilename() { return filename; }
+        public byte[] getContent() { return content; }
+        public UUID getFileId() { return fileId; }
     }
 
+    private final List<StoredFile> stored = new ArrayList<>();
+
     @Override
-    public void delete(final UUID fileId) throws FileServiceException {
-        this.storage.remove(fileId);
+    public UUID store(final StoragePath storagePath, final UUID correlationId, final String filename, final InputStream content) {
+        try {
+            final UUID fileId = randomUUID();
+            stored.add(new StoredFile(storagePath, correlationId, filename, content.readAllBytes(), fileId));
+            return fileId;
+        } catch (final IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
-    public List<Pair<JsonObject, InputStream>> getAll() {
-        return new ArrayList<>(this.storage.values());
+    public List<StoredFile> getAll() {
+        return new ArrayList<>(stored);
     }
 }

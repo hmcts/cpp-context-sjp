@@ -77,7 +77,7 @@ public class PressTransparencyReportListener {
         final UUID reportId = fromString(metadataAddedPayload.getString(REPORT_ID));
         final JsonObject metadata = metadataAddedPayload.getJsonObject("metadata");
         final PressTransparencyReportMetadata pressTransparencyReportMetadata = pressTransparencyReportMetadataRepository.findBy(reportId);
-        pressTransparencyReportMetadata.setFileServiceId(fromString(metadata.getString("fileId")));
+        pressTransparencyReportMetadata.setBlobFileId(fromString(metadata.getString("fileId")));
         pressTransparencyReportMetadata.setNumberOfPages(metadata.getInt("numberOfPages"));
         pressTransparencyReportMetadata.setSizeInBytes(metadata.getInt("fileSize"));
     }
@@ -86,7 +86,7 @@ public class PressTransparencyReportListener {
         final UUID reportId = fromString(metadataAddedPayload.getString(REPORT_ID));
         final JsonObject metadata = metadataAddedPayload.getJsonObject("metadata");
         final PressTransparencyReportMetadata pressTransparencyReportMetadata = pressTransparencyReportMetadataRepository.findBy(reportId);
-        pressTransparencyReportMetadata.setFileServiceId(fromString(metadata.getString("fileId")));
+        pressTransparencyReportMetadata.setBlobFileId(fromString(metadata.getString("fileId")));
         pressTransparencyReportMetadata.setNumberOfPages(metadata.getInt("numberOfPages"));
         pressTransparencyReportMetadata.setSizeInBytes(metadata.getInt("fileSize"));
         pressTransparencyReportMetadataRepository.save(pressTransparencyReportMetadata);

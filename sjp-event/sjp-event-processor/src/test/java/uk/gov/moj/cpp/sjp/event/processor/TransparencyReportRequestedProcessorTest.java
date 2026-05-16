@@ -24,8 +24,6 @@ import static uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderF
 import static uk.gov.moj.cpp.sjp.event.processor.helper.JsonObjectConversionHelper.streamToJsonObject;
 
 import uk.gov.justice.services.core.sender.Sender;
-import uk.gov.justice.services.fileservice.api.FileServiceException;
-import uk.gov.justice.services.fileservice.api.FileStorer;
 import uk.gov.justice.services.messaging.Envelope;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.messaging.Metadata;
@@ -36,6 +34,9 @@ import uk.gov.moj.cpp.sjp.event.processor.service.ReferenceDataOffencesService;
 import uk.gov.moj.cpp.sjp.event.processor.service.ReferenceDataService;
 import uk.gov.moj.cpp.sjp.event.processor.service.SjpService;
 import uk.gov.moj.cpp.sjp.event.processor.utils.PayloadHelper;
+import uk.gov.moj.cpp.sjp.event.processor.utils.fake.FakeSasUriGenerator;
+import uk.gov.moj.cpp.sjp.filestore.azure.FileStorer;
+import uk.gov.moj.cpp.sjp.filestore.azure.StoragePath;
 
 import java.io.InputStream;
 import java.time.LocalDate;
@@ -55,6 +56,7 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 @ExtendWith(MockitoExtension.class)
@@ -67,6 +69,9 @@ public class TransparencyReportRequestedProcessorTest {
 
     @Mock
     private FileStorer fileStorer;
+
+    @Spy
+    private FakeSasUriGenerator sasUriGenerator;
 
     @Mock
     private ReferenceDataOffencesService referenceDataOffencesService;
@@ -97,7 +102,7 @@ public class TransparencyReportRequestedProcessorTest {
 
     @Test
     @SuppressWarnings("deprecation")
-    public void shouldCreateTransparencyReport() throws FileServiceException {
+    public void shouldCreateTransparencyReport() {
         final UUID englishPayloadFileUUID = randomUUID();
         final UUID welshPayloadFileUUID = randomUUID();
         final UUID transparencyReportId = randomUUID();
@@ -131,7 +136,7 @@ public class TransparencyReportRequestedProcessorTest {
 
         final List<JsonObject> pendingCasesList = pendingCasesList(caseIds, youngOffenderCaseIds, pressRestrictionCaseIds);
         when(sjpService.getPendingCases(any(), any())).thenReturn(pendingCasesList);
-        when(fileStorer.store(any(), any()))
+        when(fileStorer.store(any(StoragePath.class), any(UUID.class), any(String.class), any(InputStream.class)))
                 .thenReturn(englishPayloadFileUUID)
                 .thenReturn(welshPayloadFileUUID);
 
@@ -146,7 +151,7 @@ public class TransparencyReportRequestedProcessorTest {
         );
         processor.createTransparencyReport(privateEventEnvelope);
 
-        verify(fileStorer, times(2)).store(any(JsonObject.class), payloadForFileServiceCaptor.capture());
+        verify(fileStorer, times(2)).store(any(StoragePath.class), any(UUID.class), any(String.class), payloadForFileServiceCaptor.capture());
         verify(sender, times(2)).sendAsAdmin(payloadForDocumentGenerationCaptor.capture());
 
         final JsonObject payloadForEnglishPdf = streamToJsonObject(payloadForFileServiceCaptor.getAllValues().get(0));
@@ -160,7 +165,7 @@ public class TransparencyReportRequestedProcessorTest {
     }
 
     @Test
-    public void shouldCreateTransparencyPDFReportFULL() throws FileServiceException {
+    public void shouldCreateTransparencyPDFReportFULL() {
         final String expectedEnglishTemplateName = "PublicPendingCasesFullEnglish";
         final UUID englishPayloadFileUUID = randomUUID();
         final UUID welshPayloadFileUUID = randomUUID();
@@ -188,7 +193,7 @@ public class TransparencyReportRequestedProcessorTest {
 
         final List<JsonObject> pendingCasesList = pendingCasesList(caseIds, youngOffenderCaseIds, pressRestrictionCaseIds);
         when(sjpService.getPendingCases(any(), any())).thenReturn(pendingCasesList);
-        when(fileStorer.store(any(), any()))
+        when(fileStorer.store(any(StoragePath.class), any(UUID.class), any(String.class), any(InputStream.class)))
                 .thenReturn(englishPayloadFileUUID)
                 .thenReturn(welshPayloadFileUUID);
 
@@ -203,7 +208,7 @@ public class TransparencyReportRequestedProcessorTest {
         );
         processor.createTransparencyPDFReport(privateEventEnvelope);
 
-        verify(fileStorer, times(1)).store(any(JsonObject.class), payloadForFileServiceCaptor.capture());
+        verify(fileStorer, times(1)).store(any(StoragePath.class), any(UUID.class), any(String.class), payloadForFileServiceCaptor.capture());
         verify(sender, times(1)).sendAsAdmin(payloadForDocumentGenerationCaptor.capture());
 
         final JsonObject payloadForEnglishPdf = streamToJsonObject(payloadForFileServiceCaptor.getValue());
@@ -218,7 +223,7 @@ public class TransparencyReportRequestedProcessorTest {
     }
 
     @Test
-    public void shouldCreateTransparencyPDFReportDELTA() throws FileServiceException {
+    public void shouldCreateTransparencyPDFReportDELTA() {
         final String expectedEnglishTemplateName = "PublicPendingCasesDeltaEnglish";
         final UUID englishPayloadFileUUID = randomUUID();
         final UUID transparencyReportId = randomUUID();
@@ -243,7 +248,7 @@ public class TransparencyReportRequestedProcessorTest {
 
         final List<JsonObject> pendingCasesList = pendingCasesList(caseIds, youngOffenderCaseIds, pressRestrictionCaseIds);
         when(sjpService.getPendingDeltaCases(any(), any())).thenReturn(pendingCasesList);
-        when(fileStorer.store(any(), any())).thenReturn(englishPayloadFileUUID);
+        when(fileStorer.store(any(StoragePath.class), any(UUID.class), any(String.class), any(InputStream.class))).thenReturn(englishPayloadFileUUID);
 
         final JsonEnvelope privateEventEnvelope = envelopeFrom(
                 metadataWithRandomUUID("sjp.events.transparency-pdf-report-requested"),
@@ -258,7 +263,7 @@ public class TransparencyReportRequestedProcessorTest {
         when(payloadHelper.getStartDate(eq(false))).thenReturn("15 January 2024");
         processor.createTransparencyPDFReport(privateEventEnvelope);
 
-        verify(fileStorer, times(1)).store(any(JsonObject.class), payloadForFileServiceCaptor.capture());
+        verify(fileStorer, times(1)).store(any(StoragePath.class), any(UUID.class), any(String.class), payloadForFileServiceCaptor.capture());
         verify(sender, times(1)).sendAsAdmin(payloadForDocumentGenerationCaptor.capture());
 
         final JsonObject payloadForEnglishPdf = streamToJsonObject(payloadForFileServiceCaptor.getValue());
@@ -273,7 +278,7 @@ public class TransparencyReportRequestedProcessorTest {
     }
 
     @Test
-    public void shouldCreateTransparencyReportJSONFull() throws FileServiceException {
+    public void shouldCreateTransparencyReportJSONFull() {
         final String expectedEnglishTemplateName = "PublicPendingCasesFullEnglish";
         final UUID englishPayloadFileUUID = randomUUID();
         final UUID welshPayloadFileUUID = randomUUID();
@@ -331,7 +336,7 @@ public class TransparencyReportRequestedProcessorTest {
     }
 
     @Test
-    public void shouldCreateTransparencyReportJSONDELTA() throws FileServiceException {
+    public void shouldCreateTransparencyReportJSONDELTA() {
         final String expectedEnglishTemplateName = "PublicPendingCasesDeltaEnglish";
         final UUID englishPayloadFileUUID = randomUUID();
         final UUID welshPayloadFileUUID = randomUUID();
@@ -359,7 +364,7 @@ public class TransparencyReportRequestedProcessorTest {
 
         final List<JsonObject> pendingCasesList = pendingCasesList(caseIds, youngOffenderCaseIds, pressRestrictionCaseIds);
         given(sjpService.getPendingDeltaCases(any(), any())).willReturn(pendingCasesList);
-        given(fileStorer.store(any(), any()))
+        given(fileStorer.store(any(StoragePath.class), any(UUID.class), any(String.class), any(InputStream.class)))
                 .willReturn(englishPayloadFileUUID)
                 .willReturn(welshPayloadFileUUID);
 
@@ -374,7 +379,7 @@ public class TransparencyReportRequestedProcessorTest {
         );
         processor.createTransparencyPDFReport(privateEventEnvelope);
 
-        verify(fileStorer, times(1)).store(any(JsonObject.class), payloadForFileServiceCaptor.capture());
+        verify(fileStorer, times(1)).store(any(StoragePath.class), any(UUID.class), any(String.class), payloadForFileServiceCaptor.capture());
         verify(sender, times(1)).sendAsAdmin(payloadForDocumentGenerationCaptor.capture());
 
         final JsonObject payloadForEnglishPdf = streamToJsonObject(payloadForFileServiceCaptor.getAllValues().get(0));

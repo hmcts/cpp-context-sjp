@@ -18,9 +18,8 @@ public class TransparencyReportMetadata {
     @Column(name = "id")
     private UUID id;
 
-    // use file_service_id instead
     @Column(name = "english_file_service_id")
-    private UUID englishFileServiceId;
+    private UUID englishBlobFileId;
 
     @Column(name = "english_number_of_pages")
     private Integer englishNumberOfPages;
@@ -29,7 +28,7 @@ public class TransparencyReportMetadata {
     private Integer englishSizeInBytes;
 
     @Column(name = "welsh_file_service_id")
-    private UUID welshFileServiceId;
+    private UUID welshBlobFileId;
 
     @Column(name = "welsh_number_of_pages")
     private Integer welshNumberOfPages;
@@ -53,7 +52,7 @@ public class TransparencyReportMetadata {
     private LocalDateTime generatedAt;
 
     @Column(name = "file_service_id")
-    private UUID fileServiceId;
+    private UUID blobFileId;
 
     @Column(name = "number_of_pages")
     private Integer numberOfPages;
@@ -66,19 +65,19 @@ public class TransparencyReportMetadata {
 
     }
 
-    public TransparencyReportMetadata(final UUID englishFileServiceId,
+    public TransparencyReportMetadata(final UUID englishBlobFileId,
                                       final Integer englishNumberOfPages,
                                       final Integer englishSizeInBytes,
-                                      final UUID welshFileServiceId,
+                                      final UUID welshBlobFileId,
                                       final Integer welshNumberOfPages,
                                       final Integer welshSizeInBytes,
                                       final LocalDateTime generatedAt
     ) {
         this.id = randomUUID();
-        this.englishFileServiceId = englishFileServiceId;
+        this.englishBlobFileId = englishBlobFileId;
         this.englishNumberOfPages = englishNumberOfPages;
         this.englishSizeInBytes = englishSizeInBytes;
-        this.welshFileServiceId = welshFileServiceId;
+        this.welshBlobFileId = welshBlobFileId;
         this.welshNumberOfPages = welshNumberOfPages;
         this.welshSizeInBytes = welshSizeInBytes;
         this.generatedAt = generatedAt;
@@ -101,12 +100,12 @@ public class TransparencyReportMetadata {
         this.id = id;
     }
 
-    public UUID getEnglishFileServiceId() {
-        return englishFileServiceId;
+    public UUID getEnglishBlobFileId() {
+        return englishBlobFileId;
     }
 
-    public void setEnglishFileServiceId(final UUID englishFileServiceId) {
-        this.englishFileServiceId = englishFileServiceId;
+    public void setEnglishBlobFileId(final UUID englishBlobFileId) {
+        this.englishBlobFileId = englishBlobFileId;
     }
 
     public Integer getEnglishNumberOfPages() {
@@ -125,12 +124,12 @@ public class TransparencyReportMetadata {
         this.englishSizeInBytes = englishSizeInBytes;
     }
 
-    public UUID getWelshFileServiceId() {
-        return welshFileServiceId;
+    public UUID getWelshBlobFileId() {
+        return welshBlobFileId;
     }
 
-    public void setWelshFileServiceId(final UUID welshFileServiceId) {
-        this.welshFileServiceId = welshFileServiceId;
+    public void setWelshBlobFileId(final UUID welshBlobFileId) {
+        this.welshBlobFileId = welshBlobFileId;
     }
 
     public Integer getWelshNumberOfPages() {
@@ -189,12 +188,12 @@ public class TransparencyReportMetadata {
         this.generatedAt = generatedAt;
     }
 
-    public UUID getFileServiceId() {
-        return fileServiceId;
+    public UUID getBlobFileId() {
+        return blobFileId;
     }
 
-    public void setFileServiceId(final UUID fileServiceId) {
-        this.fileServiceId = fileServiceId;
+    public void setBlobFileId(final UUID blobFileId) {
+        this.blobFileId = blobFileId;
     }
 
     public Integer getNumberOfPages() {

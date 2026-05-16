@@ -3,8 +3,12 @@ package uk.gov.moj.sjp.it.util;
 import static java.util.UUID.randomUUID;
 import static javax.json.Json.createObjectBuilder;
 import static uk.gov.justice.services.integrationtest.utils.jms.JmsMessageProducerClientProvider.newPublicJmsMessageProducerClientProvider;
+import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
+import static uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderFactory.metadataWithRandomUUID;
+import static uk.gov.moj.sjp.it.util.Defaults.DEFAULT_USER_ID;
 
 import uk.gov.justice.services.integrationtest.utils.jms.JmsMessageProducerClient;
+import uk.gov.justice.services.messaging.JsonEnvelope;
 
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
@@ -40,6 +44,27 @@ public class SysDocGeneratorHelper {
         producerClient.sendMessage("public.systemdocgenerator.events.document-available", payload);
     }
 
+    public static void publishDocumentAvailablePublicEvent(final UUID sourceCorrelationId,
+                                                           final String templateIdentifier,
+                                                           final UUID blobFileId,
+                                                           final String sourceUri) {
+        final JsonObject payload = documentAvailableWithBlobPayload(
+                sourceCorrelationId,
+                templateIdentifier,
+                blobFileId,
+                sourceUri
+        );
+        final JsonEnvelope envelope = envelopeFrom(
+                metadataWithRandomUUID("public.systemdocgenerator.events.document-available")
+                        .withUserId(DEFAULT_USER_ID.toString())
+                        .build(),
+                payload);
+
+        final JmsMessageProducerClient producerClient = newPublicJmsMessageProducerClientProvider()
+                .getMessageProducerClient();
+        producerClient.sendMessage("public.systemdocgenerator.events.document-available", envelope);
+    }
+
     public static void publishGenerationFailedPublicEvent(final UUID sourceCorrelationId,
                                                           final String templateIdentifier) {
         publishGenerationFailedPublicEvent(sourceCorrelationId, templateIdentifier, randomUUID());
@@ -68,6 +93,23 @@ public class SysDocGeneratorHelper {
                 .add("templateIdentifier", templateIdentifier)
                 .add("payloadFileServiceId", payloadFileServiceId.toString())
                 .add("documentFileServiceId", documentFileServiceId.toString())
+                .add("conversionFormat", CONVERSION_FORMAT)
+                .add("originatingSource", ORIGINATING_SOURCE)
+                .add("requestedTime", currentTimeMinus10Seconds())
+                .add("generatedTime", currentTime())
+                .add("generateVersion", 1)
+                .build();
+    }
+
+    private static JsonObject documentAvailableWithBlobPayload(final UUID sourceCorrelationId,
+                                                               final String templateIdentifier,
+                                                               final UUID blobFileId,
+                                                               final String sourceUri) {
+        return createObjectBuilder()
+                .add("sourceCorrelationId", sourceCorrelationId.toString())
+                .add("templateIdentifier", templateIdentifier)
+                .add("blobFileId", blobFileId.toString())
+                .add("sourceUri", sourceUri)
                 .add("conversionFormat", CONVERSION_FORMAT)
                 .add("originatingSource", ORIGINATING_SOURCE)
                 .add("requestedTime", currentTimeMinus10Seconds())

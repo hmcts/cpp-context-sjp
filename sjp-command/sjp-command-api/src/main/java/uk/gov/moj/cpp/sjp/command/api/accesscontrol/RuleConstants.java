@@ -175,6 +175,10 @@ public final class RuleConstants {
         return asList(SECOND_LINE_SUPPORT);
     }
 
+    public static List<String> getIngestFileActionGroups() {
+        return asList(GROUP_SYSTEM_USERS);
+    }
+
     public static List<String> getCaseCompleteBdfGroups() {
         return asList(GROUP_SYSTEM_USERS);
     }

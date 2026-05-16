@@ -57,8 +57,8 @@ public class TransparencyReportMetadataRepositoryTest extends BaseTransactionalJ
         assertThat(latestTransparencyReportMetadataFromDB.getEnglishSizeInBytes(), is(12));
         assertThat(latestTransparencyReportMetadataFromDB.getWelshNumberOfPages(), is(3));
         assertThat(latestTransparencyReportMetadataFromDB.getEnglishNumberOfPages(), is(2));
-        assertThat(latestTransparencyReportMetadataFromDB.getWelshFileServiceId(), is(latestReportWelshServiceId));
-        assertThat(latestTransparencyReportMetadataFromDB.getEnglishFileServiceId(), is(latestReportEnglishServiceId));
+        assertThat(latestTransparencyReportMetadataFromDB.getWelshBlobFileId(), is(latestReportWelshServiceId));
+        assertThat(latestTransparencyReportMetadataFromDB.getEnglishBlobFileId(), is(latestReportEnglishServiceId));
     }
 
     private TransparencyReportMetadata populateTransparencyMetadata(final UUID reportServiceId, final UUID id, final UUID welshServiceId,
@@ -72,9 +72,9 @@ public class TransparencyReportMetadataRepositoryTest extends BaseTransactionalJ
         earlierTransparencyReportMetadata.setEnglishSizeInBytes(englishSizeInBytes);
         earlierTransparencyReportMetadata.setWelshNumberOfPages(welshNumberOfPages);
         earlierTransparencyReportMetadata.setEnglishNumberOfPages(englishNumberOfPages);
-        earlierTransparencyReportMetadata.setWelshFileServiceId(welshServiceId);
-        earlierTransparencyReportMetadata.setEnglishFileServiceId(englishServiceId);
-        earlierTransparencyReportMetadata.setFileServiceId(reportServiceId);
+        earlierTransparencyReportMetadata.setWelshBlobFileId(welshServiceId);
+        earlierTransparencyReportMetadata.setEnglishBlobFileId(englishServiceId);
+        earlierTransparencyReportMetadata.setBlobFileId(reportServiceId);
         earlierTransparencyReportMetadata.setDocumentFormat(PDF.name());
         earlierTransparencyReportMetadata.setDocumentRequestType(DELTA.name());
         earlierTransparencyReportMetadata.setTitle("Transparency Report");

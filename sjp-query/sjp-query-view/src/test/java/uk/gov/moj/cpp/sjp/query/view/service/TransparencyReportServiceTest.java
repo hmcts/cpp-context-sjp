@@ -89,7 +89,7 @@ public class TransparencyReportServiceTest {
     private void setUpMetadata() {
         final TransparencyReportMetadata metadata = new TransparencyReportMetadata(UUID.randomUUID(), PDF.name(), FULL.name(), "title", ENGLISH.name(), LocalDateTime.now());
 
-        metadata.setFileServiceId(fileServiceIds.get(0));
+        metadata.setBlobFileId(fileServiceIds.get(0));
         metadata.setNumberOfPages(numberOfPages.get(0));
         metadata.setSizeInBytes(fileSizes.get(0));
         metadata.setGeneratedAt(generatedAt);

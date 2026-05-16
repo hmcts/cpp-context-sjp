@@ -23,6 +23,7 @@ import static uk.gov.moj.sjp.it.Constants.PUBLIC_EVENT_OFFENCES_WITHDRAWAL_STATU
 import static uk.gov.moj.sjp.it.command.CreateCase.CreateCasePayloadBuilder.defaultCaseBuilder;
 import static uk.gov.moj.sjp.it.command.CreateCase.OffenceBuilder.defaultOffenceBuilder;
 import static uk.gov.moj.sjp.it.command.CreateCase.createCaseForPayloadBuilder;
+import static uk.gov.moj.cpp.sjp.domain.common.CaseStatus.NO_PLEA_RECEIVED_READY_FOR_DECISION;
 import static uk.gov.moj.sjp.it.helper.AssignmentHelper.requestCaseAssignment;
 import static uk.gov.moj.sjp.it.helper.DecisionHelper.verifyCaseIsReadyInViewStore;
 import static uk.gov.moj.sjp.it.helper.DecisionHelper.verifyCaseNotReadyInViewStore;
@@ -30,6 +31,7 @@ import static uk.gov.moj.sjp.it.helper.DecisionHelper.verifyCaseUnassigned;
 import static uk.gov.moj.sjp.it.helper.DecisionHelper.verifyCaseUnmarkedReady;
 import static uk.gov.moj.sjp.it.helper.DecisionHelper.verifyDecisionSaved;
 import static uk.gov.moj.sjp.it.helper.OffencesWithdrawalRequestHelper.assertCaseQueryDoesNotReturnWithdrawalReasons;
+import static uk.gov.moj.sjp.it.pollingquery.CasePoller.pollUntilCaseHasStatus;
 import static uk.gov.moj.sjp.it.helper.OffencesWithdrawalRequestHelper.assertCaseQueryReturnsWithdrawalReasons;
 import static uk.gov.moj.sjp.it.helper.SessionHelper.startSessionAndConfirm;
 import static uk.gov.moj.sjp.it.model.ProsecutingAuthority.DVLA;
@@ -192,6 +194,7 @@ public class MultipleOffencesWithdrawalRequestedIT extends BaseIntegrationTest {
 
         final UUID sessionId = randomUUID();
 
+        pollUntilCaseHasStatus(caseId, NO_PLEA_RECEIVED_READY_FOR_DECISION);
         startSessionAndRequestAssignment(sessionId, userId, MAGISTRATE);
 
         final Withdraw withdrawDecision = new Withdraw(randomUUID(), createOffenceDecisionInformation(offenceId1, NO_VERDICT), randomUUID());

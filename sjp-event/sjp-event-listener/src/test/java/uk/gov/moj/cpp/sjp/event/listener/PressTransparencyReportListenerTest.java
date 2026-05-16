@@ -113,7 +113,7 @@ public class PressTransparencyReportListenerTest {
                         .build());
         when(pressTransparencyReportMetadataRepository.findBy(reportId)).thenReturn(reportMetadata);
         pressTransparencyReportListener.handleMetadataAdded(eventEnvelope);
-        assertThat(reportMetadata.getFileServiceId(), is(reportFileId));
+        assertThat(reportMetadata.getBlobFileId(), is(reportFileId));
         assertThat(reportMetadata.getNumberOfPages(), is(reportNumberOfPages));
         assertThat(reportMetadata.getSizeInBytes(), is(pdfSizeInBytes));
 
@@ -140,7 +140,7 @@ public class PressTransparencyReportListenerTest {
                         .build());
         when(pressTransparencyReportMetadataRepository.findBy(reportId)).thenReturn(reportMetadata);
         pressTransparencyReportListener.handleReportMetadataAdded(eventEnvelope);
-        assertThat(reportMetadata.getFileServiceId(), is(reportFileId));
+        assertThat(reportMetadata.getBlobFileId(), is(reportFileId));
         assertThat(reportMetadata.getNumberOfPages(), is(reportNumberOfPages));
         assertThat(reportMetadata.getSizeInBytes(), is(pdfSizeInBytes));
 

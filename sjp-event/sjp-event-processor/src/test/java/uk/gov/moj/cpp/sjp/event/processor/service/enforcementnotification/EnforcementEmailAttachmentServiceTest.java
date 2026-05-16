@@ -23,7 +23,6 @@ import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
 import uk.gov.justice.services.common.converter.ObjectToJsonObjectConverter;
 import uk.gov.justice.services.common.converter.jackson.ObjectMapperProducer;
 import uk.gov.justice.services.core.enveloper.Enveloper;
-import uk.gov.justice.services.fileservice.api.FileServiceException;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.test.utils.core.enveloper.EnvelopeFactory;
 import uk.gov.moj.cpp.sjp.event.EnforcementPendingApplicationNotificationRequired;
@@ -34,9 +33,10 @@ import uk.gov.moj.cpp.sjp.event.processor.service.SjpService;
 import uk.gov.moj.cpp.sjp.event.processor.service.systemdocgenerator.ConversionFormat;
 import uk.gov.moj.cpp.sjp.event.processor.service.systemdocgenerator.DocumentGenerationRequest;
 import uk.gov.moj.cpp.sjp.event.processor.utils.fake.FakeFileStorer;
+import uk.gov.moj.cpp.sjp.event.processor.utils.fake.FakeSasUriGenerator;
 import uk.gov.moj.cpp.sjp.event.processor.utils.fake.FakeSystemDocGenerator;
 
-import java.io.InputStream;
+import java.io.ByteArrayInputStream;
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
 import java.util.UUID;
@@ -44,9 +44,7 @@ import java.util.UUID;
 import javax.json.JsonObject;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.apache.commons.lang3.tuple.Pair;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.Rule;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -72,6 +70,9 @@ public class EnforcementEmailAttachmentServiceTest {
 
     @Spy
     private FakeFileStorer fileStorer;
+
+    @Spy
+    private FakeSasUriGenerator sasUriGenerator;
 
     @Spy
     private JsonObjectToObjectConverter converter = createJsonObjectToObjectConverter();
@@ -121,32 +122,31 @@ public class EnforcementEmailAttachmentServiceTest {
     }
 
     @Test
-    public void shouldStoreMetadataInFileServer() throws FileServiceException {
+    public void shouldStoreMetadataInFileServer() {
 
         final JsonObject jsonObject = mock(JsonObject.class);
         final JsonEnvelope privateEvent = EnvelopeFactory.createEnvelope(EVENT_NAME, jsonObject);
-        CaseDetails caseDetails = mock(CaseDetails.class);
-        CaseApplication caseApplication = mock(CaseApplication.class);
+        final CaseDetails caseDetails = mock(CaseDetails.class);
+        final CaseApplication caseApplication = mock(CaseApplication.class);
         when(caseDetails.getCaseApplication()).thenReturn(caseApplication);
         when(caseApplication.getApplicationType()).thenReturn(STAT_DEC);
         when(sjpService.getCaseDetailsByApplicationId(initiatedEvent.getApplicationId(), privateEvent)).thenReturn(caseDetails);
-        
+
         service.generateNotification(initiatedEvent, privateEvent);
 
         assertThat(fileStorer.getAll(), hasSize(1));
-        final JsonObject metadata = fileStorer.getAll().get(0).getKey();
-        assertThat(metadata.size(), is(3));
-        assertThat(metadata.getString("fileName"), equalTo(fileName(APP_ID)));
-        assertThat(metadata.getString("conversionFormat"), equalTo("pdf"));
-        assertThat(metadata.getString("templateName"), equalTo(ENFORCEMENT_PENDING_APPLICATION_NOTIFICATION.getValue()));
+        final FakeFileStorer.StoredFile stored = fileStorer.getAll().get(0);
+        assertThat(stored.getStoragePath().prefix(), equalTo("published/sdg-payloads"));
+        assertThat(stored.getCorrelationId(), equalTo(APP_ID));
+        assertThat(stored.getFilename(), equalTo(fileName(APP_ID)));
     }
 
     @Test
-    public void shouldStoreTemplateDataForNoticeGenerationFileServer() throws FileServiceException {
+    public void shouldStoreTemplateDataForNoticeGenerationFileServer() {
         final JsonObject jsonObject = mock(JsonObject.class);
         final JsonEnvelope privateEvent = EnvelopeFactory.createEnvelope(EVENT_NAME, jsonObject);
-        CaseDetails caseDetails = mock(CaseDetails.class);
-        CaseApplication caseApplication = mock(CaseApplication.class);
+        final CaseDetails caseDetails = mock(CaseDetails.class);
+        final CaseApplication caseApplication = mock(CaseApplication.class);
         when(caseDetails.getCaseApplication()).thenReturn(caseApplication);
         when(caseApplication.getApplicationType()).thenReturn(STAT_DEC);
         when(sjpService.getCaseDetailsByApplicationId(initiatedEvent.getApplicationId(), privateEvent)).thenReturn(caseDetails);
@@ -163,21 +163,24 @@ public class EnforcementEmailAttachmentServiceTest {
     }
 
     @Test
-    public void shouldRequestPdfGenerationOnSystemDocGenerator() throws FileServiceException {
+    public void shouldRequestPdfGenerationOnSystemDocGenerator() {
         final JsonObject jsonObject = mock(JsonObject.class);
         final JsonEnvelope privateEvent = EnvelopeFactory.createEnvelope(EVENT_NAME, jsonObject);
-        CaseDetails caseDetails = mock(CaseDetails.class);
-        CaseApplication caseApplication = mock(CaseApplication.class);
+        final CaseDetails caseDetails = mock(CaseDetails.class);
+        final CaseApplication caseApplication = mock(CaseApplication.class);
         when(caseDetails.getCaseApplication()).thenReturn(caseApplication);
         when(caseApplication.getApplicationType()).thenReturn(STAT_DEC);
         when(sjpService.getCaseDetailsByApplicationId(initiatedEvent.getApplicationId(), privateEvent)).thenReturn(caseDetails);
         service.generateNotification(initiatedEvent, privateEvent);
 
+        final UUID storedFileId = fileStorer.getAll().get(0).getFileId();
         final DocumentGenerationRequest request = systemDocGenerator.getDocumentGenerationRequest(privateEvent);
         assertThat(request.getOriginatingSource(), equalTo("sjp"));
         assertThat(request.getTemplateIdentifier(), equalTo(ENFORCEMENT_PENDING_APPLICATION_NOTIFICATION));
         assertThat(request.getConversionFormat(), equalTo(ConversionFormat.PDF));
         assertThat(request.getSourceCorrelationId(), equalTo(APP_ID.toString()));
+        assertThat(request.getPayloadFileServiceId(), equalTo(storedFileId));
+        assertThat(request.getPayloadSourceUri().toString(), equalTo("https://fake.blob.core.windows.net/sjp-files/published/sdg-payloads/" + storedFileId + "?sv=fake"));
     }
 
     @Test
@@ -195,12 +198,12 @@ public class EnforcementEmailAttachmentServiceTest {
     @Test
     public void shouldBuildEmailSubjectWithOtherApplicationType() {
         final String errorMessage = String.format("Invalid Application Type, unable to derive email subject for application type: %s", null);
-        var e = assertThrows(IllegalStateException.class, () -> service.getEmailSubject(null));
+        final IllegalStateException e = assertThrows(IllegalStateException.class, () -> service.getEmailSubject(null));
         assertThat(e.getMessage(), CoreMatchers.is(errorMessage));
     }
 
-    private EnforcementPendingApplicationNotificationTemplateData getTemplateData(final Pair<JsonObject, InputStream> fileStoreEntry) {
-        final JsonObject fileContent = JsonObjectConversionHelper.streamToJsonObject(fileStoreEntry.getValue());
+    private EnforcementPendingApplicationNotificationTemplateData getTemplateData(final FakeFileStorer.StoredFile storedFile) {
+        final JsonObject fileContent = JsonObjectConversionHelper.streamToJsonObject(new ByteArrayInputStream(storedFile.getContent()));
         return jsonObjectToObjectConverter.convert(fileContent, EnforcementPendingApplicationNotificationTemplateData.class);
     }
 

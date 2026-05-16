@@ -1,5 +1,6 @@
 package uk.gov.moj.cpp.sjp.event.processor.service.systemdocgenerator;
 
+import static javax.json.Json.createArrayBuilder;
 import static javax.json.Json.createObjectBuilder;
 import static uk.gov.justice.services.core.annotation.Component.EVENT_PROCESSOR;
 import static uk.gov.justice.services.messaging.Envelope.metadataFrom;
@@ -27,6 +28,11 @@ public class SystemDocGenerator {
                 .add("conversionFormat", request.getConversionFormat().getValue())
                 .add("sourceCorrelationId", request.getSourceCorrelationId())
                 .add("payloadFileServiceId", request.getPayloadFileServiceId().toString())
+                .add("additionalInformation", createArrayBuilder()
+                        .add(createObjectBuilder()
+                                .add("propertyName", "payloadSourceUri")
+                                .add("propertyValue", request.getPayloadSourceUri().toString()))
+                        .build())
                 .build();
 
         sender.sendAsAdmin(Envelope.envelopeFrom(

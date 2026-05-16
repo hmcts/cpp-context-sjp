@@ -25,8 +25,9 @@ import uk.gov.justice.services.core.annotation.FrameworkComponent;
 import uk.gov.justice.services.core.annotation.Handles;
 import uk.gov.justice.services.core.annotation.ServiceComponent;
 import uk.gov.justice.services.core.sender.Sender;
-import uk.gov.justice.services.fileservice.api.FileServiceException;
-import uk.gov.justice.services.fileservice.api.FileStorer;
+import uk.gov.moj.cpp.sjp.filestore.azure.FileStorer;
+import uk.gov.moj.cpp.sjp.filestore.azure.SasUriGenerator;
+import uk.gov.moj.cpp.sjp.filestore.azure.StoragePath;
 import uk.gov.justice.services.messaging.Envelope;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.messaging.JsonObjects;
@@ -41,6 +42,7 @@ import uk.gov.moj.cpp.sjp.event.transparency.TransparencyPDFReportRequested;
 import uk.gov.moj.cpp.sjp.event.transparency.TransparencyReportRequested;
 
 import java.io.ByteArrayInputStream;
+import java.net.URI;
 import java.time.LocalDate;
 import java.time.Period;
 import java.util.*;
@@ -87,6 +89,9 @@ public class TransparencyReportRequestedProcessor {
     private FileStorer fileStorer;
 
     @Inject
+    private SasUriGenerator sasUriGenerator;
+
+    @Inject
     private ReferenceDataService referenceDataService;
 
     @Inject
@@ -106,7 +111,6 @@ public class TransparencyReportRequestedProcessor {
         return "PublicPendingCases" + type + lang;
     }
 
-    @SuppressWarnings("squid:S00112")
     @Handles(TransparencyPDFReportRequested.EVENT_NAME)
     @Transactional
     public void createTransparencyPDFReport(final JsonEnvelope envelope) {
@@ -117,13 +121,9 @@ public class TransparencyReportRequestedProcessor {
         final List<JsonObject> allPendingCasesFromViewStore = getPendingCasesFromViewStore(envelope);
         final List<JsonObject> filteredCases = getFilteredCases(allPendingCasesFromViewStore);
         final boolean isWelsh = WELSH.name().equalsIgnoreCase(eventPayload.getString(LANGUAGE));
-        try {
-            final JsonObject payloadForDocumentGeneration = buildPayload(filteredCases, isWelsh, false, envelope);
-            requestDocumentGeneration(envelope, transparencyReportId, payloadForDocumentGeneration);
-            storeReportMetadata(envelope, transparencyReportId, filteredCases);
-        } catch (FileServiceException e) {
-            throw new RuntimeException("IO Exception happened during transparency report generation", e);
-        }
+        final JsonObject payloadForDocumentGeneration = buildPayload(filteredCases, isWelsh, false, envelope);
+        requestDocumentGeneration(envelope, transparencyReportId, payloadForDocumentGeneration);
+        storeReportMetadata(envelope, transparencyReportId, filteredCases);
     }
 
     @SuppressWarnings("squid:S00112")
@@ -149,7 +149,7 @@ public class TransparencyReportRequestedProcessor {
      * @deprecated @Link{createTransparencyPDFReport} or @Link{createTransparencyJSONReport}
      */
     @Deprecated(forRemoval = true)
-    @SuppressWarnings({"squid:S00112", "squid:S1133"})
+    @SuppressWarnings("squid:S1133")
     @Handles(TransparencyReportRequested.EVENT_NAME)
     @Transactional
     public void createTransparencyReport(final JsonEnvelope envelope) {
@@ -160,58 +160,58 @@ public class TransparencyReportRequestedProcessor {
         final List<JsonObject> allPendingCasesFromViewStore = getPendingCasesFromViewStore(envelope);
         final List<JsonObject> filteredCases = getFilteredCases(allPendingCasesFromViewStore);
         storeReportMetadata(envelope, transparencyReportId, filteredCases);
-        try {
-            final JsonObject payloadForDocumentGenerationEnglish = buildPayload(filteredCases, false, false, envelope);
-            final String englishPayloadFileName = String.format("transparency-report-template-parameters.english.%s.json", transparencyReportId);
-            final UUID englishPayloadFileId = storeDocumentGeneratorPayload(payloadForDocumentGenerationEnglish, englishPayloadFileName, "type", LANGUAGE);
-            requestDocumentGeneration(envelope, transparencyReportId, englishPayloadFileId, "type", LANGUAGE);
 
-            final JsonObject payloadForPublicEventInEnglish = buildPayload(filteredCases, false, true, envelope);
-            if (LOGGER.isInfoEnabled()) {
-                LOGGER.info("publishing Sjp public event for english report {}, {}", PUBLIC_EVENT_SJP_PENDING_CASES_PUBLIC_LIST_GENERATED, payloadForPublicEventInEnglish);
-            }
-            final JsonObjectBuilder pendingListEnglishBuilder = Json.createObjectBuilder()
-                    .add(LANGUAGE, "ENGLISH")
-                    .add(LIST_PAYLOAD, payloadForPublicEventInEnglish);
-            sender.send(Envelope.envelopeFrom(metadataFrom(envelope.metadata())
-                            .withName(PUBLIC_EVENT_SJP_PENDING_CASES_PUBLIC_LIST_GENERATED),
-                    pendingListEnglishBuilder.build()));
+        final JsonObject payloadForDocumentGenerationEnglish = buildPayload(filteredCases, false, false, envelope);
+        final String englishPayloadFileName = String.format("transparency-report-template-parameters.english.%s.json", transparencyReportId);
+        final UUID englishPayloadFileId = storeDocumentGeneratorPayload(payloadForDocumentGenerationEnglish, englishPayloadFileName, "type", LANGUAGE, transparencyReportId);
+        requestDocumentGeneration(envelope, transparencyReportId, englishPayloadFileId, "type", LANGUAGE);
 
-            final JsonObject payloadForDocumentGenerationWelsh = buildPayload(filteredCases, true, false, envelope);
-            final String welshPayloadFileName = String.format("transparency-report-template-parameters.welsh.%s.json", transparencyReportId);
-            final UUID welshPayloadFileId = storeDocumentGeneratorPayload(payloadForDocumentGenerationWelsh, welshPayloadFileName, "type", LANGUAGE);
-            requestDocumentGeneration(envelope, transparencyReportId, welshPayloadFileId, "type", LANGUAGE);
-
-            final JsonObject payloadForPublicEventInWelsh = buildPayload(filteredCases, true, true, envelope);
-            if (LOGGER.isInfoEnabled()) {
-                LOGGER.info("publishing Sjp public event for welsh report {}, {}", PUBLIC_EVENT_SJP_PENDING_CASES_PUBLIC_LIST_GENERATED, payloadForPublicEventInEnglish);
-            }
-            final JsonObjectBuilder pendingListWelshBuilder = Json.createObjectBuilder()
-                    .add(LANGUAGE, "WELSH")
-                    .add(LIST_PAYLOAD, payloadForPublicEventInWelsh);
-            sender.send(Envelope.envelopeFrom(metadataFrom(envelope.metadata())
-                            .withName(PUBLIC_EVENT_SJP_PENDING_CASES_PUBLIC_LIST_GENERATED),
-                    pendingListWelshBuilder.build()));
-
-        } catch (FileServiceException e) {
-            throw new RuntimeException("IO Exception happened during transparency report generation", e);
+        final JsonObject payloadForPublicEventInEnglish = buildPayload(filteredCases, false, true, envelope);
+        if (LOGGER.isInfoEnabled()) {
+            LOGGER.info("publishing Sjp public event for english report {}, {}", PUBLIC_EVENT_SJP_PENDING_CASES_PUBLIC_LIST_GENERATED, payloadForPublicEventInEnglish);
         }
+        final JsonObjectBuilder pendingListEnglishBuilder = Json.createObjectBuilder()
+                .add(LANGUAGE, "ENGLISH")
+                .add(LIST_PAYLOAD, payloadForPublicEventInEnglish);
+        sender.send(Envelope.envelopeFrom(metadataFrom(envelope.metadata())
+                        .withName(PUBLIC_EVENT_SJP_PENDING_CASES_PUBLIC_LIST_GENERATED),
+                pendingListEnglishBuilder.build()));
+
+        final JsonObject payloadForDocumentGenerationWelsh = buildPayload(filteredCases, true, false, envelope);
+        final String welshPayloadFileName = String.format("transparency-report-template-parameters.welsh.%s.json", transparencyReportId);
+        final UUID welshPayloadFileId = storeDocumentGeneratorPayload(payloadForDocumentGenerationWelsh, welshPayloadFileName, "type", LANGUAGE, transparencyReportId);
+        requestDocumentGeneration(envelope, transparencyReportId, welshPayloadFileId, "type", LANGUAGE);
+
+        final JsonObject payloadForPublicEventInWelsh = buildPayload(filteredCases, true, true, envelope);
+        if (LOGGER.isInfoEnabled()) {
+            LOGGER.info("publishing Sjp public event for welsh report {}, {}", PUBLIC_EVENT_SJP_PENDING_CASES_PUBLIC_LIST_GENERATED, payloadForPublicEventInEnglish);
+        }
+        final JsonObjectBuilder pendingListWelshBuilder = Json.createObjectBuilder()
+                .add(LANGUAGE, "WELSH")
+                .add(LIST_PAYLOAD, payloadForPublicEventInWelsh);
+        sender.send(Envelope.envelopeFrom(metadataFrom(envelope.metadata())
+                        .withName(PUBLIC_EVENT_SJP_PENDING_CASES_PUBLIC_LIST_GENERATED),
+                pendingListWelshBuilder.build()));
     }
 
 
-    private void requestDocumentGeneration(final JsonEnvelope envelope, final UUID reportId, final JsonObject payload) throws FileServiceException {
+    private void requestDocumentGeneration(final JsonEnvelope envelope, final UUID reportId, final JsonObject payload) {
         final String payloadFileName = String.format("transparency-report-template-parameters.%s.json", reportId.toString());
         String type = envelope.payloadAsJsonObject().getString(REQUEST_TYPE).toLowerCase();
         type = type.substring(0, 1).toUpperCase() + type.substring(1);
         String language = envelope.payloadAsJsonObject().getString(LANGUAGE).toLowerCase();
         language = language.substring(0, 1).toUpperCase() + language.substring(1);
-        final UUID payloadFileId = storeDocumentGeneratorPayload(payload, payloadFileName, type, language);
-        sendDocumentGenerationRequest(envelope, reportId, payloadFileId, type, language);
+        final UUID payloadFileId = storeDocumentGeneratorPayload(payload, payloadFileName, type, language, reportId);
+        final URI payloadSourceUri = sasUriGenerator.generateReadUri(StoragePath.published("sdg-payloads"), payloadFileId);
+        sendDocumentGenerationRequest(envelope, reportId, payloadFileId, payloadSourceUri, type, language);
     }
 
     private void sendDocumentGenerationRequest(final JsonEnvelope eventEnvelope,
                                                final UUID reportId,
-                                               final UUID payloadFileServiceUUID, final String type, final String language) {
+                                               final UUID payloadFileServiceUUID,
+                                               final URI payloadSourceUri,
+                                               final String type,
+                                               final String language) {
 
         final JsonObject docGeneratorPayload = createObjectBuilder()
                 .add("originatingSource", "sjp")
@@ -219,6 +219,11 @@ public class TransparencyReportRequestedProcessor {
                 .add(CONVERSION_FORMAT_STRING, CONVERSION_FORMAT)
                 .add("sourceCorrelationId", reportId.toString())
                 .add("payloadFileServiceId", payloadFileServiceUUID.toString())
+                .add("additionalInformation", Json.createArrayBuilder()
+                        .add(createObjectBuilder()
+                                .add("propertyName", "payloadSourceUri")
+                                .add("propertyValue", payloadSourceUri.toString()))
+                        .build())
                 .build();
 
         sender.sendAsAdmin(
@@ -287,13 +292,18 @@ public class TransparencyReportRequestedProcessor {
     private void requestDocumentGeneration(final JsonEnvelope eventEnvelope,
                                            final UUID transparencyReportId,
                                            final UUID payloadFileServiceUUID, final String type, final String language) {
-
+        final URI payloadSourceUri = sasUriGenerator.generateReadUri(StoragePath.published("sdg-payloads"), payloadFileServiceUUID);
         final JsonObject docGeneratorPayload = createObjectBuilder()
                 .add("originatingSource", "sjp")
                 .add(TEMPLATE_IDENTIFIER_STRING, payloadHelper.getTemplateIdentifier(type, language, ExportType.PUBLIC.name()))
                 .add(CONVERSION_FORMAT_STRING, CONVERSION_FORMAT)
                 .add("sourceCorrelationId", transparencyReportId.toString())
                 .add("payloadFileServiceId", payloadFileServiceUUID.toString())
+                .add("additionalInformation", Json.createArrayBuilder()
+                        .add(createObjectBuilder()
+                                .add("propertyName", "payloadSourceUri")
+                                .add("propertyValue", payloadSourceUri.toString()))
+                        .build())
                 .build();
         sender.sendAsAdmin(
                 Envelope.envelopeFrom(
@@ -303,17 +313,9 @@ public class TransparencyReportRequestedProcessor {
         );
     }
 
-    private UUID storeDocumentGeneratorPayload(final JsonObject documentGeneratorPayload, final String fileName, final String type, final String language) throws FileServiceException {
+    private UUID storeDocumentGeneratorPayload(final JsonObject documentGeneratorPayload, final String fileName, final String type, final String language, final UUID correlationId) {
         final byte[] jsonPayloadInBytes = jsonObjectAsByteArray(documentGeneratorPayload);
-
-        final JsonObject metadata = createObjectBuilder()
-                .add("fileName", fileName)
-                .add(CONVERSION_FORMAT_STRING, CONVERSION_FORMAT)
-                .add(TEMPLATE_IDENTIFIER_STRING, getTemplateIdentifier(type, language))
-                .add("numberOfPages", 1)
-                .add("fileSize", jsonPayloadInBytes.length)
-                .build();
-        return fileStorer.store(metadata, new ByteArrayInputStream(jsonPayloadInBytes));
+        return fileStorer.store(StoragePath.published("sdg-payloads"), correlationId, fileName, new ByteArrayInputStream(jsonPayloadInBytes));
     }
 
     private void storeReportMetadata(final JsonEnvelope envelope,

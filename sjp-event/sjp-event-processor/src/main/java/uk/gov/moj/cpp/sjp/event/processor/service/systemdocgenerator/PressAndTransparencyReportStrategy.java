@@ -8,15 +8,14 @@ import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
 
 import uk.gov.justice.services.core.annotation.ServiceComponent;
 import uk.gov.justice.services.core.sender.Sender;
-import uk.gov.justice.services.fileservice.api.FileRetriever;
-import uk.gov.justice.services.fileservice.api.FileServiceException;
-import uk.gov.justice.services.fileservice.domain.FileReference;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.sjp.event.processor.utils.PdfHelper;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URI;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Stream;
@@ -41,6 +40,17 @@ public class PressAndTransparencyReportStrategy implements SystemDocGeneratorRes
     private static final String PRESS_TRANSPARENCY_TEMPLATE_IDENTIFIER_DELTA = "PressPendingCasesDeltaEnglish";
     private static final String PRESS_TRANSPARENCY_TEMPLATE_IDENTIFIER_WELSH = "PressPendingCasesFullWelsh";
     private static final String PRESS_TRANSPARENCY_TEMPLATE_IDENTIFIER_WELSH_DELTA = "PressPendingCasesDeltaWelsh";
+    private static final String COMMAND_INGEST_FILE = "sjp.ingest-file";
+    private static final Map<String, String> TEMPLATE_TO_FILENAME = Map.of(
+            TRANSPARENCY_TEMPLATE_IDENTIFIER,       "transparency-report-full-english.pdf",
+            TRANSPARENCY_TEMPLATE_IDENTIFIER_DELTA, "transparency-report-delta-english.pdf",
+            TRANSPARENCY_TEMPLATE_IDENTIFIER_WELSH, "transparency-report-full-welsh.pdf",
+            TRANSPARENCY_TEMPLATE_IDENTIFIER_WELSH_DELTA, "transparency-report-delta-welsh.pdf",
+            PRESS_TRANSPARENCY_TEMPLATE_IDENTIFIER,       "press-transparency-report-full-english.pdf",
+            PRESS_TRANSPARENCY_TEMPLATE_IDENTIFIER_DELTA, "press-transparency-report-delta-english.pdf",
+            PRESS_TRANSPARENCY_TEMPLATE_IDENTIFIER_WELSH, "press-transparency-report-full-welsh.pdf",
+            PRESS_TRANSPARENCY_TEMPLATE_IDENTIFIER_WELSH_DELTA, "press-transparency-report-delta-welsh.pdf"
+    );
     private static final String COMMAND_TRANSPARENCY_REPORT_FAILED = "sjp.command.transparency-report-failed";
     private static final String COMMAND_PRESS_TRANSPARENCY_REPORT_FAILED = "sjp.command.press-transparency-report-failed";
     private static final Locale ENGLISH = new Locale("en", "GB");
@@ -60,8 +70,6 @@ public class PressAndTransparencyReportStrategy implements SystemDocGeneratorRes
     @ServiceComponent(EVENT_PROCESSOR)
     @Inject
     private Sender sender;
-    @Inject
-    private FileRetriever fileRetriever;
     @Inject
     private PdfHelper pdfHelper;
 
@@ -87,11 +95,14 @@ public class PressAndTransparencyReportStrategy implements SystemDocGeneratorRes
         final JsonObject documentAvailablePayload = envelope.payloadAsJsonObject();
         final String templateIdentifier = getTemplateIdentifier(envelope);
 
-        try {
-            final String reportId = getSourceCorrelationId(envelope);
-            final Optional<JsonObjectBuilder> documentMetadata = getDocumentMetadata(documentAvailablePayload);
+        if (documentAvailablePayload.containsKey("sourceUri")) {
+            dispatchIngestFile(envelope, documentAvailablePayload);
+        }
 
-            documentMetadata.ifPresent(docMetadata -> {
+        final String reportId = getSourceCorrelationId(envelope);
+        final Optional<JsonObjectBuilder> documentMetadata = getDocumentMetadata(documentAvailablePayload);
+
+        documentMetadata.ifPresent(docMetadata -> {
 
                 switch (templateIdentifier) {
                     case TRANSPARENCY_TEMPLATE_IDENTIFIER:
@@ -130,9 +141,6 @@ public class PressAndTransparencyReportStrategy implements SystemDocGeneratorRes
                         LOGGER.info("unrecognized template {}", templateIdentifier);
                 }
             });
-        } catch (FileServiceException e) {
-            LOGGER.error("error retrieving document from file service", e);
-        }
     }
 
     private void processGenerationFailed(final JsonEnvelope envelope) {
@@ -154,29 +162,41 @@ public class PressAndTransparencyReportStrategy implements SystemDocGeneratorRes
         );
     }
 
-    private Optional<JsonObjectBuilder> getDocumentMetadata(final JsonObject payload) throws FileServiceException {
-        final String fileId = payload.getString("documentFileServiceId");
-        final Optional<FileReference> documentFileReference = fileRetriever.retrieve(fromString(fileId));
-        return documentFileReference.map(this::toDocumentBytes).
-                map(documentBytes -> toDocumentMetadata(fileId, documentBytes));
+    private void dispatchIngestFile(final JsonEnvelope envelope, final JsonObject payload) {
+        final String blobFileId = payload.getString("blobFileId");
+        final String sourceUri = payload.getString("sourceUri");
+        final String sourceCorrelationId = getSourceCorrelationId(envelope);
+        final String templateIdentifier = getTemplateIdentifier(envelope);
+        final JsonObject ingestPayload = createObjectBuilder()
+                .add("fileId", blobFileId)
+                .add("correlationId", sourceCorrelationId)
+                .add("filename", TEMPLATE_TO_FILENAME.getOrDefault(templateIdentifier, templateIdentifier + ".pdf"))
+                .add("sourceUri", sourceUri)
+                .build();
+        sender.send(envelopeFrom(
+                metadataFrom(envelope.metadata()).withName(COMMAND_INGEST_FILE),
+                ingestPayload));
+        LOGGER.info("Dispatched {} for blobFileId='{}' template='{}'", COMMAND_INGEST_FILE, blobFileId, templateIdentifier);
     }
 
-    @SuppressWarnings("squid:S2674")
-    private byte[] toDocumentBytes(final FileReference fileReference) {
+    private Optional<JsonObjectBuilder> getDocumentMetadata(final JsonObject payload) {
+        if (!payload.containsKey("sourceUri")) {
+            return Optional.empty();
+        }
+        final String blobFileId = payload.getString("blobFileId");
+        final String sourceUri = payload.getString("sourceUri");
         try {
-            final InputStream contentStream = fileReference.getContentStream();
-            final byte[] docBytes = new byte[contentStream.available()];
-            contentStream.read(docBytes);
-            return docBytes;
-        } catch (IOException e) {
-            LOGGER.error("error accessing document content for file " + fileReference.getFileId().toString(), e);
-            return new byte[0];
-        } finally {
-            try {
-                fileReference.close();
-            } catch (Exception e) {
-                LOGGER.error("error disposing file reference", e);
-            }
+            final byte[] documentBytes = downloadBytes(URI.create(sourceUri));
+            return Optional.ofNullable(toDocumentMetadata(blobFileId, documentBytes));
+        } catch (final IOException e) {
+            LOGGER.error("error downloading document from sourceUri '{}'", sourceUri, e);
+            return Optional.empty();
+        }
+    }
+
+    private byte[] downloadBytes(final URI sourceUri) throws IOException {
+        try (final InputStream inputStream = sourceUri.toURL().openStream()) {
+            return inputStream.readAllBytes();
         }
     }
 

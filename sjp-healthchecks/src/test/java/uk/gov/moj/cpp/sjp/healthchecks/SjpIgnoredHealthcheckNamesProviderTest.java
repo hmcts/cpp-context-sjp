@@ -24,7 +24,7 @@ public class SjpIgnoredHealthcheckNamesProviderTest {
 
         final List<String> namesOfIgnoredHealthChecks = ignoredHealthcheckNamesProvider.getNamesOfIgnoredHealthChecks();
 
-        assertThat(namesOfIgnoredHealthChecks.size(), is(1));
-        assertThat(namesOfIgnoredHealthChecks, hasItems(JOB_STORE_HEALTHCHECK_NAME));
+        assertThat(namesOfIgnoredHealthChecks.size(), is(2));
+        assertThat(namesOfIgnoredHealthChecks, hasItems(JOB_STORE_HEALTHCHECK_NAME, FILE_STORE_HEALTHCHECK_NAME));
     }
 }

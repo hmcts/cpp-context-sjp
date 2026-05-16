@@ -3,7 +3,7 @@
     <parent>
         <artifactId>sjp-command</artifactId>
         <groupId>uk.gov.moj.cpp.sjp</groupId>
-        <version>17.103.170-SNAPSHOT</version>
+        <version>17.104.1-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -35,14 +35,9 @@
         </dependency>
 
         <dependency>
-            <groupId>uk.gov.justice.framework-generators</groupId>
-            <artifactId>rest-adapter-file-service</artifactId>
-            <version>${cpp.framework.version}</version>
-        </dependency>
-
-        <dependency>
-            <groupId>uk.gov.justice.services</groupId>
-            <artifactId>file-service-persistence</artifactId>
+            <groupId>uk.gov.moj.cpp.sjp</groupId>
+            <artifactId>sjp-file-store-core</artifactId>
+            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>uk.gov.moj.cpp.core.domain</groupId>

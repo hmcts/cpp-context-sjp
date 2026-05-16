@@ -19,7 +19,7 @@ public class PressTransparencyReportMetadata {
     private UUID id;
 
     @Column(name = "file_service_id")
-    private UUID fileServiceId;
+    private UUID blobFileId;
 
     @Column(name = "number_of_pages")
     private Integer numberOfPages;
@@ -47,7 +47,7 @@ public class PressTransparencyReportMetadata {
 
     }
 
-    public PressTransparencyReportMetadata(final UUID fileServiceId,
+    public PressTransparencyReportMetadata(final UUID blobFileId,
                                            final Integer englishNumberOfPages,
                                            final Integer sizeInBytes,
                                            final String documentFormat,
@@ -56,7 +56,7 @@ public class PressTransparencyReportMetadata {
                                            final String language,
                                            final LocalDateTime generatedAt) {
         this.id = randomUUID();
-        this.fileServiceId = fileServiceId;
+        this.blobFileId = blobFileId;
         this.numberOfPages = englishNumberOfPages;
         this.sizeInBytes = sizeInBytes;
         this.documentFormat = documentFormat;
@@ -89,12 +89,12 @@ public class PressTransparencyReportMetadata {
         this.id = id;
     }
 
-    public UUID getFileServiceId() {
-        return fileServiceId;
+    public UUID getBlobFileId() {
+        return blobFileId;
     }
 
-    public void setFileServiceId(final UUID fileServiceId) {
-        this.fileServiceId = fileServiceId;
+    public void setBlobFileId(final UUID blobFileId) {
+        this.blobFileId = blobFileId;
     }
 
     public Integer getNumberOfPages() {

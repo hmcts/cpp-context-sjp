@@ -885,7 +885,9 @@ public class SjpQueryViewTest {
                 true,
                 updatedOn,
                 REGION,
-                null);
+                null,
+                null
+        );
 
         DefendantDetailsUpdatesView.DefendantDetailsUpdate defendantDetailsUpdateCompany = new DefendantDetailsUpdatesView.DefendantDetailsUpdate(
                 null,
@@ -899,7 +901,8 @@ public class SjpQueryViewTest {
                 true,
                 updatedOn,
                 REGION,
-                LEGAL_ENTITY_NAME);
+                LEGAL_ENTITY_NAME,
+                null);
 
 
         when(defendantService.findDefendantDetailUpdates(queryEnvelope)).thenReturn(new DefendantDetailsUpdatesView(

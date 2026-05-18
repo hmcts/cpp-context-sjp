@@ -60,7 +60,11 @@ public class ProgressionService {
                                                  withName(PROGRESSION_CASE_QUERY), requestPayload);
         final JsonEnvelope jsonResultEnvelope = requester.requestAsAdmin(requestEnvelope);
 
-        return ofNullable(jsonResultEnvelope.payloadAsJsonObject());
+        if (!jsonResultEnvelope.payloadIsNull()){
+            return ofNullable(jsonResultEnvelope.payloadAsJsonObject());
+        } else {
+            return Optional.empty();
+        }
     }
 
     public List<String> findDefendantOffences(UUID caseId, DefendantDetail defendant) {

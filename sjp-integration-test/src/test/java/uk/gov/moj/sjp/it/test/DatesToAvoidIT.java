@@ -122,7 +122,7 @@ class DatesToAvoidIT extends BaseIntegrationTest {
     @Test
     public void shouldCaseBePendingDatesToAvoidForPleaChangeScenariosAndBeResultedAfterDatesToAvoid() {
         setupIdMapperStub();
-        shouldCaseBePendingDatesToAvoidForPleaChangeScenarios();
+        shouldCaseBePendingDatesToAvoidForPleaChangeScenarios(null);
 
         addDatesToAvoid(tflCaseBuilder.getId(), DATE_TO_AVOID);
         assertThatNumberOfCasesPendingDatesToAvoidIsAccurate(tflUserId, tflInitialPendingDatesToAvoidCount);
@@ -134,7 +134,7 @@ class DatesToAvoidIT extends BaseIntegrationTest {
 
     @Test
     public void shouldCaseBePendingDatesToAvoidForPleaChangeScenariosAndBeReadyAfterDatesToAvoidExpiry() {
-        shouldCaseBePendingDatesToAvoidForPleaChangeScenarios();
+        shouldCaseBePendingDatesToAvoidForPleaChangeScenarios("TFL");
         pollUntilCaseHasStatus(tflCaseBuilder.getId(), PLEA_RECEIVED_NOT_READY_FOR_DECISION);
         makeDatesToAvoidExpired(eventListener, tflCaseBuilder.getId());
         verifyDatesToAvoidExpiredEventEmitted(eventListener, tflCaseBuilder.getId());
@@ -198,7 +198,7 @@ class DatesToAvoidIT extends BaseIntegrationTest {
         updatePleaToNotGuiltyAndConfirm(tvlCaseBuilder.getId(), tvlCaseBuilder.getOffenceId(), tvlCaseBuilder.getDefendantBuilder().getId());
 
         //checks that correct dates-to-avoid record is retrieved (i.e. the one related to the case passed in)
-        assertThatDatesToAvoidIsPendingSubmissionForCase(userId, createCasePayloadBuilder);
+        assertThatDatesToAvoidIsPendingSubmissionForCase(userId, createCasePayloadBuilder, null);
 
         requestWithdrawalOfOffences(createCasePayloadBuilder.getId(), userId, asList(withdrawalRequestsStatus()
                 .withOffenceId(createCasePayloadBuilder.getOffenceId())
@@ -210,11 +210,11 @@ class DatesToAvoidIT extends BaseIntegrationTest {
         assertThatNumberOfCasesPendingDatesToAvoidIsAccurate(userId, expectedPendingDatesToAvoidCount);
     }
 
-    private void shouldCaseBePendingDatesToAvoidForPleaChangeScenarios() {
+    private void shouldCaseBePendingDatesToAvoidForPleaChangeScenarios(final String prosecutingAuthority) {
         //checks that dates-to-avoid is pending submission when NOT_GUILTY plea submitted
         updatePleaToNotGuiltyAndConfirm(tflCaseBuilder.getId(), tflCaseBuilder.getOffenceId(), tflCaseBuilder.getDefendantBuilder().getId());
 //        verifyDatesToAvoidRequiredEvent(tflCaseBuilder.getId());
-        assertThatDatesToAvoidIsPendingSubmissionForCase(tflUserId, tflCaseBuilder);
+        assertThatDatesToAvoidIsPendingSubmissionForCase(tflUserId, tflCaseBuilder, prosecutingAuthority);
 
         //checks that dates-to-avoid NOT pending submission when plea is cancelled
         cancelPlea(tflCaseBuilder.getId(), tflCaseBuilder.getOffenceId(), tflCaseBuilder.getDefendantBuilder().getId());
@@ -223,7 +223,7 @@ class DatesToAvoidIT extends BaseIntegrationTest {
 
         //checks that dates-to-avoid is pending submission again when plea updated to NOT_GUILTY
         updatePleaToNotGuiltyAndConfirm(tflCaseBuilder.getId(), tflCaseBuilder.getOffenceId(), tflCaseBuilder.getDefendantBuilder().getId());
-        assertThatDatesToAvoidIsPendingSubmissionForCase(tflUserId, tflCaseBuilder);
+        assertThatDatesToAvoidIsPendingSubmissionForCase(tflUserId, tflCaseBuilder, prosecutingAuthority);
     }
 
     private void completeCase(CreateCase.CreateCasePayloadBuilder createCasePayloadBuilder) {
@@ -242,11 +242,12 @@ class DatesToAvoidIT extends BaseIntegrationTest {
                 false, null, singletonList(Triple.of(offenceId, defendantId, null)));
     }
 
-    private void assertThatDatesToAvoidIsPendingSubmissionForCase(final UUID userId, final CreateCase.CreateCasePayloadBuilder aCase) {
+    private void assertThatDatesToAvoidIsPendingSubmissionForCase(final UUID userId, final CreateCase.CreateCasePayloadBuilder aCase,
+                                                                  final String prosecutingAuthority) {
         final Matcher<? super ReadContext> pendingDatesToAvoidMatcher =
                 withJsonPath("$.cases[-1].caseId", equalTo(aCase.getId().toString()));
 
-        final JsonPath path = pollUntilPendingDatesToAvoidIsOk(userId.toString(), pendingDatesToAvoidMatcher);
+        final JsonPath path = pollUntilPendingDatesToAvoidIsOk(userId.toString(), pendingDatesToAvoidMatcher, prosecutingAuthority);
         final List<Map> pendingDatesToAvoid = path.getList("cases");
         final Integer datesToAvoidCount = path.get("count");
         final Map map = pendingDatesToAvoid.get(pendingDatesToAvoid.size() - 1);
@@ -267,12 +268,12 @@ class DatesToAvoidIT extends BaseIntegrationTest {
     }
 
     private int pollForCountOfCasesPendingDatesToAvoid(final UUID userId) {
-        return pollUntilPendingDatesToAvoidIsOk(userId.toString(), withJsonPath("$.count"))
+        return pollUntilPendingDatesToAvoidIsOk(userId.toString(), withJsonPath("$.count"), null)
                 .get("count");
     }
 
     private void assertThatNumberOfCasesPendingDatesToAvoidIsAccurate(final UUID userId, final int pendingDatesToAvoidCount) {
-        pollUntilPendingDatesToAvoidIsOk(userId.toString(), withJsonPath("$.count", equalTo(pendingDatesToAvoidCount)));
+        pollUntilPendingDatesToAvoidIsOk(userId.toString(), withJsonPath("$.count", equalTo(pendingDatesToAvoidCount)), null);
     }
 
     private void assertWithinSeconds(final long value, final long tolerance) {

@@ -53,7 +53,8 @@ public class AcknowledgeDefendantDetailsUpdatesHandler {
         final ProsecutingAuthorityAccess currentUsersProsecutingAuthorityAccess = prosecutingAuthorityProvider.getCurrentUsersProsecutingAuthorityAccess(command);
 
         final Stream<Object> events = caseAggregate
-                .acknowledgeDefendantDetailsUpdates(defendantId, clock.now(), currentUsersProsecutingAuthorityAccess.getProsecutingAuthority());
+                .acknowledgeDefendantDetailsUpdates(defendantId, clock.now(), currentUsersProsecutingAuthorityAccess.getProsecutingAuthority(),
+                        currentUsersProsecutingAuthorityAccess.getAgentProsecutorAuthorityAccess());
 
         eventStream.append(events.map(enveloper.withMetadataFrom(command)));
     }

@@ -23,6 +23,7 @@ import static uk.gov.moj.cpp.sjp.query.view.response.DefendantDetailsUpdatesView
 
 import uk.gov.justice.json.schemas.domains.sjp.Gender;
 import uk.gov.justice.services.messaging.JsonEnvelope;
+import uk.gov.moj.cpp.accesscontrol.sjp.providers.ProsecutingAuthorityAccess;
 import uk.gov.moj.cpp.accesscontrol.sjp.providers.ProsecutingAuthorityProvider;
 import uk.gov.moj.cpp.sjp.domain.DefendantOutstandingFineRequestsQueryResult;
 import uk.gov.moj.cpp.sjp.persistence.builder.CaseDetailBuilder;
@@ -36,6 +37,7 @@ import uk.gov.moj.cpp.sjp.query.view.converter.ProsecutingAuthorityAccessFilterC
 import uk.gov.moj.cpp.sjp.query.view.response.DefendantDetailsUpdatesView;
 
 import java.time.ZonedDateTime;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
@@ -78,11 +80,11 @@ public class DefendantServiceTest {
 
     @BeforeEach
     public void setup() {
-        updatedDefendantDetails1 = createUpdatedDefendantDetailsWithRegion("London");
-        updatedDefendantDetails2 = createUpdatedDefendantDetailsWithRegion("Oxford");
-        updatedDefendantDetails3 = createUpdatedDefendantDetailsWithRegion(" ");
-        updatedDefendantDetails4 = createUpdatedDefendantDetailsWithRegion("");
-        updatedDefendantDetails5 = createUpdatedDefendantDetailsWithRegion(null);
+        updatedDefendantDetails1 = createUpdatedDefendantDetailsWithRegionAndProsecutingAuthority("London", null);
+        updatedDefendantDetails2 = createUpdatedDefendantDetailsWithRegionAndProsecutingAuthority("Oxford", "TVL");
+        updatedDefendantDetails3 = createUpdatedDefendantDetailsWithRegionAndProsecutingAuthority(" ", null);
+        updatedDefendantDetails4 = createUpdatedDefendantDetailsWithRegionAndProsecutingAuthority("", "TFL");
+        updatedDefendantDetails5 = createUpdatedDefendantDetailsWithRegionAndProsecutingAuthority(null, "TFL");
 
         updatedDefendantDetails = newArrayList(
                 updatedDefendantDetails1,
@@ -107,8 +109,12 @@ public class DefendantServiceTest {
         when(defendantRepository.findUpdatedByCaseProsecutingAuthority(
                 any(),
                 any(),
+                any(),
                 any()))
                 .thenReturn(updatedDefendantDetails);
+
+        final ProsecutingAuthorityAccess prosecutingAuthorityAccess = ProsecutingAuthorityAccess.of("TFL", new ArrayList<>());
+        when(prosecutingAuthorityProvider.getCurrentUsersProsecutingAuthorityAccess(envelope)).thenReturn(prosecutingAuthorityAccess);
 
         final DefendantDetailsUpdatesView defendantDetailUpdates = defendantService.findDefendantDetailUpdates(envelope);
 
@@ -132,8 +138,12 @@ public class DefendantServiceTest {
         when(defendantRepository.findUpdatedByCaseProsecutingAuthority(
                 any(),
                 any(),
+                any(),
                 any()))
                 .thenReturn(updatedDefendantDetails);
+
+        final ProsecutingAuthorityAccess prosecutingAuthorityAccess = ProsecutingAuthorityAccess.of("TFL", new ArrayList<>());
+        when(prosecutingAuthorityProvider.getCurrentUsersProsecutingAuthorityAccess(envelope)).thenReturn(prosecutingAuthorityAccess);
 
         final DefendantDetailsUpdatesView defendantDetailUpdates = defendantService.findDefendantDetailUpdates(envelope);
 
@@ -171,8 +181,12 @@ public class DefendantServiceTest {
         when(defendantRepository.findUpdatedByCaseProsecutingAuthority(
                 any(),
                 any(),
+                any(),
                 any()))
                 .thenReturn(updatedDefendantDetails);
+
+        final ProsecutingAuthorityAccess prosecutingAuthorityAccess = ProsecutingAuthorityAccess.of("TFL", new ArrayList<>());
+        when(prosecutingAuthorityProvider.getCurrentUsersProsecutingAuthorityAccess(envelope)).thenReturn(prosecutingAuthorityAccess);
 
         final DefendantDetailsUpdatesView defendantDetailUpdates = defendantService.findDefendantDetailUpdates(envelope);
 
@@ -193,8 +207,12 @@ public class DefendantServiceTest {
         when(defendantRepository.findUpdatedByCaseProsecutingAuthority(
                 any(),
                 any(),
+                any(),
                 any()))
                 .thenReturn(updatedDefendantDetails);
+
+        final ProsecutingAuthorityAccess prosecutingAuthorityAccess = ProsecutingAuthorityAccess.of("TFL", new ArrayList<>());
+        when(prosecutingAuthorityProvider.getCurrentUsersProsecutingAuthorityAccess(envelope)).thenReturn(prosecutingAuthorityAccess);
 
         final DefendantDetailsUpdatesView defendantDetailUpdates = defendantService.findDefendantDetailUpdates(envelope);
 
@@ -204,13 +222,41 @@ public class DefendantServiceTest {
     }
 
     @Test
+    public void shouldReturnDefendantUpdatesFilteredByProsecutingAuthority() {
+        final JsonEnvelope envelope = envelopeWithProsecutingAuthority("TFL");
+        when(defendantRepository.findUpdatedByCaseProsecutingAuthority(
+                any(),
+                any(),
+                any(),
+                any()))
+                .thenReturn(updatedDefendantDetails);
+
+        final ProsecutingAuthorityAccess prosecutingAuthorityAccess = ProsecutingAuthorityAccess.of("TFL", new ArrayList<>());
+        when(prosecutingAuthorityProvider.getCurrentUsersProsecutingAuthorityAccess(envelope)).thenReturn(prosecutingAuthorityAccess);
+
+        final DefendantDetailsUpdatesView defendantDetailUpdates = defendantService.findDefendantDetailUpdates(envelope);
+
+        assertThat(defendantDetailUpdates.getDefendantDetailsUpdates().size(), is(2));
+        assertThat(defendantDetailUpdates.getDefendantDetailsUpdates(),
+                containsInAnyOrder(
+                        DefendantDetailsUpdate.of(updatedDefendantDetails4),
+                        DefendantDetailsUpdate.of(updatedDefendantDetails5)
+                ));
+        assertThat(defendantDetailUpdates.getTotal(), is(updatedDefendantDetails.size()));
+    }
+
+    @Test
     public void shouldFindDefendantUpdatesFilteredEmptyList() {
         final JsonEnvelope envelope = envelope("UNKNOWN");
         when(defendantRepository.findUpdatedByCaseProsecutingAuthority(
                 any(),
                 any(),
+                any(),
                 any()))
                 .thenReturn(updatedDefendantDetails);
+
+        final ProsecutingAuthorityAccess prosecutingAuthorityAccess = ProsecutingAuthorityAccess.of("TFL", new ArrayList<>());
+        when(prosecutingAuthorityProvider.getCurrentUsersProsecutingAuthorityAccess(envelope)).thenReturn(prosecutingAuthorityAccess);
 
         final DefendantDetailsUpdatesView defendantDetailUpdates = defendantService.findDefendantDetailUpdates(envelope);
 
@@ -231,8 +277,12 @@ public class DefendantServiceTest {
         final UpdatedDefendantDetails update3 = anUpdatedDefendantDetails().withUpdateTime(ZonedDateTime.now().minusDays(2)).withRegion("").build();
         when(defendantRepository.findUpdatedByCaseProsecutingAuthority(any(),
                 any(),
+                any(),
                 any()))
                 .thenReturn(asList(update3, update2, update1));
+
+        final ProsecutingAuthorityAccess prosecutingAuthorityAccess = ProsecutingAuthorityAccess.of("TFL", new ArrayList<>());
+        when(prosecutingAuthorityProvider.getCurrentUsersProsecutingAuthorityAccess(envelope)).thenReturn(prosecutingAuthorityAccess);
 
         final DefendantDetailsUpdatesView defendantDetailUpdates = defendantService.findDefendantDetailUpdates(envelope);
 
@@ -266,9 +316,12 @@ public class DefendantServiceTest {
 
     }
 
-    private UpdatedDefendantDetails createUpdatedDefendantDetailsWithRegion(final String region) {
+    private UpdatedDefendantDetails createUpdatedDefendantDetailsWithRegionAndProsecutingAuthority(final String region,
+                                                                                                   final String prosecutingAuthority) {
         return anUpdatedDefendantDetails()
                 .withRegion(region)
+                .withProsecutingAuthority(prosecutingAuthority)
+                .withUpdateTime(ZonedDateTime.now())
                 .build();
     }
 
@@ -284,6 +337,15 @@ public class DefendantServiceTest {
                 createObjectBuilder()
                         .add("limit", Integer.MAX_VALUE)
                         .add("regionId", regionFilterCriteria)
+        );
+    }
+
+    private JsonEnvelope envelopeWithProsecutingAuthority(final String prosecutingAuthority) {
+        return envelopeFrom(
+                metadataWithRandomUUIDAndName(),
+                createObjectBuilder()
+                        .add("prosecutingAuthority", prosecutingAuthority)
+                        .add("limit", 5)
         );
     }
 

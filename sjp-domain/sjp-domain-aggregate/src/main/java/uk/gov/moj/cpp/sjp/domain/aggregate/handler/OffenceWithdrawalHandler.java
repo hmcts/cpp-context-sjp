@@ -24,10 +24,11 @@ public class OffenceWithdrawalHandler {
     private OffenceWithdrawalHandler() {
     }
 
-    public Stream<Object> requestOffenceWithdrawal(final UUID caseId, final UUID setBy, final ZonedDateTime setAt, final List<WithdrawalRequestsStatus> withdrawalRequestsStatus, final CaseAggregateState state, final String prosecutionAuthority) {
+    public Stream<Object> requestOffenceWithdrawal(final UUID caseId, final UUID setBy, final ZonedDateTime setAt, final List<WithdrawalRequestsStatus> withdrawalRequestsStatus,
+                                                   final CaseAggregateState state, final String prosecutionAuthority, final List<String> agentProsecutorAuthorityAccess) {
 
         return HandlerUtils.
-                createRejectionEvents(null, "Request Offence Withdrawal", null, state, prosecutionAuthority).
+                createRejectionEvents(null, "Request Offence Withdrawal", null, state, prosecutionAuthority, agentProsecutorAuthorityAccess).
                 orElse(createWithdrawalEvents(caseId, setBy, setAt, withdrawalRequestsStatus, state));
     }
 

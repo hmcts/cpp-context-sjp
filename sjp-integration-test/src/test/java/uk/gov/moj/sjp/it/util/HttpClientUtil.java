@@ -56,6 +56,7 @@ public class HttpClientUtil {
 
         final String writeUrl = getWriteUrl(url);
         try (Response response = restClient.postCommand(writeUrl, mediaType, payload, map)) {
+
             String responseBody = "";
             try {
                 responseBody = response.readEntity(String.class);

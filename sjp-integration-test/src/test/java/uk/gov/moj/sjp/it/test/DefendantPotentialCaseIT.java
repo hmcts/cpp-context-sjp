@@ -10,6 +10,7 @@ import static uk.gov.moj.sjp.it.command.CreateCase.CreateCasePayloadBuilder.defa
 import static uk.gov.moj.sjp.it.command.CreateCase.createCaseForPayloadBuilder;
 import static uk.gov.moj.sjp.it.model.ProsecutingAuthority.TFL;
 import static uk.gov.moj.sjp.it.pollingquery.CasePoller.pollForCase;
+import static uk.gov.moj.sjp.it.pollingquery.CasePoller.pollUntilCaseByIdIsOk;
 import static uk.gov.moj.sjp.it.pollingquery.CasePoller.pollUntilPotentialCasesByDefendantIdIsOk;
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubProsecutorQuery;
 import static uk.gov.moj.sjp.it.stub.UnifiedSearchStub.stubUnifiedSearchQueryForCases;
@@ -65,8 +66,7 @@ public class DefendantPotentialCaseIT extends BaseIntegrationTest {
     }
 
     @Test
-    @Disabled("Ignored as failing in pipeline. will be reverted back before merging to main")
-    public void shouldFindPotentialCases() {
+    public void shouldFindPotentialCases(){
         UUID caseId = randomCaseId;
         UUID defendantId = randomUUID();
 
@@ -82,6 +82,8 @@ public class DefendantPotentialCaseIT extends BaseIntegrationTest {
                 .run(() -> createCaseForPayloadBuilder(createCase))
                 .popEvent(CaseReceived.EVENT_NAME);
         assertTrue(caseReceivedEvent.isPresent());
+
+        pollUntilCaseByIdIsOk(caseId);
 
         final String potentialCasesResponsePayload = pollUntilPotentialCasesByDefendantIdIsOk(defendantId);
         final JsonObject potentialCases = responseToJsonObject(potentialCasesResponsePayload);

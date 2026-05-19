@@ -2,7 +2,8 @@ package uk.gov.moj.cpp.sjp.query.view;
 
 
 import static java.util.Arrays.stream;
-import static javax.json.Json.createObjectBuilder;
+import static uk.gov.justice.services.messaging.JsonObjects.createArrayBuilder;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 
 import uk.gov.justice.services.core.annotation.Component;
 import uk.gov.justice.services.core.annotation.Handles;
@@ -25,7 +26,6 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 import javax.inject.Inject;
-import javax.json.Json;
 import javax.json.JsonArrayBuilder;
 import javax.json.JsonObject;
 
@@ -84,7 +84,7 @@ public class AssignmentQueryView {
         final List<AssignmentCandidate> assignmentCandidatesList = assignmentService.getAssignmentCandidates(assigneeId, sessionType, prosecutingAuthorities, limit);
 
 
-        final JsonArrayBuilder casesReadyForDecisionBuilder = Json.createArrayBuilder();
+        final JsonArrayBuilder casesReadyForDecisionBuilder = createArrayBuilder();
 
         assignmentCandidatesList.forEach(assignmentCandidate -> casesReadyForDecisionBuilder.add(createObjectBuilder()
                 .add("caseId", assignmentCandidate.getCaseId().toString())

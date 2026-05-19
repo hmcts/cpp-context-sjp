@@ -3,6 +3,7 @@ package uk.gov.moj.cpp.sjp.query.view.service.defendantcase.search;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
 import static uk.gov.justice.services.core.annotation.Component.QUERY_VIEW;
 import static uk.gov.justice.services.core.enveloper.Enveloper.envelop;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 import static uk.gov.moj.cpp.sjp.query.view.service.defendantcase.search.DefendantCaseQuery.CASES_DEFAULT_PAGE_SIZE;
 import static uk.gov.moj.cpp.sjp.query.view.service.defendantcase.search.DefendantCaseQuery.CASES_QUERY_NAME;
 import static uk.gov.moj.cpp.sjp.query.view.service.defendantcase.search.DefendantCaseQuery.CASES_START_FROM;
@@ -12,19 +13,18 @@ import uk.gov.justice.services.core.enveloper.Enveloper;
 import uk.gov.justice.services.core.requester.Requester;
 import uk.gov.justice.services.messaging.Envelope;
 import uk.gov.moj.cpp.sjp.persistence.entity.DefendantDetail;
+import uk.gov.moj.cpp.sjp.persistence.entity.PersonalDetails;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
 import javax.inject.Inject;
-import javax.json.Json;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import uk.gov.moj.cpp.sjp.persistence.entity.PersonalDetails;
 
 public class UnifiedDefendantCaseSearcher implements DefendantCaseSearcher {
 
@@ -41,7 +41,7 @@ public class UnifiedDefendantCaseSearcher implements DefendantCaseSearcher {
     public List<DefendantCase> searchDefendantCases(Envelope<?> envelope,
                                                     DefendantDetail defendant) {
         final List<DefendantCase> defendantCases = new ArrayList<>();
-        if(!hasMandatoryDetails(defendant)){
+        if (!hasMandatoryDetails(defendant)) {
             return defendantCases;
         }
         int page = 0;
@@ -51,7 +51,7 @@ public class UnifiedDefendantCaseSearcher implements DefendantCaseSearcher {
 
 
         while (true) {
-            final JsonObjectBuilder criteriaBuilder = Json.createObjectBuilder();
+            final JsonObjectBuilder criteriaBuilder = createObjectBuilder();
             defendantQuery.getCriteria().forEach(criteriaBuilder::add);
             criteriaBuilder.add(CASES_START_FROM, page);
 
@@ -80,7 +80,7 @@ public class UnifiedDefendantCaseSearcher implements DefendantCaseSearcher {
 
     private boolean hasMandatoryDetails(final DefendantDetail defendant) {
         final PersonalDetails personalDetails = defendant.getPersonalDetails();
-        if(personalDetails != null) {
+        if (personalDetails != null) {
             final String firstName = personalDetails.getFirstName();
             final String lastName = personalDetails.getLastName();
             final LocalDate dateOfBirth = personalDetails.getDateOfBirth();

@@ -1,17 +1,23 @@
 package uk.gov.moj.cpp.sjp.query.view.converter;
 
-import com.google.common.collect.ImmutableMap;
-import org.json.JSONException;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
-import org.mockito.Spy;
-import org.mockito.junit.jupiter.MockitoExtension;
+import static java.time.format.DateTimeFormatter.ofPattern;
+import static java.util.UUID.fromString;
+import static java.util.UUID.randomUUID;
+import static org.hamcrest.CoreMatchers.not;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.hasItem;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
+import static uk.gov.justice.services.messaging.JsonObjects.createArrayBuilder;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
+import static uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderFactory.metadataWithRandomUUID;
+import static uk.gov.moj.cpp.sjp.query.view.matcher.ResultMatchers.FO;
+import static uk.gov.moj.cpp.sjp.query.view.util.FileUtil.getFileContentAsJson;
+import static uk.gov.moj.cpp.sjp.query.view.util.FileUtil.getFileContentAsJsonArray;
+
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.sjp.query.view.util.fakes.FakeReferenceDataService;
 
-import javax.json.*;
 import java.math.BigDecimal;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
@@ -21,18 +27,19 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-import static java.time.format.DateTimeFormatter.ofPattern;
-import static java.util.UUID.fromString;
-import static java.util.UUID.randomUUID;
-import static org.hamcrest.CoreMatchers.not;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.hasItem;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
-import static uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderFactory.metadataWithRandomUUID;
-import static uk.gov.moj.cpp.sjp.query.view.matcher.ResultMatchers.FO;
-import static uk.gov.moj.cpp.sjp.query.view.util.FileUtil.getFileContentAsJson;
-import static uk.gov.moj.cpp.sjp.query.view.util.FileUtil.getFileContentAsJsonArray;
+import javax.json.JsonArray;
+import javax.json.JsonArrayBuilder;
+import javax.json.JsonObject;
+import javax.json.JsonObjectBuilder;
+
+import com.google.common.collect.ImmutableMap;
+import org.json.JSONException;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Spy;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 @ExtendWith(MockitoExtension.class)
 public class ReferencedDecisionSavedOffenceConverterTest {
@@ -57,6 +64,7 @@ public class ReferencedDecisionSavedOffenceConverterTest {
     public void setup() {
         referenceDataService.addWithdrawalReason(fromString("1dbf0960-51e3-4d90-803d-d54cd8ea7d3e"), "Reason");
     }
+
     @Test
     public void shouldConvertFinancialPenalty() throws JSONException {
         String path = "converter/decision-saved-event.fine.input.json";
@@ -383,21 +391,24 @@ public class ReferencedDecisionSavedOffenceConverterTest {
         assertEquals(toMap(expectedArrayModified), toMap(actualArrayModified));
 
     }
+
     private Map<String, String> toMap(JsonObject jsonObject) {
         return jsonObject.entrySet().stream()
                 .collect(Collectors.toMap(Map.Entry::getKey, e -> e.getValue().toString().replaceAll("\"", "")));
     }
+
     private List<Map<String, String>> toMap(JsonArray jsonArray) {
         return jsonArray.getValuesAs(JsonObject.class).stream()
                 .map(this::toMap)
                 .collect(Collectors.toList());
     }
+
     private JsonArray removeIdFromJsonObjects(JsonArray jsonArray) {
-        JsonArrayBuilder arrayBuilder = Json.createArrayBuilder();
+        JsonArrayBuilder arrayBuilder = createArrayBuilder();
 
         for (int i = 0; i < jsonArray.size(); i++) {
             JsonObject originalObject = jsonArray.getJsonObject(i);
-            JsonObjectBuilder objectBuilder = Json.createObjectBuilder();
+            JsonObjectBuilder objectBuilder = createObjectBuilder();
 
             for (String key : originalObject.keySet()) {
                 if (!"id".equals(key)) {

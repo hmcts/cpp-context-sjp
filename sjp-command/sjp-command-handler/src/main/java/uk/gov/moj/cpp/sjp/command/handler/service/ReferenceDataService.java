@@ -1,11 +1,8 @@
 package uk.gov.moj.cpp.sjp.command.handler.service;
 
 import static java.util.Optional.of;
-import static javax.json.Json.createObjectBuilder;
-import static uk.gov.justice.services.core.enveloper.Enveloper.envelop;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
 import uk.gov.justice.services.core.annotation.Component;
 import uk.gov.justice.services.core.annotation.ServiceComponent;
@@ -17,9 +14,11 @@ import java.util.Optional;
 import java.util.UUID;
 
 import javax.inject.Inject;
-import javax.json.Json;
 import javax.json.JsonObject;
 import javax.json.JsonValue;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class ReferenceDataService {
 
@@ -60,7 +59,7 @@ public class ReferenceDataService {
 
         LOGGER.info(" Calling {} to get prosecutors for {} ", REFERENCEDATA_QUERY_PROSECUTOR, id);
 
-        final JsonObject payload = Json.createObjectBuilder().add(ID, id.toString()).build();
+        final JsonObject payload = createObjectBuilder().add(ID, id.toString()).build();
 
         final JsonEnvelope requestEnvelope = enveloper.withMetadataFrom(event, REFERENCEDATA_QUERY_PROSECUTOR)
                 .apply(payload);

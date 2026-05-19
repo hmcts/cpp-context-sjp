@@ -2,8 +2,8 @@ package uk.gov.moj.sjp.it.helper;
 
 import static java.lang.String.format;
 import static java.util.Optional.ofNullable;
-import static javax.json.Json.createObjectBuilder;
 import static javax.ws.rs.core.Response.Status.ACCEPTED;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 import static uk.gov.moj.sjp.it.util.FileUtil.getFileContentAsJson;
 import static uk.gov.moj.sjp.it.util.HttpClientUtil.makePostCall;
 

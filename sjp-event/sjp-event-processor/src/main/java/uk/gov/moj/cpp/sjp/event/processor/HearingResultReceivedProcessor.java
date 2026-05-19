@@ -5,6 +5,7 @@ import static org.apache.commons.collections.CollectionUtils.isEmpty;
 import static uk.gov.justice.services.core.annotation.Component.EVENT_PROCESSOR;
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
 import static uk.gov.justice.services.messaging.JsonEnvelope.metadataFrom;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 
 import uk.gov.justice.core.courts.CourtApplication;
 import uk.gov.justice.core.courts.CourtApplicationCase;
@@ -22,7 +23,6 @@ import java.util.Objects;
 import java.util.Optional;
 
 import javax.inject.Inject;
-import javax.json.Json;
 import javax.json.JsonObject;
 
 import org.slf4j.Logger;
@@ -70,7 +70,7 @@ public class HearingResultReceivedProcessor {
     }
 
     private void sendMessage(final JsonEnvelope jsonEnvelope, final String applicationId, final String sjpCaseId, final String applicationStatus) {
-        final JsonObject applicationStatusPayload = Json.createObjectBuilder()
+        final JsonObject applicationStatusPayload = createObjectBuilder()
                 .add("caseId", sjpCaseId)
                 .add("applicationId", applicationId)
                 .add("applicationStatus", applicationStatus)

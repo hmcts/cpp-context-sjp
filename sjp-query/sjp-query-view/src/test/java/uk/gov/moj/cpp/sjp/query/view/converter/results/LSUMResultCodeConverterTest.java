@@ -1,21 +1,21 @@
 package uk.gov.moj.cpp.sjp.query.view.converter.results;
 
-import static javax.json.Json.createArrayBuilder;
-import static javax.json.Json.createObjectBuilder;
 import static org.mockito.MockitoAnnotations.initMocks;
+import static uk.gov.justice.services.messaging.JsonObjects.createArrayBuilder;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 
-import java.util.stream.Stream;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.Arguments;
-import org.junit.jupiter.params.provider.MethodSource;
 import uk.gov.justice.services.common.converter.LocalDates;
 
 import java.time.LocalDate;
+import java.util.stream.Stream;
 
 import javax.json.JsonArray;
 import javax.json.JsonObject;
 
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 
 public class LSUMResultCodeConverterTest extends ResultCodeConverterTest {
 

@@ -2,7 +2,6 @@ package uk.gov.moj.cpp.sjp.event.processor.results.converter;
 
 import static java.util.Optional.ofNullable;
 import static java.util.UUID.fromString;
-import static javax.json.Json.createObjectBuilder;
 import static javax.json.JsonValue.NULL;
 import static uk.gov.justice.core.courts.CourtApplicationParty.courtApplicationParty;
 import static uk.gov.justice.core.courts.HearingLanguage.ENGLISH;
@@ -11,7 +10,7 @@ import static uk.gov.justice.core.courts.ProsecutingAuthority.prosecutingAuthori
 import static uk.gov.justice.json.schemas.domains.sjp.results.PublicHearingResulted.publicHearingResulted;
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
 import static uk.gov.justice.services.messaging.JsonEnvelope.metadataFrom;
-import static uk.gov.moj.cpp.sjp.event.processor.helper.JsonObjectConversionHelper.toJsonString;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 import static uk.gov.moj.cpp.sjp.event.processor.results.converter.judicialresult.JCaseResultsConstants.DATE_FORMAT;
 import static uk.gov.moj.cpp.sjp.event.processor.results.converter.judicialresult.JudicialResultHelper.LABEL;
 import static uk.gov.moj.cpp.sjp.event.processor.results.converter.judicialresult.JudicialResultHelper.SESSION_ID;

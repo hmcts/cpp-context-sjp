@@ -1,14 +1,13 @@
 package uk.gov.moj.cpp.sjp.event.processor.service;
 
-import static javax.json.Json.createObjectBuilder;
-import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.equalTo;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 
 import javax.json.JsonObject;
 
 import org.junit.jupiter.api.Test;
-import uk.gov.justice.services.adapter.rest.exception.BadRequestException;
 
 public class LocalJusticeAreaTest {
 

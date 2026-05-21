@@ -1,7 +1,6 @@
 package uk.gov.moj.cpp.sjp.query.view.converter;
 
 import uk.gov.justice.services.messaging.JsonObjects;
-
 import com.google.common.collect.ImmutableMap;
 import org.json.JSONException;
 import org.junit.jupiter.api.BeforeEach;

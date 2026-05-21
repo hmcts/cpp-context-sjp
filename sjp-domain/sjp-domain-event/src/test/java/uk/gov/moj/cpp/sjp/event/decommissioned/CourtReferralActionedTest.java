@@ -12,7 +12,7 @@ import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.UUID;
 
-import javax.json.Json;
+import uk.gov.justice.services.messaging.JsonObjects;
 import javax.json.JsonObject;
 
 import org.junit.jupiter.api.Test;
@@ -22,7 +22,7 @@ public class CourtReferralActionedTest {
     @Test
     public void shouldDeserializeDecommissionedCourtReferralActionedEvent() throws Exception {
         final DateTimeFormatter dtf = DateTimeFormatter.ISO_DATE_TIME;
-        final JsonObject oldEventPayload = Json.createObjectBuilder()
+        final JsonObject oldEventPayload = JsonObjects.createObjectBuilder()
                 .add("caseId", UUID.randomUUID().toString())
                 .add("actioned", ZonedDateTime.now().format(dtf))
                 .build();

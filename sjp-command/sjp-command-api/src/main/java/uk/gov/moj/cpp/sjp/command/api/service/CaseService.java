@@ -1,6 +1,6 @@
 package uk.gov.moj.cpp.sjp.command.api.service;
 
-import static javax.json.Json.createObjectBuilder;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 import static uk.gov.justice.services.core.annotation.Component.COMMAND_API;
 import static uk.gov.justice.services.messaging.Envelope.metadataFrom;
 

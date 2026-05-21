@@ -2,7 +2,7 @@ package uk.gov.moj.cpp.sjp.event.processor.results.converter;
 
 import static java.util.Optional.ofNullable;
 import static java.util.UUID.fromString;
-import static javax.json.Json.createObjectBuilder;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 import static javax.json.JsonValue.NULL;
 import static uk.gov.justice.core.courts.CourtApplicationParty.courtApplicationParty;
 import static uk.gov.justice.core.courts.HearingLanguage.ENGLISH;

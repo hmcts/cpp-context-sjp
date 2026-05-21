@@ -10,7 +10,7 @@ import uk.gov.moj.cpp.sjp.CourtReferralNotFound;
 
 import java.util.UUID;
 
-import javax.json.Json;
+import uk.gov.justice.services.messaging.JsonObjects;
 import javax.json.JsonObject;
 
 import org.junit.jupiter.api.Test;
@@ -19,7 +19,7 @@ public class CourtReferralNotFoundTest {
 
     @Test
     public void shouldDeserializeDecommissionedCourtReferralNotFoundEvent() throws Exception {
-        final JsonObject oldEventPayload = Json.createObjectBuilder()
+        final JsonObject oldEventPayload = JsonObjects.createObjectBuilder()
                 .add("caseId", UUID.randomUUID().toString())
                 .build();
 

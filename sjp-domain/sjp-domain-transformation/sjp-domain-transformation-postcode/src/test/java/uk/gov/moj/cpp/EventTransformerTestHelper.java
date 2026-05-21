@@ -15,7 +15,7 @@ import java.io.StringReader;
 import java.util.Map;
 import java.util.stream.Stream;
 
-import javax.json.Json;
+import uk.gov.justice.services.messaging.JsonObjects;
 import javax.json.JsonObject;
 
 public class EventTransformerTestHelper {
@@ -41,7 +41,7 @@ public class EventTransformerTestHelper {
 
 
     private JsonEnvelope buildEnvelopeFromJsonResource(final String fileName) {
-        final JsonObject payload = Json.createReader(CaseReceivedEventTransformerTest.class
+        final JsonObject payload = JsonObjects.createReader(CaseReceivedEventTransformerTest.class
                 .getResourceAsStream("/events/" + fileName)).readObject();
         return envelopeFrom(metadataWithRandomUUID(eventTransformer.getEventName()), payload);
     }

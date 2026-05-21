@@ -9,7 +9,7 @@ import static java.util.Optional.empty;
 import static java.util.UUID.fromString;
 import static java.util.UUID.randomUUID;
 import static java.util.Optional.of;
-import static javax.json.Json.createObjectBuilder;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 import static org.apache.commons.lang3.RandomStringUtils.randomAlphanumeric;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.Matchers.is;

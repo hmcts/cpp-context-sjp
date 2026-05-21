@@ -1,5 +1,7 @@
 package uk.gov.moj.sjp.it.test.ingestor.helper;
 
+import uk.gov.justice.services.messaging.JsonObjects;
+
 import static java.util.Optional.empty;
 import static java.util.Optional.of;
 import static org.junit.jupiter.api.Assertions.assertTrue;

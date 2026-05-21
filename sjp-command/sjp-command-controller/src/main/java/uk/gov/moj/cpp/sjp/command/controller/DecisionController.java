@@ -4,7 +4,6 @@ import static java.lang.String.format;
 import static java.util.Objects.nonNull;
 import static java.util.Optional.ofNullable;
 import static java.util.UUID.randomUUID;
-import static javax.json.Json.createArrayBuilder;
 import static uk.gov.justice.services.core.annotation.Component.COMMAND_CONTROLLER;
 import static uk.gov.justice.services.core.enveloper.Enveloper.envelop;
 import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
@@ -26,6 +25,7 @@ import javax.json.JsonArrayBuilder;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
 
+import uk.gov.justice.services.messaging.JsonObjects;
 @ServiceComponent(COMMAND_CONTROLLER)
 public class DecisionController {
 
@@ -55,9 +55,9 @@ public class DecisionController {
 
         final JsonObject userDetails = userService.getCallingUserDetails(caseDecisionCommand);
 
-        final JsonObjectBuilder enrichedPayload = createObjectBuilder(payload)
+        final JsonObjectBuilder enrichedPayload = JsonObjects.createObjectBuilder(payload)
                 .add("decisionId", randomUUID().toString())
-                .add("savedBy", createObjectBuilder()
+                .add("savedBy", JsonObjects.createObjectBuilder()
                         .add(USER_ID, userDetails.getJsonString(USER_ID))
                         .add(FIRST_NAME, userDetails.getString(FIRST_NAME))
                         .add(LAST_NAME, userDetails.getString(LAST_NAME)));
@@ -81,9 +81,9 @@ public class DecisionController {
 
         final JsonObject payload = command.payloadAsJsonObject();
         final JsonObject userDetails = userService.getCallingUserDetails(command);
-        final JsonObjectBuilder enrichedPayload = createObjectBuilder(payload)
+        final JsonObjectBuilder enrichedPayload = JsonObjects.createObjectBuilder(payload)
                 .add("decisionId", randomUUID().toString())
-                .add("savedBy", createObjectBuilder()
+                .add("savedBy", JsonObjects.createObjectBuilder()
                         .add(USER_ID, userDetails.getJsonString(USER_ID))
                         .add(FIRST_NAME, userDetails.getString(FIRST_NAME))
                         .add(LAST_NAME, userDetails.getString(LAST_NAME)));
@@ -118,7 +118,7 @@ public class DecisionController {
                 .map(defendantPostCode -> referenceDataService.getEnforcementArea(defendantPostCode))
                 .map(this::getDefendantCourtDetails)
                 .ifPresent(defendantCourtDetails -> {
-                    final JsonObjectBuilder defendantDetails = createObjectBuilder();
+                    final JsonObjectBuilder defendantDetails = JsonObjects.createObjectBuilder();
                     defendantDetails.add("court", defendantCourtDetails);
                     enrichedPayload.add("defendant", defendantDetails);
                 });
@@ -127,7 +127,7 @@ public class DecisionController {
     private JsonObject getDefendantCourtDetails(final Optional<JsonObject> enforcementArea) {
         return enforcementArea
                 .map(value -> value.getJsonObject("localJusticeArea"))
-                .map(localJusticeArea -> createObjectBuilder()
+                .map(localJusticeArea -> JsonObjects.createObjectBuilder()
                         .add("nationalCourtCode", localJusticeArea.getString("nationalCourtCode"))
                         .add("nationalCourtName", localJusticeArea.getString("name"))
                         .build())
@@ -142,9 +142,9 @@ public class DecisionController {
     }
 
     private JsonArrayBuilder addOffenceDecisionId(JsonArray offenceDecisions) {
-        final JsonArrayBuilder decisionsWithIdBuilder = createArrayBuilder();
+        final JsonArrayBuilder decisionsWithIdBuilder = JsonObjects.createArrayBuilder();
         offenceDecisions.getValuesAs(JsonObject.class).forEach(offenceDecision ->
-                decisionsWithIdBuilder.add(createObjectBuilder(offenceDecision)
+                decisionsWithIdBuilder.add(JsonObjects.createObjectBuilder(offenceDecision)
                         .add("id", randomUUID().toString())
                         .build()
                 ));
@@ -152,12 +152,12 @@ public class DecisionController {
     }
 
     private JsonArrayBuilder addReferralReason(final JsonArray offenceDecisions) {
-        final JsonArrayBuilder decisionsBuilder = createArrayBuilder();
+        final JsonArrayBuilder decisionsBuilder = JsonObjects.createArrayBuilder();
         offenceDecisions.getValuesAs(JsonObject.class)
                 .forEach(offenceDecision -> {
                     final String type = offenceDecision.getString("type");
                     if (type.equals(REFER_FOR_COURT_HEARING)) {
-                        final JsonObjectBuilder referralDecisionWithReason = createObjectBuilder(offenceDecision);
+                        final JsonObjectBuilder referralDecisionWithReason = JsonObjects.createObjectBuilder(offenceDecision);
                         final String referralReasonId = offenceDecision.getString("referralReasonId");
                         referenceDataService.getReferralReason(referralReasonId)
                                 .map(referralReasonRefData ->

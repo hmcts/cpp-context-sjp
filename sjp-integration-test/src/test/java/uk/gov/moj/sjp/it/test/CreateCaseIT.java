@@ -7,7 +7,7 @@ import static java.time.LocalDate.now;
 import static java.util.UUID.randomUUID;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static java.util.stream.Collectors.toList;
-import static javax.json.Json.createObjectBuilder;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
 import static org.awaitility.Awaitility.await;
 import static org.hamcrest.CoreMatchers.equalTo;
@@ -52,7 +52,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-import javax.json.Json;
+import uk.gov.justice.services.messaging.JsonObjects;
 import javax.json.JsonArray;
 import javax.json.JsonObject;
 import javax.json.JsonValue;
@@ -579,7 +579,7 @@ public class CreateCaseIT extends BaseIntegrationTest {
                 .withDefendantId(randomUUID());
     }
     private JsonObject responseToJsonObject(String response) {
-        return Json.createReader(new StringReader(response)).readObject();
+        return JsonObjects.createReader(new StringReader(response)).readObject();
     }
 
     private static void verifyOffenceCode(final UUID caseId, final String offenceCode2) {

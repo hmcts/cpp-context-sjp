@@ -7,7 +7,7 @@ import uk.gov.justice.services.messaging.JsonEnvelope;
 import java.io.IOException;
 import java.io.InputStream;
 
-import javax.json.Json;
+import uk.gov.justice.services.messaging.JsonObjects;
 import javax.json.JsonObject;
 import javax.json.JsonReader;
 
@@ -25,7 +25,7 @@ public abstract class BaseConverterTest {
 
     protected void givenPayload(String filePath) throws IOException {
         try (InputStream inputStream = getClass().getResourceAsStream(filePath)) {
-            JsonReader jsonReader = Json.createReader(inputStream);
+            JsonReader jsonReader = JsonObjects.createReader(inputStream);
             payload = jsonReader.readObject();
         }
         when(command.payloadAsJsonObject()).thenReturn(payload);

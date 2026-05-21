@@ -27,7 +27,7 @@ import uk.gov.moj.cpp.sjp.event.processor.service.SjpService;
 import java.util.Optional;
 import java.util.UUID;
 
-import javax.json.Json;
+import uk.gov.justice.services.messaging.JsonObjects;
 import javax.json.JsonObject;
 
 import org.junit.jupiter.api.Test;
@@ -70,16 +70,16 @@ public class CourtCentreConverterTest {
         final Address address = Address.address().withAddress1(ADDRESS_LINE_1).build();
         final Address welshAddress = Address.address().withAddress1(WELSH_ADDRESS_LINE_1).build();
         final UUID offenceId = randomUUID();
-        JsonObject jsonObject = Json.createObjectBuilder()
+        JsonObject jsonObject = JsonObjects.createObjectBuilder()
                 .add("id", UUID.randomUUID().toString())
                 .add("name", "test")
                 .build();
 
-        final JsonObject sjpSessionPayload = Json.createObjectBuilder()
+        final JsonObject sjpSessionPayload = JsonObjects.createObjectBuilder()
                 .add("courtHouseCode", UUID.randomUUID().toString())
                 .build();
 
-        final Optional<JsonObject> courtOptional = Optional.of(Json.createObjectBuilder()
+        final Optional<JsonObject> courtOptional = Optional.of(JsonObjects.createObjectBuilder()
                 .add("id", COURT_CENTRE_ID.toString())
                 .add("isWelsh", true)
                 .add("oucode", COURT_CENTRE_CODE)
@@ -119,16 +119,16 @@ public class CourtCentreConverterTest {
         final Address address = Address.address().withAddress1(ADDRESS_LINE_1).build();
         final Address welshAddress = Address.address().withAddress1(WELSH_ADDRESS_LINE_1).build();
         final UUID sjpSessionId = randomUUID();
-        JsonObject jsonObject = Json.createObjectBuilder()
+        JsonObject jsonObject = JsonObjects.createObjectBuilder()
                 .add("id", UUID.randomUUID().toString())
                 .add("name", "test")
                 .build();
 
-        final JsonObject sjpSessionPayload = Json.createObjectBuilder()
+        final JsonObject sjpSessionPayload = JsonObjects.createObjectBuilder()
                 .add("courtHouseCode", UUID.randomUUID().toString())
                 .build();
 
-        final Optional<JsonObject> courtOptional = Optional.of(Json.createObjectBuilder()
+        final Optional<JsonObject> courtOptional = Optional.of(JsonObjects.createObjectBuilder()
                 .add("id", COURT_CENTRE_ID.toString())
                 .add("isWelsh", true)
                 .add("oucode", COURT_CENTRE_CODE)

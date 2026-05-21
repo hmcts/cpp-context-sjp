@@ -45,7 +45,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-import javax.json.Json;
+import uk.gov.justice.services.messaging.JsonObjects;
 import javax.json.JsonObject;
 import javax.json.JsonValue;
 import javax.ws.rs.core.Response;
@@ -275,7 +275,7 @@ public class DefendantDetailsIT extends BaseIntegrationTest {
                 userUid);
         assertThat(response.getStatus(), equalTo(Response.Status.OK.getStatusCode()));
 
-        return Json.createReader(new StringReader(response.readEntity(String.class))).readObject();
+        return JsonObjects.createReader(new StringReader(response.readEntity(String.class))).readObject();
     }
 
     private JsonObject getUpdatedDefendantDetails(UUID userUid, String prosecutingAuhority) {
@@ -289,6 +289,6 @@ public class DefendantDetailsIT extends BaseIntegrationTest {
     }
 
     private JsonObject responseToJsonObject(String response) {
-        return Json.createReader(new StringReader(response)).readObject();
+        return JsonObjects.createReader(new StringReader(response)).readObject();
     }
 }

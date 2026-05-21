@@ -11,7 +11,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 import javax.inject.Inject;
-import javax.json.Json;
+import uk.gov.justice.services.messaging.JsonObjects;
 import javax.json.JsonObject;
 
 @ServiceComponent(Component.QUERY_VIEW)
@@ -29,8 +29,8 @@ public class SjpDocumentView {
         final UUID documentId = UUID.fromString(envelope.payloadAsJsonObject().getString("documentId"));
 
         final Optional<JsonObject> caseDocument = caseService.findCaseDocument(caseId, documentId)
-                .map(document -> Json.createObjectBuilder().add("caseDocument",
-                        Json.createObjectBuilder()
+                .map(document -> JsonObjects.createObjectBuilder().add("caseDocument",
+                        JsonObjects.createObjectBuilder()
                                 .add("id", document.getId().toString())
                                 .add("materialId", document.getMaterialId().toString())
                                 .add("documentType", document.getDocumentType())

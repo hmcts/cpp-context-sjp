@@ -285,7 +285,7 @@ public class DefendantDetailsIT extends BaseIntegrationTest {
                 userUid);
         assertThat(response.getStatus(), equalTo(Response.Status.OK.getStatusCode()));
 
-        return Json.createReader(new StringReader(response.readEntity(String.class))).readObject();
+        return JsonObjects.createReader(new StringReader(response.readEntity(String.class))).readObject();
     }
 
     private JsonObject responseToJsonObject(String response) {

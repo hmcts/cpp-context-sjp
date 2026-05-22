@@ -36,7 +36,7 @@ import java.util.Set;
 import java.util.stream.Stream;
 
 import javax.inject.Inject;
-import javax.json.Json;
+import uk.gov.justice.services.messaging.JsonObjects;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
 
@@ -208,7 +208,7 @@ public class PleadOnlineProcessor {
     }
 
     private JsonObject getCaseDetail(final JsonEnvelope envelope) {
-        final JsonObject queryCasePayload = Json.createObjectBuilder()
+        final JsonObject queryCasePayload = JsonObjects.createObjectBuilder()
                 .add("caseId", envelope.payloadAsJsonObject().getString("caseId"))
                 .build();
 

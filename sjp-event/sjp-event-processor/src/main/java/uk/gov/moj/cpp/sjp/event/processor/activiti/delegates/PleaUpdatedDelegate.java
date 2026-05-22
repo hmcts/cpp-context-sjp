@@ -17,7 +17,7 @@ import uk.gov.moj.cpp.sjp.domain.plea.PleaType;
 import java.util.UUID;
 
 import javax.inject.Named;
-import javax.json.Json;
+import uk.gov.justice.services.messaging.JsonObjects;
 import javax.json.JsonObject;
 
 import org.activiti.engine.delegate.DelegateExecution;
@@ -43,7 +43,7 @@ public class PleaUpdatedDelegate extends AbstractCaseDelegate {
                     .withName(PLEA_UPDATED_PUBLIC_EVENT_NAME)
                     .build();
 
-            final JsonObject publicEventPayload = Json.createObjectBuilder()
+            final JsonObject publicEventPayload = JsonObjects.createObjectBuilder()
                     .add(CASE_ID, caseId.toString())
                     .add(OFFENCE_ID, offenceId)
                     .add(PLEA, pleaType.name())

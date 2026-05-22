@@ -7,7 +7,7 @@ import java.nio.charset.Charset;
 import java.util.HashMap;
 import java.util.Map;
 
-import javax.json.Json;
+import uk.gov.justice.services.messaging.JsonObjects;
 import javax.json.JsonArray;
 import javax.json.JsonObject;
 import javax.json.JsonReader;
@@ -40,13 +40,13 @@ public class FileUtil {
     }
 
     public static JsonObject getFileContentAsJson(final String path, final Map<String, Object> namedPlaceholders) {
-        try (final JsonReader reader = Json.createReader(new StringReader(getFileContent(path, namedPlaceholders)))) {
+        try (final JsonReader reader = JsonObjects.createReader(new StringReader(getFileContent(path, namedPlaceholders)))) {
             return reader.readObject();
         }
     }
 
     public static JsonArray getFileContentAsJsonArray(final String path, final Map<String, Object> namedPlaceholders) {
-        try (final JsonReader reader = Json.createReader(new StringReader(getFileContent(path, namedPlaceholders)))) {
+        try (final JsonReader reader = JsonObjects.createReader(new StringReader(getFileContent(path, namedPlaceholders)))) {
             return reader.readArray();
         }
     }

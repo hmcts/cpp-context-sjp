@@ -2,8 +2,8 @@ package uk.gov.moj.cpp.sjp.event.processor;
 
 import static java.time.ZonedDateTime.now;
 import static java.util.UUID.randomUUID;
-import static javax.json.Json.createArrayBuilder;
-import static javax.json.Json.createObjectBuilder;
+import static uk.gov.justice.services.messaging.JsonObjects.createArrayBuilder;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.mockito.Mockito.verify;
@@ -27,7 +27,7 @@ import uk.gov.justice.services.test.utils.core.enveloper.EnveloperFactory;
 
 import java.util.UUID;
 
-import javax.json.Json;
+import uk.gov.justice.services.messaging.JsonObjects;
 import javax.json.JsonArray;
 
 import com.google.common.collect.ImmutableMap;
@@ -92,7 +92,7 @@ public class ProsecutionCasesReferredToCourtProcessorTest {
                         .add(CASE_ID, caseId.toString())
                         .add(DEFENDANT_ID, defendantId.toString())
                         .add("defendantOffences", createArrayBuilder().add(offenceId.toString()))
-                        .add("courtCentre", Json.createObjectBuilder()
+                        .add("courtCentre", JsonObjects.createObjectBuilder()
                                 .add("id", "cf73207f-3ced-488a-82a0-3fba79c2ce04")
                                 .add("name", "Carmarthen Magistrates' Court")
                                 .add("roomId", "d7020fe0-cd97-4ce0-84c2-fd00ff0bc48a")

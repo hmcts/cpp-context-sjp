@@ -58,7 +58,7 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.UUID;
 
-import javax.json.Json;
+import uk.gov.justice.services.messaging.JsonObjects;
 import javax.json.JsonArrayBuilder;
 import javax.json.JsonObjectBuilder;
 import javax.json.JsonValue;
@@ -258,9 +258,9 @@ public class HearingResultReceivedProcessorTest {
     @Test
     public void shouldHandleHearingResultReceivedWhenCourtApplicationsIsNotPresent() throws IOException {
 
-        JsonObjectBuilder hearingJsonBuilder = Json.createObjectBuilder();
+        JsonObjectBuilder hearingJsonBuilder = JsonObjects.createObjectBuilder();
         hearingJsonBuilder.add("id", randomUUID().toString());
-        JsonObjectBuilder hearingEnvelopeJsonBuilder = Json.createObjectBuilder();
+        JsonObjectBuilder hearingEnvelopeJsonBuilder = JsonObjects.createObjectBuilder();
         hearingEnvelopeJsonBuilder.add("hearing", hearingJsonBuilder);
 
         final JsonEnvelope hearingJsonEnvelope = envelopeFrom(metadataWithRandomUUID(HearingResultReceivedProcessor.PUBLIC_HEARING_RESULTED),
@@ -272,10 +272,10 @@ public class HearingResultReceivedProcessorTest {
     @Test
     public void shouldHandleHearingResultReceivedWhenCourtApplicationIsNotPresent() throws IOException {
 
-        JsonObjectBuilder courtApplicationJsonObjectBuilder = Json.createObjectBuilder();
-        JsonArrayBuilder courtApplications = Json.createArrayBuilder();
+        JsonObjectBuilder courtApplicationJsonObjectBuilder = JsonObjects.createObjectBuilder();
+        JsonArrayBuilder courtApplications = JsonObjects.createArrayBuilder();
         courtApplicationJsonObjectBuilder.add("courtApplications", courtApplications);
-        JsonObjectBuilder hearingJsonBuilder = Json.createObjectBuilder();
+        JsonObjectBuilder hearingJsonBuilder = JsonObjects.createObjectBuilder();
         hearingJsonBuilder.add("hearing", courtApplicationJsonObjectBuilder);
 
         final JsonEnvelope hearingJsonEnvelope = envelopeFrom(metadataWithRandomUUID(HearingResultReceivedProcessor.PUBLIC_HEARING_RESULTED),

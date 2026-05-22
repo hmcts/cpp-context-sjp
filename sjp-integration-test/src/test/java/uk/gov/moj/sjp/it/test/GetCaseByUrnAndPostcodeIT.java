@@ -13,7 +13,7 @@ import uk.gov.moj.sjp.it.helper.CitizenHelper;
 
 import java.util.UUID;
 
-import javax.json.Json;
+import uk.gov.justice.services.messaging.JsonObjects;
 import javax.json.JsonObject;
 
 import org.junit.jupiter.api.BeforeAll;
@@ -46,7 +46,7 @@ public class GetCaseByUrnAndPostcodeIT extends BaseIntegrationTest {
 
     @Test
     public void shouldFindCaseByUrnAndPostcode() {
-        final JsonObject expected = Json.createReader(getClass().getResourceAsStream("/GetCaseByUrnAndPostcodeIT/expected.json")).readObject();
+        final JsonObject expected = JsonObjects.createReader(getClass().getResourceAsStream("/GetCaseByUrnAndPostcodeIT/expected.json")).readObject();
         citizenHelper.verifyCaseByPersonUrnAndPostcode(expected, urn, POSTCODE);
     }
 

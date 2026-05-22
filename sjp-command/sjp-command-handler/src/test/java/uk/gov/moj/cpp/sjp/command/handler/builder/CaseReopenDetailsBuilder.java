@@ -1,7 +1,7 @@
 package uk.gov.moj.cpp.sjp.command.handler.builder;
 
 
-import static javax.json.Json.createObjectBuilder;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
 import static uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderFactory.metadataOf;
 import static uk.gov.moj.cpp.sjp.domain.util.DefaultTestData.CASE_ID;

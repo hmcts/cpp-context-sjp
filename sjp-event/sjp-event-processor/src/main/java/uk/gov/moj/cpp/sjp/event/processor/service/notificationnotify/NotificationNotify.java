@@ -1,6 +1,6 @@
 package uk.gov.moj.cpp.sjp.event.processor.service.notificationnotify;
 
-import static javax.json.Json.createObjectBuilder;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
 
 import uk.gov.justice.services.core.annotation.Component;

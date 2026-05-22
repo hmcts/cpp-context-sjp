@@ -9,8 +9,8 @@ import static java.util.Collections.emptyList;
 import static java.util.Optional.of;
 import static java.util.UUID.randomUUID;
 import static java.util.stream.Collectors.toList;
-import static javax.json.Json.createArrayBuilder;
-import static javax.json.Json.createObjectBuilder;
+import static uk.gov.justice.services.messaging.JsonObjects.createArrayBuilder;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -110,7 +110,7 @@ import java.util.UUID;
 import java.util.function.Function;
 import java.util.stream.Stream;
 
-import javax.json.Json;
+import uk.gov.justice.services.messaging.JsonObjects;
 import javax.json.JsonObject;
 import javax.persistence.NoResultException;
 
@@ -839,7 +839,7 @@ public class SjpQueryViewTest {
         offenceDetail.setCode(offenceCode);
         when(offenceRepository.findBy(offenceId)).thenReturn(offenceDetail);
 
-        final JsonObject offenceData = Json.createObjectBuilder()
+        final JsonObject offenceData = JsonObjects.createObjectBuilder()
                 .add("title", "Offence title").build();
         when(referenceDataService.getOffenceData(offenceCode)).thenReturn(of(offenceData));
 

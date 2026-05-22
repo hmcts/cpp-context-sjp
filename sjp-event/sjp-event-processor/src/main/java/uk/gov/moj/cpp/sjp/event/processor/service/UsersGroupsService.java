@@ -9,7 +9,7 @@ import uk.gov.justice.services.messaging.JsonEnvelope;
 import java.util.UUID;
 
 import javax.inject.Inject;
-import javax.json.Json;
+import uk.gov.justice.services.messaging.JsonObjects;
 import javax.json.JsonObject;
 
 public class UsersGroupsService {
@@ -22,7 +22,7 @@ public class UsersGroupsService {
     private Requester requester;
 
     public JsonObject getUserDetails(final UUID userId, final JsonEnvelope envelope) {
-        final JsonObject payload = Json.createObjectBuilder().add("userId", userId.toString()).build();
+        final JsonObject payload = JsonObjects.createObjectBuilder().add("userId", userId.toString()).build();
         final JsonEnvelope request = enveloper.withMetadataFrom(envelope, "usersgroups.get-user-details").apply(payload);
         final JsonEnvelope response = requester.requestAsAdmin(request);
         return response.payloadAsJsonObject();

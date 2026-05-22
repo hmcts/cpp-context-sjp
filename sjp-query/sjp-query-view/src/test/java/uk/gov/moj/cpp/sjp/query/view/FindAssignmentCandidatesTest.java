@@ -34,7 +34,7 @@ import java.util.Collections;
 import java.util.Set;
 import java.util.UUID;
 
-import javax.json.Json;
+import uk.gov.justice.services.messaging.JsonObjects;
 import javax.json.JsonObjectBuilder;
 
 import org.junit.jupiter.api.Test;
@@ -156,7 +156,7 @@ public class FindAssignmentCandidatesTest {
     }
 
     private JsonEnvelope buildAssignmentQuery(final SessionType sessionType) {
-        final JsonObjectBuilder assignmentQueryPayloadBuilder = Json.createObjectBuilder()
+        final JsonObjectBuilder assignmentQueryPayloadBuilder = JsonObjects.createObjectBuilder()
                 .add("assigneeId", assigneeId.toString())
                 .add("sessionType", sessionType.name())
                 .add("localJusticeAreaNationalCourtCode", localJusticeAreaNationalCourtCode)
@@ -166,7 +166,7 @@ public class FindAssignmentCandidatesTest {
     }
 
     private JsonEnvelope buildAssignmentQuery(final SessionType sessionType, final String prosecutingAuthorities) {
-        final JsonObjectBuilder assignmentQueryPayloadBuilder = Json.createObjectBuilder()
+        final JsonObjectBuilder assignmentQueryPayloadBuilder = JsonObjects.createObjectBuilder()
                 .add("assigneeId", assigneeId.toString())
                 .add("sessionType", sessionType.name())
                 .add("localJusticeAreaNationalCourtCode", localJusticeAreaNationalCourtCode)

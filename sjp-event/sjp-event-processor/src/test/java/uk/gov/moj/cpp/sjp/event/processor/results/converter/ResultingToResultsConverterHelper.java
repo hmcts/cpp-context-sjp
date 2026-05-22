@@ -4,8 +4,8 @@ import static java.time.ZoneOffset.UTC;
 import static java.time.ZonedDateTime.now;
 import static java.util.Arrays.asList;
 import static java.util.UUID.randomUUID;
-import static javax.json.Json.createArrayBuilder;
-import static javax.json.Json.createObjectBuilder;
+import static uk.gov.justice.services.messaging.JsonObjects.createArrayBuilder;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 import static org.apache.commons.lang3.RandomStringUtils.randomAlphanumeric;
 import static org.apache.commons.lang3.RandomUtils.nextInt;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -45,7 +45,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-import javax.json.Json;
+import uk.gov.justice.services.messaging.JsonObjects;
 import javax.json.JsonArrayBuilder;
 import javax.json.JsonObject;
 import javax.json.JsonValue;
@@ -113,7 +113,7 @@ public class ResultingToResultsConverterHelper {
     private static final UUID PROMPT2_ID = randomUUID();
     private static final UUID PROMPT3_ID = randomUUID();
     private static final UUID PROMPT4_ID = randomUUID();
-    private static final Envelope emptyEnvelope = createEnvelope("...", Json.createObjectBuilder().build());
+    private static final Envelope emptyEnvelope = createEnvelope("...", JsonObjects.createObjectBuilder().build());
 
     public static PersonalDetails buildPersonalDetails() {
         return PersonalDetails.personalDetails()
@@ -188,7 +188,7 @@ public class ResultingToResultsConverterHelper {
         final JsonArrayBuilder promptsBuilder = createArrayBuilder();
 
         for (final Prompt prompt : prompts) {
-            promptsBuilder.add(Json.createObjectBuilder().add("id", prompt.getPromptDefinitionId().toString()).add("value", prompt.getValue()));
+            promptsBuilder.add(JsonObjects.createObjectBuilder().add("id", prompt.getPromptDefinitionId().toString()).add("value", prompt.getValue()));
         }
         final uk.gov.moj.cpp.sjp.domain.resulting.Offence offence1 = new uk.gov.moj.cpp.sjp.domain.resulting.Offence(OFFENCE_ID_1, null, null, null, asList(new Result(resultDefinitionId1, prompts)));
 

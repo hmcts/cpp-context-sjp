@@ -15,6 +15,7 @@ import javax.inject.Inject;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
 
+import uk.gov.justice.services.messaging.JsonObjects;
 @ServiceComponent(COMMAND_CONTROLLER)
 public class ApplicationDecisionController {
 
@@ -29,8 +30,8 @@ public class ApplicationDecisionController {
         final JsonObject payload = commandEnvelope.payloadAsJsonObject();
         final JsonObject userDetails = userService.getCallingUserDetails(commandEnvelope);
 
-        final JsonObjectBuilder enrichedPayload = createObjectBuilder(payload)
-                .add("savedBy", createObjectBuilder()
+        final JsonObjectBuilder enrichedPayload = JsonObjects.createObjectBuilder(payload)
+                .add("savedBy", JsonObjects.createObjectBuilder()
                         .add("userId", userDetails.getJsonString("userId"))
                         .add("firstName", userDetails.getString("firstName"))
                         .add("lastName", userDetails.getString("lastName")));

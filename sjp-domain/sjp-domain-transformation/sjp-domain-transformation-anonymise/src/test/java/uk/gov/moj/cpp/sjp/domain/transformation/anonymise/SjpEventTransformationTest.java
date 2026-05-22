@@ -13,7 +13,7 @@ import uk.gov.justice.tools.eventsourcing.anonymization.util.FileUtil;
 import java.io.StringReader;
 import java.util.stream.Stream;
 
-import javax.json.Json;
+import uk.gov.justice.services.messaging.JsonObjects;
 import javax.json.JsonObject;
 import javax.json.JsonReader;
 
@@ -27,7 +27,7 @@ public class SjpEventTransformationTest {
     private JsonObject anonymisedJsonObject;
 
     private static JsonObject jsonFromString(String jsonObjectStr) {
-        JsonReader jsonReader = Json.createReader(new StringReader(jsonObjectStr));
+        JsonReader jsonReader = JsonObjects.createReader(new StringReader(jsonObjectStr));
         JsonObject object = jsonReader.readObject();
         jsonReader.close();
         return object;

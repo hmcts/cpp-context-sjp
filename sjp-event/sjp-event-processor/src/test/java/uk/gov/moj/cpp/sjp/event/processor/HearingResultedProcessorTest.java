@@ -30,7 +30,6 @@ import uk.gov.justice.services.core.sender.Sender;
 import uk.gov.justice.services.messaging.Envelope;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 
-import javax.json.JsonValue;
 import java.util.Arrays;
 import java.util.UUID;
 

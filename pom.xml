@@ -53,7 +53,7 @@
         <cpp.framework.action.mapping.enabled>true</cpp.framework.action.mapping.enabled>
         <mvn.site.url>file://${project.build.directory}/site</mvn.site.url>
         <file.alfresco.version>2.3.0</file.alfresco.version>
-        <coredomain.version>17.103.12</coredomain.version>
+        <coredomain.version>17.103.13</coredomain.version>
         <criminal-court-public-model.version>${coredomain.version}</criminal-court-public-model.version>
         <javax.el-api.version>3.0.0</javax.el-api.version>
         <joda-time.version>2.10</joda-time.version>
@@ -66,7 +66,7 @@
         <argLine>-Djava.locale.providers=CLDR</argLine>
         <elasticsearch-maven-plugin.version>6.13</elasticsearch-maven-plugin.version>
         <elasticsearch.embedded.version>7.16.2</elasticsearch.embedded.version>
-        <stagingenforcement.version>17.103.76</stagingenforcement.version>
+        <stagingenforcement.version>17.104.81</stagingenforcement.version>
         <unifiedsearch.version>17.0.26</unifiedsearch.version>
         <jsonassert.version>1.5.0</jsonassert.version>
         <junit4.version>4.13.1</junit4.version>

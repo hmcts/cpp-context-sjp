@@ -1,14 +1,18 @@
 package uk.gov.moj.cpp.sjp.event.processor;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.ArgumentCaptor;
-import org.mockito.Captor;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
+import static java.util.Collections.singletonList;
+import static java.util.UUID.randomUUID;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+import static uk.gov.justice.core.courts.CourtApplication.courtApplication;
+import static uk.gov.justice.core.courts.Hearing.hearing;
+import static uk.gov.justice.json.schemas.domains.sjp.results.PublicHearingResulted.publicHearingResulted;
+import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
+import static uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderFactory.metadataWithRandomUUID;
+import static uk.gov.justice.services.test.utils.core.reflection.ReflectionUtil.setField;
+import static uk.gov.moj.cpp.sjp.event.processor.utils.ApplicationResult.G;
+import static uk.gov.moj.cpp.sjp.event.processor.utils.SjpApplicationTypes.APPEARANCE_TO_MAKE_STATUTORY_DECLARATION_SJP;
+
 import uk.gov.justice.core.courts.CourtApplication;
 import uk.gov.justice.core.courts.CourtApplicationType;
 import uk.gov.justice.core.courts.Hearing;
@@ -24,23 +28,19 @@ import uk.gov.justice.services.core.sender.Sender;
 import uk.gov.justice.services.messaging.Envelope;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 
-import javax.json.JsonValue;
-import java.util.Arrays;
 import java.util.UUID;
 
-import static java.util.Collections.singletonList;
-import static java.util.UUID.randomUUID;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-import static uk.gov.justice.core.courts.CourtApplication.courtApplication;
-import static uk.gov.justice.core.courts.Hearing.hearing;
-import static uk.gov.justice.json.schemas.domains.sjp.results.PublicHearingResulted.publicHearingResulted;
-import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
-import static uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderFactory.metadataWithRandomUUID;
-import static uk.gov.justice.services.test.utils.core.reflection.ReflectionUtil.setField;
-import static uk.gov.moj.cpp.sjp.event.processor.utils.ApplicationResult.G;
-import static uk.gov.moj.cpp.sjp.event.processor.utils.SjpApplicationTypes.APPEARANCE_TO_MAKE_STATUTORY_DECLARATION_SJP;
+import javax.json.JsonValue;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 
 @ExtendWith(MockitoExtension.class)
@@ -61,7 +61,11 @@ public class HearingResultedProcessorTest {
 
 
     private final ProsecutionCase prosecutionCase = ProsecutionCase.prosecutionCase().
-            withMigrationSourceSystem(new MigrationSourceSystem("1234","Exhibit"))
+            withMigrationSourceSystem(MigrationSourceSystem
+                    .migrationSourceSystem()
+                    .withMigrationSourceSystemCaseIdentifier("1234")
+                    .withMigrationSourceSystemName("Exhibit")
+                    .build())
             .build();
 
     final UUID caseId = randomUUID();

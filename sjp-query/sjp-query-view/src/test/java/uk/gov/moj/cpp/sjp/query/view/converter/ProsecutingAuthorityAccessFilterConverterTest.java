@@ -3,6 +3,7 @@ package uk.gov.moj.cpp.sjp.query.view.converter;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
 
+import java.util.ArrayList;
 import java.util.stream.Stream;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
@@ -21,7 +22,7 @@ public class ProsecutingAuthorityAccessFilterConverterTest {
     static Stream<Arguments> data() {
         return Stream.of(
                 Arguments.of(ProsecutingAuthorityAccess.NONE, null),
-                Arguments.of(ProsecutingAuthorityAccess.of(PROSECUTING_AUTHORITY), PROSECUTING_AUTHORITY),
+                Arguments.of(ProsecutingAuthorityAccess.of(PROSECUTING_AUTHORITY, new ArrayList<>()), PROSECUTING_AUTHORITY),
                 Arguments.of(ProsecutingAuthorityAccess.ALL, "%")
         );
     }

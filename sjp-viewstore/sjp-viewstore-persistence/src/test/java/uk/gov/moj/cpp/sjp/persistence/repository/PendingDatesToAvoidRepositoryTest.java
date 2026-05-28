@@ -11,6 +11,7 @@ import uk.gov.moj.cpp.sjp.persistence.entity.PendingDatesToAvoid;
 
 import java.time.ZonedDateTime;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 
@@ -83,7 +84,7 @@ public class PendingDatesToAvoidRepositoryTest extends BaseTransactionalJunit4Te
     @Test
     public void shouldFindCasesPendingDatesToAvoidForTfl() {
         // WHEN
-        List<PendingDatesToAvoid> results = pendingDatesToAvoidRepository.findCasesPendingDatesToAvoid("TFL");
+        List<PendingDatesToAvoid> results = pendingDatesToAvoidRepository.findCasesPendingDatesToAvoid("TFL", Collections.emptyList());
 
         // THEN
         assertThat(results, hasSize(3));
@@ -93,9 +94,24 @@ public class PendingDatesToAvoidRepositoryTest extends BaseTransactionalJunit4Te
     }
 
     @Test
+    public void shouldFindCasesPendingDatesToAvoidForTflAndTvl() {
+        // WHEN
+        List<PendingDatesToAvoid> results = pendingDatesToAvoidRepository.findCasesPendingDatesToAvoid("TFL",  Arrays.asList("TVL", "XYZ"));
+
+        // THEN
+        assertThat(results, hasSize(6));
+        assertThat(results.get(0).getCaseId(), equalTo(testData.get(11).getCaseId()));
+        assertThat(results.get(1).getCaseId(), equalTo(testData.get(10).getCaseId()));
+        assertThat(results.get(2).getCaseId(), equalTo(testData.get(4).getCaseId()));
+        assertThat(results.get(3).getCaseId(), equalTo(testData.get(5).getCaseId()));
+        assertThat(results.get(4).getCaseId(), equalTo(testData.get(0).getCaseId()));
+        assertThat(results.get(5).getCaseId(), equalTo(testData.get(6).getCaseId()));
+    }
+
+    @Test
     public void shouldFindCasesPendingDatesToAvoidForTvl() {
         // WHEN
-        List<PendingDatesToAvoid> results = pendingDatesToAvoidRepository.findCasesPendingDatesToAvoid("TVL");
+        List<PendingDatesToAvoid> results = pendingDatesToAvoidRepository.findCasesPendingDatesToAvoid("TVL", Collections.emptyList());
 
         // THEN
         assertThat(results, hasSize(3));
@@ -106,12 +122,12 @@ public class PendingDatesToAvoidRepositoryTest extends BaseTransactionalJunit4Te
 
     @Test
     public void shouldRemovePendingDatesToAvoid() {
-        List<PendingDatesToAvoid> results = pendingDatesToAvoidRepository.findCasesPendingDatesToAvoid("TFL");
+        List<PendingDatesToAvoid> results = pendingDatesToAvoidRepository.findCasesPendingDatesToAvoid("TFL", Collections.emptyList());
         assertThat(results, hasSize(3));
 
         pendingDatesToAvoidRepository.removeByCaseId(testData.get(0).getCaseId());
 
-        results = pendingDatesToAvoidRepository.findCasesPendingDatesToAvoid("TFL");
+        results = pendingDatesToAvoidRepository.findCasesPendingDatesToAvoid("TFL", Collections.emptyList());
         assertThat(results, hasSize(2));
         assertThat(results.get(0).getCaseId(), equalTo(testData.get(4).getCaseId()));
         assertThat(results.get(1).getCaseId(), equalTo(testData.get(5).getCaseId()));

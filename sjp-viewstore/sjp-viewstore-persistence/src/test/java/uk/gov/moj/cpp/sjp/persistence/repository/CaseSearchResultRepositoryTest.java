@@ -16,6 +16,8 @@ import java.time.Duration;
 import java.time.Instant;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicLong;
@@ -51,7 +53,18 @@ public class CaseSearchResultRepositoryTest extends BaseTransactionalJunit4Test 
         createCaseSearchResult(false);
 
         // check it is case insensitive
-        final List<CaseSearchResult> results = caseSearchResultRepository.findByLastName(PROSECUTING_AUTHORITY_WILDCARD, LAST_NAME.toLowerCase());
+        final List<CaseSearchResult> results = caseSearchResultRepository.findByLastName(PROSECUTING_AUTHORITY_WILDCARD, LAST_NAME.toLowerCase(), new ArrayList<>());
+
+        assertThat(results.get(0).getLastName(), equalTo(LAST_NAME));
+        assertThat(results.get(0).getCaseSummary().getUrn(), equalTo(URN));
+    }
+
+    @Test
+    public void shouldFindByLastNameForAgent() {
+
+        createCaseSearchResult(PROSECUTING_AUTHORITY_2);
+
+        final List<CaseSearchResult> results = caseSearchResultRepository.findByLastName(PROSECUTING_AUTHORITY_1, LAST_NAME.toLowerCase(), Arrays.asList(PROSECUTING_AUTHORITY_2));
 
         assertThat(results.get(0).getLastName(), equalTo(LAST_NAME));
         assertThat(results.get(0).getCaseSummary().getUrn(), equalTo(URN));
@@ -62,7 +75,7 @@ public class CaseSearchResultRepositoryTest extends BaseTransactionalJunit4Test 
 
         createCaseSearchResult(PROSECUTING_AUTHORITY_2);
 
-        final List<CaseSearchResult> results = caseSearchResultRepository.findByLastName(PROSECUTING_AUTHORITY_1, LAST_NAME.toLowerCase());
+        final List<CaseSearchResult> results = caseSearchResultRepository.findByLastName(PROSECUTING_AUTHORITY_1, LAST_NAME.toLowerCase(),  new ArrayList<>());
 
         assertThat(results.size(), is(0));
     }
@@ -74,7 +87,7 @@ public class CaseSearchResultRepositoryTest extends BaseTransactionalJunit4Test 
         final CaseSearchResult caseSearchResultB = createCaseSearchResultWithFirstname("firstNameB", PROSECUTING_AUTHORITY_1);
 
         // check results come back ordered by first name ascending
-        final List<CaseSearchResult> results = caseSearchResultRepository.findByLastName(PROSECUTING_AUTHORITY_WILDCARD, LAST_NAME.toLowerCase());
+        final List<CaseSearchResult> results = caseSearchResultRepository.findByLastName(PROSECUTING_AUTHORITY_WILDCARD, LAST_NAME.toLowerCase(), new ArrayList<>());
 
         assertThat(results.get(0).getLastName(), equalTo(LAST_NAME));
         assertThat(results.get(0).getFirstName(), equalTo(caseSearchResultA.getFirstName()));
@@ -88,7 +101,7 @@ public class CaseSearchResultRepositoryTest extends BaseTransactionalJunit4Test 
         // given
         final CaseSearchResult caseSearchResult = createCaseSearchResult(false);
         // when
-        final List<CaseSearchResult> results = caseSearchResultRepository.findByLastName(PROSECUTING_AUTHORITY_1, LAST_NAME.toLowerCase());
+        final List<CaseSearchResult> results = caseSearchResultRepository.findByLastName(PROSECUTING_AUTHORITY_1, LAST_NAME.toLowerCase(), new ArrayList<>());
         // then
         assertThat(results, hasSize(1));
         ensure(results.get(0), LAST_NAME, IS_CURRENT);
@@ -97,13 +110,13 @@ public class CaseSearchResultRepositoryTest extends BaseTransactionalJunit4Test 
         simulateDefendantLastNameChanged(LAST_NAME_UPDATED, results.get(0).getCaseId());
 
         // when
-        final List<CaseSearchResult> afterUpdateForOldLastName = caseSearchResultRepository.findByLastName(PROSECUTING_AUTHORITY_1, LAST_NAME.toLowerCase());
+        final List<CaseSearchResult> afterUpdateForOldLastName = caseSearchResultRepository.findByLastName(PROSECUTING_AUTHORITY_1, LAST_NAME.toLowerCase(), new ArrayList<>());
         // then
         assertThat(afterUpdateForOldLastName, hasSize(1));
         ensure(afterUpdateForOldLastName.get(0), LAST_NAME_UPDATED, IS_OLD);
 
         // when
-        final List<CaseSearchResult> afterUpdateForNewLastName = caseSearchResultRepository.findByLastName(PROSECUTING_AUTHORITY_1, LAST_NAME_UPDATED.toLowerCase());
+        final List<CaseSearchResult> afterUpdateForNewLastName = caseSearchResultRepository.findByLastName(PROSECUTING_AUTHORITY_1, LAST_NAME_UPDATED.toLowerCase(), new ArrayList<>());
         // then
         assertThat(afterUpdateForNewLastName, hasSize(1));
         ensure(afterUpdateForNewLastName.get(0), LAST_NAME_UPDATED, IS_CURRENT);
@@ -112,13 +125,13 @@ public class CaseSearchResultRepositoryTest extends BaseTransactionalJunit4Test 
         simulateDefendantLastNameChanged(LAST_NAME, caseSearchResult.getCaseId());
 
         // when
-        final List<CaseSearchResult> afterUpdateBackForOriginalLastName = caseSearchResultRepository.findByLastName(PROSECUTING_AUTHORITY_1, LAST_NAME.toLowerCase());
+        final List<CaseSearchResult> afterUpdateBackForOriginalLastName = caseSearchResultRepository.findByLastName(PROSECUTING_AUTHORITY_1, LAST_NAME.toLowerCase(), new ArrayList<>());
         // then
         assertThat(afterUpdateBackForOriginalLastName, hasSize(1));
         ensure(afterUpdateBackForOriginalLastName.get(0), LAST_NAME, IS_CURRENT);
 
         // when
-        final List<CaseSearchResult> afterUpdateBackForUpdatedButRevertedLastName = caseSearchResultRepository.findByLastName(PROSECUTING_AUTHORITY_1, LAST_NAME_UPDATED.toLowerCase());
+        final List<CaseSearchResult> afterUpdateBackForUpdatedButRevertedLastName = caseSearchResultRepository.findByLastName(PROSECUTING_AUTHORITY_1, LAST_NAME_UPDATED.toLowerCase(), new ArrayList<>());
         // then
         assertThat(afterUpdateBackForUpdatedButRevertedLastName, hasSize(1));
         ensure(afterUpdateBackForUpdatedButRevertedLastName.get(0), LAST_NAME, IS_OLD);
@@ -128,7 +141,7 @@ public class CaseSearchResultRepositoryTest extends BaseTransactionalJunit4Test 
         //simulateDefendantLastNameChanged(LAST_NAME_UPDATED, caseSearchResultRepository.findByUrn(PROSECUTING_AUTHORITY_1, URN));
         createCaseSearchResult(false);
         // when
-        final List<CaseSearchResult> resultsAfterInsert = caseSearchResultRepository.findByLastName(PROSECUTING_AUTHORITY_1, LAST_NAME.toLowerCase());
+        final List<CaseSearchResult> resultsAfterInsert = caseSearchResultRepository.findByLastName(PROSECUTING_AUTHORITY_1, LAST_NAME.toLowerCase(), new ArrayList<>());
         // then the results should contain 1 entry with LAST_NAME and 1 entry with LAST_NAME_UPDATED
         assertThat(resultsAfterInsert, hasSize(2));
         ensure(resultsAfterInsert.get(0), LAST_NAME_UPDATED, IS_OLD);
@@ -146,10 +159,22 @@ public class CaseSearchResultRepositoryTest extends BaseTransactionalJunit4Test 
         final CaseSearchResult caseSearchResult = createCaseSearchResult(false);
 
         // check it is case insensitive
-        final List<CaseSearchResult> results = caseSearchResultRepository.findByUrn(PROSECUTING_AUTHORITY_WILDCARD, URN.toLowerCase());
+        final List<CaseSearchResult> results = caseSearchResultRepository.findByUrn(PROSECUTING_AUTHORITY_WILDCARD, URN.toLowerCase(), new ArrayList<>());
 
         assertThat(results.get(0).getLastName(), equalTo(caseSearchResult.getLastName()));
         assertThat(results.get(0).getCaseSummary().getUrn(), equalTo(caseSearchResult.getCaseSummary().getUrn()));
+    }
+
+    @Test
+    public void shouldFindByUrnForAgent() {
+
+        createCaseSearchResult(PROSECUTING_AUTHORITY_2);
+
+        // check it is case insensitive
+        final List<CaseSearchResult> results = caseSearchResultRepository.findByUrn(PROSECUTING_AUTHORITY_1, URN.toLowerCase(), Arrays.asList(PROSECUTING_AUTHORITY_2));
+
+        assertThat(results.get(0).getLastName(), equalTo(LAST_NAME));
+        assertThat(results.get(0).getCaseSummary().getUrn(), equalTo(URN));
     }
 
     @Test
@@ -158,7 +183,7 @@ public class CaseSearchResultRepositoryTest extends BaseTransactionalJunit4Test 
         createCaseSearchResult(PROSECUTING_AUTHORITY_2);
 
         // check it is case insensitive
-        final List<CaseSearchResult> results = caseSearchResultRepository.findByUrn(PROSECUTING_AUTHORITY_1, URN.toLowerCase());
+        final List<CaseSearchResult> results = caseSearchResultRepository.findByUrn(PROSECUTING_AUTHORITY_1, URN.toLowerCase(), new ArrayList<>());
 
         assertThat(results.size(), is(0));
     }
@@ -171,7 +196,7 @@ public class CaseSearchResultRepositoryTest extends BaseTransactionalJunit4Test 
         simulateDefendantLastNameChanged(LAST_NAME, caseSearchResult.getCaseId());
 
         // when
-        final List<CaseSearchResult> resultsByUrn = caseSearchResultRepository.findByUrn(PROSECUTING_AUTHORITY_1, URN);
+        final List<CaseSearchResult> resultsByUrn = caseSearchResultRepository.findByUrn(PROSECUTING_AUTHORITY_1, URN, new ArrayList<>());
         final List<CaseSearchResult> resultsByCaseId = caseSearchResultRepository.findByCaseId(caseSearchResult.getCaseId());
 
         // then
@@ -288,7 +313,17 @@ public class CaseSearchResultRepositoryTest extends BaseTransactionalJunit4Test 
     public void shouldFindByLegalEntityName() {
         createCaseSearchResult(true);
         // check it is case insensitive
-        final List<CaseSearchResult> results = caseSearchResultRepository.findByLegalEntityName(PROSECUTING_AUTHORITY_WILDCARD, LEGAL_ENTITY_NAME.toLowerCase());
+        final List<CaseSearchResult> results = caseSearchResultRepository.findByLegalEntityName(PROSECUTING_AUTHORITY_WILDCARD, LEGAL_ENTITY_NAME.toLowerCase(), new ArrayList<>());
+
+        assertEquals(LEGAL_ENTITY_NAME, results.get(0).getLegalEntityName());
+        assertEquals(URN, results.get(0).getCaseSummary().getUrn());
+    }
+
+    @Test
+    public void shouldFindByLegalEntityNameForAgent() {
+        createCaseSearchResult(true);
+        // check it is case insensitive
+        final List<CaseSearchResult> results = caseSearchResultRepository.findByLegalEntityName(PROSECUTING_AUTHORITY_2, LEGAL_ENTITY_NAME.toLowerCase(), Arrays.asList(PROSECUTING_AUTHORITY_1));
 
         assertEquals(LEGAL_ENTITY_NAME, results.get(0).getLegalEntityName());
         assertEquals(URN, results.get(0).getCaseSummary().getUrn());

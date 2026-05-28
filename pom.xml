@@ -9,7 +9,7 @@
 
     <groupId>uk.gov.moj.cpp.sjp</groupId>
     <artifactId>sjp-parent</artifactId>
-    <version>17.103.172</version>
+    <version>17.103.173-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <properties>

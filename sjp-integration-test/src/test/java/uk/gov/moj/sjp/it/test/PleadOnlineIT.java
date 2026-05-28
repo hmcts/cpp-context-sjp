@@ -1466,13 +1466,16 @@ public class PleadOnlineIT extends BaseIntegrationTest {
         final PleaType pleaType = PleaType.valueOf(pleaPayload.getJSONArray("offences").getJSONObject(0).getString("plea"));
         try (final PleadOnlineHelper pleadOnlineHelper = new PleadOnlineHelper(createCasePayloadBuilder.getId())) {
             pleadOnlineHelper.pleadOnlinePublicEvent(stringToJsonObjectConverter.convert(pleaPayload.toString()));
-            final Matcher[] pleaMatchers = {
+            final List<Matcher> pleaMatchersList = new ArrayList<>(asList(
                     withJsonPath("defendant.offences[0].plea", is(pleaType.name())),
                     withJsonPath("defendant.offences[0].pleaMethod", is(PleaMethod.ONLINE.name())),
                     withJsonPath("defendant.offences[0].pleaDate", notNullValue()),
                     withJsonPath("onlinePleaReceived", is(true))
-            };
-            return pleadOnlineHelper.verifyPleaUpdated(createCasePayloadBuilder.getId(), pleaMatchers);
+            ));
+            if (NOT_GUILTY.equals(pleaType)) {
+                pleaMatchersList.add(withJsonPath("readyForDecision", is(false)));
+            }
+            return pleadOnlineHelper.verifyPleaUpdated(createCasePayloadBuilder.getId(), pleaMatchersList.toArray(new Matcher[0]));
         }
     }
 
@@ -1480,13 +1483,19 @@ public class PleadOnlineIT extends BaseIntegrationTest {
         final PleaType pleaType = PleaType.valueOf(pleaPayload.getJSONArray("offences").getJSONObject(0).getString("plea"));
         try (final PleadOnlineHelper pleadOnlineHelper = new PleadOnlineHelper(createCasePayloadBuilder.getId())) {
             pleadOnlineHelper.pleadOnline(pleaPayload.toString());
-            final Matcher[] pleaMatchers = {
+            final List<Matcher> pleaMatchersList = new ArrayList<>(asList(
                     withJsonPath("defendant.offences[0].plea", is(pleaType.name())),
                     withJsonPath("defendant.offences[0].pleaMethod", is(PleaMethod.ONLINE.name())),
                     withJsonPath("defendant.offences[0].pleaDate", notNullValue()),
                     withJsonPath("onlinePleaReceived", is(true))
-            };
-            return pleadOnlineHelper.verifyPleaUpdated(createCasePayloadBuilder.getId(), pleaMatchers);
+            ));
+            if (NOT_GUILTY.equals(pleaType)) {
+                // CaseStatusChanged(PLEA_RECEIVED_NOT_READY_FOR_DECISION) is emitted after OnlinePleaReceived.
+                // Without this check the test may read the response before that event is processed,
+                // seeing the old NO_PLEA_RECEIVED_READY_FOR_DECISION status (readyForDecision: true).
+                pleaMatchersList.add(withJsonPath("readyForDecision", is(false)));
+            }
+            return pleadOnlineHelper.verifyPleaUpdated(createCasePayloadBuilder.getId(), pleaMatchersList.toArray(new Matcher[0]));
         }
     }
 

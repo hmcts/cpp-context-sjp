@@ -2,6 +2,7 @@ package uk.gov.moj.cpp.sjp.event.processor;
 
 import static java.util.Collections.singletonList;
 import static java.util.UUID.randomUUID;
+import org.junit.jupiter.api.Assertions;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static uk.gov.justice.core.courts.CourtApplication.courtApplication;
@@ -14,6 +15,7 @@ import static uk.gov.moj.cpp.sjp.event.processor.utils.ApplicationResult.G;
 import static uk.gov.moj.cpp.sjp.event.processor.utils.SjpApplicationTypes.APPEARANCE_TO_MAKE_STATUTORY_DECLARATION_SJP;
 
 import uk.gov.justice.core.courts.CourtApplication;
+import uk.gov.justice.core.courts.CourtApplicationCase;
 import uk.gov.justice.core.courts.CourtApplicationType;
 import uk.gov.justice.core.courts.Hearing;
 import uk.gov.justice.core.courts.JudicialResult;
@@ -28,6 +30,7 @@ import uk.gov.justice.services.core.sender.Sender;
 import uk.gov.justice.services.messaging.Envelope;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 
+import java.util.Arrays;
 import java.util.UUID;
 
 import javax.json.JsonValue;
@@ -105,6 +108,29 @@ public class HearingResultedProcessorTest {
                 objectToJsonObjectConverter.convert(publicHearingResulted));
     }
 
+    private JsonEnvelope populateHearingWithNoJudicialResult(String applicationType, UUID caseId, boolean isSJP, String resultDefinitionId, final boolean hasMigration) {
+
+        CourtApplicationType courtApplicationType = new CourtApplicationType.Builder()
+                .withType(applicationType)
+                .build();
+        CourtApplicationCase courtApplicationCase = new CourtApplicationCase.Builder()
+                .withIsSJP(true)
+                .withProsecutionCaseId(caseId)
+                .build();
+        CourtApplication courtApplication = courtApplication()
+                .withId(randomUUID())
+                .withType(courtApplicationType)
+                .withCourtApplicationCases(Arrays.asList(courtApplicationCase))
+                .build();
+
+        final PublicHearingResulted publicHearingResulted = publicHearingResulted()
+                .withHearing(getHearing(isSJP, courtApplication,hasMigration))
+                .build();
+
+
+        return envelopeFrom(metadataWithRandomUUID(HearingResultReceivedProcessor.PUBLIC_HEARING_RESULTED),
+                objectToJsonObjectConverter.convert(publicHearingResulted));
+    }
     private Hearing getHearing(final boolean isSJP, final CourtApplication courtApplication, final boolean hasMigration) {
         return !hasMigration ? hearing().withCourtApplications(singletonList(courtApplication)).withProsecutionCases(singletonList(ProsecutionCase.prosecutionCase().build())).withIsSJPHearing(isSJP).build() :
                 hearing().withCourtApplications(singletonList(courtApplication)).withProsecutionCases(singletonList(prosecutionCase)).withIsSJPHearing(isSJP).build();
@@ -123,12 +149,20 @@ public class HearingResultedProcessorTest {
     @Test
     public void shouldNotThrowExceptionForEmptyApplicationCases() {
 
-            runTest(APPEARANCE_TO_MAKE_STATUTORY_DECLARATION_SJP.getApplicationType(), G.getResultId(), ApplicationStatus.STATUTORY_DECLARATION_GRANTED, true,false);
+        runTest(APPEARANCE_TO_MAKE_STATUTORY_DECLARATION_SJP.getApplicationType(), G.getResultId(), ApplicationStatus.STATUTORY_DECLARATION_GRANTED, true,false);
     }
 
     @Test
     public void shouldNotProceedWithMigrationSystem() {
 
         runTest(APPEARANCE_TO_MAKE_STATUTORY_DECLARATION_SJP.getApplicationType(), G.getResultId(), ApplicationStatus.STATUTORY_DECLARATION_GRANTED, false,true);
+    }
+
+    @Test
+    public void shouldNotProceedWithNoJudicialResults() {
+
+        JsonEnvelope hearingJsonEnvelopeWithNoJudicialResult = populateHearingWithNoJudicialResult(APPEARANCE_TO_MAKE_STATUTORY_DECLARATION_SJP.getApplicationType(), caseId, false, G.getResultId(), false);
+        Assertions.assertDoesNotThrow(() -> hearingResultReceivedProcessor.hearingResultReceived(hearingJsonEnvelopeWithNoJudicialResult));
+        verify(sender, never()).send(envelopeCaptor.capture());
     }
 }

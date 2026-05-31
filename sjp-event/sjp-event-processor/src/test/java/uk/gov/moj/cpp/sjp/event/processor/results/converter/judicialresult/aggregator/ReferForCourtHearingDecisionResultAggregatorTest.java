@@ -33,6 +33,7 @@ import uk.gov.moj.cpp.sjp.event.CaseListedInCriminalCourtsV2;
 import uk.gov.moj.cpp.sjp.event.CaseOffenceListedInCriminalCourts;
 import uk.gov.moj.cpp.sjp.event.processor.results.converter.CourtCentreConverter;
 
+import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.Arrays;
 import java.util.Collections;
@@ -95,7 +96,8 @@ public class ReferForCourtHearingDecisionResultAggregatorTest extends  BaseDecis
                 "Note",
                 30,
                 courtOptions, null);
-        final ZonedDateTime zonedDateTime = ZonedDateTime.now().plusDays(1);
+        final ZonedDateTime zonedDateTime = ZonedDateTime.now(ZoneId.of("UTC")).plusDays(1);
+        final ZonedDateTime zonedDateTimeLocal = zonedDateTime.withZoneSameInstant(ZoneId.of("Europe/London"));
         final UUID caseId = randomUUID();
         final UUID defendantId = randomUUID();
         final UUID hearingId = randomUUID();
@@ -117,7 +119,7 @@ public class ReferForCourtHearingDecisionResultAggregatorTest extends  BaseDecis
         assertThat(judicialResult.getJudicialResultId().toString(), is("600edfc3-a584-4f9f-a52e-5bb8a99646c1"));
         assertThat(judicialResult.getOrderedDate(), is(resultedOn.format(DATE_FORMAT)));
 
-        assertThat(judicialResult.getResultText(), is("Refer for a full court hearing\n" +"Reasons for referring to court referral reason (referral sub reason)\nCourthouse organisation name Court Name\nCourtroom Court Room Name\nEstimated duration 123456\nTime of hearing "+zonedDateTime.toLocalTime()+"\nDate of hearing "+zonedDateTime.toLocalDate()+"\nCourthouse address line 1 Address 1\nCourthouse address line 2 Address 2\nCourthouse address line 3 Address 3\nCourthouse address line 4 Address 4\nCourthouse address line 5 Address 5\nCourthouse post code DD4 4DD"));
+        assertThat(judicialResult.getResultText(), is("Refer for a full court hearing\n" +"Reasons for referring to court referral reason (referral sub reason)\nCourthouse organisation name Court Name\nCourtroom Court Room Name\nEstimated duration 123456\nTime of hearing "+zonedDateTimeLocal.toLocalTime()+"\nDate of hearing "+zonedDateTimeLocal.toLocalDate()+"\nCourthouse address line 1 Address 1\nCourthouse address line 2 Address 2\nCourthouse address line 3 Address 3\nCourthouse address line 4 Address 4\nCourthouse address line 5 Address 5\nCourthouse post code DD4 4DD"));
 
 
         assertThat(judicialResult.getJudicialResultPrompts().size(), is(12));
@@ -148,7 +150,8 @@ public class ReferForCourtHearingDecisionResultAggregatorTest extends  BaseDecis
                 "Note",
                 30,
                 courtOptions, null);
-        final ZonedDateTime zonedDateTime = ZonedDateTime.now().plusDays(1);
+        final ZonedDateTime zonedDateTime = ZonedDateTime.now(ZoneId.of("UTC")).plusDays(1);
+        final ZonedDateTime zonedDateTimeLocal = zonedDateTime.withZoneSameInstant(ZoneId.of("Europe/London"));
         final UUID caseId = randomUUID();
         final UUID defendantId = randomUUID();
         final UUID hearingId = randomUUID();
@@ -171,7 +174,7 @@ public class ReferForCourtHearingDecisionResultAggregatorTest extends  BaseDecis
         assertThat(judicialResult.getJudicialResultId().toString(), is("600edfc3-a584-4f9f-a52e-5bb8a99646c1"));
         assertThat(judicialResult.getOrderedDate(), is(resultedOn.format(DATE_FORMAT)));
 
-        assertThat(judicialResult.getResultText(), is("Refer for a full court hearing\n" +"Reasons for referring to court referral reason (referral sub reason)\nCourthouse organisation name Court Name\nCourtroom Court Room Name\nEstimated duration 123456\nTime of hearing "+zonedDateTime.toLocalTime()+"\nDate of hearing "+zonedDateTime.toLocalDate()+"\nCourthouse address line 1 Address 1"));
+        assertThat(judicialResult.getResultText(), is("Refer for a full court hearing\n" +"Reasons for referring to court referral reason (referral sub reason)\nCourthouse organisation name Court Name\nCourtroom Court Room Name\nEstimated duration 123456\nTime of hearing "+zonedDateTimeLocal.toLocalTime()+"\nDate of hearing "+zonedDateTimeLocal.toLocalDate()+"\nCourthouse address line 1 Address 1"));
         assertThat(resultsAggregate.getFinalOffence(offence1Id),is(nullValue()));
         assertThat(judicialResult.getJudicialResultPrompts().size(), is(7));
         assertThat(judicialResult.getJudicialResultPrompts(),
@@ -191,6 +194,58 @@ public class ReferForCourtHearingDecisionResultAggregatorTest extends  BaseDecis
         assertThat(judicialResult.getNextHearing().getEstimatedMinutes(), is(hearingDays.get(0).getListedDurationMinutes()));
         assertThat(judicialResult.getNextHearing().getAdjournmentReason(), is("referral reason (referral sub reason)"));
 
+    }
+
+    @Test
+    public void shouldConvertUtcSittingTimeToBstInResultTextDuringSummer() {
+        // 10:00 UTC on a BST date (May) should appear as 11:00 in the result text
+        final ZonedDateTime utcSummerDateTime = ZonedDateTime.parse("2026-05-28T10:00:00.000Z");
+
+        final ReferForCourtHearing offenceDecision = new ReferForCourtHearing(null,
+                Collections.singletonList(createOffenceDecisionInformation(offence1Id, PROVED_SJP)),
+                REFERRAL_REASON_ID, "Note", 30, courtOptions, null);
+
+        final List<HearingDay> hearingDays = Arrays.asList(HearingDay.hearingDay()
+                .withSittingDay(utcSummerDateTime)
+                .withListedDurationMinutes(60)
+                .build());
+        final CaseOffenceListedInCriminalCourts caseOffenceListedInCriminalCourts =
+                new CaseOffenceListedInCriminalCourts(randomUUID(), randomUUID(), Arrays.asList(offence1Id),
+                        randomUUID(), createCourtCenter(), hearingDays, hearingType);
+        final CaseListedInCriminalCourtsV2 caseListedInCcForReferToCourt =
+                new CaseListedInCriminalCourtsV2(Arrays.asList(caseOffenceListedInCriminalCourts), null, randomUUID());
+
+        aggregator.aggregate(offenceDecision, sjpSessionEnvelope, resultsAggregate, caseListedInCcForReferToCourt, resultedOn);
+
+        final JudicialResult judicialResult = resultsAggregate.getResults(offence1Id).get(0);
+        assertThat(judicialResult.getResultText(), Matchers.containsString("Time of hearing 11:00"));
+        assertThat(judicialResult.getResultText(), Matchers.containsString("Date of hearing 2026-05-28"));
+    }
+
+    @Test
+    public void shouldNotOffsetUtcSittingTimeInResultTextDuringWinter() {
+        // 10:00 UTC on a GMT date (December) should appear as 10:00 in the result text (no offset)
+        final ZonedDateTime utcWinterDateTime = ZonedDateTime.parse("2026-12-28T10:00:00.000Z");
+
+        final ReferForCourtHearing offenceDecision = new ReferForCourtHearing(null,
+                Collections.singletonList(createOffenceDecisionInformation(offence1Id, PROVED_SJP)),
+                REFERRAL_REASON_ID, "Note", 30, courtOptions, null);
+
+        final List<HearingDay> hearingDays = Arrays.asList(HearingDay.hearingDay()
+                .withSittingDay(utcWinterDateTime)
+                .withListedDurationMinutes(60)
+                .build());
+        final CaseOffenceListedInCriminalCourts caseOffenceListedInCriminalCourts =
+                new CaseOffenceListedInCriminalCourts(randomUUID(), randomUUID(), Arrays.asList(offence1Id),
+                        randomUUID(), createCourtCenter(), hearingDays, hearingType);
+        final CaseListedInCriminalCourtsV2 caseListedInCcForReferToCourt =
+                new CaseListedInCriminalCourtsV2(Arrays.asList(caseOffenceListedInCriminalCourts), null, randomUUID());
+
+        aggregator.aggregate(offenceDecision, sjpSessionEnvelope, resultsAggregate, caseListedInCcForReferToCourt, resultedOn);
+
+        final JudicialResult judicialResult = resultsAggregate.getResults(offence1Id).get(0);
+        assertThat(judicialResult.getResultText(), Matchers.containsString("Time of hearing 10:00"));
+        assertThat(judicialResult.getResultText(), Matchers.containsString("Date of hearing 2026-12-28"));
     }
 
     private CourtCentre createCourtCenterWithEmptyAddresses() {

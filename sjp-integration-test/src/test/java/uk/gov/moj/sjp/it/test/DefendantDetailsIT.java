@@ -46,6 +46,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
+import javax.json.Json;
 import javax.json.JsonObject;
 import javax.json.JsonValue;
 import javax.ws.rs.core.Response;
@@ -285,7 +286,7 @@ public class DefendantDetailsIT extends BaseIntegrationTest {
                 userUid);
         assertThat(response.getStatus(), equalTo(Response.Status.OK.getStatusCode()));
 
-        return createReader(new StringReader(response.readEntity(String.class))).readObject();
+        return Json.createReader(new StringReader(response.readEntity(String.class))).readObject();
     }
 
     private JsonObject responseToJsonObject(String response) {

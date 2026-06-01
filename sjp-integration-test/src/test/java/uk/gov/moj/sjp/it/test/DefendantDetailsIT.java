@@ -46,6 +46,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
+import javax.json.Json;
 import javax.json.JsonObject;
 import javax.json.JsonValue;
 import javax.ws.rs.core.Response;
@@ -271,16 +272,6 @@ public class DefendantDetailsIT extends BaseIntegrationTest {
     private JsonObject getUpdatedDefendantDetails(UUID userUid) {
         final Response response = makeGetCall(
                 "/defendant-details-updates?limit=" + Integer.MAX_VALUE,
-                DEFENDANT_DETAIL_UPDATES_CONTENT_TYPE,
-                userUid);
-        assertThat(response.getStatus(), equalTo(Response.Status.OK.getStatusCode()));
-
-        return createReader(new StringReader(response.readEntity(String.class))).readObject();
-    }
-
-    private JsonObject getUpdatedDefendantDetails(UUID userUid, String prosecutingAuhority) {
-        final Response response = makeGetCall(
-                "/defendant-details-updates?limit=" + Integer.MAX_VALUE + "&prosecutingAuthority="+ prosecutingAuhority,
                 DEFENDANT_DETAIL_UPDATES_CONTENT_TYPE,
                 userUid);
         assertThat(response.getStatus(), equalTo(Response.Status.OK.getStatusCode()));

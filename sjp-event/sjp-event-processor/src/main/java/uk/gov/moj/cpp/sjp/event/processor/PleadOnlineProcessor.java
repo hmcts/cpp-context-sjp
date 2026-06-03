@@ -12,10 +12,10 @@ import static org.apache.commons.lang3.StringUtils.EMPTY;
 import static org.apache.commons.lang3.StringUtils.SPACE;
 import static uk.gov.justice.services.core.annotation.Component.EVENT_PROCESSOR;
 import static uk.gov.justice.services.messaging.Envelope.metadataFrom;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilderWithFilter;
 import static uk.gov.moj.cpp.sjp.domain.common.CaseStatus.COMPLETED;
 import static uk.gov.moj.cpp.sjp.domain.common.CaseStatus.REFERRED_FOR_COURT_HEARING;
-
 
 import uk.gov.justice.services.adapter.rest.exception.BadRequestException;
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
@@ -36,7 +36,6 @@ import java.util.Set;
 import java.util.stream.Stream;
 
 import javax.inject.Inject;
-import javax.json.Json;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
 
@@ -93,7 +92,7 @@ public class PleadOnlineProcessor {
 
         checkValidationErrors(validationErrors);
         final JsonObjectBuilder pleaOnlineObjectBuilder = createObjectBuilderWithFilter(payload, field -> !asList(PERSONAL_DETAILS, EMPLOYER).contains(field));
-        if (payload.containsKey(PERSONAL_DETAILS))  {
+        if (payload.containsKey(PERSONAL_DETAILS)) {
             pleaOnlineObjectBuilder.add(PERSONAL_DETAILS, replacePostcodeInPayload(payload, PERSONAL_DETAILS));
         }
 
@@ -190,15 +189,15 @@ public class PleadOnlineProcessor {
     }
 
     private static boolean hasEmptyFinancialMeans(final JsonObject pleadOnline) {
-        return ! pleadOnline.containsKey(FINANCIAL_MEANS) ||
-                ! pleadOnline.getJsonObject(FINANCIAL_MEANS).containsKey("benefits") ||
-                ! pleadOnline.getJsonObject(FINANCIAL_MEANS).containsKey("income") ||
+        return !pleadOnline.containsKey(FINANCIAL_MEANS) ||
+                !pleadOnline.getJsonObject(FINANCIAL_MEANS).containsKey("benefits") ||
+                !pleadOnline.getJsonObject(FINANCIAL_MEANS).containsKey("income") ||
                 StringUtils.isEmpty(pleadOnline.getJsonObject(FINANCIAL_MEANS).getString("employmentStatus", null));
     }
 
     private static boolean hasEmptyLegalEntityFinancialMeans(final JsonObject pleadOnline) {
-        return ! pleadOnline.containsKey("legalEntityFinancialMeans") ||
-                ! pleadOnline.getJsonObject("legalEntityFinancialMeans").containsKey("netTurnover");
+        return !pleadOnline.containsKey("legalEntityFinancialMeans") ||
+                !pleadOnline.getJsonObject("legalEntityFinancialMeans").containsKey("netTurnover");
     }
 
     private void checkValidationErrors(Map<String, List<String>> validationErrors) {
@@ -208,7 +207,7 @@ public class PleadOnlineProcessor {
     }
 
     private JsonObject getCaseDetail(final JsonEnvelope envelope) {
-        final JsonObject queryCasePayload = Json.createObjectBuilder()
+        final JsonObject queryCasePayload = createObjectBuilder()
                 .add("caseId", envelope.payloadAsJsonObject().getString("caseId"))
                 .build();
 

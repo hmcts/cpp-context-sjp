@@ -1,15 +1,15 @@
 package uk.gov.moj.cpp.sjp.command.service;
 
+import static uk.gov.justice.services.core.annotation.Component.COMMAND_CONTROLLER;
+import static uk.gov.justice.services.messaging.Envelope.metadataFrom;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
+
 import uk.gov.justice.services.core.annotation.ServiceComponent;
 import uk.gov.justice.services.core.requester.Requester;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 
 import javax.inject.Inject;
 import javax.json.JsonObject;
-
-import static javax.json.Json.createObjectBuilder;
-import static uk.gov.justice.services.core.annotation.Component.COMMAND_CONTROLLER;
-import static uk.gov.justice.services.messaging.Envelope.metadataFrom;
 
 public class CaseApplicationService {
 

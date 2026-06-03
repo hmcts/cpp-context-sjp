@@ -3,6 +3,7 @@ package uk.gov.moj.cpp.sjp.event.processor.activiti.delegates;
 import static uk.gov.justice.services.core.annotation.Component.EVENT_PROCESSOR;
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
 import static uk.gov.justice.services.messaging.JsonEnvelope.metadataFrom;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 
 import uk.gov.justice.services.core.annotation.FrameworkComponent;
 import uk.gov.justice.services.core.sender.Sender;
@@ -13,7 +14,6 @@ import uk.gov.moj.cpp.sjp.event.processor.utils.MetadataHelper;
 
 import javax.inject.Inject;
 import javax.inject.Named;
-import javax.json.Json;
 import javax.json.JsonObject;
 
 import org.activiti.engine.delegate.DelegateExecution;
@@ -52,7 +52,7 @@ public class AddMaterialToCase implements JavaDelegate {
 
         final Metadata metadata = metadataHelper.metadataFromString(metadataAsString);
 
-        final JsonObject payload = Json.createObjectBuilder()
+        final JsonObject payload = createObjectBuilder()
                 .add("id", documentReference)
                 .add("caseId", caseId)
                 .add("materialId", materialId)

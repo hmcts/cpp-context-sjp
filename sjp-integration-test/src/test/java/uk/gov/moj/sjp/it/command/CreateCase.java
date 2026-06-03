@@ -1,6 +1,16 @@
 package uk.gov.moj.sjp.it.command;
 
-import org.apache.commons.lang3.RandomStringUtils;
+import static com.google.common.collect.Lists.newArrayList;
+import static java.util.Objects.nonNull;
+import static java.util.Objects.requireNonNull;
+import static java.util.Optional.ofNullable;
+import static java.util.UUID.randomUUID;
+import static javax.ws.rs.core.Response.Status.ACCEPTED;
+import static uk.gov.justice.services.messaging.JsonObjects.createArrayBuilder;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
+import static uk.gov.moj.sjp.it.Constants.DEFAULT_OFFENCE_CODE;
+import static uk.gov.moj.sjp.it.util.HttpClientUtil.getPostCallResponse;
+
 import uk.gov.justice.json.schemas.domains.sjp.Gender;
 import uk.gov.justice.json.schemas.domains.sjp.Language;
 import uk.gov.justice.services.common.converter.LocalDates;
@@ -9,10 +19,6 @@ import uk.gov.moj.sjp.it.command.builder.ContactDetailsBuilder;
 import uk.gov.moj.sjp.it.model.ProsecutingAuthority;
 import uk.gov.moj.sjp.it.util.UrnProvider;
 
-import javax.json.JsonArrayBuilder;
-import javax.json.JsonObject;
-import javax.json.JsonObjectBuilder;
-import javax.ws.rs.core.Response;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.Arrays;
@@ -22,16 +28,12 @@ import java.util.UUID;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
-import static com.google.common.collect.Lists.newArrayList;
-import static java.util.Objects.nonNull;
-import static java.util.Objects.requireNonNull;
-import static java.util.Optional.ofNullable;
-import static java.util.UUID.randomUUID;
-import static javax.json.Json.createArrayBuilder;
-import static javax.json.Json.createObjectBuilder;
-import static javax.ws.rs.core.Response.Status.ACCEPTED;
-import static uk.gov.moj.sjp.it.Constants.DEFAULT_OFFENCE_CODE;
-import static uk.gov.moj.sjp.it.util.HttpClientUtil.getPostCallResponse;
+import javax.json.JsonArrayBuilder;
+import javax.json.JsonObject;
+import javax.json.JsonObjectBuilder;
+import javax.ws.rs.core.Response;
+
+import org.apache.commons.lang3.RandomStringUtils;
 
 public class CreateCase {
 

@@ -1,5 +1,7 @@
 package uk.gov.moj.cpp.sjp.query.view;
 
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
+
 import uk.gov.justice.services.core.annotation.Component;
 import uk.gov.justice.services.core.annotation.Handles;
 import uk.gov.justice.services.core.annotation.ServiceComponent;
@@ -11,7 +13,6 @@ import java.util.Optional;
 import java.util.UUID;
 
 import javax.inject.Inject;
-import javax.json.Json;
 import javax.json.JsonObject;
 
 @ServiceComponent(Component.QUERY_VIEW)
@@ -29,8 +30,8 @@ public class SjpDocumentView {
         final UUID documentId = UUID.fromString(envelope.payloadAsJsonObject().getString("documentId"));
 
         final Optional<JsonObject> caseDocument = caseService.findCaseDocument(caseId, documentId)
-                .map(document -> Json.createObjectBuilder().add("caseDocument",
-                        Json.createObjectBuilder()
+                .map(document -> createObjectBuilder().add("caseDocument",
+                        createObjectBuilder()
                                 .add("id", document.getId().toString())
                                 .add("materialId", document.getMaterialId().toString())
                                 .add("documentType", document.getDocumentType())

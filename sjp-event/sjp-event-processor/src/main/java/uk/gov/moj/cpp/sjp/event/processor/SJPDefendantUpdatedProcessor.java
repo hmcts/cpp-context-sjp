@@ -1,8 +1,9 @@
 package uk.gov.moj.cpp.sjp.event.processor;
 
 import static uk.gov.justice.services.core.annotation.Component.EVENT_PROCESSOR;
-import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
 import static uk.gov.justice.services.messaging.Envelope.metadataFrom;
+import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 
 import uk.gov.justice.services.core.annotation.Handles;
 import uk.gov.justice.services.core.annotation.ServiceComponent;
@@ -10,7 +11,6 @@ import uk.gov.justice.services.core.sender.Sender;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 
 import javax.inject.Inject;
-import javax.json.Json;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
 
@@ -58,7 +58,7 @@ public class SJPDefendantUpdatedProcessor {
 
             final JsonObject personDefendant = defendant.getJsonObject("personDefendant");
             final JsonObject legalEntityDefendant = defendant.getJsonObject("legalEntityDefendant");
-            
+
             if (personDefendant == null && legalEntityDefendant == null) {
                 LOGGER.info("No personDefendant or legalEntityDefendant found in event, skipping update");
                 return;
@@ -83,9 +83,9 @@ public class SJPDefendantUpdatedProcessor {
         }
     }
 
-    private JsonObject buildCommandPayload(final JsonObject defendant, final String prosecutionCaseId, 
-                                          final JsonObject personDefendant, final JsonObject legalEntityDefendant) {
-        final JsonObjectBuilder payloadBuilder = Json.createObjectBuilder()
+    private JsonObject buildCommandPayload(final JsonObject defendant, final String prosecutionCaseId,
+                                           final JsonObject personDefendant, final JsonObject legalEntityDefendant) {
+        final JsonObjectBuilder payloadBuilder = createObjectBuilder()
                 .add("caseId", prosecutionCaseId)
                 .add("defendantId", defendant.getString("id"));
 
@@ -100,8 +100,8 @@ public class SJPDefendantUpdatedProcessor {
         return payloadBuilder.build();
     }
 
-    private void addPersonDefendantData(final JsonObjectBuilder payloadBuilder, final JsonObject personDefendant, 
-                                       final JsonObject defendant) {
+    private void addPersonDefendantData(final JsonObjectBuilder payloadBuilder, final JsonObject personDefendant,
+                                        final JsonObject defendant) {
         final JsonObject personDetails = personDefendant.getJsonObject("personDetails");
         if (personDetails != null) {
             addPersonDetails(payloadBuilder, personDetails);
@@ -130,7 +130,7 @@ public class SJPDefendantUpdatedProcessor {
             return;
         }
 
-        final JsonObjectBuilder contactNumberBuilder = Json.createObjectBuilder();
+        final JsonObjectBuilder contactNumberBuilder = createObjectBuilder();
         addIfPresent(contactNumberBuilder, contact, "home", "home");
         addIfPresent(contactNumberBuilder, contact, MOBILE, MOBILE);
         addIfPresent(contactNumberBuilder, contact, "work", "business");
@@ -151,7 +151,7 @@ public class SJPDefendantUpdatedProcessor {
     }
 
     private void addDefendantAddressIfNeeded(final JsonObjectBuilder payloadBuilder, final JsonObject personDefendant,
-                                            final JsonObject defendant) {
+                                             final JsonObject defendant) {
         final JsonObject personDetailsForAddress = personDefendant.getJsonObject("personDetails");
         if (personDetailsForAddress == null || personDetailsForAddress.getJsonObject(ADDRESS) == null) {
             addAddressIfPresent(payloadBuilder, defendant, ADDRESS);
@@ -159,19 +159,19 @@ public class SJPDefendantUpdatedProcessor {
     }
 
     private void addLegalEntityDefendantData(final JsonObjectBuilder payloadBuilder, final JsonObject legalEntityDefendant) {
-        final JsonObjectBuilder legalEntityBuilder = Json.createObjectBuilder();
-        
+        final JsonObjectBuilder legalEntityBuilder = createObjectBuilder();
+
         // Handle Organisation structure (legalEntityDefendant.organisation.name, etc.)
         final JsonObject organisation = legalEntityDefendant.getJsonObject("organisation");
         if (organisation != null) {
             // Extract from organisation
             addIfPresent(legalEntityBuilder, organisation, "name", "name");
             addAddressIfPresent(legalEntityBuilder, organisation, ADDRESS);
-            
+
             final JsonObject contact = organisation.getJsonObject("contact");
             if (contact != null) {
                 // Convert ContactNumber to contactDetails format
-                final JsonObjectBuilder contactDetailsBuilder = Json.createObjectBuilder();
+                final JsonObjectBuilder contactDetailsBuilder = createObjectBuilder();
                 addIfPresent(contactDetailsBuilder, contact, "home", "home");
                 addIfPresent(contactDetailsBuilder, contact, MOBILE, MOBILE);
                 addIfPresent(contactDetailsBuilder, contact, "work", "business");
@@ -182,32 +182,32 @@ public class SJPDefendantUpdatedProcessor {
                     legalEntityBuilder.add(CONTACT_DETAILS, contactDetails);
                 }
             }
-            
+
             addIfPresent(legalEntityBuilder, organisation, INCORPORATION_NUMBER, INCORPORATION_NUMBER);
         } else {
             // Handle flat structure (for backward compatibility)
             addIfPresent(legalEntityBuilder, legalEntityDefendant, "name", "name");
             addAddressIfPresent(legalEntityBuilder, legalEntityDefendant, ADDRESS);
-            
+
             final JsonObject contactDetails = legalEntityDefendant.getJsonObject(CONTACT_DETAILS);
             if (contactDetails != null) {
                 legalEntityBuilder.add(CONTACT_DETAILS, contactDetails);
             }
-            
+
             addIfPresent(legalEntityBuilder, legalEntityDefendant, INCORPORATION_NUMBER, INCORPORATION_NUMBER);
         }
-        
+
         // Position is at legalEntityDefendant level, not in organisation
         addIfPresent(legalEntityBuilder, legalEntityDefendant, "position", "position");
-        
+
         final JsonObject legalEntity = legalEntityBuilder.build();
         if (!legalEntity.isEmpty()) {
             payloadBuilder.add("legalEntityDefendant", legalEntity);
         }
     }
 
-    private void addIfPresent(final JsonObjectBuilder builder, final JsonObject source, 
-                             final String sourceKey, final String targetKey) {
+    private void addIfPresent(final JsonObjectBuilder builder, final JsonObject source,
+                              final String sourceKey, final String targetKey) {
         if (source.containsKey(sourceKey) && !source.isNull(sourceKey)) {
             try {
                 final String value = source.getString(sourceKey, null);
@@ -221,7 +221,8 @@ public class SJPDefendantUpdatedProcessor {
     }
 
     /**
-     * Converts gender from courtsGender format (MALE, FEMALE, etc.) to gender format (Male, Female, etc.)
+     * Converts gender from courtsGender format (MALE, FEMALE, etc.) to gender format (Male, Female,
+     * etc.)
      */
     private void addGenderIfPresent(final JsonObjectBuilder builder, final JsonObject personDetails) {
         if (personDetails.containsKey("gender") && !personDetails.isNull("gender")) {
@@ -240,9 +241,8 @@ public class SJPDefendantUpdatedProcessor {
     }
 
     /**
-     * Converts gender from courtsGender.json enum values to gender.json enum values.
-     * courtsGender: MALE, FEMALE, NOT_KNOWN, NOT_SPECIFIED
-     * gender: Male, Female, Not Specified
+     * Converts gender from courtsGender.json enum values to gender.json enum values. courtsGender:
+     * MALE, FEMALE, NOT_KNOWN, NOT_SPECIFIED gender: Male, Female, Not Specified
      */
     private String convertGenderFromCourtsFormat(final String courtsGender) {
         if (courtsGender == null) {

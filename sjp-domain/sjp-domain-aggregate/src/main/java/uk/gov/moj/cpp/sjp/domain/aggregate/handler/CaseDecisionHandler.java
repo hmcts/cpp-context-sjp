@@ -253,6 +253,8 @@ public class CaseDecisionHandler {
                     .withConvictionDate(referForCourtHearing.getConvictionDate())
                     .withConvictingCourt(referForCourtHearing.getConvictingCourt())
                     .withNextHearing(referForCourtHearing.getNextHearing())
+                    .withSessionId(decision.getSessionId())
+                    .withPressRestriction(referForCourtHearing.getPressRestriction())
                     .build());
 
             if (isNotEmpty(referForCourtHearing.getListingNotes())) {

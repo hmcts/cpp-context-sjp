@@ -11,6 +11,9 @@ import static uk.gov.moj.cpp.sjp.RecordCaseReferralForCourtHearingRejection.reco
 import uk.gov.justice.core.courts.NextHearing;
 import uk.gov.justice.json.schemas.domains.sjp.queries.CaseDecision;
 import uk.gov.justice.json.schemas.domains.sjp.queries.CaseDetails;
+import uk.gov.justice.json.schemas.domains.sjp.queries.DecisionType;
+import uk.gov.justice.json.schemas.domains.sjp.queries.QueryOffenceDecision;
+import uk.gov.justice.json.schemas.domains.sjp.queries.Session;
 import uk.gov.justice.json.schemas.domains.sjp.query.DefendantsOnlinePlea;
 import uk.gov.justice.services.common.converter.ObjectToJsonObjectConverter;
 import uk.gov.justice.services.common.util.Clock;
@@ -183,13 +186,14 @@ public class CourtReferralProcessor {
         final CaseReferredForCourtHearingV2 caseReferredForCourtHearing = event.payload();
         final CaseDetails caseDetails = sjpService.getCaseDetails(caseReferredForCourtHearing.getCaseId(), emptyEnvelope);
 
-        final CaseDecision caseDecision = getReferralDecisionFromCaseDecisions(
-                caseReferredForCourtHearing.getDecisionId(),
-                caseDetails)
-                .orElseThrow(() -> new IllegalArgumentException(
-                        format("Referral decision not found for case %s",
-                                caseDetails.getId()))
-                );
+        final CaseDecision caseDecision = caseReferredForCourtHearing.getSessionId() != null
+                ? buildCaseDecisionFromEvent(caseReferredForCourtHearing)
+                : getReferralDecisionFromCaseDecisions(
+                        caseReferredForCourtHearing.getDecisionId(),
+                        caseDetails)
+                        .orElseThrow(() -> new IllegalArgumentException(
+                                format("Referral decision not found for case %s",
+                                        caseDetails.getId())));
 
         final DefendantsOnlinePlea defendantOnlinePleaDetails = Optional.of(caseDetails.getOnlinePleaReceived())
                 .filter(Boolean::booleanValue)
@@ -257,6 +261,31 @@ public class CourtReferralProcessor {
                 .stream()
                 .filter(caseDecision -> caseDecision.getId().equals(decisionId))
                 .findFirst();
+    }
+
+    private CaseDecision buildCaseDecisionFromEvent(final CaseReferredForCourtHearingV2 event) {
+        final uk.gov.justice.json.schemas.domains.sjp.queries.PressRestriction queryPressRestriction =
+                Optional.ofNullable(event.getPressRestriction())
+                        .map(pr -> uk.gov.justice.json.schemas.domains.sjp.queries.PressRestriction.pressRestriction()
+                                .withName(pr.getName())
+                                .withRequested(pr.getRequested())
+                                .build())
+                        .orElse(null);
+
+        final QueryOffenceDecision offenceDecision = QueryOffenceDecision.queryOffenceDecision()
+                .withDecisionType(DecisionType.REFER_FOR_COURT_HEARING)
+                .withPressRestriction(queryPressRestriction)
+                .build();
+
+        final Session session = Session.session()
+                .withSessionId(event.getSessionId())
+                .build();
+
+        return CaseDecision.caseDecision()
+                .withId(event.getDecisionId())
+                .withSession(session)
+                .withOffenceDecisions(List.of(offenceDecision))
+                .build();
     }
 
 }

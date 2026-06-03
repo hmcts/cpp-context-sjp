@@ -5,6 +5,7 @@ import uk.gov.justice.core.courts.NextHearing;
 import uk.gov.justice.domain.annotation.Event;
 import uk.gov.moj.cpp.sjp.domain.DefendantCourtOptions;
 import uk.gov.moj.cpp.sjp.domain.decision.OffenceDecisionInformation;
+import uk.gov.moj.cpp.sjp.domain.decision.PressRestriction;
 import uk.gov.moj.cpp.sjp.domain.decision.SessionCourt;
 
 import java.time.LocalDate;
@@ -46,6 +47,10 @@ public class CaseReferredForCourtHearingV2 {
 
     private NextHearing nextHearing;
 
+    private UUID sessionId;
+
+    private PressRestriction pressRestriction;
+
     @JsonIgnoreProperties(ignoreUnknown = true)
     public CaseReferredForCourtHearingV2(final UUID caseId, final List<OffenceDecisionInformation> referredOffences,
                                          final UUID referralReasonId, final String referralReason,
@@ -53,7 +58,8 @@ public class CaseReferredForCourtHearingV2 {
                                          final ZonedDateTime referredAt, final UUID decisionId,
                                          final DefendantCourtOptions defendantCourtOptions,
                                          final LocalDate convictionDate , final SessionCourt convictingCourt,
-                                         final NextHearing nextHearing) {
+                                         final NextHearing nextHearing, final UUID sessionId,
+                                         final PressRestriction pressRestriction) {
         this.caseId = caseId;
         this.estimatedHearingDuration = estimatedHearingDuration;
         this.listingNotes = listingNotes;
@@ -66,6 +72,8 @@ public class CaseReferredForCourtHearingV2 {
         this.convictionDate = convictionDate;
         this.convictingCourt = convictingCourt;
         this.nextHearing = nextHearing;
+        this.sessionId = sessionId;
+        this.pressRestriction = pressRestriction;
     }
 
     public UUID getCaseId() {
@@ -116,6 +124,14 @@ public class CaseReferredForCourtHearingV2 {
         return nextHearing;
     }
 
+    public UUID getSessionId() {
+        return sessionId;
+    }
+
+    public PressRestriction getPressRestriction() {
+        return pressRestriction;
+    }
+
     public static Builder caseReferredForCourtHearingV2() {
         return new CaseReferredForCourtHearingV2.Builder();
     }
@@ -133,6 +149,8 @@ public class CaseReferredForCourtHearingV2 {
         private LocalDate convictionDate;
         private SessionCourt convictingCourt;
         private NextHearing nextHearing;
+        private UUID sessionId;
+        private PressRestriction pressRestriction;
 
         public Builder withCaseId(final UUID caseId) {
             this.caseId = caseId;
@@ -194,9 +212,20 @@ public class CaseReferredForCourtHearingV2 {
             return this;
         }
 
+        public Builder withSessionId(final UUID sessionId) {
+            this.sessionId = sessionId;
+            return this;
+        }
+
+        public Builder withPressRestriction(final PressRestriction pressRestriction) {
+            this.pressRestriction = pressRestriction;
+            return this;
+        }
+
         public CaseReferredForCourtHearingV2 build() {
             return new CaseReferredForCourtHearingV2(caseId, referredOffences, referralReasonId, referralReason,
-                    estimatedHearingDuration, listingNotes, referredAt, decisionId, defendantCourtOptions, convictionDate, convictingCourt, nextHearing);
+                    estimatedHearingDuration, listingNotes, referredAt, decisionId, defendantCourtOptions,
+                    convictionDate, convictingCourt, nextHearing, sessionId, pressRestriction);
         }
 
     }

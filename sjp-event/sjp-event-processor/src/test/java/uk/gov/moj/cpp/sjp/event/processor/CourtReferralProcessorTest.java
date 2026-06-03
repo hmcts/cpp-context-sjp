@@ -335,6 +335,43 @@ public class CourtReferralProcessorTest {
     }
 
     @Test
+    public void shouldSendCommandUsingEventDataWhenSessionIdPresent() {
+        final UUID caseId = randomUUID();
+        final UUID sessionId = randomUUID();
+        final UUID defendantId = randomUUID();
+
+        final CaseReferredForCourtHearingV2 caseReferredForCourtHearing = caseReferredForCourtHearingV2()
+                .withCaseId(caseId)
+                .withDecisionId(randomUUID())
+                .withSessionId(sessionId)
+                .build();
+
+        final Metadata metadata = metadataWithRandomUUID("sjp.events.case-referred-for-court-hearing-v2").build();
+        final Envelope<CaseReferredForCourtHearingV2> envelope = envelopeFrom(metadata, caseReferredForCourtHearing);
+
+        // caseDecisions is empty — proves the viewstore lookup path is bypassed
+        final CaseDetails caseDetails = CaseDetails.caseDetails()
+                .withId(caseId)
+                .withOnlinePleaReceived(false)
+                .withDefendant(Defendant.defendant().withId(defendantId).build())
+                .withCaseDecisions(emptyList())
+                .build();
+        when(sjpService.getCaseDetails(any(), any(JsonEnvelope.class))).thenReturn(caseDetails);
+
+        when(prosecutionCasesDataSourcingService.createProsecutionCaseViews(any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any()))
+                .thenReturn(singletonList(createDummyProsecutionCaseView(caseId)));
+        when(sjpReferralDataSourcingService.createSjpReferralView(any(), any(), any(), any())).thenReturn(createDummySjpReferralView());
+        when(prosecutionCaseFileService.getCaseFileDetails(eq(caseId), any())).thenReturn(Optional.empty());
+        when(hearingRequestsDataSourcingService.createHearingRequestViews(any(), any(), any(), any(), any(), any(), any(), any(), any())).thenReturn(emptyList());
+        when(courtDocumentsDataSourcingService.createCourtDocumentViews((ZonedDateTime) any(), any(), any())).thenReturn(emptyList());
+
+        courtReferralProcessor.caseReferredForCourtHearingV2(envelope);
+
+        verify(sender).send(commandCaptor.capture());
+        assertThat(commandCaptor.getValue().metadata().name(), is("progression.refer-cases-to-court"));
+    }
+
+    @Test
     public void shouldHandleCourtReferralRelatedEvents() {
         assertThat(CourtReferralProcessor.class, isHandlerClass(EVENT_PROCESSOR)
                 .with(allOf(

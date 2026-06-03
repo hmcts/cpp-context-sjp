@@ -1357,6 +1357,12 @@ public class CaseDecisionHandlerTest {
         )));
 
         assertThat(eventList, hasItem(new CaseUnassigned(caseId)));
+        assertThat(eventList, hasItem(allOf(
+                Matchers.instanceOf(CaseReferredForCourtHearingV2.class),
+                Matchers.<CaseReferredForCourtHearingV2>hasProperty("caseId", is(caseId)),
+                Matchers.<CaseReferredForCourtHearingV2>hasProperty("decisionId", is(decisionId)),
+                Matchers.<CaseReferredForCourtHearingV2>hasProperty("sessionId", is(sessionId))
+        )));
         assertThat(eventList.size(), is(7));
     }
 

@@ -50,6 +50,24 @@ public class CaseReceivedTransformationTest {
         verifyCase(inputCourtApplication, transformedJson, false);
     }
 
+    @Test
+    public void shouldTransformCaseReceivedEventWithPncIdentifier() throws IOException {
+
+        final JsonObject specJson = readJsonViaPath("src/transformer/sjp.events.case-received-spec.json");
+        assertNotNull(specJson);
+
+        final JsonObject inputJson = readJson("/sjp.events.case-received-with-pnc-identifier.json");
+        final DocumentContext inputCourtApplication = parse(inputJson);
+        final JsonObject transformedJson = joltTransformer.transformWithJolt(specJson.toString(), inputJson);
+
+        verifyCase(inputCourtApplication, transformedJson, false);
+
+        final JsonObject inputDefendant = inputCourtApplication.read("$.defendant");
+        final JsonObject outputParties = (JsonObject) transformedJson.getJsonArray("parties").get(0);
+
+        assertThat(outputParties.getString("pncId"), is(inputDefendant.getString("pncIdentifier")));
+    }
+
     private void verifyCase(final DocumentContext inputCase, final JsonObject outputCase, final boolean isCompany) {
 
         assertThat(outputCase.getString("caseId"), is(((JsonString) inputCase.read("$.caseId")).getString()));

@@ -3,9 +3,10 @@ package uk.gov.moj.cpp.sjp.event.processor;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
 import static java.util.Collections.singletonList;
 import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.allOf;
 import static org.mockito.Mockito.verify;
+import static uk.gov.justice.services.messaging.JsonObjects.createReader;
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMetadataMatcher.withMetadataEnvelopedFrom;
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopePayloadMatcher.payloadIsJson;
 
@@ -22,7 +23,6 @@ import uk.gov.moj.cpp.sjp.event.PleasSet;
 import java.io.StringReader;
 import java.util.UUID;
 
-import javax.json.Json;
 import javax.json.JsonObject;
 import javax.json.JsonValue;
 
@@ -74,18 +74,18 @@ public class PleasSetProcessorTest {
 
 
         assertThat(sentEnvelope.payload(), payloadIsJson(
-                allOf(
-                        withJsonPath("$.caseId", equalTo(caseId.toString())),
-                        withJsonPath("$.pleas[0].defendantId", equalTo(plea.getDefendantId().toString())),
-                        withJsonPath("$.pleas[0].offenceId", equalTo(plea.getOffenceId().toString())),
-                        withJsonPath("$.pleas[0].pleaType", equalTo(plea.getPleaType().toString()))
-                )
+                        allOf(
+                                withJsonPath("$.caseId", equalTo(caseId.toString())),
+                                withJsonPath("$.pleas[0].defendantId", equalTo(plea.getDefendantId().toString())),
+                                withJsonPath("$.pleas[0].offenceId", equalTo(plea.getOffenceId().toString())),
+                                withJsonPath("$.pleas[0].pleaType", equalTo(plea.getPleaType().toString()))
+                        )
                 )
         );
     }
 
     public JsonObject convertToJsonObject(PleasSet pleasSet) throws JsonProcessingException {
         String json = objectMapper.writeValueAsString(pleasSet);
-        return Json.createReader(new StringReader(json)).readObject();
+        return createReader(new StringReader(json)).readObject();
     }
 }

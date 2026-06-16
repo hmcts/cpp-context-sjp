@@ -3,8 +3,9 @@ package uk.gov.moj.cpp.sjp.event.processor;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.core.AllOf.allOf;
-import static org.mockito.hamcrest.MockitoHamcrest.argThat;
 import static org.mockito.Mockito.verify;
+import static org.mockito.hamcrest.MockitoHamcrest.argThat;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 import static uk.gov.justice.services.test.utils.core.enveloper.EnveloperFactory.createEnveloper;
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMatcher.jsonEnvelope;
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMetadataMatcher.metadata;
@@ -16,8 +17,6 @@ import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.test.utils.core.enveloper.EnvelopeFactory;
 
 import java.util.UUID;
-
-import javax.json.Json;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -47,8 +46,8 @@ public class CaseCreationFailedBecauseCaseAlreadyExistedProcessorTest {
 
         final JsonEnvelope privateEvent = EnvelopeFactory
                 .createEnvelope("sjp.events.case-creation-failed-because-case-already-existed",
-                                Json.createObjectBuilder().add("caseId", CASE_ID).add("urn", URN)
-                                                .build());
+                        createObjectBuilder().add("caseId", CASE_ID).add("urn", URN)
+                                .build());
 
         //when
         caseCreationFailedBecauseCaseAlreadyExistedProcessor.publish(privateEvent);
@@ -57,8 +56,8 @@ public class CaseCreationFailedBecauseCaseAlreadyExistedProcessorTest {
         verify(sender).send(argThat(
                 jsonEnvelope(metadata().withName("public.sjp.case-creation-failed-because-case-already-existed"),
                         payloadIsJson(allOf(
-                                        withJsonPath("$.caseId", is(CASE_ID)),
-                                        withJsonPath("$.urn", is(URN)))))
+                                withJsonPath("$.caseId", is(CASE_ID)),
+                                withJsonPath("$.urn", is(URN)))))
         ));
     }
 }

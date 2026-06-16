@@ -8,12 +8,12 @@ import static java.util.Objects.nonNull;
 import static java.util.Optional.empty;
 import static java.util.Optional.of;
 import static java.util.UUID.fromString;
-import static javax.json.Json.createArrayBuilder;
-import static javax.json.Json.createObjectBuilder;
 import static org.apache.commons.lang3.StringUtils.isEmpty;
 import static uk.gov.justice.services.core.annotation.Component.EVENT_PROCESSOR;
 import static uk.gov.justice.services.messaging.Envelope.metadataFrom;
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
+import static uk.gov.justice.services.messaging.JsonObjects.createArrayBuilder;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 import static uk.gov.moj.cpp.sjp.domain.DocumentLanguage.WELSH;
 import static uk.gov.moj.cpp.sjp.domain.DocumentRequestType.FULL;
 import static uk.gov.moj.cpp.sjp.event.processor.DateTimeUtil.DATE_FORMAT;
@@ -45,10 +45,11 @@ import uk.gov.moj.cpp.sjp.event.transparency.PressTransparencyPDFReportRequested
 import java.io.ByteArrayInputStream;
 import java.time.LocalDate;
 import java.time.format.DateTimeParseException;
-import java.util.*;
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
 
 import javax.inject.Inject;
-import javax.json.Json;
 import javax.json.JsonArray;
 import javax.json.JsonArrayBuilder;
 import javax.json.JsonObject;
@@ -179,7 +180,7 @@ public class PressTransparencyReportRequestedProcessor {
         LOGGER.info("publishing public event for sjp pending cases for public list in english");
         final String type = envelope.payloadAsJsonObject().getString(REQUEST_TYPE);
         final String language = envelope.payloadAsJsonObject().getString(LANGUAGE);
-        final JsonObjectBuilder pendingListEnglishBuilder = Json.createObjectBuilder()
+        final JsonObjectBuilder pendingListEnglishBuilder = createObjectBuilder()
                 .add(LANGUAGE, language)
                 .add(REQUEST_TYPE, type)
                 .add("listPayload", payloadForDocumentGeneration);

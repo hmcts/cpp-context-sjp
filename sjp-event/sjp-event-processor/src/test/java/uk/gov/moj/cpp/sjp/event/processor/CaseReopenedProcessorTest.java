@@ -2,9 +2,10 @@ package uk.gov.moj.cpp.sjp.event.processor;
 
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
 import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.core.AllOf.allOf;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.core.AllOf.allOf;
 import static org.mockito.Mockito.verify;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 import static uk.gov.justice.services.test.utils.core.enveloper.EnveloperFactory.createEnveloper;
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMatcher.jsonEnvelope;
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMetadataMatcher.metadata;
@@ -19,7 +20,6 @@ import java.time.LocalDate;
 import java.util.UUID;
 import java.util.function.Consumer;
 
-import javax.json.Json;
 import javax.json.JsonObjectBuilder;
 
 import org.junit.jupiter.api.Test;
@@ -73,7 +73,7 @@ public class CaseReopenedProcessorTest {
 
     private void verifyCaseReopenedUndoneEventMessage(final String eventName,
                                                       final Consumer<JsonEnvelope> consumer) {
-        JsonObjectBuilder jsonObjectBuilder = Json.createObjectBuilder().add("caseId", CASE_ID);
+        JsonObjectBuilder jsonObjectBuilder = createObjectBuilder().add("caseId", CASE_ID);
 
         final JsonEnvelope privateEvent = EnvelopeFactory.createEnvelope(eventName, jsonObjectBuilder.build());
 
@@ -91,7 +91,7 @@ public class CaseReopenedProcessorTest {
                                                 final String reopenedDate,
                                                 final String libraCaseNumber,
                                                 final String reason) {
-        JsonObjectBuilder jsonObjectBuilder = Json.createObjectBuilder()
+        JsonObjectBuilder jsonObjectBuilder = createObjectBuilder()
                 .add("caseId", CASE_ID)
                 .add("reopenedDate", reopenedDate)
                 .add("libraCaseNumber", libraCaseNumber)

@@ -11,6 +11,7 @@ import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.greaterThanOrEqualTo;
 import static org.hamcrest.core.Is.is;
+import static uk.gov.justice.services.messaging.JsonObjects.createReader;
 import static uk.gov.justice.services.test.utils.core.http.RequestParamsBuilder.requestParams;
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMatcher.jsonEnvelope;
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMetadataMatcher.metadata;
@@ -275,7 +276,7 @@ public class DefendantDetailsIT extends BaseIntegrationTest {
                 userUid);
         assertThat(response.getStatus(), equalTo(Response.Status.OK.getStatusCode()));
 
-        return Json.createReader(new StringReader(response.readEntity(String.class))).readObject();
+        return createReader(new StringReader(response.readEntity(String.class))).readObject();
     }
 
     private JsonObject getUpdatedDefendantDetails(UUID userUid, String prosecutingAuhority) {
@@ -289,6 +290,6 @@ public class DefendantDetailsIT extends BaseIntegrationTest {
     }
 
     private JsonObject responseToJsonObject(String response) {
-        return Json.createReader(new StringReader(response)).readObject();
+        return createReader(new StringReader(response)).readObject();
     }
 }

@@ -1,11 +1,11 @@
 package uk.gov.moj.cpp.sjp.event.processor;
 
 import static java.time.ZoneOffset.UTC;
-import static javax.json.Json.createObjectBuilder;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.mockito.Mockito.verify;
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 import static uk.gov.moj.cpp.sjp.event.processor.DefendantDetailsUpdatesAcknowledgedProcessor.PUBLIC_SJP_EVENTS_DEFENDANT_DETAILS_UPDATES_ACKNOWLEDGED;
 
 import uk.gov.justice.services.core.enveloper.Enveloper;

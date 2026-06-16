@@ -47,6 +47,9 @@
       "items": {
         "$ref" : "http://justice.gov.uk/json/schemas/domains/sjp/events/case-received.offence.json"
       }
+    },
+    "pncIdentifier": {
+      "type": "string"
     }
   }
 }

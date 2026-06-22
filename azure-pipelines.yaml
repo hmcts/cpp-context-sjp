@@ -21,7 +21,7 @@ resources:
       type: github
       name: hmcts/cpp-azure-devops-templates
       endpoint: 'hmcts'
-      ref: 'main'
+      ref: 'dtspo-31109-cpp-devops-templates-new-ado-agents'
 
 pool:
   name: "MDV-ADO-AGENT-AKS-01"
@@ -42,10 +42,9 @@ stages:
           sonarqube_project: ${{ variables['sonarqubeProject'] }}
           sonarQubeType: 'sonarQubeAKS'
 
-  - ${{ if eq(variables['Build.Reason'], 'IndividualCI') }}:
-      - template: pipelines/context-validation.yaml@cppAzureDevOpsTemplates
-        parameters:
-          repo: "$(Build.Repository.Name)"
-          sonarQubeType: 'sonarQubeAKS'
-          serviceName: ${{ variables['service_Name'] }}
-          itTestFolder: ${{ variables['itTest_Folder'] }}
+  - template: pipelines/context-validation.yaml@cppAzureDevOpsTemplates
+    parameters:
+      repo: "$(Build.Repository.Name)"
+      sonarQubeType: 'sonarQubeAKS'
+      serviceName: ${{ variables['service_Name'] }}
+      itTestFolder: ${{ variables['itTest_Folder'] }}

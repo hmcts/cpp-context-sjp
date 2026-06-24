@@ -3,12 +3,11 @@ package uk.gov.moj.sjp.it.util;
 import static java.util.Optional.ofNullable;
 import static java.util.stream.Collectors.joining;
 import static org.apache.commons.lang3.StringUtils.wrap;
+import static uk.gov.justice.services.messaging.JsonObjects.createReader;
 import static uk.gov.moj.sjp.it.Constants.PRIVATE_ACTIVE_MQ_TOPIC;
 import static uk.gov.moj.sjp.it.Constants.PUBLIC_ACTIVE_MQ_TOPIC;
 import static uk.gov.moj.sjp.it.util.OptionalPresent.ifPresent;
 
-
-import org.hamcrest.Matcher;
 import uk.gov.justice.services.messaging.DefaultJsonObjectEnvelopeConverter;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 
@@ -23,12 +22,12 @@ import javax.jms.MessageConsumer;
 import javax.jms.Session;
 import javax.jms.TextMessage;
 import javax.jms.Topic;
-import javax.json.Json;
 import javax.json.JsonObject;
 
 import io.restassured.path.json.JsonPath;
 import org.apache.activemq.artemis.jms.client.ActiveMQConnectionFactory;
 import org.apache.activemq.artemis.jms.client.ActiveMQTopic;
+import org.hamcrest.Matcher;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -101,7 +100,7 @@ public class TopicUtil implements AutoCloseable {
 
     public static Optional<JsonObject> retrieveMessageAsJsonObject(final MessageConsumer consumer) {
         return ifPresent(retrieveMessageAsString(consumer, RETRIEVE_TIMEOUT),
-                (x) -> Optional.of(Json.createReader(new StringReader(x)).readObject())
+                (x) -> Optional.of(createReader(new StringReader(x)).readObject())
         ).orElse(Optional::<JsonObject>empty);
     }
 
@@ -129,7 +128,7 @@ public class TopicUtil implements AutoCloseable {
         do {
             message = retrieveMessage(consumer, RETRIEVE_TIMEOUT).orElse(null);
             if (ofNullable(message).isPresent()) {
-                if(matchers.matches(message.prettify())){
+                if (matchers.matches(message.prettify())) {
                     return message;
                 }
             }

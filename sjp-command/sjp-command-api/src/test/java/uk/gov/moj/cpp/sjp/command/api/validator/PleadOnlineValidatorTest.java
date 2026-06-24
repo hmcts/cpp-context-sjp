@@ -2,25 +2,22 @@ package uk.gov.moj.cpp.sjp.command.api.validator;
 
 import static java.lang.Boolean.FALSE;
 import static java.lang.Boolean.TRUE;
-import static java.util.Arrays.asList;
 import static java.util.Collections.emptyMap;
 import static java.util.Collections.singletonList;
 import static java.util.Collections.singletonMap;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
-import static org.hamcrest.MatcherAssert.assertThat;
 import static uk.gov.justice.json.schemas.domains.sjp.command.FinancialMeans.financialMeans;
 import static uk.gov.justice.json.schemas.domains.sjp.command.Plea.GUILTY;
 import static uk.gov.justice.json.schemas.domains.sjp.command.Plea.NOT_GUILTY;
 import static uk.gov.justice.json.schemas.domains.sjp.command.PleadOnline.pleadOnline;
+import static uk.gov.justice.services.messaging.JsonObjects.createArrayBuilder;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 import static uk.gov.moj.cpp.sjp.domain.common.CaseStatus.COMPLETED;
 import static uk.gov.moj.cpp.sjp.domain.common.CaseStatus.NO_PLEA_RECEIVED_READY_FOR_DECISION;
 import static uk.gov.moj.cpp.sjp.domain.common.CaseStatus.REFERRED_FOR_COURT_HEARING;
 
-import java.util.stream.Stream;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.Arguments;
-import org.junit.jupiter.params.provider.MethodSource;
 import uk.gov.justice.json.schemas.domains.sjp.command.Benefits;
 import uk.gov.justice.json.schemas.domains.sjp.command.FinancialMeans;
 import uk.gov.justice.json.schemas.domains.sjp.command.Frequency;
@@ -32,23 +29,21 @@ import uk.gov.justice.json.schemas.domains.sjp.command.PleadOnline;
 import uk.gov.moj.cpp.sjp.domain.common.CaseStatus;
 
 import java.math.BigDecimal;
-import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.stream.Stream;
 
-import javax.json.Json;
 import javax.json.JsonArray;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
 
 import org.hamcrest.Matcher;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.junit.runners.Parameterized;
-import org.junit.runners.Parameterized.Parameter;
-import org.junit.runners.Parameterized.Parameters;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 
 public class PleadOnlineValidatorTest {
 
@@ -183,7 +178,7 @@ public class PleadOnlineValidatorTest {
 
     private JsonObject getCaseDetail(final Boolean completed, final Boolean assigned, final CaseStatus status, final Boolean pendingWithdrawal, final Plea plea) {
 
-        final JsonObjectBuilder caseDetailBuilder = Json.createObjectBuilder()
+        final JsonObjectBuilder caseDetailBuilder = createObjectBuilder()
                 .add("id", UUID.randomUUID().toString());
 
         Optional.ofNullable(completed)
@@ -195,7 +190,7 @@ public class PleadOnlineValidatorTest {
         Optional.ofNullable(status)
                 .ifPresent(value -> caseDetailBuilder.add("status", value.name()));
 
-        final JsonObjectBuilder offenceObjectBuilder = Json.createObjectBuilder();
+        final JsonObjectBuilder offenceObjectBuilder = createObjectBuilder();
 
         Optional.ofNullable(pendingWithdrawal)
                 .ifPresent(value -> offenceObjectBuilder.add("pendingWithdrawal", value));
@@ -203,9 +198,9 @@ public class PleadOnlineValidatorTest {
         Optional.ofNullable(plea)
                 .ifPresent(value -> offenceObjectBuilder.add("plea", value.name()));
 
-        final JsonArray offences = Json.createArrayBuilder().add(offenceObjectBuilder.build()).build();
+        final JsonArray offences = createArrayBuilder().add(offenceObjectBuilder.build()).build();
 
-        final JsonObject defendant = Json.createObjectBuilder()
+        final JsonObject defendant = createObjectBuilder()
                 .add("offences", offences)
                 .build();
 

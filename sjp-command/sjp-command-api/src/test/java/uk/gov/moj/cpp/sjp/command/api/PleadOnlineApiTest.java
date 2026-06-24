@@ -1,8 +1,8 @@
 package uk.gov.moj.cpp.sjp.command.api;
 
 import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.Matchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.is;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
@@ -12,15 +12,16 @@ import static uk.gov.justice.json.schemas.domains.sjp.command.Plea.GUILTY;
 import static uk.gov.justice.json.schemas.domains.sjp.command.Plea.NOT_GUILTY;
 import static uk.gov.justice.services.messaging.Envelope.envelopeFrom;
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
+import static uk.gov.justice.services.messaging.JsonObjects.createArrayBuilder;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 import static uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderFactory.metadataWithRandomUUID;
 import static uk.gov.moj.cpp.sjp.command.utils.CommonObjectBuilderUtil.buildAddressObjectWithPostcode;
 import static uk.gov.moj.cpp.sjp.command.utils.CommonObjectBuilderUtil.buildEmployerWithAddress;
 import static uk.gov.moj.cpp.sjp.command.utils.CommonObjectBuilderUtil.buildPersonalDetailsWithAddress;
-import static uk.gov.moj.cpp.sjp.command.utils.CommonObjectBuilderUtil.buildPleadOnline;
 import static uk.gov.moj.cpp.sjp.command.utils.CommonObjectBuilderUtil.buildPleadAocpOnline;
+import static uk.gov.moj.cpp.sjp.command.utils.CommonObjectBuilderUtil.buildPleadOnline;
 import static uk.gov.moj.cpp.sjp.domain.common.CaseStatus.NO_PLEA_RECEIVED_READY_FOR_DECISION;
 
-import org.hamcrest.CoreMatchers;
 import uk.gov.justice.json.schemas.domains.sjp.command.Benefits;
 import uk.gov.justice.json.schemas.domains.sjp.command.FinancialMeans;
 import uk.gov.justice.json.schemas.domains.sjp.command.Frequency;
@@ -39,16 +40,15 @@ import uk.gov.justice.services.test.utils.framework.api.JsonObjectConvertersFact
 import uk.gov.moj.cpp.sjp.command.api.validator.PleadOnlineValidator;
 
 import java.math.BigDecimal;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 
-import javax.json.Json;
 import javax.json.JsonArray;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
 import javax.json.JsonValue;
 
+import org.hamcrest.CoreMatchers;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
@@ -224,6 +224,7 @@ public class PleadOnlineApiTest {
         var e = assertThrows(BadRequestException.class, () -> invokePleadOnlineAndVerify(pleadOnline, caseDetail));
         assertThat(e.getMessage(), CoreMatchers.is(CASE_HAS_BEEN_REVIEWED_EXCEPTION_MESSAGE));
     }
+
     @Test
     public void shouldNotPleadOnlineWhenCasePostAdjourned() {
         final PleadOnline pleadOnline = buildPleadOnline(
@@ -294,7 +295,7 @@ public class PleadOnlineApiTest {
                 metadataWithRandomUUID(PLEAD_ONLINE_COMMAND_NAME),
                 pleadOnline);
 
-        if(caseDetail != null) {
+        if (caseDetail != null) {
             final JsonEnvelope caseDetailResponseEnvelope = getCaseDetailResponseEnvelope(caseDetail);
             when(requester.requestAsAdmin(queryEnvelopeCaptor.capture())).thenReturn(caseDetailResponseEnvelope);
         }
@@ -335,21 +336,21 @@ public class PleadOnlineApiTest {
     }
 
     private JsonObject getCaseDetail(final Plea plea, final JsonValue completed) {
-        final JsonObjectBuilder caseDetailBuilder = Json.createObjectBuilder()
+        final JsonObjectBuilder caseDetailBuilder = createObjectBuilder()
                 .add("id", caseId.toString())
                 .add("completed", completed)
                 .add("assigned", JsonValue.FALSE)
                 .add("status", NO_PLEA_RECEIVED_READY_FOR_DECISION.name());
 
-        final JsonObjectBuilder offenceObjectBuilder = Json.createObjectBuilder();
+        final JsonObjectBuilder offenceObjectBuilder = createObjectBuilder();
         offenceObjectBuilder.add("pendingWithdrawal", JsonValue.FALSE);
 
         Optional.ofNullable(plea)
                 .ifPresent(value -> offenceObjectBuilder.add("plea", plea.name()));
 
-        final JsonArray offences = Json.createArrayBuilder().add(offenceObjectBuilder.build()).build();
+        final JsonArray offences = createArrayBuilder().add(offenceObjectBuilder.build()).build();
 
-        final JsonObject defendant = Json.createObjectBuilder()
+        final JsonObject defendant = createObjectBuilder()
                 .add("offences", offences)
                 .build();
 
@@ -357,22 +358,23 @@ public class PleadOnlineApiTest {
 
         return caseDetailBuilder.build();
     }
-    private JsonObject getCaseDetailPostConvention( final String adjournedTo, final String convention,final String conventionDate) {
-        final JsonObjectBuilder caseDetailBuilder = Json.createObjectBuilder()
+
+    private JsonObject getCaseDetailPostConvention(final String adjournedTo, final String convention, final String conventionDate) {
+        final JsonObjectBuilder caseDetailBuilder = createObjectBuilder()
                 .add("id", caseId.toString())
                 .add("adjournedTo", adjournedTo);
 
-        final JsonObjectBuilder offenceObjectBuilder = Json.createObjectBuilder();
+        final JsonObjectBuilder offenceObjectBuilder = createObjectBuilder();
         Optional.ofNullable(convention)
-                .ifPresent(value ->  offenceObjectBuilder.add("convention", convention));
+                .ifPresent(value -> offenceObjectBuilder.add("convention", convention));
 
         Optional.ofNullable(conventionDate)
-                .ifPresent(value ->  offenceObjectBuilder.add("conventionDate", conventionDate));
+                .ifPresent(value -> offenceObjectBuilder.add("conventionDate", conventionDate));
 
 
-        final JsonArray offences = Json.createArrayBuilder().add(offenceObjectBuilder.build()).build();
+        final JsonArray offences = createArrayBuilder().add(offenceObjectBuilder.build()).build();
 
-        final JsonObject defendant = Json.createObjectBuilder()
+        final JsonObject defendant = createObjectBuilder()
                 .add("offences", offences)
                 .build();
 

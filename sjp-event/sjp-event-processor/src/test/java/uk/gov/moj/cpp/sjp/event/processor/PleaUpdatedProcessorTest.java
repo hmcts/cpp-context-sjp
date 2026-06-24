@@ -11,6 +11,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.justice.services.core.annotation.Component.EVENT_PROCESSOR;
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 import static uk.gov.justice.services.test.utils.core.enveloper.EnvelopeFactory.createEnvelope;
 import static uk.gov.justice.services.test.utils.core.matchers.HandlerClassMatcher.isHandlerClass;
 import static uk.gov.justice.services.test.utils.core.matchers.HandlerMethodMatcher.method;
@@ -39,8 +40,6 @@ import uk.gov.moj.cpp.sjp.event.processor.activiti.CaseStateService;
 
 import java.time.ZonedDateTime;
 import java.util.UUID;
-
-import javax.json.Json;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -74,7 +73,7 @@ public class PleaUpdatedProcessorTest {
         final ZonedDateTime pleaUpdatedDate = ZonedDateTime.now(UTC).minusDays(2);
 
         final JsonEnvelope privateEvent = createEnvelope(PleaUpdated.EVENT_NAME,
-                Json.createObjectBuilder()
+                createObjectBuilder()
                         .add(CASE_ID, caseId.toString())
                         .add(OFFENCE_ID, offenceId.toString())
                         .add(PLEA, pleaType.name())
@@ -96,7 +95,7 @@ public class PleaUpdatedProcessorTest {
                 metadataWithRandomUUID(PleaUpdated.EVENT_NAME)
                         .createdAt(metadataCreatedAt)
                         .build(),
-                Json.createObjectBuilder()
+                createObjectBuilder()
                         .add(CASE_ID, caseId.toString())
                         .add(OFFENCE_ID, offenceId.toString())
                         .add(PLEA, pleaType.name())
@@ -123,7 +122,7 @@ public class PleaUpdatedProcessorTest {
         final PleaType pleaType = NOT_GUILTY;
 
         final JsonEnvelope privateEvent = createEnvelope(PleaUpdated.EVENT_NAME,
-                Json.createObjectBuilder()
+                createObjectBuilder()
                         .add(CASE_ID, caseId.toString())
                         .add(OFFENCE_ID, offenceId.toString())
                         .add(PLEA, pleaType.name())
@@ -145,7 +144,7 @@ public class PleaUpdatedProcessorTest {
         final UUID offenceId = randomUUID();
 
         final JsonEnvelope privateEvent = createEnvelope(PleadedGuilty.EVENT_NAME,
-                Json.createObjectBuilder()
+                createObjectBuilder()
                         .add(CASE_ID, caseId.toString())
                         .add(OFFENCE_ID, offenceId.toString())
                         .add(PLEAD_DATE, stoppedClock.now().toString())
@@ -162,7 +161,7 @@ public class PleaUpdatedProcessorTest {
         final UUID offenceId = randomUUID();
 
         final JsonEnvelope privateEvent = createEnvelope(PleadedGuiltyCourtHearingRequested.EVENT_NAME,
-                Json.createObjectBuilder()
+                createObjectBuilder()
                         .add(CASE_ID, caseId.toString())
                         .add(OFFENCE_ID, offenceId.toString())
                         .add(PLEAD_DATE, stoppedClock.now().toString())
@@ -179,7 +178,7 @@ public class PleaUpdatedProcessorTest {
         final UUID offenceId = randomUUID();
 
         final JsonEnvelope privateEvent = createEnvelope(PleadedNotGuilty.EVENT_NAME,
-                Json.createObjectBuilder()
+                createObjectBuilder()
                         .add(CASE_ID, caseId.toString())
                         .add(OFFENCE_ID, offenceId.toString())
                         .add(PLEAD_DATE, stoppedClock.now().toString())

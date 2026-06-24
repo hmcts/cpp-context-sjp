@@ -5,6 +5,7 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.verify;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMetadataMatcher.withMetadataEnvelopedFrom;
 
 import uk.gov.justice.services.adapter.rest.exception.BadRequestException;
@@ -17,8 +18,6 @@ import uk.gov.justice.services.test.utils.core.enveloper.EnveloperFactory;
 import java.time.LocalDate;
 import java.util.UUID;
 import java.util.function.Consumer;
-
-import javax.json.Json;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -75,7 +74,7 @@ public class CaseReopenedApiTest {
 
     @Test
     public void shouldUndoCaseReopened() {
-        final JsonEnvelope command = EnvelopeFactory.createEnvelope(COMMAND_UNDO, Json.createObjectBuilder().build());
+        final JsonEnvelope command = EnvelopeFactory.createEnvelope(COMMAND_UNDO, createObjectBuilder().build());
 
         caseReopenedApi.undoCaseReopenedInLibra(command);
 
@@ -116,7 +115,7 @@ public class CaseReopenedApiTest {
 
     private JsonEnvelope getEnvelope(final String reopenedDate, final String command) {
         return EnvelopeFactory.createEnvelope(command,
-                Json.createObjectBuilder()
+                createObjectBuilder()
                         .add("caseId", caseId)
                         .add("reopenedDate", reopenedDate)
                         .add("libraCaseNumber", libraCaseId)

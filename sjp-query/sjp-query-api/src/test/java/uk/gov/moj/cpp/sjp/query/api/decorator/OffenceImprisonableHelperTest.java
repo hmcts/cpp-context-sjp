@@ -1,10 +1,11 @@
 package uk.gov.moj.cpp.sjp.query.api.decorator;
 
-import static javax.json.Json.createObjectBuilder;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 
 import java.util.stream.Stream;
+
 import javax.json.JsonObjectBuilder;
 
 import org.junit.jupiter.params.ParameterizedTest;

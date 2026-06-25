@@ -3,7 +3,9 @@ package uk.gov.moj.cpp.sjp.command.api;
 import static java.util.Arrays.asList;
 import static uk.gov.justice.services.core.annotation.Component.COMMAND_API;
 import static uk.gov.justice.services.messaging.Envelope.metadataFrom;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilderWithFilter;
+import static uk.gov.justice.services.messaging.JsonObjects.createReader;
 import static uk.gov.moj.cpp.sjp.command.api.service.AddressService.normalizePostcodeInAddress;
 
 import uk.gov.justice.json.schemas.domains.sjp.command.PleadAocpOnline;
@@ -19,10 +21,6 @@ import uk.gov.justice.services.core.sender.Sender;
 import uk.gov.justice.services.messaging.Envelope;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.sjp.command.api.validator.PleadOnlineValidator;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 
 import java.io.StringReader;
 import java.util.List;
@@ -30,10 +28,14 @@ import java.util.Map;
 import java.util.Objects;
 
 import javax.inject.Inject;
-import javax.json.Json;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
 import javax.json.JsonReader;
+
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 
 @ServiceComponent(COMMAND_API)
 public class PleadOnlineApi {
@@ -82,7 +84,7 @@ public class PleadOnlineApi {
         checkValidationErrors(validationErrors);
 
         final JsonObjectBuilder pleaOnlineObjectBuilder = createObjectBuilderWithFilter(payload, field -> !asList(PERSONAL_DETAILS, EMPLOYER).contains(field));
-        if (payload.containsKey(PERSONAL_DETAILS))  {
+        if (payload.containsKey(PERSONAL_DETAILS)) {
             pleaOnlineObjectBuilder.add(PERSONAL_DETAILS, replacePostcodeInPayload(payload, PERSONAL_DETAILS));
         }
 
@@ -143,7 +145,7 @@ public class PleadOnlineApi {
 
 
     private JsonObject getCaseDetail(final Envelope<PleadOnline> envelope) {
-        final JsonObject queryCasePayload = Json.createObjectBuilder()
+        final JsonObject queryCasePayload = createObjectBuilder()
                 .add("caseId", envelope.payload().getCaseId().toString())
                 .build();
 
@@ -166,7 +168,7 @@ public class PleadOnlineApi {
     }
 
     private static JsonObject jsonFromString(final String jsonObjectStr) {
-        final JsonReader jsonReader = Json.createReader(new StringReader(jsonObjectStr));
+        final JsonReader jsonReader = createReader(new StringReader(jsonObjectStr));
         final JsonObject object = jsonReader.readObject();
         jsonReader.close();
         return object;

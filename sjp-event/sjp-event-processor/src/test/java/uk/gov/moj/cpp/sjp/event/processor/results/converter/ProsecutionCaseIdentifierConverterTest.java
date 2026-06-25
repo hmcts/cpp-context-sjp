@@ -4,6 +4,8 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
+import static uk.gov.justice.services.messaging.JsonObjects.createArrayBuilder;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 import static uk.gov.moj.cpp.sjp.event.processor.results.converter.TestConstants.CASE_URN;
 import static uk.gov.moj.cpp.sjp.event.processor.results.converter.TestConstants.COURT_CENTRE_CODE;
 import static uk.gov.moj.cpp.sjp.event.processor.results.converter.TestConstants.FULL_NAME;
@@ -14,7 +16,6 @@ import static uk.gov.moj.cpp.sjp.event.processor.results.converter.TestConstants
 import uk.gov.justice.core.courts.ProsecutionCaseIdentifier;
 import uk.gov.moj.cpp.sjp.event.processor.service.ReferenceDataService;
 
-import javax.json.Json;
 import javax.json.JsonArray;
 import javax.json.JsonObject;
 
@@ -39,8 +40,8 @@ public class ProsecutionCaseIdentifierConverterTest {
     public void shouldConvertProsecutionCaseIdentifierWithPoliceFlag() {
 
 
-        JsonArray value = Json.createArrayBuilder()
-                .add(Json.createObjectBuilder()
+        JsonArray value = createArrayBuilder()
+                .add(createObjectBuilder()
                         .add("policeFlag", true)
                         .add("id", ID_2.toString())
                         .add("shortName", SHORT_NAME)
@@ -49,7 +50,7 @@ public class ProsecutionCaseIdentifierConverterTest {
                 )
                 .build();
 
-        JsonObject jsonObject = Json.createObjectBuilder()
+        JsonObject jsonObject = createObjectBuilder()
                 .add("prosecutors", value)
                 .build();
 
@@ -68,8 +69,8 @@ public class ProsecutionCaseIdentifierConverterTest {
     public void shouldConvertProsecutionCaseIdentifierWithoutPoliceFlag() {
 
 
-        JsonArray value = Json.createArrayBuilder()
-                .add(Json.createObjectBuilder()
+        JsonArray value = createArrayBuilder()
+                .add(createObjectBuilder()
                         .add("policeFlag", false)
                         .add("id", ID_2.toString())
                         .add("shortName", SHORT_NAME)
@@ -78,7 +79,7 @@ public class ProsecutionCaseIdentifierConverterTest {
                 )
                 .build();
 
-        JsonObject jsonObject = Json.createObjectBuilder()
+        JsonObject jsonObject = createObjectBuilder()
                 .add("prosecutors", value)
                 .build();
 

@@ -2,6 +2,7 @@ package uk.gov.moj.cpp.sjp.event.processor.results.converter;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 import static uk.gov.moj.cpp.sjp.event.processor.results.converter.TestConstants.LJA_CODE;
 import static uk.gov.moj.cpp.sjp.event.processor.results.converter.TestConstants.LJA_CODE_KEY;
 import static uk.gov.moj.cpp.sjp.event.processor.results.converter.TestConstants.LJA_NAME;
@@ -13,7 +14,6 @@ import uk.gov.justice.core.courts.LjaDetails;
 
 import java.util.Optional;
 
-import javax.json.Json;
 import javax.json.JsonObject;
 
 import org.junit.jupiter.api.Test;
@@ -43,13 +43,13 @@ public class LJADetailsConverterTest {
 
 
     public static JsonObject getSjpSessionPayload() {
-        return Json.createObjectBuilder()
+        return createObjectBuilder()
                 .add(LJA_CODE_KEY, LJA_CODE)
                 .build();
     }
 
     public static Optional<JsonObject> getCourt() {
-        return Optional.of(Json.createObjectBuilder()
+        return Optional.of(createObjectBuilder()
                 .add(LJA_NAME_KEY, LJA_NAME)
                 .add(LJA_WELSH_NAME_KEY, LJA_WELSH_NAME)
 

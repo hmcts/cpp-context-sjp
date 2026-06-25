@@ -1,12 +1,12 @@
 package uk.gov.moj.cpp.sjp.event.processor.utils;
 
 import static org.junit.jupiter.api.Assertions.fail;
+import static uk.gov.justice.services.messaging.JsonObjects.createReader;
 
 import java.io.StringReader;
 import java.nio.charset.Charset;
 import java.util.Map;
 
-import javax.json.Json;
 import javax.json.JsonObject;
 import javax.json.JsonReader;
 
@@ -38,7 +38,7 @@ public class FileUtil {
     }
 
     public static JsonObject getFileContentAsJson(final String path, final Map<String, Object> namedPlaceholders) {
-        try (final JsonReader reader = Json.createReader(new StringReader(getFileContent(path, namedPlaceholders)))) {
+        try (final JsonReader reader = createReader(new StringReader(getFileContent(path, namedPlaceholders)))) {
             return reader.readObject();
         }
     }

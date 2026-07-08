@@ -17,6 +17,8 @@ import uk.gov.moj.cpp.sjp.event.processor.results.converter.SjpToHearingConverte
 import javax.inject.Inject;
 import javax.json.JsonObject;
 
+import java.time.ZoneId;
+
 import static uk.gov.justice.hearing.courts.HearingResulted.hearingResulted;
 import static uk.gov.justice.services.core.enveloper.Enveloper.envelop;
 import static uk.gov.moj.cpp.sjp.event.processor.results.converter.judicialresult.JCaseResultsConstants.DATE_FORMAT;
@@ -37,6 +39,7 @@ public class CaseListedProcessor {
     private static final String PUBLIC_EVENTS_HEARING_RESULTED = "public.events.hearing.hearing-resulted";
 
     public static final String SJP_COMMAND_SAVE_APPLICATION_OFFENCES_RESULTS = "sjp.command.save-application-offences-results";
+    private static final String LONDON_ZONE_ID = "Europe/London";
 
     @Handles(CaseListedInCriminalCourtsV2.EVENT_NAME)
     public void handleCaseListedInCCReferToCourt(final JsonEnvelope caseListedInCcForReferToCourtEnvelope) {
@@ -47,9 +50,10 @@ public class CaseListedProcessor {
         LOGGER.info("Received  CaseListedInCcForReferToCourt for caseId {}", caseId);
 
         final PublicHearingResulted publicHearingResulted = sjpToHearingConverter.convertCaseDecisionInCcForReferToCourt(caseListedInCcForReferToCourtEnvelope);
+        ZoneId zoneId = ZoneId.of(LONDON_ZONE_ID);
         final Envelope<HearingResulted> publicHearingResultedEnvelope = envelop(hearingResulted()
                 .withHearing(publicHearingResulted.getHearing())
-                .withHearingDay(publicHearingResulted.getSharedTime().format(DATE_FORMAT))
+                .withHearingDay(publicHearingResulted.getSharedTime().withZoneSameInstant(zoneId).format(DATE_FORMAT))
                 .withSharedTime(publicHearingResulted.getSharedTime())
                 .withIsReshare(false)
                 .build())
@@ -60,7 +64,7 @@ public class CaseListedProcessor {
         final Envelope<HearingResulted> hearingResultedEnvelope = envelop(HearingResulted
                 .hearingResulted()
                 .withHearing(publicHearingResulted.getHearing())
-                .withHearingDay(publicHearingResulted.getSharedTime().format(DATE_FORMAT))
+                .withHearingDay(publicHearingResulted.getSharedTime().withZoneSameInstant(zoneId).format(DATE_FORMAT))
                 .withSharedTime(publicHearingResulted.getSharedTime())
                 .withIsReshare(false)
                 .build())

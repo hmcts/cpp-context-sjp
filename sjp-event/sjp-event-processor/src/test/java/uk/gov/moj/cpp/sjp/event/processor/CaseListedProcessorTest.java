@@ -154,6 +154,49 @@ public class CaseListedProcessorTest {
                         .withName(PUBLIC_EVENTS_HEARING_RESULTED));
     }
 
+    @Test
+    public void shouldHandleCaseListedInCCReferToCourtIfTheHearingDateInMidNight() {
+        final UUID caseId = randomUUID();
+
+        final JsonEnvelope privateEvent = createEnvelope(PRIVATE_CASE_LISTED_IN_REFER_TO_COURT_EVENT,
+                createObjectBuilder()
+                        .add(CASE_ID, caseId.toString())
+                        .add("courtCentre", createObjectBuilder()
+                                .add("id", "cf73207f-3ced-488a-82a0-3fba79c2ce04")
+                                .add("name", "Carmarthen Magistrates' Court")
+                                .add("roomId", "d7020fe0-cd97-4ce0-84c2-fd00ff0bc48a")
+                                .add("roomName", "JK2Y7hu0Tc")
+                                .add("welshName", "${welshName}")
+                                .add("welshRoomName", "hm60SAXokc")
+                                .add("roomId", "d7020fe0-cd97-4ce0-84c2-fd00ff0bc48a"))
+                        .add("hearingDays", populateCorrectedHearingDaysWithHearingDate())
+                        .add("jurisdictionType", "MAGISTRATES")
+                        .build());
+
+        when(sjpToHearingConverter.convertCaseDecisionInCcForReferToCourt(privateEvent)).thenReturn(publicHearingResultedPayload);
+        when(publicHearingResultedPayload.getSharedTime()).thenReturn(ZonedDateTime.parse("2026-06-30T23:55:03.166Z"));
+
+        caseListedProcessor.handleCaseListedInCCReferToCourt(privateEvent);
+
+        verify(sender, times(2)).send(jsonEnvelopeCaptor.capture());
+
+        final List<DefaultEnvelope> eventEnvelopes = jsonEnvelopeCaptor.getAllValues();
+        final Envelope<JsonValue> publicHearingResultedEvent = eventEnvelopes.get(0);
+
+        assertThat(publicHearingResultedEvent.metadata(),
+                withMetadataEnvelopedFrom(privateEvent)
+                        .withName(PUBLIC_EVENTS_HEARING_RESULTED));
+    }
+
+    private JsonArray populateCorrectedHearingDaysWithHearingDate() {
+        return createArrayBuilder()
+                .add(createObjectBuilder()
+                        .add("listedDurationMinutes", 1531791578)
+                        .add("listingSequence", 810249414)
+                        .add("sittingDay", "2026-06-30T23:55:03.166Z"))
+                .build();
+    }
+
     private JsonArray populateCorrectedHearingDays() {
         return createArrayBuilder()
                 .add(createObjectBuilder()

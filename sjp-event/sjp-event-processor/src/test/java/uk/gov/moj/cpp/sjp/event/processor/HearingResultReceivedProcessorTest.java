@@ -1,45 +1,15 @@
 package uk.gov.moj.cpp.sjp.event.processor;
 
-import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
-import static java.util.Collections.singletonList;
-import static java.util.UUID.randomUUID;
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.Matchers.allOf;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.atLeastOnce;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.verify;
-import static uk.gov.justice.core.courts.CourtApplication.courtApplication;
-import static uk.gov.justice.core.courts.Hearing.hearing;
-import static uk.gov.justice.json.schemas.domains.sjp.ApplicationStatus.APPLICATION_STATUS_NOT_KNOWN;
-import static uk.gov.justice.json.schemas.domains.sjp.results.PublicHearingResulted.publicHearingResulted;
-import static uk.gov.justice.services.core.annotation.Component.EVENT_PROCESSOR;
-import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
-import static uk.gov.justice.services.test.utils.core.matchers.HandlerClassMatcher.isHandlerClass;
-import static uk.gov.justice.services.test.utils.core.matchers.HandlerMethodMatcher.method;
-import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopePayloadMatcher.payloadIsJson;
-import static uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderFactory.metadataWithRandomUUID;
-import static uk.gov.justice.services.test.utils.core.reflection.ReflectionUtil.setField;
-import static uk.gov.moj.cpp.sjp.event.processor.utils.ApplicationResult.AACA;
-import static uk.gov.moj.cpp.sjp.event.processor.utils.ApplicationResult.AACD;
-import static uk.gov.moj.cpp.sjp.event.processor.utils.ApplicationResult.AASA;
-import static uk.gov.moj.cpp.sjp.event.processor.utils.ApplicationResult.AASD;
-import static uk.gov.moj.cpp.sjp.event.processor.utils.ApplicationResult.ACSD;
-import static uk.gov.moj.cpp.sjp.event.processor.utils.ApplicationResult.APA;
-import static uk.gov.moj.cpp.sjp.event.processor.utils.ApplicationResult.ASV;
-import static uk.gov.moj.cpp.sjp.event.processor.utils.ApplicationResult.AW;
-import static uk.gov.moj.cpp.sjp.event.processor.utils.ApplicationResult.G;
-import static uk.gov.moj.cpp.sjp.event.processor.utils.ApplicationResult.RFSD;
-import static uk.gov.moj.cpp.sjp.event.processor.utils.ApplicationResult.ROPENED;
-import static uk.gov.moj.cpp.sjp.event.processor.utils.ApplicationResult.STDEC;
-import static uk.gov.moj.cpp.sjp.event.processor.utils.ApplicationResult.WDRN;
-import static uk.gov.moj.cpp.sjp.event.processor.utils.SjpApplicationTypes.APPEAL_AGAINST_CONVICTION;
-import static uk.gov.moj.cpp.sjp.event.processor.utils.SjpApplicationTypes.APPEAL_AGAINST_SENTENCE;
-import static uk.gov.moj.cpp.sjp.event.processor.utils.SjpApplicationTypes.APPEAL_AGAINST_SENTENCE_AND_CONVICTION;
-import static uk.gov.moj.cpp.sjp.event.processor.utils.SjpApplicationTypes.APPEARANCE_TO_MAKE_STATUTORY_DECLARATION_SJP;
-import static uk.gov.moj.cpp.sjp.event.processor.utils.SjpApplicationTypes.APPLICATION_TO_REOPEN_CASE;
-
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.microsoft.applicationinsights.core.dependencies.apachecommons.lang3.StringUtils;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.justice.core.courts.CourtApplication;
 import uk.gov.justice.core.courts.CourtApplicationCase;
 import uk.gov.justice.core.courts.CourtApplicationType;
@@ -54,24 +24,59 @@ import uk.gov.justice.services.messaging.Envelope;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.sjp.event.CaseReceived;
 
+import javax.json.JsonArrayBuilder;
+import javax.json.JsonObjectBuilder;
+import javax.json.JsonValue;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.UUID;
 
-import javax.json.Json;
-import javax.json.JsonArrayBuilder;
-import javax.json.JsonObjectBuilder;
-import javax.json.JsonValue;
-
-import com.fasterxml.jackson.databind.ObjectMapper;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.ArgumentCaptor;
-import org.mockito.Captor;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
+import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
+import static java.util.Collections.singletonList;
+import static java.util.UUID.randomUUID;
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.allOf;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.atLeastOnce;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+import static uk.gov.justice.core.courts.CourtApplication.courtApplication;
+import static uk.gov.justice.core.courts.Hearing.hearing;
+import static uk.gov.justice.json.schemas.domains.sjp.ApplicationStatus.APPLICATION_STATUS_NOT_KNOWN;
+import static uk.gov.justice.json.schemas.domains.sjp.results.PublicHearingResulted.publicHearingResulted;
+import static uk.gov.justice.services.core.annotation.Component.EVENT_PROCESSOR;
+import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
+import static uk.gov.justice.services.messaging.JsonObjects.createArrayBuilder;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
+import static uk.gov.justice.services.test.utils.core.matchers.HandlerClassMatcher.isHandlerClass;
+import static uk.gov.justice.services.test.utils.core.matchers.HandlerMethodMatcher.method;
+import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopePayloadMatcher.payloadIsJson;
+import static uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderFactory.metadataWithRandomUUID;
+import static uk.gov.justice.services.test.utils.core.reflection.ReflectionUtil.setField;
+import static uk.gov.moj.cpp.sjp.event.processor.utils.ApplicationResult.AACA;
+import static uk.gov.moj.cpp.sjp.event.processor.utils.ApplicationResult.AACD;
+import static uk.gov.moj.cpp.sjp.event.processor.utils.ApplicationResult.AASA;
+import static uk.gov.moj.cpp.sjp.event.processor.utils.ApplicationResult.AASD;
+import static uk.gov.moj.cpp.sjp.event.processor.utils.ApplicationResult.ACSD;
+import static uk.gov.moj.cpp.sjp.event.processor.utils.ApplicationResult.APA;
+import static uk.gov.moj.cpp.sjp.event.processor.utils.ApplicationResult.ASV;
+import static uk.gov.moj.cpp.sjp.event.processor.utils.ApplicationResult.AW;
+import static uk.gov.moj.cpp.sjp.event.processor.utils.ApplicationResult.DISM;
+import static uk.gov.moj.cpp.sjp.event.processor.utils.ApplicationResult.G;
+import static uk.gov.moj.cpp.sjp.event.processor.utils.ApplicationResult.RFSD;
+import static uk.gov.moj.cpp.sjp.event.processor.utils.ApplicationResult.ROPENED;
+import static uk.gov.moj.cpp.sjp.event.processor.utils.ApplicationResult.STDEC;
+import static uk.gov.moj.cpp.sjp.event.processor.utils.ApplicationResult.WDRN;
+import static uk.gov.moj.cpp.sjp.event.processor.utils.SjpApplicationTypes.APPEAL_AGAINST_CONVICTION;
+import static uk.gov.moj.cpp.sjp.event.processor.utils.SjpApplicationTypes.APPEAL_AGAINST_CONVICTION_AND_SENTENCE_BY_MAGISTRATE_TO_CROWN_COURT;
+import static uk.gov.moj.cpp.sjp.event.processor.utils.SjpApplicationTypes.APPEAL_AGAINST_CONVICTION_BY_MAGISTRATE_TO_CROWN_COURT;
+import static uk.gov.moj.cpp.sjp.event.processor.utils.SjpApplicationTypes.APPEAL_AGAINST_SENTENCE;
+import static uk.gov.moj.cpp.sjp.event.processor.utils.SjpApplicationTypes.APPEAL_AGAINST_SENTENCE_AND_CONVICTION;
+import static uk.gov.moj.cpp.sjp.event.processor.utils.SjpApplicationTypes.APPEAL_AGAINST_SENTENCE_BY_MAGISTRATE_TO_CROWN_COURT;
+import static uk.gov.moj.cpp.sjp.event.processor.utils.SjpApplicationTypes.APPEARANCE_TO_MAKE_STATUTORY_DECLARATION_OTHER_THAN_SJP;
+import static uk.gov.moj.cpp.sjp.event.processor.utils.SjpApplicationTypes.APPEARANCE_TO_MAKE_STATUTORY_DECLARATION_SJP;
+import static uk.gov.moj.cpp.sjp.event.processor.utils.SjpApplicationTypes.APPLICATION_TO_REOPEN_CASE;
 
 @ExtendWith(MockitoExtension.class)
 public class HearingResultReceivedProcessorTest {
@@ -111,8 +116,8 @@ public class HearingResultReceivedProcessorTest {
                 .withProsecutionCaseId(caseId)
                 .build();
         CourtApplicationType courtApplicationType = new CourtApplicationType.Builder()
-                .withType(applicationType)
-
+                .withType(applicationType.startsWith("MC80") ? StringUtils.EMPTY : applicationType)
+                .withCode(applicationType.startsWith("MC80") ? applicationType : StringUtils.EMPTY)
                 .build();
         CourtApplication courtApplication = courtApplication()
                 .withId(randomUUID())
@@ -133,7 +138,6 @@ public class HearingResultReceivedProcessorTest {
                 objectToJsonObjectConverter.convert(publicHearingResulted));
         return hearingJsonEnvelope;
     }
-
 
     private void runTest(String applicationType, String resultDefinitionId, ApplicationStatus applicationStatus) {
         JsonEnvelope hearingJsonEnvelope = populateHearing(applicationType, caseId, true, resultDefinitionId);
@@ -258,9 +262,9 @@ public class HearingResultReceivedProcessorTest {
     @Test
     public void shouldHandleHearingResultReceivedWhenCourtApplicationsIsNotPresent() throws IOException {
 
-        JsonObjectBuilder hearingJsonBuilder = Json.createObjectBuilder();
+        JsonObjectBuilder hearingJsonBuilder = createObjectBuilder();
         hearingJsonBuilder.add("id", randomUUID().toString());
-        JsonObjectBuilder hearingEnvelopeJsonBuilder = Json.createObjectBuilder();
+        JsonObjectBuilder hearingEnvelopeJsonBuilder = createObjectBuilder();
         hearingEnvelopeJsonBuilder.add("hearing", hearingJsonBuilder);
 
         final JsonEnvelope hearingJsonEnvelope = envelopeFrom(metadataWithRandomUUID(HearingResultReceivedProcessor.PUBLIC_HEARING_RESULTED),
@@ -272,10 +276,10 @@ public class HearingResultReceivedProcessorTest {
     @Test
     public void shouldHandleHearingResultReceivedWhenCourtApplicationIsNotPresent() throws IOException {
 
-        JsonObjectBuilder courtApplicationJsonObjectBuilder = Json.createObjectBuilder();
-        JsonArrayBuilder courtApplications = Json.createArrayBuilder();
+        JsonObjectBuilder courtApplicationJsonObjectBuilder = createObjectBuilder();
+        JsonArrayBuilder courtApplications = createArrayBuilder();
         courtApplicationJsonObjectBuilder.add("courtApplications", courtApplications);
-        JsonObjectBuilder hearingJsonBuilder = Json.createObjectBuilder();
+        JsonObjectBuilder hearingJsonBuilder = createObjectBuilder();
         hearingJsonBuilder.add("hearing", courtApplicationJsonObjectBuilder);
 
         final JsonEnvelope hearingJsonEnvelope = envelopeFrom(metadataWithRandomUUID(HearingResultReceivedProcessor.PUBLIC_HEARING_RESULTED),
@@ -291,5 +295,63 @@ public class HearingResultReceivedProcessorTest {
                 .with(method("handleCaseReceivedEvent").thatHandles(CaseReceived.EVENT_NAME)));
     }
 
+    @Test
+    public void shouldHandleJudicialResultsMatchingApplicationCodeForStatDecApplication() throws IOException {
+
+        runTest(APPEARANCE_TO_MAKE_STATUTORY_DECLARATION_SJP.getApplicationCode(), G.getResultId(), ApplicationStatus.STATUTORY_DECLARATION_GRANTED);
+        runTest(APPEARANCE_TO_MAKE_STATUTORY_DECLARATION_SJP.getApplicationCode(), STDEC.getResultId(), ApplicationStatus.STATUTORY_DECLARATION_GRANTED);
+        runTest(APPEARANCE_TO_MAKE_STATUTORY_DECLARATION_SJP.getApplicationCode(), RFSD.getResultId(), ApplicationStatus.STATUTORY_DECLARATION_REFUSED);
+        runTest(APPEARANCE_TO_MAKE_STATUTORY_DECLARATION_SJP.getApplicationCode(), WDRN.getResultId(), ApplicationStatus.STATUTORY_DECLARATION_WITHDRAWN);
+
+        runTest(APPEARANCE_TO_MAKE_STATUTORY_DECLARATION_SJP.getApplicationCode(), G.getResultId(), ApplicationStatus.STATUTORY_DECLARATION_GRANTED);
+        runTest(APPEARANCE_TO_MAKE_STATUTORY_DECLARATION_SJP.getApplicationCode(), STDEC.getResultId(), ApplicationStatus.STATUTORY_DECLARATION_GRANTED);
+        runTest(APPEARANCE_TO_MAKE_STATUTORY_DECLARATION_SJP.getApplicationCode(), RFSD.getResultId(), ApplicationStatus.STATUTORY_DECLARATION_REFUSED);
+        runTest(APPEARANCE_TO_MAKE_STATUTORY_DECLARATION_SJP.getApplicationCode(), WDRN.getResultId(), ApplicationStatus.STATUTORY_DECLARATION_WITHDRAWN);
+
+        runTest(APPEARANCE_TO_MAKE_STATUTORY_DECLARATION_OTHER_THAN_SJP.getApplicationCode(), G.getResultId(), ApplicationStatus.STATUTORY_DECLARATION_GRANTED);
+        runTest(APPEARANCE_TO_MAKE_STATUTORY_DECLARATION_OTHER_THAN_SJP.getApplicationCode(), STDEC.getResultId(), ApplicationStatus.STATUTORY_DECLARATION_GRANTED);
+        runTest(APPEARANCE_TO_MAKE_STATUTORY_DECLARATION_OTHER_THAN_SJP.getApplicationCode(), RFSD.getResultId(), ApplicationStatus.STATUTORY_DECLARATION_REFUSED);
+        runTest(APPEARANCE_TO_MAKE_STATUTORY_DECLARATION_OTHER_THAN_SJP.getApplicationCode(), WDRN.getResultId(), ApplicationStatus.STATUTORY_DECLARATION_WITHDRAWN);
+    }
+
+    @Test
+    public void shouldHandleJudicialResultsMatchingApplicationCodeForAppealApplication() throws IOException {
+
+        runTest(APPEAL_AGAINST_SENTENCE_BY_MAGISTRATE_TO_CROWN_COURT.getApplicationCode(), AACA.getResultId(), ApplicationStatus.APPEAL_ALLOWED);
+        runTest(APPEAL_AGAINST_SENTENCE_BY_MAGISTRATE_TO_CROWN_COURT.getApplicationCode(), AASA.getResultId(), ApplicationStatus.APPEAL_ALLOWED);
+        runTest(APPEAL_AGAINST_SENTENCE_BY_MAGISTRATE_TO_CROWN_COURT.getApplicationCode(), AACD.getResultId(), ApplicationStatus.APPEAL_DISMISSED);
+        runTest(APPEAL_AGAINST_SENTENCE_BY_MAGISTRATE_TO_CROWN_COURT.getApplicationCode(), AASD.getResultId(), ApplicationStatus.APPEAL_DISMISSED);
+        runTest(APPEAL_AGAINST_SENTENCE_BY_MAGISTRATE_TO_CROWN_COURT.getApplicationCode(), ACSD.getResultId(), ApplicationStatus.APPEAL_DISMISSED);
+        runTest(APPEAL_AGAINST_SENTENCE_BY_MAGISTRATE_TO_CROWN_COURT.getApplicationCode(), DISM.getResultId(), ApplicationStatus.APPEAL_DISMISSED);
+        runTest(APPEAL_AGAINST_SENTENCE_BY_MAGISTRATE_TO_CROWN_COURT.getApplicationCode(), WDRN.getResultId(), ApplicationStatus.APPEAL_WITHDRAWN);
+        runTest(APPEAL_AGAINST_SENTENCE_BY_MAGISTRATE_TO_CROWN_COURT.getApplicationCode(), AW.getResultId(), ApplicationStatus.APPEAL_WITHDRAWN);
+
+        runTest(APPEAL_AGAINST_CONVICTION_AND_SENTENCE_BY_MAGISTRATE_TO_CROWN_COURT.getApplicationCode(), AACA.getResultId(), ApplicationStatus.APPEAL_ALLOWED);
+        runTest(APPEAL_AGAINST_CONVICTION_AND_SENTENCE_BY_MAGISTRATE_TO_CROWN_COURT.getApplicationCode(), AASA.getResultId(), ApplicationStatus.APPEAL_ALLOWED);
+        runTest(APPEAL_AGAINST_CONVICTION_AND_SENTENCE_BY_MAGISTRATE_TO_CROWN_COURT.getApplicationCode(), AACD.getResultId(), ApplicationStatus.APPEAL_DISMISSED);
+        runTest(APPEAL_AGAINST_CONVICTION_AND_SENTENCE_BY_MAGISTRATE_TO_CROWN_COURT.getApplicationCode(), AASD.getResultId(), ApplicationStatus.APPEAL_DISMISSED);
+        runTest(APPEAL_AGAINST_CONVICTION_AND_SENTENCE_BY_MAGISTRATE_TO_CROWN_COURT.getApplicationCode(), ACSD.getResultId(), ApplicationStatus.APPEAL_DISMISSED);
+        runTest(APPEAL_AGAINST_CONVICTION_AND_SENTENCE_BY_MAGISTRATE_TO_CROWN_COURT.getApplicationCode(), DISM.getResultId(), ApplicationStatus.APPEAL_DISMISSED);
+        runTest(APPEAL_AGAINST_CONVICTION_AND_SENTENCE_BY_MAGISTRATE_TO_CROWN_COURT.getApplicationCode(), WDRN.getResultId(), ApplicationStatus.APPEAL_WITHDRAWN);
+        runTest(APPEAL_AGAINST_CONVICTION_AND_SENTENCE_BY_MAGISTRATE_TO_CROWN_COURT.getApplicationCode(), AW.getResultId(), ApplicationStatus.APPEAL_WITHDRAWN);
+
+        runTest(APPEAL_AGAINST_CONVICTION_BY_MAGISTRATE_TO_CROWN_COURT.getApplicationCode(), AACA.getResultId(), ApplicationStatus.APPEAL_ALLOWED);
+        runTest(APPEAL_AGAINST_CONVICTION_BY_MAGISTRATE_TO_CROWN_COURT.getApplicationCode(), AASA.getResultId(), ApplicationStatus.APPEAL_ALLOWED);
+        runTest(APPEAL_AGAINST_CONVICTION_BY_MAGISTRATE_TO_CROWN_COURT.getApplicationCode(), AACD.getResultId(), ApplicationStatus.APPEAL_DISMISSED);
+        runTest(APPEAL_AGAINST_CONVICTION_BY_MAGISTRATE_TO_CROWN_COURT.getApplicationCode(), AASD.getResultId(), ApplicationStatus.APPEAL_DISMISSED);
+        runTest(APPEAL_AGAINST_CONVICTION_BY_MAGISTRATE_TO_CROWN_COURT.getApplicationCode(), ACSD.getResultId(), ApplicationStatus.APPEAL_DISMISSED);
+        runTest(APPEAL_AGAINST_CONVICTION_BY_MAGISTRATE_TO_CROWN_COURT.getApplicationCode(), DISM.getResultId(), ApplicationStatus.APPEAL_DISMISSED);
+        runTest(APPEAL_AGAINST_CONVICTION_BY_MAGISTRATE_TO_CROWN_COURT.getApplicationCode(), WDRN.getResultId(), ApplicationStatus.APPEAL_WITHDRAWN);
+        runTest(APPEAL_AGAINST_CONVICTION_BY_MAGISTRATE_TO_CROWN_COURT.getApplicationCode(), AW.getResultId(), ApplicationStatus.APPEAL_WITHDRAWN);
+    }
+
+    @Test
+    public void shouldHandleJudicialResultsMatchingApplicationCodeForReopenApplication() throws IOException {
+
+        runTest(APPLICATION_TO_REOPEN_CASE.getApplicationCode(), G.getResultId(), ApplicationStatus.REOPENING_GRANTED);
+        runTest(APPLICATION_TO_REOPEN_CASE.getApplicationCode(), ROPENED.getResultId(), ApplicationStatus.REOPENING_GRANTED);
+        runTest(APPLICATION_TO_REOPEN_CASE.getApplicationCode(), RFSD.getResultId(), ApplicationStatus.REOPENING_REFUSED);
+        runTest(APPLICATION_TO_REOPEN_CASE.getApplicationCode(), WDRN.getResultId(), ApplicationStatus.REOPENING_WITHDRAWN);
+    }
 
 }

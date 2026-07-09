@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+         http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.3.xsd">
+
+    <changeSet id="093" author="sevket.arisu"
+               logicalFilePath="liquibase/sjp-view-store-db-changelog.xml">
+        <sql>
+            CREATE INDEX IF NOT EXISTS defendant_correlation_id_idx ON defendant (correlation_id NULLS LAST);
+        </sql>
+
+        <rollback>
+            DROP INDEX IF EXISTS defendant_correlation_id_idx;
+        </rollback>
+    </changeSet>
+
+</databaseChangeLog>

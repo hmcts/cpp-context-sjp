@@ -12,7 +12,6 @@ import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.sjp.command.service.UserService;
 
 import javax.inject.Inject;
-import javax.json.Json;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
 
@@ -31,14 +30,14 @@ public class ApplicationDecisionController {
         final JsonObject userDetails = userService.getCallingUserDetails(commandEnvelope);
 
         final JsonObjectBuilder enrichedPayload = createObjectBuilder(payload)
-                .add("savedBy", Json.createObjectBuilder()
+                .add("savedBy", createObjectBuilder()
                         .add("userId", userDetails.getJsonString("userId"))
                         .add("firstName", userDetails.getString("firstName"))
                         .add("lastName", userDetails.getString("lastName")));
 
         sender.send(envelopeFrom(
                 metadataFrom(commandEnvelope.metadata())
-                .withName("sjp.command.handler.save-application-decision"),
+                        .withName("sjp.command.handler.save-application-decision"),
                 enrichedPayload.build())
         );
     }

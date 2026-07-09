@@ -11,9 +11,12 @@ public class UpdatedDefendantDetailsBuilder {
     private ZonedDateTime updateTime;
     private String region;
 
+    private String prosecutingAuthority;
+
     private UpdatedDefendantDetailsBuilder() {
         this.updateTime = ZonedDateTime.now();
         this.region = "region";
+        this.prosecutingAuthority = "TFL";
     }
 
     public static UpdatedDefendantDetailsBuilder anUpdatedDefendantDetails() {
@@ -30,6 +33,11 @@ public class UpdatedDefendantDetailsBuilder {
         return this;
     }
 
+    public UpdatedDefendantDetailsBuilder withProsecutingAuthority(final String prosecutingAuthority) {
+        this.prosecutingAuthority = prosecutingAuthority;
+        return this;
+    }
+
     public UpdatedDefendantDetails build() {
         return new UpdatedDefendantDetails(
                 "firstName",
@@ -42,6 +50,7 @@ public class UpdatedDefendantDetailsBuilder {
                 "caseUrn",
                 UUID.randomUUID(),
                 region,
-                null);
+                null,
+                prosecutingAuthority);
     }
 }

@@ -1,14 +1,14 @@
 package uk.gov.moj.cpp.sjp.command.handler;
 
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.core.AllOf.allOf;
-import static org.hamcrest.MatcherAssert.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMatcher.jsonEnvelope;
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMetadataMatcher.metadata;
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopePayloadMatcher.payloadIsJson;
@@ -44,8 +44,6 @@ import uk.gov.moj.cpp.sjp.event.CaseReopenedUpdated;
 import uk.gov.moj.cpp.sjp.event.CaseStatusChanged;
 
 import java.util.stream.Stream;
-
-import javax.json.Json;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -141,7 +139,7 @@ public class CaseReopenedHandlerTest {
         // when
         JsonEnvelope jsonEnvelope = JsonEnvelope.envelopeFrom(
                 MetadataBuilderFactory.metadataOf(CASE_ID, EventNamesHolder.CASE_REOPENED_UNDONE).build(),
-                Json.createObjectBuilder().add("caseId", CASE_ID.toString()).build());
+                createObjectBuilder().add("caseId", CASE_ID.toString()).build());
 
         caseReopenedHandler.undoCaseReopenedInLibra(jsonEnvelope);
 

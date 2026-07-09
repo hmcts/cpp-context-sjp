@@ -8,6 +8,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 import static uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderFactory.metadataWithRandomUUID;
 
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
@@ -15,7 +16,6 @@ import uk.gov.justice.services.common.util.Clock;
 import uk.gov.justice.services.common.util.UtcClock;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.test.utils.core.messaging.JsonEnvelopeBuilder;
-import uk.gov.moj.cpp.sjp.domain.Interpreter;
 import uk.gov.moj.cpp.sjp.event.InterpreterCancelledForDefendant;
 import uk.gov.moj.cpp.sjp.event.InterpreterUpdatedForDefendant;
 import uk.gov.moj.cpp.sjp.persistence.entity.CaseDetail;
@@ -27,8 +27,6 @@ import uk.gov.moj.cpp.sjp.persistence.repository.OnlinePleaRepository;
 
 import java.time.ZonedDateTime;
 import java.util.UUID;
-
-import javax.json.Json;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -87,7 +85,7 @@ public class InterpreterUpdatedListenerTest {
                 .with(metadataWithRandomUUID("sjp.events.interpreter-for-defendant-updated"))
                 .withPayloadOf(caseId, "caseId")
                 .withPayloadOf(defendantId, "defendantId").withPayloadOf(
-                        Json.createObjectBuilder().add("needed", true)
+                        createObjectBuilder().add("needed", true)
                                 .add("language", language).build(), "interpreter")
                 .build();
 

@@ -16,14 +16,18 @@ import org.hamcrest.Matcher;
 
 public class PendingDatesToAvoidPoller {
 
-    private static RequestParamsBuilder getDatesToAvoid(final String userId) {
+    private static RequestParamsBuilder getDatesToAvoid(final String userId, final String prosecutingAuthority) {
+        final String url = prosecutingAuthority != null ? "/cases/pending-dates-to-avoid?prosecutingAuthority="
+                + prosecutingAuthority : "/cases/pending-dates-to-avoid";
+
         final String contentType = "application/vnd.sjp.query.pending-dates-to-avoid+json";
-        return requestParams(getReadUrl("/cases/pending-dates-to-avoid"), contentType)
+        return requestParams(getReadUrl(url), contentType)
                 .withHeader(HeaderConstants.USER_ID, userId);
     }
 
-    public static JsonPath pollUntilPendingDatesToAvoidIsOk(final String userId, final Matcher<? super ReadContext> jsonPayloadMatcher) {
-        return new JsonPath(pollWithDefaults(getDatesToAvoid(userId))
+    public static JsonPath pollUntilPendingDatesToAvoidIsOk(final String userId, final Matcher<? super ReadContext> jsonPayloadMatcher,
+                                                            final String prosecutingAuthority) {
+        return new JsonPath(pollWithDefaults(getDatesToAvoid(userId, prosecutingAuthority))
                 .until(
                         status().is(OK),
                         payload().isJson(jsonPayloadMatcher)

@@ -4,16 +4,13 @@ import static java.math.BigDecimal.ONE;
 import static java.util.Optional.empty;
 import static java.util.Optional.of;
 import static java.util.UUID.randomUUID;
-import static javax.json.Json.createObjectBuilder;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static uk.gov.justice.services.test.utils.core.messaging.JsonEnvelopeBuilder.envelope;
-import static uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderFactory.metadataWithRandomUUID;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 import static uk.gov.moj.cpp.sjp.command.api.validator.decisionvalidator.FinancialPenaltyDecisionValidator.validateFinancialPenaltyDecision;
 
 import uk.gov.justice.services.adapter.rest.exception.BadRequestException;
-import uk.gov.justice.services.messaging.JsonEnvelope;
 
 import java.math.BigDecimal;
 import java.util.Optional;
@@ -21,9 +18,7 @@ import java.util.UUID;
 
 import javax.json.JsonObject;
 
-import org.junit.Rule;
 import org.junit.jupiter.api.Test;
-import org.junit.rules.ExpectedException;
 
 public class FinancialPenaltyDecisionValidatorTest {
 

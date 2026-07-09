@@ -174,4 +174,8 @@ public final class RuleConstants {
     public static List<String> getDeleteCaseDocumentActionGroups() {
         return asList(SECOND_LINE_SUPPORT);
     }
+
+    public static List<String> getCaseCompleteBdfGroups() {
+        return asList(GROUP_SYSTEM_USERS);
+    }
 }

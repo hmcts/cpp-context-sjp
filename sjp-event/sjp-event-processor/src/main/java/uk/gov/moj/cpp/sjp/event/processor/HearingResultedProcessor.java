@@ -5,6 +5,7 @@ import static org.apache.commons.collections.CollectionUtils.isEmpty;
 import static uk.gov.justice.services.core.annotation.Component.EVENT_PROCESSOR;
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
 import static uk.gov.justice.services.messaging.JsonEnvelope.metadataFrom;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 
 import uk.gov.justice.core.courts.CourtApplication;
 import uk.gov.justice.core.courts.CourtApplicationCase;
@@ -22,7 +23,6 @@ import java.util.Objects;
 import java.util.Optional;
 
 import javax.inject.Inject;
-import javax.json.Json;
 import javax.json.JsonObject;
 
 import org.slf4j.Logger;
@@ -52,9 +52,9 @@ public class HearingResultedProcessor {
             return;
         }
 
-        if (hearing.getProsecutionCases() != null && hearing.getProsecutionCases().stream().anyMatch(e-> Objects.nonNull(e.getMigrationSourceSystem()))){
+        if (hearing.getProsecutionCases() != null && hearing.getProsecutionCases().stream().anyMatch(e -> Objects.nonNull(e.getMigrationSourceSystem()))) {
             LOGGER.info("public.events.hearing.hearing-resulted has migrationsource system.  Hence ignoring");
-            return ;
+            return;
         }
 
         LOGGER.info("public.events.hearing.hearing-resulted processing start");
@@ -65,15 +65,16 @@ public class HearingResultedProcessor {
 
         hearing.getCourtApplications().stream().forEach(courtApplication -> {
             final String applicationType = courtApplication.getType().getType();
+            final String applicationCode = courtApplication.getType().getCode();
             final String applicationId = courtApplication.getId().toString();
-            if(courtApplication.getCourtApplicationCases() != null ) {
+            if(courtApplication.getCourtApplicationCases() != null && courtApplication.getJudicialResults() != null) {
                 courtApplication
                         .getCourtApplicationCases()
                         .stream()
                         .filter(CourtApplicationCase::getIsSJP)
                         .forEach(courtApplicationCase -> {
                             final String sjpCaseId = courtApplicationCase.getProsecutionCaseId().toString();
-                            final String applicationStatus = getApplicationStatus(courtApplication, applicationType);
+                            final String applicationStatus = getApplicationStatus(courtApplication, applicationType, applicationCode);
                             sendMessage(jsonEnvelope, applicationId, sjpCaseId, applicationStatus);
                         });
             }
@@ -82,7 +83,7 @@ public class HearingResultedProcessor {
     }
 
     private void sendMessage(final JsonEnvelope jsonEnvelope, final String applicationId, final String sjpCaseId, final String applicationStatus) {
-        final JsonObject applicationStatusPayload = Json.createObjectBuilder()
+        final JsonObject applicationStatusPayload = createObjectBuilder()
                 .add("caseId", sjpCaseId)
                 .add("applicationId", applicationId)
                 .add("applicationStatus", applicationStatus)
@@ -93,13 +94,13 @@ public class HearingResultedProcessor {
         sender.send(envelopeToSend);
     }
 
-    private String getApplicationStatus(final CourtApplication courtApplication, final String applicationType) {
+    private String getApplicationStatus(final CourtApplication courtApplication, final String applicationType, final String applicationCode) {
 
         final Optional<String> applicationStatus =
                 courtApplication
                         .getJudicialResults()
                         .stream()
-                        .map(judicialResult -> ApplicationResultStatusResolver.getApplicationStatus(applicationType, judicialResult.getJudicialResultTypeId()))
+                        .map(judicialResult -> ApplicationResultStatusResolver.getApplicationStatus(applicationType, judicialResult.getJudicialResultTypeId(), applicationCode))
                         .filter(Objects::nonNull)
                         .findFirst();
 

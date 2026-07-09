@@ -49,7 +49,8 @@ public class OffenceWithdrawalHandlerTest {
         final UUID offenceId = randomUUID();
         offenceWithdrawalDetails.add(new WithdrawalRequestsStatus(offenceId, withdrawalRequestReasonId));
         final ZonedDateTime now = ZonedDateTime.now();
-        final List<Object> eventList = offenceWithdrawalHandler.requestOffenceWithdrawal(caseID, user.getUserId(), now, offenceWithdrawalDetails, caseAggregateState, "ALL").collect(toList());
+        final List<Object> eventList = offenceWithdrawalHandler.requestOffenceWithdrawal(caseID, user.getUserId(), now, offenceWithdrawalDetails, caseAggregateState,
+                "ALL", new ArrayList<>()).collect(toList());
         final List<uk.gov.justice.json.schemas.fragments.sjp.WithdrawalRequestsStatus> offenceWithdrawalList = convertWtihdrawalRequestsStatus(offenceWithdrawalDetails);
         assertThat(eventList, containsInAnyOrder(new OffencesWithdrawalRequestsStatusSet(caseID, now, user.getUserId(), offenceWithdrawalList),
                 new OffenceWithdrawalRequested(caseID, offenceId, withdrawalRequestReasonId, user.getUserId(), now)));
@@ -61,7 +62,8 @@ public class OffenceWithdrawalHandlerTest {
         final UUID offenceId = randomUUID();
         final List<WithdrawalRequestsStatus> offenceWithdrawalDetails = newArrayList(new WithdrawalRequestsStatus(offenceId, withdrawalRequestReasonId));
         final ZonedDateTime now = ZonedDateTime.now();
-        final List<Object> eventList = offenceWithdrawalHandler.requestOffenceWithdrawal(caseID, user.getUserId(), now, offenceWithdrawalDetails, caseAggregateState, "ALL").collect(toList());
+        final List<Object> eventList = offenceWithdrawalHandler.requestOffenceWithdrawal(caseID, user.getUserId(), now, offenceWithdrawalDetails, caseAggregateState,
+                "ALL", new ArrayList<>()).collect(toList());
         assertThat(eventList, containsInAnyOrder(
                 new CaseUpdateRejected(caseID, CaseUpdateRejected.RejectReason.CASE_COMPLETED)
         ));
@@ -73,7 +75,8 @@ public class OffenceWithdrawalHandlerTest {
         final UUID offenceId = randomUUID();
         final List<WithdrawalRequestsStatus> offenceWithdrawalDetails = newArrayList(new WithdrawalRequestsStatus(offenceId, withdrawalRequestReasonId));
         final ZonedDateTime now = ZonedDateTime.now();
-        final List<Object> eventList = offenceWithdrawalHandler.requestOffenceWithdrawal(caseID, user.getUserId(), now, offenceWithdrawalDetails, caseAggregateState, "ALL").collect(toList());
+        final List<Object> eventList = offenceWithdrawalHandler.requestOffenceWithdrawal(caseID, user.getUserId(), now, offenceWithdrawalDetails, caseAggregateState,
+                "ALL", new ArrayList<>()).collect(toList());
         assertThat(eventList, containsInAnyOrder(
                 new CaseUpdateRejected(caseID, CaseUpdateRejected.RejectReason.CASE_ASSIGNED)
         ));
@@ -89,7 +92,8 @@ public class OffenceWithdrawalHandlerTest {
         final UUID offenceId_2 = randomUUID();
         offenceWithdrawalDetails.add(new WithdrawalRequestsStatus(offenceId_2, withdrawalRequestReasonId));
         final ZonedDateTime now = ZonedDateTime.now();
-        final List<Object> eventList = offenceWithdrawalHandler.requestOffenceWithdrawal(caseID, user.getUserId(), now, offenceWithdrawalDetails, caseAggregateState, "ALL").collect(toList());
+        final List<Object> eventList = offenceWithdrawalHandler.requestOffenceWithdrawal(caseID, user.getUserId(), now, offenceWithdrawalDetails, caseAggregateState,
+                "ALL", new ArrayList<>()).collect(toList());
         final List<uk.gov.justice.json.schemas.fragments.sjp.WithdrawalRequestsStatus> offenceWithdrawalList = convertWtihdrawalRequestsStatus(offenceWithdrawalDetails);
 
         assertThat(eventList, containsInAnyOrder(new OffencesWithdrawalRequestsStatusSet(caseID, now, user.getUserId(), offenceWithdrawalList),
@@ -105,7 +109,8 @@ public class OffenceWithdrawalHandlerTest {
 
         final List<WithdrawalRequestsStatus> offenceWithdrawalDetails = new ArrayList<>();
         final ZonedDateTime after2Days = ZonedDateTime.now().plusDays(2);
-        final List<Object> cancelEventList = offenceWithdrawalHandler.requestOffenceWithdrawal(caseID, user.getUserId(), after2Days, offenceWithdrawalDetails, caseAggregateState, "ALL").collect(toList());
+        final List<Object> cancelEventList = offenceWithdrawalHandler.requestOffenceWithdrawal(caseID, user.getUserId(), after2Days, offenceWithdrawalDetails, caseAggregateState,
+                "ALL", new ArrayList<>()).collect(toList());
 
         final List<uk.gov.justice.json.schemas.fragments.sjp.WithdrawalRequestsStatus> offenceWithdrawalList = convertWtihdrawalRequestsStatus(offenceWithdrawalDetails);
 
@@ -128,7 +133,8 @@ public class OffenceWithdrawalHandlerTest {
         offenceWithdrawalDetails.add(new WithdrawalRequestsStatus(offenceId, withdrawalRequestReasonId));
         offenceWithdrawalDetails.add(new WithdrawalRequestsStatus(offenceId_1, withdrawalRequestReasonId));
         final ZonedDateTime after2Days = ZonedDateTime.now().plusDays(2);
-        final List<Object> cancelEventList = offenceWithdrawalHandler.requestOffenceWithdrawal(caseID, user.getUserId(), after2Days, offenceWithdrawalDetails, caseAggregateState, "ALL").collect(toList());
+        final List<Object> cancelEventList = offenceWithdrawalHandler.requestOffenceWithdrawal(caseID, user.getUserId(), after2Days, offenceWithdrawalDetails, caseAggregateState,
+                "ALL", new ArrayList<>()).collect(toList());
         final List<uk.gov.justice.json.schemas.fragments.sjp.WithdrawalRequestsStatus> offenceWithdrawalList = convertWtihdrawalRequestsStatus(offenceWithdrawalDetails);
 
         assertThat(cancelEventList, containsInAnyOrder(new OffencesWithdrawalRequestsStatusSet(caseID, after2Days, user.getUserId(), offenceWithdrawalList),
@@ -145,7 +151,8 @@ public class OffenceWithdrawalHandlerTest {
         final List<WithdrawalRequestsStatus> offenceWithdrawalDetails = new ArrayList<>();
         offenceWithdrawalDetails.add(new WithdrawalRequestsStatus(offenceId, offenceNewWithdrawalRequestReasonId));
         final ZonedDateTime after2Days = ZonedDateTime.now().plusDays(2);
-         final List<Object> reasonChangedEventList = offenceWithdrawalHandler.requestOffenceWithdrawal(caseID, user.getUserId(), after2Days, offenceWithdrawalDetails, caseAggregateState, "ALL").collect(toList());
+         final List<Object> reasonChangedEventList = offenceWithdrawalHandler.requestOffenceWithdrawal(caseID, user.getUserId(), after2Days, offenceWithdrawalDetails, caseAggregateState,
+                 "ALL", new ArrayList<>()).collect(toList());
         final List<uk.gov.justice.json.schemas.fragments.sjp.WithdrawalRequestsStatus> offenceWithdrawalList = convertWtihdrawalRequestsStatus(offenceWithdrawalDetails);
 
         assertThat(reasonChangedEventList, containsInAnyOrder(new OffencesWithdrawalRequestsStatusSet(caseID, after2Days, user.getUserId(), offenceWithdrawalList),
@@ -164,7 +171,8 @@ public class OffenceWithdrawalHandlerTest {
         offenceWithdrawalDetails.add(new WithdrawalRequestsStatus(offenceId, offenceNewWithdrawalRequestReasonId));
         offenceWithdrawalDetails.add(new WithdrawalRequestsStatus(offenceId_1, offenceNewWithdrawalRequestReasonId));
         final ZonedDateTime after2Days = ZonedDateTime.now().plusDays(2);
-        final List<Object> reasonChangedEventList = offenceWithdrawalHandler.requestOffenceWithdrawal(caseID, user.getUserId(), after2Days, offenceWithdrawalDetails, caseAggregateState, "ALL").collect(toList());
+        final List<Object> reasonChangedEventList = offenceWithdrawalHandler.requestOffenceWithdrawal(caseID, user.getUserId(), after2Days, offenceWithdrawalDetails, caseAggregateState,
+                "ALL", new ArrayList<>()).collect(toList());
         final List<uk.gov.justice.json.schemas.fragments.sjp.WithdrawalRequestsStatus> offenceWithdrawalList = convertWtihdrawalRequestsStatus(offenceWithdrawalDetails);
 
         assertThat(reasonChangedEventList, containsInAnyOrder(new OffencesWithdrawalRequestsStatusSet(caseID, after2Days, user.getUserId(), offenceWithdrawalList),
@@ -189,7 +197,8 @@ public class OffenceWithdrawalHandlerTest {
         offenceWithdrawalDetails.add(new WithdrawalRequestsStatus(offenceId_1, offenceNewWithdrawalRequestReasonId));
         final ZonedDateTime after2Days = ZonedDateTime.now().plusDays(2);
 
-        final List<Object> eventList = offenceWithdrawalHandler.requestOffenceWithdrawal(caseID, user.getUserId(), after2Days, offenceWithdrawalDetails, caseAggregateState, "ALL").collect(toList());
+        final List<Object> eventList = offenceWithdrawalHandler.requestOffenceWithdrawal(caseID, user.getUserId(), after2Days, offenceWithdrawalDetails, caseAggregateState,
+                "ALL", new ArrayList<>()).collect(toList());
         final List<uk.gov.justice.json.schemas.fragments.sjp.WithdrawalRequestsStatus> offenceWithdrawalList = convertWtihdrawalRequestsStatus(offenceWithdrawalDetails);
 
         assertThat(eventList, containsInAnyOrder(new OffencesWithdrawalRequestsStatusSet(caseID, after2Days, user.getUserId(), offenceWithdrawalList),

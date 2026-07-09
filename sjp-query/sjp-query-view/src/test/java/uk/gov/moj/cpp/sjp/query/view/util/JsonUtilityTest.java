@@ -1,13 +1,14 @@
 package uk.gov.moj.cpp.sjp.query.view.util;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
+
+import javax.json.JsonObject;
+import javax.json.JsonValue;
+
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
-
-import javax.json.Json;
-import javax.json.JsonObject;
-import javax.json.JsonValue;
-import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @ExtendWith(MockitoExtension.class)
 public class JsonUtilityTest {
@@ -17,13 +18,13 @@ public class JsonUtilityTest {
     private static final String TO_DATE = "2017-08-15";
 
     private static JsonObject createPayload(final String key, final String value) {
-        return Json.createObjectBuilder()
+        return createObjectBuilder()
                 .add(key, value)
                 .build();
     }
 
     private static JsonObject createEmptyPayload() {
-        return Json.createObjectBuilder()
+        return createObjectBuilder()
                 .build();
     }
 
@@ -48,7 +49,7 @@ public class JsonUtilityTest {
 
     @Test
     public void shouldReturnEmptyStringForJsonNull() throws Exception {
-        final JsonObject jsonNull = Json.createObjectBuilder().add("id", JsonValue.NULL).build();
+        final JsonObject jsonNull = createObjectBuilder().add("id", JsonValue.NULL).build();
 
         final String result = JsonUtility.getString(jsonNull, "id");
 

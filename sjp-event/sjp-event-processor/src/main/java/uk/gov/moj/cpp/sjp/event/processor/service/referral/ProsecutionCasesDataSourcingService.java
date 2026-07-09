@@ -1,5 +1,8 @@
 package uk.gov.moj.cpp.sjp.event.processor.service.referral;
 
+import static java.util.Collections.emptyList;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
+
 import uk.gov.justice.json.schemas.domains.sjp.queries.CaseDecision;
 import uk.gov.justice.json.schemas.domains.sjp.queries.CaseDetails;
 import uk.gov.justice.json.schemas.domains.sjp.queries.Offence;
@@ -17,8 +20,6 @@ import uk.gov.moj.cpp.sjp.event.processor.service.SjpService;
 import uk.gov.moj.cpp.sjp.event.processor.service.referral.helpers.ProsecutionCasesViewHelper;
 import uk.gov.moj.cpp.sjp.model.prosecution.ProsecutionCaseView;
 
-import javax.inject.Inject;
-import javax.json.JsonObject;
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
 import java.util.HashMap;
@@ -30,8 +31,8 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-import static java.util.Collections.emptyList;
-import static javax.json.Json.createObjectBuilder;
+import javax.inject.Inject;
+import javax.json.JsonObject;
 
 @SuppressWarnings("squid:S107")
 public class ProsecutionCasesDataSourcingService {

@@ -1,7 +1,7 @@
 package uk.gov.moj.cpp.sjp.event.processor.activiti.delegates;
 
-import static javax.json.Json.createObjectBuilder;
 import static org.apache.commons.lang3.BooleanUtils.isTrue;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 import static uk.gov.moj.cpp.sjp.event.processor.EventProcessorConstants.CASE_ID;
 import static uk.gov.moj.cpp.sjp.event.processor.EventProcessorConstants.MARKED_AT;
 import static uk.gov.moj.cpp.sjp.event.processor.EventProcessorConstants.REASON;

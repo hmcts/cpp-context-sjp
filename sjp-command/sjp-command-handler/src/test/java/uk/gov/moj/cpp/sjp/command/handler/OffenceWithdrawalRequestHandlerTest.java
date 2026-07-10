@@ -116,6 +116,7 @@ public class OffenceWithdrawalRequestHandlerTest {
         final UUID offenceId_2 = randomUUID();
         final ZonedDateTime setAt = clock.now();
         final String prosecutionAuthority = "ALL";
+        final List<String> agentProsecutorAuthorityAccess = List.of("TFL", "TVL");
 
         final SetOffencesWithdrawalRequestsStatus requestsStatus = new SetOffencesWithdrawalRequestsStatus(caseId, requestPayload(offenceId_1, offenceId_2));
         final UUID userId = randomUUID();
@@ -125,6 +126,7 @@ public class OffenceWithdrawalRequestHandlerTest {
         when(aggregateService.get(eventStream, CaseAggregate.class)).thenReturn(caseAggregate);
         when(prosecutingAuthorityProvider.getCurrentUsersProsecutingAuthorityAccess(any())).thenReturn(prosecutingAuthorityAccess);
         when(prosecutingAuthorityAccess.getProsecutingAuthority()).thenReturn(prosecutionAuthority);
+        when(prosecutingAuthorityAccess.getAgentProsecutorAuthorityAccess()).thenReturn(agentProsecutorAuthorityAccess);
 
         final List<uk.gov.moj.cpp.sjp.domain.aggregate.state.WithdrawalRequestsStatus> offenceWithdrawalRequestsStatus =
                 requestsStatus.getWithdrawalRequestsStatus().stream()
@@ -134,7 +136,7 @@ public class OffenceWithdrawalRequestHandlerTest {
                         )
                         .collect(Collectors.toList());
 
-        when(caseAggregate.requestForOffenceWithdrawal(eq(requestsStatus.getCaseId()), eq(userId), eq(setAt), eq(offenceWithdrawalRequestsStatus), eq(prosecutionAuthority)))
+        when(caseAggregate.requestForOffenceWithdrawal(eq(requestsStatus.getCaseId()), eq(userId), eq(setAt), eq(offenceWithdrawalRequestsStatus), eq(prosecutionAuthority), eq(agentProsecutorAuthorityAccess)))
                 .thenReturn(Stream.of(new OffencesWithdrawalRequestsStatusSet(caseId, setAt, userId, requestPayload(offenceId_1, offenceId_2)),
                         new OffenceWithdrawalRequested(caseId, offenceId_1, withdrawalRequestReasonId, userId, setAt),
                         new OffenceWithdrawalRequested(caseId, offenceId_2, withdrawalRequestReasonId, userId, setAt)));

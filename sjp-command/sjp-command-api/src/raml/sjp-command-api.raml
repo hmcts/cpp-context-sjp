@@ -984,3 +984,29 @@ baseUri: http://localhost:8080/sjp-command-api/command/api/rest/sjp
           description: Accepted
         500:
           description: Internal Server Error
+
+
+/cases/{caseId}/complete-bdf:
+  uriParameters:
+    caseId:
+      description: Id of the case to complete
+      type: string
+  post:
+    description: |
+      decision
+      ...
+      (mapping):
+          requestType: application/vnd.sjp.case-complete-bdf+json
+          name: sjp.case-complete-bdf
+      ...
+    body:
+          application/vnd.sjp.case-complete-bdf+json:
+            example:
+              !include json/sjp.case-complete-bdf.json
+            schema:
+              !include json/schema/sjp.case-complete-bdf.json
+    responses:
+      500:
+        description: Internal Server Error
+      202:
+        description: Accepted

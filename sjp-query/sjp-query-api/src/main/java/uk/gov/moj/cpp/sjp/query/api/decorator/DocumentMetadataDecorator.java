@@ -2,6 +2,7 @@ package uk.gov.moj.cpp.sjp.query.api.decorator;
 
 import static java.util.UUID.fromString;
 import static org.slf4j.LoggerFactory.getLogger;
+import static uk.gov.justice.services.messaging.JsonObjects.createArrayBuilder;
 import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilderWithFilter;
 
@@ -13,7 +14,6 @@ import java.util.Optional;
 import java.util.UUID;
 
 import javax.inject.Inject;
-import javax.json.Json;
 import javax.json.JsonArrayBuilder;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
@@ -60,7 +60,7 @@ public class DocumentMetadataDecorator {
                 .getValuesAs(JsonObject.class)
                 .stream()
                 .map(caseDocument -> this.decorateDocumentPayload(caseDocument, requestEnvelope))
-                .reduce(Json.createArrayBuilder(), JsonArrayBuilder::add, JsonArrayBuilder::add);
+                .reduce(createArrayBuilder(), JsonArrayBuilder::add, JsonArrayBuilder::add);
 
         objectBuilder.add("caseDocuments", caseDocumentsDecorated);
         return objectBuilder.build();

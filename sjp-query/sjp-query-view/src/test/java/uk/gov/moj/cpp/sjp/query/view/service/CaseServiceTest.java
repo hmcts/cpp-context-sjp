@@ -8,8 +8,6 @@ import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
 import static java.util.Optional.of;
 import static java.util.UUID.randomUUID;
-import static javax.json.Json.createArrayBuilder;
-import static javax.json.Json.createObjectBuilder;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
@@ -18,12 +16,16 @@ import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.nullValue;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.fail;
+import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static uk.gov.justice.services.messaging.JsonObjects.createArrayBuilder;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 import static uk.gov.moj.cpp.sjp.domain.common.CaseManagementStatus.IN_PROGRESS;
 
 import uk.gov.justice.services.common.converter.ListToJsonArrayConverter;
@@ -720,12 +722,15 @@ public class CaseServiceTest {
         final String query = URN;
         final ProsecutingAuthorityAccess prosecutingAuthorityAccess = mock(ProsecutingAuthorityAccess.class);
         final String prosecutingAuthorityAccessFilterValue = "SOME_FILTER";
+        final List<String> agents = Arrays.asList("AGENT");
 
+        when(prosecutingAuthorityAccess.getAgentProsecutorAuthorityAccess())
+                .thenReturn(agents);
         when(prosecutingAuthorityProvider.getCurrentUsersProsecutingAuthorityAccess(envelope))
                 .thenReturn(prosecutingAuthorityAccess);
         when(prosecutingAuthorityAccessFilterConverter.convertToProsecutingAuthorityAccessFilter(prosecutingAuthorityAccess))
                 .thenReturn(prosecutingAuthorityAccessFilterValue);
-        when(caseSearchResultRepository.findByUrn(prosecutingAuthorityAccessFilterValue, query))
+        when(caseSearchResultRepository.findByUrn(prosecutingAuthorityAccessFilterValue, query, agents))
                 .thenReturn(singletonList(createCaseSearchResult()));
 
         final CaseSearchResultsView cases = service.searchCases(envelope, query);
@@ -740,15 +745,55 @@ public class CaseServiceTest {
         final String query = LAST_NAME;
         final ProsecutingAuthorityAccess prosecutingAuthorityAccess = mock(ProsecutingAuthorityAccess.class);
         final String prosecutingAuthorityAccessFilterValue = "SOME_FILTER";
+        final List<String> agents = Arrays.asList("AGENT");
 
+        when(prosecutingAuthorityAccess.getAgentProsecutorAuthorityAccess())
+                .thenReturn(agents);
         when(prosecutingAuthorityProvider.getCurrentUsersProsecutingAuthorityAccess(envelope))
                 .thenReturn(prosecutingAuthorityAccess);
         when(prosecutingAuthorityAccessFilterConverter.convertToProsecutingAuthorityAccessFilter(prosecutingAuthorityAccess))
                 .thenReturn(prosecutingAuthorityAccessFilterValue);
 
-        when(caseSearchResultRepository.findByUrn(prosecutingAuthorityAccessFilterValue, query))
+        when(caseSearchResultRepository.findByUrn(prosecutingAuthorityAccessFilterValue, query, agents))
                 .thenReturn(emptyList());
-        when(caseSearchResultRepository.findByLastName(prosecutingAuthorityAccessFilterValue, query))
+        when(caseSearchResultRepository.findByLastName(prosecutingAuthorityAccessFilterValue, query, agents))
+                .thenReturn(singletonList(createCaseSearchResult()));
+
+        final CaseSearchResultsView cases = service.searchCases(envelope, query);
+
+        verify(prosecutingAuthorityProvider).getCurrentUsersProsecutingAuthorityAccess(envelope);
+
+        final CaseSearchResultsView.CaseSearchResultView result = cases.getResults().get(0);
+        assertThat(result.getCaseId(), equalTo(CASE_ID));
+        assertThat(result.getUrn(), equalTo(URN));
+        assertThat(result.getEnterpriseId(), equalTo(ENTERPRISE_ID));
+        assertThat(result.getProsecutingAuthority(), equalTo(PROSECUTING_AUTHORITY));
+        assertThat(result.getPostingDate(), equalTo(POSTING_DATE));
+        assertThat(result.getStatus(), equalTo(CASE_STATUS_REFERRED_FOR_COURT_HEARING));
+        assertThat(result.getDefendant().getFirstName(), equalTo(FIRST_NAME));
+        assertThat(result.getDefendant().getLastName(), equalTo(LAST_NAME));
+        assertThat(result.getDefendant().getDateOfBirth(), equalTo(DATE_OF_BIRTH));
+    }
+
+    @Test
+    public void shouldSearchCasesByLegalEntityName() {
+        final String query = LAST_NAME;
+        final ProsecutingAuthorityAccess prosecutingAuthorityAccess = mock(ProsecutingAuthorityAccess.class);
+        final String prosecutingAuthorityAccessFilterValue = "SOME_FILTER";
+        final List<String> agents = new ArrayList<>();
+
+        when(prosecutingAuthorityAccess.getAgentProsecutorAuthorityAccess())
+                .thenReturn(agents);
+        when(prosecutingAuthorityProvider.getCurrentUsersProsecutingAuthorityAccess(envelope))
+                .thenReturn(prosecutingAuthorityAccess);
+        when(prosecutingAuthorityAccessFilterConverter.convertToProsecutingAuthorityAccessFilter(prosecutingAuthorityAccess))
+                .thenReturn(prosecutingAuthorityAccessFilterValue);
+
+        when(caseSearchResultRepository.findByUrn(anyString(), anyString(), anyList()))
+                .thenReturn(emptyList());
+        when(caseSearchResultRepository.findByLastName(anyString(), anyString(), anyList()))
+                .thenReturn(emptyList());
+        when(caseSearchResultRepository.findByLegalEntityName(anyString(), anyString(), anyList()))
                 .thenReturn(singletonList(createCaseSearchResult()));
 
         final CaseSearchResultsView cases = service.searchCases(envelope, query);

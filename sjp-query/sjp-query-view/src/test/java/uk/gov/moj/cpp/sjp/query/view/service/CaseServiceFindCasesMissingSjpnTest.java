@@ -9,6 +9,8 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.hasSize;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.anyList;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -22,6 +24,7 @@ import uk.gov.moj.cpp.sjp.query.view.converter.ProsecutingAuthorityAccessFilterC
 import uk.gov.moj.cpp.sjp.query.view.response.CasesMissingSjpnView;
 
 import java.time.LocalDate;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
@@ -39,6 +42,8 @@ public class CaseServiceFindCasesMissingSjpnTest {
     private static final LocalDate NOW = LocalDate.now();
     private static final int COUNT = 10;
     private static final String TVL_FILTER_VALUE = "TVL";
+
+    private static final List<String> AGENT_FILTER_VALUE = Arrays.asList("TFL", "XYZ");
     private List<CaseDetail> caseDetails;
     @Mock
     private QueryResult queryResult;
@@ -66,8 +71,10 @@ public class CaseServiceFindCasesMissingSjpnTest {
     public void shouldFindAllCasesMissingSjpn() {
 
         when(queryResult.getResultList()).thenReturn(caseDetails);
-        when(caseRepository.findCasesMissingSjpn(TVL_FILTER_VALUE)).thenReturn(queryResult);
-        when(caseRepository.countCasesMissingSjpn(TVL_FILTER_VALUE)).thenReturn(COUNT);
+        when(caseRepository.findCasesMissingSjpn(eq(TVL_FILTER_VALUE), anyList()))
+                .thenReturn(queryResult);
+        when(caseRepository.countCasesMissingSjpn(eq(TVL_FILTER_VALUE), anyList()))
+                .thenReturn(COUNT);
 
         final CasesMissingSjpnView casesMissingSjpnView = service.findCasesMissingSjpn(envelope, empty(), empty());
 
@@ -81,8 +88,8 @@ public class CaseServiceFindCasesMissingSjpnTest {
     public void shouldFindCasesMissingSjpnLimitedByPostingDate() {
 
         when(queryResult.getResultList()).thenReturn(caseDetails);
-        when(caseRepository.findCasesMissingSjpn(TVL_FILTER_VALUE, NOW)).thenReturn(queryResult);
-        when(caseRepository.countCasesMissingSjpn(TVL_FILTER_VALUE, NOW)).thenReturn(COUNT);
+        when(caseRepository.findCasesMissingSjpn(TVL_FILTER_VALUE, NOW, AGENT_FILTER_VALUE)).thenReturn(queryResult);
+        when(caseRepository.countCasesMissingSjpn(TVL_FILTER_VALUE, NOW, AGENT_FILTER_VALUE)).thenReturn(COUNT);
 
         final CasesMissingSjpnView casesMissingSjpnView = service.findCasesMissingSjpn(envelope, empty(), Optional.of(NOW));
 
@@ -96,12 +103,12 @@ public class CaseServiceFindCasesMissingSjpnTest {
     public void shouldReturnEmptyListWhenLimitIsZero() {
         final int limit = 0;
 
-        when(caseRepository.countCasesMissingSjpn(TVL_FILTER_VALUE)).thenReturn(COUNT);
+        when(caseRepository.countCasesMissingSjpn(TVL_FILTER_VALUE, AGENT_FILTER_VALUE)).thenReturn(COUNT);
 
         final CasesMissingSjpnView casesMissingSjpnView = service.findCasesMissingSjpn(envelope, Optional.of(limit), empty());
 
-        verify(caseRepository, never()).findCasesMissingSjpn(any(String.class));
-        verify(caseRepository, never()).findCasesMissingSjpn(any(String.class), any(LocalDate.class));
+        verify(caseRepository, never()).findCasesMissingSjpn(any(String.class), any(List.class));
+        verify(caseRepository, never()).findCasesMissingSjpn(any(String.class), any(LocalDate.class), any(List.class));
         verify(queryResult, never()).maxResults(anyInt());
 
         assertThat(casesMissingSjpnView.ids, hasSize(0));
@@ -114,12 +121,12 @@ public class CaseServiceFindCasesMissingSjpnTest {
 
         when(queryResult.getResultList()).thenReturn(caseDetails);
         when(queryResult.maxResults(anyInt())).thenReturn(queryResult);
-        when(caseRepository.findCasesMissingSjpn(TVL_FILTER_VALUE)).thenReturn(queryResult);
-        when(caseRepository.countCasesMissingSjpn(TVL_FILTER_VALUE)).thenReturn(COUNT);
+        when(caseRepository.findCasesMissingSjpn(eq(TVL_FILTER_VALUE), anyList())).thenReturn(queryResult);
+        when(caseRepository.countCasesMissingSjpn(eq(TVL_FILTER_VALUE), anyList())).thenReturn(COUNT);
 
         final CasesMissingSjpnView casesMissingSjpnView = service.findCasesMissingSjpn(envelope, Optional.of(limit), empty());
 
-        verify(caseRepository).findCasesMissingSjpn(TVL_FILTER_VALUE);
+        verify(caseRepository).findCasesMissingSjpn(TVL_FILTER_VALUE, AGENT_FILTER_VALUE);
         verify(queryResult).maxResults(limit);
 
         assertThat(casesMissingSjpnView.ids, equalTo(extractCaseIds(caseDetails)));
@@ -132,12 +139,12 @@ public class CaseServiceFindCasesMissingSjpnTest {
 
         when(queryResult.getResultList()).thenReturn(caseDetails);
         when(queryResult.maxResults(anyInt())).thenReturn(queryResult);
-        when(caseRepository.findCasesMissingSjpn(TVL_FILTER_VALUE, NOW)).thenReturn(queryResult);
-        when(caseRepository.countCasesMissingSjpn(TVL_FILTER_VALUE, NOW)).thenReturn(COUNT);
+        when(caseRepository.findCasesMissingSjpn(TVL_FILTER_VALUE, NOW, AGENT_FILTER_VALUE)).thenReturn(queryResult);
+        when(caseRepository.countCasesMissingSjpn(TVL_FILTER_VALUE, NOW, AGENT_FILTER_VALUE)).thenReturn(COUNT);
 
         final CasesMissingSjpnView casesMissingSjpnView = service.findCasesMissingSjpn(envelope, Optional.of(limit), Optional.of(NOW));
 
-        verify(caseRepository).findCasesMissingSjpn(TVL_FILTER_VALUE, NOW);
+        verify(caseRepository).findCasesMissingSjpn(TVL_FILTER_VALUE, NOW, AGENT_FILTER_VALUE);
         verify(queryResult).maxResults(limit);
 
         assertThat(casesMissingSjpnView.ids, equalTo(extractCaseIds(caseDetails)));
@@ -145,11 +152,11 @@ public class CaseServiceFindCasesMissingSjpnTest {
     }
 
     private void mockProsecutingAuthorityAccess() {
-
         when(prosecutingAuthorityProvider.getCurrentUsersProsecutingAuthorityAccess(envelope))
                 .thenReturn(prosecutingAuthorityAccess);
         when(prosecutingAuthorityAccessFilterConverter.convertToProsecutingAuthorityAccessFilter(prosecutingAuthorityAccess))
                 .thenReturn(TVL_FILTER_VALUE);
+        when(prosecutingAuthorityAccess.getAgentProsecutorAuthorityAccess()).thenReturn(AGENT_FILTER_VALUE);
     }
 
     private CaseDetail createCaseDetails() {

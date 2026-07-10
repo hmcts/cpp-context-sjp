@@ -2,10 +2,10 @@ package uk.gov.moj.cpp.sjp.event.processor.service.enforcementnotification;
 
 import static java.lang.String.format;
 import static java.util.Objects.nonNull;
-import static javax.json.Json.createObjectBuilder;
 import static org.apache.commons.collections.CollectionUtils.isNotEmpty;
 import static uk.gov.justice.json.schemas.domains.sjp.ApplicationType.REOPENING;
 import static uk.gov.justice.json.schemas.domains.sjp.ApplicationType.STAT_DEC;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 import static uk.gov.moj.cpp.sjp.event.processor.helper.JsonObjectConversionHelper.jsonObjectAsByteArray;
 
 import uk.gov.justice.json.schemas.domains.sjp.ApplicationType;

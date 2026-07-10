@@ -1,8 +1,8 @@
 package uk.gov.moj.cpp.sjp.query.view.converter;
 
-import static javax.json.Json.createObjectBuilder;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.mockito.Mockito.when;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 import static uk.gov.moj.cpp.sjp.query.view.converter.ResultCode.D45;
 import static uk.gov.moj.cpp.sjp.query.view.converter.ResultCode.DPR;
 import static uk.gov.moj.cpp.sjp.query.view.util.results.ResultsMatchers.D45;
@@ -12,7 +12,6 @@ import uk.gov.moj.cpp.sjp.query.view.service.CachedReferenceData;
 
 import javax.json.JsonObject;
 
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;

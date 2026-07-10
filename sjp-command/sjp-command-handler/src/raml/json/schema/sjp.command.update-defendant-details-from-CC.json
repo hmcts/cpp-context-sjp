@@ -73,8 +73,7 @@
       },
       "required": [
         "name",
-        "address",
-        "contactDetails"
+        "address"
       ],
       "additionalProperties": false
     }

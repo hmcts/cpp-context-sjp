@@ -2,10 +2,10 @@ package uk.gov.moj.cpp.sjp.query.view.service;
 
 import static java.util.Optional.ofNullable;
 import static java.util.UUID.randomUUID;
-import static javax.json.Json.createObjectBuilder;
 import static uk.gov.justice.services.core.annotation.Component.QUERY_VIEW;
 import static uk.gov.justice.services.messaging.Envelope.metadataBuilder;
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 
 import uk.gov.justice.services.core.annotation.ServiceComponent;
 import uk.gov.justice.services.core.enveloper.Enveloper;
@@ -60,7 +60,11 @@ public class ProgressionService {
                                                  withName(PROGRESSION_CASE_QUERY), requestPayload);
         final JsonEnvelope jsonResultEnvelope = requester.requestAsAdmin(requestEnvelope);
 
-        return ofNullable(jsonResultEnvelope.payloadAsJsonObject());
+        if (!jsonResultEnvelope.payloadIsNull()){
+            return ofNullable(jsonResultEnvelope.payloadAsJsonObject());
+        } else {
+            return Optional.empty();
+        }
     }
 
     public List<String> findDefendantOffences(UUID caseId, DefendantDetail defendant) {

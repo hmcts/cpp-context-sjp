@@ -3,9 +3,9 @@ package uk.gov.moj.cpp.sjp.query.view.service;
 import static java.lang.String.format;
 import static java.util.Objects.nonNull;
 import static java.util.Optional.of;
-import static javax.json.Json.createArrayBuilder;
-import static javax.json.Json.createObjectBuilder;
 import static org.slf4j.LoggerFactory.getLogger;
+import static uk.gov.justice.services.messaging.JsonObjects.createArrayBuilder;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 import static uk.gov.moj.cpp.sjp.query.view.converter.ResultCode.RSJP;
 import static uk.gov.moj.cpp.sjp.query.view.util.CaseResultsConstants.VERDICT;
 

@@ -62,6 +62,7 @@ import uk.gov.moj.cpp.sjp.domain.aggregate.state.CaseAggregateState;
 import uk.gov.moj.cpp.sjp.domain.aggregate.state.WithdrawalRequestsStatus;
 import uk.gov.moj.cpp.sjp.domain.common.CaseManagementStatus;
 import uk.gov.moj.cpp.sjp.domain.common.CaseState;
+import uk.gov.moj.cpp.sjp.domain.common.CaseStatus;
 import uk.gov.moj.cpp.sjp.domain.decision.AocpDecision;
 import uk.gov.moj.cpp.sjp.domain.decision.Decision;
 import uk.gov.moj.cpp.sjp.domain.onlineplea.PleadAocpOnline;
@@ -71,6 +72,8 @@ import uk.gov.moj.cpp.sjp.domain.plea.PleaMethod;
 import uk.gov.moj.cpp.sjp.domain.plea.SetPleas;
 import uk.gov.moj.cpp.sjp.event.ApplicationResultsRecorded;
 import uk.gov.moj.cpp.sjp.event.CCApplicationStatusCreated;
+import uk.gov.moj.cpp.sjp.event.CaseCompleted;
+import uk.gov.moj.cpp.sjp.event.CaseStatusChanged;
 import uk.gov.moj.cpp.sjp.event.CaseListedInCriminalCourtsUpdated;
 
 import javax.json.JsonObject;
@@ -82,7 +85,6 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Supplier;
-import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -224,8 +226,8 @@ public class CaseAggregate implements Aggregate {
         return apply(CaseLanguageHandler.INSTANCE.updateHearingRequirements(userId, defendantId, interpreterLanguage, speakWelsh, state, pleaMethod, createdOn));
     }
 
-    public Stream<Object> addDatesToAvoid(final String datesToAvoid, final String userProsecutingAuthority) {
-        return applyAndResolveCaseReadiness(() -> CaseCoreHandler.INSTANCE.addDatesToAvoid(datesToAvoid, state, userProsecutingAuthority));
+    public Stream<Object> addDatesToAvoid(final String datesToAvoid, final String userProsecutingAuthority, final List<String> agentProsecutorAuthorityAccess) {
+        return applyAndResolveCaseReadiness(() -> CaseCoreHandler.INSTANCE.addDatesToAvoid(datesToAvoid, state, userProsecutingAuthority, agentProsecutorAuthorityAccess));
     }
 
     public Stream<Object> expireDefendantResponseTimer() {
@@ -259,9 +261,10 @@ public class CaseAggregate implements Aggregate {
     public Stream<Object> acknowledgeDefendantDetailsUpdates(
             final UUID defendantId,
             final ZonedDateTime acknowledgedAt,
-            final String userProsecutingAuthority) {
+            final String userProsecutingAuthority,
+            final List<String> agentProsecutorAuthorityAccess) {
 
-        return apply(CaseDefendantHandler.INSTANCE.acknowledgeDefendantDetailsUpdates(defendantId, acknowledgedAt, state, userProsecutingAuthority));
+        return apply(CaseDefendantHandler.INSTANCE.acknowledgeDefendantDetailsUpdates(defendantId, acknowledgedAt, state, userProsecutingAuthority, agentProsecutorAuthorityAccess));
     }
 
     public Stream<Object> updateDefendantDetails(final UUID userId,
@@ -369,8 +372,10 @@ public class CaseAggregate implements Aggregate {
                 state));
     }
 
-    public Stream<Object> requestForOffenceWithdrawal(final UUID caseId, final UUID setBy, final ZonedDateTime setAt, final List<WithdrawalRequestsStatus> withdrawalRequestsStatus, final String prosecutionAuthority) {
-        return applyAndResolveCaseReadiness(() -> OffenceWithdrawalHandler.INSTANCE.requestOffenceWithdrawal(caseId, setBy, setAt, withdrawalRequestsStatus, state, prosecutionAuthority));
+    public Stream<Object> requestForOffenceWithdrawal(final UUID caseId, final UUID setBy, final ZonedDateTime setAt, final List<WithdrawalRequestsStatus> withdrawalRequestsStatus,
+                                                      final String prosecutionAuthority, final List<String> agentProsecutorAuthorityAccess) {
+        return applyAndResolveCaseReadiness(() -> OffenceWithdrawalHandler.INSTANCE.requestOffenceWithdrawal(caseId, setBy, setAt, withdrawalRequestsStatus, state,
+                prosecutionAuthority, agentProsecutorAuthorityAccess));
     }
 
     public Stream<Object> setPleas(final UUID caseId, final SetPleas pleas, final UUID userId, final ZonedDateTime pleadAt) {
@@ -561,5 +566,12 @@ public class CaseAggregate implements Aggregate {
 
     public Stream<Object> updateOffenceCode(final UUID caseId, final String offenceCode) {
         return UpdateOffenceCodeHandler.INSTANCE.updateOffenceCode(getState(), caseId, offenceCode);
+    }
+
+    public Stream<Object> caseCompletedBdf() {
+        final Stream.Builder<Object> streamBuilder = Stream.builder();
+        return apply(streamBuilder.add(new CaseCompleted(state.getCaseId(), state.getSessionIds()))
+                .add(new CaseStatusChanged(state.getCaseId(), CaseStatus.COMPLETED))
+                .build());
     }
 }

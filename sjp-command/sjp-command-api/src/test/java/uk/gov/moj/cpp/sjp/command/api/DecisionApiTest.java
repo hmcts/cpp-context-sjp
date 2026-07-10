@@ -8,8 +8,6 @@ import static java.time.LocalDate.now;
 import static java.util.Objects.nonNull;
 import static java.util.Optional.ofNullable;
 import static java.util.UUID.randomUUID;
-import static javax.json.Json.createArrayBuilder;
-import static javax.json.Json.createObjectBuilder;
 import static org.hamcrest.CoreMatchers.allOf;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
@@ -20,6 +18,8 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.justice.services.core.annotation.Component.COMMAND_API;
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
+import static uk.gov.justice.services.messaging.JsonObjects.createArrayBuilder;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 import static uk.gov.justice.services.test.utils.core.matchers.HandlerClassMatcher.isHandlerClass;
 import static uk.gov.justice.services.test.utils.core.matchers.HandlerMethodMatcher.method;
 import static uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderFactory.metadataWithRandomUUID;
@@ -423,6 +423,28 @@ public class DecisionApiTest {
         assertThat(envelopeCaptor.getValue().payload().toString(), isJson(
                 withJsonPath("$.offenceDecisions[0].nextHearing.courtScheduleId", is(courtScheduleId.toString()))
         ));
+    }
+
+
+    @Test
+    void shouldCompleteCaseViaBdf() {
+        final UUID caseId = randomUUID();
+        final JsonEnvelope envelope = createCaseCompleteBdfPayload(caseId);
+        decisionApi.caseCompleteBdf(envelope);
+        verify(sender).send(envelopeCaptor.capture());
+        final Envelope sentEnvelope = envelopeCaptor.getValue();
+        assertThat(sentEnvelope.metadata().name(), is("sjp.command.case-complete-bdf"));
+        assertThat(sentEnvelope.payload().toString(), isJson(
+                allOf(
+                        withJsonPath("$.caseId", is(caseId.toString()))
+                )
+        ));
+    }
+
+    private JsonEnvelope createCaseCompleteBdfPayload(final UUID caseId) {
+        final JsonObjectBuilder applicationBuilder = createObjectBuilder()
+                .add("caseId", caseId.toString());
+        return envelopeFrom(metadataWithRandomUUID("sjp.command.case-complete-bdf"), applicationBuilder.build());
     }
 
     private JsonEnvelope createApplicationDecisionCommand(final boolean granted, final String rejectionReason,

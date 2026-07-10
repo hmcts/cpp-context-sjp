@@ -1,18 +1,21 @@
 package uk.gov.moj.sjp.it.test;
 
-import static java.time.LocalDate.*;
+import static java.time.LocalDate.of;
 import static java.util.UUID.randomUUID;
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static uk.gov.justice.services.messaging.JsonObjects.createReader;
 import static uk.gov.moj.sjp.it.command.CreateCase.CreateCasePayloadBuilder.defaultCaseBuilder;
 import static uk.gov.moj.sjp.it.command.CreateCase.createCaseForPayloadBuilder;
 import static uk.gov.moj.sjp.it.model.ProsecutingAuthority.TFL;
 import static uk.gov.moj.sjp.it.pollingquery.CasePoller.pollForCase;
+import static uk.gov.moj.sjp.it.pollingquery.CasePoller.pollUntilCaseByIdIsOk;
 import static uk.gov.moj.sjp.it.pollingquery.CasePoller.pollUntilPotentialCasesByDefendantIdIsOk;
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubProsecutorQuery;
 import static uk.gov.moj.sjp.it.stub.UnifiedSearchStub.stubUnifiedSearchQueryForCases;
 
+import org.junit.jupiter.api.Disabled;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.sjp.event.CaseReceived;
 import uk.gov.moj.sjp.it.command.CreateCase;
@@ -24,7 +27,6 @@ import java.time.LocalDate;
 import java.util.Optional;
 import java.util.UUID;
 
-import uk.gov.justice.services.messaging.JsonObjects;
 import javax.json.JsonArray;
 import javax.json.JsonObject;
 
@@ -64,7 +66,7 @@ public class DefendantPotentialCaseIT extends BaseIntegrationTest {
     }
 
     @Test
-    public void shouldFindPotentialCases() {
+    public void shouldFindPotentialCases(){
         UUID caseId = randomCaseId;
         UUID defendantId = randomUUID();
 
@@ -80,6 +82,8 @@ public class DefendantPotentialCaseIT extends BaseIntegrationTest {
                 .run(() -> createCaseForPayloadBuilder(createCase))
                 .popEvent(CaseReceived.EVENT_NAME);
         assertTrue(caseReceivedEvent.isPresent());
+
+        pollUntilCaseByIdIsOk(caseId);
 
         final String potentialCasesResponsePayload = pollUntilPotentialCasesByDefendantIdIsOk(defendantId);
         final JsonObject potentialCases = responseToJsonObject(potentialCasesResponsePayload);
@@ -108,6 +112,6 @@ public class DefendantPotentialCaseIT extends BaseIntegrationTest {
     }
 
     private JsonObject responseToJsonObject(String response) {
-        return JsonObjects.createReader(new StringReader(response)).readObject();
+        return createReader(new StringReader(response)).readObject();
     }
 }

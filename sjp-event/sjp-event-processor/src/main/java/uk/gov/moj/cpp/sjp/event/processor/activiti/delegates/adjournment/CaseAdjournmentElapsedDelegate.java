@@ -1,6 +1,6 @@
 package uk.gov.moj.cpp.sjp.event.processor.activiti.delegates.adjournment;
 
-import static javax.json.Json.createObjectBuilder;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 import static uk.gov.moj.cpp.sjp.event.processor.activiti.CaseStateService.CASE_ADJOURNED_VARIABLE;
 
 import uk.gov.justice.services.messaging.Metadata;

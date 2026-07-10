@@ -13,6 +13,7 @@ import java.math.BigDecimal;
 import java.util.HashMap;
 import java.util.UUID;
 
+import javax.json.Json;
 import javax.json.JsonObject;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -33,7 +34,7 @@ public class JudicialResultHelperTest {
     @Test
     public void shouldPopulatePromptDefinitionAttributesForYearsDuration() {
         final JudicialResultPrompt.Builder builder = JudicialResultHelper.populatePromptDefinitionAttributesBasedOnDuration(
-                DDP_DISQUALIFICATION_PERIOD, resultDefinition, "Year(s)");
+                DDP_DISQUALIFICATION_PERIOD, resultDefinition, "Years");
 
         final JudicialResultPrompt prompt = builder.build();
 
@@ -51,7 +52,7 @@ public class JudicialResultHelperTest {
     @Test
     public void shouldPopulatePromptDefinitionAttributesForMonthsDuration() {
         final JudicialResultPrompt.Builder builder = JudicialResultHelper.populatePromptDefinitionAttributesBasedOnDuration(
-                DDP_DISQUALIFICATION_PERIOD, resultDefinition, "MONTH");
+                DDP_DISQUALIFICATION_PERIOD, resultDefinition, "Months");
 
         final JudicialResultPrompt prompt = builder.build();
 
@@ -69,7 +70,7 @@ public class JudicialResultHelperTest {
     @Test
     public void shouldPopulatePromptDefinitionAttributesForDaysDuration() {
         final JudicialResultPrompt.Builder builder = JudicialResultHelper.populatePromptDefinitionAttributesBasedOnDuration(
-                DDP_DISQUALIFICATION_PERIOD, resultDefinition, "Day(s)");
+                DDP_DISQUALIFICATION_PERIOD, resultDefinition, "Days");
 
         final JudicialResultPrompt prompt = builder.build();
 
@@ -85,9 +86,77 @@ public class JudicialResultHelperTest {
     }
 
     @Test
+    public void shouldPopulatePromptDefinitionAttributesWhenDurationDiffersOnlyByCase() {
+        final JudicialResultPrompt.Builder builder = JudicialResultHelper.populatePromptDefinitionAttributesBasedOnDuration(
+                DDP_DISQUALIFICATION_PERIOD, resultDefinition, "months");
+
+        final JudicialResultPrompt prompt = builder.build();
+
+        assertThat(prompt.getJudicialResultPromptTypeId(), is(DISQUALIFICATION_PERIOD_PROMPT_ID));
+        assertThat(prompt.getPromptReference(), is("disqualificationPeriod"));
+    }
+
+    @Test
+    public void shouldPopulatePromptDefinitionAttributesWhenDurationIsSingularFormOfPromptValue() {
+        final JudicialResultPrompt.Builder builder = JudicialResultHelper.populatePromptDefinitionAttributesBasedOnDuration(
+                DDP_DISQUALIFICATION_PERIOD, resultDefinition, "Year");
+
+        final JudicialResultPrompt prompt = builder.build();
+
+        assertThat(prompt.getJudicialResultPromptTypeId(), is(DISQUALIFICATION_PERIOD_PROMPT_ID));
+        assertThat(prompt.getPromptReference(), is("disqualificationPeriod"));
+    }
+
+    @Test
+    public void shouldPopulatePromptDefinitionAttributesWhenPromptValueIsSubstringOfDuration() {
+        final JudicialResultPrompt.Builder builder = JudicialResultHelper.populatePromptDefinitionAttributesBasedOnDuration(
+                DDP_DISQUALIFICATION_PERIOD, resultDefinition, "CalendarDays");
+
+        final JudicialResultPrompt prompt = builder.build();
+
+        assertThat(prompt.getJudicialResultPromptTypeId(), is(DISQUALIFICATION_PERIOD_PROMPT_ID));
+        assertThat(prompt.getPromptReference(), is("disqualificationPeriod"));
+    }
+
+    @Test
     public void shouldThrowRuntimeExceptionWhenPromptNotFoundForDuration() {
         assertThrows(RuntimeException.class, () ->
                 JudicialResultHelper.populatePromptDefinitionAttributesBasedOnDuration(
-                        JPrompt.AMOUNT_OF_FINE, resultDefinition, "Year(s)"));
+                        JPrompt.AMOUNT_OF_FINE, resultDefinition, "Years"));
+    }
+
+    @Test
+    public void shouldThrowRuntimeExceptionWhenDurationDoesNotMatchAnyPromptValue() {
+        assertThrows(RuntimeException.class, () ->
+                JudicialResultHelper.populatePromptDefinitionAttributesBasedOnDuration(
+                        DDP_DISQUALIFICATION_PERIOD, resultDefinition, "Weeks"));
+    }
+
+    @Test
+    public void shouldThrowRuntimeExceptionWhenDurationIsBlank() {
+        assertThrows(RuntimeException.class, () ->
+                JudicialResultHelper.populatePromptDefinitionAttributesBasedOnDuration(
+                        DDP_DISQUALIFICATION_PERIOD, resultDefinition, ""));
+    }
+
+    @Test
+    public void shouldThrowRuntimeExceptionWhenDurationIsNull() {
+        assertThrows(RuntimeException.class, () ->
+                JudicialResultHelper.populatePromptDefinitionAttributesBasedOnDuration(
+                        DDP_DISQUALIFICATION_PERIOD, resultDefinition, null));
+    }
+
+    @Test
+    public void shouldThrowRuntimeExceptionWhenMatchingPromptHasBlankDurationValue() {
+        final JsonObject resultDefinitionWithBlankDuration = Json.createObjectBuilder()
+                .add("prompts", Json.createArrayBuilder()
+                        .add(Json.createObjectBuilder()
+                                .add("id", DISQUALIFICATION_PERIOD_PROMPT_ID.toString())
+                                .add("duration", "")))
+                .build();
+
+        assertThrows(RuntimeException.class, () ->
+                JudicialResultHelper.populatePromptDefinitionAttributesBasedOnDuration(
+                        DDP_DISQUALIFICATION_PERIOD, resultDefinitionWithBlankDuration, "Years"));
     }
 }

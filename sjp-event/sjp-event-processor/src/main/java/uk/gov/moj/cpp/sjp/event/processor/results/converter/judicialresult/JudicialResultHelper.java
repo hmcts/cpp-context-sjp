@@ -65,6 +65,7 @@ public class JudicialResultHelper {
             "I", "INTERMEDIARY");
 
     public static final String Y = "Y";
+    public static final String DURATION = "duration";
 
 
     private JudicialResultHelper() {
@@ -93,8 +94,11 @@ public class JudicialResultHelper {
                 resultDefinition.getJsonArray("prompts")
                         .getValuesAs(JsonObject.class)
                         .stream()
-                        .filter(prompt -> prompt.getString("id").equals(jsPrompt.getId().toString())
-                                && duration.equals(prompt.getString("duration")))
+                        .filter(prompt -> prompt.getString("id").equals(jsPrompt.getId().toString()))
+                        .filter(prompt -> prompt.containsKey(DURATION))
+                        .filter(prompt -> duration.equals(prompt.getString(DURATION))
+                                ||duration.toUpperCase().contains(prompt.getString(DURATION).toUpperCase())
+                                || prompt.getString(DURATION).toUpperCase().contains(duration.toUpperCase()))
                         .findFirst();
 
         return populatePrompt(jsPrompt, promptJson);

@@ -50,12 +50,12 @@ public class DismissDecisionResultAggregator extends DecisionResultAggregator {
 
         setFinalOffence(decisionAggregate, offenceId, judicialResults);
 
-        // conviction information - a dismissal carries the FOUND_NOT_GUILTY verdict but has no
-        // conviction date or convicting court
+        // conviction information - a dismissal carries the FOUND_NOT_GUILTY verdict dated on the
+        // resulting date but has no convicting court
         decisionAggregate.putConvictionInfo(offenceId,
                 new ConvictionInfo(offenceId,
                         dismissOffenceDecision.getOffenceDecisionInformation().getVerdict(),
-                        dismissOffenceDecision.getConvictionDate(),
+                        resultedOn.toLocalDate(),
                         null));
     }
 

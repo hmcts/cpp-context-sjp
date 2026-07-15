@@ -62,7 +62,7 @@ public class DismissDecisionResultAggregatorTest extends BaseDecisionResultAggre
         assertThat(convictionInfo, is(Matchers.notNullValue()));
         assertThat(convictionInfo.getOffenceId(), Matchers.is(offence1Id));
         assertThat(convictionInfo.getVerdictType(), Matchers.is(FOUND_NOT_GUILTY));
-        assertThat(convictionInfo.getConvictionDate(), is(nullValue()));
+        assertThat(convictionInfo.getConvictionDate(), is(resultedOn.toLocalDate()));
         assertThat(convictionInfo.getConvictingCourt(), is(nullValue()));
     }
 }

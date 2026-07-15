@@ -8,6 +8,7 @@ import uk.gov.justice.core.courts.JudicialResultPrompt;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.sjp.domain.decision.Dismiss;
 import uk.gov.moj.cpp.sjp.domain.decision.OffenceDecision;
+import uk.gov.moj.cpp.sjp.event.processor.results.converter.ConvictionInfo;
 import uk.gov.moj.cpp.sjp.event.processor.results.converter.judicialresult.JCachedReferenceData;
 import uk.gov.moj.cpp.sjp.event.processor.results.converter.judicialresult.DecisionAggregate;
 
@@ -49,6 +50,13 @@ public class DismissDecisionResultAggregator extends DecisionResultAggregator {
 
         setFinalOffence(decisionAggregate, offenceId, judicialResults);
 
+        // conviction information - a dismissal carries the FOUND_NOT_GUILTY verdict but has no
+        // conviction date or convicting court
+        decisionAggregate.putConvictionInfo(offenceId,
+                new ConvictionInfo(offenceId,
+                        dismissOffenceDecision.getOffenceDecisionInformation().getVerdict(),
+                        dismissOffenceDecision.getConvictionDate(),
+                        null));
     }
 
 }

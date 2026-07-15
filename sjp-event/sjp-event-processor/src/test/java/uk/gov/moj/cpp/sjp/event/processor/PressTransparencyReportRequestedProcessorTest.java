@@ -40,15 +40,17 @@ import uk.gov.justice.services.fileservice.api.FileServiceException;
 import uk.gov.justice.services.fileservice.api.FileStorer;
 import uk.gov.justice.services.messaging.Envelope;
 import uk.gov.justice.services.messaging.JsonEnvelope;
-import uk.gov.justice.services.messaging.spi.DefaultEnvelope;
 import uk.gov.moj.cpp.sjp.domain.DocumentRequestType;
 import uk.gov.moj.cpp.sjp.domain.ListType;
+import uk.gov.moj.cpp.sjp.event.processor.service.CourtListPublishingService;
 import uk.gov.moj.cpp.sjp.event.processor.service.ReferenceDataOffencesService;
 import uk.gov.moj.cpp.sjp.event.processor.service.ReferenceDataService;
 import uk.gov.moj.cpp.sjp.event.processor.service.SjpService;
 import uk.gov.moj.cpp.sjp.event.processor.utils.PayloadHelper;
 
+import java.io.IOException;
 import java.io.InputStream;
+import java.io.StringReader;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -63,6 +65,7 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Function;
 
+import javax.json.Json;
 import javax.json.JsonArray;
 import javax.json.JsonArrayBuilder;
 import javax.json.JsonObject;
@@ -81,7 +84,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 public class PressTransparencyReportRequestedProcessorTest {
 
     private static final DateTimeFormatter DOB_FORMAT = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-    private static final String PUBLIC_EVENT_SJP_PENDING_CASES_PUBLIC_LIST_GENERATED = "public.sjp.press-transparency-report-generated";
     private static final String STORE_PRESS_TRANSPARENCY_REPORT_DATA_COMMAND = "sjp.command.store-press-transparency-report-data";
     private static final String EXPECTED_TEMPLATE_NAME_DELTA = "PressPendingCasesDeltaEnglish";
     private static final String EXPECTED_TEMPLATE_NAME_FULL = "PressPendingCasesFullEnglish";
@@ -164,6 +166,8 @@ public class PressTransparencyReportRequestedProcessorTest {
     private PayloadHelper payloadHelper;
     @Mock
     private SjpService sjpService;
+    @Mock
+    private CourtListPublishingService courtListPublishingService;
     @Captor
     private ArgumentCaptor<InputStream> payloadForDocumentGenerationCaptor;
     @Captor
@@ -171,7 +175,7 @@ public class PressTransparencyReportRequestedProcessorTest {
     @Captor
     private ArgumentCaptor<JsonEnvelope> storePressTransparencyReportCommandEnvelopeCaptor;
     @Captor
-    private ArgumentCaptor<DefaultEnvelope> defaultEnvelopeArgumentCaptor;
+    private ArgumentCaptor<String> courtListPublishRequestCaptor;
 
     @BeforeEach
     public void setUp() throws Exception {
@@ -189,33 +193,6 @@ public class PressTransparencyReportRequestedProcessorTest {
 
     private void mockSjpService(final List<JsonObject> sjpService, final List<JsonObject> pendingCasesList) {
         when(sjpService).thenReturn(pendingCasesList);
-    }
-
-    @Test
-    @SuppressWarnings("deprecation")
-    public void shouldCreatePressTransparencyReport() throws FileServiceException {
-
-        final String defendantDateOfBirth = "1980-06-12";
-
-        final List<JsonObject> pendingCasesList = pendingCasesList(CASE_IDS, false, defendantDateOfBirth, false);
-
-        mockCommon(sjpService.getPendingDeltaCases(any(), any()), pendingCasesList);
-
-        processor.handlePressTransparencyRequest(PRIVATE_EVENT_PDF_ENVELOPE_DELTA);
-
-        final JsonObject actual = getDocumentGeneratorPayloadFromFileStorer();
-
-        actual.getJsonArray("readyCases").forEach(rc ->
-                assertThat(rc.toString(), isJson(withJsonPath("$.dateOfBirth", equalTo(format(getAge(defendantDateOfBirth)))))));
-
-        assertPayloadForDocumentGenerator(actual, pendingCasesList, NUMBER_OF_PENDING_CASES_FOR_EXPORT, false);
-
-        verify(sender).sendAsAdmin(documentGenerationRequestCaptor.capture());
-
-        assertDocumentGenerationRequest(documentGenerationRequestCaptor.getValue(), EXPECTED_DOC_GENERATION_PAYLOAD_DELTA);
-
-        verify(sender, times(1)).send(storePressTransparencyReportCommandEnvelopeCaptor.capture());
-        assertPressTransparencyReportEnvelope(storePressTransparencyReportCommandEnvelopeCaptor.getValue(), REPORT_ID, CASE_IDS, DocumentRequestType.DELTA);
     }
 
     @Test
@@ -282,7 +259,7 @@ public class PressTransparencyReportRequestedProcessorTest {
     }
 
     @Test
-    public void shouldCreatePressTransparencyJSONReportDelta() {
+    public void shouldCreatePressTransparencyJSONReportDelta() throws IOException {
 
         final String defendantDateOfBirth = "1980-06-12";
 
@@ -291,11 +268,10 @@ public class PressTransparencyReportRequestedProcessorTest {
         mockSjpService(sjpService.getPendingDeltaCases(any(), any()), pendingCasesList);
 
         processor.handlePressTransparencyJSONReportRequest(PRIVATE_EVENT_ENVELOPE_JSON_DELTA);
-        verify(sender, times(1)).send(defaultEnvelopeArgumentCaptor.capture());
-        final Envelope jsonEnvelope = defaultEnvelopeArgumentCaptor.getAllValues().get(0);
-        assertThat(jsonEnvelope.metadata().name(), is(PUBLIC_EVENT_SJP_PENDING_CASES_PUBLIC_LIST_GENERATED));
-        final JsonObject eventPayload = (JsonObject) jsonEnvelope.payload();
-        final JsonObject payload = eventPayload.getJsonObject("listPayload");
+        verify(courtListPublishingService, times(1)).publishCourtList(courtListPublishRequestCaptor.capture());
+        final JsonObject courtListPublishRequest = Json.createReader(new StringReader(courtListPublishRequestCaptor.getValue())).readObject();
+        assertThat(courtListPublishRequest.getString("listType"), is("SJP_PRESS_LIST"));
+        final JsonObject payload = courtListPublishRequest.getJsonObject("listPayload");
         assertThat(payload.getInt("totalNumberOfRecords"), is(1));
         final JsonArray readyCases = payload.getJsonArray("readyCases");
         assertThat(1, is(readyCases.size()));
@@ -307,7 +283,7 @@ public class PressTransparencyReportRequestedProcessorTest {
     }
 
     @Test
-    public void shouldCreatePressTransparencyJSONReportFull() {
+    public void shouldCreatePressTransparencyJSONReportFull() throws IOException {
 
         final String defendantDateOfBirth = "1980-06-12";
 
@@ -316,11 +292,10 @@ public class PressTransparencyReportRequestedProcessorTest {
         mockSjpService(sjpService.getPendingCases(any(), any()), pendingCasesList);
 
         processor.handlePressTransparencyJSONReportRequest(PRIVATE_EVENT_ENVELOPE_JSON_FULL);
-        verify(sender, times(1)).send(defaultEnvelopeArgumentCaptor.capture());
-        final Envelope jsonEnvelope = defaultEnvelopeArgumentCaptor.getAllValues().get(0);
-        assertThat(jsonEnvelope.metadata().name(), is(PUBLIC_EVENT_SJP_PENDING_CASES_PUBLIC_LIST_GENERATED));
-        final JsonObject eventPayload = (JsonObject) jsonEnvelope.payload();
-        final JsonObject payload = eventPayload.getJsonObject("listPayload");
+        verify(courtListPublishingService, times(1)).publishCourtList(courtListPublishRequestCaptor.capture());
+        final JsonObject courtListPublishRequest = Json.createReader(new StringReader(courtListPublishRequestCaptor.getValue())).readObject();
+        assertThat(courtListPublishRequest.getString("listType"), is("SJP_PRESS_LIST"));
+        final JsonObject payload = courtListPublishRequest.getJsonObject("listPayload");
         assertThat(payload.getInt("totalNumberOfRecords"), is(1));
         final JsonArray readyCases = payload.getJsonArray("readyCases");
         assertThat(1, is(readyCases.size()));
@@ -339,44 +314,6 @@ public class PressTransparencyReportRequestedProcessorTest {
 
         final InputStream payloadBytes = payloadForDocumentGenerationCaptor.getValue();
         return streamToJsonObject(payloadBytes);
-    }
-
-    @Test
-    @SuppressWarnings("deprecation")
-    public void shouldCreatePressTransparencyWhenNoDateOfBirthReport() throws FileServiceException {
-
-        final String defendantDateOfBirth = "";
-
-        final List<JsonObject> pendingCasesList = pendingCasesList(CASE_IDS, false, defendantDateOfBirth, false);
-
-        mockCommon(sjpService.getPendingDeltaCases(any(), any()), pendingCasesList);
-
-        processor.handlePressTransparencyRequest(PRIVATE_EVENT_PDF_ENVELOPE_DELTA);
-
-        final JsonObject actual = getDocumentGeneratorPayloadFromFileStorer();
-
-        assertThat(actual.containsKey("dateOfBirth"), is(false));
-
-
-    }
-
-    @Test
-    @SuppressWarnings("deprecation")
-    public void shouldExcludeYouthDefendants() throws FileServiceException {
-
-        final String defendantDateOfBirth = "1980-06-12";
-
-        final List<JsonObject> pendingCasesList = pendingCasesList(CASE_IDS, true, defendantDateOfBirth, false);
-
-        mockCommon(sjpService.getPendingDeltaCases(any(), any()), pendingCasesList);
-
-        processor.handlePressTransparencyRequest(PRIVATE_EVENT_PDF_ENVELOPE_DELTA);
-
-        verify(fileStorer).store(any(JsonObject.class), payloadForDocumentGenerationCaptor.capture());
-
-        final InputStream payloadBytes = payloadForDocumentGenerationCaptor.getValue();
-        final JsonObject payloadForDocumentGenerator = streamToJsonObject(payloadBytes);
-
     }
 
     @Test

@@ -15,7 +15,11 @@ public class ApplicationParameters {
     @Value(key = "RELAY_CASE_ON_CPP_FUNCTION_PATH")
     private String relayCaseOnCppFunctionPath;
 
-    
+    @Inject
+    @Value(key = "COURT_LIST_PUBLISHING_SERVICE_URL", defaultValue = "http://localhost:8080")
+    private String courtListPublishingServiceUrl;
+
+
     public String getAzureFunctionHostName() {
 
         return azureFunctionHostName;
@@ -24,5 +28,10 @@ public class ApplicationParameters {
     public String getRelayCaseOnCppFunctionPath() {
 
         return relayCaseOnCppFunctionPath;
+    }
+
+    public String getCourtListPublishingServiceUrl() {
+
+        return courtListPublishingServiceUrl;
     }
 }

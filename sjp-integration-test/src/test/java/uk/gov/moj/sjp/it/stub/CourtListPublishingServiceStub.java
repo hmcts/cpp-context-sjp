@@ -26,7 +26,7 @@ import org.slf4j.LoggerFactory;
 
 public class CourtListPublishingServiceStub {
 
-    private static final String PUBLISH_COURT_LIST_URL = "/api/court-list-publish/sjp/publishCourtList";
+    private static final String PUBLISH_COURT_LIST_URL = "/courtlistpublishing-service/api/court-list-publish/sjp/publishCourtList";
     private final static Logger LOGGER = LoggerFactory.getLogger(CourtListPublishingServiceStub.class);
 
     public static void stubPublishCourtListEndpoint() {

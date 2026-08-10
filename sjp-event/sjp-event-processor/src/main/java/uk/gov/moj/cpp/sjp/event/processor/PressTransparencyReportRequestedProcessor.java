@@ -148,18 +148,27 @@ public class PressTransparencyReportRequestedProcessor {
     public void handlePressTransparencyJSONReportRequest(final JsonEnvelope envelope) {
         payloadHelper.initCache();
 
-        final List<JsonObject> pendingCasesFromViewStore = getPendingCasesFromViewStore(envelope);
         final JsonObject eventPayload = envelope.payloadAsJsonObject();
         final UUID reportId = fromString(eventPayload.getString(PRESS_TRANSPARENCY_REPORT_ID));
-        final boolean isWelsh = WELSH.name().equalsIgnoreCase(eventPayload.getString(LANGUAGE));
+        final String requestType = eventPayload.getString(REQUEST_TYPE);
+        final String language = eventPayload.getString(LANGUAGE);
+        LOGGER.info("handling press transparency JSON report request for press report {}, requestType {}, language {}",
+                reportId, requestType, language);
+
+        final List<JsonObject> pendingCasesFromViewStore = getPendingCasesFromViewStore(envelope);
+        LOGGER.info("fetched {} pending case(s) from view store for press report {}", pendingCasesFromViewStore.size(), reportId);
+
+        final boolean isWelsh = WELSH.name().equalsIgnoreCase(language);
         LOGGER.info("generating press transparency JSON report for press report {}", reportId);
         publishCourtList(envelope, buildPayload(pendingCasesFromViewStore, true, envelope, isWelsh));
+        LOGGER.info("completed handling press transparency JSON report request for press report {}", reportId);
     }
 
     private void publishCourtList(final JsonEnvelope envelope, final JsonObject payloadForDocumentGeneration) {
-        LOGGER.info("publishing sjp press pending cases list to court list publishing service");
         final String type = envelope.payloadAsJsonObject().getString(REQUEST_TYPE);
         final String language = envelope.payloadAsJsonObject().getString(LANGUAGE);
+        LOGGER.info("building sjp press court list publish request, listType {}, requestType {}, language {}",
+                SJP_PRESS_LIST, type, language);
         final JsonObject courtListPublishRequest = createObjectBuilder()
                 .add(LIST_TYPE, SJP_PRESS_LIST)
                 .add(LANGUAGE, language)
@@ -167,9 +176,12 @@ public class PressTransparencyReportRequestedProcessor {
                 .add("listPayload", payloadForDocumentGeneration)
                 .build();
 
+        LOGGER.info("publishing sjp press pending cases list to court list publishing service");
         try {
             courtListPublishingService.publishCourtList(courtListPublishRequest.toString());
+            LOGGER.info("publishing sjp press pending cases list to court list publishing service called successfully");
         } catch (IOException e) {
+            LOGGER.error("IO Exception happened while publishing sjp press court list", e);
             throw new RuntimeException("IO Exception happened while publishing sjp press court list", e);
         }
     }

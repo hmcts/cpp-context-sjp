@@ -16,7 +16,7 @@ import uk.gov.justice.services.core.annotation.Adapter;
 import uk.gov.justice.services.core.annotation.Component;
 import uk.gov.justice.services.core.interceptor.InterceptorChainProcessor;
 import uk.gov.justice.services.messaging.JsonEnvelope;
-import uk.gov.moj.cpp.material.client.MaterialClient;
+import uk.gov.moj.cpp.sjp.material.client.MaterialClient;
 import uk.gov.moj.cpp.systemusers.ServiceContextSystemUserProvider;
 
 import java.util.UUID;

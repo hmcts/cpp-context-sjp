@@ -20,7 +20,6 @@ import static uk.gov.moj.cpp.sjp.event.processor.DateTimeUtil.formatDateTimeForP
 import static uk.gov.moj.cpp.sjp.event.processor.DateTimeUtil.formatPublicationDateTimeForJsonReport;
 import static uk.gov.moj.cpp.sjp.event.processor.DateTimeUtil.getDateTimeForDeltaReport;
 import static uk.gov.moj.cpp.sjp.event.processor.helper.JsonObjectConversionHelper.jsonObjectAsByteArray;
-import static uk.gov.moj.cpp.sjp.event.processor.service.CourtListPublishingService.ALERT_PATTERN;
 
 import uk.gov.justice.services.core.annotation.FrameworkComponent;
 import uk.gov.justice.services.core.annotation.Handles;
@@ -34,8 +33,6 @@ import uk.gov.justice.services.messaging.JsonObjects;
 import uk.gov.moj.cpp.sjp.domain.ListType;
 import uk.gov.moj.cpp.sjp.event.processor.service.CourtListPublishingService;
 import uk.gov.moj.cpp.sjp.event.processor.service.ExportType;
-import uk.gov.moj.cpp.sjp.event.processor.service.ReferenceDataOffencesService;
-import uk.gov.moj.cpp.sjp.event.processor.service.ReferenceDataService;
 import uk.gov.moj.cpp.sjp.event.processor.service.SjpService;
 import uk.gov.moj.cpp.sjp.event.processor.utils.PayloadHelper;
 import uk.gov.moj.cpp.sjp.event.transparency.TransparencyJSONReportRequested;
@@ -90,12 +87,6 @@ public class TransparencyReportRequestedProcessor {
 
     @Inject
     private FileStorer fileStorer;
-
-    @Inject
-    private ReferenceDataService referenceDataService;
-
-    @Inject
-    private ReferenceDataOffencesService referenceDataOffencesService;
 
     @Inject
     private SjpService sjpService;
@@ -199,7 +190,7 @@ public class TransparencyReportRequestedProcessor {
         try {
             courtListPublishingService.publishCourtList(courtListPublishRequest.toString());
         } catch (IOException e) {
-            LOGGER.error("Error {} publishing sjp public court list: {}", ALERT_PATTERN, e.getMessage(), e);
+            LOGGER.error("IO Exception happened while publishing sjp public court list", e);
             throw new RuntimeException("IO Exception happened while publishing sjp public court list", e);
         }
     }
@@ -355,12 +346,12 @@ public class TransparencyReportRequestedProcessor {
         if (pendingCase.containsKey(LEGAL_ENTITY_NAME)) {
             return pendingCase.getString(LEGAL_ENTITY_NAME).toUpperCase();
         } else {
-            return format("%s %s", pendingCase.getString(FIRST_NAME).length() > 0 ? pendingCase.getString(FIRST_NAME).toUpperCase().charAt(0) : "", capitalize(lowerCase(pendingCase.getString(LAST_NAME, ""))));
+            return format("%s %s", !pendingCase.getString(FIRST_NAME).isEmpty() ? pendingCase.getString(FIRST_NAME).toUpperCase().charAt(0) : "", capitalize(lowerCase(pendingCase.getString(LAST_NAME, ""))));
         }
     }
 
     private String getDefendantFirstName(final JsonObject pendingCase) {
-        return pendingCase.getString(FIRST_NAME).length() > 0 ? String.valueOf(pendingCase.getString(FIRST_NAME).toUpperCase().charAt(0)) : "";
+        return !pendingCase.getString(FIRST_NAME).isEmpty() ? String.valueOf(pendingCase.getString(FIRST_NAME).toUpperCase().charAt(0)) : "";
     }
 
     private String getDefendantLastName(final JsonObject pendingCase) {
@@ -369,7 +360,7 @@ public class TransparencyReportRequestedProcessor {
 
     private Optional<String> getPersonDefendantFullName(final JsonObject pendingCase) {
         if( JsonObjects.getString(pendingCase, FIRST_NAME).isPresent() || JsonObjects.getString(pendingCase, LAST_NAME).isPresent() ) {
-            return Optional.of((String) format("%s %s", pendingCase.getString(FIRST_NAME).length() > 0 ? pendingCase.getString(FIRST_NAME).toUpperCase().charAt(0) : "", capitalize(lowerCase(pendingCase.getString(LAST_NAME, "")))));
+            return Optional.of(format("%s %s", !pendingCase.getString(FIRST_NAME).isEmpty() ? pendingCase.getString(FIRST_NAME).toUpperCase().charAt(0) : "", capitalize(lowerCase(pendingCase.getString(LAST_NAME, "")))));
         }
         return Optional.empty();
     }

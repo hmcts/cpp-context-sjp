@@ -12,7 +12,6 @@ public class CourtListPublishingService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(CourtListPublishingService.class);
     private static final String PUBLISH_SJP_COURT_LIST_PATH = "/api/court-list-publish/sjp/publishCourtList";
-    public static final String ALERT_PATTERN = "PUBLISHING_FAILED";
 
     private final HttpConnectionHelper httpConnectionHelper;
 
@@ -34,7 +33,7 @@ public class CourtListPublishingService {
             final Integer responseCode = httpConnectionHelper.getResponseCode(url, payload, systemUserId);
             LOGGER.info("publish court list response from url {}, responseCode {}", url, responseCode);
         } catch (final IOException e) {
-            LOGGER.error("Error {} publishing court list to url {}: {}", ALERT_PATTERN, url, e.getMessage(), e);
+            LOGGER.error("failed to publish court list to url {}", url, e);
             throw e;
         }
     }

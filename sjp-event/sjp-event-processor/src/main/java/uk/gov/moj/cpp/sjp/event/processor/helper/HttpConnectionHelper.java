@@ -1,7 +1,5 @@
 package uk.gov.moj.cpp.sjp.event.processor.helper;
 
-import static uk.gov.moj.cpp.sjp.event.processor.service.CourtListPublishingService.ALERT_PATTERN;
-
 import uk.gov.justice.services.common.http.HeaderConstants;
 
 import java.io.IOException;
@@ -39,7 +37,7 @@ public class HttpConnectionHelper {
             LOGGER.info("received response from url {}, statusCode {}", url, statusCode);
             return statusCode;
         } catch (final IOException e) {
-            LOGGER.error("Error {} sending POST request to url {}: {}", ALERT_PATTERN, url, e.getMessage(), e);
+            LOGGER.error("failed to send POST request to url {}", url, e);
             throw e;
         }
     }

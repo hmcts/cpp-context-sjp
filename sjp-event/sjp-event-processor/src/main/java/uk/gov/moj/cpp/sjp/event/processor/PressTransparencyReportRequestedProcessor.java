@@ -23,6 +23,7 @@ import static uk.gov.moj.cpp.sjp.event.processor.DateTimeUtil.formatDateTimeForP
 import static uk.gov.moj.cpp.sjp.event.processor.DateTimeUtil.formatPublicationDateTimeForJsonReport;
 import static uk.gov.moj.cpp.sjp.event.processor.DateTimeUtil.getDateTimeForDeltaReport;
 import static uk.gov.moj.cpp.sjp.event.processor.helper.JsonObjectConversionHelper.jsonObjectAsByteArray;
+import static uk.gov.moj.cpp.sjp.event.processor.service.CourtListPublishingService.ALERT_PATTERN;
 
 import uk.gov.justice.services.core.annotation.FrameworkComponent;
 import uk.gov.justice.services.core.annotation.Handles;
@@ -181,7 +182,7 @@ public class PressTransparencyReportRequestedProcessor {
             courtListPublishingService.publishCourtList(courtListPublishRequest.toString());
             LOGGER.info("publishing sjp press pending cases list to court list publishing service called successfully");
         } catch (IOException e) {
-            LOGGER.error("IO Exception happened while publishing sjp press court list", e);
+            LOGGER.error("Error {} publishing sjp press court list: {}", ALERT_PATTERN, e.getMessage(), e);
             throw new RuntimeException("IO Exception happened while publishing sjp press court list", e);
         }
     }

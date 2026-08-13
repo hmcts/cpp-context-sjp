@@ -20,6 +20,7 @@ import static uk.gov.moj.cpp.sjp.event.processor.DateTimeUtil.formatDateTimeForP
 import static uk.gov.moj.cpp.sjp.event.processor.DateTimeUtil.formatPublicationDateTimeForJsonReport;
 import static uk.gov.moj.cpp.sjp.event.processor.DateTimeUtil.getDateTimeForDeltaReport;
 import static uk.gov.moj.cpp.sjp.event.processor.helper.JsonObjectConversionHelper.jsonObjectAsByteArray;
+import static uk.gov.moj.cpp.sjp.event.processor.service.CourtListPublishingService.ALERT_PATTERN;
 
 import uk.gov.justice.services.core.annotation.FrameworkComponent;
 import uk.gov.justice.services.core.annotation.Handles;
@@ -145,7 +146,9 @@ public class TransparencyReportRequestedProcessor {
         final boolean isWelsh = WELSH.name().equalsIgnoreCase(eventPayload.getString(LANGUAGE));
         LOGGER.info("generating public transparency JSON report {}", transparencyReportId);
         final List<JsonObject> filteredCases = getFilteredCases(allPendingCasesFromViewStore);
+        LOGGER.info("generating public transparency JSON report for press report {}", transparencyReportId);
         publishCourtList(envelope, buildPayload(filteredCases, isWelsh, true, envelope));
+        LOGGER.info("completed handling public transparency JSON report request for press report {}", transparencyReportId);
         storeReportMetadata(envelope, transparencyReportId, filteredCases);
     }
 
@@ -183,17 +186,21 @@ public class TransparencyReportRequestedProcessor {
         LOGGER.info("publishing sjp pending cases public list to court list publishing service");
         final String type = envelope.payloadAsJsonObject().getString(REQUEST_TYPE);
         final String language = envelope.payloadAsJsonObject().getString(LANGUAGE);
+        LOGGER.info("building sjp public court list publish request, listType {}, requestType {}, language {}",
+                SJP_PUBLISH_LIST, type, language);
         final JsonObject courtListPublishRequest = createObjectBuilder()
                 .add(LIST_TYPE, SJP_PUBLISH_LIST)
                 .add(LANGUAGE, language)
                 .add(REQUEST_TYPE, type)
                 .add(LIST_PAYLOAD, payloadForDocumentGeneration)
                 .build();
+        LOGGER.info("publishing sjp public court list pending cases list to court list publishing service");
 
         try {
             courtListPublishingService.publishCourtList(courtListPublishRequest.toString());
         } catch (IOException e) {
-            throw new RuntimeException("IO Exception happened while publishing sjp court list", e);
+            LOGGER.error("Error {} publishing sjp public court list: {}", ALERT_PATTERN, e.getMessage(), e);
+            throw new RuntimeException("IO Exception happened while publishing sjp public court list", e);
         }
     }
 

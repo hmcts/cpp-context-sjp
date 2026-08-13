@@ -16,7 +16,7 @@ public class ApplicationParameters {
     private String relayCaseOnCppFunctionPath;
 
     @Inject
-    @Value(key = "COURT_LIST_PUBLISHING_SERVICE_URL", defaultValue = "http://localhost:8080")
+    @Value(key = "COURT_LIST_PUBLISHING_SERVICE_URL", defaultValue = "http://localhost:8080/courtlistpublishing-service")
     private String courtListPublishingServiceUrl;
 
 

@@ -346,12 +346,12 @@ public class TransparencyReportRequestedProcessor {
         if (pendingCase.containsKey(LEGAL_ENTITY_NAME)) {
             return pendingCase.getString(LEGAL_ENTITY_NAME).toUpperCase();
         } else {
-            return format("%s %s", !pendingCase.getString(FIRST_NAME).isEmpty() ? pendingCase.getString(FIRST_NAME).toUpperCase().charAt(0) : "", capitalize(lowerCase(pendingCase.getString(LAST_NAME, ""))));
+            return format("%s %s", pendingCase.getString(FIRST_NAME).length() > 0 ? pendingCase.getString(FIRST_NAME).toUpperCase().charAt(0) : "", capitalize(lowerCase(pendingCase.getString(LAST_NAME, ""))));
         }
     }
 
     private String getDefendantFirstName(final JsonObject pendingCase) {
-        return !pendingCase.getString(FIRST_NAME).isEmpty() ? String.valueOf(pendingCase.getString(FIRST_NAME).toUpperCase().charAt(0)) : "";
+        return pendingCase.getString(FIRST_NAME).length() > 0 ? String.valueOf(pendingCase.getString(FIRST_NAME).toUpperCase().charAt(0)) : "";
     }
 
     private String getDefendantLastName(final JsonObject pendingCase) {
@@ -360,7 +360,7 @@ public class TransparencyReportRequestedProcessor {
 
     private Optional<String> getPersonDefendantFullName(final JsonObject pendingCase) {
         if( JsonObjects.getString(pendingCase, FIRST_NAME).isPresent() || JsonObjects.getString(pendingCase, LAST_NAME).isPresent() ) {
-            return Optional.of(format("%s %s", !pendingCase.getString(FIRST_NAME).isEmpty() ? pendingCase.getString(FIRST_NAME).toUpperCase().charAt(0) : "", capitalize(lowerCase(pendingCase.getString(LAST_NAME, "")))));
+            return Optional.of(format("%s %s", pendingCase.getString(FIRST_NAME).length() > 0 ? pendingCase.getString(FIRST_NAME).toUpperCase().charAt(0) : "", capitalize(lowerCase(pendingCase.getString(LAST_NAME, "")))));
         }
         return Optional.empty();
     }

@@ -4,6 +4,7 @@ import static java.lang.String.format;
 import static java.time.LocalDate.parse;
 import static java.time.LocalDateTime.now;
 import static java.time.temporal.ChronoUnit.YEARS;
+import static java.util.Objects.nonNull;
 import static java.util.Optional.empty;
 import static java.util.Optional.of;
 import static java.util.UUID.fromString;
@@ -391,7 +392,7 @@ public class PressTransparencyReportRequestedProcessor {
         final String county = pendingCase.containsKey(COUNTY) ? format(STRING_FORMAT_COMMA_PREFIX, pendingCase.getString(COUNTY)) : EMPTY;
         final String town = pendingCase.containsKey(TOWN) ? format(STRING_FORMAT_COMMA_PREFIX, pendingCase.getString(TOWN)) : EMPTY;
         final String postcode = pendingCase.containsKey(POSTCODE) ? format(STRING_FORMAT, pendingCase.getString(POSTCODE)) : EMPTY;
-        if (!postcode.isEmpty()) {
+        if (nonNull(postcode) && !postcode.isEmpty()) {
             return format("%s%s%s%s,%s", addressLine1, addressLine2, county, town, postcode).trim();
         } else {
             return format("%s%s%s%s", addressLine1, addressLine2, county, town).trim();

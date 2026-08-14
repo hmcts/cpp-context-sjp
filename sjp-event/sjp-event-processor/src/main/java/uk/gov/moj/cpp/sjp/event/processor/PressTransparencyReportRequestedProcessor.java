@@ -36,8 +36,6 @@ import uk.gov.justice.services.messaging.JsonObjects;
 import uk.gov.moj.cpp.sjp.domain.ListType;
 import uk.gov.moj.cpp.sjp.event.processor.service.CourtListPublishingService;
 import uk.gov.moj.cpp.sjp.event.processor.service.ExportType;
-import uk.gov.moj.cpp.sjp.event.processor.service.ReferenceDataOffencesService;
-import uk.gov.moj.cpp.sjp.event.processor.service.ReferenceDataService;
 import uk.gov.moj.cpp.sjp.event.processor.service.SjpService;
 import uk.gov.moj.cpp.sjp.event.processor.utils.PayloadHelper;
 import uk.gov.moj.cpp.sjp.event.transparency.PressTransparencyJSONReportRequested;
@@ -82,7 +80,6 @@ public class PressTransparencyReportRequestedProcessor {
     public static final String OFFENCES = "offences";
     public static final String PROSECUTOR_NAME = "prosecutorName";
     public static final String EMPTY = "";
-    public static final String STRING_FORMAT_COMMA = " %s,";
     public static final String STRING_FORMAT_COMMA_PREFIX = ", %s";
     public static final String STRING_FORMAT = " %s";
     public static final String SJP_OFFENCES = "sjpOffences";
@@ -105,10 +102,6 @@ public class PressTransparencyReportRequestedProcessor {
     private FileStorer fileStorer;
     @Inject
     private SjpService sjpService;
-    @Inject
-    private ReferenceDataOffencesService referenceDataOffencesService;
-    @Inject
-    private ReferenceDataService referenceDataService;
     @Inject
     private PayloadHelper payloadHelper;
     @Inject
@@ -421,7 +414,7 @@ public class PressTransparencyReportRequestedProcessor {
 
     private Optional<String> getPersonDefendantFullName(final JsonObject pendingCase) {
         if( JsonObjects.getString(pendingCase, FIRST_NAME).isPresent() || JsonObjects.getString(pendingCase, LAST_NAME).isPresent() ) {
-            return Optional.of((String) format("%s %s", pendingCase.getString(FIRST_NAME, ""), pendingCase.getString(LAST_NAME, "").toUpperCase()));
+            return Optional.of(format("%s %s", pendingCase.getString(FIRST_NAME, ""), pendingCase.getString(LAST_NAME, "").toUpperCase()));
         }
         return Optional.empty();
     }

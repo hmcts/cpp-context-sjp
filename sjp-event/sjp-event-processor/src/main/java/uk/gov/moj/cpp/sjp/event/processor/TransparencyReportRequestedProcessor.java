@@ -33,8 +33,6 @@ import uk.gov.justice.services.messaging.JsonObjects;
 import uk.gov.moj.cpp.sjp.domain.ListType;
 import uk.gov.moj.cpp.sjp.event.processor.service.CourtListPublishingService;
 import uk.gov.moj.cpp.sjp.event.processor.service.ExportType;
-import uk.gov.moj.cpp.sjp.event.processor.service.ReferenceDataOffencesService;
-import uk.gov.moj.cpp.sjp.event.processor.service.ReferenceDataService;
 import uk.gov.moj.cpp.sjp.event.processor.service.SjpService;
 import uk.gov.moj.cpp.sjp.event.processor.utils.PayloadHelper;
 import uk.gov.moj.cpp.sjp.event.transparency.TransparencyJSONReportRequested;
@@ -91,12 +89,6 @@ public class TransparencyReportRequestedProcessor {
     private FileStorer fileStorer;
 
     @Inject
-    private ReferenceDataService referenceDataService;
-
-    @Inject
-    private ReferenceDataOffencesService referenceDataOffencesService;
-
-    @Inject
     private SjpService sjpService;
 
     @Inject
@@ -145,7 +137,9 @@ public class TransparencyReportRequestedProcessor {
         final boolean isWelsh = WELSH.name().equalsIgnoreCase(eventPayload.getString(LANGUAGE));
         LOGGER.info("generating public transparency JSON report {}", transparencyReportId);
         final List<JsonObject> filteredCases = getFilteredCases(allPendingCasesFromViewStore);
+        LOGGER.info("generating public transparency JSON report for press report {}", transparencyReportId);
         publishCourtList(envelope, buildPayload(filteredCases, isWelsh, true, envelope));
+        LOGGER.info("completed handling public transparency JSON report request for press report {}", transparencyReportId);
         storeReportMetadata(envelope, transparencyReportId, filteredCases);
     }
 
@@ -183,17 +177,21 @@ public class TransparencyReportRequestedProcessor {
         LOGGER.info("publishing sjp pending cases public list to court list publishing service");
         final String type = envelope.payloadAsJsonObject().getString(REQUEST_TYPE);
         final String language = envelope.payloadAsJsonObject().getString(LANGUAGE);
+        LOGGER.info("building sjp public court list publish request, listType {}, requestType {}, language {}",
+                SJP_PUBLISH_LIST, type, language);
         final JsonObject courtListPublishRequest = createObjectBuilder()
                 .add(LIST_TYPE, SJP_PUBLISH_LIST)
                 .add(LANGUAGE, language)
                 .add(REQUEST_TYPE, type)
                 .add(LIST_PAYLOAD, payloadForDocumentGeneration)
                 .build();
+        LOGGER.info("publishing sjp public court list pending cases list to court list publishing service");
 
         try {
             courtListPublishingService.publishCourtList(courtListPublishRequest.toString());
         } catch (IOException e) {
-            throw new RuntimeException("IO Exception happened while publishing sjp court list", e);
+            LOGGER.error("IO Exception happened while publishing sjp public court list", e);
+            throw new RuntimeException("IO Exception happened while publishing sjp public court list", e);
         }
     }
 
@@ -362,7 +360,7 @@ public class TransparencyReportRequestedProcessor {
 
     private Optional<String> getPersonDefendantFullName(final JsonObject pendingCase) {
         if( JsonObjects.getString(pendingCase, FIRST_NAME).isPresent() || JsonObjects.getString(pendingCase, LAST_NAME).isPresent() ) {
-            return Optional.of((String) format("%s %s", pendingCase.getString(FIRST_NAME).length() > 0 ? pendingCase.getString(FIRST_NAME).toUpperCase().charAt(0) : "", capitalize(lowerCase(pendingCase.getString(LAST_NAME, "")))));
+            return Optional.of(format("%s %s", pendingCase.getString(FIRST_NAME).length() > 0 ? pendingCase.getString(FIRST_NAME).toUpperCase().charAt(0) : "", capitalize(lowerCase(pendingCase.getString(LAST_NAME, "")))));
         }
         return Optional.empty();
     }

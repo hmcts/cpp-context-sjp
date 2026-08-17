@@ -1,16 +1,17 @@
 package uk.gov.moj.cpp.sjp.command.api.validator.decisionvalidator;
 
-import org.junit.jupiter.api.Test;
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
+import static uk.gov.moj.cpp.sjp.command.api.validator.decisionvalidator.DischargeDecisionValidator.validateDischargeDecision;
+
 import uk.gov.justice.services.adapter.rest.exception.BadRequestException;
 import uk.gov.moj.cpp.sjp.domain.decision.discharge.DischargeType;
 
 import javax.json.JsonObject;
 
-import static javax.json.Json.createObjectBuilder;
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static uk.gov.moj.cpp.sjp.command.api.validator.decisionvalidator.DischargeDecisionValidator.validateDischargeDecision;
+import org.junit.jupiter.api.Test;
 
 public class DischargeDecisionValidatorTest {
 

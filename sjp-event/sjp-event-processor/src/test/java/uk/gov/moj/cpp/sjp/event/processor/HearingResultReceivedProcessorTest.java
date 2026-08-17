@@ -24,7 +24,6 @@ import uk.gov.justice.services.messaging.Envelope;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.sjp.event.CaseReceived;
 
-import javax.json.Json;
 import javax.json.JsonArrayBuilder;
 import javax.json.JsonObjectBuilder;
 import javax.json.JsonValue;
@@ -48,6 +47,8 @@ import static uk.gov.justice.json.schemas.domains.sjp.ApplicationStatus.APPLICAT
 import static uk.gov.justice.json.schemas.domains.sjp.results.PublicHearingResulted.publicHearingResulted;
 import static uk.gov.justice.services.core.annotation.Component.EVENT_PROCESSOR;
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
+import static uk.gov.justice.services.messaging.JsonObjects.createArrayBuilder;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 import static uk.gov.justice.services.test.utils.core.matchers.HandlerClassMatcher.isHandlerClass;
 import static uk.gov.justice.services.test.utils.core.matchers.HandlerMethodMatcher.method;
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopePayloadMatcher.payloadIsJson;
@@ -261,9 +262,9 @@ public class HearingResultReceivedProcessorTest {
     @Test
     public void shouldHandleHearingResultReceivedWhenCourtApplicationsIsNotPresent() throws IOException {
 
-        JsonObjectBuilder hearingJsonBuilder = Json.createObjectBuilder();
+        JsonObjectBuilder hearingJsonBuilder = createObjectBuilder();
         hearingJsonBuilder.add("id", randomUUID().toString());
-        JsonObjectBuilder hearingEnvelopeJsonBuilder = Json.createObjectBuilder();
+        JsonObjectBuilder hearingEnvelopeJsonBuilder = createObjectBuilder();
         hearingEnvelopeJsonBuilder.add("hearing", hearingJsonBuilder);
 
         final JsonEnvelope hearingJsonEnvelope = envelopeFrom(metadataWithRandomUUID(HearingResultReceivedProcessor.PUBLIC_HEARING_RESULTED),
@@ -275,10 +276,10 @@ public class HearingResultReceivedProcessorTest {
     @Test
     public void shouldHandleHearingResultReceivedWhenCourtApplicationIsNotPresent() throws IOException {
 
-        JsonObjectBuilder courtApplicationJsonObjectBuilder = Json.createObjectBuilder();
-        JsonArrayBuilder courtApplications = Json.createArrayBuilder();
+        JsonObjectBuilder courtApplicationJsonObjectBuilder = createObjectBuilder();
+        JsonArrayBuilder courtApplications = createArrayBuilder();
         courtApplicationJsonObjectBuilder.add("courtApplications", courtApplications);
-        JsonObjectBuilder hearingJsonBuilder = Json.createObjectBuilder();
+        JsonObjectBuilder hearingJsonBuilder = createObjectBuilder();
         hearingJsonBuilder.add("hearing", courtApplicationJsonObjectBuilder);
 
         final JsonEnvelope hearingJsonEnvelope = envelopeFrom(metadataWithRandomUUID(HearingResultReceivedProcessor.PUBLIC_HEARING_RESULTED),

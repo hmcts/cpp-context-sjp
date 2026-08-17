@@ -1,20 +1,21 @@
 package uk.gov.moj.cpp.sjp.query.converter;
 
-import static javax.json.Json.createArrayBuilder;
-import static javax.json.Json.createObjectBuilder;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.mockito.Mockito.when;
+import static uk.gov.justice.services.messaging.JsonObjects.createArrayBuilder;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 import static uk.gov.justice.services.test.utils.core.messaging.JsonEnvelopeBuilder.envelope;
 import static uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderFactory.metadataWithRandomUUID;
 
 import uk.gov.justice.services.common.converter.LocalDates;
 import uk.gov.justice.services.messaging.JsonEnvelope;
+import uk.gov.moj.cpp.sjp.query.api.converter.CaseConverter;
+import uk.gov.moj.cpp.sjp.query.api.service.ReferenceOffencesDataService;
 
 import java.time.LocalDate;
 import java.util.UUID;
 
-import javax.json.Json;
 import javax.json.JsonObject;
 
 import org.junit.jupiter.api.Test;
@@ -22,8 +23,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import uk.gov.moj.cpp.sjp.query.api.converter.CaseConverter;
-import uk.gov.moj.cpp.sjp.query.api.service.ReferenceOffencesDataService;
 
 @ExtendWith(MockitoExtension.class)
 public class CaseConverterTest {
@@ -177,12 +176,12 @@ public class CaseConverterTest {
 
     private JsonObject buildOffenceReferenceData(final String title, final String legislation,
                                                  final String titleWelsh, final String legislationWelsh) {
-        return Json.createObjectBuilder()
+        return createObjectBuilder()
                 .add("title", title)
                 .add("legislation", legislation)
-                .add("details", Json.createObjectBuilder()
-                        .add("document", Json.createObjectBuilder()
-                                .add("welsh", Json.createObjectBuilder()
+                .add("details", createObjectBuilder()
+                        .add("document", createObjectBuilder()
+                                .add("welsh", createObjectBuilder()
                                         .add("welshoffencetitle", titleWelsh)
                                         .add("welshlegislation", legislationWelsh)
                                 )))

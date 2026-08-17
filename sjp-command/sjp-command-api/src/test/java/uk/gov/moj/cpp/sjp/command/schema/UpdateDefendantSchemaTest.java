@@ -1,18 +1,18 @@
 package uk.gov.moj.cpp.sjp.command.schema;
 
-import static javax.json.Json.createReader;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
+import static uk.gov.justice.services.messaging.JsonObjects.createReader;
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMatcher.jsonEnvelope;
 import static uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderFactory.metadataWithRandomUUID;
 
-import org.junit.jupiter.api.Disabled;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 
 import javax.json.JsonObject;
 
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 @Disabled("Those tests can be looked when the JsonSchemaValidationMatcher supports the Json catalogues...")

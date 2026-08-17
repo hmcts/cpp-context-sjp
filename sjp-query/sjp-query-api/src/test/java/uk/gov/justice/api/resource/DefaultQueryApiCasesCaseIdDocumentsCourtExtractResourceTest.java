@@ -6,16 +6,16 @@ import static java.util.UUID.randomUUID;
 import static org.apache.http.HttpStatus.SC_INTERNAL_SERVER_ERROR;
 import static org.apache.http.HttpStatus.SC_NOT_FOUND;
 import static org.apache.http.HttpStatus.SC_OK;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.isA;
 import static org.hamcrest.collection.IsMapContaining.hasEntry;
-import static org.hamcrest.MatcherAssert.assertThat;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static uk.gov.justice.services.messaging.JsonObjects.createReader;
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMatcher.jsonEnvelope;
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMetadataMatcher.metadata;
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopePayloadMatcher.payload;
@@ -31,7 +31,6 @@ import java.io.IOException;
 import java.util.Optional;
 import java.util.UUID;
 
-import javax.json.Json;
 import javax.json.JsonObject;
 import javax.ws.rs.core.Response;
 
@@ -69,7 +68,7 @@ public class DefaultQueryApiCasesCaseIdDocumentsCourtExtractResourceTest {
 
     @BeforeEach
     public void init() {
-       // when(serviceContextSystemUserProvider.getContextSystemUserId()).thenReturn(Optional.of(userId));
+        // when(serviceContextSystemUserProvider.getContextSystemUserId()).thenReturn(Optional.of(userId));
     }
 
     @Test
@@ -93,7 +92,7 @@ public class DefaultQueryApiCasesCaseIdDocumentsCourtExtractResourceTest {
     }
 
     @Test
-    public void shouldReturnNotFoundStatusWhenCourtExtractDataNotFound(){
+    public void shouldReturnNotFoundStatusWhenCourtExtractDataNotFound() {
         when(courtExtractDataService.getCourtExtractData(any(JsonEnvelope.class))).
                 thenReturn(Optional.empty());
 
@@ -119,21 +118,19 @@ public class DefaultQueryApiCasesCaseIdDocumentsCourtExtractResourceTest {
     }
 
 
-
-
     private void verifyInterceptorChainExecution() {
         verify(interceptorChainProcessor).process(interceptorContextCaptor.capture());
 
         MatcherAssert.assertThat(interceptorContextCaptor.getValue().inputEnvelope(),
                 jsonEnvelope(metadata().withName(DefaultQueryApiCasesCaseIdDocumentsCourtExtractResource.QUERY_ACTION_NAME).withUserId(userId.toString()),
-                payload().isJson(allOf(
-                        withJsonPath("$.caseId", equalTo(caseId.toString()))
-                ))
-        ));
+                        payload().isJson(allOf(
+                                withJsonPath("$.caseId", equalTo(caseId.toString()))
+                        ))
+                ));
     }
 
     private Optional<JsonObject> buildMockCourtData() {
-        return Optional.of(Json.createReader(getClass().getClassLoader().
+        return Optional.of(createReader(getClass().getClassLoader().
                 getResourceAsStream("uk/gov/moj/cpp/sjp/query/court-extract/case-court-extract-data.json")).
                 readObject());
     }

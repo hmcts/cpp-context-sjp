@@ -2,14 +2,12 @@ package uk.gov.moj.cpp.sjp.query.api.util;
 
 import static java.util.Collections.emptyMap;
 import static org.junit.jupiter.api.Assertions.fail;
-
-import uk.gov.moj.cpp.sjp.query.api.helper.JsonHelper;
+import static uk.gov.justice.services.messaging.JsonObjects.createReader;
 
 import java.io.StringReader;
 import java.nio.charset.Charset;
 import java.util.Map;
 
-import javax.json.Json;
 import javax.json.JsonObject;
 import javax.json.JsonReader;
 
@@ -49,7 +47,7 @@ public class FileUtil {
     }
 
     public static JsonObject getJsonObject(final String json) {
-        try (final JsonReader reader = Json.createReader(new StringReader(json))) {
+        try (final JsonReader reader = createReader(new StringReader(json))) {
             return reader.readObject();
         }
     }

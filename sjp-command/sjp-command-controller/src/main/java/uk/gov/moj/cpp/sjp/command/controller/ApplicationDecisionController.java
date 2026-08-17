@@ -37,7 +37,7 @@ public class ApplicationDecisionController {
 
         sender.send(envelopeFrom(
                 metadataFrom(commandEnvelope.metadata())
-                .withName("sjp.command.handler.save-application-decision"),
+                        .withName("sjp.command.handler.save-application-decision"),
                 enrichedPayload.build())
         );
     }

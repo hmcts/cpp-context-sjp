@@ -4,6 +4,8 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static uk.gov.justice.services.messaging.JsonObjects.createArrayBuilder;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 import static uk.gov.justice.services.test.utils.core.messaging.JsonEnvelopeBuilder.envelope;
 import static uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderFactory.metadataWithRandomUUID;
 
@@ -11,10 +13,10 @@ import uk.gov.justice.services.core.enveloper.Enveloper;
 import uk.gov.justice.services.core.requester.Requester;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.test.utils.core.enveloper.EnveloperFactory;
+import uk.gov.moj.cpp.sjp.query.api.service.ReferenceOffencesDataService;
 
 import java.util.UUID;
 
-import javax.json.Json;
 import javax.json.JsonObject;
 
 import org.junit.jupiter.api.Test;
@@ -25,7 +27,6 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
-import uk.gov.moj.cpp.sjp.query.api.service.ReferenceOffencesDataService;
 
 @ExtendWith(MockitoExtension.class)
 public class ReferenceOffencesDataServiceTest {
@@ -57,8 +58,8 @@ public class ReferenceOffencesDataServiceTest {
 
         when(requester.request(any(JsonEnvelope.class))).thenReturn(response);
 
-        final JsonObject responsePayload = Json.createObjectBuilder()
-                .add("offences", Json.createArrayBuilder().add(Json.createObjectBuilder()))
+        final JsonObject responsePayload = createObjectBuilder()
+                .add("offences", createArrayBuilder().add(createObjectBuilder()))
                 .build();
 
         when(response.payloadAsJsonObject()).thenReturn(responsePayload);
@@ -81,7 +82,7 @@ public class ReferenceOffencesDataServiceTest {
                 .with(metadataWithRandomUUID("sjp.query.case-by-urn-postcode")).build();
 
         final UUID offenceId = UUID.randomUUID();
-        final JsonObject responsePayload = Json.createObjectBuilder().add("offenceId", offenceId.toString()).build();
+        final JsonObject responsePayload = createObjectBuilder().add("offenceId", offenceId.toString()).build();
 
         when(requester.request(any(JsonEnvelope.class))).thenReturn(response);
         when(response.payloadAsJsonObject()).thenReturn(responsePayload);

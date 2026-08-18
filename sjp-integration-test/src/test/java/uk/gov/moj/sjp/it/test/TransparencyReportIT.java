@@ -73,7 +73,7 @@ public class TransparencyReportIT extends BaseIntegrationTest {
 
     private final UUID caseId1 = randomUUID(), caseId2 = randomUUID();
     private final UUID offenceId1 = randomUUID(), offenceId2 = randomUUID();
-    private TransparencyReportHelper transparencyReportHelper = new TransparencyReportHelper();
+    private final TransparencyReportHelper transparencyReportHelper = new TransparencyReportHelper();
 
     @BeforeEach
     public void beforeEachTest() throws Exception {

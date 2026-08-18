@@ -211,16 +211,12 @@ public class TransparencyReportRequestedProcessorTest {
     }
 
     @Test
-    public void shouldCreateTransparencyReportJSONFull() throws FileServiceException, IOException {
-        final String expectedEnglishTemplateName = "PublicPendingCasesFullEnglish";
-        final UUID englishPayloadFileUUID = randomUUID();
-        final UUID welshPayloadFileUUID = randomUUID();
+    public void shouldCreateTransparencyReportJSONFull() throws IOException {
         final UUID transparencyReportId = randomUUID();
 
         final String offenceTitle = "OffenceTitle";
         final String prosecutorName = "TFL";
         final String prosecutorEnglish = "Transport For London";
-        final String prosecutorWelsh = "Transport For London - Welsh";
         final Integer numberOfPendingCasesForExport = 9;
         final List<UUID> caseIds = range(0, numberOfPendingCasesForExport)
                 .mapToObj(e -> randomUUID()).collect(toList());
@@ -253,11 +249,11 @@ public class TransparencyReportRequestedProcessorTest {
 
         verify(courtListPublishingService, times(1)).publishCourtList(courtListPublishRequestCaptor.capture());
         final JsonObject courtListPublishRequest = Json.createReader(new StringReader(courtListPublishRequestCaptor.getValue())).readObject();
-        assertThat(courtListPublishRequest.getString("listType"), is("SJP_PUBLISH_LIST"));
+        assertThat(courtListPublishRequest.getString("listType"), is("SJP_PUBLIC_LIST"));
         final JsonObject payload = courtListPublishRequest.getJsonObject("listPayload");
-        assertThat(payload.getInt("totalNumberOfRecords"), is(9));
+        assertThat(payload.getInt("totalNumberOfRecords"), is(numberOfPendingCasesForExport));
         final JsonArray readyCases = payload.getJsonArray("readyCases");
-        assertThat(9, is(readyCases.size()));
+        assertThat(readyCases.size(), is(numberOfPendingCasesForExport));
         readyCases.getValuesAs(JsonObject.class).forEach(jsonObject -> {
             assertThat(jsonObject.getJsonArray("sjpOffences"), notNullValue());
             assertThat(jsonObject.getString("firstName"), is("A"));

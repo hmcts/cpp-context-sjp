@@ -211,7 +211,7 @@ public class TransparencyReportIT extends BaseIntegrationTest {
         final List<JSONObject> courtListPublishRequests = pollCourtListPublishRequests(hasSize(1));
         final JSONObject courtListPublishRequest = courtListPublishRequests.get(0);
 
-        assertThat(courtListPublishRequest.getString("listType"), is("SJP_PUBLISH_LIST"));
+        assertThat(courtListPublishRequest.getString("listType"), is("SJP_PUBLIC_LIST"));
 
         final JSONObject listPayload = courtListPublishRequest.getJSONObject("listPayload");
         assertThat(listPayload.getJSONArray("readyCases").length(), is(2));

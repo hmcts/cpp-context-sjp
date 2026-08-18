@@ -67,7 +67,7 @@ public class TransparencyReportRequestedProcessor {
     private static final String SJP_OFFENCES = "sjpOffences";
     private static final String OFFENCES = "offences";
     private static final String LIST_TYPE = "listType";
-    private static final String SJP_PUBLISH_LIST = "SJP_PUBLISH_LIST";
+    private static final String SJP_PUBLIC_LIST = "SJP_PUBLIC_LIST";
     public static final String DEFENDANT_NAME = "defendantName";
     public static final String PROSECUTOR_NAME = "prosecutorName";
     public static final String TITLE = "title";
@@ -178,9 +178,9 @@ public class TransparencyReportRequestedProcessor {
         final String type = envelope.payloadAsJsonObject().getString(REQUEST_TYPE);
         final String language = envelope.payloadAsJsonObject().getString(LANGUAGE);
         LOGGER.info("building sjp public court list publish request, listType {}, requestType {}, language {}",
-                SJP_PUBLISH_LIST, type, language);
+                SJP_PUBLIC_LIST, type, language);
         final JsonObject courtListPublishRequest = createObjectBuilder()
-                .add(LIST_TYPE, SJP_PUBLISH_LIST)
+                .add(LIST_TYPE, SJP_PUBLIC_LIST)
                 .add(LANGUAGE, language)
                 .add(REQUEST_TYPE, type)
                 .add(LIST_PAYLOAD, payloadForDocumentGeneration)

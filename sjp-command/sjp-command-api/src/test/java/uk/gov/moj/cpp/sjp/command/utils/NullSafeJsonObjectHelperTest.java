@@ -1,14 +1,13 @@
 package uk.gov.moj.cpp.sjp.command.utils;
 
-import org.junit.jupiter.api.Test;
-import uk.gov.justice.services.adapter.rest.exception.BadRequestException;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.is;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 
 import javax.json.JsonObject;
 
-import static javax.json.Json.createObjectBuilder;
-import static org.hamcrest.Matchers.is;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import org.junit.jupiter.api.Test;
 
 public class NullSafeJsonObjectHelperTest {
 

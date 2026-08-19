@@ -34,6 +34,7 @@ import uk.gov.moj.cpp.sjp.event.processor.results.converter.CourtCentreConverter
 import uk.gov.moj.cpp.sjp.event.processor.results.converter.judicialresult.DecisionAggregate;
 import uk.gov.moj.cpp.sjp.event.processor.results.converter.judicialresult.JCachedReferenceData;
 
+import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -160,7 +161,8 @@ public class ReferForCourtHearingDecisionResultAggregator extends DecisionResult
                 .withJudicialResultPromptTypeId(NHMC_DURATION_IN_MINUTES.getId())
                 .withValue(caseOffenceListedInCriminalCourts.getHearingDays().get(0).getListedDurationMinutes().toString()).build());
 
-        final ZonedDateTime sittingDateTime = caseOffenceListedInCriminalCourts.getHearingDays().get(0).getSittingDay();
+        final ZonedDateTime sittingDateTime = caseOffenceListedInCriminalCourts.getHearingDays().get(0).getSittingDay()
+                .withZoneSameInstant(ZoneId.of("Europe/London"));
 
         judicialResultPrompts.add(getPrompt(NHMC_HOUSE_HEARING_TIME, resultDefinition)
                 .withJudicialResultPromptTypeId(NHMC_HOUSE_HEARING_TIME.getId())

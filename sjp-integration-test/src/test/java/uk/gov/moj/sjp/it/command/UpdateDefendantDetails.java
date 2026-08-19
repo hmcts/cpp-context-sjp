@@ -1,7 +1,7 @@
 package uk.gov.moj.sjp.it.command;
 
 import static java.util.Optional.ofNullable;
-import static javax.json.Json.createObjectBuilder;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 import static uk.gov.moj.sjp.it.util.HttpClientUtil.getPostCallResponse;
 import static uk.gov.moj.sjp.it.util.HttpClientUtil.makePostCall;
 

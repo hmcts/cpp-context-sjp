@@ -3,6 +3,7 @@ package uk.gov.moj.cpp.sjp.event.processor.activiti.delegates;
 import static java.util.Arrays.asList;
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
 import static uk.gov.justice.services.messaging.JsonEnvelope.metadataFrom;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 import static uk.gov.moj.cpp.sjp.event.processor.EventProcessorConstants.CASE_ID;
 import static uk.gov.moj.cpp.sjp.event.processor.EventProcessorConstants.OFFENCE_ID;
 import static uk.gov.moj.cpp.sjp.event.processor.PleaUpdatedProcessor.PLEA_CANCELLED_PUBLIC_EVENT_NAME;
@@ -15,7 +16,6 @@ import uk.gov.justice.services.messaging.Metadata;
 import java.util.UUID;
 
 import javax.inject.Named;
-import javax.json.Json;
 import javax.json.JsonObject;
 
 import org.activiti.engine.delegate.DelegateExecution;
@@ -37,7 +37,7 @@ public class PleaCancelledDelegate extends AbstractCaseDelegate {
                     .withName(PLEA_CANCELLED_PUBLIC_EVENT_NAME)
                     .build();
 
-            final JsonObject publicEventPayload = Json.createObjectBuilder()
+            final JsonObject publicEventPayload = createObjectBuilder()
                     .add(CASE_ID, caseId.toString())
                     .add(OFFENCE_ID, offenceId)
                     .build();

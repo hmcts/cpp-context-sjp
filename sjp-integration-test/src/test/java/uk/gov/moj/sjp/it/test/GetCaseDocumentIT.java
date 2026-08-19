@@ -13,6 +13,7 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.notNullValue;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 import static uk.gov.moj.sjp.it.helper.CaseDocumentHelper.getCaseDocumentContent;
 import static uk.gov.moj.sjp.it.helper.CaseDocumentHelper.getCaseDocumentMetadata;
 import static uk.gov.moj.sjp.it.helper.CaseDocumentHelper.pollForCaseDocument;
@@ -34,7 +35,6 @@ import uk.gov.moj.sjp.it.stub.MaterialStub;
 import java.time.ZonedDateTime;
 import java.util.UUID;
 
-import javax.json.Json;
 import javax.json.JsonObject;
 import javax.ws.rs.core.Response;
 
@@ -55,7 +55,7 @@ public class GetCaseDocumentIT extends BaseIntegrationTest {
     private final String mimeType = "application/json";
     private final String documentType = "OTHER-Test";
     private final String documentUrl = "http://documentlocation.com/myfile.pdf";
-    private final JsonObject expectedResponse = Json.createObjectBuilder().add("url", documentUrl).build();
+    private final JsonObject expectedResponse = createObjectBuilder().add("url", documentUrl).build();
     private final ZonedDateTime addedAt = ZonedDateTime.now();
     private static final String NATIONAL_COURT_CODE = "1080";
     private final StringToJsonObjectConverter stringToJsonObjectConverter = new StringToJsonObjectConverter();

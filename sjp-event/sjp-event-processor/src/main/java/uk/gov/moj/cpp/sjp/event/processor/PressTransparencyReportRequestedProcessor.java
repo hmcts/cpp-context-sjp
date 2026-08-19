@@ -65,6 +65,7 @@ public class PressTransparencyReportRequestedProcessor {
 
     private static final String LIST_TYPE = "listType";
     private static final String SJP_PRESS_LIST = "SJP_PRESS_LIST";
+    private static final String SJP_DELTA_PRESS_LIST = "SJP_DELTA_PRESS_LIST";
     public static final String CASE_URN = "caseUrn";
     public static final String FIRST_NAME = "firstName";
     public static final String LAST_NAME = "lastName";
@@ -160,10 +161,13 @@ public class PressTransparencyReportRequestedProcessor {
     private void publishCourtList(final JsonEnvelope envelope, final JsonObject payloadForDocumentGeneration) {
         final String type = envelope.payloadAsJsonObject().getString(REQUEST_TYPE);
         final String language = envelope.payloadAsJsonObject().getString(LANGUAGE);
+        // FULL/DELTA is part of the CaTH list-type vocabulary, not a separate field: sending
+        // SJP_PRESS_LIST for delta content makes CaTH render it with the full-list template.
+        final String listType = FULL.name().equals(type) ? SJP_PRESS_LIST : SJP_DELTA_PRESS_LIST;
         LOGGER.info("building sjp press court list publish request, listType {}, requestType {}, language {}",
-                SJP_PRESS_LIST, type, language);
+                listType, type, language);
         final JsonObject courtListPublishRequest = createObjectBuilder()
-                .add(LIST_TYPE, SJP_PRESS_LIST)
+                .add(LIST_TYPE, listType)
                 .add(LANGUAGE, language)
                 .add(REQUEST_TYPE, type)
                 .add("listPayload", payloadForDocumentGeneration)

@@ -3,6 +3,7 @@ package uk.gov.moj.cpp.sjp.event.processor;
 import static java.util.UUID.fromString;
 import static java.util.UUID.randomUUID;
 import static java.util.stream.Collectors.toList;
+import static java.util.Collections.emptyList;
 import static java.util.stream.IntStream.range;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.everyItem;
@@ -490,4 +491,34 @@ public class TransparencyReportRequestedProcessorTest {
         return pendingCase;
     }
 
+
+    @Test
+    public void shouldPublishDeltaPublicListTypeWhenRequestTypeIsDelta() throws Exception {
+        final UUID transparencyReportId = randomUUID();
+
+        when(payloadHelper.mapOffenceIntoOffenceTitleString(any(), eq(false), any())).thenReturn("OffenceTitle");
+        when(payloadHelper.buildProsecutorName(any(), eq(false), any())).thenReturn("Transport For London");
+        when(payloadHelper.getStartDate(eq(false))).thenReturn("15 January 2024");
+
+        final List<UUID> caseIds = range(0, 3).mapToObj(e -> randomUUID()).collect(toList());
+        when(sjpService.getPendingDeltaCases(any(), any()))
+                .thenReturn(pendingCasesList(caseIds, emptyList(), emptyList()));
+
+        final JsonEnvelope privateEventEnvelope = envelopeFrom(
+                metadataWithRandomUUID("sjp.events.transparency-json-report-requested"),
+                createObjectBuilder()
+                        .add("transparencyReportId", transparencyReportId.toString())
+                        .add("format", DocumentFormat.JSON.name())
+                        .add("requestType", DocumentRequestType.DELTA.name())
+                        .add("language", "ENGLISH")
+                        .build()
+        );
+
+        processor.createTransparencyJSONReport(privateEventEnvelope);
+
+        verify(courtListPublishingService, times(1)).publishCourtList(courtListPublishRequestCaptor.capture());
+        final JsonObject courtListPublishRequest =
+                Json.createReader(new StringReader(courtListPublishRequestCaptor.getValue())).readObject();
+        assertThat(courtListPublishRequest.getString("listType"), is("SJP_DELTA_PUBLIC_LIST"));
+    }
 }

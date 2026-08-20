@@ -270,7 +270,7 @@ public class PressTransparencyReportRequestedProcessorTest {
         processor.handlePressTransparencyJSONReportRequest(PRIVATE_EVENT_ENVELOPE_JSON_DELTA);
         verify(courtListPublishingService, times(1)).publishCourtList(courtListPublishRequestCaptor.capture());
         final JsonObject courtListPublishRequest = Json.createReader(new StringReader(courtListPublishRequestCaptor.getValue())).readObject();
-        assertThat(courtListPublishRequest.getString("listType"), is("SJP_PRESS_LIST"));
+        assertThat(courtListPublishRequest.getString("listType"), is("SJP_DELTA_PRESS_LIST"));
         final JsonObject payload = courtListPublishRequest.getJsonObject("listPayload");
         assertThat(payload.getInt("totalNumberOfRecords"), is(1));
         final JsonArray readyCases = payload.getJsonArray("readyCases");

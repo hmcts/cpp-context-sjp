@@ -175,7 +175,16 @@ public class PressTransparencyReportIT extends BaseIntegrationTest {
     }
 
     @Test
-    public void shouldGeneratePressTransparencyJsonReports() {
+    public void shouldGeneratePressTransparencyJsonReportsFull() {
+        verifyGeneratePressTransparencyJsonReport("FULL", "SJP_PRESS_LIST");
+    }
+
+    @Test
+    public void shouldGeneratePressTransparencyJsonReportsDelta() {
+        verifyGeneratePressTransparencyJsonReport("DELTA", "SJP_DELTA_PRESS_LIST");
+    }
+
+    private void verifyGeneratePressTransparencyJsonReport(final String requestType, final String expectedListType) {
 
         final CreateCase.DefendantBuilder defendant1 = defaultDefendant()
                 .withRandomLastName();
@@ -193,7 +202,7 @@ public class PressTransparencyReportIT extends BaseIntegrationTest {
 
         final JsonObject payload = createObjectBuilder()
                 .add("format", "JSON")
-                .add("requestType", "DELTA")
+                .add("requestType", requestType)
                 .add("language", "ENGLISH")
                 .build();
 
@@ -208,7 +217,7 @@ public class PressTransparencyReportIT extends BaseIntegrationTest {
         final List<JSONObject> courtListPublishRequests = pollCourtListPublishRequests(hasSize(1));
         final JSONObject courtListPublishRequest = courtListPublishRequests.get(0);
 
-        assertThat(courtListPublishRequest.getString("listType"), is("SJP_PRESS_LIST"));
+        assertThat(courtListPublishRequest.getString("listType"), is(expectedListType));
 
         final JSONObject listPayload = courtListPublishRequest.getJSONObject("listPayload");
         assertThat(listPayload.getJSONArray("readyCases").length(), is(2));

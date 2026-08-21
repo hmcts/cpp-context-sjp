@@ -178,7 +178,16 @@ public class TransparencyReportIT extends BaseIntegrationTest {
     }
 
     @Test
-    public void shouldGenerateTransparencyJsonReports() {
+    public void shouldGenerateTransparencyJsonReportsFull() {
+        verifyGenerateTransparencyJsonReport("FULL", "SJP_PUBLIC_LIST");
+    }
+
+    @Test
+    public void shouldGenerateTransparencyJsonReportsDelta() {
+        verifyGenerateTransparencyJsonReport("DELTA", "SJP_DELTA_PUBLIC_LIST");
+    }
+
+    private void verifyGenerateTransparencyJsonReport(final String requestType, final String expectedListType) {
 
         final CreateCase.DefendantBuilder defendant1 = defaultDefendant()
                 .withRandomLastName();
@@ -196,7 +205,7 @@ public class TransparencyReportIT extends BaseIntegrationTest {
 
         final JsonObject payload = createObjectBuilder()
                 .add("format", "JSON")
-                .add("requestType", "DELTA")
+                .add("requestType", requestType)
                 .add("language", "ENGLISH")
                 .build();
 
@@ -211,7 +220,7 @@ public class TransparencyReportIT extends BaseIntegrationTest {
         final List<JSONObject> courtListPublishRequests = pollCourtListPublishRequests(hasSize(1));
         final JSONObject courtListPublishRequest = courtListPublishRequests.get(0);
 
-        assertThat(courtListPublishRequest.getString("listType"), is("SJP_PUBLIC_LIST"));
+        assertThat(courtListPublishRequest.getString("listType"), is(expectedListType));
 
         final JSONObject listPayload = courtListPublishRequest.getJSONObject("listPayload");
         assertThat(listPayload.getJSONArray("readyCases").length(), is(2));

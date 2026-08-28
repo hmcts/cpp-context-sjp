@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.List;
 import jakarta.persistence.CollectionTable;
 import jakarta.persistence.ElementCollection;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.JoinColumn;
 import uk.gov.moj.cpp.sjp.domain.SessionType;
 
@@ -62,7 +63,11 @@ public class Session implements Serializable {
     @Enumerated(EnumType.STRING)
     private SessionType type;
 
-    @ElementCollection
+    // EAGER: the Session entity is returned directly by the query handlers (sjp.query.session,
+    // latest-aocp-session, convicting-court-session) and serialised to JSON by the framework's
+    // ObjectToJsonValueConverter AFTER the handler returns (outside any session), so prosecutors
+    // must already be loaded. It is always part of the serialised session view.
+    @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(
             name = "session_prosecutors",
             joinColumns = @JoinColumn(name = "session_id")

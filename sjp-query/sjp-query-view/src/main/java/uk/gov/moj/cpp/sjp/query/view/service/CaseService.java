@@ -76,11 +76,15 @@ import jakarta.persistence.NonUniqueResultException;
 
 import com.google.common.collect.Sets;
 import org.apache.commons.lang3.StringUtils;
+import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.persistence.TypedQuery;
+import jakarta.transaction.Transactional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 @SuppressWarnings("WeakerAccess")
+@ApplicationScoped
+@Transactional
 public class CaseService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(CaseService.class);

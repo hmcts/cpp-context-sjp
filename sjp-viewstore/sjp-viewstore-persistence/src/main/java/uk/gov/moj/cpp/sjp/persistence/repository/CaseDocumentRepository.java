@@ -28,7 +28,7 @@ public class CaseDocumentRepository {
     }
 
     public CaseDocument findByMaterialId(final UUID materialId) {
-        return entityManager.createQuery("FROM CaseDocument cd WHERE cd.materialId = :materialId", CaseDocument.class)
+        return entityManager.createQuery("SELECT cd FROM CaseDocument cd WHERE cd.materialId = :materialId", CaseDocument.class)
                 .setParameter("materialId", materialId)
                 .getSingleResult();
     }

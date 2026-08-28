@@ -13,6 +13,7 @@ import java.util.UUID;
 
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.persistence.EntityManager;
+import jakarta.persistence.NoResultException;
 import jakarta.persistence.PersistenceContext;
 import jakarta.persistence.TypedQuery;
 
@@ -81,19 +82,23 @@ public class CaseRepository {
     }
 
     public CaseDetail findByUrn(final String urn) {
-        return entityManager.createQuery("FROM CaseDetail cd WHERE UPPER(cd.urn) = UPPER(:urn)", CaseDetail.class)
+        return entityManager.createQuery("SELECT cd FROM CaseDetail cd WHERE UPPER(cd.urn) = UPPER(:urn)", CaseDetail.class)
                 .setParameter("urn", urn)
                 .getSingleResult();
     }
 
     public CaseDetail findByUrnPostcode(final String urn, final String postcode) {
-        return entityManager.createQuery("SELECT cd FROM CaseDetail cd " +
+        final TypedQuery<CaseDetail> query = entityManager.createQuery("SELECT cd FROM CaseDetail cd " +
                         "INNER JOIN cd.defendant dd " +
-                        "WHERE (UPPER(cd.urn) = UPPER(:urn) OR UPPER(REGEXP_REPLACE(cd.urn, '^[a-zA-Z]+', '')) = UPPER(:urn)) " +
-                        "AND UPPER(REPLACE(dd.address.postcode,' ','')) = UPPER(REPLACE(:postcode, ' ',''))", CaseDetail.class)
+                        "WHERE (UPPER(cd.urn) = UPPER(:urn) OR UPPER(FUNCTION('REGEXP_REPLACE', cd.urn, '^[a-zA-Z]+', '')) = UPPER(:urn)) " +
+                        "AND UPPER(FUNCTION('REPLACE', dd.address.postcode, ' ', '')) = UPPER(FUNCTION('REPLACE', :postcode, ' ', ''))", CaseDetail.class)
                 .setParameter("urn", urn)
-                .setParameter("postcode", postcode)
-                .getResultList().stream().findFirst().orElse(null);
+                .setParameter("postcode", postcode);
+        try {
+            return query.getSingleResult();
+        } catch (final NoResultException e) {
+            return null;
+        }
     }
 
     public List<CaseDetail> findByDefendantId(final UUID defendantId) {
@@ -281,7 +286,13 @@ public class CaseRepository {
     }
 
     public CaseDetail save(final CaseDetail caseDetail) {
-        return entityManager.merge(caseDetail);
+        // Mirror the DeltaSpike EntityRepository.save contract: persist a genuinely-new entity
+        // (leaving the passed instance managed so later mutations are tracked), else merge.
+        if (caseDetail.getId() != null && entityManager.find(CaseDetail.class, caseDetail.getId()) != null) {
+            return entityManager.merge(caseDetail);
+        }
+        entityManager.persist(caseDetail);
+        return caseDetail;
     }
 
     public void remove(final CaseDetail caseDetail) {

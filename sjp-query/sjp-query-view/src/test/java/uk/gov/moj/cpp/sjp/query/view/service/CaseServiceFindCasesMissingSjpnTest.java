@@ -28,7 +28,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
-import org.apache.deltaspike.data.api.QueryResult;
+import jakarta.persistence.TypedQuery;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -46,7 +46,7 @@ public class CaseServiceFindCasesMissingSjpnTest {
     private static final List<String> AGENT_FILTER_VALUE = Arrays.asList("TFL", "XYZ");
     private List<CaseDetail> caseDetails;
     @Mock
-    private QueryResult queryResult;
+    private TypedQuery<CaseDetail> queryResult;
     @Mock
     private CaseRepository caseRepository;
     @Mock
@@ -78,7 +78,7 @@ public class CaseServiceFindCasesMissingSjpnTest {
 
         final CasesMissingSjpnView casesMissingSjpnView = service.findCasesMissingSjpn(envelope, empty(), empty());
 
-        verify(queryResult, never()).maxResults(anyInt());
+        verify(queryResult, never()).setMaxResults(anyInt());
 
         assertThat(casesMissingSjpnView.ids, equalTo(extractCaseIds(caseDetails)));
         assertThat(casesMissingSjpnView.count, equalTo(COUNT));
@@ -93,7 +93,7 @@ public class CaseServiceFindCasesMissingSjpnTest {
 
         final CasesMissingSjpnView casesMissingSjpnView = service.findCasesMissingSjpn(envelope, empty(), Optional.of(NOW));
 
-        verify(queryResult, never()).maxResults(anyInt());
+        verify(queryResult, never()).setMaxResults(anyInt());
 
         assertThat(casesMissingSjpnView.ids, equalTo(extractCaseIds(caseDetails)));
         assertThat(casesMissingSjpnView.count, equalTo(COUNT));
@@ -109,7 +109,7 @@ public class CaseServiceFindCasesMissingSjpnTest {
 
         verify(caseRepository, never()).findCasesMissingSjpn(any(String.class), any(List.class));
         verify(caseRepository, never()).findCasesMissingSjpn(any(String.class), any(LocalDate.class), any(List.class));
-        verify(queryResult, never()).maxResults(anyInt());
+        verify(queryResult, never()).setMaxResults(anyInt());
 
         assertThat(casesMissingSjpnView.ids, hasSize(0));
         assertThat(casesMissingSjpnView.count, equalTo(COUNT));
@@ -120,14 +120,14 @@ public class CaseServiceFindCasesMissingSjpnTest {
         final int limit = 2;
 
         when(queryResult.getResultList()).thenReturn(caseDetails);
-        when(queryResult.maxResults(anyInt())).thenReturn(queryResult);
+        when(queryResult.setMaxResults(anyInt())).thenReturn(queryResult);
         when(caseRepository.findCasesMissingSjpn(eq(TVL_FILTER_VALUE), anyList())).thenReturn(queryResult);
         when(caseRepository.countCasesMissingSjpn(eq(TVL_FILTER_VALUE), anyList())).thenReturn(COUNT);
 
         final CasesMissingSjpnView casesMissingSjpnView = service.findCasesMissingSjpn(envelope, Optional.of(limit), empty());
 
         verify(caseRepository).findCasesMissingSjpn(TVL_FILTER_VALUE, AGENT_FILTER_VALUE);
-        verify(queryResult).maxResults(limit);
+        verify(queryResult).setMaxResults(limit);
 
         assertThat(casesMissingSjpnView.ids, equalTo(extractCaseIds(caseDetails)));
         assertThat(casesMissingSjpnView.count, equalTo(COUNT));
@@ -138,14 +138,14 @@ public class CaseServiceFindCasesMissingSjpnTest {
         final int limit = 2;
 
         when(queryResult.getResultList()).thenReturn(caseDetails);
-        when(queryResult.maxResults(anyInt())).thenReturn(queryResult);
+        when(queryResult.setMaxResults(anyInt())).thenReturn(queryResult);
         when(caseRepository.findCasesMissingSjpn(TVL_FILTER_VALUE, NOW, AGENT_FILTER_VALUE)).thenReturn(queryResult);
         when(caseRepository.countCasesMissingSjpn(TVL_FILTER_VALUE, NOW, AGENT_FILTER_VALUE)).thenReturn(COUNT);
 
         final CasesMissingSjpnView casesMissingSjpnView = service.findCasesMissingSjpn(envelope, Optional.of(limit), Optional.of(NOW));
 
         verify(caseRepository).findCasesMissingSjpn(TVL_FILTER_VALUE, NOW, AGENT_FILTER_VALUE);
-        verify(queryResult).maxResults(limit);
+        verify(queryResult).setMaxResults(limit);
 
         assertThat(casesMissingSjpnView.ids, equalTo(extractCaseIds(caseDetails)));
         assertThat(casesMissingSjpnView.count, equalTo(COUNT));

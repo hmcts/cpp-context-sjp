@@ -1,10 +1,14 @@
 package uk.gov.moj.cpp.sjp.persistence.repository;
 
-import org.apache.deltaspike.testcontrol.api.junit.CdiTestRunner;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import static java.time.ZoneOffset.UTC;
+import static java.time.ZonedDateTime.now;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.contains;
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.iterableWithSize;
 
-import uk.gov.justice.services.test.utils.persistence.BaseTransactionalJunit4Test;
+import uk.gov.justice.services.test.utils.persistence.HibernateTestEntityManagerProvider;
 import uk.gov.moj.cpp.sjp.domain.CaseReadinessReason;
 import uk.gov.moj.cpp.sjp.domain.SessionType;
 import uk.gov.moj.cpp.sjp.persistence.builder.CaseDetailBuilder;
@@ -15,36 +19,43 @@ import uk.gov.moj.cpp.sjp.persistence.entity.PersonalDetails;
 import uk.gov.moj.cpp.sjp.persistence.entity.ReadyCase;
 import uk.gov.moj.cpp.sjp.persistence.entity.view.UpdatedDefendantDetails;
 
-import jakarta.inject.Inject;
-
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
 import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 
-import static java.time.ZoneOffset.UTC;
-import static java.time.ZonedDateTime.now;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.contains;
-import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.iterableWithSize;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
-@RunWith(CdiTestRunner.class)
-public class DefendantRepositoryTest extends BaseTransactionalJunit4Test {
+class DefendantRepositoryTest {
 
-    @Inject
+    private static final String PERSISTENCE_UNIT = "sjp-test-persistence-unit";
+
+    @RegisterExtension
+    static HibernateTestEntityManagerProvider provider = new HibernateTestEntityManagerProvider(PERSISTENCE_UNIT);
+
     private CaseRepository caseRepository;
 
-    @Inject
     private DefendantRepository defendantRepository;
 
-    @Inject
     private ReadyCaseRepository readyCaseRepository;
 
+    @BeforeEach
+    void createRepositoriesWithInjectedEntityManager() {
+        caseRepository = new CaseRepository();
+        provider.injectEntityManagerInto(caseRepository);
+
+        defendantRepository = new DefendantRepository();
+        provider.injectEntityManagerInto(defendantRepository);
+
+        readyCaseRepository = new ReadyCaseRepository();
+        provider.injectEntityManagerInto(readyCaseRepository);
+    }
+
     @Test
-    public void shouldFindDefendantWithDoBUpdatedAndUpdatesNotAcknowledgedYet() {
+    void shouldFindDefendantWithDoBUpdatedAndUpdatesNotAcknowledgedYet() {
         final PersonalDetails personalDetails = new PersonalDetails();
         personalDetails.markDateOfBirthUpdated(now(UTC));
 
@@ -57,7 +68,7 @@ public class DefendantRepositoryTest extends BaseTransactionalJunit4Test {
     }
 
     @Test
-    public void shouldFindDefendantWithDoBUpdatedAndUpdatesAcknowledgedBefore() {
+    void shouldFindDefendantWithDoBUpdatedAndUpdatesAcknowledgedBefore() {
         final PersonalDetails personalDetails = new PersonalDetails();
         personalDetails.markDateOfBirthUpdated(now(UTC));
 
@@ -70,7 +81,7 @@ public class DefendantRepositoryTest extends BaseTransactionalJunit4Test {
     }
 
     @Test
-    public void shouldIgnoreDefendantWithDoBUpdateWhenAcknowledged() {
+    void shouldIgnoreDefendantWithDoBUpdateWhenAcknowledged() {
         final PersonalDetails personalDetails = new PersonalDetails();
         personalDetails.markDateOfBirthUpdated(now(UTC).minusDays(2));
 
@@ -82,7 +93,7 @@ public class DefendantRepositoryTest extends BaseTransactionalJunit4Test {
     }
 
     @Test
-    public void shouldFindDefendantWithAddressUpdatedAndUpdatesNotAcknowledgedYet() {
+    void shouldFindDefendantWithAddressUpdatedAndUpdatesNotAcknowledgedYet() {
         final PersonalDetails personalDetails = new PersonalDetails();
 
         final UpdatedDefendantDetails defendant = createCaseDetail(personalDetails, "TVL", null,now(UTC),null);
@@ -94,7 +105,7 @@ public class DefendantRepositoryTest extends BaseTransactionalJunit4Test {
     }
 
     @Test
-    public void shouldIgnoreDefendantWhenUpdateHappenedMoreThan10DaysAgo() {
+    void shouldIgnoreDefendantWhenUpdateHappenedMoreThan10DaysAgo() {
         final PersonalDetails personalDetails = new PersonalDetails();
 
         createCaseDetail(personalDetails, "TVL", null, now(UTC).minusDays(15), null);
@@ -105,7 +116,7 @@ public class DefendantRepositoryTest extends BaseTransactionalJunit4Test {
     }
 
     @Test
-    public void shouldFindDefendantWithAddressUpdatedAndUpdatesAcknowledgedBefore() {
+    void shouldFindDefendantWithAddressUpdatedAndUpdatesAcknowledgedBefore() {
         final PersonalDetails personalDetails = new PersonalDetails();
 
         final UpdatedDefendantDetails defendant = createCaseDetail(personalDetails, "TVL", now(UTC).minusDays(2), now(UTC), null);
@@ -117,7 +128,7 @@ public class DefendantRepositoryTest extends BaseTransactionalJunit4Test {
     }
 
     @Test
-    public void shouldIgnoreDefendantWithAddressUpdateWhenAcknowledged() {
+    void shouldIgnoreDefendantWithAddressUpdateWhenAcknowledged() {
         final PersonalDetails personalDetails = new PersonalDetails();
 
         createCaseDetail(personalDetails, "TVL", now(UTC), now(UTC).minusDays(2), null);
@@ -128,7 +139,7 @@ public class DefendantRepositoryTest extends BaseTransactionalJunit4Test {
     }
 
     @Test
-    public void shouldFindDefendantWithNameUpdatedAndUpdatesNotAcknowledgedYet() {
+    void shouldFindDefendantWithNameUpdatedAndUpdatesNotAcknowledgedYet() {
         final PersonalDetails personalDetails = new PersonalDetails();
 
         final UpdatedDefendantDetails defendant = createCaseDetail(personalDetails, "TVL", null, null, now(UTC));
@@ -140,7 +151,7 @@ public class DefendantRepositoryTest extends BaseTransactionalJunit4Test {
     }
 
     @Test
-    public void shouldFindDefendantWithNameUpdatedAndUpdatesAcknowledgedBefore() {
+    void shouldFindDefendantWithNameUpdatedAndUpdatesAcknowledgedBefore() {
         final PersonalDetails personalDetails = new PersonalDetails();
 
         final UpdatedDefendantDetails defendant = createCaseDetail(personalDetails, "TVL", now(UTC).minusDays(2), null, now(UTC));
@@ -152,7 +163,7 @@ public class DefendantRepositoryTest extends BaseTransactionalJunit4Test {
     }
 
     @Test
-    public void shouldIgnoreDefendantWithNameUpdateWhenAcknowledged() {
+    void shouldIgnoreDefendantWithNameUpdateWhenAcknowledged() {
         final PersonalDetails personalDetails = new PersonalDetails();
 
         createCaseDetail(personalDetails, "TVL", now(UTC), null, now(UTC).minusDays(2));
@@ -163,7 +174,7 @@ public class DefendantRepositoryTest extends BaseTransactionalJunit4Test {
     }
 
     @Test
-    public void shouldIgnoreDefendantWithNoDetailChanges() {
+    void shouldIgnoreDefendantWithNoDetailChanges() {
         createCaseDetail(new PersonalDetails(), "TVL", null, null, null);
 
         final List<UpdatedDefendantDetails> defendantDetails = defendantRepository.findUpdatedByCaseProsecutingAuthority("TVL", now().minusDays(10), now(), Collections.emptyList());
@@ -172,7 +183,7 @@ public class DefendantRepositoryTest extends BaseTransactionalJunit4Test {
     }
 
     @Test
-    public void shouldIgnoreDefendantForOtherAuthorityGroup() {
+    void shouldIgnoreDefendantForOtherAuthorityGroup() {
         createCaseDetail(null, "TVL", null, null, null);
 
         final List<UpdatedDefendantDetails> defendantDetails = defendantRepository.findUpdatedByCaseProsecutingAuthority("TFL", now().minusDays(10), now(), Collections.emptyList());
@@ -181,7 +192,7 @@ public class DefendantRepositoryTest extends BaseTransactionalJunit4Test {
     }
 
     @Test
-    public void shouldfindCaseIdByDefendantId() {
+    void shouldfindCaseIdByDefendantId() {
         final UpdatedDefendantDetails caseDetail = createCaseDetail(new PersonalDetails(), "TVL", null, null, null);
 
         final UUID actualCaseId = defendantRepository.findCaseIdByDefendantId(caseDetail.getDefendantId());
@@ -191,7 +202,7 @@ public class DefendantRepositoryTest extends BaseTransactionalJunit4Test {
 
 
     @Test
-    public void shouldFindDefendantsByReadyCases() {
+    void shouldFindDefendantsByReadyCases() {
         final UpdatedDefendantDetails caseDetail = createCaseDetail(new PersonalDetails(), "TVL", null, null, null);
 
         final List<DefendantDetail> byReadyCases = defendantRepository.findByReadyCases();

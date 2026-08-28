@@ -9,18 +9,20 @@ import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.nullValue;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static uk.gov.moj.cpp.sjp.domain.SessionType.DELEGATED_POWERS;
 import static uk.gov.moj.cpp.sjp.domain.SessionType.MAGISTRATE;
 
 import uk.gov.justice.services.common.util.Clock;
+import uk.gov.justice.services.common.util.UtcClock;
 import uk.gov.justice.services.test.utils.core.random.RandomGenerator;
-import uk.gov.justice.services.test.utils.persistence.BaseTransactionalJunit4Test;
+import uk.gov.justice.services.test.utils.persistence.HibernateTestEntityManagerProvider;
 import uk.gov.moj.cpp.sjp.domain.CaseReadinessReason;
 import uk.gov.moj.cpp.sjp.persistence.builder.CaseDetailBuilder;
 import uk.gov.moj.cpp.sjp.persistence.builder.DefendantDetailBuilder;
@@ -41,17 +43,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
-import jakarta.inject.Inject;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.NonUniqueResultException;
 
-import org.apache.deltaspike.testcontrol.api.junit.CdiTestRunner;
-import org.junit.After;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
-@RunWith(CdiTestRunner.class)
-public class CaseRepositoryTest extends BaseTransactionalJunit4Test {
+class CaseRepositoryTest {
 
     private static final Map<UUID, CaseDetail> CASES = new HashMap<>();
 
@@ -81,17 +80,19 @@ public class CaseRepositoryTest extends BaseTransactionalJunit4Test {
     private static final String OFFENCE_CODE = "PS0001";
     private static final List<ReadyCase> READY_CASES = new ArrayList<>();
     private static LocalDate postingDate = LocalDate.of(2015, 12, 31);
-    @Inject
+
+    private static final String PERSISTENCE_UNIT = "sjp-test-persistence-unit";
+
+    @RegisterExtension
+    static HibernateTestEntityManagerProvider provider = new HibernateTestEntityManagerProvider(PERSISTENCE_UNIT);
+
     private EntityManager entityManager;
 
-    @Inject
     private CaseRepository caseRepository;
 
-    @Inject
     private ReadyCaseRepository readyCaseRepository;
 
-    @Inject
-    private Clock clock;
+    private final Clock clock = new UtcClock();
 
     private ZonedDateTime caseCreatedOn;
 
@@ -101,8 +102,16 @@ public class CaseRepositoryTest extends BaseTransactionalJunit4Test {
         return PROSECUTING_AUTHORITY + RandomGenerator.integer(100000000, 999999999).next();
     }
 
-    @Override
-    public void setUpBefore() {
+    @BeforeEach
+    void createRepositoriesAndSeedCases() {
+        caseRepository = new CaseRepository();
+        provider.injectEntityManagerInto(caseRepository);
+
+        readyCaseRepository = new ReadyCaseRepository();
+        provider.injectEntityManagerInto(readyCaseRepository);
+
+        entityManager = provider.getEntityManager();
+
         caseCreatedOn = clock.now();
         // given 4 cases exist in database
         case1 = getCase(VALID_CASE_ID_1, VALID_URN_1, VALID_DEFENDANT_ID_1);
@@ -129,49 +138,43 @@ public class CaseRepositoryTest extends BaseTransactionalJunit4Test {
 
         READY_CASES.forEach(readyCaseRepository::save);
 
-        //clear L1 cache to force JPA to execute query against database
+        //flush pending inserts then clear L1 cache to force JPA to execute query against database
+        entityManager.flush();
         entityManager.clear();
     }
 
-    @After
-    public void tearDownAfterTemporary() {
-        // cleaning up database after each test to avoid data collision
-        CASES.values().forEach(caseRepository::attachAndRemove);
-        READY_CASES.forEach(readyCaseRepository::attachAndRemove);
-    }
-
     @Test
-    public void shouldFindPressTransparencyReportPendingCases() {
+    void shouldFindPressTransparencyReportPendingCases() {
         final List<PendingCaseToPublishPerOffence> caseDetails = caseRepository.findPressTransparencyReportPendingCases();
         assertNotNull(caseDetails);
     }
 
     @Test
-    public void shouldFindPressTransparencyDeltaReportPendingCases() {
+    void shouldFindPressTransparencyDeltaReportPendingCases() {
         final List<PendingCaseToPublishPerOffence> caseDetails = caseRepository.findPressTransparencyDeltaReportPendingCases(any(), any());
         assertNotNull(caseDetails);
     }
 
     @Test
-    public void shouldFindPublicTransparencyReportPendingCases() {
+    void shouldFindPublicTransparencyReportPendingCases() {
         final List<PendingCaseToPublishPerOffence> caseDetails = caseRepository.findPublicTransparencyReportPendingCases();
         assertNotNull(caseDetails);
     }
 
     @Test
-    public void shouldFindPublicTransparencyDeltaReportPendingCases() {
+    void shouldFindPublicTransparencyDeltaReportPendingCases() {
         final List<PendingCaseToPublishPerOffence> caseDetails = caseRepository.findPublicTransparencyDeltaReportPendingCases(any(), any());
         assertNotNull(caseDetails);
     }
 
     @Test
-    public void shouldFindCase() {
+    void shouldFindCase() {
         final CaseDetail actualCase = caseRepository.findBy(VALID_CASE_ID_1);
         assertNotNull(actualCase);
     }
 
     @Test
-    public void shouldFindCaseWithMultipleDocuments() {
+    void shouldFindCaseWithMultipleDocuments() {
         final CaseDetail actualCase = caseRepository.findBy(VALID_CASE_ID_2);
         assertNotNull(actualCase);
         assertThat(actualCase.getCaseDocuments(), hasSize(case2.getCaseDocuments().size()));
@@ -180,62 +183,62 @@ public class CaseRepositoryTest extends BaseTransactionalJunit4Test {
     }
 
     @Test
-    public void shouldFindCaseMatchingUrn() {
+    void shouldFindCaseMatchingUrn() {
         final CaseDetail actualCase = caseRepository.findByUrn(VALID_URN_1);
         assertNotNull(actualCase);
-        assertEquals("ID should match ID of case 1", VALID_CASE_ID_1, actualCase.getId());
+        assertEquals(VALID_CASE_ID_1, actualCase.getId(), "ID should match ID of case 1");
         assertThat(caseCreatedOn, is(actualCase.getDateTimeCreated()));
     }
 
     @Test
-    public void shouldFindCaseMatchingUrnIgnoringCase() {
+    void shouldFindCaseMatchingUrnIgnoringCase() {
         final CaseDetail actualCase = caseRepository.findByUrn(VALID_URN_1.toLowerCase());
         assertNotNull(actualCase);
-        assertEquals("ID should match ID of case 1", VALID_CASE_ID_1, actualCase.getId());
+        assertEquals(VALID_CASE_ID_1, actualCase.getId(), "ID should match ID of case 1");
     }
 
     @Test
-    public void shouldFindCaseByPersonId() {
+    void shouldFindCaseByPersonId() {
         final List<CaseDetail> caseDetails = caseRepository.findByDefendantId(VALID_DEFENDANT_ID_1);
         assertNotNull(caseDetails);
         assertThat("Should have 1 entry", caseDetails, hasSize(1));
-        assertEquals("ID should match ID of case 1", VALID_CASE_ID_1, caseDetails.get(0).getId());
+        assertEquals(VALID_CASE_ID_1, caseDetails.get(0).getId(), "ID should match ID of case 1");
     }
 
     @Test
-    public void shouldFindCaseWithEnterpriseIdByCaseId() {
+    void shouldFindCaseWithEnterpriseIdByCaseId() {
         final CaseDetail caseDetail = caseRepository.findBy(VALID_CASE_ID_1);
 
         assertThat(caseDetail.getEnterpriseId(), equalTo(ENTERPRISE_ID));
     }
 
     @Test
-    public void shouldFindCaseDocuments() {
+    void shouldFindCaseDocuments() {
         final List<CaseDocument> caseDocuments = caseRepository.findCaseDocuments(VALID_CASE_ID_2);
         assertNotNull(caseDocuments);
         assertThat(caseDocuments.stream().map(CaseDocument::getMaterialId).collect(toList()), containsInAnyOrder(VALID_MATERIAL_ID_1, VALID_MATERIAL_ID_2));
     }
 
     @Test
-    public void shouldFindCaseDefendants_Success() {
+    void shouldFindCaseDefendants_Success() {
         final DefendantDetail defendant = caseRepository.findCaseDefendant(VALID_CASE_ID_3);
         assertNotNull(defendant);
         assertEquals(VALID_CASE_ID_3, defendant.getCaseDetail().getId());
     }
 
     @Test
-    public void shouldCompleteCaseSuccessfully() {
-        assertFalse("CaseAggregate should not be completed",
-                CASES.get(VALID_CASE_ID_1).isCompleted());
+    void shouldCompleteCaseSuccessfully() {
+        assertFalse(CASES.get(VALID_CASE_ID_1).isCompleted(),
+                "CaseAggregate should not be completed");
 
         caseRepository.completeCase(VALID_CASE_ID_1);
         final CaseDetail actualCase = caseRepository.findBy(VALID_CASE_ID_1);
-        assertTrue("CaseAggregate should be completed", actualCase.isCompleted());
+        assertTrue(actualCase.isCompleted(), "CaseAggregate should be completed");
         assertNull(actualCase.getAdjournedTo());
     }
 
     @Test
-    public void shouldUpdateLibraCaseReopenedDetails() {
+    void shouldUpdateLibraCaseReopenedDetails() {
         final LocalDate reopenedDate = now();
         final String reason = "REASON";
         final CaseDetail actualCase = caseRepository.findByUrn(VALID_URN_1);
@@ -250,7 +253,7 @@ public class CaseRepositoryTest extends BaseTransactionalJunit4Test {
     }
 
     @Test
-    public void shouldFindCaseByMaterialIdWhenMaterialIsDocument() {
+    void shouldFindCaseByMaterialIdWhenMaterialIsDocument() {
 
         final CaseDetail actualCase = caseRepository.findByUrn(VALID_URN_2);
 
@@ -260,7 +263,7 @@ public class CaseRepositoryTest extends BaseTransactionalJunit4Test {
     }
 
     @Test
-    public void shouldPersistCurrencyAndOtherSupportingInformation() {
+    void shouldPersistCurrencyAndOtherSupportingInformation() {
         final CaseDetail caseDetail = caseRepository.findBy(VALID_CASE_ID_1);
 
         assertThat(caseDetail.getDefendant().getNumPreviousConvictions(), is(NUM_PREVIOUS_CONVICTIONS));
@@ -277,44 +280,44 @@ public class CaseRepositoryTest extends BaseTransactionalJunit4Test {
     }
 
     @Test
-    public void shouldNotFindNonExistingCase() {
+    void shouldNotFindNonExistingCase() {
         final CaseDetail caseDetail = caseRepository.findBy(UUID.randomUUID());
 
         assertThat(caseDetail, nullValue());
     }
 
     @Test
-    public void shouldFindCaseMatchingUrnWithPrefixAndPostcode() {
+    void shouldFindCaseMatchingUrnWithPrefixAndPostcode() {
         final CaseDetail actualCase = caseRepository.findByUrnPostcode(VALID_URN_1, POSTCODE_1);
 
         assertNotNull(actualCase);
-        assertEquals("ID should match ID of case 1", VALID_CASE_ID_1, actualCase.getId());
-        assertEquals("URN should match URN of case 1", VALID_URN_1, actualCase.getUrn());
+        assertEquals(VALID_CASE_ID_1, actualCase.getId(), "ID should match ID of case 1");
+        assertEquals(VALID_URN_1, actualCase.getUrn(), "URN should match URN of case 1");
 
     }
 
     @Test
-    public void shouldFindCaseMatchingUrnWithPrefixAndPostcodeWithExtraSpaces() {
+    void shouldFindCaseMatchingUrnWithPrefixAndPostcodeWithExtraSpaces() {
         final CaseDetail actualCase = caseRepository.findByUrnPostcode(VALID_URN_1, String.format("  %s   ", POSTCODE_1));
 
         assertNotNull(actualCase);
-        assertEquals("ID should match ID of case 1", VALID_CASE_ID_1, actualCase.getId());
-        assertEquals("URN should match URN of case 1", VALID_URN_1, actualCase.getUrn());
+        assertEquals(VALID_CASE_ID_1, actualCase.getId(), "ID should match ID of case 1");
+        assertEquals(VALID_URN_1, actualCase.getUrn(), "URN should match URN of case 1");
 
     }
 
     @Test
-    public void shouldFindCaseMatchingUrnWithoutPrefixAndPostcode() {
+    void shouldFindCaseMatchingUrnWithoutPrefixAndPostcode() {
         final CaseDetail actualCase = caseRepository.findByUrnPostcode(VALID_URN_1.replace(PROSECUTING_AUTHORITY, ""), POSTCODE_1);
 
         assertNotNull(actualCase);
-        assertEquals("ID should match ID of case 1", VALID_CASE_ID_1, actualCase.getId());
-        assertEquals("URN should match URN of case 1", VALID_URN_1, actualCase.getUrn());
+        assertEquals(VALID_CASE_ID_1, actualCase.getId(), "ID should match ID of case 1");
+        assertEquals(VALID_URN_1, actualCase.getUrn(), "URN should match URN of case 1");
 
     }
 
     @Test
-    public void shouldFindCaseWhenUrnWithoutPrefixSameButPostcodeDifferent() {
+    void shouldFindCaseWhenUrnWithoutPrefixSameButPostcodeDifferent() {
 
         //given
         final String urn1 = "TFL12345678A";
@@ -338,8 +341,8 @@ public class CaseRepositoryTest extends BaseTransactionalJunit4Test {
         assertEquals(urn1, actualCase.getUrn());
     }
 
-    @Test(expected = NonUniqueResultException.class)
-    public void shouldThrowExceptionWhenTwoCasesHaveSameUrnWithoutPrefixAndPostcode() {
+    @Test
+    void shouldThrowExceptionWhenTwoCasesHaveSameUrnWithoutPrefixAndPostcode() {
 
         //given
         final String urn1 = "TFL12345678A";
@@ -356,14 +359,12 @@ public class CaseRepositoryTest extends BaseTransactionalJunit4Test {
         CASES.put(caseDetail1.getId(), caseDetail1);
         CASES.put(caseDetail2.getId(), caseDetail2);
 
-        //when
-        final CaseDetail actualCase = caseRepository.findByUrnPostcode("12345678A", postcode1);
-
-        //then throws exception
+        //when / then throws exception
+        assertThrows(NonUniqueResultException.class, () -> caseRepository.findByUrnPostcode("12345678A", postcode1));
     }
 
     @Test
-    public void shouldFindCasesForSOCCheck() {
+    void shouldFindCasesForSOCCheck() {
         final String loggedInUserId = "2781b565-4514-4805-8744-a3e827f0f611";
         final String ljaCode = "2577";
         final String courtHouseCode = "B01LY00";
@@ -376,7 +377,7 @@ public class CaseRepositoryTest extends BaseTransactionalJunit4Test {
     }
 
     @Test
-    public void shouldFindCasesWithoutDefendantPostCode() {
+    void shouldFindCasesWithoutDefendantPostCode() {
         //given
         final CaseDetail caseDetail1 = getCase(randomUUID(), VALID_URN_1, POSTCODE_1);
         final CaseDetail caseDetail2 = getCase(randomUUID(), VALID_URN_2, POSTCODE_2);
@@ -395,7 +396,7 @@ public class CaseRepositoryTest extends BaseTransactionalJunit4Test {
     }
 
     @Test
-    public void shouldFindCasesWithoutDefendantPostCodeWhenDefendantIsCompany() {
+    void shouldFindCasesWithoutDefendantPostCodeWhenDefendantIsCompany() {
         //given
         final CaseDetail caseDetail1 = getCase(randomUUID(), VALID_URN_1, POSTCODE_1);
         final CaseDetail caseDetail2 = getCase(randomUUID(), VALID_URN_2, POSTCODE_2);

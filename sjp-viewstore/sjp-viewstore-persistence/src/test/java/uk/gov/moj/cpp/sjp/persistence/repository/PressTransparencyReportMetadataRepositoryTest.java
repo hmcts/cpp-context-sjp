@@ -1,34 +1,41 @@
 package uk.gov.moj.cpp.sjp.persistence.repository;
 
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertThat;
 import static uk.gov.moj.cpp.sjp.domain.DocumentFormat.PDF;
 import static uk.gov.moj.cpp.sjp.domain.DocumentRequestType.DELTA;
 
-import uk.gov.justice.services.test.utils.persistence.BaseTransactionalJunit4Test;
+import uk.gov.justice.services.test.utils.persistence.HibernateTestEntityManagerProvider;
 import uk.gov.moj.cpp.sjp.persistence.entity.PressTransparencyReportMetadata;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
 
-import jakarta.inject.Inject;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
-import org.apache.deltaspike.testcontrol.api.junit.CdiTestRunner;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+class PressTransparencyReportMetadataRepositoryTest {
 
-@RunWith(CdiTestRunner.class)
-public class PressTransparencyReportMetadataRepositoryTest extends BaseTransactionalJunit4Test {
+    private static final String PERSISTENCE_UNIT = "sjp-test-persistence-unit";
 
-    @Inject
+    @RegisterExtension
+    static HibernateTestEntityManagerProvider provider = new HibernateTestEntityManagerProvider(PERSISTENCE_UNIT);
+
     private PressTransparencyReportMetadataRepository pressTransparencyReportMetadataRepository;
 
     private static final LocalDateTime earlierGeneratedAt = LocalDateTime.of(2018, 11, 26, 0, 0, 0);
     private static final LocalDateTime latestGeneratedAt = LocalDateTime.of(2018, 11, 27, 0, 0, 0);
     private static final LocalDateTime from = LocalDateTime.of(2018, 11, 25, 0, 0, 0);
 
+    @BeforeEach
+    void setUp() {
+        pressTransparencyReportMetadataRepository = new PressTransparencyReportMetadataRepository();
+        provider.injectEntityManagerInto(pressTransparencyReportMetadataRepository);
+    }
+
     @Test
-    public void shouldReturnTheLatestPressReportMetadata() {
+    void shouldReturnTheLatestPressReportMetadata() {
         // given
         final UUID earlierReportId = UUID.randomUUID();
         final UUID earlierReportServiceId = UUID.randomUUID();
@@ -72,4 +79,3 @@ public class PressTransparencyReportMetadataRepositoryTest extends BaseTransacti
     }
 
 }
-

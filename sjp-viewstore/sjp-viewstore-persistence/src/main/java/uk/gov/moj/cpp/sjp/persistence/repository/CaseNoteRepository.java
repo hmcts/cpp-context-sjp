@@ -34,7 +34,13 @@ public class CaseNoteRepository {
     }
 
     public CaseNote save(final CaseNote entity) {
-        return entityManager.merge(entity);
+        // Mirror the DeltaSpike EntityRepository.save contract: persist a genuinely-new entity
+        // (leaving the passed instance managed) else merge.
+        if (entity.getNoteId() != null && entityManager.find(CaseNote.class, entity.getNoteId()) != null) {
+            return entityManager.merge(entity);
+        }
+        entityManager.persist(entity);
+        return entity;
     }
 
     public void remove(final CaseNote entity) {

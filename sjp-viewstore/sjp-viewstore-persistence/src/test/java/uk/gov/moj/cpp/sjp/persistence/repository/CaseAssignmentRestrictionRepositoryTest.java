@@ -7,34 +7,36 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertNull;
 
 import uk.gov.justice.services.common.util.Clock;
-import uk.gov.justice.services.test.utils.persistence.BaseTransactionalJunit4Test;
+import uk.gov.justice.services.common.util.UtcClock;
+import uk.gov.justice.services.test.utils.persistence.HibernateTestEntityManagerProvider;
 import uk.gov.moj.cpp.sjp.persistence.entity.CaseAssignmentRestriction;
 
-import jakarta.inject.Inject;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
-import org.apache.deltaspike.testcontrol.api.junit.CdiTestRunner;
-import org.junit.Before;
-import org.junit.Ignore;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-
-@RunWith(CdiTestRunner.class)
-@Ignore
+@Disabled
 // This test is ignored since h2 does not support jsonb type
-public class CaseAssignmentRestrictionRepositoryTest extends BaseTransactionalJunit4Test {
+class CaseAssignmentRestrictionRepositoryTest {
+
+    private static final String PERSISTENCE_UNIT = "sjp-test-persistence-unit";
+
+    @RegisterExtension
+    static HibernateTestEntityManagerProvider provider = new HibernateTestEntityManagerProvider(PERSISTENCE_UNIT);
 
     private static final String PROSECUTING_AUTHORITY_TVL = "TVL";
     private static final String PROSECUTING_AUTHORITY_TFL = "TFL";
     private static final String PROSECUTING_AUTHORITY_DVLA = "DVLA";
 
-    @Inject
-    private Clock dateTimeCreated;
+    private final Clock dateTimeCreated = new UtcClock();
 
-    @Inject
     private CaseAssignmentRestrictionRepository repository;
 
-    @Before
-    public void set() {
+    @BeforeEach
+    void set() {
+        repository = new CaseAssignmentRestrictionRepository();
+        provider.injectEntityManagerInto(repository);
         repository.saveCaseAssignmentRestriction(PROSECUTING_AUTHORITY_TVL, "[]", "[]", dateTimeCreated.now(), dateTimeCreated.now().toLocalDate(), dateTimeCreated.now().toLocalDate());
         repository.saveCaseAssignmentRestriction(PROSECUTING_AUTHORITY_TFL, "[\"1234\"]", "[]", dateTimeCreated.now(), null, dateTimeCreated.now().toLocalDate());
         repository.saveCaseAssignmentRestriction(PROSECUTING_AUTHORITY_DVLA, "[]", "[\"9876\"]", dateTimeCreated.now(), dateTimeCreated.now().toLocalDate(), null);

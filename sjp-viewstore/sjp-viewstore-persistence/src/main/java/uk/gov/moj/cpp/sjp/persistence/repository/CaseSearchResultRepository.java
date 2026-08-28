@@ -18,10 +18,10 @@ public class CaseSearchResultRepository {
     public List<CaseSearchResult> findByLastName(final String prosecutingAuthority, final String lastName,
                                                  final List<String> agentProsecutorAuthorityAccess) {
         return entityManager.createQuery(
-                "from CaseSearchResult as r inner join fetch r.caseSummary as c where upper(r.lastName) = upper(:lastName) and r.dateAdded = " +
+                "select r from CaseSearchResult as r inner join fetch r.caseSummary where upper(r.lastName) = upper(:lastName) and r.dateAdded = " +
                         "(select max(z.dateAdded) from CaseSearchResult as z where z.caseId=r.caseId and upper(z.lastName) = upper(:lastName)) " +
                         "and (r.caseSummary.prosecutingAuthority like :prosecutingAuthority OR r.caseSummary.prosecutingAuthority IN (:agentProsecutorAuthorityAccess)) " +
-                        "order by r.firstName ASC, c.postingDate DESC",
+                        "order by r.firstName ASC, r.caseSummary.postingDate DESC",
                 CaseSearchResult.class)
                 .setParameter("prosecutingAuthority", prosecutingAuthority)
                 .setParameter("lastName", lastName)
@@ -32,10 +32,10 @@ public class CaseSearchResultRepository {
     public List<CaseSearchResult> findByUrn(final String prosecutingAuthority, final String urn,
                                             final List<String> agentProsecutorAuthorityAccess) {
         return entityManager.createQuery(
-                "from CaseSearchResult as r inner join fetch r.caseSummary as c where upper(r.caseSummary.urn) = upper(:urn) and r.dateAdded = " +
+                "select r from CaseSearchResult as r inner join fetch r.caseSummary where upper(r.caseSummary.urn) = upper(:urn) and r.dateAdded = " +
                         "(select max(z.dateAdded) from CaseSearchResult as z where z.caseId=r.caseId) " +
                         "and (r.caseSummary.prosecutingAuthority like :prosecutingAuthority OR r.caseSummary.prosecutingAuthority IN (:agentProsecutorAuthorityAccess)) " +
-                        "order by r.firstName ASC, c.postingDate DESC",
+                        "order by r.firstName ASC, r.caseSummary.postingDate DESC",
                 CaseSearchResult.class)
                 .setParameter("prosecutingAuthority", prosecutingAuthority)
                 .setParameter("urn", urn)
@@ -54,10 +54,10 @@ public class CaseSearchResultRepository {
     public List<CaseSearchResult> findByLegalEntityName(final String prosecutingAuthority, final String legalEntityName,
                                                         final List<String> agentProsecutorAuthorityAccess) {
         return entityManager.createQuery(
-                "from CaseSearchResult as r inner join fetch r.caseSummary as c where upper(r.legalEntityName) = upper(:legalEntityName) and r.dateAdded = " +
+                "select r from CaseSearchResult as r inner join fetch r.caseSummary where upper(r.legalEntityName) = upper(:legalEntityName) and r.dateAdded = " +
                         "(select max(z.dateAdded) from CaseSearchResult as z where z.caseId=r.caseId and upper(z.legalEntityName) = upper(:legalEntityName)) " +
                         "and (r.caseSummary.prosecutingAuthority like :prosecutingAuthority OR r.caseSummary.prosecutingAuthority IN (:agentProsecutorAuthorityAccess)) " +
-                        "order by r.legalEntityName ASC, c.postingDate DESC",
+                        "order by r.legalEntityName ASC, r.caseSummary.postingDate DESC",
                 CaseSearchResult.class)
                 .setParameter("prosecutingAuthority", prosecutingAuthority)
                 .setParameter("legalEntityName", legalEntityName)
@@ -71,6 +71,12 @@ public class CaseSearchResultRepository {
 
     public CaseSearchResult save(final CaseSearchResult entity) {
         return entityManager.merge(entity);
+    }
+
+    public CaseSearchResult saveAndFlush(final CaseSearchResult entity) {
+        final CaseSearchResult merged = entityManager.merge(entity);
+        entityManager.flush();
+        return merged;
     }
 
     public void remove(final CaseSearchResult entity) {

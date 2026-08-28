@@ -10,7 +10,8 @@ import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.isIn;
 
 import uk.gov.justice.services.common.util.Clock;
-import uk.gov.justice.services.test.utils.persistence.BaseTransactionalJunit4Test;
+import uk.gov.justice.services.common.util.UtcClock;
+import uk.gov.justice.services.test.utils.persistence.HibernateTestEntityManagerProvider;
 import uk.gov.moj.cpp.sjp.persistence.entity.CaseDetail;
 import uk.gov.moj.cpp.sjp.persistence.entity.CaseDetailMissingSjpn;
 import uk.gov.moj.cpp.sjp.persistence.entity.CaseDocument;
@@ -22,30 +23,32 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import jakarta.inject.Inject;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
-import org.apache.deltaspike.testcontrol.api.junit.CdiTestRunner;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-
-@RunWith(CdiTestRunner.class)
-public class CaseRepositorySjpnTest extends BaseTransactionalJunit4Test {
+class CaseRepositorySjpnTest {
 
     private static final String TFL_PROSECUTOR_FILTER_VALUE = "TFL";
     private static final String COURT_ADMIN_FILTER_VALUE = "%";
     private static final int NUMBER_OF_PROSECUTING_AUTHORITIES = 2;
 
-    @Inject
+    private static final String PERSISTENCE_UNIT = "sjp-test-persistence-unit";
+
+    @RegisterExtension
+    static HibernateTestEntityManagerProvider provider = new HibernateTestEntityManagerProvider(PERSISTENCE_UNIT);
+
     private CaseRepository caseRepository;
 
-    @Inject
-    private Clock clock;
+    private final Clock clock = new UtcClock();
 
     private SjpCases tflCases, tvlCases, allCases = new SjpCases();
 
-    @Before
-    public void addCasesAndDocuments() {
+    @BeforeEach
+    void createRepositoryAndSeedCases() {
+
+        caseRepository = new CaseRepository();
+        provider.injectEntityManagerInto(caseRepository);
 
         tflCases = createCasesAndDocuments("TFL");
         tvlCases = createCasesAndDocuments("TVL");
@@ -63,7 +66,7 @@ public class CaseRepositorySjpnTest extends BaseTransactionalJunit4Test {
     }
 
     @Test
-    public void findCasesMissingSjpnForTflProsecutors() {
+    void findCasesMissingSjpnForTflProsecutors() {
         final List<CaseDetail> actualCases = caseRepository.findCasesMissingSjpn(TFL_PROSECUTOR_FILTER_VALUE, Collections.emptyList()).getResultList();
         final List<UUID> actualCaseIds = extractCaseIds(actualCases);
 
@@ -71,7 +74,7 @@ public class CaseRepositorySjpnTest extends BaseTransactionalJunit4Test {
     }
 
     @Test
-    public void findCasesMissingSjpnForCourtAdmin() {
+    void findCasesMissingSjpnForCourtAdmin() {
         final List<CaseDetail> actualCases = caseRepository.findCasesMissingSjpn(COURT_ADMIN_FILTER_VALUE, Collections.emptyList()).getResultList();
         final List<UUID> actualCaseIds = extractCaseIds(actualCases);
 
@@ -79,10 +82,10 @@ public class CaseRepositorySjpnTest extends BaseTransactionalJunit4Test {
     }
 
     @Test
-    public void findCasesMissingSjpnWithLimitForTflProsecutors() {
+    void findCasesMissingSjpnWithLimitForTflProsecutors() {
         int limit = 3;
 
-        final List<CaseDetail> actualCases = caseRepository.findCasesMissingSjpn(TFL_PROSECUTOR_FILTER_VALUE, Collections.emptyList()).maxResults(limit).getResultList();
+        final List<CaseDetail> actualCases = caseRepository.findCasesMissingSjpn(TFL_PROSECUTOR_FILTER_VALUE, Collections.emptyList()).setMaxResults(limit).getResultList();
         final List<UUID> actualCaseIds = extractCaseIds(actualCases);
 
         assertThat(actualCaseIds, hasSize(limit));
@@ -92,10 +95,10 @@ public class CaseRepositorySjpnTest extends BaseTransactionalJunit4Test {
     }
 
     @Test
-    public void findCasesMissingSjpnWithLimitForCourtAdmin() {
+    void findCasesMissingSjpnWithLimitForCourtAdmin() {
         int limit = 3;
 
-        final List<CaseDetail> actualCases = caseRepository.findCasesMissingSjpn(COURT_ADMIN_FILTER_VALUE, Collections.emptyList()).maxResults(limit).getResultList();
+        final List<CaseDetail> actualCases = caseRepository.findCasesMissingSjpn(COURT_ADMIN_FILTER_VALUE, Collections.emptyList()).setMaxResults(limit).getResultList();
         final List<UUID> actualCaseIds = extractCaseIds(actualCases);
 
         assertThat(actualCaseIds, hasSize(limit));
@@ -105,21 +108,21 @@ public class CaseRepositorySjpnTest extends BaseTransactionalJunit4Test {
     }
 
     @Test
-    public void countCasesMissingSjpnForTflProsecutors() {
+    void countCasesMissingSjpnForTflProsecutors() {
         final int actualCaseCount = caseRepository.countCasesMissingSjpn(TFL_PROSECUTOR_FILTER_VALUE, Collections.emptyList());
 
         assertThat(actualCaseCount, equalTo(tflCases.uncompletedSjpCasesWithoutSjpn.size()));
     }
 
     @Test
-    public void countCasesMissingSjpnForCourAdmin() {
+    void countCasesMissingSjpnForCourAdmin() {
         final int actualCaseCount = caseRepository.countCasesMissingSjpn(COURT_ADMIN_FILTER_VALUE, Collections.emptyList());
 
         assertThat(actualCaseCount, equalTo(allCases.uncompletedSjpCasesWithoutSjpn.size()));
     }
 
     @Test
-    public void countCasesMissingSjpnWithPostingDateOlderThanSpecifiedForTflProsecutors() {
+    void countCasesMissingSjpnWithPostingDateOlderThanSpecifiedForTflProsecutors() {
         int sjpCasesMissingSjpnCount = tflCases.uncompletedSjpCasesWithoutSjpn.size();
         for (int i = 0; i < sjpCasesMissingSjpnCount; i++) {
             final LocalDate postingDate = LocalDate.now().minusDays(i);
@@ -129,7 +132,7 @@ public class CaseRepositorySjpnTest extends BaseTransactionalJunit4Test {
     }
 
     @Test
-    public void countCasesMissingSjpnWithPostingDateOlderThanSpecifiedForCourtAdmin() {
+    void countCasesMissingSjpnWithPostingDateOlderThanSpecifiedForCourtAdmin() {
         int sjpCasesMissingSjpnCount = allCases.uncompletedSjpCasesWithoutSjpn.size();
         for (int i = 0; i < sjpCasesMissingSjpnCount / NUMBER_OF_PROSECUTING_AUTHORITIES; i++) {
             final LocalDate postingDate = LocalDate.now().minusDays(i);

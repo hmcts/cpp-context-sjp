@@ -17,7 +17,7 @@ public class EmailNotificationRepository {
 
     public EmailNotification findByReferenceIdAndNotificationType(final UUID referenceId, final EmailNotification.NotificationNotifyDocumentType notificationType) {
         return entityManager.createQuery(
-                "FROM EmailNotification e WHERE e.referenceId = :referenceId AND e.notificationType = :notificationType",
+                "SELECT e FROM EmailNotification e WHERE e.referenceId = :referenceId AND e.notificationType = :notificationType",
                 EmailNotification.class)
                 .setParameter("referenceId", referenceId)
                 .setParameter("notificationType", notificationType)

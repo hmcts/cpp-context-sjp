@@ -8,21 +8,19 @@ import java.time.Duration;
 import java.util.UUID;
 
 import org.activiti.engine.runtime.ProcessInstance;
-import org.activiti.engine.test.ActivitiRule;
 import org.activiti.engine.test.Deployment;
-import org.junit.Before;
-import org.junit.Ignore;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
-//TODO FIXME!!! junit5 not yet supported by activiti engine //https://github.com/Activiti/Activiti/issues/3267
 public class CaseAssignmentTimeoutProcessTest {
 
     private static final String TIMEOUT_PROCESS_PATH = "processes/caseAssignmentTimeout.bpmn20.xml";
     private static final int MAX_MILLIS_TO_WAIT = 10000;
 
-    @Rule
-    public ActivitiRule rule = new ActivitiRule();
+    @RegisterExtension
+    ActivitiJUnit5Extension rule = new ActivitiJUnit5Extension();
 
     private CaseAssignmentTimeoutProcess caseAssignmentTimeoutProcess;
 
@@ -30,7 +28,7 @@ public class CaseAssignmentTimeoutProcessTest {
 
     private DelegatesVerifier delegatesVerifier;
 
-    @Before
+    @BeforeEach
     public void init() {
 
         caseId = randomUUID();
@@ -74,7 +72,7 @@ public class CaseAssignmentTimeoutProcessTest {
     }
 
     @Test
-    @Ignore("DD-17905:Commented as part of 21.25.01 as it is failing on Jenkins at random, but works locally")
+    @Disabled("DD-17905:Commented as part of 21.25.01 as it is failing on Jenkins at random, but works locally")
     @Deployment(resources = TIMEOUT_PROCESS_PATH)
     public void shouldNotThrowAnExceptionForDuplicateTimers() {
 

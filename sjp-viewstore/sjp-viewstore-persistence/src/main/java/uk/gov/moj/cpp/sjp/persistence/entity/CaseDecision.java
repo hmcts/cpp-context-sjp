@@ -86,7 +86,7 @@ public class CaseDecision implements Serializable {
     }
 
     public void setOffenceDecisions(List<OffenceDecision> offenceDecisions) {
-        this.offenceDecisions = copyOf(offenceDecisions);
+        this.offenceDecisions = new ArrayList<>(offenceDecisions);
     }
 
     public FinancialImposition getFinancialImposition() {

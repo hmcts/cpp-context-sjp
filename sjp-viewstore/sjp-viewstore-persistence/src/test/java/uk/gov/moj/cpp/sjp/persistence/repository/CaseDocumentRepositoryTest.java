@@ -1,9 +1,9 @@
 package uk.gov.moj.cpp.sjp.persistence.repository;
 
-import static junit.framework.TestCase.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import uk.gov.justice.services.common.converter.ZonedDateTimes;
-import uk.gov.justice.services.test.utils.persistence.BaseTransactionalJunit4Test;
+import uk.gov.justice.services.test.utils.persistence.HibernateTestEntityManagerProvider;
 
 import uk.gov.moj.cpp.sjp.persistence.entity.CaseDetail;
 import uk.gov.moj.cpp.sjp.persistence.entity.CaseDocument;
@@ -15,21 +15,20 @@ import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.UUID;
 
-import jakarta.inject.Inject;
-
 import org.apache.commons.lang3.RandomStringUtils;
-import org.apache.deltaspike.testcontrol.api.junit.CdiTestRunner;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
-@RunWith(CdiTestRunner.class)
-public class CaseDocumentRepositoryTest extends BaseTransactionalJunit4Test {
+class CaseDocumentRepositoryTest {
 
-    @Inject
+    private static final String PERSISTENCE_UNIT = "sjp-test-persistence-unit";
+
+    @RegisterExtension
+    static HibernateTestEntityManagerProvider provider = new HibernateTestEntityManagerProvider(PERSISTENCE_UNIT);
+
     private CaseDocumentRepository caseDocumentRepository;
 
-    @Inject
     private CaseRepository caseRepository;
 
     private ZonedDateTime addedAt_2017_01_01 = ZonedDateTimes.fromString("2017-01-01T00:00:00.000Z");
@@ -38,8 +37,12 @@ public class CaseDocumentRepositoryTest extends BaseTransactionalJunit4Test {
 
     private static final Integer DOCUMENT_NUMBER = 1;
 
-    @Before
-    public void givenCaseDocuments() {
+    @BeforeEach
+    void givenCaseDocuments() {
+        caseDocumentRepository = new CaseDocumentRepository();
+        provider.injectEntityManagerInto(caseDocumentRepository);
+        caseRepository = new CaseRepository();
+        provider.injectEntityManagerInto(caseRepository);
         addCaseDocument(addedAt_2017_01_01);
         addCaseDocument(addedAt_2017_01_05);
         addCaseDocument(addedAt_2017_01_10);

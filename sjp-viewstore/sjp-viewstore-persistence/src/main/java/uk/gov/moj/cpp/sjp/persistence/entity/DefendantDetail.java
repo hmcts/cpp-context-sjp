@@ -1,6 +1,5 @@
 package uk.gov.moj.cpp.sjp.persistence.entity;
 
-import static java.util.Collections.emptySet;
 
 import java.io.Serializable;
 import java.time.ZonedDateTime;
@@ -199,7 +198,7 @@ public class DefendantDetail implements Serializable {
     }
 
     public void setOffences(final List<OffenceDetail> offences) {
-        this.offences = offences == null ? emptySet() : new TreeSet<>(offences);
+        this.offences = offences == null ? new TreeSet<>() : new TreeSet<>(offences);
         this.offences.forEach(offence -> offence.setDefendantDetail(this));
     }
 

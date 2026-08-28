@@ -4,7 +4,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasSize;
 
-import uk.gov.justice.services.test.utils.persistence.BaseTransactionalJunit4Test;
+import uk.gov.justice.services.test.utils.persistence.HibernateTestEntityManagerProvider;
 import uk.gov.moj.cpp.sjp.persistence.builder.DatesToAvoidTestData;
 import uk.gov.moj.cpp.sjp.persistence.entity.CaseDetail;
 import uk.gov.moj.cpp.sjp.persistence.entity.PendingDatesToAvoid;
@@ -15,27 +15,31 @@ import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 
-import jakarta.inject.Inject;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
-import org.apache.deltaspike.testcontrol.api.junit.CdiTestRunner;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+class PendingDatesToAvoidRepositoryTest {
 
+    private static final String PERSISTENCE_UNIT = "sjp-test-persistence-unit";
 
-@RunWith(CdiTestRunner.class)
-public class PendingDatesToAvoidRepositoryTest extends BaseTransactionalJunit4Test {
+    @RegisterExtension
+    static HibernateTestEntityManagerProvider provider = new HibernateTestEntityManagerProvider(PERSISTENCE_UNIT);
 
-    @Inject
     private PendingDatesToAvoidRepository pendingDatesToAvoidRepository;
 
-    @Inject
     private CaseRepository caseRepository;
 
     private List<DatesToAvoidTestData> testData;
 
-    @Before
-    public void set() {
+    @BeforeEach
+    void setUp() {
+        pendingDatesToAvoidRepository = new PendingDatesToAvoidRepository();
+        provider.injectEntityManagerInto(pendingDatesToAvoidRepository);
+
+        caseRepository = new CaseRepository();
+        provider.injectEntityManagerInto(caseRepository);
+
         testData = Arrays.asList(
                 //TFL combinations
                 new DatesToAvoidTestData("TFL", null, false, false,
@@ -82,7 +86,7 @@ public class PendingDatesToAvoidRepositoryTest extends BaseTransactionalJunit4Te
     }
 
     @Test
-    public void shouldFindCasesPendingDatesToAvoidForTfl() {
+    void shouldFindCasesPendingDatesToAvoidForTfl() {
         // WHEN
         List<PendingDatesToAvoid> results = pendingDatesToAvoidRepository.findCasesPendingDatesToAvoid("TFL", Collections.emptyList());
 
@@ -94,7 +98,7 @@ public class PendingDatesToAvoidRepositoryTest extends BaseTransactionalJunit4Te
     }
 
     @Test
-    public void shouldFindCasesPendingDatesToAvoidForTflAndTvl() {
+    void shouldFindCasesPendingDatesToAvoidForTflAndTvl() {
         // WHEN
         List<PendingDatesToAvoid> results = pendingDatesToAvoidRepository.findCasesPendingDatesToAvoid("TFL",  Arrays.asList("TVL", "XYZ"));
 
@@ -109,7 +113,7 @@ public class PendingDatesToAvoidRepositoryTest extends BaseTransactionalJunit4Te
     }
 
     @Test
-    public void shouldFindCasesPendingDatesToAvoidForTvl() {
+    void shouldFindCasesPendingDatesToAvoidForTvl() {
         // WHEN
         List<PendingDatesToAvoid> results = pendingDatesToAvoidRepository.findCasesPendingDatesToAvoid("TVL", Collections.emptyList());
 
@@ -121,7 +125,7 @@ public class PendingDatesToAvoidRepositoryTest extends BaseTransactionalJunit4Te
     }
 
     @Test
-    public void shouldRemovePendingDatesToAvoid() {
+    void shouldRemovePendingDatesToAvoid() {
         List<PendingDatesToAvoid> results = pendingDatesToAvoidRepository.findCasesPendingDatesToAvoid("TFL", Collections.emptyList());
         assertThat(results, hasSize(3));
 

@@ -253,7 +253,7 @@ public class CaseDetail implements Serializable {
     }
 
     public void setCaseDecisions(List<CaseDecision> caseDecisions) {
-        this.caseDecisions = copyOf(caseDecisions);
+        this.caseDecisions = new ArrayList<>(caseDecisions);
     }
 
     public ZonedDateTime getDateTimeCreated() {

@@ -5,7 +5,6 @@ import static com.google.common.base.CaseFormat.UPPER_UNDERSCORE;
 import static java.lang.String.format;
 import static java.util.Arrays.stream;
 import static java.util.stream.Collectors.toList;
-import static org.activiti.engine.impl.test.JobTestHelper.waitForJobExecutorToProcessAllJobs;
 import static org.apache.commons.lang3.ArrayUtils.contains;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.greaterThan;
@@ -18,7 +17,6 @@ import org.activiti.engine.delegate.DelegateExecution;
 import org.activiti.engine.impl.cfg.StandaloneProcessEngineConfiguration;
 import org.activiti.engine.runtime.Execution;
 import org.activiti.engine.runtime.ProcessInstance;
-import org.activiti.engine.test.ActivitiRule;
 import org.apache.commons.lang3.StringUtils;
 import org.hamcrest.Matcher;
 import org.slf4j.Logger;
@@ -51,9 +49,9 @@ public class DelegatesVerifier {
         }
     }
 
-    private final ActivitiRule rule;
+    private final ActivitiJUnit5Extension rule;
 
-    public DelegatesVerifier(final ActivitiRule rule) {
+    public DelegatesVerifier(final ActivitiJUnit5Extension rule) {
         this.rule = rule;
 
         stream(DelegatesVerifier.Delegate.values()).map(this::getDelegateExecution).forEach(MockedDelegate::resetExecutions);
@@ -130,7 +128,7 @@ public class DelegatesVerifier {
 
     public void tryProcessPendingJobs() {
         try {
-            waitForJobExecutorToProcessAllJobs(rule, 10000, 10);
+            rule.waitForJobExecutorToProcessAllJobs(10000, 10);
         } catch (final ActivitiException e) {
             LOGGER.warn("Exception thrown while waiting for jobs to be processed", e);
         }

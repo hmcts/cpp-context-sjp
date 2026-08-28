@@ -2,12 +2,11 @@ package uk.gov.moj.cpp.sjp.persistence.repository;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
-import org.apache.deltaspike.testcontrol.api.junit.CdiTestRunner;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
-import uk.gov.justice.services.test.utils.persistence.BaseTransactionalJunit4Test;
-import uk.gov.justice.services.test.utils.persistence.BaseTransactionalJunit4Test;
+import uk.gov.justice.services.test.utils.persistence.HibernateTestEntityManagerProvider;
 import uk.gov.moj.cpp.sjp.domain.AssignmentCandidate;
 import uk.gov.moj.cpp.sjp.domain.CaseReadinessReason;
 import uk.gov.moj.cpp.sjp.domain.SessionType;
@@ -25,7 +24,6 @@ import uk.gov.moj.cpp.sjp.persistence.entity.ReadyCase;
 import uk.gov.moj.cpp.sjp.persistence.entity.ReserveCase;
 import uk.gov.moj.cpp.sjp.persistence.entity.StreamStatus;
 
-import jakarta.inject.Inject;
 import jakarta.persistence.EntityManager;
 
 import java.time.LocalDate;
@@ -65,21 +63,27 @@ import static uk.gov.moj.cpp.sjp.domain.plea.PleaType.GUILTY;
 import static uk.gov.moj.cpp.sjp.domain.plea.PleaType.GUILTY_REQUEST_HEARING;
 import static uk.gov.moj.cpp.sjp.domain.plea.PleaType.NOT_GUILTY;
 
-@RunWith(CdiTestRunner.class)
-public class AssignmentRepositoryTest extends BaseTransactionalJunit4Test {
+class AssignmentRepositoryTest {
+
+    private static final String PERSISTENCE_UNIT = "sjp-test-persistence-unit";
+
+    @RegisterExtension
+    static HibernateTestEntityManagerProvider provider = new HibernateTestEntityManagerProvider(PERSISTENCE_UNIT);
 
     private static final ZonedDateTime TODAY_MIDNIGHT = ZonedDateTime.now(UTC).truncatedTo(ChronoUnit.DAYS);
     private final int NO_LIMIT = Integer.MAX_VALUE;
-    @Inject
+
     private AssignmentRepository assignmentRepository;
 
-    @Inject
     private EntityManager em;
 
     private UUID assigneeId;
 
-    @Override
-    public void setUpBefore() {
+    @BeforeEach
+    void setUp() {
+        assignmentRepository = new AssignmentRepository();
+        provider.injectEntityManagerInto(assignmentRepository, "em");
+        em = provider.getEntityManager();
         assigneeId = UUID.randomUUID();
     }
 

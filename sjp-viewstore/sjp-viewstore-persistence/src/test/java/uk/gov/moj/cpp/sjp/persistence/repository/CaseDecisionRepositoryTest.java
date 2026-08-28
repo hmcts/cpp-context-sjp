@@ -2,12 +2,12 @@ package uk.gov.moj.cpp.sjp.persistence.repository;
 
 import static java.util.Arrays.*;
 import static java.util.UUID.randomUUID;
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static uk.gov.moj.cpp.sjp.domain.decision.discharge.DischargeType.CONDITIONAL;
 import static uk.gov.moj.cpp.sjp.domain.decision.discharge.PeriodUnit.*;
 import static uk.gov.moj.cpp.sjp.domain.plea.PleaType.*;
 
-import uk.gov.justice.services.test.utils.persistence.BaseTransactionalJunit4Test;
+import uk.gov.justice.services.test.utils.persistence.HibernateTestEntityManagerProvider;
 import uk.gov.moj.cpp.sjp.domain.decision.imposition.InstallmentPeriod;
 import uk.gov.moj.cpp.sjp.domain.decision.imposition.PaymentType;
 import uk.gov.moj.cpp.sjp.persistence.entity.CaseDecision;
@@ -27,29 +27,29 @@ import java.time.LocalDate;
 import java.time.ZonedDateTime;
 import java.util.UUID;
 
-import jakarta.inject.Inject;
 import jakarta.persistence.EntityManager;
 
-import org.apache.deltaspike.testcontrol.api.junit.CdiTestRunner;
-import org.junit.After;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
-@RunWith(CdiTestRunner.class)
-public class CaseDecisionRepositoryTest extends BaseTransactionalJunit4Test {
+class CaseDecisionRepositoryTest {
 
-    @Inject
+    private static final String PERSISTENCE_UNIT = "sjp-test-persistence-unit";
+
+    @RegisterExtension
+    static HibernateTestEntityManagerProvider provider = new HibernateTestEntityManagerProvider(PERSISTENCE_UNIT);
+
     private EntityManager entityManager;
 
-    @Inject
     private CaseDecisionRepository caseDecisionRepository;
 
-
-    @Override
-    public void setUpBefore() { }
-
-    @After
-    public void tearDownAfterTemporary() { }
+    @BeforeEach
+    void setUp() {
+        caseDecisionRepository = new CaseDecisionRepository();
+        provider.injectEntityManagerInto(caseDecisionRepository);
+        entityManager = provider.getEntityManager();
+    }
 
     @Test
     public void shouldSaveDischargeOffenceDecision() {

@@ -1,36 +1,43 @@
 package uk.gov.moj.cpp.sjp.persistence.repository;
 
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertThat;
 import static uk.gov.moj.cpp.sjp.domain.DocumentFormat.PDF;
 import static uk.gov.moj.cpp.sjp.domain.DocumentLanguage.ENGLISH;
 import static uk.gov.moj.cpp.sjp.domain.DocumentRequestType.DELTA;
 import static uk.gov.moj.cpp.sjp.domain.DocumentRequestType.FULL;
 
-import uk.gov.justice.services.test.utils.persistence.BaseTransactionalJunit4Test;
+import uk.gov.justice.services.test.utils.persistence.HibernateTestEntityManagerProvider;
 import uk.gov.moj.cpp.sjp.persistence.entity.TransparencyReportMetadata;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
 
-import jakarta.inject.Inject;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
-import org.apache.deltaspike.testcontrol.api.junit.CdiTestRunner;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+class TransparencyReportMetadataRepositoryTest {
 
-@RunWith(CdiTestRunner.class)
-public class TransparencyReportMetadataRepositoryTest extends BaseTransactionalJunit4Test {
+    private static final String PERSISTENCE_UNIT = "sjp-test-persistence-unit";
 
-    @Inject
+    @RegisterExtension
+    static HibernateTestEntityManagerProvider provider = new HibernateTestEntityManagerProvider(PERSISTENCE_UNIT);
+
     private TransparencyReportMetadataRepository transparencyReportMetadataRepository;
 
     private static final LocalDateTime earlierGeneratedAt = LocalDateTime.of(2018, 11, 26, 0, 0, 0);
     private static final LocalDateTime latestGeneratedAt = LocalDateTime.of(2018, 11, 27, 0, 0, 0);
     private static final LocalDateTime from = LocalDateTime.of(2018, 11, 25, 0, 0, 0);
 
+    @BeforeEach
+    void setUp() {
+        transparencyReportMetadataRepository = new TransparencyReportMetadataRepository();
+        provider.injectEntityManagerInto(transparencyReportMetadataRepository);
+    }
+
     @Test
-    public void shouldReturnTheLatestReportMetadata() {
+    void shouldReturnTheLatestReportMetadata() {
         // given
         final UUID earlierReportId = UUID.randomUUID();
         final UUID earlierReportWelshServiceId = UUID.randomUUID();
@@ -85,4 +92,3 @@ public class TransparencyReportMetadataRepositoryTest extends BaseTransactionalJ
 
 
 }
-

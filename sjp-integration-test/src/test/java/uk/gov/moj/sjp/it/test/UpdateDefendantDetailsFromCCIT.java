@@ -26,8 +26,8 @@ import java.util.UUID;
 
 import jakarta.json.JsonObject;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 public class UpdateDefendantDetailsFromCCIT extends BaseIntegrationTest {
 
@@ -36,7 +36,7 @@ public class UpdateDefendantDetailsFromCCIT extends BaseIntegrationTest {
     private final UUID userId = randomUUID();
     private CreateCase.CreateCasePayloadBuilder createCasePayloadBuilder;
 
-    @Before
+    @BeforeEach
     public void setUp() {
         createCasePayloadBuilder = withDefaults();
         stubEnforcementAreaByPostcode(createCasePayloadBuilder.getDefendantBuilder().getAddressBuilder().getPostcode(),

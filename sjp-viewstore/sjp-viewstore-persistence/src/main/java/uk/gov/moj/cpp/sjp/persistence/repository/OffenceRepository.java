@@ -30,7 +30,7 @@ public class OffenceRepository {
 
     public List<OffenceDetail> findByIds(List<UUID> offenceIds) {
         return entityManager.createQuery(
-                "FROM OffenceDetail od WHERE od.id IN :offenceIds",
+                "SELECT od FROM OffenceDetail od WHERE od.id IN (:offenceIds)",
                 OffenceDetail.class)
                 .setParameter("offenceIds", offenceIds)
                 .getResultList();

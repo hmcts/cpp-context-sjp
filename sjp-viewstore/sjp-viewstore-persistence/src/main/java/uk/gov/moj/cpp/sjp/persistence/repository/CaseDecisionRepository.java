@@ -35,7 +35,13 @@ public class CaseDecisionRepository {
     }
 
     public CaseDecision save(final CaseDecision entity) {
-        return entityManager.merge(entity);
+        // Mirror the DeltaSpike EntityRepository.save contract: persist a genuinely-new entity
+        // (leaving the passed instance managed, and its associations unresolved) else merge.
+        if (entity.getId() != null && entityManager.find(CaseDecision.class, entity.getId()) != null) {
+            return entityManager.merge(entity);
+        }
+        entityManager.persist(entity);
+        return entity;
     }
 
     public void remove(final CaseDecision entity) {

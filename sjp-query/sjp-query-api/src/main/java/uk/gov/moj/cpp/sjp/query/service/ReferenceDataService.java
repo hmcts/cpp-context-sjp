@@ -11,8 +11,8 @@ import uk.gov.moj.cpp.sjp.query.exception.OffenceNotFoundException;
 
 import java.util.List;
 
-import javax.inject.Inject;
-import javax.json.JsonObject;
+import jakarta.inject.Inject;
+import jakarta.json.JsonObject;
 
 public class ReferenceDataService {
 

@@ -20,7 +20,7 @@ import uk.gov.moj.cpp.sjp.domain.decision.Withdraw;
 
 import java.util.UUID;
 
-import javax.json.JsonObject;
+import jakarta.json.JsonObject;
 
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.BeforeEach;

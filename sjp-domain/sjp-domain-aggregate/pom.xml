@@ -79,9 +79,9 @@
             <artifactId>messaging-core</artifactId>
         </dependency>
         <dependency>
-            <groupId>javax.el</groupId>
-            <artifactId>javax.el-api</artifactId>
-            <version>${javax.el-api.version}</version>
+            <groupId>jakarta.el</groupId>
+            <artifactId>jakarta.el-api</artifactId>
+            <version>${jakarta.el-api.version}</version>
         </dependency>
         <dependency>
             <groupId>org.junit.jupiter</groupId>

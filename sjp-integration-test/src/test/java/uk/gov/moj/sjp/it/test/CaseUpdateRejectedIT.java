@@ -37,8 +37,8 @@ import java.sql.SQLException;
 import java.util.Optional;
 import java.util.UUID;
 
-import javax.jms.JMSException;
-import javax.json.JsonObject;
+import jakarta.jms.JMSException;
+import jakarta.json.JsonObject;
 
 import com.google.common.collect.Sets;
 import org.junit.jupiter.api.BeforeEach;

@@ -33,7 +33,7 @@ import uk.gov.moj.cpp.sjp.event.MarkedAsLegalSocChecked;
 import java.util.UUID;
 import java.util.stream.Stream;
 
-import javax.json.JsonObjectBuilder;
+import jakarta.json.JsonObjectBuilder;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

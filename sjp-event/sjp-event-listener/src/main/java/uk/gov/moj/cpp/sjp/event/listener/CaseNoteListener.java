@@ -10,7 +10,7 @@ import uk.gov.justice.services.messaging.Envelope;
 import uk.gov.moj.cpp.sjp.persistence.entity.CaseNote;
 import uk.gov.moj.cpp.sjp.persistence.repository.CaseNoteRepository;
 
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 
 @ServiceComponent(EVENT_LISTENER)
 public class CaseNoteListener {

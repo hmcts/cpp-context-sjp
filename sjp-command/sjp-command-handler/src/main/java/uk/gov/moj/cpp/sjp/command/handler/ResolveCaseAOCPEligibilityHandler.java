@@ -10,7 +10,7 @@ import static java.util.Optional.empty;
 import static java.util.Optional.of;
 import static java.util.UUID.fromString;
 
-import javax.json.JsonObject;
+import jakarta.json.JsonObject;
 
 import java.math.BigDecimal;
 import java.util.Optional;

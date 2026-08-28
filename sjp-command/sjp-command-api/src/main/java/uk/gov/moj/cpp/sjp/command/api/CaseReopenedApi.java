@@ -14,8 +14,8 @@ import uk.gov.justice.services.messaging.JsonObjects;
 import java.time.LocalDate;
 import java.util.Optional;
 
-import javax.inject.Inject;
-import javax.json.JsonObject;
+import jakarta.inject.Inject;
+import jakarta.json.JsonObject;
 
 /**
  * Command api for marking a case as reopened.

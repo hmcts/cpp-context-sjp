@@ -9,7 +9,7 @@ import uk.gov.justice.services.messaging.JsonObjects;
 
 import java.util.UUID;
 
-import javax.json.JsonObject;
+import jakarta.json.JsonObject;
 
 @ServiceComponent(Component.COMMAND_HANDLER)
 public class UpdateHearingRequirementsHandler extends CaseCommandHandler {

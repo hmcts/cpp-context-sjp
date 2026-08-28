@@ -17,8 +17,8 @@ import uk.gov.moj.cpp.sjp.domain.aggregate.CaseAggregate;
 import java.util.UUID;
 import java.util.stream.Stream;
 
-import javax.inject.Inject;
-import javax.json.JsonObject;
+import jakarta.inject.Inject;
+import jakarta.json.JsonObject;
 
 @ServiceComponent(Component.COMMAND_HANDLER)
 public class AcknowledgeDefendantDetailsUpdatesHandler {

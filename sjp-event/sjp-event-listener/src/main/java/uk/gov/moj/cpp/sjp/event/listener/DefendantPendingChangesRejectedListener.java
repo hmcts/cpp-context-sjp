@@ -11,8 +11,8 @@ import uk.gov.moj.cpp.sjp.event.DefendantPendingChangesRejected;
 import uk.gov.moj.cpp.sjp.persistence.entity.DefendantDetailUpdateRequest;
 import uk.gov.moj.cpp.sjp.persistence.repository.DefendantDetailUpdateRequestRepository;
 
-import javax.inject.Inject;
-import javax.transaction.Transactional;
+import jakarta.inject.Inject;
+import jakarta.transaction.Transactional;
 
 @ServiceComponent(EVENT_LISTENER)
 public class DefendantPendingChangesRejectedListener {

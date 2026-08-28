@@ -84,10 +84,10 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-import javax.json.JsonArray;
-import javax.json.JsonObject;
-import javax.persistence.NoResultException;
-import javax.persistence.NonUniqueResultException;
+import jakarta.json.JsonArray;
+import jakarta.json.JsonObject;
+import jakarta.persistence.NoResultException;
+import jakarta.persistence.NonUniqueResultException;
 
 import org.apache.commons.lang3.tuple.Pair;
 import org.junit.jupiter.api.Test;

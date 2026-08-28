@@ -26,8 +26,8 @@ import uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMetadataMatc
 import uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopePayloadMatcher;
 import uk.gov.moj.cpp.sjp.command.service.ReferenceDataService;
 
-import javax.json.JsonObject;
-import javax.json.JsonValue;
+import jakarta.json.JsonObject;
+import jakarta.json.JsonValue;
 
 import com.jayway.jsonpath.ReadContext;
 import org.hamcrest.Matcher;

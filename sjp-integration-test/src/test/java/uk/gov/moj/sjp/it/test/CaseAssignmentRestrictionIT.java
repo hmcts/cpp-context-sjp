@@ -22,9 +22,9 @@ import java.sql.SQLException;
 import java.util.List;
 import java.util.Random;
 
-import javax.json.JsonArrayBuilder;
-import javax.json.JsonObjectBuilder;
-import javax.ws.rs.core.Response;
+import jakarta.json.JsonArrayBuilder;
+import jakarta.json.JsonObjectBuilder;
+import jakarta.ws.rs.core.Response;
 
 import org.hamcrest.Matcher;
 import org.junit.jupiter.api.BeforeEach;

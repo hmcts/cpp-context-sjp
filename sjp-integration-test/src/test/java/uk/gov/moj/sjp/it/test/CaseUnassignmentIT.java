@@ -32,7 +32,7 @@ import java.sql.SQLException;
 import java.util.Optional;
 import java.util.UUID;
 
-import javax.ws.rs.core.Response;
+import jakarta.ws.rs.core.Response;
 
 import com.google.common.collect.Sets;
 import org.junit.jupiter.api.BeforeEach;

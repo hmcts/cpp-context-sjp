@@ -26,7 +26,7 @@ import uk.gov.moj.cpp.sjp.event.processor.service.timers.TimerService;
 import java.time.ZonedDateTime;
 import java.util.UUID;
 
-import javax.json.JsonValue;
+import jakarta.json.JsonValue;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

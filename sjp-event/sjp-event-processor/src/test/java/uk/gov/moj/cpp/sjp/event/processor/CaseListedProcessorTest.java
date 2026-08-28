@@ -29,8 +29,8 @@ import java.util.List;
 import java.util.UUID;
 import java.util.function.Function;
 
-import javax.json.JsonArray;
-import javax.json.JsonValue;
+import jakarta.json.JsonArray;
+import jakarta.json.JsonValue;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;

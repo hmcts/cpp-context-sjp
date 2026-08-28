@@ -7,7 +7,7 @@ import uk.gov.justice.services.adapter.rest.exception.BadRequestException;
 
 import java.time.LocalDate;
 
-import javax.json.JsonObject;
+import jakarta.json.JsonObject;
 
 public class AdjournDecisionValidator {
 

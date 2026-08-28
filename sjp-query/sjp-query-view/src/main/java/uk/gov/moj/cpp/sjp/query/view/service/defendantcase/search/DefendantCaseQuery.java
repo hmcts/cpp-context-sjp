@@ -10,8 +10,8 @@ import uk.gov.moj.cpp.sjp.persistence.entity.PersonalDetails;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 
-import javax.json.JsonObject;
-import javax.json.JsonObjectBuilder;
+import jakarta.json.JsonObject;
+import jakarta.json.JsonObjectBuilder;
 
 public class DefendantCaseQuery {
 

@@ -18,7 +18,7 @@ import uk.gov.moj.cpp.sjp.event.processor.utils.builders.SystemDocGeneratorEnvel
 
 import java.util.UUID;
 
-import javax.json.JsonValue;
+import jakarta.json.JsonValue;
 
 import org.hamcrest.core.Is;
 import org.junit.jupiter.api.Test;

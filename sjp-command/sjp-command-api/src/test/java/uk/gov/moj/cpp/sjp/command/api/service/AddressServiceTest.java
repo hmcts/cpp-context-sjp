@@ -14,8 +14,8 @@ import static uk.gov.moj.cpp.sjp.command.api.service.AddressService.normalizePos
 import java.util.List;
 import java.util.stream.Stream;
 
-import javax.json.JsonObject;
-import javax.json.JsonObjectBuilder;
+import jakarta.json.JsonObject;
+import jakarta.json.JsonObjectBuilder;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;

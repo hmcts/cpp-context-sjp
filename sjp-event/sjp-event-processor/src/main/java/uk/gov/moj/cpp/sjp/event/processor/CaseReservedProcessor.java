@@ -5,7 +5,7 @@ import static uk.gov.justice.services.core.enveloper.Enveloper.envelop;
 
 import java.time.ZonedDateTime;
 import java.util.UUID;
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 import uk.gov.justice.services.core.annotation.Component;
 import uk.gov.justice.services.core.annotation.Handles;
 import uk.gov.justice.services.core.annotation.ServiceComponent;

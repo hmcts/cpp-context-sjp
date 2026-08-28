@@ -9,7 +9,7 @@ import static uk.gov.moj.cpp.sjp.command.api.validator.decisionvalidator.Dischar
 import uk.gov.justice.services.adapter.rest.exception.BadRequestException;
 import uk.gov.moj.cpp.sjp.domain.decision.discharge.DischargeType;
 
-import javax.json.JsonObject;
+import jakarta.json.JsonObject;
 
 import org.junit.jupiter.api.Test;
 

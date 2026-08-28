@@ -16,7 +16,7 @@ import uk.gov.moj.cpp.sjp.event.session.CaseAssignmentRequested;
 
 import java.util.UUID;
 
-import javax.json.JsonObject;
+import jakarta.json.JsonObject;
 
 import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;

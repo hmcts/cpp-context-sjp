@@ -4,8 +4,8 @@ import static uk.gov.moj.cpp.sjp.query.view.converter.ResultCode.SETASIDE;
 
 import uk.gov.moj.cpp.sjp.query.view.service.CachedReferenceData;
 
-import javax.json.JsonObject;
-import javax.json.JsonObjectBuilder;
+import jakarta.json.JsonObject;
+import jakarta.json.JsonObjectBuilder;
 
 public class SetAsideDecisionResult extends AbstractOffenceDecisionResult {
 

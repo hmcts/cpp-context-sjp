@@ -2,7 +2,7 @@ package uk.gov.moj.sjp.it.helper;
 
 import static java.lang.String.format;
 import static java.util.Optional.ofNullable;
-import static javax.ws.rs.core.Response.Status.ACCEPTED;
+import static jakarta.ws.rs.core.Response.Status.ACCEPTED;
 import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 import static uk.gov.moj.sjp.it.util.FileUtil.getFileContentAsJson;
 import static uk.gov.moj.sjp.it.util.HttpClientUtil.makePostCall;
@@ -10,8 +10,8 @@ import static uk.gov.moj.sjp.it.util.HttpClientUtil.makePostCall;
 import java.time.LocalDate;
 import java.util.UUID;
 
-import javax.json.JsonObject;
-import javax.json.JsonObjectBuilder;
+import jakarta.json.JsonObject;
+import jakarta.json.JsonObjectBuilder;
 
 import com.google.common.collect.ImmutableMap;
 

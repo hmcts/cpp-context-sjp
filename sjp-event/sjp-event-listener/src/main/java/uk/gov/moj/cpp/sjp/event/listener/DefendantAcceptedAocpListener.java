@@ -23,7 +23,7 @@ import uk.gov.moj.cpp.sjp.domain.onlineplea.Offence;
 
 import java.util.UUID;
 
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 
 @ServiceComponent(EVENT_LISTENER)
 public class DefendantAcceptedAocpListener {

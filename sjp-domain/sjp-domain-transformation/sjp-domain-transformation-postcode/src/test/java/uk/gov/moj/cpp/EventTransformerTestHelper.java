@@ -16,7 +16,7 @@ import uk.gov.moj.cpp.sjp.BaseEventTransformer;
 import java.util.Map;
 import java.util.stream.Stream;
 
-import javax.json.JsonObject;
+import jakarta.json.JsonObject;
 
 public class EventTransformerTestHelper {
 

@@ -6,8 +6,8 @@ import static uk.gov.moj.sjp.it.util.HttpClientUtil.makePostCall;
 
 import java.util.UUID;
 
-import javax.json.JsonObject;
-import javax.ws.rs.core.Response;
+import jakarta.json.JsonObject;
+import jakarta.ws.rs.core.Response;
 
 public class AddDatesToAvoid {
 

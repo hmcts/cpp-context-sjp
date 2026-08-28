@@ -24,7 +24,7 @@ import uk.gov.moj.sjp.it.model.ProsecutingAuthority;
 import java.util.Optional;
 import java.util.UUID;
 
-import javax.json.JsonObject;
+import jakarta.json.JsonObject;
 
 import org.junit.Before;
 import org.junit.Test;

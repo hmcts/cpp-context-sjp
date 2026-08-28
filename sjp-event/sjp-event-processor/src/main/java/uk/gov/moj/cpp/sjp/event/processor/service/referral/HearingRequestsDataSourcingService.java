@@ -14,8 +14,8 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-import javax.inject.Inject;
-import javax.json.JsonObject;
+import jakarta.inject.Inject;
+import jakarta.json.JsonObject;
 
 @SuppressWarnings("squid:S107")
 public class HearingRequestsDataSourcingService {

@@ -31,7 +31,7 @@ import uk.gov.moj.sjp.it.model.ProsecutingAuthority;
 import java.math.BigDecimal;
 import java.util.UUID;
 
-import javax.json.JsonObject;
+import jakarta.json.JsonObject;
 
 import org.hamcrest.Matcher;
 import org.junit.jupiter.api.AfterEach;

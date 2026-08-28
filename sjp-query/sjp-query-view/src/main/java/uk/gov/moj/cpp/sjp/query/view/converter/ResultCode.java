@@ -50,8 +50,8 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Supplier;
 
-import javax.json.JsonArrayBuilder;
-import javax.json.JsonObject;
+import jakarta.json.JsonArrayBuilder;
+import jakarta.json.JsonObject;
 
 import org.slf4j.Logger;
 

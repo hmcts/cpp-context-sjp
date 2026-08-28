@@ -10,7 +10,7 @@ import uk.gov.justice.services.core.sender.Sender;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.sjp.command.api.service.CaseService;
 
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 
 @ServiceComponent(COMMAND_API)
 public class AocpResponseTimerExpiredApi {

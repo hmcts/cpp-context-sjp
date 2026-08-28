@@ -13,7 +13,7 @@ import uk.gov.justice.services.messaging.JsonEnvelope;
 
 import java.util.UUID;
 
-import javax.json.JsonObject;
+import jakarta.json.JsonObject;
 
 import org.hamcrest.MatcherAssert;
 import org.junit.jupiter.api.Test;

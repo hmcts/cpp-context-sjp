@@ -29,7 +29,7 @@ import uk.gov.moj.cpp.sjp.event.DefendantsNationalInsuranceNumberUpdated;
 
 import java.util.UUID;
 
-import javax.json.JsonObjectBuilder;
+import jakarta.json.JsonObjectBuilder;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

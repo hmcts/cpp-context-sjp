@@ -1,7 +1,7 @@
 package uk.gov.moj.sjp.it.verifier;
 
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
-import static javax.ws.rs.core.Response.Status.OK;
+import static jakarta.ws.rs.core.Response.Status.OK;
 import static org.hamcrest.CoreMatchers.allOf;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static uk.gov.justice.services.test.utils.core.matchers.ResponsePayloadMatcher.payload;

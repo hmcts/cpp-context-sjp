@@ -14,8 +14,8 @@ import java.io.StringWriter;
 import java.io.UncheckedIOException;
 import java.util.List;
 
-import javax.json.JsonObject;
-import javax.json.JsonReader;
+import jakarta.json.JsonObject;
+import jakarta.json.JsonReader;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.json.JSONObject;

@@ -76,7 +76,7 @@ import uk.gov.moj.cpp.sjp.event.CaseCompleted;
 import uk.gov.moj.cpp.sjp.event.CaseStatusChanged;
 import uk.gov.moj.cpp.sjp.event.CaseListedInCriminalCourtsUpdated;
 
-import javax.json.JsonObject;
+import jakarta.json.JsonObject;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.ZonedDateTime;

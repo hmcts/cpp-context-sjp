@@ -22,8 +22,8 @@ import uk.gov.moj.cpp.sjp.persistence.repository.CaseRepository;
 
 import java.time.LocalDate;
 
-import javax.inject.Inject;
-import javax.transaction.Transactional;
+import jakarta.inject.Inject;
+import jakarta.transaction.Transactional;
 
 @ServiceComponent(EVENT_LISTENER)
 public class DefendantUpdatedListener {

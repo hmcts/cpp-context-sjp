@@ -32,7 +32,7 @@ import java.math.BigDecimal;
 import java.util.Collections;
 import java.util.UUID;
 
-import javax.json.JsonObject;
+import jakarta.json.JsonObject;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

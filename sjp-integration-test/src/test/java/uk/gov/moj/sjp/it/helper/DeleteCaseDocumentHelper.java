@@ -12,8 +12,8 @@ import uk.gov.moj.sjp.it.util.TopicUtil;
 
 import java.util.UUID;
 
-import javax.jms.MessageConsumer;
-import javax.ws.rs.core.Response;
+import jakarta.jms.MessageConsumer;
+import jakarta.ws.rs.core.Response;
 
 import io.restassured.path.json.JsonPath;
 import org.slf4j.Logger;

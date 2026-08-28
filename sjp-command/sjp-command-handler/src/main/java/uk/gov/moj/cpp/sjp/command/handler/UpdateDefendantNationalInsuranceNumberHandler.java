@@ -8,7 +8,7 @@ import uk.gov.justice.services.messaging.JsonEnvelope;
 
 import java.util.UUID;
 
-import javax.json.JsonObject;
+import jakarta.json.JsonObject;
 
 @ServiceComponent(Component.COMMAND_HANDLER)
 public class UpdateDefendantNationalInsuranceNumberHandler extends CaseCommandHandler {

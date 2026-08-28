@@ -10,7 +10,7 @@ import uk.gov.justice.services.common.util.Clock;
 import uk.gov.justice.services.test.utils.persistence.BaseTransactionalJunit4Test;
 import uk.gov.moj.cpp.sjp.persistence.entity.CaseAssignmentRestriction;
 
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 
 import org.apache.deltaspike.testcontrol.api.junit.CdiTestRunner;
 import org.junit.Before;

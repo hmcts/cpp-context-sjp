@@ -8,7 +8,7 @@ import uk.gov.moj.cpp.sjp.persistence.entity.CaseApplicationDecision;
 import uk.gov.moj.cpp.sjp.persistence.repository.CaseApplicationRepository;
 import uk.gov.moj.cpp.sjp.persistence.repository.SessionRepository;
 
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 
 
 public class ApplicationDecisionSavedToApplicationDecision implements Converter<ApplicationDecisionSaved, CaseApplicationDecision> {

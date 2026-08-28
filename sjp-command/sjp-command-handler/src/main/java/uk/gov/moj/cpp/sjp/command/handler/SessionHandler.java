@@ -9,7 +9,7 @@ import static uk.gov.justice.services.messaging.JsonObjects.getBoolean;
 
 import java.util.List;
 import java.util.stream.Collectors;
-import javax.json.JsonString;
+import jakarta.json.JsonString;
 import uk.gov.justice.core.courts.DelegatedPowers;
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
 import uk.gov.justice.services.common.util.Clock;
@@ -31,8 +31,8 @@ import java.util.UUID;
 import java.util.function.Function;
 import java.util.stream.Stream;
 
-import javax.inject.Inject;
-import javax.json.JsonObject;
+import jakarta.inject.Inject;
+import jakarta.json.JsonObject;
 
 @ServiceComponent(Component.COMMAND_HANDLER)
 public class SessionHandler {

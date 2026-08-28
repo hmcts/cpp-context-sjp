@@ -40,7 +40,7 @@ import uk.gov.moj.cpp.sjp.event.CaseStatusChanged;
 import java.util.UUID;
 import java.util.stream.Stream;
 
-import javax.json.JsonObjectBuilder;
+import jakarta.json.JsonObjectBuilder;
 
 import org.hamcrest.Matchers;
 import org.hamcrest.core.AllOf;

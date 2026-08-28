@@ -31,8 +31,8 @@ import uk.gov.moj.cpp.sjp.event.processor.service.UsersGroupsService;
 import java.time.ZonedDateTime;
 import java.util.UUID;
 
-import javax.json.JsonObject;
-import javax.json.JsonValue;
+import jakarta.json.JsonObject;
+import jakarta.json.JsonValue;
 
 import org.hamcrest.CoreMatchers;
 import org.junit.jupiter.api.Test;

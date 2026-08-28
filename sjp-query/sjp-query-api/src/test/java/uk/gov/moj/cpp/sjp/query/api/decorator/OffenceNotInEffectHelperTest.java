@@ -8,7 +8,7 @@ import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 import java.time.LocalDate;
 import java.util.stream.Stream;
 
-import javax.json.JsonObjectBuilder;
+import jakarta.json.JsonObjectBuilder;
 
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;

@@ -9,8 +9,8 @@ import uk.gov.moj.cpp.sjp.command.service.ReferenceDataService;
 import java.util.Objects;
 import java.util.Optional;
 
-import javax.inject.Inject;
-import javax.json.JsonObject;
+import jakarta.inject.Inject;
+import jakarta.json.JsonObject;
 
 public abstract class RegionAwareController extends BaseController {
 

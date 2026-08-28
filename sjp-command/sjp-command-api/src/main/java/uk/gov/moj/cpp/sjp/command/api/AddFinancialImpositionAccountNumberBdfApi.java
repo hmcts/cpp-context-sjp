@@ -9,7 +9,7 @@ import uk.gov.justice.services.core.annotation.ServiceComponent;
 import uk.gov.justice.services.core.sender.Sender;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 
 /**
  * This command is only used for ATCM-6980 BDF and can be deprecated once ran however the event

@@ -15,7 +15,7 @@ import static uk.gov.moj.cpp.sjp.domain.util.DefaultTestData.REOPEN_UPDATE_REASO
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.sjp.domain.CaseReopenDetails;
 
-import javax.json.JsonObject;
+import jakarta.json.JsonObject;
 
 public class CaseReopenDetailsBuilder {
 

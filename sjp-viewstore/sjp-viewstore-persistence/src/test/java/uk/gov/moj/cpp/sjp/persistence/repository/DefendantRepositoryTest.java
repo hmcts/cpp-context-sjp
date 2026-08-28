@@ -15,7 +15,7 @@ import uk.gov.moj.cpp.sjp.persistence.entity.PersonalDetails;
 import uk.gov.moj.cpp.sjp.persistence.entity.ReadyCase;
 import uk.gov.moj.cpp.sjp.persistence.entity.view.UpdatedDefendantDetails;
 
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 
 import java.time.LocalDate;
 import java.time.ZonedDateTime;

@@ -6,9 +6,9 @@ import uk.gov.moj.cpp.sjp.domain.verdict.VerdictType;
 import java.time.ZonedDateTime;
 import java.util.UUID;
 
-import javax.persistence.Column;
-import javax.persistence.DiscriminatorValue;
-import javax.persistence.Entity;
+import jakarta.persistence.Column;
+import jakarta.persistence.DiscriminatorValue;
+import jakarta.persistence.Entity;
 
 @Entity
 @DiscriminatorValue("REFERRED_TO_OPEN_COURT")

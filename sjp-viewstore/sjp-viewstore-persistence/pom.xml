@@ -3,7 +3,7 @@
     <parent>
         <artifactId>sjp-viewstore</artifactId>
         <groupId>uk.gov.moj.cpp.sjp</groupId>
-        <version>17.104.194-SNAPSHOT</version>
+        <version>25.104.0-M1-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -11,30 +11,25 @@
 
     <dependencies>
         <dependency>
-            <groupId>javax</groupId>
-            <artifactId>javaee-api</artifactId>
+            <groupId>jakarta.platform</groupId>
+            <artifactId>jakarta.jakartaee-api</artifactId>
             <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>uk.gov.justice.services</groupId>
-            <artifactId>persistence-deltaspike</artifactId>
+            <artifactId>persistence-jdbc</artifactId>
         </dependency>
         <dependency>
             <groupId>uk.gov.justice.utils</groupId>
             <artifactId>utilities-core</artifactId>
         </dependency>
         <dependency>
-            <groupId>jakarta.xml.bind</groupId>
+            <groupId>javax.xml.bind</groupId>
             <artifactId>jaxb-api</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.hibernate</groupId>
+            <groupId>org.hibernate.orm</groupId>
             <artifactId>hibernate-core</artifactId>
-            <scope>provided</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.hibernate</groupId>
-            <artifactId>hibernate-entitymanager</artifactId>
             <scope>provided</scope>
         </dependency>
 
@@ -70,28 +65,13 @@
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>org.apache.tomee</groupId>
-            <artifactId>openejb-core</artifactId>
+            <groupId>uk.gov.justice.utils</groupId>
+            <artifactId>test-utils-core</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>org.apache.tomee</groupId>
-            <artifactId>openejb-server</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.deltaspike.modules</groupId>
-            <artifactId>deltaspike-test-control-module-api</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.deltaspike.modules</groupId>
-            <artifactId>deltaspike-test-control-module-impl</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.deltaspike.cdictrl</groupId>
-            <artifactId>deltaspike-cdictrl-openejb</artifactId>
+            <groupId>uk.gov.justice.utils</groupId>
+            <artifactId>test-utils-hibernate</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>

@@ -26,6 +26,11 @@
                         <version>${javaee-api.version}</version>
                     </dependency>
                     <dependency>
+                        <groupId>jakarta.xml.bind</groupId>
+                        <artifactId>jakarta.xml.bind-api</artifactId>
+                        <version>${jakarta.xml.bind-api.raml.version}</version>
+                    </dependency>
+                    <dependency>
                         <groupId>uk.gov.moj.cpp.sjp</groupId>
                         <artifactId>sjp-command-handler</artifactId>
                         <version>${project.version}</version>
@@ -47,6 +52,11 @@
                         <groupId>jakarta.platform</groupId>
                         <artifactId>jakarta.jakartaee-api</artifactId>
                         <version>${javaee-api.version}</version>
+                    </dependency>
+                    <dependency>
+                        <groupId>jakarta.xml.bind</groupId>
+                        <artifactId>jakarta.xml.bind-api</artifactId>
+                        <version>${jakarta.xml.bind-api.raml.version}</version>
                     </dependency>
                     <dependency>
                         <groupId>uk.gov.moj.cpp.usersgroups</groupId>

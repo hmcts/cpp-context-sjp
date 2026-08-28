@@ -103,6 +103,11 @@
                         </executions>
                         <dependencies>
                             <dependency>
+                                <groupId>jakarta.xml.bind</groupId>
+                                <artifactId>jakarta.xml.bind-api</artifactId>
+                                <version>${jakarta.xml.bind-api.raml.version}</version>
+                            </dependency>
+                            <dependency>
                                 <artifactId>unifiedsearch-client-generator</artifactId>
                                 <groupId>uk.gov.justice.framework-generators</groupId>
                                 <version>${cpp.framework.version}</version>

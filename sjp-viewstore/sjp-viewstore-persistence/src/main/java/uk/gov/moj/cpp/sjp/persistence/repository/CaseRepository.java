@@ -11,28 +11,22 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
 
-import jakarta.inject.Inject;
+import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
+import jakarta.persistence.TypedQuery;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.deltaspike.data.api.AbstractEntityRepository;
-import org.apache.deltaspike.data.api.Query;
-import org.apache.deltaspike.data.api.QueryParam;
-import org.apache.deltaspike.data.api.QueryResult;
-import org.apache.deltaspike.data.api.Repository;
-import org.apache.deltaspike.data.api.SingleResultType;
-import org.apache.deltaspike.data.api.criteria.CriteriaSupport;
 
 /**
  * Repository for {@link CaseDetail}
  */
 @SuppressWarnings({"ALL", "PMD.BeanMembersShouldSerialize"})
-@Repository
-public abstract class CaseRepository extends AbstractEntityRepository<CaseDetail, UUID> implements CriteriaSupport<CaseDetail> {
+@ApplicationScoped
+public class CaseRepository {
 
-    @Inject
+    @PersistenceContext(unitName = "sjp-persistence-unit")
     private EntityManager entityManager;
-
 
     private static final String SELECT_CASES_FOR_SOC_CHECK =
             " with adjourn_temp as (select distinct cd.id from case_decision cd inner join offence_decision od on cd.id = od.case_decision_id where od.decision_type = 'ADJOURN')" +
@@ -77,7 +71,6 @@ public abstract class CaseRepository extends AbstractEntityRepository<CaseDetail
         return sb.toString();
     }
 
-
     public void completeCase(final UUID caseId) {
         final CaseDetail caseDetail = findBy(caseId);
 
@@ -87,145 +80,215 @@ public abstract class CaseRepository extends AbstractEntityRepository<CaseDetail
         }
     }
 
-    @Query(value = "FROM CaseDetail cd WHERE UPPER(cd.urn) = UPPER(:urn)")
-    public abstract CaseDetail findByUrn(@QueryParam("urn") String urn);
+    public CaseDetail findByUrn(final String urn) {
+        return entityManager.createQuery("FROM CaseDetail cd WHERE UPPER(cd.urn) = UPPER(:urn)", CaseDetail.class)
+                .setParameter("urn", urn)
+                .getSingleResult();
+    }
 
-    @Query(value = "SELECT cd FROM CaseDetail cd " +
-            "INNER JOIN cd.defendant dd " +
-            "WHERE (UPPER(cd.urn) = UPPER(:urn) OR UPPER(REGEXP_REPLACE(cd.urn, '^[a-zA-Z]+', '')) = UPPER(:urn)) " +
-            "AND UPPER(REPLACE(dd.address.postcode,' ','')) = UPPER(REPLACE(:postcode, ' ',''))", singleResult = SingleResultType.OPTIONAL)
-    public abstract CaseDetail findByUrnPostcode(@QueryParam("urn") String urn,
-                                                 @QueryParam("postcode") String postcode);
+    public CaseDetail findByUrnPostcode(final String urn, final String postcode) {
+        return entityManager.createQuery("SELECT cd FROM CaseDetail cd " +
+                        "INNER JOIN cd.defendant dd " +
+                        "WHERE (UPPER(cd.urn) = UPPER(:urn) OR UPPER(REGEXP_REPLACE(cd.urn, '^[a-zA-Z]+', '')) = UPPER(:urn)) " +
+                        "AND UPPER(REPLACE(dd.address.postcode,' ','')) = UPPER(REPLACE(:postcode, ' ',''))", CaseDetail.class)
+                .setParameter("urn", urn)
+                .setParameter("postcode", postcode)
+                .getResultList().stream().findFirst().orElse(null);
+    }
 
-    @Query(value = "select cd from CaseDetail cd INNER JOIN cd.defendant dd WHERE dd.id = :defendantId")
-    public abstract List<CaseDetail> findByDefendantId(@QueryParam("defendantId") final UUID defendantId);
+    public List<CaseDetail> findByDefendantId(final UUID defendantId) {
+        return entityManager.createQuery("select cd from CaseDetail cd INNER JOIN cd.defendant dd WHERE dd.id = :defendantId", CaseDetail.class)
+                .setParameter("defendantId", defendantId)
+                .getResultList();
+    }
 
-    @Query(value = "SELECT cd FROM CaseDetail cd LEFT OUTER JOIN cd.caseDocuments cdocs ON cdocs.documentType = 'SJPN' " +
-            "WHERE cdocs IS NULL AND cd.completed IS NOT true AND ( cd.prosecutingAuthority LIKE :prosecutingAuthorityFilter OR cd.prosecutingAuthority IN (:agentProsecutorAuthorityAccess))")
-    public abstract QueryResult<CaseDetail> findCasesMissingSjpn(@QueryParam("prosecutingAuthorityFilter") String prosecutingAuthorityFilter,
-                                                                 @QueryParam("agentProsecutorAuthorityAccess") List<String> agentProsecutorAuthorityAccess);
+    public TypedQuery<CaseDetail> findCasesMissingSjpn(final String prosecutingAuthorityFilter,
+                                                       final List<String> agentProsecutorAuthorityAccess) {
+        return entityManager.createQuery("SELECT cd FROM CaseDetail cd LEFT OUTER JOIN cd.caseDocuments cdocs ON cdocs.documentType = 'SJPN' " +
+                        "WHERE cdocs IS NULL AND cd.completed IS NOT true AND ( cd.prosecutingAuthority LIKE :prosecutingAuthorityFilter OR cd.prosecutingAuthority IN (:agentProsecutorAuthorityAccess))", CaseDetail.class)
+                .setParameter("prosecutingAuthorityFilter", prosecutingAuthorityFilter)
+                .setParameter("agentProsecutorAuthorityAccess", agentProsecutorAuthorityAccess);
+    }
 
-    @Query(value = "SELECT cd FROM CaseDetail cd LEFT OUTER JOIN cd.caseDocuments cdocs ON cdocs.documentType = 'SJPN' " +
-            "WHERE cdocs IS NULL AND cd.postingDate < :postedBefore AND cd.completed IS NOT true AND ( cd.prosecutingAuthority LIKE :prosecutingAuthorityFilter " +
-            "OR cd.prosecutingAuthority IN (:agentProsecutorAuthorityAccess))")
-    public abstract QueryResult<CaseDetail> findCasesMissingSjpn(@QueryParam("prosecutingAuthorityFilter") String prosecutingAuthorityFilter, @QueryParam("postedBefore") final LocalDate postedBefore,
-                                                                 @QueryParam("agentProsecutorAuthorityAccess") List<String> agentProsecutorAuthorityAccess);
+    public TypedQuery<CaseDetail> findCasesMissingSjpn(final String prosecutingAuthorityFilter, final LocalDate postedBefore,
+                                                       final List<String> agentProsecutorAuthorityAccess) {
+        return entityManager.createQuery("SELECT cd FROM CaseDetail cd LEFT OUTER JOIN cd.caseDocuments cdocs ON cdocs.documentType = 'SJPN' " +
+                        "WHERE cdocs IS NULL AND cd.postingDate < :postedBefore AND cd.completed IS NOT true AND ( cd.prosecutingAuthority LIKE :prosecutingAuthorityFilter " +
+                        "OR cd.prosecutingAuthority IN (:agentProsecutorAuthorityAccess))", CaseDetail.class)
+                .setParameter("prosecutingAuthorityFilter", prosecutingAuthorityFilter)
+                .setParameter("postedBefore", postedBefore)
+                .setParameter("agentProsecutorAuthorityAccess", agentProsecutorAuthorityAccess);
+    }
 
-    @Query(value = "SELECT COUNT(cd) FROM CaseDetail cd LEFT OUTER JOIN cd.caseDocuments cdocs ON cdocs.documentType = 'SJPN' " +
-            "WHERE cdocs IS NULL AND cd.completed IS NOT true AND ( cd.prosecutingAuthority LIKE :prosecutingAuthorityFilter OR cd.prosecutingAuthority IN (:agentProsecutorAuthorityAccess) )")
-    public abstract int countCasesMissingSjpn(@QueryParam("prosecutingAuthorityFilter") String prosecutingAuthorityFilter,
-                                              @QueryParam("agentProsecutorAuthorityAccess") List<String> agentProsecutorAuthorityAccess);
+    public int countCasesMissingSjpn(final String prosecutingAuthorityFilter,
+                                     final List<String> agentProsecutorAuthorityAccess) {
+        return entityManager.createQuery("SELECT COUNT(cd) FROM CaseDetail cd LEFT OUTER JOIN cd.caseDocuments cdocs ON cdocs.documentType = 'SJPN' " +
+                        "WHERE cdocs IS NULL AND cd.completed IS NOT true AND ( cd.prosecutingAuthority LIKE :prosecutingAuthorityFilter OR cd.prosecutingAuthority IN (:agentProsecutorAuthorityAccess) )", Long.class)
+                .setParameter("prosecutingAuthorityFilter", prosecutingAuthorityFilter)
+                .setParameter("agentProsecutorAuthorityAccess", agentProsecutorAuthorityAccess)
+                .getSingleResult().intValue();
+    }
 
-    @Query(value = "SELECT COUNT(cd) FROM CaseDetail cd LEFT OUTER JOIN cd.caseDocuments cdocs ON cdocs.documentType = 'SJPN' " +
-            "WHERE cdocs IS NULL AND cd.postingDate < :postedBefore AND cd.completed IS NOT true AND ( cd.prosecutingAuthority LIKE :prosecutingAuthorityFilter OR cd.prosecutingAuthority IN (:agentProsecutorAuthorityAccess))")
-    public abstract int countCasesMissingSjpn(@QueryParam("prosecutingAuthorityFilter") String prosecutingAuthorityFilter, @QueryParam("postedBefore") final LocalDate postedBefore,
-                                              @QueryParam("agentProsecutorAuthorityAccess") List<String> agentProsecutorAuthorityAccess);
+    public int countCasesMissingSjpn(final String prosecutingAuthorityFilter, final LocalDate postedBefore,
+                                     final List<String> agentProsecutorAuthorityAccess) {
+        return entityManager.createQuery("SELECT COUNT(cd) FROM CaseDetail cd LEFT OUTER JOIN cd.caseDocuments cdocs ON cdocs.documentType = 'SJPN' " +
+                        "WHERE cdocs IS NULL AND cd.postingDate < :postedBefore AND cd.completed IS NOT true AND ( cd.prosecutingAuthority LIKE :prosecutingAuthorityFilter OR cd.prosecutingAuthority IN (:agentProsecutorAuthorityAccess))", Long.class)
+                .setParameter("prosecutingAuthorityFilter", prosecutingAuthorityFilter)
+                .setParameter("postedBefore", postedBefore)
+                .setParameter("agentProsecutorAuthorityAccess", agentProsecutorAuthorityAccess)
+                .getSingleResult().intValue();
+    }
 
-    @Query(value = "SELECT cd.caseDocuments FROM CaseDetail cd where cd.id = :caseId")
-    public abstract List<CaseDocument> findCaseDocuments(@QueryParam("caseId") final UUID caseId);
+    public List<CaseDocument> findCaseDocuments(final UUID caseId) {
+        return entityManager.createQuery("SELECT cd.caseDocuments FROM CaseDetail cd where cd.id = :caseId", CaseDocument.class)
+                .setParameter("caseId", caseId)
+                .getResultList();
+    }
 
-    @Query(value = "SELECT cd.defendant FROM CaseDetail cd where cd.id = :caseId")
-    public abstract DefendantDetail findCaseDefendant(@QueryParam("caseId") final UUID caseId);
+    public DefendantDetail findCaseDefendant(final UUID caseId) {
+        return entityManager.createQuery("SELECT cd.defendant FROM CaseDetail cd where cd.id = :caseId", DefendantDetail.class)
+                .setParameter("caseId", caseId)
+                .getSingleResult();
+    }
 
-    @Query(value = "select cd from CaseDetail cd JOIN cd.caseDocuments cdocs " +
-            "WHERE cdocs.materialId = :materialId")
-    public abstract CaseDetail findByMaterialId(@QueryParam("materialId") final UUID materialId);
+    public CaseDetail findByMaterialId(final UUID materialId) {
+        return entityManager.createQuery("select cd from CaseDetail cd JOIN cd.caseDocuments cdocs WHERE cdocs.materialId = :materialId", CaseDetail.class)
+                .setParameter("materialId", materialId)
+                .getSingleResult();
+    }
 
-    @Query(value = "SELECT cd.prosecutingAuthority FROM CaseDetail cd WHERE cd.id = :caseId", singleResult = SingleResultType.OPTIONAL)
-    public abstract String getProsecutingAuthority(@QueryParam("caseId") final UUID caseId);
+    public String getProsecutingAuthority(final UUID caseId) {
+        return entityManager.createQuery("SELECT cd.prosecutingAuthority FROM CaseDetail cd WHERE cd.id = :caseId", String.class)
+                .setParameter("caseId", caseId)
+                .getResultList().stream().findFirst().orElse(null);
+    }
 
-    @Query(value = "SELECT new uk.gov.moj.cpp.sjp.persistence.entity.PendingCaseToPublishPerOffence" +
-            "(d.personalDetails.title, d.personalDetails.firstName, d.personalDetails.lastName, d.legalEntityDetails.legalEntityName, d.personalDetails.dateOfBirth," +
-            "cd.id, cd.urn," +
-            "d.address.address1, d.address.address2," +
-            "d.address.address3, d.address.address4, d.address.address5," +
-            "d.address.postcode, o.code, o.startDate, o.wording, " +
-            "o.pressRestriction.requested, o.pressRestriction.name, o.completed, cd.prosecutingAuthority, o.wordingWelsh) " +
-            "FROM CaseDetail cd " +
-            "LEFT OUTER JOIN cd.defendant d " +
-            "LEFT OUTER JOIN d.offences o " +
-            "WHERE cd.id IN (SELECT rc.id FROM ReadyCase rc) " +
-            "AND cd.id IN (SELECT cps.caseId FROM CasePublishStatus cps WHERE cps.numberOfPublishes < 5)" +
-            "ORDER BY cd.postingDate")
-    public abstract List<PendingCaseToPublishPerOffence> findPublicTransparencyReportPendingCases();
+    public List<PendingCaseToPublishPerOffence> findPublicTransparencyReportPendingCases() {
+        return entityManager.createQuery("SELECT new uk.gov.moj.cpp.sjp.persistence.entity.PendingCaseToPublishPerOffence" +
+                "(d.personalDetails.title, d.personalDetails.firstName, d.personalDetails.lastName, d.legalEntityDetails.legalEntityName, d.personalDetails.dateOfBirth," +
+                "cd.id, cd.urn," +
+                "d.address.address1, d.address.address2," +
+                "d.address.address3, d.address.address4, d.address.address5," +
+                "d.address.postcode, o.code, o.startDate, o.wording, " +
+                "o.pressRestriction.requested, o.pressRestriction.name, o.completed, cd.prosecutingAuthority, o.wordingWelsh) " +
+                "FROM CaseDetail cd " +
+                "LEFT OUTER JOIN cd.defendant d " +
+                "LEFT OUTER JOIN d.offences o " +
+                "WHERE cd.id IN (SELECT rc.id FROM ReadyCase rc) " +
+                "AND cd.id IN (SELECT cps.caseId FROM CasePublishStatus cps WHERE cps.numberOfPublishes < 5)" +
+                "ORDER BY cd.postingDate", PendingCaseToPublishPerOffence.class)
+                .getResultList();
+    }
 
-    @Query(value = "SELECT new uk.gov.moj.cpp.sjp.persistence.entity.PendingCaseToPublishPerOffence" +
-            "(d.personalDetails.title, d.personalDetails.firstName, d.personalDetails.lastName, d.legalEntityDetails.legalEntityName, d.personalDetails.dateOfBirth," +
-            "cd.id, cd.urn," +
-            "d.address.address1, d.address.address2," +
-            "d.address.address3, d.address.address4, d.address.address5," +
-            "d.address.postcode, o.code, o.startDate, o.wording, " +
-            "o.pressRestriction.requested, o.pressRestriction.name, o.completed, cd.prosecutingAuthority, o.wordingWelsh) " +
-            "FROM CaseDetail cd " +
-            "LEFT OUTER JOIN cd.defendant d " +
-            "LEFT OUTER JOIN d.offences o " +
-            "WHERE cd.id IN (SELECT rc.id FROM ReadyCase rc WHERE rc.markedAt BETWEEN :fromDate AND :toDate) " +
-            "ORDER BY cd.postingDate")
-    public abstract List<PendingCaseToPublishPerOffence> findPublicTransparencyDeltaReportPendingCases(@QueryParam("fromDate") final LocalDate fromDate, @QueryParam("toDate") final LocalDate toDate);
+    public List<PendingCaseToPublishPerOffence> findPublicTransparencyDeltaReportPendingCases(final LocalDate fromDate, final LocalDate toDate) {
+        return entityManager.createQuery("SELECT new uk.gov.moj.cpp.sjp.persistence.entity.PendingCaseToPublishPerOffence" +
+                "(d.personalDetails.title, d.personalDetails.firstName, d.personalDetails.lastName, d.legalEntityDetails.legalEntityName, d.personalDetails.dateOfBirth," +
+                "cd.id, cd.urn," +
+                "d.address.address1, d.address.address2," +
+                "d.address.address3, d.address.address4, d.address.address5," +
+                "d.address.postcode, o.code, o.startDate, o.wording, " +
+                "o.pressRestriction.requested, o.pressRestriction.name, o.completed, cd.prosecutingAuthority, o.wordingWelsh) " +
+                "FROM CaseDetail cd " +
+                "LEFT OUTER JOIN cd.defendant d " +
+                "LEFT OUTER JOIN d.offences o " +
+                "WHERE cd.id IN (SELECT rc.id FROM ReadyCase rc WHERE rc.markedAt BETWEEN :fromDate AND :toDate) " +
+                "ORDER BY cd.postingDate", PendingCaseToPublishPerOffence.class)
+                .setParameter("fromDate", fromDate)
+                .setParameter("toDate", toDate)
+                .getResultList();
+    }
 
-    @Query(value = "SELECT new uk.gov.moj.cpp.sjp.persistence.entity.PendingCaseToPublishPerOffence" +
-            "(d.personalDetails.title, d.personalDetails.firstName, d.personalDetails.lastName, d.legalEntityDetails.legalEntityName, d.personalDetails.dateOfBirth," +
-            "cd.id, cd.urn," +
-            "d.address.address1, d.address.address2," +
-            "d.address.address3, d.address.address4, d.address.address5," +
-            "d.address.postcode, o.code, o.startDate, o.wording," +
-            "o.pressRestriction.requested, o.pressRestriction.name, o.completed, cd.prosecutingAuthority, o.wordingWelsh) " +
-            "FROM CaseDetail cd " +
-            "LEFT OUTER JOIN cd.defendant d " +
-            "LEFT OUTER JOIN d.offences o " +
-            "WHERE cd.id IN (SELECT rc.id FROM ReadyCase rc) " +
-            "AND cd.id IN (SELECT cps.caseId FROM CasePublishStatus cps WHERE cps.numberOfPublishes < 5)" +
-            "ORDER BY cd.postingDate")
-    public abstract List<PendingCaseToPublishPerOffence> findPressTransparencyReportPendingCases();
+    public List<PendingCaseToPublishPerOffence> findPressTransparencyReportPendingCases() {
+        return entityManager.createQuery("SELECT new uk.gov.moj.cpp.sjp.persistence.entity.PendingCaseToPublishPerOffence" +
+                "(d.personalDetails.title, d.personalDetails.firstName, d.personalDetails.lastName, d.legalEntityDetails.legalEntityName, d.personalDetails.dateOfBirth," +
+                "cd.id, cd.urn," +
+                "d.address.address1, d.address.address2," +
+                "d.address.address3, d.address.address4, d.address.address5," +
+                "d.address.postcode, o.code, o.startDate, o.wording," +
+                "o.pressRestriction.requested, o.pressRestriction.name, o.completed, cd.prosecutingAuthority, o.wordingWelsh) " +
+                "FROM CaseDetail cd " +
+                "LEFT OUTER JOIN cd.defendant d " +
+                "LEFT OUTER JOIN d.offences o " +
+                "WHERE cd.id IN (SELECT rc.id FROM ReadyCase rc) " +
+                "AND cd.id IN (SELECT cps.caseId FROM CasePublishStatus cps WHERE cps.numberOfPublishes < 5)" +
+                "ORDER BY cd.postingDate", PendingCaseToPublishPerOffence.class)
+                .getResultList();
+    }
 
-    @Query(value = "SELECT new uk.gov.moj.cpp.sjp.persistence.entity.PendingCaseToPublishPerOffence" +
-            "(d.personalDetails.title, d.personalDetails.firstName, d.personalDetails.lastName, d.legalEntityDetails.legalEntityName, d.personalDetails.dateOfBirth," +
-            "cd.id, cd.urn," +
-            "d.address.address1, d.address.address2," +
-            "d.address.address3, d.address.address4, d.address.address5," +
-            "d.address.postcode, o.code, o.startDate, o.wording," +
-            "o.pressRestriction.requested, o.pressRestriction.name, o.completed, cd.prosecutingAuthority, o.wordingWelsh) " +
-            "FROM CaseDetail cd " +
-            "LEFT OUTER JOIN cd.defendant d " +
-            "LEFT OUTER JOIN d.offences o " +
-            "WHERE cd.id IN (SELECT rc.id FROM ReadyCase rc WHERE rc.markedAt BETWEEN :fromDate AND :toDate) " +
-            "ORDER BY cd.postingDate")
-    public abstract List<PendingCaseToPublishPerOffence> findPressTransparencyDeltaReportPendingCases(@QueryParam("fromDate") final LocalDate fromDate, @QueryParam("toDate") final LocalDate toDate);
+    public List<PendingCaseToPublishPerOffence> findPressTransparencyDeltaReportPendingCases(final LocalDate fromDate, final LocalDate toDate) {
+        return entityManager.createQuery("SELECT new uk.gov.moj.cpp.sjp.persistence.entity.PendingCaseToPublishPerOffence" +
+                "(d.personalDetails.title, d.personalDetails.firstName, d.personalDetails.lastName, d.legalEntityDetails.legalEntityName, d.personalDetails.dateOfBirth," +
+                "cd.id, cd.urn," +
+                "d.address.address1, d.address.address2," +
+                "d.address.address3, d.address.address4, d.address.address5," +
+                "d.address.postcode, o.code, o.startDate, o.wording," +
+                "o.pressRestriction.requested, o.pressRestriction.name, o.completed, cd.prosecutingAuthority, o.wordingWelsh) " +
+                "FROM CaseDetail cd " +
+                "LEFT OUTER JOIN cd.defendant d " +
+                "LEFT OUTER JOIN d.offences o " +
+                "WHERE cd.id IN (SELECT rc.id FROM ReadyCase rc WHERE rc.markedAt BETWEEN :fromDate AND :toDate) " +
+                "ORDER BY cd.postingDate", PendingCaseToPublishPerOffence.class)
+                .setParameter("fromDate", fromDate)
+                .setParameter("toDate", toDate)
+                .getResultList();
+    }
 
-    @Query(value = "SELECT DISTINCT new uk.gov.moj.cpp.sjp.persistence.entity.CaseNotGuiltyPlea" +
-            "(e.id, e.urn, o.pleaDate, d.personalDetails.firstName, d.personalDetails.lastName, d.legalEntityDetails.legalEntityName, e.prosecutingAuthority, e.caseManagementStatus) " +
-            "FROM CaseDetail e " +
-            "JOIN e.defendant d " +
-            "JOIN d.offences o " +
-            "WHERE e.completed = false " +
-            "AND o.plea = 'NOT_GUILTY' " +
-            "AND e.caseStatus != 'REFER_FOR_COURT_HEARING' " +
-            "AND e.prosecutingAuthority = :prosecutingAuthority " +
-            "ORDER BY o.pleaDate DESC ")
-    public abstract List<CaseNotGuiltyPlea> findCasesNotGuiltyPleaByProsecutingAuthority(@QueryParam("prosecutingAuthority") String prosecutingAuthority);
+    public List<CaseNotGuiltyPlea> findCasesNotGuiltyPleaByProsecutingAuthority(final String prosecutingAuthority) {
+        return entityManager.createQuery("SELECT DISTINCT new uk.gov.moj.cpp.sjp.persistence.entity.CaseNotGuiltyPlea" +
+                "(e.id, e.urn, o.pleaDate, d.personalDetails.firstName, d.personalDetails.lastName, d.legalEntityDetails.legalEntityName, e.prosecutingAuthority, e.caseManagementStatus) " +
+                "FROM CaseDetail e " +
+                "JOIN e.defendant d " +
+                "JOIN d.offences o " +
+                "WHERE e.completed = false " +
+                "AND o.plea = 'NOT_GUILTY' " +
+                "AND e.caseStatus != 'REFER_FOR_COURT_HEARING' " +
+                "AND e.prosecutingAuthority = :prosecutingAuthority " +
+                "ORDER BY o.pleaDate DESC ", CaseNotGuiltyPlea.class)
+                .setParameter("prosecutingAuthority", prosecutingAuthority)
+                .getResultList();
+    }
 
-    @Query(value = "SELECT DISTINCT new uk.gov.moj.cpp.sjp.persistence.entity.CaseNotGuiltyPlea" +
-            "(e.id, e.urn, o.pleaDate, d.personalDetails.firstName, d.personalDetails.lastName, d.legalEntityDetails.legalEntityName, e.prosecutingAuthority, e.caseManagementStatus) " +
-            "FROM CaseDetail e " +
-            "JOIN e.defendant d " +
-            "JOIN d.offences o " +
-            "WHERE e.completed = false " +
-            "AND o.plea = 'NOT_GUILTY' " +
-            "AND e.caseStatus != 'REFER_FOR_COURT_HEARING' " +
-            "ORDER BY o.pleaDate DESC ")
-    public abstract List<CaseNotGuiltyPlea> findCasesNotGuiltyPlea();
+    public List<CaseNotGuiltyPlea> findCasesNotGuiltyPlea() {
+        return entityManager.createQuery("SELECT DISTINCT new uk.gov.moj.cpp.sjp.persistence.entity.CaseNotGuiltyPlea" +
+                "(e.id, e.urn, o.pleaDate, d.personalDetails.firstName, d.personalDetails.lastName, d.legalEntityDetails.legalEntityName, e.prosecutingAuthority, e.caseManagementStatus) " +
+                "FROM CaseDetail e " +
+                "JOIN e.defendant d " +
+                "JOIN d.offences o " +
+                "WHERE e.completed = false " +
+                "AND o.plea = 'NOT_GUILTY' " +
+                "AND e.caseStatus != 'REFER_FOR_COURT_HEARING' " +
+                "ORDER BY o.pleaDate DESC ", CaseNotGuiltyPlea.class)
+                .getResultList();
+    }
 
-    @Query(value = "SELECT DISTINCT new uk.gov.moj.cpp.sjp.persistence.entity.CaseWithoutDefendantPostcode" +
-            "(e.id, e.urn, e.postingDate, d.personalDetails.firstName, d.personalDetails.lastName, e.prosecutingAuthority,d.legalEntityDetails.legalEntityName) " +
-            "FROM CaseDetail e " +
-            "JOIN e.defendant d " +
-            "WHERE e.completed = false " +
-            "AND d.address.postcode IS NULL " +
-            "ORDER BY e.postingDate DESC ")
-    public abstract List<CaseWithoutDefendantPostcode> findCasesWithoutDefendantPostcode();
+    public List<CaseWithoutDefendantPostcode> findCasesWithoutDefendantPostcode() {
+        return entityManager.createQuery("SELECT DISTINCT new uk.gov.moj.cpp.sjp.persistence.entity.CaseWithoutDefendantPostcode" +
+                "(e.id, e.urn, e.postingDate, d.personalDetails.firstName, d.personalDetails.lastName, e.prosecutingAuthority,d.legalEntityDetails.legalEntityName) " +
+                "FROM CaseDetail e " +
+                "JOIN e.defendant d " +
+                "WHERE e.completed = false " +
+                "AND d.address.postcode IS NULL " +
+                "ORDER BY e.postingDate DESC ", CaseWithoutDefendantPostcode.class)
+                .getResultList();
+    }
 
     public void updateDatesToAvoid(final UUID caseId, final String datesToAvoid) {
         findBy(caseId).setDatesToAvoid(datesToAvoid);
     }
 
+    public CaseDetail findBy(final UUID id) {
+        return entityManager.find(CaseDetail.class, id);
+    }
+
+    public CaseDetail save(final CaseDetail caseDetail) {
+        return entityManager.merge(caseDetail);
+    }
+
+    public void remove(final CaseDetail caseDetail) {
+        entityManager.remove(entityManager.contains(caseDetail) ? caseDetail : entityManager.merge(caseDetail));
+    }
+
+    public Long count() {
+        return entityManager.createQuery("SELECT COUNT(cd) FROM CaseDetail cd", Long.class).getSingleResult();
+    }
 }

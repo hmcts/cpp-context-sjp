@@ -148,7 +148,7 @@ public abstract class AocpOnlinePleaRepository {
     @ApplicationScoped
     public static class PersonDetailsOnlinePleaRepository extends AocpOnlinePleaRepository {
         @Override
-        final List<FIELDS> getFieldsToUpdate() {
+        List<FIELDS> getFieldsToUpdate() {
             return asList(
                     PERSON_FIRST_NAME,
                     PERSON_LAST_NAME,

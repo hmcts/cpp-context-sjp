@@ -283,7 +283,7 @@ public abstract class OnlinePleaRepository {
     @ApplicationScoped
     public static class FinancialMeansOnlinePleaRepository extends OnlinePleaRepository {
         @Override
-        final List<FIELDS> getFieldsToUpdate() {
+        List<FIELDS> getFieldsToUpdate() {
             return asList(
                     EMPLOYMENT_INCOME_PAYMENT_AMOUNT,
                     EMPLOYMENT_INCOME_FREQUENCY,
@@ -306,7 +306,7 @@ public abstract class OnlinePleaRepository {
     @ApplicationScoped
     public static class EmployerOnlinePleaRepository extends OnlinePleaRepository {
         @Override
-        final List<FIELDS> getFieldsToUpdate() {
+        List<FIELDS> getFieldsToUpdate() {
             return asList(
                     EMPLOYER_REFERENCE,
                     EMPLOYER_NAME,
@@ -324,7 +324,7 @@ public abstract class OnlinePleaRepository {
     @ApplicationScoped
     public static class TrialOnlinePleaRepository extends OnlinePleaRepository {
         @Override
-        final List<FIELDS> getFieldsToUpdate() {
+        List<FIELDS> getFieldsToUpdate() {
             return asList(
                     CASE_ID,
                     WITNESS_DISPUTE,
@@ -337,7 +337,7 @@ public abstract class OnlinePleaRepository {
     @ApplicationScoped
     public static class InterpreterLanguageOnlinePleaRepository extends OnlinePleaRepository {
         @Override
-        final List<FIELDS> getFieldsToUpdate() {
+        List<FIELDS> getFieldsToUpdate() {
             return singletonList(INTERPRETER_LANGUAGE);
         }
     }
@@ -345,7 +345,7 @@ public abstract class OnlinePleaRepository {
     @ApplicationScoped
     public static class HearingLanguageOnlinePleaRepository extends OnlinePleaRepository {
         @Override
-        final List<FIELDS> getFieldsToUpdate() {
+        List<FIELDS> getFieldsToUpdate() {
             return singletonList(HEARING_LANGUAGE);
         }
     }
@@ -353,7 +353,7 @@ public abstract class OnlinePleaRepository {
     @ApplicationScoped
     public static class PersonDetailsOnlinePleaRepository extends OnlinePleaRepository {
         @Override
-        final List<FIELDS> getFieldsToUpdate() {
+        List<FIELDS> getFieldsToUpdate() {
             return asList(
                     PERSON_FIRST_NAME,
                     PERSON_LAST_NAME,
@@ -378,7 +378,7 @@ public abstract class OnlinePleaRepository {
     @ApplicationScoped
     public static class PleaDetailsRepository extends OnlinePleaRepository {
         @Override
-        final List<FIELDS> getFieldsToUpdate() {
+        List<FIELDS> getFieldsToUpdate() {
             return asList(
                     COME_TO_COURT
             );
@@ -388,7 +388,7 @@ public abstract class OnlinePleaRepository {
     @ApplicationScoped
     public static class OutstandingFinesOnlinePleaRepository extends OnlinePleaRepository {
         @Override
-        final List<FIELDS> getFieldsToUpdate() {
+        List<FIELDS> getFieldsToUpdate() {
             return asList(
                     OUTSTANDING_FINES
             );
@@ -398,7 +398,7 @@ public abstract class OnlinePleaRepository {
     @ApplicationScoped
     public static class LegalEntityDetailsOnlinePleaRepository extends OnlinePleaRepository {
         @Override
-        final List<FIELDS> getFieldsToUpdate() {
+        List<FIELDS> getFieldsToUpdate() {
             return asList(
                     LEGALENTITY_NAME,
                     LEGALENTITY_HOME,

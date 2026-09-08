@@ -27,7 +27,7 @@ import uk.gov.justice.services.core.accesscontrol.AccessControlViolationExceptio
 import uk.gov.justice.services.core.interceptor.InterceptorChainProcessor;
 import uk.gov.justice.services.core.interceptor.InterceptorContext;
 import uk.gov.justice.services.messaging.JsonEnvelope;
-import uk.gov.moj.cpp.material.client.MaterialClient;
+import uk.gov.moj.cpp.sjp.material.client.MaterialClient;
 import uk.gov.moj.cpp.systemusers.ServiceContextSystemUserProvider;
 
 import java.util.Optional;
@@ -116,7 +116,7 @@ public class DefaultQueryApiCasesCaseIdDocumentsDocumentIdContentResourceTest {
 
         verifyInterceptorChainExecution();
 
-        verify(materialClient, never()).getMaterial(argThat(any(UUID.class)), argThat(any(UUID.class)));
+        verify(materialClient, never()).getMaterialWithHeader(argThat(any(UUID.class)), argThat(any(UUID.class)));
     }
 
     @Test
@@ -150,7 +150,7 @@ public class DefaultQueryApiCasesCaseIdDocumentsDocumentIdContentResourceTest {
         }
 
         verifyInterceptorChainExecution();
-        verify(materialClient, never()).getMaterial(argThat(any(UUID.class)), argThat(any(UUID.class)));
+        verify(materialClient, never()).getMaterialWithHeader(argThat(any(UUID.class)), argThat(any(UUID.class)));
     }
 
     @Test

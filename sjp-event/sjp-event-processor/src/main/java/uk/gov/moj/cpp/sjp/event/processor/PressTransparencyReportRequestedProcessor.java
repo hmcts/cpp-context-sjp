@@ -34,15 +34,15 @@ import uk.gov.justice.services.messaging.Envelope;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.messaging.JsonObjects;
 import uk.gov.moj.cpp.sjp.domain.ListType;
+import uk.gov.moj.cpp.sjp.event.processor.service.CourtListPublishingService;
 import uk.gov.moj.cpp.sjp.event.processor.service.ExportType;
-import uk.gov.moj.cpp.sjp.event.processor.service.ReferenceDataOffencesService;
-import uk.gov.moj.cpp.sjp.event.processor.service.ReferenceDataService;
 import uk.gov.moj.cpp.sjp.event.processor.service.SjpService;
 import uk.gov.moj.cpp.sjp.event.processor.utils.PayloadHelper;
 import uk.gov.moj.cpp.sjp.event.transparency.PressTransparencyJSONReportRequested;
 import uk.gov.moj.cpp.sjp.event.transparency.PressTransparencyPDFReportRequested;
 
 import java.io.ByteArrayInputStream;
+import java.io.IOException;
 import java.time.LocalDate;
 import java.time.format.DateTimeParseException;
 import java.util.List;
@@ -63,7 +63,9 @@ import org.slf4j.LoggerFactory;
 @ServiceComponent(EVENT_PROCESSOR)
 public class PressTransparencyReportRequestedProcessor {
 
-    public static final String PUBLIC_SJP_PRESS_TRANSPARENCY_REPORT_GENERATED = "public.sjp.press-transparency-report-generated";
+    private static final String LIST_TYPE = "listType";
+    private static final String SJP_PRESS_LIST = "SJP_PRESS_LIST";
+    private static final String SJP_DELTA_PRESS_LIST = "SJP_DELTA_PRESS_LIST";
     public static final String CASE_URN = "caseUrn";
     public static final String FIRST_NAME = "firstName";
     public static final String LAST_NAME = "lastName";
@@ -79,7 +81,6 @@ public class PressTransparencyReportRequestedProcessor {
     public static final String OFFENCES = "offences";
     public static final String PROSECUTOR_NAME = "prosecutorName";
     public static final String EMPTY = "";
-    public static final String STRING_FORMAT_COMMA = " %s,";
     public static final String STRING_FORMAT_COMMA_PREFIX = ", %s";
     public static final String STRING_FORMAT = " %s";
     public static final String SJP_OFFENCES = "sjpOffences";
@@ -103,14 +104,12 @@ public class PressTransparencyReportRequestedProcessor {
     @Inject
     private SjpService sjpService;
     @Inject
-    private ReferenceDataOffencesService referenceDataOffencesService;
-    @Inject
-    private ReferenceDataService referenceDataService;
-    @Inject
     private PayloadHelper payloadHelper;
     @Inject
     @FrameworkComponent(EVENT_PROCESSOR)
     private Sender sender;
+    @Inject
+    private CourtListPublishingService courtListPublishingService;
 
     private String getTemplateIdentifier(final String type, final String lang) {
         return "PressPendingCases" + type + lang;
@@ -143,53 +142,45 @@ public class PressTransparencyReportRequestedProcessor {
     public void handlePressTransparencyJSONReportRequest(final JsonEnvelope envelope) {
         payloadHelper.initCache();
 
-        final List<JsonObject> pendingCasesFromViewStore = getPendingCasesFromViewStore(envelope);
         final JsonObject eventPayload = envelope.payloadAsJsonObject();
         final UUID reportId = fromString(eventPayload.getString(PRESS_TRANSPARENCY_REPORT_ID));
-        final boolean isWelsh = WELSH.name().equalsIgnoreCase(eventPayload.getString(LANGUAGE));
+        final String requestType = eventPayload.getString(REQUEST_TYPE);
+        final String language = eventPayload.getString(LANGUAGE);
+        LOGGER.info("handling press transparency JSON report request for press report {}, requestType {}, language {}",
+                reportId, requestType, language);
+
+        final List<JsonObject> pendingCasesFromViewStore = getPendingCasesFromViewStore(envelope);
+        LOGGER.info("fetched {} pending case(s) from view store for press report {}", pendingCasesFromViewStore.size(), reportId);
+
+        final boolean isWelsh = WELSH.name().equalsIgnoreCase(language);
         LOGGER.info("generating press transparency JSON report for press report {}", reportId);
-        sendPublicEvent(envelope, buildPayload(pendingCasesFromViewStore, true, envelope, isWelsh));
+        publishCourtList(envelope, buildPayload(pendingCasesFromViewStore, true, envelope, isWelsh));
+        LOGGER.info("completed handling press transparency JSON report request for press report {}", reportId);
     }
 
-    /**
-     * @deprecated with CCT-1587 now we are using two separate events for PDF and JSON report
-     * generation {@link PressTransparencyPDFReportRequested} and {@link
-     * PressTransparencyJSONReportRequested}
-     */
-    @Deprecated(forRemoval = true)
-    @Handles("sjp.events.press-transparency-report-requested")
-    @Transactional
-    @SuppressWarnings({"squid:S00112", "squid:S1133"})
-    public void handlePressTransparencyRequest(final JsonEnvelope envelope) {
-        payloadHelper.initCache();
-
-        final List<JsonObject> pendingCasesFromViewStore = getPendingCasesFromViewStore(envelope);
-        final JsonObject eventPayload = envelope.payloadAsJsonObject();
-        final UUID reportId = fromString(eventPayload.getString(PRESS_TRANSPARENCY_REPORT_ID));
-        try {
-            final JsonObject payloadForDocumentGeneration = buildPayload(pendingCasesFromViewStore, false, envelope, false);
-            requestDocumentGeneration(envelope, reportId, payloadForDocumentGeneration);
-            sendPublicEvent(envelope, buildPayload(pendingCasesFromViewStore, true, envelope, false));
-            storeReportMetadata(envelope, reportId, pendingCasesFromViewStore);
-        } catch (FileServiceException e) {
-            throw new RuntimeException("IO Exception happened during press transparency report generation", e);
-        }
-    }
-
-    private void sendPublicEvent(final JsonEnvelope envelope, final JsonObject payloadForDocumentGeneration) {
-        LOGGER.info("publishing public event for sjp pending cases for public list in english");
+    private void publishCourtList(final JsonEnvelope envelope, final JsonObject payloadForDocumentGeneration) {
         final String type = envelope.payloadAsJsonObject().getString(REQUEST_TYPE);
         final String language = envelope.payloadAsJsonObject().getString(LANGUAGE);
-        final JsonObjectBuilder pendingListEnglishBuilder = createObjectBuilder()
+        // FULL/DELTA is part of the CaTH list-type vocabulary, not a separate field: sending
+        // SJP_PRESS_LIST for delta content makes CaTH render it with the full-list template.
+        final String listType = FULL.name().equals(type) ? SJP_PRESS_LIST : SJP_DELTA_PRESS_LIST;
+        LOGGER.info("building sjp press court list publish request, listType {}, requestType {}, language {}",
+                listType, type, language);
+        final JsonObject courtListPublishRequest = createObjectBuilder()
+                .add(LIST_TYPE, listType)
                 .add(LANGUAGE, language)
                 .add(REQUEST_TYPE, type)
-                .add("listPayload", payloadForDocumentGeneration);
-        if (LOGGER.isInfoEnabled()) {
-            LOGGER.info("publishing Sjp public event for press report {}, {}", PUBLIC_SJP_PRESS_TRANSPARENCY_REPORT_GENERATED, payloadForDocumentGeneration);
+                .add("listPayload", payloadForDocumentGeneration)
+                .build();
+
+        LOGGER.info("publishing sjp press pending cases list to court list publishing service");
+        try {
+            courtListPublishingService.publishCourtList(courtListPublishRequest.toString());
+            LOGGER.info("publishing sjp press pending cases list to court list publishing service called successfully");
+        } catch (IOException e) {
+            LOGGER.error("IO Exception happened while publishing sjp press court list", e);
+            throw new RuntimeException("IO Exception happened while publishing sjp press court list", e);
         }
-        sender.send(Envelope.envelopeFrom(metadataFrom(envelope.metadata())
-                        .withName(PUBLIC_SJP_PRESS_TRANSPARENCY_REPORT_GENERATED),
-                pendingListEnglishBuilder.build()));
     }
 
     private void storeReportMetadata(final JsonEnvelope envelope,
@@ -427,7 +418,7 @@ public class PressTransparencyReportRequestedProcessor {
 
     private Optional<String> getPersonDefendantFullName(final JsonObject pendingCase) {
         if( JsonObjects.getString(pendingCase, FIRST_NAME).isPresent() || JsonObjects.getString(pendingCase, LAST_NAME).isPresent() ) {
-            return Optional.of((String) format("%s %s", pendingCase.getString(FIRST_NAME, ""), pendingCase.getString(LAST_NAME, "").toUpperCase()));
+            return Optional.of(format("%s %s", pendingCase.getString(FIRST_NAME, ""), pendingCase.getString(LAST_NAME, "").toUpperCase()));
         }
         return Optional.empty();
     }

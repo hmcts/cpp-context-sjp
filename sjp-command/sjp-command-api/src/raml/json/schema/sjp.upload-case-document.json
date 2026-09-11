@@ -4,9 +4,22 @@
   "properties": {
     "caseDocument": {
       "type": "string"
+    },
+    "caseDocumentUri": {
+      "type": "string",
+      "format": "uri"
     }
   },
-  "required": [
-    "caseDocument"
+  "oneOf": [
+    {
+      "required": [
+        "caseDocument"
+      ]
+    },
+    {
+      "required": [
+        "caseDocumentUri"
+      ]
+    }
   ]
 }

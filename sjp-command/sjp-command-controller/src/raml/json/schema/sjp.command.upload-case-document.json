@@ -9,13 +9,28 @@
     "caseDocument": {
       "type": "string"
     },
+    "caseDocumentUri": {
+      "type": "string",
+      "format": "uri"
+    },
     "caseDocumentType": {
       "type": "string"
     }
   },
   "required": [
     "caseId",
-    "caseDocument",
     "caseDocumentType"
+  ],
+  "oneOf": [
+    {
+      "required": [
+        "caseDocument"
+      ]
+    },
+    {
+      "required": [
+        "caseDocumentUri"
+      ]
+    }
   ]
 }

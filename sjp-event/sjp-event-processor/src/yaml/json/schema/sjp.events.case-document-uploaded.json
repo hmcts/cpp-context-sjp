@@ -10,6 +10,10 @@
     "documentReference": {
       "type": "string"
     },
+    "documentReferenceUri": {
+      "type": "string",
+      "format": "uri"
+    },
     "documentType": {
       "type": "string"
     }
@@ -17,7 +21,18 @@
   "additionalProperties": false,
   "required": [
     "caseId",
-    "documentReference",
     "documentType"
+  ],
+  "oneOf": [
+    {
+      "required": [
+        "documentReference"
+      ]
+    },
+    {
+      "required": [
+        "documentReferenceUri"
+      ]
+    }
   ]
 }

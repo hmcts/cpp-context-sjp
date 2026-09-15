@@ -38,9 +38,9 @@ import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
-import javax.json.JsonObject;
-import javax.json.JsonReader;
-import javax.ws.rs.core.Response;
+import jakarta.json.JsonObject;
+import jakarta.json.JsonReader;
+import jakarta.ws.rs.core.Response;
 
 import org.hamcrest.Matcher;
 import org.json.JSONObject;

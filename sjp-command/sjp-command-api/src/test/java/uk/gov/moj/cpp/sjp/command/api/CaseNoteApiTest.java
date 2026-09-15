@@ -39,8 +39,8 @@ import uk.gov.moj.cpp.accesscontrol.test.utils.BaseDroolsAccessControlTest;
 import java.util.Map;
 import java.util.UUID;
 
-import javax.json.JsonObjectBuilder;
-import javax.ws.rs.BadRequestException;
+import jakarta.json.JsonObjectBuilder;
+import jakarta.ws.rs.BadRequestException;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

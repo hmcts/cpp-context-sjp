@@ -3,7 +3,7 @@ package uk.gov.moj.cpp.sjp.command.api.validator.decisionvalidator;
 import uk.gov.justice.services.adapter.rest.exception.BadRequestException;
 import uk.gov.moj.cpp.sjp.domain.decision.discharge.DischargeType;
 
-import javax.json.JsonObject;
+import jakarta.json.JsonObject;
 
 import static uk.gov.moj.cpp.sjp.command.utils.NullSafeJsonObjectHelper.notNull;
 import static uk.gov.moj.cpp.sjp.domain.decision.discharge.DischargeType.CONDITIONAL;

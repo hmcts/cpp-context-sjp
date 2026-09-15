@@ -1,6 +1,5 @@
 package uk.gov.moj.cpp.sjp.persistence.entity;
 
-import static java.util.Collections.emptySet;
 
 import java.io.Serializable;
 import java.time.ZonedDateTime;
@@ -12,18 +11,18 @@ import java.util.Set;
 import java.util.TreeSet;
 import java.util.UUID;
 
-import javax.persistence.CascadeType;
-import javax.persistence.Column;
-import javax.persistence.Embedded;
-import javax.persistence.Entity;
-import javax.persistence.FetchType;
-import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.OneToMany;
-import javax.persistence.OneToOne;
-import javax.persistence.OrderBy;
-import javax.persistence.Table;
-import javax.persistence.UniqueConstraint;
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.Column;
+import jakarta.persistence.Embedded;
+import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.OneToOne;
+import jakarta.persistence.OrderBy;
+import jakarta.persistence.Table;
+import jakarta.persistence.UniqueConstraint;
 
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
@@ -199,7 +198,7 @@ public class DefendantDetail implements Serializable {
     }
 
     public void setOffences(final List<OffenceDetail> offences) {
-        this.offences = offences == null ? emptySet() : new TreeSet<>(offences);
+        this.offences = offences == null ? new TreeSet<>() : new TreeSet<>(offences);
         this.offences.forEach(offence -> offence.setDefendantDetail(this));
     }
 

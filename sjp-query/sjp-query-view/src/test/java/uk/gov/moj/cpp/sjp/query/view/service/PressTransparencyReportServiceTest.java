@@ -18,7 +18,7 @@ import uk.gov.moj.cpp.sjp.query.view.response.PressTransparencyReportMetadataVie
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 
-import javax.persistence.NoResultException;
+import jakarta.persistence.NoResultException;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

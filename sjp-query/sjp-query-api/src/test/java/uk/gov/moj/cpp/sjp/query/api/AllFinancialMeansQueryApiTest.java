@@ -25,7 +25,7 @@ import uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMatcher;
 
 import java.util.UUID;
 
-import javax.json.JsonObjectBuilder;
+import jakarta.json.JsonObjectBuilder;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

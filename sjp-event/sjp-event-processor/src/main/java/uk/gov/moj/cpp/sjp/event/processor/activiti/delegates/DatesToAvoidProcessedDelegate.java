@@ -13,7 +13,7 @@ import uk.gov.moj.cpp.sjp.domain.plea.PleaType;
 
 import java.util.UUID;
 
-import javax.inject.Named;
+import jakarta.inject.Named;
 
 import org.activiti.engine.delegate.DelegateExecution;
 

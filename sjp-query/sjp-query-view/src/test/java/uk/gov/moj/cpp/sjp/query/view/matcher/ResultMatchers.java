@@ -10,7 +10,7 @@ import uk.gov.moj.cpp.sjp.query.view.converter.ResultCode;
 
 import java.math.BigDecimal;
 
-import javax.json.JsonValue;
+import jakarta.json.JsonValue;
 
 import org.hamcrest.Matcher;
 

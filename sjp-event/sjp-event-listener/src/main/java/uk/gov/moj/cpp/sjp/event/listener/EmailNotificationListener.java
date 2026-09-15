@@ -17,8 +17,8 @@ import uk.gov.moj.cpp.sjp.persistence.repository.EmailNotificationRepository;
 import java.time.ZonedDateTime;
 import java.util.UUID;
 
-import javax.inject.Inject;
-import javax.transaction.Transactional;
+import jakarta.inject.Inject;
+import jakarta.transaction.Transactional;
 
 @ServiceComponent(EVENT_LISTENER)
 public class EmailNotificationListener {

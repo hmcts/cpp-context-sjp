@@ -10,7 +10,7 @@ import uk.gov.moj.cpp.sjp.event.processor.model.referral.HearingRequestView;
 import uk.gov.moj.cpp.sjp.event.processor.model.referral.HearingTypeView;
 import uk.gov.moj.cpp.sjp.event.processor.model.referral.ReferralReasonView;
 
-import javax.json.JsonObject;
+import jakarta.json.JsonObject;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;

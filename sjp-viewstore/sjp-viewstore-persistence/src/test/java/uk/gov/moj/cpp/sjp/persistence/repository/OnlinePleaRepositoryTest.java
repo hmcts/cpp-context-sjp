@@ -6,12 +6,13 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.closeTo;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import uk.gov.justice.services.common.util.Clock;
-import uk.gov.justice.services.test.utils.persistence.BaseTransactionalJunit4Test;
+import uk.gov.justice.services.common.util.UtcClock;
+import uk.gov.justice.services.test.utils.persistence.HibernateTestEntityManagerProvider;
 import uk.gov.moj.cpp.sjp.persistence.entity.Address;
 import uk.gov.moj.cpp.sjp.persistence.entity.CaseDetail;
 import uk.gov.moj.cpp.sjp.persistence.entity.LegalEntityFinancialMeans;
@@ -24,35 +25,39 @@ import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.UUID;
 
-import javax.inject.Inject;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
-import org.apache.deltaspike.testcontrol.api.junit.CdiTestRunner;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-
-
-@RunWith(CdiTestRunner.class)
-public class OnlinePleaRepositoryTest extends BaseTransactionalJunit4Test {
+class OnlinePleaRepositoryTest {
 
     public static final String HOME = "123131231";
     public static final String MOBILE = "12313131";
     public static final String EMAIL = "test@test.com";
-    @Inject
+
+    private static final String PERSISTENCE_UNIT = "sjp-test-persistence-unit";
+
+    @RegisterExtension
+    static HibernateTestEntityManagerProvider provider = new HibernateTestEntityManagerProvider(PERSISTENCE_UNIT);
+
     private OnlinePleaRepository.FinancialMeansOnlinePleaRepository onlinePleaRepository;
 
-    @Inject
     private CaseRepository caseRepository;
 
-    @Inject
-    private Clock clock;
+    private final Clock clock = new UtcClock();
 
     private UUID caseId;
 
     private UUID caseId2;
 
-    @Before
-    public void set() {
+    @BeforeEach
+    void setUp() {
+        onlinePleaRepository = new OnlinePleaRepository.FinancialMeansOnlinePleaRepository();
+        provider.injectEntityManagerInto(onlinePleaRepository);
+
+        caseRepository = new CaseRepository();
+        provider.injectEntityManagerInto(caseRepository);
+
         caseId = UUID.randomUUID();
         final CaseDetail caseDetail = getCaseWithDefendant(caseId);
         caseRepository.save(caseDetail);
@@ -69,7 +74,7 @@ public class OnlinePleaRepositoryTest extends BaseTransactionalJunit4Test {
     }
 
     @Test
-    public void shouldFindOnlinePleaGivenCaseIdAndDefendantId() {
+    void shouldFindOnlinePleaGivenCaseIdAndDefendantId() {
 
         final OnlinePlea onlinePlea = onlinePleaRepository.findBy(caseId);
         final UUID defendantId = onlinePlea.getDefendantId();
@@ -81,7 +86,7 @@ public class OnlinePleaRepositoryTest extends BaseTransactionalJunit4Test {
     }
 
     @Test
-    public void shouldDeleteOutgoingDataOnSettingItToNullInOnlinePleaData() {
+    void shouldDeleteOutgoingDataOnSettingItToNullInOnlinePleaData() {
         final OnlinePlea onlinePlea = onlinePleaRepository.findBy(caseId);
         assertThat("Outgoing financial means data should present", onlinePlea.getOutgoings() != null);
         onlinePlea.setOutgoings(null);
@@ -91,7 +96,7 @@ public class OnlinePleaRepositoryTest extends BaseTransactionalJunit4Test {
     }
 
     @Test
-    public void shouldRetrieveLegalEntityDetails() {
+    void shouldRetrieveLegalEntityDetails() {
         final OnlinePlea onlinePlea =  onlinePleaRepository.findBy(caseId2);
         assertNotNull(onlinePlea.getLegalEntityDetails());
         assertEquals("companyLegal", onlinePlea.getLegalEntityDetails().getLegalEntityName());
@@ -106,7 +111,7 @@ public class OnlinePleaRepositoryTest extends BaseTransactionalJunit4Test {
     }
 
     @Test
-    public void shouldFindOnlinePleaWithoutFinances() {
+    void shouldFindOnlinePleaWithoutFinances() {
         // WHEN
         final OnlinePlea actualFullOnlinePlea = onlinePleaRepository.findBy(caseId);
         final OnlinePlea actualOnlinePleaWithoutFinances = onlinePleaRepository.findOnlinePleaWithoutFinances(caseId);

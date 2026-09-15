@@ -16,13 +16,13 @@ import java.util.Arrays;
 import java.util.Optional;
 import java.util.function.Function;
 
-import javax.jms.Connection;
-import javax.jms.JMSException;
-import javax.jms.MessageConsumer;
-import javax.jms.Session;
-import javax.jms.TextMessage;
-import javax.jms.Topic;
-import javax.json.JsonObject;
+import jakarta.jms.Connection;
+import jakarta.jms.JMSException;
+import jakarta.jms.MessageConsumer;
+import jakarta.jms.Session;
+import jakarta.jms.TextMessage;
+import jakarta.jms.Topic;
+import jakarta.json.JsonObject;
 
 import io.restassured.path.json.JsonPath;
 import org.apache.activemq.artemis.jms.client.ActiveMQConnectionFactory;
@@ -42,6 +42,8 @@ public class TopicUtil implements AutoCloseable {
     private static final long RETRIEVE_TIMEOUT = 20000;
     private static final long MESSAGE_RETRIEVE_TRIAL_TIMEOUT = 10000;
 
+    private final String topicName;
+
     private Connection connection;
 
     private Session session;
@@ -53,9 +55,19 @@ public class TopicUtil implements AutoCloseable {
     public static final TopicUtil publicEvents = new TopicUtil(PUBLIC_ACTIVE_MQ_TOPIC);
 
     private TopicUtil(final String topicName) {
+        this.topicName = topicName;
+        connect();
+    }
+
+    private synchronized void connect() {
         try {
             LOGGER.info("Artemis URI: {}", QUEUE_URI);
-            ActiveMQConnectionFactory factory = new ActiveMQConnectionFactory(QUEUE_URI);
+            final ActiveMQConnectionFactory factory = new ActiveMQConnectionFactory(QUEUE_URI);
+            // Artemis 2.54 closes idle client connections, which would silently kill this shared
+            // static consumer connection part-way through a multi-test run and make events appear
+            // "not present". Disable the idle timeout so the connection stays alive end-to-end.
+            factory.setConnectionTTL(-1);
+            factory.setClientFailureCheckPeriod(-1);
             connection = factory.createConnection();
             connection.start();
             session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
@@ -67,10 +79,17 @@ public class TopicUtil implements AutoCloseable {
     }
 
     public MessageConsumer createConsumer(final String eventSelector) {
+        final String selector = String.format(EVENT_SELECTOR_TEMPLATE, eventSelector);
         try {
-            return session.createConsumer(topic, String.format(EVENT_SELECTOR_TEMPLATE, eventSelector));
+            return session.createConsumer(topic, selector);
         } catch (JMSException e) {
-            throw new RuntimeException(e);
+            LOGGER.warn("Consumer creation failed; reconnecting to Artemis and retrying once", e);
+            connect();
+            try {
+                return session.createConsumer(topic, selector);
+            } catch (JMSException retry) {
+                throw new RuntimeException(retry);
+            }
         }
     }
 
@@ -84,7 +103,13 @@ public class TopicUtil implements AutoCloseable {
         try {
             return session.createConsumer(topic, eventSelectorsExpression);
         } catch (JMSException e) {
-            throw new RuntimeException(e);
+            LOGGER.warn("Consumer creation failed; reconnecting to Artemis and retrying once", e);
+            connect();
+            try {
+                return session.createConsumer(topic, eventSelectorsExpression);
+            } catch (JMSException retry) {
+                throw new RuntimeException(retry);
+            }
         }
     }
 

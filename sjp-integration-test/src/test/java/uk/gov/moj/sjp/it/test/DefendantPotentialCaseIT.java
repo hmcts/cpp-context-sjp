@@ -27,8 +27,8 @@ import java.time.LocalDate;
 import java.util.Optional;
 import java.util.UUID;
 
-import javax.json.JsonArray;
-import javax.json.JsonObject;
+import jakarta.json.JsonArray;
+import jakarta.json.JsonObject;
 
 import com.jayway.jsonpath.matchers.JsonPathMatchers;
 import org.hamcrest.Matcher;

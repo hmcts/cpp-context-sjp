@@ -9,7 +9,7 @@ import static java.util.UUID.randomUUID;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.core.AllOf.allOf;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderFactory.metadataWithRandomUUIDAndName;
 import static uk.gov.moj.cpp.sjp.event.processor.activiti.CaseStateService.CASE_ADJOURNED_DATE;
 import static uk.gov.moj.cpp.sjp.event.processor.activiti.CaseStateService.CASE_ADJOURNED_SIGNAL_NAME;
@@ -60,19 +60,17 @@ import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 import com.google.common.collect.ImmutableMap;
-import org.activiti.engine.test.ActivitiRule;
 import org.activiti.engine.test.Deployment;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
-//TODO FIXME!!! junit5 not yet supported by activiti engine //https://github.com/Activiti/Activiti/issues/3267
 public class CaseStateProcessTest {
 
     private static final String PROCESS_PATH = "processes/case-state.bpmn20.xml";
 
-    @Rule
-    public ActivitiRule rule = new ActivitiRule();
+    @RegisterExtension
+    ActivitiJUnit5Extension rule = new ActivitiJUnit5Extension();
 
     private DelegatesVerifier delegatesVerifier;
 
@@ -80,7 +78,7 @@ public class CaseStateProcessTest {
     private Metadata metadata;
     private CaseStateService caseStateService;
 
-    @Before
+    @BeforeEach
     public void init() {
         caseId = randomUUID();
         metadata = metadataWithRandomUUIDAndName().build();

@@ -4,7 +4,7 @@ import uk.gov.moj.sjp.it.util.HttpClientUtil;
 
 import java.util.UUID;
 
-import javax.ws.rs.core.Response;
+import jakarta.ws.rs.core.Response;
 
 import io.restassured.path.json.JsonPath;
 

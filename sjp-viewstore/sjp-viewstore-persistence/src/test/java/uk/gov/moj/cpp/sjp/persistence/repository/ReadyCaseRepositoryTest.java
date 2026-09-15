@@ -11,25 +11,32 @@ import static uk.gov.moj.cpp.sjp.domain.CaseReadinessReason.PLEADED_GUILTY;
 import static uk.gov.moj.cpp.sjp.domain.SessionType.DELEGATED_POWERS;
 import static uk.gov.moj.cpp.sjp.domain.SessionType.MAGISTRATE;
 
-import uk.gov.justice.services.test.utils.persistence.BaseTransactionalJunit4Test;
+import uk.gov.justice.services.test.utils.persistence.HibernateTestEntityManagerProvider;
 import uk.gov.moj.cpp.sjp.persistence.entity.ReadyCase;
 
 import java.util.UUID;
 
-import javax.inject.Inject;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
-import org.apache.deltaspike.testcontrol.api.junit.CdiTestRunner;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+class ReadyCaseRepositoryTest {
 
-@RunWith(CdiTestRunner.class)
-public class ReadyCaseRepositoryTest extends BaseTransactionalJunit4Test {
+    private static final String PERSISTENCE_UNIT = "sjp-test-persistence-unit";
 
-    @Inject
+    @RegisterExtension
+    static HibernateTestEntityManagerProvider provider = new HibernateTestEntityManagerProvider(PERSISTENCE_UNIT);
+
     private ReadyCaseRepository readyCaseRepository;
 
+    @BeforeEach
+    void setUp() {
+        readyCaseRepository = new ReadyCaseRepository();
+        provider.injectEntityManagerInto(readyCaseRepository);
+    }
+
     @Test
-    public void shouldGetReadyCasesByAssigneeId() {
+    void shouldGetReadyCasesByAssigneeId() {
         final UUID assigneeId1 = UUID.randomUUID();
         final UUID assigneeId2 = UUID.randomUUID();
         final UUID assigneeId3 = UUID.randomUUID();
@@ -50,7 +57,7 @@ public class ReadyCaseRepositoryTest extends BaseTransactionalJunit4Test {
     }
 
     @Test
-    public void shouldSaveAndLoadAllFields() {
+    void shouldSaveAndLoadAllFields() {
         final UUID assigneeId = UUID.randomUUID();
         final UUID caseId = UUID.randomUUID();
 

@@ -4,8 +4,8 @@ package uk.gov.moj.cpp.sjp.query.view.converter.prompts;
 import uk.gov.moj.cpp.sjp.query.view.converter.Prompt;
 import uk.gov.moj.cpp.sjp.query.view.service.OffenceDataSupplier;
 
-import javax.json.JsonArrayBuilder;
-import javax.json.JsonObject;
+import jakarta.json.JsonArrayBuilder;
+import jakarta.json.JsonObject;
 
 public class HardcodedValuePromptConverter extends PromptConverter {
 

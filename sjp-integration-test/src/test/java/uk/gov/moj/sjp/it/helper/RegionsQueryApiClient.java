@@ -6,8 +6,8 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import uk.gov.moj.sjp.it.util.HttpClientUtil;
 import uk.gov.moj.sjp.it.util.JsonHelper;
 
-import javax.json.JsonObject;
-import javax.ws.rs.core.Response;
+import jakarta.json.JsonObject;
+import jakarta.ws.rs.core.Response;
 
 public class RegionsQueryApiClient {
 

@@ -4,7 +4,7 @@ import uk.gov.justice.core.courts.Address;
 
 import java.util.Optional;
 
-import javax.json.JsonObject;
+import jakarta.json.JsonObject;
 
 public class AddressConverter {
     private static final String ADDRESS1_KEY = "address1";

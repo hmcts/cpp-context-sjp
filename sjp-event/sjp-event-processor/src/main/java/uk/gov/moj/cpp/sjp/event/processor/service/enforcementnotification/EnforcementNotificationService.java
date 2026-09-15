@@ -16,7 +16,7 @@ import uk.gov.moj.cpp.sjp.event.processor.service.SjpService;
 
 import java.util.UUID;
 
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 
 public class EnforcementNotificationService {
 

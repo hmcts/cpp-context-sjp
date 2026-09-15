@@ -28,7 +28,7 @@ import java.time.ZonedDateTime;
 import java.util.Optional;
 import java.util.UUID;
 
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 
 /**
  * Process responses from Notification.Notify public events for sent and failed emails

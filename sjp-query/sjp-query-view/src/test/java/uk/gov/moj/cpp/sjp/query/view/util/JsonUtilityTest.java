@@ -3,8 +3,8 @@ package uk.gov.moj.cpp.sjp.query.view.util;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 
-import javax.json.JsonObject;
-import javax.json.JsonValue;
+import jakarta.json.JsonObject;
+import jakarta.json.JsonValue;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

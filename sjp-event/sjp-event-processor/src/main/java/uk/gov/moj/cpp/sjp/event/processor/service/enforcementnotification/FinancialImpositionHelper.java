@@ -2,7 +2,7 @@ package uk.gov.moj.cpp.sjp.event.processor.service.enforcementnotification;
 
 import uk.gov.justice.json.schemas.domains.sjp.queries.CaseDetails;
 
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 
 public class FinancialImpositionHelper {
 

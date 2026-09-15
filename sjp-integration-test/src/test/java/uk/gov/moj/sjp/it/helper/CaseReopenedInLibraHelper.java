@@ -23,8 +23,8 @@ import uk.gov.moj.sjp.it.util.TopicUtil;
 import java.time.LocalDate;
 import java.util.UUID;
 
-import javax.jms.JMSException;
-import javax.jms.MessageConsumer;
+import jakarta.jms.JMSException;
+import jakarta.jms.MessageConsumer;
 
 import io.restassured.path.json.JsonPath;
 import org.slf4j.Logger;

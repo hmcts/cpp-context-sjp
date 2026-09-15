@@ -10,8 +10,8 @@ import uk.gov.moj.cpp.sjp.persistence.repository.CaseRepository;
 
 import java.util.UUID;
 
-import javax.inject.Inject;
-import javax.json.JsonObject;
+import jakarta.inject.Inject;
+import jakarta.json.JsonObject;
 
 @ServiceComponent(EVENT_LISTENER)
 public class EnterpriseIdAssociatedListener {

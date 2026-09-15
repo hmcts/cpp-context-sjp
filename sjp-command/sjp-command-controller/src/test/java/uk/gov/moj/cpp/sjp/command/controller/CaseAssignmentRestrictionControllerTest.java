@@ -21,7 +21,7 @@ import uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopePayloadMatch
 
 import java.time.LocalDate;
 
-import javax.json.JsonValue;
+import jakarta.json.JsonValue;
 
 import com.jayway.jsonpath.ReadContext;
 import org.hamcrest.Matcher;

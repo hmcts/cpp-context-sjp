@@ -11,9 +11,9 @@ import uk.gov.justice.services.core.sender.Sender;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.sjp.event.casemanagement.UpdateCasesManagementStatus;
 
-import javax.inject.Inject;
-import javax.json.JsonObject;
-import javax.transaction.Transactional;
+import jakarta.inject.Inject;
+import jakarta.json.JsonObject;
+import jakarta.transaction.Transactional;
 
 @ServiceComponent(EVENT_PROCESSOR)
 public class UpdateCasesManagementStatusProcessor {

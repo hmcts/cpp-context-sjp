@@ -25,8 +25,8 @@ import uk.gov.moj.cpp.sjp.event.processor.service.timers.TimerService;
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
 
-import javax.inject.Inject;
-import javax.json.JsonObject;
+import jakarta.inject.Inject;
+import jakarta.json.JsonObject;
 
 @ServiceComponent(EVENT_PROCESSOR)
 public class DefendantAcceptedAocpProcessor {

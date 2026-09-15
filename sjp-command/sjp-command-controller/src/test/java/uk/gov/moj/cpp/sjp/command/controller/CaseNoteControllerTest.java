@@ -35,8 +35,8 @@ import uk.gov.moj.cpp.sjp.command.service.UserService;
 
 import java.util.UUID;
 
-import javax.json.JsonObject;
-import javax.json.JsonObjectBuilder;
+import jakarta.json.JsonObject;
+import jakarta.json.JsonObjectBuilder;
 
 import com.jayway.jsonpath.ReadContext;
 import org.hamcrest.Matcher;

@@ -17,7 +17,7 @@ import uk.gov.moj.cpp.sjp.event.processor.model.referral.SjpReferralView;
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
 
-import javax.json.JsonObject;
+import jakarta.json.JsonObject;
 
 import org.junit.jupiter.api.Test;
 

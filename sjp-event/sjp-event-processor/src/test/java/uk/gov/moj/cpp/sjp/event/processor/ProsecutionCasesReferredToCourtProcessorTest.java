@@ -27,7 +27,7 @@ import uk.gov.justice.services.test.utils.core.enveloper.EnveloperFactory;
 
 import java.util.UUID;
 
-import javax.json.JsonArray;
+import jakarta.json.JsonArray;
 
 import com.google.common.collect.ImmutableMap;
 import org.junit.jupiter.api.Test;

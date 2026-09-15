@@ -10,7 +10,7 @@ import uk.gov.moj.cpp.sjp.event.processor.utils.builders.SystemDocGeneratorEnvel
 
 import java.util.Arrays;
 
-import javax.enterprise.inject.Instance;
+import jakarta.enterprise.inject.Instance;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

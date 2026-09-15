@@ -11,8 +11,8 @@ import java.io.IOException;
 import java.io.StringReader;
 import java.net.URISyntaxException;
 
-import javax.json.JsonObject;
-import javax.json.JsonReader;
+import jakarta.json.JsonObject;
+import jakarta.json.JsonReader;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 

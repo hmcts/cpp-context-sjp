@@ -28,7 +28,7 @@ import uk.gov.moj.cpp.systemidmapper.client.SystemIdMapping;
 import java.util.Optional;
 import java.util.UUID;
 
-import javax.json.JsonObjectBuilder;
+import jakarta.json.JsonObjectBuilder;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

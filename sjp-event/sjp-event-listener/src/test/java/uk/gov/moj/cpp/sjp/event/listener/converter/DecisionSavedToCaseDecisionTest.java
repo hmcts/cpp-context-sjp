@@ -69,7 +69,7 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Stream;
 
-import javax.persistence.EntityManager;
+import jakarta.persistence.EntityManager;
 
 import org.hamcrest.Matcher;
 import org.junit.jupiter.api.Test;

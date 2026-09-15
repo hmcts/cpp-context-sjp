@@ -33,7 +33,7 @@ import uk.gov.justice.services.messaging.JsonEnvelope;
 import java.util.Arrays;
 import java.util.UUID;
 
-import javax.json.JsonValue;
+import jakarta.json.JsonValue;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;

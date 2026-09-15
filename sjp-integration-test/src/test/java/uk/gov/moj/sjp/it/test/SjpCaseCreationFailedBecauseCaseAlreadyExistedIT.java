@@ -11,13 +11,13 @@ import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubRegionByPostco
 
 
 import io.restassured.path.json.JsonPath;
-import javax.jms.JMSException;
+import jakarta.jms.JMSException;
 import org.junit.jupiter.api.AfterEach;
 import uk.gov.moj.sjp.it.command.CreateCase;
 import uk.gov.moj.sjp.it.model.ProsecutingAuthority;
 import uk.gov.moj.sjp.it.util.TopicUtil;
 
-import javax.jms.MessageConsumer;
+import jakarta.jms.MessageConsumer;
 
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.BeforeEach;

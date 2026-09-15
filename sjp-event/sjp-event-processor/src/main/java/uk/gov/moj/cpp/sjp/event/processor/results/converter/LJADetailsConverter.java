@@ -6,7 +6,7 @@ import uk.gov.justice.core.courts.LjaDetails;
 
 import java.util.Optional;
 
-import javax.json.JsonObject;
+import jakarta.json.JsonObject;
 
 public class LJADetailsConverter {
     private static final String LJA_CODE = "localJusticeAreaNationalCourtCode";

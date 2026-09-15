@@ -14,8 +14,8 @@ import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.sjp.event.CaseListedInCriminalCourtsV2;
 import uk.gov.moj.cpp.sjp.event.processor.results.converter.SjpToHearingConverter;
 
-import javax.inject.Inject;
-import javax.json.JsonObject;
+import jakarta.inject.Inject;
+import jakarta.json.JsonObject;
 
 import static uk.gov.justice.hearing.courts.HearingResulted.hearingResulted;
 import static uk.gov.justice.services.core.enveloper.Enveloper.envelop;

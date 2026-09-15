@@ -8,7 +8,7 @@ import uk.gov.moj.cpp.sjp.domain.Address;
 
 import java.util.UUID;
 
-import javax.json.JsonObject;
+import jakarta.json.JsonObject;
 
 public class BasePersonInfoHandler {
 

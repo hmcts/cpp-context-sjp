@@ -53,7 +53,7 @@ public abstract class SjpDroolsAccessControlTest extends BaseDroolsAccessControl
     }
 
     @BeforeEach
-    public void setup() {
+    public void setup() throws Exception {
         super.setup();
         action = createActionFor(actionName);
     }

@@ -12,8 +12,8 @@ import uk.gov.moj.cpp.sjp.query.view.service.OffenceDataSupplier;
 import java.util.Optional;
 import java.util.UUID;
 
-import javax.json.JsonArrayBuilder;
-import javax.json.JsonObject;
+import jakarta.json.JsonArrayBuilder;
+import jakarta.json.JsonObject;
 
 public class EmployerPromptConverter extends PromptConverter {
 

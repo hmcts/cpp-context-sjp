@@ -35,7 +35,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
-import javax.json.JsonArray;
+import jakarta.json.JsonArray;
 
 import com.google.common.collect.ImmutableMap;
 import org.hamcrest.CustomTypeSafeMatcher;

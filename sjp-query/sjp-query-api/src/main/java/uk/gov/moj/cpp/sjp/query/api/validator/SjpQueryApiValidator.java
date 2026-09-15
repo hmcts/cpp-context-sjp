@@ -1,6 +1,6 @@
 package uk.gov.moj.cpp.sjp.query.api.validator;
 
-import javax.json.JsonObject;
+import jakarta.json.JsonObject;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;

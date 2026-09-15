@@ -2,19 +2,17 @@ package uk.gov.moj.cpp.sjp.persistence.entity;
 
 import java.math.BigDecimal;
 
-import javax.persistence.Column;
-import javax.persistence.Embeddable;
+import jakarta.persistence.Column;
+import jakarta.persistence.Embeddable;
 
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
-import org.checkerframework.checker.index.qual.Positive;
 
 @Embeddable
 public class LegalEntityFinancialMeans {
     @Column(name = "trading_more_than_twelve_months")
     private Boolean tradingMoreThan12Months;
 
-    @Positive
     @Column(name = "number_of_employees")
     private Integer numberOfEmployees;
 
@@ -24,7 +22,7 @@ public class LegalEntityFinancialMeans {
     @Column(name = "net_turnover_whole_pounds")
     private BigDecimal netTurnover;
 
-    public LegalEntityFinancialMeans(final Boolean tradingMoreThan12Months, @Positive final Integer numberOfEmployees, final BigDecimal grossTurnover, final BigDecimal netTurnover) {
+    public LegalEntityFinancialMeans(final Boolean tradingMoreThan12Months, final Integer numberOfEmployees, final BigDecimal grossTurnover, final BigDecimal netTurnover) {
         this.tradingMoreThan12Months = tradingMoreThan12Months;
         this.numberOfEmployees = numberOfEmployees;
         this.grossTurnover = grossTurnover;

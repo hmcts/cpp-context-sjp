@@ -25,15 +25,15 @@ import java.util.Optional;
 import java.util.UUID;
 
 import org.hamcrest.CoreMatchers;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 public class DefendantPendingChangesIT extends BaseIntegrationTest {
     private final UUID caseIdOne = randomUUID();
     private final UUID tvlUserUid = randomUUID();
     private CreateCase.CreateCasePayloadBuilder createCasePayloadBuilder;
 
-    @Before
+    @BeforeEach
     public void setUp() {
 
         createCasePayloadBuilder = withDefaults();

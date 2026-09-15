@@ -10,8 +10,8 @@ import uk.gov.moj.cpp.sjp.event.OutstandingFinesUpdated;
 import uk.gov.moj.cpp.sjp.persistence.entity.OnlinePlea;
 import uk.gov.moj.cpp.sjp.persistence.repository.OnlinePleaRepository;
 
-import javax.inject.Inject;
-import javax.transaction.Transactional;
+import jakarta.inject.Inject;
+import jakarta.transaction.Transactional;
 
 @ServiceComponent(EVENT_LISTENER)
 public class OutstandingFinesUpdatedListener {

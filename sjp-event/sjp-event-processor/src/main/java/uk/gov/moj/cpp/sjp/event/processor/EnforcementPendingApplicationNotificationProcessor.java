@@ -31,7 +31,7 @@ import uk.gov.moj.cpp.sjp.event.processor.service.notificationnotify.Notificatio
 import java.time.ZonedDateTime;
 import java.util.UUID;
 
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 
 @ServiceComponent(EVENT_PROCESSOR)
 public class EnforcementPendingApplicationNotificationProcessor {

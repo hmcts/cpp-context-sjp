@@ -6,16 +6,43 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
-import org.apache.deltaspike.data.api.EntityRepository;
-import org.apache.deltaspike.data.api.Query;
-import org.apache.deltaspike.data.api.QueryParam;
-import org.apache.deltaspike.data.api.Repository;
+import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 
-@Repository
-public interface PressTransparencyReportMetadataRepository extends EntityRepository<PressTransparencyReportMetadata, UUID> {
+@ApplicationScoped
+public class PressTransparencyReportMetadataRepository {
 
-    @Query(value = "SELECT ptrmd FROM PressTransparencyReportMetadata ptrmd " +
-            "WHERE ptrmd.fileServiceId is not null and ptrmd.generatedAt > :fromDate " +
-            "ORDER BY ptrmd.generatedAt DESC")
-    List<PressTransparencyReportMetadata> findLatestPressTransparencyReportMetadata(@QueryParam("fromDate") LocalDateTime fromDate);
+    @PersistenceContext(unitName = "sjp-persistence-unit")
+    private EntityManager entityManager;
+
+    public List<PressTransparencyReportMetadata> findLatestPressTransparencyReportMetadata(LocalDateTime fromDate) {
+        return entityManager.createQuery(
+                "SELECT ptrmd FROM PressTransparencyReportMetadata ptrmd " +
+                        "WHERE ptrmd.fileServiceId is not null and ptrmd.generatedAt > :fromDate " +
+                        "ORDER BY ptrmd.generatedAt DESC",
+                PressTransparencyReportMetadata.class)
+                .setParameter("fromDate", fromDate)
+                .getResultList();
+    }
+
+    public PressTransparencyReportMetadata findBy(final UUID id) {
+        return entityManager.find(PressTransparencyReportMetadata.class, id);
+    }
+
+    public PressTransparencyReportMetadata save(final PressTransparencyReportMetadata entity) {
+        return entityManager.merge(entity);
+    }
+
+    public void remove(final PressTransparencyReportMetadata entity) {
+        entityManager.remove(entityManager.contains(entity) ? entity : entityManager.merge(entity));
+    }
+
+    public Long count() {
+        return entityManager.createQuery("SELECT COUNT(e) FROM PressTransparencyReportMetadata e", Long.class).getSingleResult();
+    }
+
+    public List<PressTransparencyReportMetadata> findAll() {
+        return entityManager.createQuery("SELECT e FROM PressTransparencyReportMetadata e", PressTransparencyReportMetadata.class).getResultList();
+    }
 }

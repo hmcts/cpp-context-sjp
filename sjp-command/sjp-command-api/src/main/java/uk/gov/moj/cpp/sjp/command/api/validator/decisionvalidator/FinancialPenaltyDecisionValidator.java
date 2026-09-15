@@ -2,7 +2,7 @@ package uk.gov.moj.cpp.sjp.command.api.validator.decisionvalidator;
 
 import static java.math.BigDecimal.ZERO;
 import static java.util.Optional.ofNullable;
-import static javax.json.JsonValue.ValueType.NUMBER;
+import static jakarta.json.JsonValue.ValueType.NUMBER;
 import static uk.gov.moj.cpp.sjp.command.api.validator.decisionvalidator.CommonDecisionValidator.getFinancialPenaltyValue;
 
 import uk.gov.justice.services.adapter.rest.exception.BadRequestException;
@@ -10,8 +10,8 @@ import uk.gov.justice.services.adapter.rest.exception.BadRequestException;
 import java.math.BigDecimal;
 import java.util.Optional;
 
-import javax.json.JsonNumber;
-import javax.json.JsonObject;
+import jakarta.json.JsonNumber;
+import jakarta.json.JsonObject;
 
 public class FinancialPenaltyDecisionValidator {
 

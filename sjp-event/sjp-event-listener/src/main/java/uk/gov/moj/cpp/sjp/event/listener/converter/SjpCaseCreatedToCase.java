@@ -11,7 +11,7 @@ import uk.gov.moj.cpp.sjp.persistence.entity.DefendantDetail;
 import uk.gov.moj.cpp.sjp.persistence.entity.LegalEntityDetails;
 import uk.gov.moj.cpp.sjp.persistence.entity.PersonalDetails;
 
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 
 /**
  * @deprecated Replaced by {@link CaseReceivedToCase}

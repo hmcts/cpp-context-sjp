@@ -18,7 +18,7 @@ import uk.gov.moj.cpp.sjp.persistence.repository.CaseRepository;
 
 import java.util.UUID;
 
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 
 @ServiceComponent(EVENT_LISTENER)
 public class CourtReferralListener {

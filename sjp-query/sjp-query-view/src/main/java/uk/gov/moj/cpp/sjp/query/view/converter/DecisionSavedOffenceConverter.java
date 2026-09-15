@@ -63,8 +63,8 @@ import uk.gov.moj.cpp.sjp.query.view.response.DisqualificationPeriodView;
 import uk.gov.moj.cpp.sjp.query.view.response.FinancialImpositionView;
 import uk.gov.moj.cpp.sjp.query.view.response.OffenceDecisionView;
 
-import javax.json.JsonObject;
-import javax.json.JsonObjectBuilder;
+import jakarta.json.JsonObject;
+import jakarta.json.JsonObjectBuilder;
 
 public class DecisionSavedOffenceConverter {
 

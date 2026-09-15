@@ -13,7 +13,7 @@ import uk.gov.moj.cpp.sjp.query.view.service.CourtExtractDataService;
 
 import java.util.UUID;
 
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 
 @ServiceComponent(Component.QUERY_VIEW)
 public class SjpCaseCourtExtractView {

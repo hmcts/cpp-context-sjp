@@ -1,6 +1,7 @@
 package uk.gov.moj.cpp.sjp.persistence.repository;
 
 import static java.time.LocalDate.now;
+import static java.util.UUID.randomUUID;
 import static org.apache.commons.collections.ListUtils.union;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.everyItem;
@@ -36,7 +37,7 @@ class CaseRepositorySjpnTest {
     private static final String PERSISTENCE_UNIT = "sjp-test-persistence-unit";
 
     @RegisterExtension
-    static HibernateTestEntityManagerProvider provider = new HibernateTestEntityManagerProvider(PERSISTENCE_UNIT);
+    static HibernateTestEntityManagerProvider hibernateTestEntityManagerProvider = new HibernateTestEntityManagerProvider(PERSISTENCE_UNIT);
 
     private CaseRepository caseRepository;
 
@@ -48,7 +49,7 @@ class CaseRepositorySjpnTest {
     void createRepositoryAndSeedCases() {
 
         caseRepository = new CaseRepository();
-        provider.injectEntityManagerInto(caseRepository);
+        hibernateTestEntityManagerProvider.injectEntityManagerInto(caseRepository);
 
         tflCases = createCasesAndDocuments("TFL");
         tvlCases = createCasesAndDocuments("TVL");
@@ -172,7 +173,7 @@ class CaseRepositorySjpnTest {
 
         int i = cases.size();
         for (CaseDetail caseDetail : cases) {
-            caseDetail.setId(UUID.randomUUID());
+            caseDetail.setId(randomUUID());
             caseDetail.setProsecutingAuthority(prosecutingAuthority);
             caseDetail.setPostingDate(now().minusDays(i--));
             caseRepository.save(caseDetail);
@@ -191,7 +192,7 @@ class CaseRepositorySjpnTest {
 
     private void createCaseDocuments(final List<CaseDetail> cases, final String documentType) {
         for (final CaseDetail caseDetail : cases) {
-            final CaseDocument sjpNotice = new CaseDocument(UUID.randomUUID(), UUID.randomUUID(), documentType, clock.now(), caseDetail.getId(), 1);
+            final CaseDocument sjpNotice = new CaseDocument(randomUUID(), randomUUID(), documentType, clock.now(), caseDetail.getId(), 1);
             caseDetail.addCaseDocuments(sjpNotice);
             caseRepository.save(caseDetail);
         }

@@ -84,7 +84,7 @@ class CaseRepositoryTest {
     private static final String PERSISTENCE_UNIT = "sjp-test-persistence-unit";
 
     @RegisterExtension
-    static HibernateTestEntityManagerProvider provider = new HibernateTestEntityManagerProvider(PERSISTENCE_UNIT);
+    static HibernateTestEntityManagerProvider hibernateTestEntityManagerProvider = new HibernateTestEntityManagerProvider(PERSISTENCE_UNIT);
 
     private EntityManager entityManager;
 
@@ -105,12 +105,12 @@ class CaseRepositoryTest {
     @BeforeEach
     void createRepositoriesAndSeedCases() {
         caseRepository = new CaseRepository();
-        provider.injectEntityManagerInto(caseRepository);
+        hibernateTestEntityManagerProvider.injectEntityManagerInto(caseRepository);
 
         readyCaseRepository = new ReadyCaseRepository();
-        provider.injectEntityManagerInto(readyCaseRepository);
+        hibernateTestEntityManagerProvider.injectEntityManagerInto(readyCaseRepository);
 
-        entityManager = provider.getEntityManager();
+        entityManager = hibernateTestEntityManagerProvider.getEntityManager();
 
         caseCreatedOn = clock.now();
         // given 4 cases exist in database

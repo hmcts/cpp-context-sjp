@@ -18,7 +18,7 @@ class CaseRepositoryProsecutingAuthorityTest {
     private static final String PERSISTENCE_UNIT = "sjp-test-persistence-unit";
 
     @RegisterExtension
-    static HibernateTestEntityManagerProvider provider = new HibernateTestEntityManagerProvider(PERSISTENCE_UNIT);
+    static HibernateTestEntityManagerProvider hibernateTestEntityManagerProvider = new HibernateTestEntityManagerProvider(PERSISTENCE_UNIT);
 
     private CaseRepository caseRepository;
 
@@ -27,7 +27,7 @@ class CaseRepositoryProsecutingAuthorityTest {
     @BeforeEach
     void createRepositoryAndSeedCases() {
         caseRepository = new CaseRepository();
-        provider.injectEntityManagerInto(caseRepository);
+        hibernateTestEntityManagerProvider.injectEntityManagerInto(caseRepository);
 
         tflCase = aCase().withCaseId(randomUUID()).withProsecutingAuthority("TFL").build();
         tvlCase = aCase().withCaseId(randomUUID()).withProsecutingAuthority("TVL").build();

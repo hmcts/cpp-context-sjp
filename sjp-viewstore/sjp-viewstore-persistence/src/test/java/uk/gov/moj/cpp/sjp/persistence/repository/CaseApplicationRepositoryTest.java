@@ -30,11 +30,11 @@ class CaseApplicationRepositoryTest {
     private static final String PERSISTENCE_UNIT = "sjp-test-persistence-unit";
 
     @RegisterExtension
-    static HibernateTestEntityManagerProvider provider = new HibernateTestEntityManagerProvider(PERSISTENCE_UNIT);
+    static HibernateTestEntityManagerProvider hibernateTestEntityManagerProvider = new HibernateTestEntityManagerProvider(PERSISTENCE_UNIT);
 
-    private static final UUID APPLICATION_ID = UUID.randomUUID();
-    private static final UUID CASE_ID = UUID.randomUUID();
-    private static final UUID APPLICATION_TYPE_ID = UUID.randomUUID();
+    private static final UUID APPLICATION_ID = randomUUID();
+    private static final UUID CASE_ID = randomUUID();
+    private static final UUID APPLICATION_TYPE_ID = randomUUID();
     private static final String APPLICATION_REFERENCE = "ref";
     private static final String APPLICATION_REASON = "reason";
     private static final LocalDate DATE_RECEIVED = LocalDate.now();
@@ -45,7 +45,7 @@ class CaseApplicationRepositoryTest {
     private static final UUID VALID_MATERIAL_ID_2 = randomUUID();
     private static final String POSTCODE = "CR0 1AB";
     private static final String OFFENCE_CODE = "PS0001";
-    private static final UUID DEFENDANT_ID = UUID.randomUUID();
+    private static final UUID DEFENDANT_ID = randomUUID();
     private static LocalDate postingDate = LocalDate.of(2015, 12, 31);
     private static final String URN = "TFL12345678A";
     private static  CaseDetail caseDetail;
@@ -59,9 +59,9 @@ class CaseApplicationRepositoryTest {
     @BeforeEach
     void setUp() {
         caseApplicationRepository = new CaseApplicationRepository();
-        provider.injectEntityManagerInto(caseApplicationRepository);
+        hibernateTestEntityManagerProvider.injectEntityManagerInto(caseApplicationRepository);
         caseRepository = new CaseRepository();
-        provider.injectEntityManagerInto(caseRepository);
+        hibernateTestEntityManagerProvider.injectEntityManagerInto(caseRepository);
     }
 
     @Test

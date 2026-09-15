@@ -1,6 +1,7 @@
 package uk.gov.moj.cpp.sjp.persistence.repository;
 
 import static java.util.Arrays.asList;
+import static java.util.UUID.randomUUID;
 import static java.util.stream.Collectors.toList;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.allOf;
@@ -37,7 +38,7 @@ class OffenceRepositoryTest {
     private static final String PERSISTENCE_UNIT = "sjp-test-persistence-unit";
 
     @RegisterExtension
-    static HibernateTestEntityManagerProvider provider = new HibernateTestEntityManagerProvider(PERSISTENCE_UNIT);
+    static HibernateTestEntityManagerProvider hibernateTestEntityManagerProvider = new HibernateTestEntityManagerProvider(PERSISTENCE_UNIT);
 
     private OffenceRepository offenceRepository;
 
@@ -46,17 +47,17 @@ class OffenceRepositoryTest {
     @BeforeEach
     void createRepositoriesWithInjectedEntityManager() {
         offenceRepository = new OffenceRepository();
-        provider.injectEntityManagerInto(offenceRepository);
+        hibernateTestEntityManagerProvider.injectEntityManagerInto(offenceRepository);
 
         caseRepository = new CaseRepository();
-        provider.injectEntityManagerInto(caseRepository);
+        hibernateTestEntityManagerProvider.injectEntityManagerInto(caseRepository);
     }
 
     @Test
     void shouldFindOffencesByIds() {
-        final UUID offenceId1 = UUID.randomUUID();
-        final UUID offenceId2 = UUID.randomUUID();
-        final UUID offenceId3 = UUID.randomUUID();
+        final UUID offenceId1 = randomUUID();
+        final UUID offenceId2 = randomUUID();
+        final UUID offenceId3 = randomUUID();
         final CaseDetail caseDetail = getCaseWithDefendantOffences(asList(offenceId1, offenceId2, offenceId3));
         caseRepository.save(caseDetail);
 
@@ -67,9 +68,9 @@ class OffenceRepositoryTest {
     }
 
     private CaseDetail getCaseWithDefendantOffences(final List<UUID> offenceIds) {
-        final CaseDetail caseDetail = new CaseDetail(UUID.randomUUID());
+        final CaseDetail caseDetail = new CaseDetail(randomUUID());
         caseDetail.setDefendant(new DefendantDetail(
-                UUID.randomUUID(),
+                randomUUID(),
                 new PersonalDetails(),
                 offenceIds.stream().map(this::createOffenceDetails).collect(toList()),
                 NUM_PREVIOUS_CONVICTIONS,

@@ -1,5 +1,6 @@
 package uk.gov.moj.cpp.sjp.persistence.repository;
 
+import static java.util.UUID.randomUUID;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static uk.gov.moj.cpp.sjp.domain.DocumentFormat.PDF;
@@ -20,7 +21,7 @@ class PressTransparencyReportMetadataRepositoryTest {
     private static final String PERSISTENCE_UNIT = "sjp-test-persistence-unit";
 
     @RegisterExtension
-    static HibernateTestEntityManagerProvider provider = new HibernateTestEntityManagerProvider(PERSISTENCE_UNIT);
+    static HibernateTestEntityManagerProvider hibernateTestEntityManagerProvider = new HibernateTestEntityManagerProvider(PERSISTENCE_UNIT);
 
     private PressTransparencyReportMetadataRepository pressTransparencyReportMetadataRepository;
 
@@ -29,21 +30,21 @@ class PressTransparencyReportMetadataRepositoryTest {
     private static final LocalDateTime from = LocalDateTime.of(2018, 11, 25, 0, 0, 0);
 
     @BeforeEach
-    void setUp() {
+    void createRepositoryWithInjectedEntityManager() {
         pressTransparencyReportMetadataRepository = new PressTransparencyReportMetadataRepository();
-        provider.injectEntityManagerInto(pressTransparencyReportMetadataRepository);
+        hibernateTestEntityManagerProvider.injectEntityManagerInto(pressTransparencyReportMetadataRepository);
     }
 
     @Test
     void shouldReturnTheLatestPressReportMetadata() {
         // given
-        final UUID earlierReportId = UUID.randomUUID();
-        final UUID earlierReportServiceId = UUID.randomUUID();
+        final UUID earlierReportId = randomUUID();
+        final UUID earlierReportServiceId = randomUUID();
         final PressTransparencyReportMetadata earlierTransparencyReportMetadata = populatePressTransparencyMetadata(earlierReportId, earlierReportServiceId, earlierGeneratedAt, 12, 2);
         pressTransparencyReportMetadataRepository.save(earlierTransparencyReportMetadata);
 
-        final UUID latestReportId = UUID.randomUUID();
-        final UUID latestReportServiceId = UUID.randomUUID();
+        final UUID latestReportId = randomUUID();
+        final UUID latestReportServiceId = randomUUID();
         final PressTransparencyReportMetadata latestTransparencyReportMetadata = populatePressTransparencyMetadata(latestReportId, latestReportServiceId, latestGeneratedAt, 13, 3);
         pressTransparencyReportMetadataRepository.save(latestTransparencyReportMetadata);
 

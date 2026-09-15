@@ -1,6 +1,7 @@
 package uk.gov.moj.cpp.sjp.persistence.repository;
 
 import static java.time.LocalDate.now;
+import static java.util.UUID.randomUUID;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.equalTo;
@@ -25,26 +26,26 @@ class ReadyCaseRepositoryTest {
     private static final String PERSISTENCE_UNIT = "sjp-test-persistence-unit";
 
     @RegisterExtension
-    static HibernateTestEntityManagerProvider provider = new HibernateTestEntityManagerProvider(PERSISTENCE_UNIT);
+    static HibernateTestEntityManagerProvider hibernateTestEntityManagerProvider = new HibernateTestEntityManagerProvider(PERSISTENCE_UNIT);
 
     private ReadyCaseRepository readyCaseRepository;
 
     @BeforeEach
-    void setUp() {
+    void createRepositoryWithInjectedEntityManager() {
         readyCaseRepository = new ReadyCaseRepository();
-        provider.injectEntityManagerInto(readyCaseRepository);
+        hibernateTestEntityManagerProvider.injectEntityManagerInto(readyCaseRepository);
     }
 
     @Test
     void shouldGetReadyCasesByAssigneeId() {
-        final UUID assigneeId1 = UUID.randomUUID();
-        final UUID assigneeId2 = UUID.randomUUID();
-        final UUID assigneeId3 = UUID.randomUUID();
+        final UUID assigneeId1 = randomUUID();
+        final UUID assigneeId2 = randomUUID();
+        final UUID assigneeId3 = randomUUID();
 
-        final ReadyCase readyCase1 = new ReadyCase(UUID.randomUUID(), PIA, null, MAGISTRATE, 3, "TFL", now().minusDays(30), now());
-        final ReadyCase readyCase2 = new ReadyCase(UUID.randomUUID(), PIA, assigneeId1, MAGISTRATE, 3, "TFL", now().minusDays(30), now());
-        final ReadyCase readyCase3 = new ReadyCase(UUID.randomUUID(), PLEADED_GUILTY, assigneeId1, MAGISTRATE, 2, "TFL", now().minusDays(15), now());
-        final ReadyCase readyCase4 = new ReadyCase(UUID.randomUUID(), PIA, assigneeId2, MAGISTRATE, 3, "TFL", now().minusDays(30), now());
+        final ReadyCase readyCase1 = new ReadyCase(randomUUID(), PIA, null, MAGISTRATE, 3, "TFL", now().minusDays(30), now());
+        final ReadyCase readyCase2 = new ReadyCase(randomUUID(), PIA, assigneeId1, MAGISTRATE, 3, "TFL", now().minusDays(30), now());
+        final ReadyCase readyCase3 = new ReadyCase(randomUUID(), PLEADED_GUILTY, assigneeId1, MAGISTRATE, 2, "TFL", now().minusDays(15), now());
+        final ReadyCase readyCase4 = new ReadyCase(randomUUID(), PIA, assigneeId2, MAGISTRATE, 3, "TFL", now().minusDays(30), now());
 
         readyCaseRepository.save(readyCase1);
         readyCaseRepository.save(readyCase2);
@@ -58,8 +59,8 @@ class ReadyCaseRepositoryTest {
 
     @Test
     void shouldSaveAndLoadAllFields() {
-        final UUID assigneeId = UUID.randomUUID();
-        final UUID caseId = UUID.randomUUID();
+        final UUID assigneeId = randomUUID();
+        final UUID caseId = randomUUID();
 
         // save a case
         final ReadyCase readyCase = new ReadyCase(caseId,

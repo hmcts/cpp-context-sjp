@@ -1,5 +1,6 @@
 package uk.gov.moj.cpp.sjp.persistence.repository;
 
+import static java.util.UUID.randomUUID;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import uk.gov.justice.services.common.converter.ZonedDateTimes;
@@ -25,7 +26,7 @@ class CaseDocumentRepositoryTest {
     private static final String PERSISTENCE_UNIT = "sjp-test-persistence-unit";
 
     @RegisterExtension
-    static HibernateTestEntityManagerProvider provider = new HibernateTestEntityManagerProvider(PERSISTENCE_UNIT);
+    static HibernateTestEntityManagerProvider hibernateTestEntityManagerProvider = new HibernateTestEntityManagerProvider(PERSISTENCE_UNIT);
 
     private CaseDocumentRepository caseDocumentRepository;
 
@@ -40,9 +41,9 @@ class CaseDocumentRepositoryTest {
     @BeforeEach
     void givenCaseDocuments() {
         caseDocumentRepository = new CaseDocumentRepository();
-        provider.injectEntityManagerInto(caseDocumentRepository);
+        hibernateTestEntityManagerProvider.injectEntityManagerInto(caseDocumentRepository);
         caseRepository = new CaseRepository();
-        provider.injectEntityManagerInto(caseRepository);
+        hibernateTestEntityManagerProvider.injectEntityManagerInto(caseRepository);
         addCaseDocument(addedAt_2017_01_01);
         addCaseDocument(addedAt_2017_01_05);
         addCaseDocument(addedAt_2017_01_10);
@@ -68,12 +69,12 @@ class CaseDocumentRepositoryTest {
 
     private void addCaseDocument(final ZonedDateTime addedAt) {
 
-        final DefendantDetail defendantDetail = new DefendantDetail(UUID.randomUUID(), new PersonalDetails(), null,1,null,null,null);
-        final CaseDetail caseDetail = new CaseDetail(UUID.randomUUID(), "TFL1234567", RandomStringUtils.randomAlphanumeric(12).toUpperCase(), "TFL", null, null, null,
+        final DefendantDetail defendantDetail = new DefendantDetail(randomUUID(), new PersonalDetails(), null,1,null,null,null);
+        final CaseDetail caseDetail = new CaseDetail(randomUUID(), "TFL1234567", RandomStringUtils.randomAlphanumeric(12).toUpperCase(), "TFL", null, null, null,
                 defendantDetail, null, LocalDate.now(), null);
         caseDetail.setDefendant(defendantDetail);
-        final CaseDocument caseDocument = new CaseDocument(UUID.randomUUID(),
-                UUID.randomUUID(), CaseDocument.RESULT_ORDER_DOCUMENT_TYPE,
+        final CaseDocument caseDocument = new CaseDocument(randomUUID(),
+                randomUUID(), CaseDocument.RESULT_ORDER_DOCUMENT_TYPE,
                 addedAt, caseDetail.getId(), DOCUMENT_NUMBER);
 
         caseRepository.save(caseDetail);

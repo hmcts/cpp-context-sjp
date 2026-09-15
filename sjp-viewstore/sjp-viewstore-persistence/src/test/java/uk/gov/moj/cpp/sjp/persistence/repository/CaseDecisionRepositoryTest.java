@@ -7,6 +7,7 @@ import static uk.gov.moj.cpp.sjp.domain.decision.discharge.DischargeType.CONDITI
 import static uk.gov.moj.cpp.sjp.domain.decision.discharge.PeriodUnit.*;
 import static uk.gov.moj.cpp.sjp.domain.plea.PleaType.*;
 
+import uk.gov.justice.services.common.util.UtcClock;
 import uk.gov.justice.services.test.utils.persistence.HibernateTestEntityManagerProvider;
 import uk.gov.moj.cpp.sjp.domain.decision.imposition.InstallmentPeriod;
 import uk.gov.moj.cpp.sjp.domain.decision.imposition.PaymentType;
@@ -24,7 +25,6 @@ import uk.gov.moj.cpp.sjp.persistence.entity.Session;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.time.ZonedDateTime;
 import java.util.UUID;
 
 import jakarta.persistence.EntityManager;
@@ -38,17 +38,19 @@ class CaseDecisionRepositoryTest {
     private static final String PERSISTENCE_UNIT = "sjp-test-persistence-unit";
 
     @RegisterExtension
-    static HibernateTestEntityManagerProvider provider = new HibernateTestEntityManagerProvider(PERSISTENCE_UNIT);
+    static HibernateTestEntityManagerProvider hibernateTestEntityManagerProvider = new HibernateTestEntityManagerProvider(PERSISTENCE_UNIT);
+
+    private final UtcClock clock = new UtcClock();
 
     private EntityManager entityManager;
 
     private CaseDecisionRepository caseDecisionRepository;
 
     @BeforeEach
-    void setUp() {
+    void createRepositoryWithInjectedEntityManager() {
         caseDecisionRepository = new CaseDecisionRepository();
-        provider.injectEntityManagerInto(caseDecisionRepository);
-        entityManager = provider.getEntityManager();
+        hibernateTestEntityManagerProvider.injectEntityManagerInto(caseDecisionRepository);
+        entityManager = hibernateTestEntityManagerProvider.getEntityManager();
     }
 
     @Test
@@ -59,7 +61,7 @@ class CaseDecisionRepositoryTest {
         UUID caseDecisionId = randomUUID();
         caseDecision.setId(caseDecisionId);
         caseDecision.setCaseId(UUID.randomUUID());
-        caseDecision.setSavedAt(ZonedDateTime.now());
+        caseDecision.setSavedAt(clock.now());
         caseDecision.setSession(entityManager.getReference(Session.class,randomUUID()));
 
         DischargeOffenceDecision dischargeOffenceDecision = new DischargeOffenceDecision();
@@ -67,7 +69,7 @@ class CaseDecisionRepositoryTest {
         dischargeOffenceDecision.setDischargePeriod(new DischargePeriod(WEEK,10));
         dischargeOffenceDecision.setGuiltyPleaTakenIntoAccount(true);
         dischargeOffenceDecision.setPleaAtDecisionTime(GUILTY);
-        dischargeOffenceDecision.setPleaDate(ZonedDateTime.now());
+        dischargeOffenceDecision.setPleaDate(clock.now());
         dischargeOffenceDecision.setDischargeType(CONDITIONAL);
 
         caseDecision.setOffenceDecisions(asList(dischargeOffenceDecision));
@@ -90,14 +92,14 @@ class CaseDecisionRepositoryTest {
         UUID caseDecisionId = randomUUID();
         caseDecision.setId(caseDecisionId);
         caseDecision.setCaseId(UUID.randomUUID());
-        caseDecision.setSavedAt(ZonedDateTime.now());
+        caseDecision.setSavedAt(clock.now());
         caseDecision.setSession(entityManager.getReference(Session.class,randomUUID()));
 
         FinancialPenaltyOffenceDecision financialPenaltyOffenceDecision = new FinancialPenaltyOffenceDecision();
         financialPenaltyOffenceDecision.setCompensation(BigDecimal.valueOf(20.3));
         financialPenaltyOffenceDecision.setGuiltyPleaTakenIntoAccount(true);
         financialPenaltyOffenceDecision.setPleaAtDecisionTime(GUILTY);
-        financialPenaltyOffenceDecision.setPleaDate(ZonedDateTime.now());
+        financialPenaltyOffenceDecision.setPleaDate(clock.now());
         financialPenaltyOffenceDecision.setFine(BigDecimal.valueOf(20.3));
 
         caseDecision.setOffenceDecisions(asList(financialPenaltyOffenceDecision));
@@ -119,7 +121,7 @@ class CaseDecisionRepositoryTest {
         UUID caseDecisionId = randomUUID();
         caseDecision.setId(caseDecisionId);
         caseDecision.setCaseId(UUID.randomUUID());
-        caseDecision.setSavedAt(ZonedDateTime.now());
+        caseDecision.setSavedAt(clock.now());
         caseDecision.setSession(entityManager.getReference(Session.class,randomUUID()));
 
         FinancialImposition financialImposition = new FinancialImposition();

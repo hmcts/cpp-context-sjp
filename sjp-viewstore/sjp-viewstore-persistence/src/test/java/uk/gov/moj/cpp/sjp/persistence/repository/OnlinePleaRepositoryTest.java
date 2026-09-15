@@ -1,6 +1,7 @@
 package uk.gov.moj.cpp.sjp.persistence.repository;
 
 import static java.util.Arrays.asList;
+import static java.util.UUID.randomUUID;
 import static org.apache.commons.lang3.builder.EqualsBuilder.reflectionEquals;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.closeTo;
@@ -38,7 +39,7 @@ class OnlinePleaRepositoryTest {
     private static final String PERSISTENCE_UNIT = "sjp-test-persistence-unit";
 
     @RegisterExtension
-    static HibernateTestEntityManagerProvider provider = new HibernateTestEntityManagerProvider(PERSISTENCE_UNIT);
+    static HibernateTestEntityManagerProvider hibernateTestEntityManagerProvider = new HibernateTestEntityManagerProvider(PERSISTENCE_UNIT);
 
     private OnlinePleaRepository.FinancialMeansOnlinePleaRepository onlinePleaRepository;
 
@@ -51,20 +52,20 @@ class OnlinePleaRepositoryTest {
     private UUID caseId2;
 
     @BeforeEach
-    void setUp() {
+    void createRepositoriesWithInjectedEntityManagerAndSaveOnlinePleas() {
         onlinePleaRepository = new OnlinePleaRepository.FinancialMeansOnlinePleaRepository();
-        provider.injectEntityManagerInto(onlinePleaRepository);
+        hibernateTestEntityManagerProvider.injectEntityManagerInto(onlinePleaRepository);
 
         caseRepository = new CaseRepository();
-        provider.injectEntityManagerInto(caseRepository);
+        hibernateTestEntityManagerProvider.injectEntityManagerInto(caseRepository);
 
-        caseId = UUID.randomUUID();
+        caseId = randomUUID();
         final CaseDetail caseDetail = getCaseWithDefendant(caseId);
         caseRepository.save(caseDetail);
 
         final OnlinePlea insertedOnlinePlea = buildOnlinePlea(caseDetail, clock.now());
 
-        caseId2 = UUID.randomUUID();
+        caseId2 = randomUUID();
         final CaseDetail caseDetail1 = getCaseWithDefendant(caseId2);
         caseRepository.save(caseDetail1);
 

@@ -1,13 +1,11 @@
 package uk.gov.moj.cpp.sjp.persistence.repository;
 
-import static java.time.ZoneOffset.UTC;
-import static java.time.ZonedDateTime.now;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.iterableWithSize;
 
+import uk.gov.justice.services.common.util.UtcClock;
 import uk.gov.justice.services.test.utils.persistence.HibernateTestEntityManagerProvider;
 import uk.gov.moj.cpp.sjp.domain.CaseReadinessReason;
 import uk.gov.moj.cpp.sjp.domain.SessionType;
@@ -34,7 +32,9 @@ class DefendantRepositoryTest {
     private static final String PERSISTENCE_UNIT = "sjp-test-persistence-unit";
 
     @RegisterExtension
-    static HibernateTestEntityManagerProvider provider = new HibernateTestEntityManagerProvider(PERSISTENCE_UNIT);
+    static HibernateTestEntityManagerProvider hibernateTestEntityManagerProvider = new HibernateTestEntityManagerProvider(PERSISTENCE_UNIT);
+
+    private final UtcClock clock = new UtcClock();
 
     private CaseRepository caseRepository;
 
@@ -45,49 +45,73 @@ class DefendantRepositoryTest {
     @BeforeEach
     void createRepositoriesWithInjectedEntityManager() {
         caseRepository = new CaseRepository();
-        provider.injectEntityManagerInto(caseRepository);
+        hibernateTestEntityManagerProvider.injectEntityManagerInto(caseRepository);
 
         defendantRepository = new DefendantRepository();
-        provider.injectEntityManagerInto(defendantRepository);
+        hibernateTestEntityManagerProvider.injectEntityManagerInto(defendantRepository);
 
         readyCaseRepository = new ReadyCaseRepository();
-        provider.injectEntityManagerInto(readyCaseRepository);
+        hibernateTestEntityManagerProvider.injectEntityManagerInto(readyCaseRepository);
     }
 
     @Test
     void shouldFindDefendantWithDoBUpdatedAndUpdatesNotAcknowledgedYet() {
         final PersonalDetails personalDetails = new PersonalDetails();
-        personalDetails.markDateOfBirthUpdated(now(UTC));
+        personalDetails.markDateOfBirthUpdated(clock.now());
 
         final UpdatedDefendantDetails defendant = createCaseDetail(personalDetails, "TVL", null,null,null);
 
-        final List<UpdatedDefendantDetails> defendantDetails = defendantRepository.findUpdatedByCaseProsecutingAuthority("TVL", now().minusDays(10), now(), Collections.emptyList());
+        final List<UpdatedDefendantDetails> defendantDetails = defendantRepository.findUpdatedByCaseProsecutingAuthority("TVL", clock.now().minusDays(10), clock.now(), Collections.emptyList());
 
         assertThat(defendantDetails, iterableWithSize(1));
-        assertThat(defendantDetails, contains(defendant));
+        final UpdatedDefendantDetails found = defendantDetails.get(0);
+        assertThat(found.getDefendantId(), is(defendant.getDefendantId()));
+        assertThat(found.getFirstName(), is(defendant.getFirstName()));
+        assertThat(found.getLastName(), is(defendant.getLastName()));
+        assertThat(found.getDateOfBirth(), is(defendant.getDateOfBirth()));
+        assertThat(found.getCaseId(), is(defendant.getCaseId()));
+        assertThat(found.getCaseUrn(), is(defendant.getCaseUrn()));
+        assertThat(found.getRegion(), is(defendant.getRegion()));
+        assertThat(found.getLegalEntityName(), is(defendant.getLegalEntityName()));
+        assertThat(found.getProsecutingAuthority(), is(defendant.getProsecutingAuthority()));
+        assertThat(found.getAddressUpdatedAt(), is(defendant.getAddressUpdatedAt()));
+        assertThat(found.getDateOfBirthUpdatedAt(), is(defendant.getDateOfBirthUpdatedAt()));
+        assertThat(found.getNameUpdatedAt(), is(defendant.getNameUpdatedAt()));
     }
 
     @Test
     void shouldFindDefendantWithDoBUpdatedAndUpdatesAcknowledgedBefore() {
         final PersonalDetails personalDetails = new PersonalDetails();
-        personalDetails.markDateOfBirthUpdated(now(UTC));
+        personalDetails.markDateOfBirthUpdated(clock.now());
 
-        final UpdatedDefendantDetails defendant = createCaseDetail(personalDetails, "TVL", now().minusDays(2),null,null);
+        final UpdatedDefendantDetails defendant = createCaseDetail(personalDetails, "TVL", clock.now().minusDays(2),null,null);
 
-        final List<UpdatedDefendantDetails> defendantDetails = defendantRepository.findUpdatedByCaseProsecutingAuthority("TVL", now().minusDays(10), now(), Collections.emptyList());
+        final List<UpdatedDefendantDetails> defendantDetails = defendantRepository.findUpdatedByCaseProsecutingAuthority("TVL", clock.now().minusDays(10), clock.now(), Collections.emptyList());
 
         assertThat(defendantDetails, iterableWithSize(1));
-        assertThat(defendantDetails, contains(defendant));
+        final UpdatedDefendantDetails found = defendantDetails.get(0);
+        assertThat(found.getDefendantId(), is(defendant.getDefendantId()));
+        assertThat(found.getFirstName(), is(defendant.getFirstName()));
+        assertThat(found.getLastName(), is(defendant.getLastName()));
+        assertThat(found.getDateOfBirth(), is(defendant.getDateOfBirth()));
+        assertThat(found.getCaseId(), is(defendant.getCaseId()));
+        assertThat(found.getCaseUrn(), is(defendant.getCaseUrn()));
+        assertThat(found.getRegion(), is(defendant.getRegion()));
+        assertThat(found.getLegalEntityName(), is(defendant.getLegalEntityName()));
+        assertThat(found.getProsecutingAuthority(), is(defendant.getProsecutingAuthority()));
+        assertThat(found.getAddressUpdatedAt(), is(defendant.getAddressUpdatedAt()));
+        assertThat(found.getDateOfBirthUpdatedAt(), is(defendant.getDateOfBirthUpdatedAt()));
+        assertThat(found.getNameUpdatedAt(), is(defendant.getNameUpdatedAt()));
     }
 
     @Test
     void shouldIgnoreDefendantWithDoBUpdateWhenAcknowledged() {
         final PersonalDetails personalDetails = new PersonalDetails();
-        personalDetails.markDateOfBirthUpdated(now(UTC).minusDays(2));
+        personalDetails.markDateOfBirthUpdated(clock.now().minusDays(2));
 
-        createCaseDetail(personalDetails, "TVL", now(UTC),null,null);
+        createCaseDetail(personalDetails, "TVL", clock.now(),null,null);
 
-        final List<UpdatedDefendantDetails> defendantDetails = defendantRepository.findUpdatedByCaseProsecutingAuthority("TVL", now().minusDays(10), now(), Collections.emptyList());
+        final List<UpdatedDefendantDetails> defendantDetails = defendantRepository.findUpdatedByCaseProsecutingAuthority("TVL", clock.now().minusDays(10), clock.now(), Collections.emptyList());
 
         assertThat(defendantDetails, iterableWithSize(0));
     }
@@ -96,21 +120,33 @@ class DefendantRepositoryTest {
     void shouldFindDefendantWithAddressUpdatedAndUpdatesNotAcknowledgedYet() {
         final PersonalDetails personalDetails = new PersonalDetails();
 
-        final UpdatedDefendantDetails defendant = createCaseDetail(personalDetails, "TVL", null,now(UTC),null);
+        final UpdatedDefendantDetails defendant = createCaseDetail(personalDetails, "TVL", null,clock.now(),null);
 
-        final List<UpdatedDefendantDetails> defendantDetails = defendantRepository.findUpdatedByCaseProsecutingAuthority("TVL", now().minusDays(10), now(), Collections.emptyList());
+        final List<UpdatedDefendantDetails> defendantDetails = defendantRepository.findUpdatedByCaseProsecutingAuthority("TVL", clock.now().minusDays(10), clock.now(), Collections.emptyList());
 
         assertThat(defendantDetails, iterableWithSize(1));
-        assertThat(defendantDetails.get(0), is(defendant));
+        final UpdatedDefendantDetails found = defendantDetails.get(0);
+        assertThat(found.getDefendantId(), is(defendant.getDefendantId()));
+        assertThat(found.getFirstName(), is(defendant.getFirstName()));
+        assertThat(found.getLastName(), is(defendant.getLastName()));
+        assertThat(found.getDateOfBirth(), is(defendant.getDateOfBirth()));
+        assertThat(found.getCaseId(), is(defendant.getCaseId()));
+        assertThat(found.getCaseUrn(), is(defendant.getCaseUrn()));
+        assertThat(found.getRegion(), is(defendant.getRegion()));
+        assertThat(found.getLegalEntityName(), is(defendant.getLegalEntityName()));
+        assertThat(found.getProsecutingAuthority(), is(defendant.getProsecutingAuthority()));
+        assertThat(found.getAddressUpdatedAt(), is(defendant.getAddressUpdatedAt()));
+        assertThat(found.getDateOfBirthUpdatedAt(), is(defendant.getDateOfBirthUpdatedAt()));
+        assertThat(found.getNameUpdatedAt(), is(defendant.getNameUpdatedAt()));
     }
 
     @Test
     void shouldIgnoreDefendantWhenUpdateHappenedMoreThan10DaysAgo() {
         final PersonalDetails personalDetails = new PersonalDetails();
 
-        createCaseDetail(personalDetails, "TVL", null, now(UTC).minusDays(15), null);
+        createCaseDetail(personalDetails, "TVL", null, clock.now().minusDays(15), null);
 
-        final List<UpdatedDefendantDetails> defendantDetails = defendantRepository.findUpdatedByCaseProsecutingAuthority("TVL", now().minusDays(10), now(), Collections.emptyList());
+        final List<UpdatedDefendantDetails> defendantDetails = defendantRepository.findUpdatedByCaseProsecutingAuthority("TVL", clock.now().minusDays(10), clock.now(), Collections.emptyList());
 
         assertThat(defendantDetails, iterableWithSize(0));
     }
@@ -119,21 +155,33 @@ class DefendantRepositoryTest {
     void shouldFindDefendantWithAddressUpdatedAndUpdatesAcknowledgedBefore() {
         final PersonalDetails personalDetails = new PersonalDetails();
 
-        final UpdatedDefendantDetails defendant = createCaseDetail(personalDetails, "TVL", now(UTC).minusDays(2), now(UTC), null);
+        final UpdatedDefendantDetails defendant = createCaseDetail(personalDetails, "TVL", clock.now().minusDays(2), clock.now(), null);
 
-        final List<UpdatedDefendantDetails> defendantDetails = defendantRepository.findUpdatedByCaseProsecutingAuthority("TVL", now().minusDays(10), now(), Collections.emptyList());
+        final List<UpdatedDefendantDetails> defendantDetails = defendantRepository.findUpdatedByCaseProsecutingAuthority("TVL", clock.now().minusDays(10), clock.now(), Collections.emptyList());
 
         assertThat(defendantDetails, iterableWithSize(1));
-        assertThat(defendantDetails.get(0), is(defendant));
+        final UpdatedDefendantDetails found = defendantDetails.get(0);
+        assertThat(found.getDefendantId(), is(defendant.getDefendantId()));
+        assertThat(found.getFirstName(), is(defendant.getFirstName()));
+        assertThat(found.getLastName(), is(defendant.getLastName()));
+        assertThat(found.getDateOfBirth(), is(defendant.getDateOfBirth()));
+        assertThat(found.getCaseId(), is(defendant.getCaseId()));
+        assertThat(found.getCaseUrn(), is(defendant.getCaseUrn()));
+        assertThat(found.getRegion(), is(defendant.getRegion()));
+        assertThat(found.getLegalEntityName(), is(defendant.getLegalEntityName()));
+        assertThat(found.getProsecutingAuthority(), is(defendant.getProsecutingAuthority()));
+        assertThat(found.getAddressUpdatedAt(), is(defendant.getAddressUpdatedAt()));
+        assertThat(found.getDateOfBirthUpdatedAt(), is(defendant.getDateOfBirthUpdatedAt()));
+        assertThat(found.getNameUpdatedAt(), is(defendant.getNameUpdatedAt()));
     }
 
     @Test
     void shouldIgnoreDefendantWithAddressUpdateWhenAcknowledged() {
         final PersonalDetails personalDetails = new PersonalDetails();
 
-        createCaseDetail(personalDetails, "TVL", now(UTC), now(UTC).minusDays(2), null);
+        createCaseDetail(personalDetails, "TVL", clock.now(), clock.now().minusDays(2), null);
 
-        final List<UpdatedDefendantDetails> defendantDetails = defendantRepository.findUpdatedByCaseProsecutingAuthority("TVL", now().minusDays(10), now(), Collections.emptyList());
+        final List<UpdatedDefendantDetails> defendantDetails = defendantRepository.findUpdatedByCaseProsecutingAuthority("TVL", clock.now().minusDays(10), clock.now(), Collections.emptyList());
 
         assertThat(defendantDetails, iterableWithSize(0));
     }
@@ -142,33 +190,57 @@ class DefendantRepositoryTest {
     void shouldFindDefendantWithNameUpdatedAndUpdatesNotAcknowledgedYet() {
         final PersonalDetails personalDetails = new PersonalDetails();
 
-        final UpdatedDefendantDetails defendant = createCaseDetail(personalDetails, "TVL", null, null, now(UTC));
+        final UpdatedDefendantDetails defendant = createCaseDetail(personalDetails, "TVL", null, null, clock.now());
 
-        final List<UpdatedDefendantDetails> defendantDetails = defendantRepository.findUpdatedByCaseProsecutingAuthority("TVL", now().minusDays(10), now(), Collections.emptyList());
+        final List<UpdatedDefendantDetails> defendantDetails = defendantRepository.findUpdatedByCaseProsecutingAuthority("TVL", clock.now().minusDays(10), clock.now(), Collections.emptyList());
 
         assertThat(defendantDetails, iterableWithSize(1));
-        assertThat(defendantDetails.get(0), is(defendant));
+        final UpdatedDefendantDetails found = defendantDetails.get(0);
+        assertThat(found.getDefendantId(), is(defendant.getDefendantId()));
+        assertThat(found.getFirstName(), is(defendant.getFirstName()));
+        assertThat(found.getLastName(), is(defendant.getLastName()));
+        assertThat(found.getDateOfBirth(), is(defendant.getDateOfBirth()));
+        assertThat(found.getCaseId(), is(defendant.getCaseId()));
+        assertThat(found.getCaseUrn(), is(defendant.getCaseUrn()));
+        assertThat(found.getRegion(), is(defendant.getRegion()));
+        assertThat(found.getLegalEntityName(), is(defendant.getLegalEntityName()));
+        assertThat(found.getProsecutingAuthority(), is(defendant.getProsecutingAuthority()));
+        assertThat(found.getAddressUpdatedAt(), is(defendant.getAddressUpdatedAt()));
+        assertThat(found.getDateOfBirthUpdatedAt(), is(defendant.getDateOfBirthUpdatedAt()));
+        assertThat(found.getNameUpdatedAt(), is(defendant.getNameUpdatedAt()));
     }
 
     @Test
     void shouldFindDefendantWithNameUpdatedAndUpdatesAcknowledgedBefore() {
         final PersonalDetails personalDetails = new PersonalDetails();
 
-        final UpdatedDefendantDetails defendant = createCaseDetail(personalDetails, "TVL", now(UTC).minusDays(2), null, now(UTC));
+        final UpdatedDefendantDetails defendant = createCaseDetail(personalDetails, "TVL", clock.now().minusDays(2), null, clock.now());
 
-        final List<UpdatedDefendantDetails> defendantDetails = defendantRepository.findUpdatedByCaseProsecutingAuthority("TVL", now().minusDays(10), now(), Collections.emptyList());
+        final List<UpdatedDefendantDetails> defendantDetails = defendantRepository.findUpdatedByCaseProsecutingAuthority("TVL", clock.now().minusDays(10), clock.now(), Collections.emptyList());
 
         assertThat(defendantDetails, iterableWithSize(1));
-        assertThat(defendantDetails.get(0), is(defendant));
+        final UpdatedDefendantDetails found = defendantDetails.get(0);
+        assertThat(found.getDefendantId(), is(defendant.getDefendantId()));
+        assertThat(found.getFirstName(), is(defendant.getFirstName()));
+        assertThat(found.getLastName(), is(defendant.getLastName()));
+        assertThat(found.getDateOfBirth(), is(defendant.getDateOfBirth()));
+        assertThat(found.getCaseId(), is(defendant.getCaseId()));
+        assertThat(found.getCaseUrn(), is(defendant.getCaseUrn()));
+        assertThat(found.getRegion(), is(defendant.getRegion()));
+        assertThat(found.getLegalEntityName(), is(defendant.getLegalEntityName()));
+        assertThat(found.getProsecutingAuthority(), is(defendant.getProsecutingAuthority()));
+        assertThat(found.getAddressUpdatedAt(), is(defendant.getAddressUpdatedAt()));
+        assertThat(found.getDateOfBirthUpdatedAt(), is(defendant.getDateOfBirthUpdatedAt()));
+        assertThat(found.getNameUpdatedAt(), is(defendant.getNameUpdatedAt()));
     }
 
     @Test
     void shouldIgnoreDefendantWithNameUpdateWhenAcknowledged() {
         final PersonalDetails personalDetails = new PersonalDetails();
 
-        createCaseDetail(personalDetails, "TVL", now(UTC), null, now(UTC).minusDays(2));
+        createCaseDetail(personalDetails, "TVL", clock.now(), null, clock.now().minusDays(2));
 
-        final List<UpdatedDefendantDetails> defendantDetails = defendantRepository.findUpdatedByCaseProsecutingAuthority("TVL", now().minusDays(10), now(), Collections.emptyList());
+        final List<UpdatedDefendantDetails> defendantDetails = defendantRepository.findUpdatedByCaseProsecutingAuthority("TVL", clock.now().minusDays(10), clock.now(), Collections.emptyList());
 
         assertThat(defendantDetails, iterableWithSize(0));
     }
@@ -177,7 +249,7 @@ class DefendantRepositoryTest {
     void shouldIgnoreDefendantWithNoDetailChanges() {
         createCaseDetail(new PersonalDetails(), "TVL", null, null, null);
 
-        final List<UpdatedDefendantDetails> defendantDetails = defendantRepository.findUpdatedByCaseProsecutingAuthority("TVL", now().minusDays(10), now(), Collections.emptyList());
+        final List<UpdatedDefendantDetails> defendantDetails = defendantRepository.findUpdatedByCaseProsecutingAuthority("TVL", clock.now().minusDays(10), clock.now(), Collections.emptyList());
 
         assertThat(defendantDetails, iterableWithSize(0));
     }
@@ -186,7 +258,7 @@ class DefendantRepositoryTest {
     void shouldIgnoreDefendantForOtherAuthorityGroup() {
         createCaseDetail(null, "TVL", null, null, null);
 
-        final List<UpdatedDefendantDetails> defendantDetails = defendantRepository.findUpdatedByCaseProsecutingAuthority("TFL", now().minusDays(10), now(), Collections.emptyList());
+        final List<UpdatedDefendantDetails> defendantDetails = defendantRepository.findUpdatedByCaseProsecutingAuthority("TFL", clock.now().minusDays(10), clock.now(), Collections.emptyList());
 
         assertThat(defendantDetails, iterableWithSize(0));
     }

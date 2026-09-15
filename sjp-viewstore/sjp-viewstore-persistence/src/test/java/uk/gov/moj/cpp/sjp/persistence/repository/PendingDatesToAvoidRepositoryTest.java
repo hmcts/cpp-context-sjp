@@ -4,12 +4,12 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasSize;
 
+import uk.gov.justice.services.common.util.UtcClock;
 import uk.gov.justice.services.test.utils.persistence.HibernateTestEntityManagerProvider;
 import uk.gov.moj.cpp.sjp.persistence.builder.DatesToAvoidTestData;
 import uk.gov.moj.cpp.sjp.persistence.entity.CaseDetail;
 import uk.gov.moj.cpp.sjp.persistence.entity.PendingDatesToAvoid;
 
-import java.time.ZonedDateTime;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -24,7 +24,9 @@ class PendingDatesToAvoidRepositoryTest {
     private static final String PERSISTENCE_UNIT = "sjp-test-persistence-unit";
 
     @RegisterExtension
-    static HibernateTestEntityManagerProvider provider = new HibernateTestEntityManagerProvider(PERSISTENCE_UNIT);
+    static HibernateTestEntityManagerProvider hibernateTestEntityManagerProvider = new HibernateTestEntityManagerProvider(PERSISTENCE_UNIT);
+
+    private final UtcClock clock = new UtcClock();
 
     private PendingDatesToAvoidRepository pendingDatesToAvoidRepository;
 
@@ -33,41 +35,41 @@ class PendingDatesToAvoidRepositoryTest {
     private List<DatesToAvoidTestData> testData;
 
     @BeforeEach
-    void setUp() {
+    void createRepositoriesWithInjectedEntityManagerAndSaveTestData() {
         pendingDatesToAvoidRepository = new PendingDatesToAvoidRepository();
-        provider.injectEntityManagerInto(pendingDatesToAvoidRepository);
+        hibernateTestEntityManagerProvider.injectEntityManagerInto(pendingDatesToAvoidRepository);
 
         caseRepository = new CaseRepository();
-        provider.injectEntityManagerInto(caseRepository);
+        hibernateTestEntityManagerProvider.injectEntityManagerInto(caseRepository);
 
         testData = Arrays.asList(
                 //TFL combinations
                 new DatesToAvoidTestData("TFL", null, false, false,
-                        ZonedDateTime.now()),
+                        clock.now()),
                 new DatesToAvoidTestData("TFL", null, true, false,
-                        ZonedDateTime.now()),
+                        clock.now()),
                 new DatesToAvoidTestData("TFL", null, false, true,
-                        ZonedDateTime.now()),
+                        clock.now()),
                 new DatesToAvoidTestData("TFL", "Witness cannot do Thursdays", false, false,
-                        ZonedDateTime.now()),
+                        clock.now()),
                 new DatesToAvoidTestData("TFL", null, false, false,
-                        ZonedDateTime.now().minusDays(3)),
+                        clock.now().minusDays(3)),
                 new DatesToAvoidTestData("TFL", null, false, false,
-                        ZonedDateTime.now().minusDays(1)),
+                        clock.now().minusDays(1)),
 
                 //TVL combinations
                 new DatesToAvoidTestData("TVL", null, false, false,
-                        ZonedDateTime.now()),
+                        clock.now()),
                 new DatesToAvoidTestData("TVL", null, true, false,
-                        ZonedDateTime.now()),
+                        clock.now()),
                 new DatesToAvoidTestData("TVL", null, false, true,
-                        ZonedDateTime.now()),
+                        clock.now()),
                 new DatesToAvoidTestData("TVL", "Witness cannot do Thursdays", false, false,
-                        ZonedDateTime.now()),
+                        clock.now()),
                 new DatesToAvoidTestData("TVL", null, false, false,
-                        ZonedDateTime.now().minusDays(5)),
+                        clock.now().minusDays(5)),
                 new DatesToAvoidTestData("TVL", null, false, false,
-                        ZonedDateTime.now().minusDays(8))
+                        clock.now().minusDays(8))
         );
         testData.forEach(this::setupAndSaveDatesToAvoidData);
     }

@@ -1,9 +1,9 @@
 package uk.gov.moj.cpp.sjp.persistence.repository;
 
-import static java.time.ZonedDateTime.now;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 
+import uk.gov.justice.services.common.util.UtcClock;
 import uk.gov.justice.services.test.utils.persistence.HibernateTestEntityManagerProvider;
 import uk.gov.moj.cpp.sjp.persistence.builder.CaseDetailBuilder;
 import uk.gov.moj.cpp.sjp.persistence.entity.CaseDetail;
@@ -23,19 +23,21 @@ class ReserveCaseRepositoryTest {
     private static final String PERSISTENCE_UNIT = "sjp-test-persistence-unit";
 
     @RegisterExtension
-    static HibernateTestEntityManagerProvider provider = new HibernateTestEntityManagerProvider(PERSISTENCE_UNIT);
+    static HibernateTestEntityManagerProvider hibernateTestEntityManagerProvider = new HibernateTestEntityManagerProvider(PERSISTENCE_UNIT);
+
+    private final UtcClock clock = new UtcClock();
 
     private ReserveCaseRepository reserveCaseRepository;
 
     private CaseRepository caseRepository;
 
     @BeforeEach
-    void setUp() {
+    void createRepositoriesWithInjectedEntityManager() {
         reserveCaseRepository = new ReserveCaseRepository();
-        provider.injectEntityManagerInto(reserveCaseRepository);
+        hibernateTestEntityManagerProvider.injectEntityManagerInto(reserveCaseRepository);
 
         caseRepository = new CaseRepository();
-        provider.injectEntityManagerInto(caseRepository);
+        hibernateTestEntityManagerProvider.injectEntityManagerInto(caseRepository);
     }
 
     @Test
@@ -60,7 +62,7 @@ class ReserveCaseRepositoryTest {
         final ReserveCase reserveCase = new ReserveCase(UUID.randomUUID(),
                 "ABC1234",
                 reservedBy,
-                now());
+                clock.now());
         caseDetailBuilder.withReserveCase(reserveCase);
 
         caseRepository.save(caseDetailBuilder.build());
@@ -79,7 +81,7 @@ class ReserveCaseRepositoryTest {
         final ReserveCase reserveCase = new ReserveCase(UUID.randomUUID(),
                 "ABC1234",
                 reservedBy,
-                now());
+                clock.now());
         caseDetailBuilder.withReserveCase(reserveCase);
         final CaseDetail caseDetail = caseDetailBuilder.build();
         caseRepository.save(caseDetail);

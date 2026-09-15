@@ -1,5 +1,6 @@
 package uk.gov.moj.cpp.sjp.persistence.repository;
 
+import static java.util.UUID.randomUUID;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static uk.gov.moj.cpp.sjp.domain.DocumentFormat.PDF;
@@ -7,6 +8,7 @@ import static uk.gov.moj.cpp.sjp.domain.DocumentLanguage.ENGLISH;
 import static uk.gov.moj.cpp.sjp.domain.DocumentRequestType.DELTA;
 import static uk.gov.moj.cpp.sjp.domain.DocumentRequestType.FULL;
 
+import uk.gov.justice.services.common.util.UtcClock;
 import uk.gov.justice.services.test.utils.persistence.HibernateTestEntityManagerProvider;
 import uk.gov.moj.cpp.sjp.persistence.entity.TransparencyReportMetadata;
 
@@ -22,7 +24,7 @@ class TransparencyReportMetadataRepositoryTest {
     private static final String PERSISTENCE_UNIT = "sjp-test-persistence-unit";
 
     @RegisterExtension
-    static HibernateTestEntityManagerProvider provider = new HibernateTestEntityManagerProvider(PERSISTENCE_UNIT);
+    static HibernateTestEntityManagerProvider hibernateTestEntityManagerProvider = new HibernateTestEntityManagerProvider(PERSISTENCE_UNIT);
 
     private TransparencyReportMetadataRepository transparencyReportMetadataRepository;
 
@@ -31,25 +33,25 @@ class TransparencyReportMetadataRepositoryTest {
     private static final LocalDateTime from = LocalDateTime.of(2018, 11, 25, 0, 0, 0);
 
     @BeforeEach
-    void setUp() {
+    void createRepositoryWithInjectedEntityManager() {
         transparencyReportMetadataRepository = new TransparencyReportMetadataRepository();
-        provider.injectEntityManagerInto(transparencyReportMetadataRepository);
+        hibernateTestEntityManagerProvider.injectEntityManagerInto(transparencyReportMetadataRepository);
     }
 
     @Test
     void shouldReturnTheLatestReportMetadata() {
         // given
-        final UUID earlierReportId = UUID.randomUUID();
-        final UUID earlierReportWelshServiceId = UUID.randomUUID();
-        final UUID earlierReportEnglishServiceId = UUID.randomUUID();
-        final UUID earlierReportServiceId = UUID.randomUUID();
+        final UUID earlierReportId = randomUUID();
+        final UUID earlierReportWelshServiceId = randomUUID();
+        final UUID earlierReportEnglishServiceId = randomUUID();
+        final UUID earlierReportServiceId = randomUUID();
         final TransparencyReportMetadata earlierTransparencyReportMetadata = populateTransparencyMetadata(earlierReportServiceId, earlierReportId, earlierReportWelshServiceId, earlierReportEnglishServiceId, earlierGeneratedAt, 12, 11, 2, 1);
         transparencyReportMetadataRepository.save(earlierTransparencyReportMetadata);
 
-        final UUID latestReportId = UUID.randomUUID();
-        final UUID latestReportWelshServiceId = UUID.randomUUID();
-        final UUID latestReportEnglishServiceId = UUID.randomUUID();
-        final UUID latestReportServiceId = UUID.randomUUID();
+        final UUID latestReportId = randomUUID();
+        final UUID latestReportWelshServiceId = randomUUID();
+        final UUID latestReportEnglishServiceId = randomUUID();
+        final UUID latestReportServiceId = randomUUID();
         final TransparencyReportMetadata latestTransparencyReportMetadata = populateTransparencyMetadata(latestReportServiceId, latestReportId, latestReportWelshServiceId, latestReportEnglishServiceId, latestGeneratedAt, 13, 12, 3, 2);
         transparencyReportMetadataRepository.save(latestTransparencyReportMetadata);
 
@@ -72,7 +74,7 @@ class TransparencyReportMetadataRepositoryTest {
                                                                     final UUID englishServiceId, final LocalDateTime earlierGeneratedAt,
                                                                     final int welshSizeInBytes, final int englishSizeInBytes,
                                                                     final int welshNumberOfPages, final int englishNumberOfPages) {
-        final TransparencyReportMetadata earlierTransparencyReportMetadata = new TransparencyReportMetadata(id, PDF.name(), FULL.name(), "title", ENGLISH.name(), LocalDateTime.now());
+        final TransparencyReportMetadata earlierTransparencyReportMetadata = new TransparencyReportMetadata(id, PDF.name(), FULL.name(), "title", ENGLISH.name(), new UtcClock().now().toLocalDateTime());
         earlierTransparencyReportMetadata.setId(id);
         earlierTransparencyReportMetadata.setGeneratedAt(earlierGeneratedAt);
         earlierTransparencyReportMetadata.setWelshSizeInBytes(welshSizeInBytes);

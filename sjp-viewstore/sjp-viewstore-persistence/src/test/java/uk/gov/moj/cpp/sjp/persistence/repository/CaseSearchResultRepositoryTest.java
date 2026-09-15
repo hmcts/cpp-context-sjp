@@ -43,7 +43,7 @@ class CaseSearchResultRepositoryTest {
     private static final String PERSISTENCE_UNIT = "sjp-test-persistence-unit";
 
     @RegisterExtension
-    static HibernateTestEntityManagerProvider provider = new HibernateTestEntityManagerProvider(PERSISTENCE_UNIT);
+    static HibernateTestEntityManagerProvider hibernateTestEntityManagerProvider = new HibernateTestEntityManagerProvider(PERSISTENCE_UNIT);
 
     private CaseSearchResultRepository caseSearchResultRepository;
     private CaseSummaryRepository caseSummaryRepository;
@@ -51,10 +51,10 @@ class CaseSearchResultRepositoryTest {
     @BeforeEach
     void createRepositoriesWithInjectedEntityManager() {
         caseSearchResultRepository = new CaseSearchResultRepository();
-        provider.injectEntityManagerInto(caseSearchResultRepository);
+        hibernateTestEntityManagerProvider.injectEntityManagerInto(caseSearchResultRepository);
 
         caseSummaryRepository = new CaseSummaryRepository();
-        provider.injectEntityManagerInto(caseSummaryRepository);
+        hibernateTestEntityManagerProvider.injectEntityManagerInto(caseSummaryRepository);
     }
 
     @Test

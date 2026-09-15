@@ -13,8 +13,8 @@ import uk.gov.moj.cpp.sjp.query.api.service.DocumentMetadataService;
 
 import java.util.UUID;
 
-import javax.inject.Inject;
-import javax.json.JsonObject;
+import jakarta.inject.Inject;
+import jakarta.json.JsonObject;
 
 @ServiceComponent(Component.QUERY_API)
 public class SjpDocumentApi {

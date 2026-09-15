@@ -10,8 +10,8 @@ import uk.gov.moj.cpp.sjp.domain.CaseDocument;
 
 import java.util.UUID;
 
-import javax.inject.Inject;
-import javax.json.JsonObject;
+import jakarta.inject.Inject;
+import jakarta.json.JsonObject;
 
 @SuppressWarnings("WeakerAccess")
 @ServiceComponent(Component.COMMAND_HANDLER)

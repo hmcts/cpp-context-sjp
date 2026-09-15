@@ -10,13 +10,13 @@ import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
-import javax.inject.Inject;
-import javax.persistence.EntityManager;
+import jakarta.inject.Inject;
+import jakarta.persistence.EntityManager;
 
 public class AssignmentRepository {
 
     @Inject
-    private EntityManager em;
+    private EntityManager entityManager;
 
     private static final String ASSIGNMENTS_CANDIDATES_QUERY =
                     "SELECT " +
@@ -57,7 +57,7 @@ public class AssignmentRepository {
             return Lists.newArrayList();
         }
 
-        return em.createNativeQuery(ASSIGNMENTS_CANDIDATES_QUERY, CaseDetail.RESULT_SET_MAPPING_ASSIGNMENT_CANDIDATES)
+        return entityManager.createNativeQuery(ASSIGNMENTS_CANDIDATES_QUERY, CaseDetail.RESULT_SET_MAPPING_ASSIGNMENT_CANDIDATES)
                 .setParameter("assigneeId", assigneeId)
                 .setParameter("prosecutingAuthorities", prosecutingAuthorities)
                 .setParameter("sessionType", sessionType.name())

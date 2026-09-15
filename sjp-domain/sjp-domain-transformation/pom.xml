@@ -3,7 +3,7 @@
     <parent>
         <artifactId>sjp-domain</artifactId>
         <groupId>uk.gov.moj.cpp.sjp</groupId>
-        <version>17.104.193-SNAPSHOT</version>
+        <version>25.104.0-M1-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -12,9 +12,7 @@
     <packaging>pom</packaging>
 
     <modules>
-        <module>sjp-domain-transformation-anonymise</module>
         <module>sjp-domain-transformation-postcode</module>
-
     </modules>
 
 </project>

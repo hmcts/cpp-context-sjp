@@ -10,8 +10,8 @@ import uk.gov.moj.cpp.sjp.event.processor.results.converter.judicialresult.Decis
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.inject.Inject;
-import javax.json.JsonObject;
+import jakarta.inject.Inject;
+import jakarta.json.JsonObject;
 
 public class ProsecutionCasesConverter {
 

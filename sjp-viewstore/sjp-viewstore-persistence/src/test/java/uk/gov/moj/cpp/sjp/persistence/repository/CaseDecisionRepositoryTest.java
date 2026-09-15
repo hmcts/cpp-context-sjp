@@ -2,12 +2,13 @@ package uk.gov.moj.cpp.sjp.persistence.repository;
 
 import static java.util.Arrays.*;
 import static java.util.UUID.randomUUID;
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static uk.gov.moj.cpp.sjp.domain.decision.discharge.DischargeType.CONDITIONAL;
 import static uk.gov.moj.cpp.sjp.domain.decision.discharge.PeriodUnit.*;
 import static uk.gov.moj.cpp.sjp.domain.plea.PleaType.*;
 
-import uk.gov.justice.services.test.utils.persistence.BaseTransactionalJunit4Test;
+import uk.gov.justice.services.common.util.UtcClock;
+import uk.gov.justice.services.test.utils.persistence.HibernateTestEntityManagerProvider;
 import uk.gov.moj.cpp.sjp.domain.decision.imposition.InstallmentPeriod;
 import uk.gov.moj.cpp.sjp.domain.decision.imposition.PaymentType;
 import uk.gov.moj.cpp.sjp.persistence.entity.CaseDecision;
@@ -24,32 +25,33 @@ import uk.gov.moj.cpp.sjp.persistence.entity.Session;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.time.ZonedDateTime;
 import java.util.UUID;
 
-import javax.inject.Inject;
-import javax.persistence.EntityManager;
+import jakarta.persistence.EntityManager;
 
-import org.apache.deltaspike.testcontrol.api.junit.CdiTestRunner;
-import org.junit.After;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
-@RunWith(CdiTestRunner.class)
-public class CaseDecisionRepositoryTest extends BaseTransactionalJunit4Test {
+class CaseDecisionRepositoryTest {
 
-    @Inject
+    private static final String PERSISTENCE_UNIT = "sjp-test-persistence-unit";
+
+    @RegisterExtension
+    static HibernateTestEntityManagerProvider hibernateTestEntityManagerProvider = new HibernateTestEntityManagerProvider(PERSISTENCE_UNIT);
+
+    private final UtcClock clock = new UtcClock();
+
     private EntityManager entityManager;
 
-    @Inject
     private CaseDecisionRepository caseDecisionRepository;
 
-
-    @Override
-    public void setUpBefore() { }
-
-    @After
-    public void tearDownAfterTemporary() { }
+    @BeforeEach
+    void createRepositoryWithInjectedEntityManager() {
+        caseDecisionRepository = new CaseDecisionRepository();
+        hibernateTestEntityManagerProvider.injectEntityManagerInto(caseDecisionRepository);
+        entityManager = hibernateTestEntityManagerProvider.getEntityManager();
+    }
 
     @Test
     public void shouldSaveDischargeOffenceDecision() {
@@ -59,7 +61,7 @@ public class CaseDecisionRepositoryTest extends BaseTransactionalJunit4Test {
         UUID caseDecisionId = randomUUID();
         caseDecision.setId(caseDecisionId);
         caseDecision.setCaseId(UUID.randomUUID());
-        caseDecision.setSavedAt(ZonedDateTime.now());
+        caseDecision.setSavedAt(clock.now());
         caseDecision.setSession(entityManager.getReference(Session.class,randomUUID()));
 
         DischargeOffenceDecision dischargeOffenceDecision = new DischargeOffenceDecision();
@@ -67,7 +69,7 @@ public class CaseDecisionRepositoryTest extends BaseTransactionalJunit4Test {
         dischargeOffenceDecision.setDischargePeriod(new DischargePeriod(WEEK,10));
         dischargeOffenceDecision.setGuiltyPleaTakenIntoAccount(true);
         dischargeOffenceDecision.setPleaAtDecisionTime(GUILTY);
-        dischargeOffenceDecision.setPleaDate(ZonedDateTime.now());
+        dischargeOffenceDecision.setPleaDate(clock.now());
         dischargeOffenceDecision.setDischargeType(CONDITIONAL);
 
         caseDecision.setOffenceDecisions(asList(dischargeOffenceDecision));
@@ -90,14 +92,14 @@ public class CaseDecisionRepositoryTest extends BaseTransactionalJunit4Test {
         UUID caseDecisionId = randomUUID();
         caseDecision.setId(caseDecisionId);
         caseDecision.setCaseId(UUID.randomUUID());
-        caseDecision.setSavedAt(ZonedDateTime.now());
+        caseDecision.setSavedAt(clock.now());
         caseDecision.setSession(entityManager.getReference(Session.class,randomUUID()));
 
         FinancialPenaltyOffenceDecision financialPenaltyOffenceDecision = new FinancialPenaltyOffenceDecision();
         financialPenaltyOffenceDecision.setCompensation(BigDecimal.valueOf(20.3));
         financialPenaltyOffenceDecision.setGuiltyPleaTakenIntoAccount(true);
         financialPenaltyOffenceDecision.setPleaAtDecisionTime(GUILTY);
-        financialPenaltyOffenceDecision.setPleaDate(ZonedDateTime.now());
+        financialPenaltyOffenceDecision.setPleaDate(clock.now());
         financialPenaltyOffenceDecision.setFine(BigDecimal.valueOf(20.3));
 
         caseDecision.setOffenceDecisions(asList(financialPenaltyOffenceDecision));
@@ -119,7 +121,7 @@ public class CaseDecisionRepositoryTest extends BaseTransactionalJunit4Test {
         UUID caseDecisionId = randomUUID();
         caseDecision.setId(caseDecisionId);
         caseDecision.setCaseId(UUID.randomUUID());
-        caseDecision.setSavedAt(ZonedDateTime.now());
+        caseDecision.setSavedAt(clock.now());
         caseDecision.setSession(entityManager.getReference(Session.class,randomUUID()));
 
         FinancialImposition financialImposition = new FinancialImposition();

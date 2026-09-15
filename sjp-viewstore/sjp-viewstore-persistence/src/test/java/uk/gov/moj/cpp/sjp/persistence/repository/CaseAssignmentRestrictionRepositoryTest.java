@@ -7,63 +7,65 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertNull;
 
 import uk.gov.justice.services.common.util.Clock;
-import uk.gov.justice.services.test.utils.persistence.BaseTransactionalJunit4Test;
+import uk.gov.justice.services.common.util.UtcClock;
+import uk.gov.justice.services.test.utils.persistence.HibernateTestEntityManagerProvider;
 import uk.gov.moj.cpp.sjp.persistence.entity.CaseAssignmentRestriction;
 
-import javax.inject.Inject;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
-import org.apache.deltaspike.testcontrol.api.junit.CdiTestRunner;
-import org.junit.Before;
-import org.junit.Ignore;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-
-@RunWith(CdiTestRunner.class)
-@Ignore
+@Disabled
 // This test is ignored since h2 does not support jsonb type
-public class CaseAssignmentRestrictionRepositoryTest extends BaseTransactionalJunit4Test {
+class CaseAssignmentRestrictionRepositoryTest {
+
+    private static final String PERSISTENCE_UNIT = "sjp-test-persistence-unit";
+
+    @RegisterExtension
+    static HibernateTestEntityManagerProvider hibernateTestEntityManagerProvider = new HibernateTestEntityManagerProvider(PERSISTENCE_UNIT);
 
     private static final String PROSECUTING_AUTHORITY_TVL = "TVL";
     private static final String PROSECUTING_AUTHORITY_TFL = "TFL";
     private static final String PROSECUTING_AUTHORITY_DVLA = "DVLA";
 
-    @Inject
-    private Clock dateTimeCreated;
+    private final Clock clock = new UtcClock();
 
-    @Inject
-    private CaseAssignmentRestrictionRepository repository;
+    private CaseAssignmentRestrictionRepository caseAssignmentRestrictionRepository;
 
-    @Before
-    public void set() {
-        repository.saveCaseAssignmentRestriction(PROSECUTING_AUTHORITY_TVL, "[]", "[]", dateTimeCreated.now(), dateTimeCreated.now().toLocalDate(), dateTimeCreated.now().toLocalDate());
-        repository.saveCaseAssignmentRestriction(PROSECUTING_AUTHORITY_TFL, "[\"1234\"]", "[]", dateTimeCreated.now(), null, dateTimeCreated.now().toLocalDate());
-        repository.saveCaseAssignmentRestriction(PROSECUTING_AUTHORITY_DVLA, "[]", "[\"9876\"]", dateTimeCreated.now(), dateTimeCreated.now().toLocalDate(), null);
+    @BeforeEach
+    void createRepositoryWithInjectedEntityManagerAndSaveRestrictions() {
+        caseAssignmentRestrictionRepository = new CaseAssignmentRestrictionRepository();
+        hibernateTestEntityManagerProvider.injectEntityManagerInto(caseAssignmentRestrictionRepository);
+        caseAssignmentRestrictionRepository.saveCaseAssignmentRestriction(PROSECUTING_AUTHORITY_TVL, "[]", "[]", clock.now(), clock.now().toLocalDate(), clock.now().toLocalDate());
+        caseAssignmentRestrictionRepository.saveCaseAssignmentRestriction(PROSECUTING_AUTHORITY_TFL, "[\"1234\"]", "[]", clock.now(), null, clock.now().toLocalDate());
+        caseAssignmentRestrictionRepository.saveCaseAssignmentRestriction(PROSECUTING_AUTHORITY_DVLA, "[]", "[\"9876\"]", clock.now(), clock.now().toLocalDate(), null);
     }
 
     @Test
     public void shouldFindByProsecutingAuthority() {
-        CaseAssignmentRestriction caseAssignmentRestriction = repository.findBy(PROSECUTING_AUTHORITY_TVL);
+        CaseAssignmentRestriction caseAssignmentRestriction = caseAssignmentRestrictionRepository.findBy(PROSECUTING_AUTHORITY_TVL);
         assertThat(caseAssignmentRestriction.getProsecutingAuthority(), equalTo(PROSECUTING_AUTHORITY_TVL));
-        assertThat(caseAssignmentRestriction.getDateTimeCreated(), equalTo(dateTimeCreated.now()));
+        assertThat(caseAssignmentRestriction.getDateTimeCreated(), equalTo(clock.now()));
         assertThat(caseAssignmentRestriction.getExclude(), equalTo(emptyList()));
         assertThat(caseAssignmentRestriction.getIncludeOnly(), equalTo(emptyList()));
-        assertThat(caseAssignmentRestriction.getValidFrom(), equalTo(dateTimeCreated.now().toLocalDate()));
-        assertThat(caseAssignmentRestriction.getValidTo(), equalTo(dateTimeCreated.now().toLocalDate()));
+        assertThat(caseAssignmentRestriction.getValidFrom(), equalTo(clock.now().toLocalDate()));
+        assertThat(caseAssignmentRestriction.getValidTo(), equalTo(clock.now().toLocalDate()));
 
-        caseAssignmentRestriction = repository.findBy(PROSECUTING_AUTHORITY_TFL);
+        caseAssignmentRestriction = caseAssignmentRestrictionRepository.findBy(PROSECUTING_AUTHORITY_TFL);
         assertThat(caseAssignmentRestriction.getProsecutingAuthority(), equalTo(PROSECUTING_AUTHORITY_TFL));
-        assertThat(caseAssignmentRestriction.getDateTimeCreated(), equalTo(dateTimeCreated.now()));
+        assertThat(caseAssignmentRestriction.getDateTimeCreated(), equalTo(clock.now()));
         assertThat(caseAssignmentRestriction.getExclude(), equalTo(emptyList()));
         assertThat(caseAssignmentRestriction.getIncludeOnly(), equalTo(singletonList("1234")));
         assertNull(caseAssignmentRestriction.getValidFrom());
-        assertThat(caseAssignmentRestriction.getValidTo(), equalTo(dateTimeCreated.now().toLocalDate()));
+        assertThat(caseAssignmentRestriction.getValidTo(), equalTo(clock.now().toLocalDate()));
 
-        caseAssignmentRestriction = repository.findBy(PROSECUTING_AUTHORITY_DVLA);
+        caseAssignmentRestriction = caseAssignmentRestrictionRepository.findBy(PROSECUTING_AUTHORITY_DVLA);
         assertThat(caseAssignmentRestriction.getProsecutingAuthority(), equalTo(PROSECUTING_AUTHORITY_DVLA));
-        assertThat(caseAssignmentRestriction.getDateTimeCreated(), equalTo(dateTimeCreated.now()));
+        assertThat(caseAssignmentRestriction.getDateTimeCreated(), equalTo(clock.now()));
         assertThat(caseAssignmentRestriction.getExclude(), equalTo(singletonList("9876")));
         assertThat(caseAssignmentRestriction.getIncludeOnly(), equalTo(emptyList()));
-        assertThat(caseAssignmentRestriction.getValidFrom(), equalTo(dateTimeCreated.now().toLocalDate()));
+        assertThat(caseAssignmentRestriction.getValidFrom(), equalTo(clock.now().toLocalDate()));
         assertNull(caseAssignmentRestriction.getValidTo());
     }
 }

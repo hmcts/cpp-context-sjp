@@ -1,6 +1,7 @@
 package uk.gov.moj.cpp.sjp.persistence.repository;
 
 import static java.time.LocalDate.now;
+import static java.util.UUID.randomUUID;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.equalTo;
@@ -11,33 +12,40 @@ import static uk.gov.moj.cpp.sjp.domain.CaseReadinessReason.PLEADED_GUILTY;
 import static uk.gov.moj.cpp.sjp.domain.SessionType.DELEGATED_POWERS;
 import static uk.gov.moj.cpp.sjp.domain.SessionType.MAGISTRATE;
 
-import uk.gov.justice.services.test.utils.persistence.BaseTransactionalJunit4Test;
+import uk.gov.justice.services.test.utils.persistence.HibernateTestEntityManagerProvider;
 import uk.gov.moj.cpp.sjp.persistence.entity.ReadyCase;
 
 import java.util.UUID;
 
-import javax.inject.Inject;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
-import org.apache.deltaspike.testcontrol.api.junit.CdiTestRunner;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+class ReadyCaseRepositoryTest {
 
-@RunWith(CdiTestRunner.class)
-public class ReadyCaseRepositoryTest extends BaseTransactionalJunit4Test {
+    private static final String PERSISTENCE_UNIT = "sjp-test-persistence-unit";
 
-    @Inject
+    @RegisterExtension
+    static HibernateTestEntityManagerProvider hibernateTestEntityManagerProvider = new HibernateTestEntityManagerProvider(PERSISTENCE_UNIT);
+
     private ReadyCaseRepository readyCaseRepository;
 
-    @Test
-    public void shouldGetReadyCasesByAssigneeId() {
-        final UUID assigneeId1 = UUID.randomUUID();
-        final UUID assigneeId2 = UUID.randomUUID();
-        final UUID assigneeId3 = UUID.randomUUID();
+    @BeforeEach
+    void createRepositoryWithInjectedEntityManager() {
+        readyCaseRepository = new ReadyCaseRepository();
+        hibernateTestEntityManagerProvider.injectEntityManagerInto(readyCaseRepository);
+    }
 
-        final ReadyCase readyCase1 = new ReadyCase(UUID.randomUUID(), PIA, null, MAGISTRATE, 3, "TFL", now().minusDays(30), now());
-        final ReadyCase readyCase2 = new ReadyCase(UUID.randomUUID(), PIA, assigneeId1, MAGISTRATE, 3, "TFL", now().minusDays(30), now());
-        final ReadyCase readyCase3 = new ReadyCase(UUID.randomUUID(), PLEADED_GUILTY, assigneeId1, MAGISTRATE, 2, "TFL", now().minusDays(15), now());
-        final ReadyCase readyCase4 = new ReadyCase(UUID.randomUUID(), PIA, assigneeId2, MAGISTRATE, 3, "TFL", now().minusDays(30), now());
+    @Test
+    void shouldGetReadyCasesByAssigneeId() {
+        final UUID assigneeId1 = randomUUID();
+        final UUID assigneeId2 = randomUUID();
+        final UUID assigneeId3 = randomUUID();
+
+        final ReadyCase readyCase1 = new ReadyCase(randomUUID(), PIA, null, MAGISTRATE, 3, "TFL", now().minusDays(30), now());
+        final ReadyCase readyCase2 = new ReadyCase(randomUUID(), PIA, assigneeId1, MAGISTRATE, 3, "TFL", now().minusDays(30), now());
+        final ReadyCase readyCase3 = new ReadyCase(randomUUID(), PLEADED_GUILTY, assigneeId1, MAGISTRATE, 2, "TFL", now().minusDays(15), now());
+        final ReadyCase readyCase4 = new ReadyCase(randomUUID(), PIA, assigneeId2, MAGISTRATE, 3, "TFL", now().minusDays(30), now());
 
         readyCaseRepository.save(readyCase1);
         readyCaseRepository.save(readyCase2);
@@ -50,9 +58,9 @@ public class ReadyCaseRepositoryTest extends BaseTransactionalJunit4Test {
     }
 
     @Test
-    public void shouldSaveAndLoadAllFields() {
-        final UUID assigneeId = UUID.randomUUID();
-        final UUID caseId = UUID.randomUUID();
+    void shouldSaveAndLoadAllFields() {
+        final UUID assigneeId = randomUUID();
+        final UUID caseId = randomUUID();
 
         // save a case
         final ReadyCase readyCase = new ReadyCase(caseId,

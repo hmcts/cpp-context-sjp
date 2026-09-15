@@ -2,7 +2,7 @@ package uk.gov.moj.cpp.sjp.event.processor.results.converter;
 
 import static java.util.Objects.isNull;
 import static java.util.Optional.of;
-import static javax.json.JsonValue.NULL;
+import static jakarta.json.JsonValue.NULL;
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
 import static uk.gov.justice.services.messaging.JsonEnvelope.metadataFrom;
 import static uk.gov.moj.cpp.sjp.event.processor.results.converter.ConverterUtils.extractUUID;
@@ -16,8 +16,8 @@ import uk.gov.moj.cpp.sjp.event.processor.service.SjpService;
 import java.util.Optional;
 import java.util.UUID;
 
-import javax.inject.Inject;
-import javax.json.JsonObject;
+import jakarta.inject.Inject;
+import jakarta.json.JsonObject;
 
 public class CourtCentreConverter {
 

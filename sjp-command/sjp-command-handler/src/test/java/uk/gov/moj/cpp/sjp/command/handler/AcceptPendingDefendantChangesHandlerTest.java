@@ -36,8 +36,8 @@ import uk.gov.moj.cpp.sjp.event.DefendantPendingChangesAccepted;
 import java.time.LocalDate;
 import java.util.UUID;
 
-import javax.json.JsonObject;
-import javax.json.JsonObjectBuilder;
+import jakarta.json.JsonObject;
+import jakarta.json.JsonObjectBuilder;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

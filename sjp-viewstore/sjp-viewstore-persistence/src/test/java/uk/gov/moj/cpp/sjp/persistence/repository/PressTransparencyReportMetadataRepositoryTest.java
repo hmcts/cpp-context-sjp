@@ -1,42 +1,50 @@
 package uk.gov.moj.cpp.sjp.persistence.repository;
 
+import static java.util.UUID.randomUUID;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertThat;
 import static uk.gov.moj.cpp.sjp.domain.DocumentFormat.PDF;
 import static uk.gov.moj.cpp.sjp.domain.DocumentRequestType.DELTA;
 
-import uk.gov.justice.services.test.utils.persistence.BaseTransactionalJunit4Test;
+import uk.gov.justice.services.test.utils.persistence.HibernateTestEntityManagerProvider;
 import uk.gov.moj.cpp.sjp.persistence.entity.PressTransparencyReportMetadata;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
 
-import javax.inject.Inject;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
-import org.apache.deltaspike.testcontrol.api.junit.CdiTestRunner;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+class PressTransparencyReportMetadataRepositoryTest {
 
-@RunWith(CdiTestRunner.class)
-public class PressTransparencyReportMetadataRepositoryTest extends BaseTransactionalJunit4Test {
+    private static final String PERSISTENCE_UNIT = "sjp-test-persistence-unit";
 
-    @Inject
+    @RegisterExtension
+    static HibernateTestEntityManagerProvider hibernateTestEntityManagerProvider = new HibernateTestEntityManagerProvider(PERSISTENCE_UNIT);
+
     private PressTransparencyReportMetadataRepository pressTransparencyReportMetadataRepository;
 
     private static final LocalDateTime earlierGeneratedAt = LocalDateTime.of(2018, 11, 26, 0, 0, 0);
     private static final LocalDateTime latestGeneratedAt = LocalDateTime.of(2018, 11, 27, 0, 0, 0);
     private static final LocalDateTime from = LocalDateTime.of(2018, 11, 25, 0, 0, 0);
 
+    @BeforeEach
+    void createRepositoryWithInjectedEntityManager() {
+        pressTransparencyReportMetadataRepository = new PressTransparencyReportMetadataRepository();
+        hibernateTestEntityManagerProvider.injectEntityManagerInto(pressTransparencyReportMetadataRepository);
+    }
+
     @Test
-    public void shouldReturnTheLatestPressReportMetadata() {
+    void shouldReturnTheLatestPressReportMetadata() {
         // given
-        final UUID earlierReportId = UUID.randomUUID();
-        final UUID earlierReportServiceId = UUID.randomUUID();
+        final UUID earlierReportId = randomUUID();
+        final UUID earlierReportServiceId = randomUUID();
         final PressTransparencyReportMetadata earlierTransparencyReportMetadata = populatePressTransparencyMetadata(earlierReportId, earlierReportServiceId, earlierGeneratedAt, 12, 2);
         pressTransparencyReportMetadataRepository.save(earlierTransparencyReportMetadata);
 
-        final UUID latestReportId = UUID.randomUUID();
-        final UUID latestReportServiceId = UUID.randomUUID();
+        final UUID latestReportId = randomUUID();
+        final UUID latestReportServiceId = randomUUID();
         final PressTransparencyReportMetadata latestTransparencyReportMetadata = populatePressTransparencyMetadata(latestReportId, latestReportServiceId, latestGeneratedAt, 13, 3);
         pressTransparencyReportMetadataRepository.save(latestTransparencyReportMetadata);
 
@@ -72,4 +80,3 @@ public class PressTransparencyReportMetadataRepositoryTest extends BaseTransacti
     }
 
 }
-

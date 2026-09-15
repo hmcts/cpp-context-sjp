@@ -9,7 +9,7 @@ import uk.gov.moj.cpp.sjp.event.listener.service.CaseService;
 import uk.gov.moj.cpp.sjp.persistence.entity.ApplicationStatus;
 import uk.gov.moj.cpp.sjp.persistence.entity.CaseDetail;
 
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 
 import java.util.UUID;
 

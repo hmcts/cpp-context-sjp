@@ -14,7 +14,7 @@ import uk.gov.moj.sjp.it.model.ProsecutingAuthority;
 
 import java.util.UUID;
 
-import javax.json.JsonObject;
+import jakarta.json.JsonObject;
 
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;

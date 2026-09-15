@@ -4,8 +4,8 @@ import static java.util.Objects.isNull;
 import static org.apache.commons.lang3.StringUtils.isWhitespace;
 import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilderWithFilter;
 
-import javax.json.JsonObject;
-import javax.json.JsonObjectBuilder;
+import jakarta.json.JsonObject;
+import jakarta.json.JsonObjectBuilder;
 
 public class ContactDetailsService {
 

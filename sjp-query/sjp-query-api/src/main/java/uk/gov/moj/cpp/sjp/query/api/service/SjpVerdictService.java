@@ -9,8 +9,8 @@ import uk.gov.moj.cpp.sjp.domain.verdict.ConvictionType;
 import uk.gov.moj.cpp.sjp.domain.verdict.VerdictService;
 import uk.gov.moj.cpp.sjp.domain.verdict.VerdictType;
 
-import javax.json.JsonArrayBuilder;
-import javax.json.JsonObject;
+import jakarta.json.JsonArrayBuilder;
+import jakarta.json.JsonObject;
 
 public class SjpVerdictService {
 

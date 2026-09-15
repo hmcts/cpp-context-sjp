@@ -21,8 +21,8 @@ import uk.gov.justice.json.schemas.domains.sjp.command.PleadOnline;
 import java.time.LocalDate;
 import java.util.UUID;
 
-import javax.json.JsonArrayBuilder;
-import javax.json.JsonObject;
+import jakarta.json.JsonArrayBuilder;
+import jakarta.json.JsonObject;
 
 public class CommonObjectBuilderUtil {
 

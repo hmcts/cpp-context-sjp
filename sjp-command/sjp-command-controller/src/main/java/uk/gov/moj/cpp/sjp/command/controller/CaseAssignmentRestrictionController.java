@@ -13,9 +13,9 @@ import uk.gov.justice.services.messaging.Envelope;
 
 import java.util.List;
 
-import javax.inject.Inject;
-import javax.json.JsonArrayBuilder;
-import javax.json.JsonObjectBuilder;
+import jakarta.inject.Inject;
+import jakarta.json.JsonArrayBuilder;
+import jakarta.json.JsonObjectBuilder;
 
 @ServiceComponent(COMMAND_CONTROLLER)
 public class CaseAssignmentRestrictionController {

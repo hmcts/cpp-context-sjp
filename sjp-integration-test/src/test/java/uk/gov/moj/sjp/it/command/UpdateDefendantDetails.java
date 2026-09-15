@@ -13,9 +13,9 @@ import uk.gov.moj.sjp.it.command.builder.ContactDetailsBuilder;
 import java.time.LocalDate;
 import java.util.UUID;
 
-import javax.json.JsonObject;
-import javax.json.JsonObjectBuilder;
-import javax.ws.rs.core.Response;
+import jakarta.json.JsonObject;
+import jakarta.json.JsonObjectBuilder;
+import jakarta.ws.rs.core.Response;
 
 public class UpdateDefendantDetails {
 

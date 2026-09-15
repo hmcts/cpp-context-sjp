@@ -2,13 +2,13 @@ package uk.gov.moj.cpp.sjp.persistence.repository;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasSize;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import uk.gov.justice.services.common.converter.LocalDates;
-import uk.gov.justice.services.test.utils.persistence.BaseTransactionalJunit4Test;
+import uk.gov.justice.services.test.utils.persistence.HibernateTestEntityManagerProvider;
 import uk.gov.moj.cpp.sjp.persistence.entity.CaseSearchResult;
 import uk.gov.moj.cpp.sjp.persistence.entity.CaseSummary;
 
@@ -22,14 +22,11 @@ import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicLong;
 
-import javax.inject.Inject;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
-import org.apache.deltaspike.testcontrol.api.junit.CdiTestRunner;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-
-@RunWith(CdiTestRunner.class)
-public class CaseSearchResultRepositoryTest extends BaseTransactionalJunit4Test {
+class CaseSearchResultRepositoryTest {
 
     private static final boolean IS_CURRENT = false;
     private static final boolean IS_OLD = true;
@@ -42,13 +39,26 @@ public class CaseSearchResultRepositoryTest extends BaseTransactionalJunit4Test 
     private static final String PROSECUTING_AUTHORITY_2 = "PROC2";
     private static final String PROSECUTING_AUTHORITY_WILDCARD = "%";
     private static final String LEGAL_ENTITY_NAME = "legalEntityName";
-    @Inject
+
+    private static final String PERSISTENCE_UNIT = "sjp-test-persistence-unit";
+
+    @RegisterExtension
+    static HibernateTestEntityManagerProvider hibernateTestEntityManagerProvider = new HibernateTestEntityManagerProvider(PERSISTENCE_UNIT);
+
     private CaseSearchResultRepository caseSearchResultRepository;
-    @Inject
     private CaseSummaryRepository caseSummaryRepository;
 
+    @BeforeEach
+    void createRepositoriesWithInjectedEntityManager() {
+        caseSearchResultRepository = new CaseSearchResultRepository();
+        hibernateTestEntityManagerProvider.injectEntityManagerInto(caseSearchResultRepository);
+
+        caseSummaryRepository = new CaseSummaryRepository();
+        hibernateTestEntityManagerProvider.injectEntityManagerInto(caseSummaryRepository);
+    }
+
     @Test
-    public void shouldFindByLastName() {
+    void shouldFindByLastName() {
 
         createCaseSearchResult(false);
 
@@ -60,7 +70,7 @@ public class CaseSearchResultRepositoryTest extends BaseTransactionalJunit4Test 
     }
 
     @Test
-    public void shouldFindByLastNameForAgent() {
+    void shouldFindByLastNameForAgent() {
 
         createCaseSearchResult(PROSECUTING_AUTHORITY_2);
 
@@ -71,7 +81,7 @@ public class CaseSearchResultRepositoryTest extends BaseTransactionalJunit4Test 
     }
 
     @Test
-    public void shouldNotFindByLastNameForOtherProsecutingAuthority() {
+    void shouldNotFindByLastNameForOtherProsecutingAuthority() {
 
         createCaseSearchResult(PROSECUTING_AUTHORITY_2);
 
@@ -81,7 +91,7 @@ public class CaseSearchResultRepositoryTest extends BaseTransactionalJunit4Test 
     }
 
     @Test
-    public void shouldFindByLastNameWithOrdering() {
+    void shouldFindByLastNameWithOrdering() {
 
         final CaseSearchResult caseSearchResultA = createCaseSearchResultWithFirstname("firstNameA", PROSECUTING_AUTHORITY_1);
         final CaseSearchResult caseSearchResultB = createCaseSearchResultWithFirstname("firstNameB", PROSECUTING_AUTHORITY_1);
@@ -97,7 +107,7 @@ public class CaseSearchResultRepositoryTest extends BaseTransactionalJunit4Test 
     }
 
     @Test
-    public void shouldFindByLastNameEvenThoughItWasChanged() {
+    void shouldFindByLastNameEvenThoughItWasChanged() {
         // given
         final CaseSearchResult caseSearchResult = createCaseSearchResult(false);
         // when
@@ -154,7 +164,7 @@ public class CaseSearchResultRepositoryTest extends BaseTransactionalJunit4Test 
     }
 
     @Test
-    public void shouldFindByUrn() {
+    void shouldFindByUrn() {
 
         final CaseSearchResult caseSearchResult = createCaseSearchResult(false);
 
@@ -166,7 +176,7 @@ public class CaseSearchResultRepositoryTest extends BaseTransactionalJunit4Test 
     }
 
     @Test
-    public void shouldFindByUrnForAgent() {
+    void shouldFindByUrnForAgent() {
 
         createCaseSearchResult(PROSECUTING_AUTHORITY_2);
 
@@ -178,7 +188,7 @@ public class CaseSearchResultRepositoryTest extends BaseTransactionalJunit4Test 
     }
 
     @Test
-    public void shouldNotFindByUrnForOtherProsecutingAuthority() {
+    void shouldNotFindByUrnForOtherProsecutingAuthority() {
 
         createCaseSearchResult(PROSECUTING_AUTHORITY_2);
 
@@ -189,7 +199,7 @@ public class CaseSearchResultRepositoryTest extends BaseTransactionalJunit4Test 
     }
 
     @Test
-    public void shouldFindByUrnOnlyLatest() {
+    void shouldFindByUrnOnlyLatest() {
         // given
         final CaseSearchResult caseSearchResult = createCaseSearchResult(false);
         simulateDefendantLastNameChanged(LAST_NAME_UPDATED, caseSearchResult.getCaseId());
@@ -207,7 +217,7 @@ public class CaseSearchResultRepositoryTest extends BaseTransactionalJunit4Test 
     }
 
     @Test
-    public void shouldFindByCaseId() {
+    void shouldFindByCaseId() {
 
         final CaseSearchResult caseSearchResult = createCaseSearchResult(false);
         final UUID caseId = caseSearchResult.getCaseId();
@@ -222,7 +232,7 @@ public class CaseSearchResultRepositoryTest extends BaseTransactionalJunit4Test 
     }
 
     @Test
-    public void shouldCreateWithoutCaseSummary() {
+    void shouldCreateWithoutCaseSummary() {
         final CaseSearchResult caseSearchResult = new CaseSearchResult(UUID.randomUUID(), UUID.randomUUID(), "firstName", "lastName", LocalDates.from("2001-02-03"), null, null);
 
         caseSearchResultRepository.save(caseSearchResult);
@@ -310,7 +320,7 @@ public class CaseSearchResultRepositoryTest extends BaseTransactionalJunit4Test 
     }
 
     @Test
-    public void shouldFindByLegalEntityName() {
+    void shouldFindByLegalEntityName() {
         createCaseSearchResult(true);
         // check it is case insensitive
         final List<CaseSearchResult> results = caseSearchResultRepository.findByLegalEntityName(PROSECUTING_AUTHORITY_WILDCARD, LEGAL_ENTITY_NAME.toLowerCase(), new ArrayList<>());
@@ -320,7 +330,7 @@ public class CaseSearchResultRepositoryTest extends BaseTransactionalJunit4Test 
     }
 
     @Test
-    public void shouldFindByLegalEntityNameForAgent() {
+    void shouldFindByLegalEntityNameForAgent() {
         createCaseSearchResult(true);
         // check it is case insensitive
         final List<CaseSearchResult> results = caseSearchResultRepository.findByLegalEntityName(PROSECUTING_AUTHORITY_2, LEGAL_ENTITY_NAME.toLowerCase(), Arrays.asList(PROSECUTING_AUTHORITY_1));

@@ -1,32 +1,38 @@
 package uk.gov.moj.cpp.sjp.persistence.repository;
 
+import static java.util.UUID.randomUUID;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 
-import uk.gov.justice.services.test.utils.persistence.BaseTransactionalTest;
+import uk.gov.justice.services.common.util.UtcClock;
+import uk.gov.justice.services.test.utils.persistence.HibernateTestEntityManagerProvider;
 import uk.gov.moj.cpp.sjp.persistence.entity.DefendantDetailUpdateRequest;
 
-import java.time.ZonedDateTime;
-import java.util.Optional;
 import java.util.UUID;
 
-import javax.inject.Inject;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
-import junit.framework.TestCase;
-import org.apache.deltaspike.testcontrol.api.junit.CdiTestRunner;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+class DefendantDetailUpdateRequestRepositoryTest {
 
-@RunWith(CdiTestRunner.class)
-public class DefendantDetailUpdateRequestRepositoryTest extends BaseTransactionalTest {
+    private static final String PERSISTENCE_UNIT = "sjp-test-persistence-unit";
 
-    @Inject
+    @RegisterExtension
+    static HibernateTestEntityManagerProvider hibernateTestEntityManagerProvider = new HibernateTestEntityManagerProvider(PERSISTENCE_UNIT);
+
     private DefendantDetailUpdateRequestRepository defendantRepository;
 
+    @BeforeEach
+    void createRepositoryWithInjectedEntityManager() {
+        defendantRepository = new DefendantDetailUpdateRequestRepository();
+        hibernateTestEntityManagerProvider.injectEntityManagerInto(defendantRepository);
+    }
+
     @Test
-    public void shouldFindByCaseId() {
-        final UUID caseId = UUID.randomUUID();
-        DefendantDetailUpdateRequest defendantDetailUpdateRequest = createDefendantDetailUpdateRequest(caseId, UUID.randomUUID(), "firstName", "lastName", "middleName");
+    void shouldFindByCaseId() {
+        final UUID caseId = randomUUID();
+        DefendantDetailUpdateRequest defendantDetailUpdateRequest = createDefendantDetailUpdateRequest(caseId, randomUUID(), "firstName", "lastName", "middleName");
         defendantRepository.save(defendantDetailUpdateRequest);
 
         final DefendantDetailUpdateRequest updateRequest = defendantRepository.findBy(caseId);
@@ -41,7 +47,7 @@ public class DefendantDetailUpdateRequestRepositoryTest extends BaseTransactiona
         defendantDetailUpdateRequest.setFirstName(firstName);
         defendantDetailUpdateRequest.setLastName(lastName);
         defendantDetailUpdateRequest.setStatus(DefendantDetailUpdateRequest.Status.PENDING);
-        defendantDetailUpdateRequest.setUpdatedAt(ZonedDateTime.now());
+        defendantDetailUpdateRequest.setUpdatedAt(new UtcClock().now());
 
         return defendantDetailUpdateRequest;
     }

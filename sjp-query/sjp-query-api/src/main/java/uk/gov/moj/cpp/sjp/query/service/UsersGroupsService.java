@@ -11,9 +11,9 @@ import uk.gov.moj.cpp.sjp.query.exception.UserNotFoundException;
 
 import java.util.UUID;
 
-import javax.inject.Inject;
-import javax.json.JsonObject;
-import javax.json.JsonValue;
+import jakarta.inject.Inject;
+import jakarta.json.JsonObject;
+import jakarta.json.JsonValue;
 
 public class UsersGroupsService {
 

@@ -74,23 +74,18 @@ import java.util.List;
 import java.util.UUID;
 import java.util.function.Function;
 
-import javax.inject.Inject;
-import javax.persistence.EntityManager;
-import javax.persistence.Query;
-import javax.persistence.criteria.CriteriaBuilder;
-import javax.persistence.criteria.CriteriaUpdate;
-import javax.persistence.criteria.Path;
-import javax.persistence.criteria.Root;
+import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
+import jakarta.persistence.Query;
+import jakarta.persistence.criteria.CriteriaBuilder;
+import jakarta.persistence.criteria.CriteriaUpdate;
+import jakarta.persistence.criteria.Path;
+import jakarta.persistence.criteria.Root;
 
-import org.apache.deltaspike.data.api.EntityRepository;
-import org.apache.deltaspike.data.api.QueryParam;
-import org.apache.deltaspike.data.api.Repository;
-import org.apache.deltaspike.data.api.SingleResultType;
+public abstract class OnlinePleaRepository {
 
-@Repository
-public abstract class OnlinePleaRepository implements EntityRepository<OnlinePlea, UUID> {
-
-    @Inject
+    @PersistenceContext(unitName = "sjp-persistence-unit")
     private EntityManager entityManager;
 
     private static final String INSERT_STATEMENT =
@@ -122,12 +117,37 @@ public abstract class OnlinePleaRepository implements EntityRepository<OnlinePle
     /**
      * Hide employment, employer and outgoings.
      */
-    @org.apache.deltaspike.data.api.Query(
-            value = "SELECT new OnlinePlea(op.caseId, op.pleaDetails, op.defendantId, op.personalDetails, op.submittedOn, op.legalEntityDetails) FROM OnlinePlea op WHERE op.caseId = :caseId",
-            singleResult = SingleResultType.OPTIONAL)
-    public abstract OnlinePlea findOnlinePleaWithoutFinances(@QueryParam("caseId") final UUID caseId);
+    public OnlinePlea findOnlinePleaWithoutFinances(final UUID caseId) {
+        return entityManager.createQuery(
+                "SELECT new OnlinePlea(op.caseId, op.pleaDetails, op.defendantId, op.personalDetails, op.submittedOn, op.legalEntityDetails) FROM OnlinePlea op WHERE op.caseId = :caseId",
+                OnlinePlea.class)
+                .setParameter("caseId", caseId)
+                .getResultStream()
+                .findFirst()
+                .orElse(null);
+    }
 
     abstract List<FIELDS> getFieldsToUpdate();
+
+    public OnlinePlea findBy(final UUID id) {
+        return entityManager.find(OnlinePlea.class, id);
+    }
+
+    public OnlinePlea save(final OnlinePlea entity) {
+        return entityManager.merge(entity);
+    }
+
+    public void remove(final OnlinePlea entity) {
+        entityManager.remove(entityManager.contains(entity) ? entity : entityManager.merge(entity));
+    }
+
+    public Long count() {
+        return entityManager.createQuery("SELECT COUNT(e) FROM OnlinePlea e", Long.class).getSingleResult();
+    }
+
+    public List<OnlinePlea> findAll() {
+        return entityManager.createQuery("SELECT e FROM OnlinePlea e", OnlinePlea.class).getResultList();
+    }
 
     enum FIELDS {
         CASE_ID(OnlinePlea::getCaseId, "caseId"),
@@ -260,9 +280,10 @@ public abstract class OnlinePleaRepository implements EntityRepository<OnlinePle
         }
     }
 
-    public abstract static class FinancialMeansOnlinePleaRepository extends OnlinePleaRepository {
+    @ApplicationScoped
+    public static class FinancialMeansOnlinePleaRepository extends OnlinePleaRepository {
         @Override
-        final List<FIELDS> getFieldsToUpdate() {
+        List<FIELDS> getFieldsToUpdate() {
             return asList(
                     EMPLOYMENT_INCOME_PAYMENT_AMOUNT,
                     EMPLOYMENT_INCOME_FREQUENCY,
@@ -282,9 +303,10 @@ public abstract class OnlinePleaRepository implements EntityRepository<OnlinePle
         }
     }
 
-    public abstract static class EmployerOnlinePleaRepository extends OnlinePleaRepository {
+    @ApplicationScoped
+    public static class EmployerOnlinePleaRepository extends OnlinePleaRepository {
         @Override
-        final List<FIELDS> getFieldsToUpdate() {
+        List<FIELDS> getFieldsToUpdate() {
             return asList(
                     EMPLOYER_REFERENCE,
                     EMPLOYER_NAME,
@@ -299,9 +321,10 @@ public abstract class OnlinePleaRepository implements EntityRepository<OnlinePle
         }
     }
 
-    public abstract static class TrialOnlinePleaRepository extends OnlinePleaRepository {
+    @ApplicationScoped
+    public static class TrialOnlinePleaRepository extends OnlinePleaRepository {
         @Override
-        final List<FIELDS> getFieldsToUpdate() {
+        List<FIELDS> getFieldsToUpdate() {
             return asList(
                     CASE_ID,
                     WITNESS_DISPUTE,
@@ -311,23 +334,26 @@ public abstract class OnlinePleaRepository implements EntityRepository<OnlinePle
         }
     }
 
-    public abstract static class InterpreterLanguageOnlinePleaRepository extends OnlinePleaRepository {
+    @ApplicationScoped
+    public static class InterpreterLanguageOnlinePleaRepository extends OnlinePleaRepository {
         @Override
-        final List<FIELDS> getFieldsToUpdate() {
+        List<FIELDS> getFieldsToUpdate() {
             return singletonList(INTERPRETER_LANGUAGE);
         }
     }
 
-    public abstract static class HearingLanguageOnlinePleaRepository extends OnlinePleaRepository {
+    @ApplicationScoped
+    public static class HearingLanguageOnlinePleaRepository extends OnlinePleaRepository {
         @Override
-        final List<FIELDS> getFieldsToUpdate() {
+        List<FIELDS> getFieldsToUpdate() {
             return singletonList(HEARING_LANGUAGE);
         }
     }
 
-    public abstract static class PersonDetailsOnlinePleaRepository extends OnlinePleaRepository {
+    @ApplicationScoped
+    public static class PersonDetailsOnlinePleaRepository extends OnlinePleaRepository {
         @Override
-        final List<FIELDS> getFieldsToUpdate() {
+        List<FIELDS> getFieldsToUpdate() {
             return asList(
                     PERSON_FIRST_NAME,
                     PERSON_LAST_NAME,
@@ -349,27 +375,30 @@ public abstract class OnlinePleaRepository implements EntityRepository<OnlinePle
         }
     }
 
-    public abstract static class PleaDetailsRepository extends OnlinePleaRepository {
+    @ApplicationScoped
+    public static class PleaDetailsRepository extends OnlinePleaRepository {
         @Override
-        final List<FIELDS> getFieldsToUpdate() {
+        List<FIELDS> getFieldsToUpdate() {
             return asList(
                     COME_TO_COURT
             );
         }
     }
 
-    public abstract static class OutstandingFinesOnlinePleaRepository extends OnlinePleaRepository {
+    @ApplicationScoped
+    public static class OutstandingFinesOnlinePleaRepository extends OnlinePleaRepository {
         @Override
-        final List<FIELDS> getFieldsToUpdate() {
+        List<FIELDS> getFieldsToUpdate() {
             return asList(
                     OUTSTANDING_FINES
             );
         }
     }
 
-    public abstract static class LegalEntityDetailsOnlinePleaRepository extends OnlinePleaRepository {
+    @ApplicationScoped
+    public static class LegalEntityDetailsOnlinePleaRepository extends OnlinePleaRepository {
         @Override
-        final List<FIELDS> getFieldsToUpdate() {
+        List<FIELDS> getFieldsToUpdate() {
             return asList(
                     LEGALENTITY_NAME,
                     LEGALENTITY_HOME,
@@ -391,9 +420,15 @@ public abstract class OnlinePleaRepository implements EntityRepository<OnlinePle
         }
     }
 
-    @org.apache.deltaspike.data.api.Query(
-            value = "SELECT op FROM OnlinePlea op WHERE op.caseId = :caseId AND op.defendantId = :defendantId",
-            singleResult = SingleResultType.OPTIONAL)
-    public abstract OnlinePlea findOnlinePleaByDefendantIdAndCaseId(@QueryParam("caseId") final UUID caseId, @QueryParam("defendantId") final UUID defendantId);
+    public OnlinePlea findOnlinePleaByDefendantIdAndCaseId(final UUID caseId, final UUID defendantId) {
+        return entityManager.createQuery(
+                "SELECT op FROM OnlinePlea op WHERE op.caseId = :caseId AND op.defendantId = :defendantId",
+                OnlinePlea.class)
+                .setParameter("caseId", caseId)
+                .setParameter("defendantId", defendantId)
+                .getResultStream()
+                .findFirst()
+                .orElse(null);
+    }
 
 }

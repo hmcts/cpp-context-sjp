@@ -15,7 +15,7 @@ import java.time.ZonedDateTime;
 import java.util.UUID;
 import java.util.stream.Stream;
 
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 
 @ServiceComponent(Component.COMMAND_HANDLER)
 public class EndorsementRemovalNotificationHandler {

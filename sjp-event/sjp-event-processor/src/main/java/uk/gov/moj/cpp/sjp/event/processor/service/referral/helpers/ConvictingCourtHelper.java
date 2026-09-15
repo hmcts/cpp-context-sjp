@@ -9,7 +9,7 @@ import uk.gov.moj.cpp.sjp.event.processor.results.converter.CourtCentreConverter
 
 import java.util.Optional;
 
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 
 public class ConvictingCourtHelper {
 

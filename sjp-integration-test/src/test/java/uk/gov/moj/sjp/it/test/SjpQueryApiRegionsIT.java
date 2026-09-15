@@ -10,7 +10,7 @@ import static uk.gov.moj.sjp.it.util.matchers.RegionsMatcher.region;
 
 import uk.gov.moj.sjp.it.helper.RegionsQueryApiClient;
 
-import javax.json.JsonObject;
+import jakarta.json.JsonObject;
 
 import org.junit.jupiter.api.Test;
 

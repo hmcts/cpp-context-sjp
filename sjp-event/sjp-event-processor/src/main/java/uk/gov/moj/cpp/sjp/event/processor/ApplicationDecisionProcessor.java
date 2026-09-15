@@ -13,7 +13,7 @@ import uk.gov.justice.services.messaging.Envelope;
 import uk.gov.moj.cpp.sjp.event.ApplicationOffenceResultsSaved;
 import uk.gov.moj.cpp.sjp.event.processor.results.converter.SjpToHearingConverter;
 
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 
 import static java.util.Objects.nonNull;
 import static uk.gov.justice.services.core.annotation.Component.EVENT_PROCESSOR;

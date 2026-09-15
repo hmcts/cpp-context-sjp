@@ -109,8 +109,8 @@ import java.util.UUID;
 import java.util.function.Function;
 import java.util.stream.Stream;
 
-import javax.json.JsonObject;
-import javax.persistence.NoResultException;
+import jakarta.json.JsonObject;
+import jakarta.persistence.NoResultException;
 
 import org.hamcrest.CoreMatchers;
 import org.hamcrest.Matchers;

@@ -10,7 +10,7 @@ import static uk.gov.moj.cpp.sjp.query.view.util.results.ResultsMatchers.DPR;
 
 import uk.gov.moj.cpp.sjp.query.view.service.CachedReferenceData;
 
-import javax.json.JsonObject;
+import jakarta.json.JsonObject;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

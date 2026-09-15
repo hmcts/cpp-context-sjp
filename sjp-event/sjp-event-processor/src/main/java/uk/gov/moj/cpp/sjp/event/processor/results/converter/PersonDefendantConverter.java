@@ -10,7 +10,7 @@ import uk.gov.justice.json.schemas.domains.sjp.queries.Defendant;
 import uk.gov.justice.services.messaging.Metadata;
 import uk.gov.moj.cpp.sjp.event.processor.results.converter.judicialresult.JCachedReferenceData;
 
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 
 public class PersonDefendantConverter {
 

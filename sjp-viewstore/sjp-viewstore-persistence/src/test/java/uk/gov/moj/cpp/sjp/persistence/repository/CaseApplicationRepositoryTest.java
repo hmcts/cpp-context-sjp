@@ -1,35 +1,40 @@
 
 package uk.gov.moj.cpp.sjp.persistence.repository;
 
-import org.apache.deltaspike.testcontrol.api.junit.CdiTestRunner;
-import org.junit.Assert;
-import org.junit.Ignore;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import static java.util.UUID.randomUUID;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static uk.gov.moj.cpp.sjp.persistence.entity.ApplicationType.STAT_DEC;
+
 import uk.gov.justice.services.common.util.Clock;
+import uk.gov.justice.services.common.util.UtcClock;
 import uk.gov.justice.services.test.utils.core.random.RandomGenerator;
-import uk.gov.justice.services.test.utils.persistence.BaseTransactionalJunit4Test;
+import uk.gov.justice.services.test.utils.persistence.HibernateTestEntityManagerProvider;
 import uk.gov.moj.cpp.sjp.persistence.builder.CaseDetailBuilder;
 import uk.gov.moj.cpp.sjp.persistence.builder.DefendantDetailBuilder;
 import uk.gov.moj.cpp.sjp.persistence.entity.CaseApplication;
 import uk.gov.moj.cpp.sjp.persistence.entity.CaseDetail;
 import uk.gov.moj.cpp.sjp.persistence.entity.CaseDocument;
 
-import javax.inject.Inject;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.UUID;
 
-import static java.util.UUID.randomUUID;
-import static uk.gov.moj.cpp.sjp.persistence.entity.ApplicationType.STAT_DEC;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
-@Ignore
-@RunWith(CdiTestRunner.class)
-public class CaseApplicationRepositoryTest extends BaseTransactionalJunit4Test {
+@Disabled
+class CaseApplicationRepositoryTest {
 
-    private static final UUID APPLICATION_ID = UUID.randomUUID();
-    private static final UUID CASE_ID = UUID.randomUUID();
-    private static final UUID APPLICATION_TYPE_ID = UUID.randomUUID();
+    private static final String PERSISTENCE_UNIT = "sjp-test-persistence-unit";
+
+    @RegisterExtension
+    static HibernateTestEntityManagerProvider hibernateTestEntityManagerProvider = new HibernateTestEntityManagerProvider(PERSISTENCE_UNIT);
+
+    private static final UUID APPLICATION_ID = randomUUID();
+    private static final UUID CASE_ID = randomUUID();
+    private static final UUID APPLICATION_TYPE_ID = randomUUID();
     private static final String APPLICATION_REFERENCE = "ref";
     private static final String APPLICATION_REASON = "reason";
     private static final LocalDate DATE_RECEIVED = LocalDate.now();
@@ -40,19 +45,24 @@ public class CaseApplicationRepositoryTest extends BaseTransactionalJunit4Test {
     private static final UUID VALID_MATERIAL_ID_2 = randomUUID();
     private static final String POSTCODE = "CR0 1AB";
     private static final String OFFENCE_CODE = "PS0001";
-    private static final UUID DEFENDANT_ID = UUID.randomUUID();
+    private static final UUID DEFENDANT_ID = randomUUID();
     private static LocalDate postingDate = LocalDate.of(2015, 12, 31);
     private static final String URN = "TFL12345678A";
     private static  CaseDetail caseDetail;
 
-    @Inject
-    private Clock clock;
+    private final Clock clock = new UtcClock();
 
-    @Inject
     private CaseApplicationRepository caseApplicationRepository;
 
-    @Inject
     private CaseRepository caseRepository;
+
+    @BeforeEach
+    void setUp() {
+        caseApplicationRepository = new CaseApplicationRepository();
+        hibernateTestEntityManagerProvider.injectEntityManagerInto(caseApplicationRepository);
+        caseRepository = new CaseRepository();
+        hibernateTestEntityManagerProvider.injectEntityManagerInto(caseRepository);
+    }
 
     @Test
     public void testFindByApplicationId() {
@@ -61,11 +71,11 @@ public class CaseApplicationRepositoryTest extends BaseTransactionalJunit4Test {
         caseApplicationRepository.save(getCaseApplication());
         caseApplicationRepository.findBy(APPLICATION_ID);
         final CaseApplication actual = caseApplicationRepository.findBy(APPLICATION_ID);
-        Assert.assertEquals(APPLICATION_ID, actual.getApplicationId());
-        Assert.assertEquals(APPLICATION_TYPE_ID, actual.getTypeId());
-        Assert.assertEquals(APPLICATION_REFERENCE, actual.getApplicationReference());
-        Assert.assertEquals(APPLICATION_REASON, actual.getOutOfTimeReason());
-        Assert.assertEquals(STAT_DEC, actual.getApplicationType());
+        assertEquals(APPLICATION_ID, actual.getApplicationId());
+        assertEquals(APPLICATION_TYPE_ID, actual.getTypeId());
+        assertEquals(APPLICATION_REFERENCE, actual.getApplicationReference());
+        assertEquals(APPLICATION_REASON, actual.getOutOfTimeReason());
+        assertEquals(STAT_DEC, actual.getApplicationType());
     }
 
     private CaseApplication getCaseApplication() {

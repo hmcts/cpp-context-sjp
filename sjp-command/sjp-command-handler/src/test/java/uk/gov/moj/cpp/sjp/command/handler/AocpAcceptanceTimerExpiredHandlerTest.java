@@ -25,7 +25,7 @@ import uk.gov.moj.cpp.sjp.event.decision.DecisionSaved;
 import java.util.UUID;
 import java.util.stream.Stream;
 
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

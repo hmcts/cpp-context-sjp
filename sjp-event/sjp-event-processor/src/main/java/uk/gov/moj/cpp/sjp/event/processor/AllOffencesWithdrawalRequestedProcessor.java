@@ -14,7 +14,7 @@ import uk.gov.moj.cpp.sjp.event.processor.activiti.CaseStateService;
 
 import java.util.UUID;
 
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 
 @SuppressWarnings("WeakerAccess")
 @ServiceComponent(Component.EVENT_PROCESSOR)

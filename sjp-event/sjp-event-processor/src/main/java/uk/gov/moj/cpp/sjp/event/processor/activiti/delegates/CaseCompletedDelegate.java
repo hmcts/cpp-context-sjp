@@ -4,7 +4,7 @@ import uk.gov.justice.services.messaging.Metadata;
 
 import java.util.UUID;
 
-import javax.inject.Named;
+import jakarta.inject.Named;
 
 import org.activiti.engine.delegate.DelegateExecution;
 import org.slf4j.Logger;

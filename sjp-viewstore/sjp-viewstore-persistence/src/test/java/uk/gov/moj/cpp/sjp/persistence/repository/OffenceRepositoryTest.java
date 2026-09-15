@@ -1,15 +1,16 @@
 package uk.gov.moj.cpp.sjp.persistence.repository;
 
 import static java.util.Arrays.asList;
+import static java.util.UUID.randomUUID;
 import static java.util.stream.Collectors.toList;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasProperty;
 import static org.hamcrest.Matchers.hasSize;
-import static org.junit.Assert.assertThat;
 
-import uk.gov.justice.services.test.utils.persistence.BaseTransactionalJunit4Test;
+import uk.gov.justice.services.test.utils.persistence.HibernateTestEntityManagerProvider;
 import uk.gov.moj.cpp.sjp.persistence.entity.Address;
 import uk.gov.moj.cpp.sjp.persistence.entity.CaseDetail;
 import uk.gov.moj.cpp.sjp.persistence.entity.ContactDetails;
@@ -22,32 +23,41 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
 
-import javax.inject.Inject;
-
 import org.apache.commons.lang3.StringUtils;
-import org.apache.deltaspike.testcontrol.api.junit.CdiTestRunner;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
 /**
  * DB integration tests for {@link OffenceRepository} class
  */
-@RunWith(CdiTestRunner.class)
-public class OffenceRepositoryTest extends BaseTransactionalJunit4Test {
+class OffenceRepositoryTest {
 
     private static final int NUM_PREVIOUS_CONVICTIONS = 1;
 
-    @Inject
+    private static final String PERSISTENCE_UNIT = "sjp-test-persistence-unit";
+
+    @RegisterExtension
+    static HibernateTestEntityManagerProvider hibernateTestEntityManagerProvider = new HibernateTestEntityManagerProvider(PERSISTENCE_UNIT);
+
     private OffenceRepository offenceRepository;
 
-    @Inject
     private CaseRepository caseRepository;
 
+    @BeforeEach
+    void createRepositoriesWithInjectedEntityManager() {
+        offenceRepository = new OffenceRepository();
+        hibernateTestEntityManagerProvider.injectEntityManagerInto(offenceRepository);
+
+        caseRepository = new CaseRepository();
+        hibernateTestEntityManagerProvider.injectEntityManagerInto(caseRepository);
+    }
+
     @Test
-    public void shouldFindOffencesByIds() {
-        final UUID offenceId1 = UUID.randomUUID();
-        final UUID offenceId2 = UUID.randomUUID();
-        final UUID offenceId3 = UUID.randomUUID();
+    void shouldFindOffencesByIds() {
+        final UUID offenceId1 = randomUUID();
+        final UUID offenceId2 = randomUUID();
+        final UUID offenceId3 = randomUUID();
         final CaseDetail caseDetail = getCaseWithDefendantOffences(asList(offenceId1, offenceId2, offenceId3));
         caseRepository.save(caseDetail);
 
@@ -58,9 +68,9 @@ public class OffenceRepositoryTest extends BaseTransactionalJunit4Test {
     }
 
     private CaseDetail getCaseWithDefendantOffences(final List<UUID> offenceIds) {
-        final CaseDetail caseDetail = new CaseDetail(UUID.randomUUID());
+        final CaseDetail caseDetail = new CaseDetail(randomUUID());
         caseDetail.setDefendant(new DefendantDetail(
-                UUID.randomUUID(),
+                randomUUID(),
                 new PersonalDetails(),
                 offenceIds.stream().map(this::createOffenceDetails).collect(toList()),
                 NUM_PREVIOUS_CONVICTIONS,

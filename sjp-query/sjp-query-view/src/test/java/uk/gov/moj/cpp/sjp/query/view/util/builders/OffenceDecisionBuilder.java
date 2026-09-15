@@ -10,8 +10,8 @@ import uk.gov.moj.cpp.sjp.domain.verdict.VerdictType;
 
 import java.util.UUID;
 
-import javax.json.JsonObject;
-import javax.json.JsonObjectBuilder;
+import jakarta.json.JsonObject;
+import jakarta.json.JsonObjectBuilder;
 
 public class OffenceDecisionBuilder {
 

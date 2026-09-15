@@ -11,7 +11,7 @@ import uk.gov.justice.services.messaging.Envelope;
 import uk.gov.moj.cpp.sjp.domain.aggregate.Session;
 import uk.gov.moj.cpp.sjp.domain.decision.AocpDecision;
 
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 
 @ServiceComponent(Component.COMMAND_HANDLER)
 public class AocpAcceptanceTimerExpiredHandler extends CaseCommandHandler {

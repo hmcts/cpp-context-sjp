@@ -11,7 +11,7 @@ import uk.gov.justice.tools.eventsourcing.transformation.api.annotation.Transfor
 
 import java.util.stream.Stream;
 
-import javax.json.JsonObject;
+import jakarta.json.JsonObject;
 
 @Transformation
 public class DefendantAddressUpdatedEventTransformer extends BaseEventTransformer {

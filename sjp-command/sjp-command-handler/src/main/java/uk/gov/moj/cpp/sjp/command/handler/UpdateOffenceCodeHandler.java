@@ -9,7 +9,7 @@ import uk.gov.justice.services.messaging.JsonEnvelope;
 
 import java.util.UUID;
 
-import javax.json.JsonObject;
+import jakarta.json.JsonObject;
 
 @ServiceComponent(COMMAND_HANDLER)
 public class UpdateOffenceCodeHandler extends CaseCommandHandler {

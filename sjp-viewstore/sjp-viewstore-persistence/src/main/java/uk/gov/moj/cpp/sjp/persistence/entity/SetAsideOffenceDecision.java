@@ -5,8 +5,8 @@ import uk.gov.moj.cpp.sjp.domain.decision.DecisionType;
 
 import java.util.UUID;
 
-import javax.persistence.DiscriminatorValue;
-import javax.persistence.Entity;
+import jakarta.persistence.DiscriminatorValue;
+import jakarta.persistence.Entity;
 
 @Entity
 @DiscriminatorValue(DecisionType.DecisionName.SET_ASIDE)

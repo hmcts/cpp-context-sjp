@@ -8,7 +8,7 @@ import uk.gov.justice.json.schemas.domains.sjp.PersonalDetails;
 
 import java.time.LocalDate;
 
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 
 public class PersonDetailsConverter {
 

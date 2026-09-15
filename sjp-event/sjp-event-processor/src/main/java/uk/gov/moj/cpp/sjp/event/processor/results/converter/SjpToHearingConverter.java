@@ -10,7 +10,7 @@ import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.sjp.event.CaseListedInCriminalCourtsV2;
 import uk.gov.moj.cpp.sjp.event.decision.DecisionSaved;
 
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 
 public class SjpToHearingConverter {
 

@@ -18,8 +18,8 @@ import uk.gov.moj.cpp.sjp.domain.decision.imposition.PaymentType;
 
 import java.time.LocalDate;
 
-import javax.json.JsonArrayBuilder;
-import javax.json.JsonObject;
+import jakarta.json.JsonArrayBuilder;
+import jakarta.json.JsonObject;
 
 import org.junit.jupiter.api.Test;
 

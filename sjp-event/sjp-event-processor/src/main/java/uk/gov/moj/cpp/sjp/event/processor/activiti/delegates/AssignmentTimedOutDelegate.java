@@ -8,8 +8,8 @@ import uk.gov.moj.cpp.sjp.event.processor.service.assignment.AssignmentService;
 
 import java.util.UUID;
 
-import javax.inject.Inject;
-import javax.inject.Named;
+import jakarta.inject.Inject;
+import jakarta.inject.Named;
 
 import org.activiti.engine.delegate.DelegateExecution;
 import org.activiti.engine.delegate.JavaDelegate;

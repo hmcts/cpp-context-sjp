@@ -30,8 +30,8 @@ import uk.gov.moj.cpp.sjp.query.service.WithdrawalReasons;
 import java.time.LocalDate;
 import java.util.UUID;
 
-import javax.json.JsonObject;
-import javax.json.JsonValue;
+import jakarta.json.JsonObject;
+import jakarta.json.JsonValue;
 
 import org.hamcrest.CoreMatchers;
 import org.junit.jupiter.api.Test;

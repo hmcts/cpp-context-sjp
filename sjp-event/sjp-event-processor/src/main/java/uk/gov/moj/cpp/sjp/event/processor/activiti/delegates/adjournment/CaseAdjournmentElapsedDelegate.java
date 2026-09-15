@@ -8,8 +8,8 @@ import uk.gov.moj.cpp.sjp.event.processor.activiti.delegates.AbstractCaseDelegat
 
 import java.util.UUID;
 
-import javax.inject.Named;
-import javax.json.JsonObject;
+import jakarta.inject.Named;
+import jakarta.json.JsonObject;
 
 import org.activiti.engine.delegate.DelegateExecution;
 import org.slf4j.Logger;

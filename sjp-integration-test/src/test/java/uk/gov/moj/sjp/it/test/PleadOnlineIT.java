@@ -10,7 +10,7 @@ import static java.util.Collections.singletonList;
 import static java.util.UUID.fromString;
 import static java.util.UUID.randomUUID;
 import static java.util.stream.Collectors.toList;
-import static javax.ws.rs.core.Response.Status.OK;
+import static jakarta.ws.rs.core.Response.Status.OK;
 import static org.apache.commons.lang3.RandomStringUtils.randomAlphanumeric;
 import static org.apache.commons.lang3.RandomUtils.nextInt;
 import static org.hamcrest.CoreMatchers.allOf;
@@ -21,7 +21,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.collection.IsEmptyCollection.empty;
-import static org.junit.Assume.assumeThat;
+import static org.junit.jupiter.api.Assumptions.assumeTrue;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
@@ -113,8 +113,8 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 
-import javax.json.JsonObject;
-import javax.ws.rs.core.Response;
+import jakarta.json.JsonObject;
+import jakarta.ws.rs.core.Response;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Sets;
@@ -1262,7 +1262,7 @@ public class PleadOnlineIT extends BaseIntegrationTest {
 
     private void pleadOnlineAndConfirmSuccessWithPublicEvent(final PleaType pleaType, final PleadOnlineHelper pleadOnlineHelper, final CaseSearchResultHelper caseSearchResultHelper,
                                               final Collection<UUID> userIds, final boolean expectToHaveFinances) {
-        assumeThat(userIds, not(empty()));
+        assumeTrue(!userIds.isEmpty());
         //checks person-info before plead-online
         personInfoVerifier.verifyPersonInfo();
         //runs plea-online
@@ -1303,7 +1303,7 @@ public class PleadOnlineIT extends BaseIntegrationTest {
 
     private void pleadOnlineAndConfirmSuccess(final PleaType pleaType, final PleadOnlineHelper pleadOnlineHelper, final CaseSearchResultHelper caseSearchResultHelper,
                                               final Collection<UUID> userIds, final boolean expectToHaveFinances) {
-        assumeThat(userIds, not(empty()));
+        assumeTrue(!userIds.isEmpty());
         //checks person-info before plead-online
         personInfoVerifier.verifyPersonInfo();
         //runs plea-online
@@ -1344,7 +1344,7 @@ public class PleadOnlineIT extends BaseIntegrationTest {
 
     private void pleadOnlineAndConfirmSuccessLegalEntityWithPublicEvent(final PleaType pleaType, final PleadOnlineHelper pleadOnlineHelper, final CaseSearchResultHelper caseSearchResultHelper,
                                                          final Collection<UUID> userIds, final boolean expectToHaveFinances) {
-        assumeThat(userIds, not(empty()));
+        assumeTrue(!userIds.isEmpty());
         //checks person-info before plead-online
         personInfoVerifier.verifyPersonInfo();
         //runs plea-online
@@ -1380,7 +1380,7 @@ public class PleadOnlineIT extends BaseIntegrationTest {
 
     private void pleadOnlineAndConfirmSuccessLegalEntity(final PleaType pleaType, final PleadOnlineHelper pleadOnlineHelper, final CaseSearchResultHelper caseSearchResultHelper,
                                                          final Collection<UUID> userIds, final boolean expectToHaveFinances) {
-        assumeThat(userIds, not(empty()));
+        assumeTrue(!userIds.isEmpty());
         //checks person-info before plead-online
         personInfoVerifier.verifyPersonInfo();
         //runs plea-online

@@ -78,6 +78,8 @@ public class AddCaseDocumentHandlerTest {
     @InjectMocks
     private AddCaseDocumentHandler addCaseDocumentHandler;
 
+    private static final String DOCUMENT_URI = "https://sadevfilestore.blob.core.windows.net/stack-stagingdvla/generated/sjpn.pdf";
+
     @Spy
     private Clock clock = new UtcClock();
 
@@ -124,9 +126,10 @@ public class AddCaseDocumentHandlerTest {
     public void testAddCaseDocument_whenCaseDocumentAlreadyExists_ReturnCaseDocumentAlreadyExistsEvent() throws Exception {
 
         JsonEnvelope addCaseDocumentCommand = anAddCaseDocumentCommand()
+                .withDocumentUri(DOCUMENT_URI)
                 .build();
         caseAggregate.receiveCase(CaseBuilder.aDefaultSjpCase().build(), clock.now());
-        caseAggregate.addCaseDocument(CASE_ID, aCaseDocument().build());
+        caseAggregate.addCaseDocument(CASE_ID, aCaseDocument().withDocumentUri(DOCUMENT_URI).build());
 
         addCaseDocumentHandler.addCaseDocument(addCaseDocumentCommand);
 
@@ -135,7 +138,47 @@ public class AddCaseDocumentHandlerTest {
                         jsonEnvelope(
                                 withMetadataEnvelopedFrom(addCaseDocumentCommand)
                                         .withName("sjp.events.case-document-addition-failed"),
-                                payloadIsJson(withJsonPath("$.documentId", is(CASE_DOCUMENT_ID_STR)))))));
+                                payloadIsJson(allOf(
+                                        withJsonPath("$.caseId", is(CASE_ID_STR)),
+                                        withJsonPath("$.documentId", is(CASE_DOCUMENT_ID_STR)),
+                                        withJsonPath("$.documentUri", is(DOCUMENT_URI))))))));
+    }
+
+    @Test
+    public void testAddCaseDocument_whenBlobAddressed_carriesTheUriOnTheAddedEvent() throws Exception {
+        final JsonEnvelope addCaseDocumentCommand = anAddCaseDocumentCommand()
+                .withDocumentUri(DOCUMENT_URI)
+                .build();
+        caseAggregate.receiveCase(CaseBuilder.aDefaultSjpCase().build(), clock.now());
+
+        addCaseDocumentHandler.addCaseDocument(addCaseDocumentCommand);
+
+        assertThat(eventStream, eventStreamAppendedWith(
+                streamContaining(
+                        jsonEnvelope(
+                                withMetadataEnvelopedFrom(addCaseDocumentCommand)
+                                        .withName("sjp.events.case-document-added"),
+                                payloadIsJson(allOf(
+                                        withJsonPath("$.caseId", is(CASE_ID_STR)),
+                                        withJsonPath("$.caseDocument.id", is(CASE_DOCUMENT_ID_STR)),
+                                        withJsonPath("$.caseDocument.documentUri", is(DOCUMENT_URI))
+                                ))))));
+    }
+
+    @Test
+    public void testAddCaseDocument_whenFileServiceAddressed_omitsTheUriEntirely() throws Exception {
+        final JsonEnvelope addCaseDocumentCommand = anAddCaseDocumentCommand().build();
+        caseAggregate.receiveCase(CaseBuilder.aDefaultSjpCase().build(), clock.now());
+
+        addCaseDocumentHandler.addCaseDocument(addCaseDocumentCommand);
+
+        // Absent rather than null: the framework serialises with NON_ABSENT.
+        assertThat(eventStream, eventStreamAppendedWith(
+                streamContaining(
+                        jsonEnvelope(
+                                withMetadataEnvelopedFrom(addCaseDocumentCommand)
+                                        .withName("sjp.events.case-document-added"),
+                                payloadIsJson(withoutJsonPath("$.caseDocument.documentUri"))))));
     }
 
     @Test

@@ -188,7 +188,7 @@ public class CaseRepositorySjpnTest extends BaseTransactionalJunit4Test {
 
     private void createCaseDocuments(final List<CaseDetail> cases, final String documentType) {
         for (final CaseDetail caseDetail : cases) {
-            final CaseDocument sjpNotice = new CaseDocument(UUID.randomUUID(), UUID.randomUUID(), documentType, clock.now(), caseDetail.getId(), 1);
+            final CaseDocument sjpNotice = new CaseDocument(UUID.randomUUID(), UUID.randomUUID(), documentType, clock.now(), caseDetail.getId(), 1, null);
             caseDetail.addCaseDocuments(sjpNotice);
             caseRepository.save(caseDetail);
         }

@@ -13,6 +13,7 @@ public class CaseDocumentAddedToCaseDocument implements Converter<CaseDocumentAd
         return new CaseDocument(caseDocument.getId(),
                 caseDocument.getMaterialId(),
                 caseDocument.getDocumentType(),
-                caseDocument.getAddedAt(), source.getCaseId(), source.getIndexWithinDocumentType());
+                caseDocument.getAddedAt(), source.getCaseId(), source.getIndexWithinDocumentType(),
+                caseDocument.getDocumentUri());
     }
 }

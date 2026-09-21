@@ -36,7 +36,7 @@ public class CaseDocumentHandler {
         if (state.getCaseDocuments().containsKey(caseDocument.getId())) {
             LOGGER.warn("Case Document already exists with ID {}", caseDocument.getId());
             return Stream.of(
-                    new CaseDocumentAlreadyExists(caseDocument.getId(), "Add Case Document"));
+                    new CaseDocumentAlreadyExists(caseId, caseDocument.getId(), caseDocument.getDocumentUri(), "Add Case Document"));
         }
 
         final int documentCount = state.getDocumentCountByDocumentType()
@@ -45,25 +45,35 @@ public class CaseDocumentHandler {
         return Stream.of(new CaseDocumentAdded(caseId, caseDocument, documentCount + 1));
     }
 
+    /**
+     * @param documentReference    file service id of the document, or null when it is addressed by
+     *                             {@code documentReferenceUri}
+     * @param documentReferenceUri blob uri of the document, or null when it is addressed by
+     *                             {@code documentReference}. Exactly one of the two is set; the
+     *                             caller validates that.
+     */
     public Stream<Object> uploadCaseDocument(final UUID caseId,
                                              final UUID documentReference,
+                                             final String documentReferenceUri,
                                              final String documentType,
                                              final CaseAggregateState state) {
 
         if (!state.hasGrantedApplication()) {
+            final Object reference = nonNull(documentReference) ? documentReference : documentReferenceUri;
+
             if (state.isCaseReferredForCourtHearing()) {
-                LOGGER.warn("Case Document Upload rejected as case is referred to court for hearing: {}", documentReference);
-                final String description = format("Case Document %s Upload rejected as case %s is referred to court for hearing", documentReference, caseId);
-                return Stream.of(new CaseDocumentUploadRejected(documentReference, description));
+                LOGGER.warn("Case Document Upload rejected as case is referred to court for hearing: {}", reference);
+                final String description = format("Case Document %s Upload rejected as case %s is referred to court for hearing", reference, caseId);
+                return Stream.of(new CaseDocumentUploadRejected(documentReference, documentReferenceUri, description));
             }
 
             if (!state.isManagedByAtcm()) {
-                LOGGER.warn("Case Document Upload rejected as case is no longer managed by ATCM: {}", documentReference);
-                final String description = format("Case Document %s Upload rejected as case %s is not managed by ATCM", documentReference, caseId);
-                return Stream.of(new CaseDocumentUploadRejected(documentReference, description));
+                LOGGER.warn("Case Document Upload rejected as case is no longer managed by ATCM: {}", reference);
+                final String description = format("Case Document %s Upload rejected as case %s is not managed by ATCM", reference, caseId);
+                return Stream.of(new CaseDocumentUploadRejected(documentReference, documentReferenceUri, description));
             }
         }
-        return Stream.of(new CaseDocumentUploaded(caseId, documentReference, documentType));
+        return Stream.of(new CaseDocumentUploaded(caseId, documentReference, documentReferenceUri, documentType));
     }
 
     public Stream<Object> deleteCaseDocument(final CaseAggregateState caseAggregateState, final UUID documentId) {

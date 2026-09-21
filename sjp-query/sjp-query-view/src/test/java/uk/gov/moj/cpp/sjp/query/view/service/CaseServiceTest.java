@@ -444,7 +444,7 @@ public class CaseServiceTest {
     public void shouldFindCaseDocuments() {
         final List<CaseDocument> caseDocumentList = new ArrayList<>();
         final UUID documentId = randomUUID();
-        final CaseDocument caseDocument = new CaseDocument(documentId, randomUUID(), "SJPN", clock.now(), CASE_ID, 2);
+        final CaseDocument caseDocument = new CaseDocument(documentId, randomUUID(), "SJPN", clock.now(), CASE_ID, 2, null);
         caseDocumentList.add(caseDocument);
         when(caseRepository.findCaseDocuments(CASE_ID)).thenReturn(caseDocumentList);
 
@@ -457,7 +457,7 @@ public class CaseServiceTest {
 
     @Test
     public void shouldFindCaseDocument() {
-        final CaseDocument caseDocument = new CaseDocument(randomUUID(), randomUUID(), "SJPN", clock.now(), CASE_ID, 2);
+        final CaseDocument caseDocument = new CaseDocument(randomUUID(), randomUUID(), "SJPN", clock.now(), CASE_ID, 2, null);
 
         when(caseRepository.findCaseDocuments(CASE_ID)).thenReturn(singletonList(caseDocument));
 
@@ -673,7 +673,7 @@ public class CaseServiceTest {
 
         final CaseDocument caseDocument = new CaseDocument(UUID.randomUUID(),
                 UUID.randomUUID(), CaseDocument.RESULT_ORDER_DOCUMENT_TYPE,
-                clock.now(), caseDetail.getId(), null);
+                clock.now(), caseDetail.getId(), null, null);
 
         final ZonedDateTime FROM_DATE_TIME = FROM_DATE.atStartOfDay(UTC);
         final ZonedDateTime TO_DATE_TIME = TO_DATE.atStartOfDay(UTC);
@@ -703,7 +703,7 @@ public class CaseServiceTest {
                 null, new DefendantDetail(), null, null, null);
         final CaseDocument caseDocument = new CaseDocument(UUID.randomUUID(),
                 UUID.randomUUID(), CaseDocument.RESULT_ORDER_DOCUMENT_TYPE,
-                clock.now(), caseDetail.getId(), null);
+                clock.now(), caseDetail.getId(), null, null);
 
         final ZonedDateTime FROM_DATE_TIME = FROM_DATE.atStartOfDay(UTC);
         final ZonedDateTime TO_DATE_TIME = TO_DATE.atStartOfDay(UTC);

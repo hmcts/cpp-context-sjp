@@ -1,9 +1,12 @@
 package uk.gov.moj.sjp.it.test;
 
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
+import static java.nio.charset.StandardCharsets.UTF_8;
+import static java.util.UUID.nameUUIDFromBytes;
 import static java.util.UUID.randomUUID;
 import static org.apache.commons.lang3.RandomStringUtils.randomAlphanumeric;
 import static org.apache.commons.lang3.RandomUtils.nextInt;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
 import static uk.gov.justice.json.schemas.domains.sjp.User.user;
@@ -147,6 +150,64 @@ public class AddCaseDocumentIT extends BaseIntegrationTest {
             final UUID documentId = caseDocumentHelper.verifyCaseDocumentUploadedEventRaised();
             final UUID materialId = MaterialStub.processMaterialAddedCommand(documentId);
             CaseDocumentHelper.assertDocumentAdded(USER_ID, caseId, materialId, documentId, documentType);
+        }
+    }
+
+    /**
+     * The JSON branch of {@code sjp.upload-case-document}, where the caller supplies an existing
+     * document reference instead of a binary part. This is the branch other contexts drive, and
+     * until now it had no integration coverage at all - every other test here posts multipart,
+     * which never exercises a caller-supplied reference because the file interceptor stores the
+     * binary and substitutes its own.
+     *
+     * <p>The reference the caller hands in must be the one that reaches Material and the one that
+     * comes back as the case document's id, which is what makes the public completion event usable
+     * as a correlation signal by the calling context.
+     */
+    @Test
+    public void shouldUploadCaseDocumentSuppliedByReferenceOnTheJsonBranch() {
+        final String documentType = "PLEA";
+        final UUID documentReference = randomUUID();
+        createCase();
+        stubAddCaseMaterial();
+
+        try (final CaseDocumentHelper caseDocumentHelper = new CaseDocumentHelper(caseId)) {
+            caseDocumentHelper.uploadCaseDocumentByReference(USER_ID, documentType, documentReference);
+
+            final UUID documentId = caseDocumentHelper.verifyCaseDocumentUploadedEventRaised();
+            assertThat(documentId, is(documentReference));
+
+            final UUID materialId = MaterialStub.processMaterialAddedCommand(documentReference);
+            CaseDocumentHelper.assertDocumentAdded(USER_ID, caseId, materialId, documentReference, documentType);
+
+            caseDocumentHelper.verifyInPublicTopic(documentReference, materialId);
+        }
+    }
+
+    /**
+     * The blob-addressed end of the same JSON branch: the caller supplies a container uri instead
+     * of a file service id. The uri must reach Material as {@code fileUri}, and must come back on
+     * the public completion event - that echo is the only join key a calling context has for a
+     * blob-addressed filing, and it is what lets staging-dvla release the blob.
+     */
+    @Test
+    public void shouldUploadCaseDocumentSuppliedByUriOnTheJsonBranch() {
+        final String documentType = "PLEA";
+        final String documentUri = "https://sadevfilestore.blob.core.windows.net/stack-stagingdvla/generated/plea.pdf";
+        createCase();
+        stubAddCaseMaterial();
+
+        try (final CaseDocumentHelper caseDocumentHelper = new CaseDocumentHelper(caseId)) {
+            caseDocumentHelper.uploadCaseDocumentByUri(USER_ID, documentType, documentUri);
+
+            assertThat(caseDocumentHelper.verifyCaseDocumentUploadedEventRaisedForUri(), is(documentUri));
+
+            final UUID materialId = MaterialStub.processMaterialAddedCommand(documentUri);
+            final UUID derivedDocumentId = nameUUIDFromBytes(documentUri.getBytes(UTF_8));
+
+            CaseDocumentHelper.assertDocumentAdded(USER_ID, caseId, materialId, derivedDocumentId, documentType);
+
+            caseDocumentHelper.verifyInPublicTopicForBlobAddressedDocument(documentUri, materialId);
         }
     }
 

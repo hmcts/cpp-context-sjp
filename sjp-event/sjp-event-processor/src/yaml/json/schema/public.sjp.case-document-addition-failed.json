@@ -1,12 +1,15 @@
 {
   "$schema": "http://json-schema.org/draft-04/schema#",
-  "id": "http://justice.gov.uk/json/schemas/domains/sjp/event/case-document-upload-rejected.json",
+  "id": "http://cpp.moj.gov.uk/sjp/json/schema/event/public-case-document-addition-failed.json",
   "type": "object",
   "properties": {
+    "caseId": {
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+    },
     "documentId": {
       "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
     },
-    "documentReferenceUri": {
+    "documentUri": {
       "type": "string",
       "format": "uri"
     },
@@ -15,18 +18,7 @@
     }
   },
   "required": [
+    "documentId",
     "description"
-  ],
-  "oneOf": [
-    {
-      "required": [
-        "documentId"
-      ]
-    },
-    {
-      "required": [
-        "documentReferenceUri"
-      ]
-    }
   ]
 }

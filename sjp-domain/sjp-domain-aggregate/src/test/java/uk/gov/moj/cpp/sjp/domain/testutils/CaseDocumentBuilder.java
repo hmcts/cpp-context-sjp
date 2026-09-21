@@ -13,13 +13,15 @@ public class CaseDocumentBuilder {
 
     private UUID id = DefaultTestData.CASE_DOCUMENT_ID;
     private UUID materialId = DefaultTestData.CASE_DOCUMENT_MATERIAL_ID;
+    private String documentUri;
 
     public static CaseDocument defaultCaseDocument() {
         return new CaseDocument(
                 DefaultTestData.CASE_DOCUMENT_ID,
                 DefaultTestData.CASE_DOCUMENT_MATERIAL_ID,
                 DefaultTestData.CASE_DOCUMENT_TYPE_SJPN,
-                clock.now()
+                clock.now(),
+                null
         );
     }
 
@@ -30,7 +32,12 @@ public class CaseDocumentBuilder {
         return new CaseDocumentBuilder();
     }
 
+    public CaseDocumentBuilder withDocumentUri(String documentUri) {
+        this.documentUri = documentUri;
+        return this;
+    }
+
     public CaseDocument build() {
-        return new CaseDocument(id, materialId, null, clock.now());
+        return new CaseDocument(id, materialId, null, clock.now(), documentUri);
     }
 }

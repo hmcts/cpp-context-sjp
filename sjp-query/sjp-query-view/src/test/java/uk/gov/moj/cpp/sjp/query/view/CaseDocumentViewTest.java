@@ -16,11 +16,11 @@ public class CaseDocumentViewTest {
     public void testOrder() {
         //given
         CaseDocumentView caseDocumentViewA2 = new CaseDocumentView(
-                new CaseDocument(null, null, "A-documentType", null, null, 2));
+                new CaseDocument(null, null, "A-documentType", null, null, 2, null));
         CaseDocumentView caseDocumentViewB1 = new CaseDocumentView(
-                new CaseDocument(null, null, "B-documentType", null, null, 1));
+                new CaseDocument(null, null, "B-documentType", null, null, 1, null));
         CaseDocumentView caseDocumentViewB2 = new CaseDocumentView(
-                new CaseDocument(null, null, "B-documentType", null, null, 2));
+                new CaseDocument(null, null, "B-documentType", null, null, 2, null));
 
         List<CaseDocumentView> caseDocumentViews = new ArrayList<>();
         caseDocumentViews.add(caseDocumentViewA2);

@@ -13,6 +13,7 @@ public class CaseDocumentBuilder {
     private UUID id;
     private UUID materialId;
     private String documentType;
+    private String documentUri;
 
     private CaseDocumentBuilder() {
         this.id = UUID.randomUUID();
@@ -34,8 +35,13 @@ public class CaseDocumentBuilder {
         return this;
     }
 
+    public CaseDocumentBuilder withDocumentUri(String documentUri) {
+        this.documentUri = documentUri;
+        return this;
+    }
+
     public CaseDocument build() {
-        return new CaseDocument(id, materialId, documentType, clock.now(), UUID.randomUUID(), 1);
+        return new CaseDocument(id, materialId, documentType, clock.now(), UUID.randomUUID(), 1, documentUri);
     }
 
 }

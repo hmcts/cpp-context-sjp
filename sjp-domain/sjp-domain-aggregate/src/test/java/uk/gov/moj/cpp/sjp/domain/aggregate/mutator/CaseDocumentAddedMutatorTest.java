@@ -17,7 +17,7 @@ public class CaseDocumentAddedMutatorTest {
     public void shouldAddCaseDocument() {
         UUID documentId = UUID.randomUUID();
         String documentType = "pdf";
-        CaseDocument caseDocument = new CaseDocument(documentId, UUID.randomUUID(), documentType, ZonedDateTime.now());
+        CaseDocument caseDocument = new CaseDocument(documentId, UUID.randomUUID(), documentType, ZonedDateTime.now(), null);
 
         CaseDocumentAdded event = new CaseDocumentAdded(UUID.randomUUID(), caseDocument, 0);
         CaseAggregateState state = new CaseAggregateState();

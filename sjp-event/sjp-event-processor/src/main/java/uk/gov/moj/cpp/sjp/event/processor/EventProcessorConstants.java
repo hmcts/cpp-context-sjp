@@ -16,8 +16,14 @@ public class EventProcessorConstants {
     public static final String PLEAD_DATE = "pleadDate";
     public static final String POSTING_DATE = "postingDate";
     public static final String CASE_DOCUMENT = "caseDocument";
+    public static final String CASE_DOCUMENT_URI = "caseDocumentUri";
     public static final String MATERIAL_ID = "materialId";
     public static final String DOCUMENT_REFERENCE = "documentReference";
+    public static final String DOCUMENT_REFERENCE_URI = "documentReferenceUri";
+    public static final String DOCUMENT_ID = "documentId";
+    public static final String DOCUMENT_URI = "documentUri";
+    public static final String FILE_SERVICE_ID = "fileServiceId";
+    public static final String FILE_URI = "fileUri";
     public static final String DOCUMENT_TYPE = "documentType";
     public static final String REASON = "reason";
     public static final String MARKED_AT = "markedAt";

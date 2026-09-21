@@ -37,7 +37,8 @@ public class AddCaseDocumentHandler extends CaseCommandHandler {
                 UUID.fromString(payload.getString("id")),
                 UUID.fromString(payload.getString("materialId")),
                 payload.getString("documentType", null),
-                clock.now());
+                clock.now(),
+                payload.getString("documentUri", null));
     }
 
 }

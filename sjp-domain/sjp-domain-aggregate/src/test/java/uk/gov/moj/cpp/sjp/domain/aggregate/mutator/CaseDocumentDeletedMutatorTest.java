@@ -18,7 +18,7 @@ public class CaseDocumentDeletedMutatorTest {
     public void shouldDeleteCaseDocumentWhenNoDocumentsPreviousSaved() {
         UUID documentId = UUID.randomUUID();
         String documentType = "pdf";
-        CaseDocument caseDocument = new CaseDocument(documentId, UUID.randomUUID(), documentType, ZonedDateTime.now());
+        CaseDocument caseDocument = new CaseDocument(documentId, UUID.randomUUID(), documentType, ZonedDateTime.now(), null);
 
         CaseDocumentDeleted caseDocumentDeletedEvent = new CaseDocumentDeleted(UUID.randomUUID(), caseDocument);
         CaseAggregateState state = new CaseAggregateState();
@@ -33,7 +33,7 @@ public class CaseDocumentDeletedMutatorTest {
     public void shouldDeleteCaseDocument() {
         UUID documentId = UUID.randomUUID();
         String documentType = "pdf";
-        CaseDocument caseDocument = new CaseDocument(documentId, UUID.randomUUID(), documentType, ZonedDateTime.now());
+        CaseDocument caseDocument = new CaseDocument(documentId, UUID.randomUUID(), documentType, ZonedDateTime.now(), null);
 
         CaseDocumentAdded caseDocumentAddedEvent = new CaseDocumentAdded(UUID.randomUUID(), caseDocument, 0);
         CaseDocumentDeleted caseDocumentDeletedEvent = new CaseDocumentDeleted(UUID.randomUUID(), caseDocument);

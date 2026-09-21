@@ -71,7 +71,7 @@ public class CaseDocumentRepositoryTest extends BaseTransactionalJunit4Test {
         caseDetail.setDefendant(defendantDetail);
         final CaseDocument caseDocument = new CaseDocument(UUID.randomUUID(),
                 UUID.randomUUID(), CaseDocument.RESULT_ORDER_DOCUMENT_TYPE,
-                addedAt, caseDetail.getId(), DOCUMENT_NUMBER);
+                addedAt, caseDetail.getId(), DOCUMENT_NUMBER, null);
 
         caseRepository.save(caseDetail);
         caseDocumentRepository.save(caseDocument);

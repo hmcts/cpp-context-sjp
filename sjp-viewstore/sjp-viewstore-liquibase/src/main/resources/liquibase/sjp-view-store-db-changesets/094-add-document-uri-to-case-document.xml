@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+         http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.3.xsd">
+
+    <changeSet id="94" author="ATCM/Mojo/aykut.danisman"
+               logicalFilePath="liquibase/sjp-view-store-db-changelog.xml">
+
+        <comment>
+            Blob uri a case document was filed from. Null for documents addressed by their file
+            service id, which is every document predating BYO-FileStore.
+        </comment>
+
+        <addColumn tableName="case_document">
+            <column name="document_uri" type="TEXT"/>
+        </addColumn>
+    </changeSet>
+
+</databaseChangeLog>

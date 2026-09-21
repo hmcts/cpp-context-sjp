@@ -11,6 +11,7 @@ import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlMatching;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlPathEqualTo;
 import static java.lang.String.format;
+import static java.util.Arrays.asList;
 import static java.util.Optional.empty;
 import static java.util.UUID.randomUUID;
 import static javax.ws.rs.core.HttpHeaders.CONTENT_TYPE;
@@ -32,6 +33,7 @@ import uk.gov.justice.services.messaging.DefaultJsonObjectEnvelopeConverter;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 
 import java.time.ZonedDateTime;
+import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
@@ -57,14 +59,38 @@ public class MaterialStub {
                 .willReturn(aResponse().withStatus(SC_OK)));
     }
 
+    /**
+     * Fields on {@code material.command.upload-file} that can carry the source document reference.
+     *
+     * <p>Only {@code fileServiceId} is in use today. The list exists so that the BYO-FileStore
+     * change - which swaps the reference onto a URI-shaped field - fails with a readable assertion
+     * rather than silently never matching and hanging in the {@code await} below until it times
+     * out. Add the new field name here at the same time as the producer starts sending it.
+     */
+    private static final List<String> DOCUMENT_REFERENCE_FIELDS = asList("fileServiceId", "fileUri");
+
+    private static boolean matchesDocumentReference(final JsonEnvelope command, final String documentReference) {
+        final JsonObject payload = command.payloadAsJsonObject();
+        return DOCUMENT_REFERENCE_FIELDS.stream()
+                .anyMatch(field -> documentReference.equals(payload.getString(field, null)));
+    }
+
     public static UUID processMaterialAddedCommand(final UUID documentReference) {
+        return processMaterialAddedCommand(documentReference.toString());
+    }
+
+    /**
+     * Reference-shape-agnostic variant: the reference is a file service uuid on the legacy path and
+     * a blob uri on the BYO-FileStore path, and Material matches on whichever field carried it.
+     */
+    public static UUID processMaterialAddedCommand(final String documentReference) {
         final DefaultJsonObjectEnvelopeConverter envelopeConverter = new DefaultJsonObjectEnvelopeConverter();
         final JsonEnvelope addMaterialCommand = await().until(() -> findAll(postRequestedFor(urlPathEqualTo(COMMAND_URL))
                         .withHeader(CONTENT_TYPE, equalTo(COMMAND_MEDIA_TYPE)))
                         .stream()
                         .map(LoggedRequest::getBodyAsString)
                         .map(envelopeConverter::asEnvelope)
-                        .filter(command -> documentReference.toString().equals(command.payloadAsJsonObject().getString("fileServiceId", null)))
+                        .filter(command -> matchesDocumentReference(command, documentReference))
                         .findFirst(), not(empty()))
                 .get();
 

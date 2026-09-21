@@ -11,7 +11,6 @@ import static uk.gov.moj.sjp.it.pollingquery.CasePoller.pollUntilCaseByIdIsOk;
 import static uk.gov.moj.sjp.it.util.HttpClientUtil.makeGetCall;
 import static uk.gov.moj.sjp.it.util.HttpClientUtil.makePostCall;
 import static uk.gov.moj.sjp.it.util.RestPollerWithDefaults.POLL_INTERVAL;
-import static uk.gov.moj.sjp.it.util.RestPollerWithDefaults.TIMEOUT_IN_SECONDS;
 
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.sjp.event.session.CaseAssigned;
@@ -27,6 +26,8 @@ import io.restassured.path.json.JsonPath;
 
 
 public class AssignmentHelper {
+
+    private static final long ASSIGNMENT_TIMEOUT_IN_SECONDS = 20L;
 
     public static UUID requestCaseAssignmentAsync(final UUID sessionId, final UUID userId) {
         final String contentType = "application/vnd.sjp.assign-next-case+json";
@@ -66,11 +67,11 @@ public class AssignmentHelper {
     }
 
     public static boolean pollUntilCaseAssignedToUser(final UUID caseId, final UUID userId) {
-        return await().pollInterval(POLL_INTERVAL).atMost(TIMEOUT_IN_SECONDS, SECONDS).until(() -> isCaseAssignedToUser(caseId, userId), is(true));
+        return await().pollInterval(POLL_INTERVAL).atMost(ASSIGNMENT_TIMEOUT_IN_SECONDS, SECONDS).until(() -> isCaseAssignedToUser(caseId, userId), is(true));
     }
 
     public static boolean pollUntilCaseNotAssignedToUser(final UUID caseId, final UUID userId) {
-        return await().pollInterval(POLL_INTERVAL).atMost(TIMEOUT_IN_SECONDS, SECONDS).until(() -> isCaseAssignedToUser(caseId, userId), is(false));
+        return await().pollInterval(POLL_INTERVAL).atMost(ASSIGNMENT_TIMEOUT_IN_SECONDS, SECONDS).until(() -> isCaseAssignedToUser(caseId, userId), is(false));
     }
 
     public static void pollCaseUnassigned(final UUID caseId) {

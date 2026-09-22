@@ -95,7 +95,7 @@ public class UpdateFinancialMeansTest extends CaseAggregateBaseTest {
 
     public void addCaseDocument(String documentType) {
         UUID documentId = UUID.randomUUID();
-        CaseDocument caseDocument = new CaseDocument(documentId, UUID.randomUUID(), documentType, ZonedDateTime.now());
+        CaseDocument caseDocument = new CaseDocument(documentId, UUID.randomUUID(), documentType, ZonedDateTime.now(), null);
         Stream<Object> eventStream = caseAggregate.addCaseDocument(UUID.randomUUID(), caseDocument);
 
     }

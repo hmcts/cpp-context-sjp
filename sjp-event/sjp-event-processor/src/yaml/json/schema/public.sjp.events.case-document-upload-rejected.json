@@ -3,15 +3,30 @@
   "id": "http://justice.gov.uk/json/schemas/domains/sjp/event/public-case-document-upload-rejected.json",
   "type": "object",
   "properties": {
-      "documentId": {
-        "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
-      },
-      "description": {
-        "type": "string"
-      }
+    "documentId": {
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+    },
+    "documentReferenceUri": {
+      "type": "string",
+      "format": "uri"
+    },
+    "description": {
+      "type": "string"
+    }
   },
   "required": [
-    "documentId",
     "description"
+  ],
+  "oneOf": [
+    {
+      "required": [
+        "documentId"
+      ]
+    },
+    {
+      "required": [
+        "documentReferenceUri"
+      ]
+    }
   ]
 }

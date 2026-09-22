@@ -29,6 +29,7 @@ public class CaseDocumentUpdatedProcessor {
 
     private static final String PUBLIC_CASE_DOCUMENT_ALREADY_ADDED_PUBLIC_EVENT = "public.sjp.case-document-already-exists";
     private static final String PUBLIC_CASE_DOCUMENT_ADDED_PUBLIC_EVENT = "public.sjp.case-document-added";
+    private static final String PUBLIC_CASE_DOCUMENT_ADDITION_FAILED_PUBLIC_EVENT = "public.sjp.case-document-addition-failed";
 
     @Handles(CaseDocumentAdded.EVENT_NAME)
     public void handleCaseDocumentAdded(final JsonEnvelope jsonEnvelope) {
@@ -48,6 +49,17 @@ public class CaseDocumentUpdatedProcessor {
         sender.send(enveloper.withMetadataFrom(jsonEnvelope, PUBLIC_CASE_DOCUMENT_ALREADY_ADDED_PUBLIC_EVENT).apply(publicEventPayload));
     }
 
+    /**
+     * Promotes the duplicate-filing rejection so a calling context learns that its document was
+     * already on the case. The payload passes through unchanged - it is flat, so there is nothing
+     * to lift out of a nested object.
+     */
+    @Handles("sjp.events.case-document-addition-failed")
+    public void handleCaseDocumentAdditionFailed(final JsonEnvelope jsonEnvelope) {
+        sender.send(enveloper.withMetadataFrom(jsonEnvelope, PUBLIC_CASE_DOCUMENT_ADDITION_FAILED_PUBLIC_EVENT)
+                .apply(jsonEnvelope.payloadAsJsonObject()));
+    }
+
     private JsonObject getCaseDocumentPublicEventPayload(String caseId, JsonObject caseDocument) {
         final JsonObjectBuilder jsonObjectBuilder = createObjectBuilder()
                 .add(EventProcessorConstants.CASE_ID, caseId)
@@ -56,6 +68,12 @@ public class CaseDocumentUpdatedProcessor {
 
         if (caseDocument.containsKey(EventProcessorConstants.DOCUMENT_TYPE)) {
             jsonObjectBuilder.add(EventProcessorConstants.DOCUMENT_TYPE, caseDocument.getString(EventProcessorConstants.DOCUMENT_TYPE));
+        }
+
+        // Present only for a blob-addressed document. The framework serialises with NON_ABSENT, so
+        // the key is absent rather than null on the file-service path.
+        if (caseDocument.containsKey(EventProcessorConstants.DOCUMENT_URI)) {
+            jsonObjectBuilder.add(EventProcessorConstants.DOCUMENT_URI, caseDocument.getString(EventProcessorConstants.DOCUMENT_URI));
         }
 
         return jsonObjectBuilder.build();

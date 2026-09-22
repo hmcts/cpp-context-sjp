@@ -21,6 +21,10 @@
         },
         "addedAt": {
           "type": "string"
+        },
+        "documentUri": {
+          "type": "string",
+          "format": "uri"
         }
       },
       "additionalProperties": true,

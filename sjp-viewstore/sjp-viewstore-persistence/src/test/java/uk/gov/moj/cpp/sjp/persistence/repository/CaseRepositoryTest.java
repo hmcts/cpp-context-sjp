@@ -457,7 +457,7 @@ public class CaseRepositoryTest extends BaseTransactionalJunit4Test {
     }
 
     private CaseDocument getCaseDocument(final UUID caseId, final UUID materialId) {
-        return new CaseDocument(randomUUID(), materialId, "SJPN", clock.now(), caseId, 1);
+        return new CaseDocument(randomUUID(), materialId, "SJPN", clock.now(), caseId, 1, null);
     }
 
 }

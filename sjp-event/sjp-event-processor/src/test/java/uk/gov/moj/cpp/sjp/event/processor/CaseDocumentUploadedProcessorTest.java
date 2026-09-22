@@ -2,6 +2,8 @@ package uk.gov.moj.cpp.sjp.event.processor;
 
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.isJson;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
+import static java.nio.charset.StandardCharsets.UTF_8;
+import static java.util.UUID.nameUUIDFromBytes;
 import static java.util.UUID.randomUUID;
 import static org.apache.commons.lang3.RandomStringUtils.randomAlphanumeric;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -52,6 +54,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 public class CaseDocumentUploadedProcessorTest {
 
     private static final String DOCUMENT_TYPE = "PLEA";
+    private static final String DOCUMENT_URI = "https://sadevfilestore.blob.core.windows.net/stack-stagingdvla/generated/doc.pdf";
     private final UUID caseId = randomUUID();
     private final UUID documentReference = randomUUID();
     private final UUID materialId = randomUUID();
@@ -167,6 +170,126 @@ public class CaseDocumentUploadedProcessorTest {
 
         verify(sender, never()).send(any());
         verify(sjpProcessManagerService, never()).signalUploadFileProcess(any(), any(), any());
+    }
+
+    @Test
+    public void shouldForwardTheUriToMaterialWhenDocumentIsBlobAddressed() {
+        final String documentUri = "https://sadevfilestore.blob.core.windows.net/stack-stagingdvla/generated/doc.pdf";
+        final JsonObject payload = createObjectBuilder()
+                .add("caseId", caseId.toString())
+                .add("documentReferenceUri", documentUri)
+                .add("documentType", DOCUMENT_TYPE).build();
+
+        caseDocumentProcessor.handleCaseDocumentUploaded(createEnvelope("sjp.events.case-document-uploaded", payload));
+
+        verify(sender, times(2)).send(envelopeCaptor.capture());
+        final List<JsonEnvelope> sent = envelopeCaptor.getAllValues();
+
+        // public event carries the uri variant, not documentId
+        assertThat(sent.get(0).payloadAsJsonObject().toString(), isJson(allOf(
+                withJsonPath("$.caseId", equalTo(caseId.toString())),
+                withJsonPath("$.documentUri", equalTo(documentUri)))));
+        assertThat(sent.get(0).payloadAsJsonObject().containsKey("documentId"), is(false));
+
+        // Material gets fileUri and, crucially, NOT fileServiceId - it rejects a command
+        // carrying more than one file reference.
+        assertThat(sent.get(1).metadata().name(), is("material.command.upload-file"));
+        assertThat(sent.get(1).payloadAsJsonObject().toString(), isJson(allOf(
+                withJsonPath("$.materialId", notNullValue()),
+                withJsonPath("$.fileUri", equalTo(documentUri)))));
+        assertThat(sent.get(1).payloadAsJsonObject().containsKey("fileServiceId"), is(false));
+    }
+
+    @Test
+    public void shouldAddCaseDocumentForABlobAddressedDocumentWithAnIdDerivedFromTheUri() {
+        // A blob-addressed document has no file service id, and case_document.id is a uuid primary
+        // key, so the id is derived from the uri. The uri rides along so the case document records
+        // where it came from and the calling context can correlate the filing.
+        caseDocumentProcessor.handleMaterialAdded(blobAddressedMaterialAdded());
+
+        verify(sender).send(envelopeCaptor.capture());
+
+        final JsonEnvelope command = envelopeCaptor.getValue();
+        assertThat(command.metadata().name(), is("sjp.command.add-case-document"));
+        assertThat(command.payloadAsJsonObject().toString(), isJson(allOf(
+                withJsonPath("$.id", equalTo(nameUUIDFromBytes(DOCUMENT_URI.getBytes(UTF_8)).toString())),
+                withJsonPath("$.caseId", equalTo(caseId.toString())),
+                withJsonPath("$.materialId", equalTo(materialId.toString())),
+                withJsonPath("$.documentUri", equalTo(DOCUMENT_URI)))));
+    }
+
+    @Test
+    public void shouldDeriveTheSameIdEveryTimeSoARedeliveryIsCaughtAsADuplicate() {
+        caseDocumentProcessor.handleMaterialAdded(blobAddressedMaterialAdded());
+        caseDocumentProcessor.handleMaterialAdded(blobAddressedMaterialAdded());
+
+        verify(sender, times(2)).send(envelopeCaptor.capture());
+        final List<JsonEnvelope> sent = envelopeCaptor.getAllValues();
+
+        // Same uri, same id - so the aggregate's containsKey check rejects the second filing
+        // exactly as it does on the file-service path.
+        assertThat(sent.get(1).payloadAsJsonObject().getString("id"),
+                is(sent.get(0).payloadAsJsonObject().getString("id")));
+    }
+
+    @Test
+    public void shouldNotCarryDocumentUriForAFileServiceAddressedDocument() {
+        final Metadata enriched = metadataFrom(
+                JsonObjects.createObjectBuilder(materialAddedMetadata.asJsonObject())
+                        .add("sjpMetadata", createObjectBuilder()
+                                .add("caseId", caseId.toString())
+                                .add("documentId", documentReference.toString())
+                                .add("documentType", DOCUMENT_TYPE)
+                                .build()).build())
+                .build();
+
+        caseDocumentProcessor.handleMaterialAdded(envelopeFrom(enriched, materialAddedPayload));
+
+        verify(sender).send(envelopeCaptor.capture());
+        assertThat(envelopeCaptor.getValue().payloadAsJsonObject().containsKey("documentUri"), is(false));
+    }
+
+    private JsonEnvelope blobAddressedMaterialAdded() {
+        final Metadata enriched = metadataFrom(
+                JsonObjects.createObjectBuilder(materialAddedMetadata.asJsonObject())
+                        .add("sjpMetadata", createObjectBuilder()
+                                .add("caseId", caseId.toString())
+                                .add("documentUri", DOCUMENT_URI)
+                                .add("documentType", DOCUMENT_TYPE)
+                                .build()).build())
+                .build();
+
+        return envelopeFrom(enriched, materialAddedPayload);
+    }
+
+    @Test
+    public void shouldPromoteCaseDocumentUploadRejectedToAPublicEvent() {
+        final String description = "Case Document Upload rejected as case is referred to court for hearing";
+        final JsonEnvelope privateEvent = createEnvelope("sjp.events.case-document-upload-rejected",
+                createObjectBuilder()
+                        .add("documentId", documentReference.toString())
+                        .add("description", description)
+                        .build());
+
+        caseDocumentProcessor.handleCaseDocumentUploadRejected(privateEvent);
+
+        verify(sender).send(envelopeCaptor.capture());
+        final JsonEnvelope publicEvent = envelopeCaptor.getValue();
+
+        assertThat(publicEvent.metadata().name(), is("public.sjp.events.case-document-upload-rejected"));
+
+        // Republished verbatim: the payload passes through untouched.
+        assertThat(publicEvent.payloadAsJsonObject().toString(), isJson(allOf(
+                withJsonPath("$.documentId", equalTo(documentReference.toString())),
+                withJsonPath("$.description", equalTo(description)))));
+
+        // Characterising current behaviour, which differs from the sibling promotion in
+        // CaseDocumentUpdatedProcessor: this handler copies metadata with
+        // JsonEnvelope.metadataFrom rather than Enveloper.withMetadataFrom, so the public event
+        // reuses the private event's message id and carries no causation chain. If that is ever
+        // brought into line with the other processor, these two assertions are the ones to update.
+        assertThat(publicEvent.metadata().id(), is(privateEvent.metadata().id()));
+        assertThat(publicEvent.metadata().causation().isEmpty(), is(true));
     }
 
     private JsonEnvelope prepareCaseDocumentUploadedEnvelope(final UUID caseId, final UUID documentReference, final String documentType) {

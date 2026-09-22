@@ -7,7 +7,10 @@ import static com.jayway.jsonpath.matchers.JsonPathMatchers.isJson;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
 import static java.lang.String.format;
 import static java.util.UUID.fromString;
+import static java.nio.charset.StandardCharsets.UTF_8;
+import static java.util.UUID.nameUUIDFromBytes;
 import static java.util.UUID.randomUUID;
+import static javax.json.Json.createObjectBuilder;
 import static javax.ws.rs.core.Response.Status.OK;
 import static org.hamcrest.CoreMatchers.allOf;
 import static org.hamcrest.CoreMatchers.equalTo;
@@ -65,6 +68,7 @@ public class CaseDocumentHelper implements AutoCloseable {
     private static final Logger LOGGER = LoggerFactory.getLogger(CaseDocumentHelper.class);
 
     private static final String WRITE_MEDIA_TYPE = "application/vnd.sjp.add-case-document+json";
+    private static final String UPLOAD_CASE_DOCUMENT_JSON_MEDIA_TYPE = "application/vnd.sjp.upload-case-document+json";
     public static final String GET_CASE_DOCUMENTS_MEDIA_TYPE = "application/vnd.sjp.query.case-documents+json";
 
     private static final String TEMPLATE_ADD_CASE_DOCUMENT_PAYLOAD = "payload/sjp.command.add-case-document.json";
@@ -149,6 +153,51 @@ public class CaseDocumentHelper implements AutoCloseable {
         makeMultipartFormPostCall(userId, writeUrl, "caseDocument", request);
     }
 
+    /**
+     * Uploads via the JSON branch of {@code sjp.upload-case-document}, supplying an existing
+     * document reference rather than a binary part.
+     *
+     * <p>This is the branch other contexts call - staging-dvla among them - and it behaves
+     * materially differently from the multipart branch: {@code SjpServiceFileInterceptor} is a
+     * no-op here, so the reference the caller supplies is the one that reaches the handler and is
+     * forwarded on to Material. The multipart branch stores the binary itself and substitutes its
+     * own reference, so it never exercises a caller-supplied one.
+     *
+     * @param documentReference the reference the caller is handing to SJP
+     * @return the same reference, for chaining into the Material stub
+     */
+    public UUID uploadCaseDocumentByReference(final UUID userId, final String documentType, final UUID documentReference) {
+        final String writeUrl = format("/cases/%s/upload-case-document/%s", caseId, documentType);
+        final String payload = createObjectBuilder()
+                .add("caseDocument", documentReference.toString())
+                .build()
+                .toString();
+
+        makePostCall(userId, writeUrl, UPLOAD_CASE_DOCUMENT_JSON_MEDIA_TYPE, payload, Response.Status.ACCEPTED);
+
+        return documentReference;
+    }
+
+    /**
+     * The blob-addressed sibling of {@link #uploadCaseDocumentByReference}: the caller supplies a
+     * container uri rather than a file service id. SJP never reads the blob - it forwards the uri
+     * to Material, which performs the only read.
+     *
+     * @param documentUri the blob uri the caller is handing to SJP
+     * @return the same uri, for chaining into the Material stub
+     */
+    public String uploadCaseDocumentByUri(final UUID userId, final String documentType, final String documentUri) {
+        final String writeUrl = format("/cases/%s/upload-case-document/%s", caseId, documentType);
+        final String payload = createObjectBuilder()
+                .add("caseDocumentUri", documentUri)
+                .build()
+                .toString();
+
+        makePostCall(userId, writeUrl, UPLOAD_CASE_DOCUMENT_JSON_MEDIA_TYPE, payload, Response.Status.ACCEPTED);
+
+        return documentUri;
+    }
+
     public void verifyInPublicTopic() {
         final String caseDocumentAddedEvent = publicConsumer.retrieveMessage().orElse(null);
 
@@ -158,6 +207,61 @@ public class CaseDocumentHelper implements AutoCloseable {
                 .assertThat("$.caseId", is(caseId.toString()))
                 .assertThat("$.id", notNullValue())
                 .assertThat("$.materialId", is(materialId));
+    }
+
+    /**
+     * Asserts the public completion event for an upload-driven document, where the material id is
+     * minted by Material rather than seeded by this helper.
+     *
+     * <p>The no-arg {@link #verifyInPublicTopic()} asserts against the helper's own pre-seeded
+     * {@code materialId}, which only holds for the add-case-document path.
+     *
+     * <p>This is the event a calling context correlates on: {@code id} is the reference it
+     * supplied and {@code caseId} tells it which case confirmed.
+     */
+    public void verifyInPublicTopic(final UUID expectedDocumentId, final UUID expectedMaterialId) {
+        final String caseDocumentAddedEvent = publicConsumer.retrieveMessage().orElse(null);
+
+        assertThat(caseDocumentAddedEvent, notNullValue());
+
+        with(caseDocumentAddedEvent)
+                .assertThat("$.caseId", is(caseId.toString()))
+                .assertThat("$.id", is(expectedDocumentId.toString()))
+                .assertThat("$.materialId", is(expectedMaterialId.toString()));
+    }
+
+    /**
+     * The blob-addressed sibling of {@link #verifyInPublicTopic(UUID, UUID)}. The join key here is
+     * {@code documentUri} - the uri the calling context supplied - because there is no file service
+     * id to correlate on. {@code id} is derived from that uri, so it is stable but not something
+     * the caller knew in advance.
+     */
+    public void verifyInPublicTopicForBlobAddressedDocument(final String expectedDocumentUri, final UUID expectedMaterialId) {
+        final String caseDocumentAddedEvent = publicConsumer.retrieveMessage().orElse(null);
+
+        assertThat(caseDocumentAddedEvent, notNullValue());
+
+        with(caseDocumentAddedEvent)
+                .assertThat("$.caseId", is(caseId.toString()))
+                .assertThat("$.documentUri", is(expectedDocumentUri))
+                .assertThat("$.id", is(nameUUIDFromBytes(expectedDocumentUri.getBytes(UTF_8)).toString()))
+                .assertThat("$.materialId", is(expectedMaterialId.toString()));
+    }
+
+    /**
+     * The blob-addressed sibling of {@link #verifyCaseDocumentUploadedEventRaised()}: the public
+     * upload event carries {@code documentUri} instead of {@code documentId}.
+     */
+    public String verifyCaseDocumentUploadedEventRaisedForUri() {
+        final String caseDocumentUploadedEvent = publicCaseDocumentUploaded.retrieveMessage().orElse(null);
+
+        assertThat(caseDocumentUploadedEvent, notNullValue());
+
+        with(caseDocumentUploadedEvent)
+                .assertThat("$.caseId", isAUuid())
+                .assertThat("$.documentUri", notNullValue());
+
+        return new JsonPath(caseDocumentUploadedEvent).getString("documentUri");
     }
 
     public void verifyUploadRejectedInPublicTopic() {
@@ -286,6 +390,7 @@ public class CaseDocumentHelper implements AutoCloseable {
     @Override
     public void close() {
         publicConsumer.close();
+        publicConsumerForRejected.close();
         publicCaseDocumentAlreadyExistsConsumer.close();
         publicCaseDocumentUploaded.close();
     }

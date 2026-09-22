@@ -21,11 +21,21 @@ public class CaseDocument implements Serializable {
 
     private final ZonedDateTime addedAt;
 
-    public CaseDocument(UUID id, UUID materialId, String documentType, ZonedDateTime addedAt) {
+    /**
+     * Blob uri the document was filed from, or null when it was addressed by its file service
+     * {@link #id} instead.
+     *
+     * <p>Absent from events recorded before blob addressing existed; those replay with this field
+     * null, exactly as before.
+     */
+    private final String documentUri;
+
+    public CaseDocument(UUID id, UUID materialId, String documentType, ZonedDateTime addedAt, String documentUri) {
         this.id = id;
         this.materialId = materialId;
         this.documentType = documentType;
         this.addedAt = addedAt;
+        this.documentUri = documentUri;
     }
 
     public UUID getId() {
@@ -50,6 +60,10 @@ public class CaseDocument implements Serializable {
 
     public ZonedDateTime getAddedAt() {
         return addedAt;
+    }
+
+    public String getDocumentUri() {
+        return documentUri;
     }
 
 }

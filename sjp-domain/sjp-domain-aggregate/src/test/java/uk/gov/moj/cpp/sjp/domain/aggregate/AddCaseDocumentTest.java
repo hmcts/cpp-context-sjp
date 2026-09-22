@@ -7,6 +7,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.isA;
+import static org.hamcrest.Matchers.nullValue;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -25,6 +26,7 @@ import org.junit.jupiter.api.Test;
 public class AddCaseDocumentTest extends CaseAggregateBaseTest {
 
     private static final CaseDocument caseDocument = CaseDocumentBuilder.defaultCaseDocument();
+    private static final String DOCUMENT_URI = "https://sadevfilestore.blob.core.windows.net/stack-stagingdvla/generated/sjpn.pdf";
 
     @Test
     public void uploadCaseDocument_caseDocumentUploadedKeepsTrackOfNthDocumentOfType() {
@@ -45,7 +47,7 @@ public class AddCaseDocumentTest extends CaseAggregateBaseTest {
 
     private void assertUploadCaseDocument(String documentType, int expectedIndexWithinDocumentType) {
         //when
-        Stream<Object> eventStream = caseAggregate.addCaseDocument(UUID.randomUUID(), new CaseDocument(UUID.randomUUID(), UUID.randomUUID(), documentType, null));
+        Stream<Object> eventStream = caseAggregate.addCaseDocument(UUID.randomUUID(), new CaseDocument(UUID.randomUUID(), UUID.randomUUID(), documentType, null, null));
         List<Object> events = asList(eventStream.toArray());
 
         //then
@@ -57,7 +59,7 @@ public class AddCaseDocumentTest extends CaseAggregateBaseTest {
     public void caseDocumentAdded_apply() {
         //given
         final CaseDocument sjpn =
-                new CaseDocument(UUID.randomUUID(), UUID.randomUUID(), "SJPN", null);
+                new CaseDocument(UUID.randomUUID(), UUID.randomUUID(), "SJPN", null, null);
         final CaseDocumentAdded firstCaseDocumentAddedEvent = (CaseDocumentAdded) caseAggregate.apply(new CaseDocumentAdded(UUID.randomUUID(), sjpn, 1));
         assertEquals(1, firstCaseDocumentAddedEvent.getIndexWithinDocumentType());
 
@@ -65,7 +67,7 @@ public class AddCaseDocumentTest extends CaseAggregateBaseTest {
         assertEquals(2, secondCaseDocumentAddedEvent.getIndexWithinDocumentType());
 
         //when
-        Stream<Object> eventStream = caseAggregate.addCaseDocument(aCase.getId(), new CaseDocument(UUID.randomUUID(), UUID.randomUUID(), "SJPN", null));
+        Stream<Object> eventStream = caseAggregate.addCaseDocument(aCase.getId(), new CaseDocument(UUID.randomUUID(), UUID.randomUUID(), "SJPN", null, null));
         List<Object> events = asList(eventStream.toArray());
 
         //then
@@ -114,5 +116,37 @@ public class AddCaseDocumentTest extends CaseAggregateBaseTest {
 
         Object object = objects.get(0);
         assertThat(object.getClass(), is(CoreMatchers.equalTo(CaseDocumentAlreadyExists.class)));
+    }
+
+    @Test
+    public void shouldCarryTheUriOnTheRejectionWhenABlobAddressedDocumentIsFiledTwice() {
+        // A duplicate filing is the one outcome that leaves the blob unreferenced, so the rejection
+        // has to name the uri - otherwise the calling context cannot correlate it back and release
+        // the blob.
+        final CaseDocument blobAddressed = CaseDocumentBuilder.aCaseDocument()
+                .withDocumentUri(DOCUMENT_URI)
+                .build();
+
+        caseAggregate.addCaseDocument(aCase.getId(), blobAddressed);
+
+        final List<Object> events = caseAggregate.addCaseDocument(aCase.getId(), blobAddressed).collect(toList());
+
+        assertThat(events.size(), is(1));
+
+        final CaseDocumentAlreadyExists rejection = (CaseDocumentAlreadyExists) events.get(0);
+        assertThat(rejection.getCaseId(), is(aCase.getId()));
+        assertThat(rejection.getDocumentUri(), is(DOCUMENT_URI));
+        assertThat(rejection.getDocumentId(), is(blobAddressed.getId()));
+    }
+
+    @Test
+    public void shouldLeaveTheUriNullOnTheRejectionForAFileServiceAddressedDocument() {
+        caseAggregate.addCaseDocument(aCase.getId(), caseDocument);
+
+        final List<Object> events = caseAggregate.addCaseDocument(aCase.getId(), caseDocument).collect(toList());
+
+        final CaseDocumentAlreadyExists rejection = (CaseDocumentAlreadyExists) events.get(0);
+        assertThat(rejection.getCaseId(), is(aCase.getId()));
+        assertThat(rejection.getDocumentUri(), is(nullValue()));
     }
 }

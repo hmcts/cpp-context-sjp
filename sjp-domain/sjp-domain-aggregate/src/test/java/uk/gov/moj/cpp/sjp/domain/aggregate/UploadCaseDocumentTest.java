@@ -48,7 +48,7 @@ public class UploadCaseDocumentTest extends CaseAggregateBaseTest {
     @Test
     public void raisesCaseStartedEvent_whenCaseIsNotStarted() {
 
-        final Stream<Object> eventsStream = caseAggregate.uploadCaseDocument(caseId, documentReference, documentType);
+        final Stream<Object> eventsStream = caseAggregate.uploadCaseDocument(caseId, documentReference, null, documentType);
         final List<Object> events = eventsStream.collect(Collectors.toList());
 
         assertThat(events, hasSize(1));
@@ -63,7 +63,7 @@ public class UploadCaseDocumentTest extends CaseAggregateBaseTest {
     @Test
     public void raisesOnlyCaseDocumentsUploaded_whenCaseIsCreated() {
 
-        final Stream<Object> eventsStream = caseAggregate.uploadCaseDocument(caseId, documentReference, documentType);
+        final Stream<Object> eventsStream = caseAggregate.uploadCaseDocument(caseId, documentReference, null, documentType);
         final List<Object> events = eventsStream.collect(Collectors.toList());
 
         assertThat(events, hasSize(1));
@@ -111,7 +111,7 @@ public class UploadCaseDocumentTest extends CaseAggregateBaseTest {
     }
 
     private List<Object> whenUploadCaseDocumentInvoked(final UUID documentReference, final String documentType, final UUID caseId) {
-        final Stream<Object> eventsStream = caseAggregate.uploadCaseDocument(caseId, documentReference, documentType);
+        final Stream<Object> eventsStream = caseAggregate.uploadCaseDocument(caseId, documentReference, null, documentType);
         return eventsStream.collect(Collectors.toList());
     }
 

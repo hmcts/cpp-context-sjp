@@ -19,6 +19,9 @@ import javax.json.JsonObject;
 @ServiceComponent(Component.COMMAND_HANDLER)
 public class UploadCaseDocumentHandler extends CaseCommandHandler {
 
+    static final String CASE_DOCUMENT = "caseDocument";
+    static final String CASE_DOCUMENT_URI = "caseDocumentUri";
+
     @Inject
     private Clock clock;
     @Handles("sjp.command.upload-case-document")
@@ -26,13 +29,25 @@ public class UploadCaseDocumentHandler extends CaseCommandHandler {
         JsonObject payload = command.payloadAsJsonObject();
 
         final UUID caseId = getCaseId(payload);
-        final UUID caseDocumentReference = UUID.fromString(payload.getString("caseDocument"));
         final String caseDocumentType = payload.getString("caseDocumentType");
+
+        // Exactly one of a file service id (caseDocument) or a blob uri (caseDocumentUri) is
+        // present - the command schema's oneOf enforces that, and JsonSchemaValidationInterceptor
+        // applies it on the way in, so this only has to pick whichever arrived.
+        final String caseDocumentReference = valueOrNull(payload, CASE_DOCUMENT);
+        final String caseDocumentUri = valueOrNull(payload, CASE_DOCUMENT_URI);
+
+        final UUID fileServiceId = caseDocumentReference == null ? null : UUID.fromString(caseDocumentReference);
+
         if(isNull(getUserId(command))){
             command = JsonEnvelope.envelopeFrom(metadataFrom(command.metadata()).withUserId(getUserIdFromCaseAggregate(caseId)),payload);
         }
         applyToCaseAggregate(command,
-                aCase -> aCase.uploadCaseDocument(caseId, caseDocumentReference, caseDocumentType)
+                aCase -> aCase.uploadCaseDocument(caseId, fileServiceId, caseDocumentUri, caseDocumentType)
         );
+    }
+
+    private static String valueOrNull(final JsonObject payload, final String field) {
+        return payload.containsKey(field) && !payload.isNull(field) ? payload.getString(field) : null;
     }
 }

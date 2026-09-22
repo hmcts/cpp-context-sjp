@@ -37,11 +37,17 @@ public class CaseDocument implements Serializable {
     @Column(name = "document_number")
     private Integer documentNumber;
 
+    /**
+     * Blob uri the document was filed from, or null when it was addressed by its file service id.
+     */
+    @Column(name = "document_uri")
+    private String documentUri;
+
     public CaseDocument() {
         super();
     }
 
-    public CaseDocument(UUID id, UUID materialId, String documentType, ZonedDateTime addedAt, UUID caseId, Integer documentNumber) {
+    public CaseDocument(UUID id, UUID materialId, String documentType, ZonedDateTime addedAt, UUID caseId, Integer documentNumber, String documentUri) {
         super();
         this.id = id;
         this.materialId = materialId;
@@ -49,6 +55,7 @@ public class CaseDocument implements Serializable {
         this.addedAt = addedAt;
         this.caseId = caseId;
         this.documentNumber = documentNumber;
+        this.documentUri = documentUri;
     }
 
     public UUID getId() {
@@ -97,6 +104,13 @@ public class CaseDocument implements Serializable {
 
     public void setDocumentNumber(Integer documentNumber) {
         this.documentNumber = documentNumber;
+    }
+
+    public String getDocumentUri() {
+        return documentUri;
+    }
+    public void setDocumentUri(String documentUri) {
+        this.documentUri = documentUri;
     }
 
 }

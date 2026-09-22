@@ -21,6 +21,7 @@ public class AddCaseDocumentCommandBuilder {
     private UUID id = CASE_DOCUMENT_ID;
     private UUID materialId = CASE_DOCUMENT_MATERIAL_ID;
     private String documentType;
+    private String documentUri;
 
     private AddCaseDocumentCommandBuilder() {
     }
@@ -35,6 +36,11 @@ public class AddCaseDocumentCommandBuilder {
 
     public AddCaseDocumentCommandBuilder withDocumentType(String documentType) {
         this.documentType = documentType;
+        return this;
+    }
+
+    public AddCaseDocumentCommandBuilder withDocumentUri(String documentUri) {
+        this.documentUri = documentUri;
         return this;
     }
 
@@ -56,6 +62,10 @@ public class AddCaseDocumentCommandBuilder {
 
         if (this.documentType != null) {
             victim.add("documentType", documentType);
+        }
+
+        if (this.documentUri != null) {
+            victim.add("documentUri", documentUri);
         }
 
         return envelopeFrom(

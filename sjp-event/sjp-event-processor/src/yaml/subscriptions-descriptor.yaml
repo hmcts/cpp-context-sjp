@@ -26,6 +26,9 @@ subscriptions_descriptor:
         - name: sjp.events.case-document-already-exists
           schema_uri: http://justice.gov.uk/json/schemas/domains/sjp/event/case-document-already-exists.json
 
+        - name: sjp.events.case-document-addition-failed
+          schema_uri: http://justice.gov.uk/json/schemas/domains/sjp/event/case-document-addition-failed.json
+
         - name: sjp.events.case-document-upload-rejected
           schema_uri: http://justice.gov.uk/json/schemas/domains/sjp/event/case-document-upload-rejected.json
 

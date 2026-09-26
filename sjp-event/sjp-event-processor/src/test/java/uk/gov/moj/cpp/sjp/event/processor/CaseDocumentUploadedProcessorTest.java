@@ -209,6 +209,10 @@ public class CaseDocumentUploadedProcessorTest {
                 .add("documentType", DOCUMENT_TYPE).build();
 
         caseDocumentProcessor.handleCaseDocumentUploaded(createEnvelope("sjp.events.case-document-uploaded", payload));
+
+        verify(sender, times(2)).send(envelopeCaptor.capture());
+        assertThat(envelopeCaptor.getAllValues().get(0).metadata().name(), is("public.sjp.case-document-uploaded"));
+        assertThat(envelopeCaptor.getAllValues().get(1).metadata().name(), is("material.command.upload-file"));
     }
 
     @Test

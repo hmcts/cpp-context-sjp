@@ -10,7 +10,7 @@
       "format": "uri"
     }
   },
-  "oneOf": [
+  "anyOf": [
     {
       "required": [
         "caseDocument"

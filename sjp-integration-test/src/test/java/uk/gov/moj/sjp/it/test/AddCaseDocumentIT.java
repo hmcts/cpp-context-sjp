@@ -1,6 +1,7 @@
 package uk.gov.moj.sjp.it.test;
 
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
+import static org.hamcrest.Matchers.not;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.UUID.nameUUIDFromBytes;
 import static java.util.UUID.randomUUID;
@@ -175,7 +176,7 @@ public class AddCaseDocumentIT extends BaseIntegrationTest {
             caseDocumentHelper.uploadCaseDocumentByReference(USER_ID, documentType, documentReference);
 
             final UUID documentId = caseDocumentHelper.verifyCaseDocumentUploadedEventRaised();
-            assertThat(documentId, is(documentReference));
+            assertThat(documentId, is(caseId));
 
             final UUID materialId = MaterialStub.processMaterialAddedCommand(documentReference);
             CaseDocumentHelper.assertDocumentAdded(USER_ID, caseId, materialId, documentReference, documentType);
@@ -189,6 +190,37 @@ public class AddCaseDocumentIT extends BaseIntegrationTest {
      * of a file service id. The uri must reach Material as {@code fileUri}, and must come back on
      * the public completion event - that echo is the only join key a calling context has for a
      * blob-addressed filing, and it is what lets staging-dvla release the blob.
+     */
+    /**
+     * Both references supplied - the shape staging-dvla sends once it derives the uuid itself. SJP
+     * must file the document under the id it was given, not one it derives, and must still forward
+     * only the uri to Material.
+     */
+    @Test
+    public void shouldUseTheSuppliedIdWhenBothReferencesAreOnTheJsonBranch() {
+        final String documentType = "PLEA";
+        final String documentUri = "https://sadevfilestore.blob.core.windows.net/stack-stagingdvla/generated/both.pdf";
+        final UUID suppliedDocumentId = randomUUID();
+        createCase();
+        stubAddCaseMaterial();
+
+        try (final CaseDocumentHelper caseDocumentHelper = new CaseDocumentHelper(caseId)) {
+            caseDocumentHelper.uploadCaseDocumentByReferenceAndUri(USER_ID, documentType, suppliedDocumentId, documentUri);
+
+            // material is keyed on the uri: it is sent fileUri, never fileServiceId
+            final UUID materialId = MaterialStub.processMaterialAddedCommand(documentUri);
+
+            CaseDocumentHelper.assertDocumentAdded(USER_ID, caseId, materialId, suppliedDocumentId, documentType);
+            caseDocumentHelper.verifyInPublicTopicWithSuppliedId(suppliedDocumentId, documentUri, materialId);
+
+            // the supplied id is a random uuid, so this also proves SJP did not derive one
+            assertThat(suppliedDocumentId, is(not(nameUUIDFromBytes(documentUri.getBytes(UTF_8)))));
+        }
+    }
+
+    /**
+     * Uri only - now the fallback path. SJP derives the id because the caller did not supply one,
+     * which is what a not-yet-updated caller or a replayed pre-change event looks like.
      */
     @Test
     public void shouldUploadCaseDocumentSuppliedByUriOnTheJsonBranch() {
@@ -208,6 +240,14 @@ public class AddCaseDocumentIT extends BaseIntegrationTest {
             CaseDocumentHelper.assertDocumentAdded(USER_ID, caseId, materialId, derivedDocumentId, documentType);
 
             caseDocumentHelper.verifyInPublicTopicForBlobAddressedDocument(documentUri, materialId);
+
+            // The query API has to give the uri back: for a blob-addressed document the id is
+            // derived from the uri rather than being a file service id, so the id alone tells a
+            // caller nothing about where the document actually lives.
+            CaseDocumentHelper.pollForCaseDocument(caseId, USER_ID, new Matcher[]{
+                    withJsonPath("$.caseDocuments[0].id", is(derivedDocumentId.toString())),
+                    withJsonPath("$.caseDocuments[0].documentUri", is(documentUri))
+            });
         }
     }
 

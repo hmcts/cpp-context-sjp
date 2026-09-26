@@ -21,7 +21,7 @@
     "caseId",
     "caseDocumentType"
   ],
-  "oneOf": [
+  "anyOf": [
     {
       "required": [
         "caseDocument"

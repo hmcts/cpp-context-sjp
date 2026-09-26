@@ -1,6 +1,7 @@
 package uk.gov.moj.cpp.sjp.query.view;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 import uk.gov.moj.cpp.sjp.persistence.entity.CaseDocument;
 import uk.gov.moj.cpp.sjp.query.view.response.CaseDocumentView;
@@ -36,6 +37,21 @@ public class CaseDocumentViewTest {
         assertEquals(1, (int) caseDocumentViews.get(1).getDocumentNumber());
         assertEquals("B-documentType", caseDocumentViews.get(2).getDocumentType());
         assertEquals(2, (int) caseDocumentViews.get(2).getDocumentNumber());
+    }
+
+    @Test
+    public void shouldMapDocumentUriThroughFromTheEntity() {
+        final String documentUri = "https://sadevfilestore.blob.core.windows.net/stack-stagingdvla/generated/plea.pdf";
+
+        final CaseDocumentView blobAddressed = new CaseDocumentView(
+                new CaseDocument(null, null, "SJPN", null, null, 1, documentUri));
+        final CaseDocumentView fileServiceAddressed = new CaseDocumentView(
+                new CaseDocument(null, null, "SJPN", null, null, 1, null));
+
+        assertEquals(documentUri, blobAddressed.getDocumentUri());
+        // Jackson serialises with NON_ABSENT, so a null here is omitted entirely and the
+        // file-service response shape is unchanged.
+        assertNull(fileServiceAddressed.getDocumentUri());
     }
 
     @Test

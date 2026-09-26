@@ -14,6 +14,16 @@ public class CaseDocumentView {
     private Integer documentNumber;
     private ZonedDateTime addedAt;
 
+    /**
+     * Blob uri the document was filed from, or null when it was addressed by its file service id.
+     *
+     * <p>For a file-service document {@code id} is the file id; for a blob-addressed one {@code id}
+     * is a uuid derived from the uri and this field carries the real reference, so any response
+     * exposing {@code id} has to expose this too. Jackson serialises with NON_ABSENT, so the field
+     * is simply absent on the file-service path and those responses are unchanged.
+     */
+    private String documentUri;
+
     public static final Comparator<CaseDocumentView> BY_DOCUMENT_TYPE_AND_NUMBER = (first, second) -> {
         if (first.documentType == null) {
             return 0;
@@ -27,15 +37,20 @@ public class CaseDocumentView {
     };
 
     public CaseDocumentView(final CaseDocument caseDocument) {
-        this(caseDocument.getId(), caseDocument.getMaterialId(), caseDocument.getDocumentType(), caseDocument.getDocumentNumber(), caseDocument.getAddedAt());
+        this(caseDocument.getId(), caseDocument.getMaterialId(), caseDocument.getDocumentType(), caseDocument.getDocumentNumber(), caseDocument.getAddedAt(), caseDocument.getDocumentUri());
     }
 
     public CaseDocumentView(final UUID id, final UUID materialId, final String documentType, final Integer documentNumber, final ZonedDateTime addedAt) {
+        this(id, materialId, documentType, documentNumber, addedAt, null);
+    }
+
+    public CaseDocumentView(final UUID id, final UUID materialId, final String documentType, final Integer documentNumber, final ZonedDateTime addedAt, final String documentUri) {
         this.id = id;
         this.materialId = materialId;
         this.documentType = documentType;
         this.documentNumber = documentNumber;
         this.addedAt = addedAt;
+        this.documentUri = documentUri;
     }
 
     public UUID getId() {
@@ -64,6 +79,10 @@ public class CaseDocumentView {
 
     public ZonedDateTime getAddedAt() {
         return addedAt;
+    }
+
+    public String getDocumentUri() {
+        return documentUri;
     }
 
 }

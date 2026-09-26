@@ -46,11 +46,12 @@ public class CaseDocumentHandler {
     }
 
     /**
-     * @param documentReference    file service id of the document, or null when it is addressed by
-     *                             {@code documentReferenceUri}
-     * @param documentReferenceUri blob uri of the document, or null when it is addressed by
-     *                             {@code documentReference}. Exactly one of the two is set; the
-     *                             caller validates that.
+     * @param documentReference    file service id of the document, or the uuid derived from
+     *                             {@code documentReferenceUri} by the calling context. Null only
+     *                             when the caller supplied a uri and no id.
+     * @param documentReferenceUri blob uri of the document, or null when it is addressed by a file
+     *                             service id. At least one of the two is set - the command schema's
+     *                             {@code anyOf} enforces that - and both may be set together.
      */
     public Stream<Object> uploadCaseDocument(final UUID caseId,
                                              final UUID documentReference,
@@ -59,7 +60,9 @@ public class CaseDocumentHandler {
                                              final CaseAggregateState state) {
 
         if (!state.hasGrantedApplication()) {
-            final Object reference = nonNull(documentReference) ? documentReference : documentReferenceUri;
+            // Both may be present now, so prefer the uri: it is the reference the calling context
+            // supplied and recognises, and the uuid is derived from it anyway.
+            final Object reference = nonNull(documentReferenceUri) ? documentReferenceUri : documentReference;
 
             if (state.isCaseReferredForCourtHearing()) {
                 LOGGER.warn("Case Document Upload rejected as case is referred to court for hearing: {}", reference);

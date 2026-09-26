@@ -236,6 +236,43 @@ public class CaseDocumentHelper implements AutoCloseable {
      * id to correlate on. {@code id} is derived from that uri, so it is stable but not something
      * the caller knew in advance.
      */
+    /**
+     * The shape staging-dvla sends now: it derives the case document's uuid from the uri itself and
+     * supplies both, so SJP files the document under the caller's id rather than one of its own.
+     *
+     * @return the uri, for chaining into the Material stub - material is still sent only the uri
+     */
+    public String uploadCaseDocumentByReferenceAndUri(final UUID userId, final String documentType,
+                                                      final UUID documentReference, final String documentUri) {
+        final String writeUrl = format("/cases/%s/upload-case-document/%s", caseId, documentType);
+        final String payload = createObjectBuilder()
+                .add("caseDocument", documentReference.toString())
+                .add("caseDocumentUri", documentUri)
+                .build()
+                .toString();
+
+        makePostCall(userId, writeUrl, UPLOAD_CASE_DOCUMENT_JSON_MEDIA_TYPE, payload, Response.Status.ACCEPTED);
+
+        return documentUri;
+    }
+
+    /**
+     * Asserts the public completion event for a document whose id was supplied by the caller rather
+     * than derived by SJP - both references ride the event.
+     */
+    public void verifyInPublicTopicWithSuppliedId(final UUID expectedDocumentId, final String expectedDocumentUri,
+                                                  final UUID expectedMaterialId) {
+        final String caseDocumentAddedEvent = publicConsumer.retrieveMessage().orElse(null);
+
+        assertThat(caseDocumentAddedEvent, notNullValue());
+
+        with(caseDocumentAddedEvent)
+                .assertThat("$.caseId", is(caseId.toString()))
+                .assertThat("$.documentUri", is(expectedDocumentUri))
+                .assertThat("$.id", is(expectedDocumentId.toString()))
+                .assertThat("$.materialId", is(expectedMaterialId.toString()));
+    }
+
     public void verifyInPublicTopicForBlobAddressedDocument(final String expectedDocumentUri, final UUID expectedMaterialId) {
         final String caseDocumentAddedEvent = publicConsumer.retrieveMessage().orElse(null);
 

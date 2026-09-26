@@ -10,6 +10,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.never;
@@ -198,6 +199,76 @@ public class CaseDocumentUploadedProcessorTest {
                 withJsonPath("$.materialId", notNullValue()),
                 withJsonPath("$.fileUri", equalTo(documentUri)))));
         assertThat(sent.get(1).payloadAsJsonObject().containsKey("fileServiceId"), is(false));
+    }
+
+    @Test
+    public void shouldHandleABlobAddressedDocumentWithoutError() {
+        final JsonObject payload = createObjectBuilder()
+                .add("caseId", caseId.toString())
+                .add("documentReferenceUri", DOCUMENT_URI)
+                .add("documentType", DOCUMENT_TYPE).build();
+
+        caseDocumentProcessor.handleCaseDocumentUploaded(createEnvelope("sjp.events.case-document-uploaded", payload));
+    }
+
+    @Test
+    public void shouldCarryBothReferencesOnwardWhenTheCallerSuppliesBoth() {
+        // The shape staging-dvla now sends: it derives the uuid from the uri itself and sends the
+        // pair, so a uuid being present must NOT be read as "file service addressed".
+        final JsonObject payload = createObjectBuilder()
+                .add("caseId", caseId.toString())
+                .add("documentReference", documentReference.toString())
+                .add("documentReferenceUri", DOCUMENT_URI)
+                .add("documentType", DOCUMENT_TYPE).build();
+
+        caseDocumentProcessor.handleCaseDocumentUploaded(createEnvelope("sjp.events.case-document-uploaded", payload));
+
+        verify(sender, times(2)).send(envelopeCaptor.capture());
+        final List<JsonEnvelope> sent = envelopeCaptor.getAllValues();
+
+        // the public event keeps everything we were given
+        assertThat(sent.get(0).payloadAsJsonObject().toString(), isJson(allOf(
+                withJsonPath("$.documentId", equalTo(documentReference.toString())),
+                withJsonPath("$.documentUri", equalTo(DOCUMENT_URI)))));
+
+        // material takes exactly one, and it has to be the uri - its handler throws on more than
+        // one reference, and a derived uuid means nothing to the file service.
+        assertThat(sent.get(1).metadata().name(), is("material.command.upload-file"));
+        assertThat(sent.get(1).payloadAsJsonObject().toString(), isJson(
+                withJsonPath("$.fileUri", equalTo(DOCUMENT_URI))));
+        assertThat(sent.get(1).payloadAsJsonObject().containsKey("fileServiceId"), is(false));
+
+        // and the sjp metadata carries both, so handleMaterialAdded uses the supplied uuid
+        assertThat(sent.get(1).metadata().asJsonObject().toString(), isJson(allOf(
+                withJsonPath("$.sjpMetadata.documentId", equalTo(documentReference.toString())),
+                withJsonPath("$.sjpMetadata.documentUri", equalTo(DOCUMENT_URI)))));
+    }
+
+    @Test
+    public void shouldUseTheSuppliedIdRatherThanDerivingOneWhenBothAreKnown() {
+        // The whole point of the change: a derived uuid is still a valid uuid, so a regression here
+        // would be invisible without pinning the supplied value explicitly.
+        final Metadata enriched = metadataFrom(
+                JsonObjects.createObjectBuilder(materialAddedMetadata.asJsonObject())
+                        .add("sjpMetadata", createObjectBuilder()
+                                .add("caseId", caseId.toString())
+                                .add("documentId", documentReference.toString())
+                                .add("documentUri", DOCUMENT_URI)
+                                .add("documentType", DOCUMENT_TYPE)
+                                .build()).build())
+                .build();
+
+        caseDocumentProcessor.handleMaterialAdded(envelopeFrom(enriched, materialAddedPayload));
+
+        verify(sender).send(envelopeCaptor.capture());
+
+        assertThat(envelopeCaptor.getValue().payloadAsJsonObject().toString(), isJson(allOf(
+                withJsonPath("$.id", equalTo(documentReference.toString())),
+                withJsonPath("$.documentUri", equalTo(DOCUMENT_URI)))));
+
+        // specifically NOT the value the fallback would have produced
+        assertThat(envelopeCaptor.getValue().payloadAsJsonObject().getString("id"),
+                is(not(nameUUIDFromBytes(DOCUMENT_URI.getBytes(UTF_8)).toString())));
     }
 
     @Test

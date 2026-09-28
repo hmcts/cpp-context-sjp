@@ -71,6 +71,7 @@ import static uk.gov.moj.sjp.it.util.FileUtil.getPayload;
 import static uk.gov.moj.sjp.it.util.SjpDatabaseCleaner.cleanViewStore;
 import static uk.gov.moj.sjp.it.verifier.PersonInfoVerifier.personInfoVerifierForPersonalDetails;
 
+import org.json.JSONArray;
 import uk.gov.justice.json.schemas.domains.sjp.Gender;
 import uk.gov.justice.json.schemas.domains.sjp.User;
 import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
@@ -87,12 +88,7 @@ import uk.gov.moj.cpp.sjp.event.CaseUpdateRejected;
 import uk.gov.moj.cpp.sjp.persistence.entity.PersonalDetails;
 import uk.gov.moj.sjp.it.command.CreateCase;
 import uk.gov.moj.sjp.it.command.UpdateDefendantDetails;
-import uk.gov.moj.sjp.it.helper.CaseSearchResultHelper;
-import uk.gov.moj.sjp.it.helper.CitizenHelper;
-import uk.gov.moj.sjp.it.helper.EmployerHelper;
-import uk.gov.moj.sjp.it.helper.EventListener;
-import uk.gov.moj.sjp.it.helper.FinancialMeansHelper;
-import uk.gov.moj.sjp.it.helper.PleadOnlineHelper;
+import uk.gov.moj.sjp.it.helper.*;
 import uk.gov.moj.sjp.it.model.DecisionCommand;
 import uk.gov.moj.sjp.it.model.PleasView;
 import uk.gov.moj.sjp.it.model.ProsecutingAuthority;
@@ -266,15 +262,22 @@ public class PleadOnlineIT extends BaseIntegrationTest {
             PleasView pleasView = objectMapper.readValue(pleaResponse, PleasView.class);
             final JSONObject defendantsPlea = new JSONObject(objectMapper.writeValueAsString(pleasView.getPleas().get(0)));
 
-            assertThat(defendantsPlea.getJSONArray("onlinePleaDetails").getJSONObject(0).get("offenceId"), equalTo(offenceId1.toString()));
-            assertThat(defendantsPlea.getJSONArray("onlinePleaDetails").getJSONObject(0).get("plea"), equalTo(pleaType1.name()));
-            assertThat(defendantsPlea.getJSONArray("onlinePleaDetails").getJSONObject(0).get("mitigation"), equalTo("I was drunk at the time"));
-            assertThat(defendantsPlea.getJSONArray("onlinePleaDetails").getJSONObject(1).get("offenceId"), equalTo(offenceId2.toString()));
-            assertThat(defendantsPlea.getJSONArray("onlinePleaDetails").getJSONObject(1).get("plea"), equalTo(pleaType2.name()));
-            assertThat(defendantsPlea.getJSONArray("onlinePleaDetails").getJSONObject(1).get("notGuiltyBecause"), equalTo("I was forced to do it"));
-            assertThat(defendantsPlea.getJSONArray("onlinePleaDetails").getJSONObject(2).get("offenceId"), equalTo(offenceId3.toString()));
-            assertThat(defendantsPlea.getJSONArray("onlinePleaDetails").getJSONObject(2).get("plea"), equalTo(pleaType3.name()));
-            assertFalse(defendantsPlea.getJSONArray("onlinePleaDetails").getJSONObject(2).has("mitigation"));
+            final JSONArray onlinePleaDetails = defendantsPlea.getJSONArray("onlinePleaDetails");
+
+            final JSONObject plea1 = findPleaDetailByOffenceId(onlinePleaDetails, offenceId1);
+            assertThat(plea1.get("offenceId"), equalTo(offenceId1.toString()));
+            assertThat(plea1.get("plea"), equalTo(pleaType1.name()));
+            assertThat(plea1.get("mitigation"), equalTo("I was drunk at the time"));
+
+            final JSONObject plea2 =findPleaDetailByOffenceId(onlinePleaDetails, offenceId2);
+            assertThat(plea2.get("offenceId"), equalTo(offenceId2.toString()));
+            assertThat(plea2.get("plea"), equalTo(pleaType2.name()));
+            assertThat(plea2.get("notGuiltyBecause"), equalTo("I was forced to do it"));
+
+            final JSONObject plea3 = findPleaDetailByOffenceId(onlinePleaDetails, offenceId3);
+            assertThat(plea3.get("offenceId"), equalTo(offenceId3.toString()));
+            assertThat(plea3.get("plea"), equalTo(pleaType3.name()));
+            assertFalse(plea3.has("mitigation"));
             assertThat(defendantsPlea.getJSONObject("personalDetails").get("firstName"), equalTo("Testy"));
             assertThat(defendantsPlea.getJSONObject("personalDetails").get("lastName"), equalTo("LLOYD"));
             assertThat(defendantsPlea.getJSONObject("personalDetails").getJSONObject("address").get("address1"), equalTo("14 Tottenham Court Road"));
@@ -531,15 +534,23 @@ public class PleadOnlineIT extends BaseIntegrationTest {
             PleasView pleasView = objectMapper.readValue(pleaResponse, PleasView.class);
             final JSONObject defendantsPlea = new JSONObject(objectMapper.writeValueAsString(pleasView.getPleas().get(0)));
 
-            assertThat(defendantsPlea.getJSONArray("onlinePleaDetails").getJSONObject(0).get("offenceId"), equalTo(offenceId1.toString()));
-            assertThat(defendantsPlea.getJSONArray("onlinePleaDetails").getJSONObject(0).get("plea"), equalTo(pleaType1.name()));
-            assertThat(defendantsPlea.getJSONArray("onlinePleaDetails").getJSONObject(0).get("mitigation"), equalTo("I was drunk at the time"));
-            assertThat(defendantsPlea.getJSONArray("onlinePleaDetails").getJSONObject(1).get("offenceId"), equalTo(offenceId2.toString()));
-            assertThat(defendantsPlea.getJSONArray("onlinePleaDetails").getJSONObject(1).get("plea"), equalTo(pleaType2.name()));
-            assertThat(defendantsPlea.getJSONArray("onlinePleaDetails").getJSONObject(1).get("notGuiltyBecause"), equalTo("I was forced to do it"));
-            assertThat(defendantsPlea.getJSONArray("onlinePleaDetails").getJSONObject(2).get("offenceId"), equalTo(offenceId3.toString()));
-            assertThat(defendantsPlea.getJSONArray("onlinePleaDetails").getJSONObject(2).get("plea"), equalTo(pleaType3.name()));
-            assertFalse(defendantsPlea.getJSONArray("onlinePleaDetails").getJSONObject(2).has("mitigation"));
+            final JSONArray onlinePleaDetails = defendantsPlea.getJSONArray("onlinePleaDetails");
+
+            final JSONObject plea1 = findPleaDetailByOffenceId(onlinePleaDetails, offenceId1);
+
+            assertThat(plea1.get("offenceId"), equalTo(offenceId1.toString()));
+            assertThat(plea1.get("plea"), equalTo(pleaType1.name()));
+            assertThat(plea1.get("mitigation"), equalTo("I was drunk at the time"));
+
+            final JSONObject plea2 = findPleaDetailByOffenceId(onlinePleaDetails, offenceId2);
+            assertThat(plea2.get("offenceId"), equalTo(offenceId2.toString()));
+            assertThat(plea2.get("plea"), equalTo(pleaType2.name()));
+            assertThat(plea2.get("notGuiltyBecause"), equalTo("I was forced to do it"));
+
+            final JSONObject plea3 = findPleaDetailByOffenceId(onlinePleaDetails, offenceId3);
+            assertThat(plea3.get("offenceId"), equalTo(offenceId3.toString()));
+            assertThat(plea3.get("plea"), equalTo(pleaType3.name()));
+            assertFalse(plea3.has("mitigation"));
             assertThat(defendantsPlea.getJSONObject("personalDetails").get("firstName"), equalTo("David"));
             assertThat(defendantsPlea.getJSONObject("personalDetails").get("lastName"), equalTo("LLOYD"));
             assertThat(defendantsPlea.getJSONObject("personalDetails").getJSONObject("address").get("address1"), equalTo("14 Tottenham Court Road"));
@@ -1000,6 +1011,7 @@ public class PleadOnlineIT extends BaseIntegrationTest {
         stubReferralReason(referralReasonId.toString(), "stub-data/referencedata.referral-reason.json");
         stubHearingTypesQuery(HEARING_TYPE_ID.toString(), HEARING_CODE, HEARING_DESCRIPTION);
         startSessionAndConfirm(sjpSessionId, legalAdviser.getUserId(), DEFAULT_LONDON_COURT_HOUSE_OU_CODE, MAGISTRATE);
+        CaseHelper.pollUntilCaseReady(createCasePayloadBuilder.getId());
         requestCaseAssignmentAndConfirm(sjpSessionId, legalAdviser.getUserId(), createCasePayloadBuilder.getId());
         final DefendantCourtOptions defendantCourtOptions = new DefendantCourtOptions(new DefendantCourtInterpreter("French", true), false, NO_DISABILITY_NEEDS);
         final ReferForCourtHearing referForCourtHearing = new ReferForCourtHearing(null, singletonList(new OffenceDecisionInformation(offenceId, VerdictType.NO_VERDICT)),
@@ -1744,5 +1756,15 @@ public class PleadOnlineIT extends BaseIntegrationTest {
                 Defaults.DEFAULT_USER_ID);
         assertThat(response.getStatus(), Matchers.equalTo(Response.Status.OK.getStatusCode()));
         return createReader(new StringReader(response.readEntity(String.class))).readObject();
+    }
+
+    private static JSONObject findPleaDetailByOffenceId(JSONArray onlinePleaDetails, UUID offenceId) {
+        for (int i=0; i < onlinePleaDetails.length(); i++) {
+            JSONObject entry = onlinePleaDetails.getJSONObject(i);
+            if (entry.get("offenceId").equals(offenceId.toString())) {
+                return entry;
+            }
+        }
+            throw  new  AssertionError("No plea detail found for offenceId" + offenceId);
     }
 }

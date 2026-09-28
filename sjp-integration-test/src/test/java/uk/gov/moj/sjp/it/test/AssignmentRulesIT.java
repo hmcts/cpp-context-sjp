@@ -46,6 +46,7 @@ import uk.gov.moj.cpp.sjp.domain.SessionType;
 import uk.gov.moj.sjp.it.command.CreateCase;
 import uk.gov.moj.sjp.it.commandclient.AssignNextCaseClient;
 import uk.gov.moj.sjp.it.helper.AssignmentHelper;
+import uk.gov.moj.sjp.it.helper.CaseHelper;
 import uk.gov.moj.sjp.it.helper.OffencesWithdrawalRequestHelper;
 import uk.gov.moj.sjp.it.helper.SessionHelper;
 
@@ -248,6 +249,9 @@ import org.slf4j.LoggerFactory;
     void shouldHandleConcurrentAssignmentRequestFromMultipleLegalAdvisers() {
         final Map<UUID, UUID> sessionIdByUserId = Stream.generate(UUID::randomUUID).limit(3).collect(toMap(identity(), la -> randomUUID()));
 
+        CaseHelper.pollUntilCaseReady(tflOldPiaCasePayloadBuilder.getId());
+        CaseHelper.pollUntilCaseReady(tflOldPiaCasePayloadBuilder.getId());
+        CaseHelper.pollUntilCaseReady(tflPleadedGuiltyCasePayloadBuilder.getId());
         sessionIdByUserId
                 .entrySet()
                 .parallelStream()
@@ -291,6 +295,8 @@ import org.slf4j.LoggerFactory;
         final UUID userId = randomUUID();
 
         SessionHelper.startSessionAndConfirm(sessionId, userId, courtHouseOUCode, sessionType);
+
+        CaseHelper.pollUntilCaseReady(caseId);
 
         requestCaseAssignmentAndConfirm(sessionId, userId, caseId);
         pollUntilCaseAssignedToUser(caseId, userId);

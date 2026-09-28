@@ -176,7 +176,7 @@ public class AddCaseDocumentIT extends BaseIntegrationTest {
             caseDocumentHelper.uploadCaseDocumentByReference(USER_ID, documentType, documentReference);
 
             final UUID documentId = caseDocumentHelper.verifyCaseDocumentUploadedEventRaised();
-            assertThat(documentId, is(caseId));
+            assertThat(documentId, is(documentReference));
 
             final UUID materialId = MaterialStub.processMaterialAddedCommand(documentReference);
             CaseDocumentHelper.assertDocumentAdded(USER_ID, caseId, materialId, documentReference, documentType);

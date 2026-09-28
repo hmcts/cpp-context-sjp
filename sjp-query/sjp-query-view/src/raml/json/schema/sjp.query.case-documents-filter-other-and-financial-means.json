@@ -18,6 +18,9 @@
           },
           "documentNumber": {
             "type": "integer"
+          },
+          "documentUri": {
+            "type": "string"
           }
         },
         "additionalProperties": false,

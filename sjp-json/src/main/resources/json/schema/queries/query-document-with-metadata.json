@@ -1,6 +1,6 @@
 {
   "$schema": "http://json-schema.org/draft-04/schema#",
-  "id": "http://justice.gov.uk/json/schemas/domains/sjp/queries/document-with-metadta.json",
+  "id": "http://justice.gov.uk/json/schemas/domains/sjp/queries/document-with-metadata.json",
   "type": "object",
   "properties": {
     "id": {
@@ -17,6 +17,9 @@
     },
     "addedAt": {
       "$ref": "http://justice.gov.uk/json/schemas/domains/sjp/temporal.json#/definitions/date-time"
+    },
+    "documentUri": {
+      "type": "string"
     },
     "metadata": {
       "$ref": "http://justice.gov.uk/json/schemas/domains/sjp/queries/document-metadata.json"

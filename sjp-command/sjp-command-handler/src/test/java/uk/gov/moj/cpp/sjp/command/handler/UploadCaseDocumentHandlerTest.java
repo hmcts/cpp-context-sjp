@@ -169,6 +169,29 @@ public class UploadCaseDocumentHandlerTest {
 
 
 
+    @Test
+    public void shouldRaiseUploadedEventCarryingBothReferencesWhenTheCallerSuppliesBoth() throws EventStreamException {
+        final JsonEnvelope command = createCommand(payload -> payload
+                .add(CASE_DOCUMENT_REFERENCE_PROPERTY, DOCUMENT_REFERENCE.toString())
+                .add(CASE_DOCUMENT_URI_PROPERTY, DOCUMENT_URI));
+        when(eventSource.getStreamById(CASE_ID)).thenReturn(eventStream);
+        when(aggregateService.get(eventStream, CaseAggregate.class)).thenReturn(caseAggregate);
+
+        uploadCaseDocumentHandler.handle(command);
+
+        assertThat(eventStream, eventStreamAppendedWith(
+                streamContaining(
+                        jsonEnvelope(
+                                withMetadataEnvelopedFrom(command)
+                                        .withName("sjp.events.case-document-uploaded"),
+                                payloadIsJson(allOf(
+                                        withJsonPath("$.caseId", equalTo(CASE_ID.toString())),
+                                        withJsonPath("$.documentReference", equalTo(DOCUMENT_REFERENCE.toString())),
+                                        withJsonPath("$.documentReferenceUri", equalTo(DOCUMENT_URI))
+                                )))
+                )));
+    }
+
     private JsonEnvelope createCaseDocumentUploadCommand(final UUID caseId, final UUID caseDocumentReference, final String documentType) {
         final JsonObjectBuilder payload = createObjectBuilder()
                 .add(CASE_ID_PROPERTY, caseId.toString())

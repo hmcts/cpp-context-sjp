@@ -100,6 +100,8 @@ import org.mockito.junit.jupiter.MockitoExtension;
 @ExtendWith(MockitoExtension.class)
 public class CaseServiceTest {
 
+    private static final String DOCUMENT_URI = "https://sadevfilestore.blob.core.windows.net/stack-stagingdvla/generated/plea.pdf";
+
     private static final UUID CASE_ID = randomUUID();
     private static final CaseStatus CASE_STATUS_REFERRED_FOR_COURT_HEARING = CaseStatus.REFERRED_FOR_COURT_HEARING;
     private static final String URN = "TFL1234";
@@ -453,6 +455,19 @@ public class CaseServiceTest {
         final CaseDocumentView firstCaseDocument = caseDocumentsView.getCaseDocuments().get(0);
         assertThat(firstCaseDocument.getId().toString(), is(documentId.toString()));
         assertThat(firstCaseDocument.getDocumentNumber(), is(2));
+        assertThat(firstCaseDocument.getDocumentUri(), is(nullValue()));
+    }
+
+    @Test
+    public void shouldExposeDocumentUriForABlobAddressedCaseDocument() {
+        // For a blob-addressed document the id is a uuid derived from the uri rather than a file
+        // service id, so any response carrying the id has to carry the uri with it.
+        final CaseDocument caseDocument = new CaseDocument(randomUUID(), randomUUID(), "SJPN", clock.now(), CASE_ID, 2, DOCUMENT_URI);
+        when(caseRepository.findCaseDocuments(CASE_ID)).thenReturn(singletonList(caseDocument));
+
+        final CaseDocumentsView caseDocumentsView = service.findCaseDocuments(CASE_ID);
+
+        assertThat(caseDocumentsView.getCaseDocuments().get(0).getDocumentUri(), is(DOCUMENT_URI));
     }
 
     @Test
@@ -468,6 +483,7 @@ public class CaseServiceTest {
         assertThat(caseDocumentView.get().getMaterialId(), is(caseDocument.getMaterialId()));
         assertThat(caseDocumentView.get().getDocumentType(), is(caseDocument.getDocumentType()));
         assertThat(caseDocumentView.get().getDocumentNumber(), is(caseDocument.getDocumentNumber()));
+        assertThat(caseDocumentView.get().getDocumentUri(), is(nullValue()));
     }
 
     @Test
@@ -691,6 +707,8 @@ public class CaseServiceTest {
                 resultOrdersView.getResultOrders().get(0).getOrder().getDocumentId());
         assertEquals(caseDocument.getAddedAt(),
                 resultOrdersView.getResultOrders().get(0).getOrder().getAddedAt());
+        assertEquals(caseDocument.getDocumentUri(),
+                resultOrdersView.getResultOrders().get(0).getOrder().getDocumentUri());
     }
 
     @Test

@@ -408,7 +408,7 @@ public class CaseService {
                             .setCaseId(caseDocument.getCaseId())
                             .setUrn(caseDetail.getUrn())
                             .setDefendant(caseDetail.getDefendant())
-                            .setOrder(caseDocument.getId(), caseDocument.getAddedAt())
+                            .setOrder(caseDocument.getId(), caseDocument.getDocumentUri(), caseDocument.getAddedAt())
                             .build());
         };
 

@@ -61,6 +61,30 @@ public class CaseDocumentHandlerTest {
     }
 
     @Test
+    public void uploadCaseDocument_whenBothReferencesSupplied_shouldNameTheUriAndCarryBoth() {
+        final UUID caseId = UUID.randomUUID();
+        final UUID documentReference = UUID.randomUUID();
+        final String documentReferenceUri = "https://sadevfilestore.blob.core.windows.net/stack-stagingdvla/generated/doc.pdf";
+        final CaseAggregateState state = mock(CaseAggregateState.class);
+
+        when(state.hasGrantedApplication()).thenReturn(false);
+        when(state.isCaseReferredForCourtHearing()).thenReturn(true);
+
+        final List<Object> events = CaseDocumentHandler.INSTANCE
+                .uploadCaseDocument(caseId, documentReference, documentReferenceUri, "type", state)
+                .collect(Collectors.toList());
+
+        final CaseDocumentUploadRejected rejected = (CaseDocumentUploadRejected) events.get(0);
+
+        // both travel on the event...
+        assertThat(rejected.getDocumentId(), is(documentReference));
+        assertThat(rejected.getDocumentReferenceUri(), is(documentReferenceUri));
+
+        // ...but the message names the uri, which is what the calling context recognises
+        assertThat(rejected.getDescription(), containsString(documentReferenceUri));
+    }
+
+    @Test
     public void uploadCaseDocument_whenCaseNotManagedByAtcm_shouldReturnCaseDocumentUploadRejectedEvent() {
         UUID caseId = UUID.randomUUID();
         UUID documentReference = UUID.randomUUID();

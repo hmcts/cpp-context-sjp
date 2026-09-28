@@ -31,9 +31,10 @@ public class UploadCaseDocumentHandler extends CaseCommandHandler {
         final UUID caseId = getCaseId(payload);
         final String caseDocumentType = payload.getString("caseDocumentType");
 
-        // Exactly one of a file service id (caseDocument) or a blob uri (caseDocumentUri) is
-        // present - the command schema's oneOf enforces that, and JsonSchemaValidationInterceptor
-        // applies it on the way in, so this only has to pick whichever arrived.
+        // At least one of a file service id (caseDocument) or a blob uri (caseDocumentUri) is
+        // present - the command schema's anyOf enforces that - and both may arrive together, which
+        // is what staging-dvla sends. Pass through whatever came; the aggregate and the processor
+        // decide what each of them means.
         final String caseDocumentReference = valueOrNull(payload, CASE_DOCUMENT);
         final String caseDocumentUri = valueOrNull(payload, CASE_DOCUMENT_URI);
 

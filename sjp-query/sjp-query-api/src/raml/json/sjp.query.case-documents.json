@@ -5,7 +5,8 @@
       "materialId": "87a321ef-ea34-47d7-865d-7f430b4775be",
       "documentType": "PLEA",
       "documentNumber": 1,
-      "addedAt": "2018-08-26T14:55:47.631Z"
+      "addedAt": "2018-08-26T14:55:47.631Z",
+      "documentUri": "https://sadevfilestore.blob.core.windows.net/stack-stagingdvla/generated/plea.pdf"
     }
   ]
 }

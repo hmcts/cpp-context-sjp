@@ -74,7 +74,11 @@ public class ResultOrdersView {
             }
 
             public Builder setOrder(final UUID documentId, final ZonedDateTime dateMaterialAdded) {
-                casesWithOrderView.order = new DefendantView.OrderView(documentId, dateMaterialAdded);
+                return setOrder(documentId, null, dateMaterialAdded);
+            }
+
+            public Builder setOrder(final UUID documentId, final String documentUri, final ZonedDateTime dateMaterialAdded) {
+                casesWithOrderView.order = new DefendantView.OrderView(documentId, documentUri, dateMaterialAdded);
                 return this;
             }
 
@@ -132,15 +136,27 @@ public class ResultOrdersView {
             public static class OrderView {
                 private UUID documentId;
 
+                /**
+                 * Blob uri the result order was filed from, or null when it was addressed by its
+                 * file service id. For a blob-addressed document {@code documentId} is derived from
+                 * this uri rather than being the file id, so the two travel together.
+                 */
+                private String documentUri;
+
                 private ZonedDateTime addedAt;
 
-                public OrderView(final UUID documentId, final ZonedDateTime addedAt) {
+                public OrderView(final UUID documentId, final String documentUri, final ZonedDateTime addedAt) {
                     this.documentId = documentId;
+                    this.documentUri = documentUri;
                     this.addedAt = addedAt;
                 }
 
                 public UUID getDocumentId() {
                     return documentId;
+                }
+
+                public String getDocumentUri() {
+                    return documentUri;
                 }
 
                 public ZonedDateTime getAddedAt() {

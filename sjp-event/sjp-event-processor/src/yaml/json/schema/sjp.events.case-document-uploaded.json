@@ -23,7 +23,7 @@
     "caseId",
     "documentType"
   ],
-  "oneOf": [
+  "anyOf": [
     {
       "required": [
         "documentReference"

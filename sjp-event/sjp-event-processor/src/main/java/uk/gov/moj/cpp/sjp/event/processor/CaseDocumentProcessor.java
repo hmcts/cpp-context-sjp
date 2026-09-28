@@ -1,7 +1,6 @@
 package uk.gov.moj.cpp.sjp.event.processor;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
-import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
 import static java.util.UUID.nameUUIDFromBytes;
 import static java.util.UUID.randomUUID;
@@ -61,12 +60,13 @@ public class CaseDocumentProcessor {
         final UUID caseId = UUID.fromString(payload.getString(CASE_ID));
         final String documentType = payload.getString(DOCUMENT_TYPE);
 
-        // Exactly one of these is set - the event schema's oneOf enforces that, and
-        // JsonSchemaValidationInterceptor applies it on the way in. A blob-addressed document is
-        // forwarded onward as a uri; SJP never reads the document itself either way.
+        // Both may now arrive together: staging-dvla derives the case document's uuid from the uri
+        // and sends the pair, so a uuid being present no longer means the document is file-service
+        // addressed. The uri is what says "blob" - test for that directly. Getting this backwards
+        // sends material a fileServiceId no file service has ever heard of.
         final String documentReference = valueOrNull(payload, DOCUMENT_REFERENCE);
         final String documentReferenceUri = valueOrNull(payload, DOCUMENT_REFERENCE_URI);
-        final boolean addressedByUri = isNull(documentReference);
+        final boolean addressedByUri = nonNull(documentReferenceUri);
 
         final JsonObjectBuilder fileUploadedEventPayload = createObjectBuilder()
                 .add(CASE_ID, caseId.toString());
@@ -76,15 +76,26 @@ public class CaseDocumentProcessor {
                 .add(CASE_ID, caseId.toString())
                 .add(DOCUMENT_TYPE, documentType);
 
+        // The public event and the sjp metadata carry everything we were given. The metadata one
+        // matters most: handleMaterialAdded reads documentId back out of it to build
+        // sjp.command.add-case-document, so the uuid has to ride along or that hop falls back to
+        // deriving one and the caller's id is lost.
+        if (nonNull(documentReference)) {
+            fileUploadedEventPayload.add(DOCUMENT_ID, documentReference);
+            sjpMetadata.add(DOCUMENT_ID, documentReference);
+        }
         if (addressedByUri) {
             fileUploadedEventPayload.add(DOCUMENT_URI, documentReferenceUri);
-            // Material rejects a command carrying more than one file reference, so send only this one.
-            uploadFilePayload.add(FILE_URI, documentReferenceUri);
             sjpMetadata.add(DOCUMENT_URI, documentReferenceUri);
+        }
+
+        // Material is the exception: material.command.upload-file is an exclusive oneOf and its
+        // handler throws on more than one reference, so exactly one goes on that payload. The uri
+        // wins when there is one - it is the only form material can actually read.
+        if (addressedByUri) {
+            uploadFilePayload.add(FILE_URI, documentReferenceUri);
         } else {
-            fileUploadedEventPayload.add(DOCUMENT_ID, documentReference);
             uploadFilePayload.add(FILE_SERVICE_ID, documentReference);
-            sjpMetadata.add(DOCUMENT_ID, documentReference);
         }
 
         sender.send(enveloper.withMetadataFrom(caseDocumentUploadedEvent, "public.sjp.case-document-uploaded")
@@ -123,11 +134,11 @@ public class CaseDocumentProcessor {
 
             LOGGER.info("Material {} is a {} for sjp case {}", materialId, documentType, caseId);
 
-            // A blob-addressed document has no file service id to become the case document's
-            // identity, and case_document.id is a uuid primary key. Derive a stable v3 uuid from
-            // the blob uri: the same uri always yields the same id, so a redelivered
-            // material.material-added is caught by the aggregate's duplicate check exactly as it is
-            // on the file-service path.
+            // Normally the id was supplied: staging-dvla derives it from the uri with this exact
+            // algorithm and sends it on the command. The derivation below is the fallback for a
+            // uri-only payload - a caller not yet updated, or a pre-change event replayed from the
+            // store. Keep the two implementations identical; see
+            // cpp-context-staging-dvla SystemDocGeneratorEventProcessor.
             final String caseDocumentId = getCaseDocumentId(documentId, documentUri);
 
             final JsonObjectBuilder payload = createObjectBuilder()

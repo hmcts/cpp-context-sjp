@@ -48,7 +48,15 @@ public class AssignmentHelper {
     }
 
     public static void requestCaseAssignmentAndConfirm(final UUID sessionId, final UUID userId, final UUID caseId) {
-        requestCaseAssignmentAsync(sessionId, userId);
+        requestCaseAssignmentAndConfirm(sessionId, userId, caseId, false);
+    }
+
+    public static void requestCaseAssignmentAndConfirm(final UUID sessionId, final UUID userId, final UUID caseId, boolean waitForEvent) {
+        if (waitForEvent) {
+            requestCaseAssignmentAndWaitForEvent(sessionId, userId, CaseAssigned.EVENT_NAME);
+        } else {
+            requestCaseAssignmentAsync(sessionId, userId);
+        }
         assignCaseToUser(caseId, userId, UUID.randomUUID(), ACCEPTED);
         pollUntilCaseAssignedToUser(caseId, userId);
     }
@@ -66,7 +74,7 @@ public class AssignmentHelper {
     }
 
     public static boolean pollUntilCaseAssignedToUser(final UUID caseId, final UUID userId) {
-        return await().pollInterval(POLL_INTERVAL).atMost(TIMEOUT_IN_SECONDS, SECONDS).until(() -> isCaseAssignedToUser(caseId, userId), is(true));
+        return await().pollInterval(POLL_INTERVAL).atMost(30, SECONDS).until(() -> isCaseAssignedToUser(caseId, userId), is(true));
     }
 
     public static boolean pollUntilCaseNotAssignedToUser(final UUID caseId, final UUID userId) {

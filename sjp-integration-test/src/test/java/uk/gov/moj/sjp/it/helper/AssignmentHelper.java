@@ -74,7 +74,7 @@ public class AssignmentHelper {
     }
 
     public static boolean pollUntilCaseAssignedToUser(final UUID caseId, final UUID userId) {
-        return await().pollInterval(POLL_INTERVAL).atMost(30, SECONDS).until(() -> isCaseAssignedToUser(caseId, userId), is(true));
+        return await().pollInterval(POLL_INTERVAL).atMost(TIMEOUT_IN_SECONDS, SECONDS).until(() -> isCaseAssignedToUser(caseId, userId), is(true));
     }
 
     public static boolean pollUntilCaseNotAssignedToUser(final UUID caseId, final UUID userId) {

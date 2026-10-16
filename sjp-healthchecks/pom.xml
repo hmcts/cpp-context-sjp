@@ -29,8 +29,9 @@
             <artifactId>unifiedsearch-client</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.elasticsearch.client</groupId>
-            <artifactId>elasticsearch-rest-high-level-client</artifactId>
+            <groupId>co.elastic.clients</groupId>
+            <artifactId>elasticsearch-java</artifactId>
+            <version>9.2.2</version>
         </dependency>
 
         <!-- Test Dependencies -->

@@ -27,7 +27,7 @@ import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMatch
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMetadataMatcher.metadata;
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopePayloadMatcher.payload;
 import static uk.gov.moj.sjp.it.command.CreateCase.createCaseForPayloadBuilder;
-import static uk.gov.moj.sjp.it.helper.AssignmentHelper.requestCaseAssignmentAndConfirm;
+import static uk.gov.moj.sjp.it.helper.AssignmentHelper.*;
 import static uk.gov.moj.sjp.it.helper.CaseHelper.pollUntilCaseReady;
 import static uk.gov.moj.sjp.it.helper.SessionHelper.startSessionAndConfirm;
 import static uk.gov.moj.sjp.it.pollingquery.CasePoller.getCase;
@@ -112,12 +112,16 @@ public class DecisionHelper {
     }
 
     public static void saveDefaultDecision(final UUID caseId, final Collection<UUID> offenceIds) {
+        saveDefaultDecision(caseId, offenceIds, false);
+    }
+
+    public static void saveDefaultDecision(final UUID caseId, final Collection<UUID> offenceIds, boolean waitingForEvent) {
         ReferenceDataServiceStub.stubDefaultCourtByCourtHouseOUCodeQuery();
         final JsonObject readyCase = CaseHelper.pollUntilCaseReady(caseId);
         final SessionType sessionType = SessionType.valueOf(readyCase.getString("sessionType"));
         final ProsecutingAuthority prosecutingAuthority = ProsecutingAuthority.valueOf(readyCase.getString("prosecutingAuthority"));
 
-        final UUID sessionId = startSessionAndRequestAssignment(DEFAULT_USER, sessionType, prosecutingAuthority, caseId);
+        final UUID sessionId = startSessionAndRequestAssignment(DEFAULT_USER, sessionType, prosecutingAuthority, caseId, waitingForEvent);
 
         saveDefaultDecisionInSession(caseId, sessionId, DEFAULT_USER_ID, offenceIds);
     }
@@ -651,10 +655,15 @@ public class DecisionHelper {
     }
 
     private static UUID startSessionAndRequestAssignment(final User user, final SessionType sessionType, final ProsecutingAuthority prosecutingAuthority, final UUID caseId) {
+       return startSessionAndRequestAssignment(user, sessionType, prosecutingAuthority, caseId,  false);
+
+    }
+
+    public static UUID startSessionAndRequestAssignment(final User user, final SessionType sessionType, final ProsecutingAuthority prosecutingAuthority, final UUID caseId, boolean waitingForEvent) {
         final String courtHouseCode = prosecutingAuthority == ProsecutingAuthority.TFL ? DEFAULT_LONDON_COURT_HOUSE_OU_CODE : DEFAULT_NON_LONDON_COURT_HOUSE_OU_CODE;
         final UUID sessionId = randomUUID();
         startSessionAndConfirm(sessionId, user.getUserId(), courtHouseCode, sessionType);
-        requestCaseAssignmentAndConfirm(sessionId, user.getUserId(), caseId);
+        requestCaseAssignmentAndConfirm(sessionId, user.getUserId(), caseId, waitingForEvent);
         return sessionId;
     }
 

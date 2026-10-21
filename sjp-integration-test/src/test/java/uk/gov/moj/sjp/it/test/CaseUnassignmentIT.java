@@ -68,9 +68,7 @@ class CaseUnassignmentIT extends BaseIntegrationTest {
         Optional<Response> createCaseResponse = createCase.getExecutor().executeSync();
         assertThat(createCaseResponse.get().getStatus(), equalTo(202));
 
-        long start = System.currentTimeMillis();
         CaseHelper.pollUntilCaseReady(CASE_ID);
-        log.info("Case became ready after {} md", System.currentTimeMillis() - start);
 
         startSessionAndConfirm(SESSION_ID, DEFAULT_USER.getUserId(), COURT_HOUSE_OU_CODE, SessionType.MAGISTRATE);
         requestCaseAssignmentAndConfirm(SESSION_ID, DEFAULT_USER.getUserId(), createCase.id);

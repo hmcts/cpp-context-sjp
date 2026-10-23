@@ -48,7 +48,15 @@ public class AssignmentHelper {
     }
 
     public static void requestCaseAssignmentAndConfirm(final UUID sessionId, final UUID userId, final UUID caseId) {
-        requestCaseAssignmentAsync(sessionId, userId);
+        requestCaseAssignmentAndConfirm(sessionId, userId, caseId, false);
+    }
+
+    public static void requestCaseAssignmentAndConfirm(final UUID sessionId, final UUID userId, final UUID caseId, boolean waitForEvent) {
+        if (waitForEvent) {
+            requestCaseAssignmentAndWaitForEvent(sessionId, userId, CaseAssigned.EVENT_NAME);
+        } else {
+            requestCaseAssignmentAsync(sessionId, userId);
+        }
         assignCaseToUser(caseId, userId, UUID.randomUUID(), ACCEPTED);
         pollUntilCaseAssignedToUser(caseId, userId);
     }

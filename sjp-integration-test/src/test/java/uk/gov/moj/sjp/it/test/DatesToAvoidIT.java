@@ -227,7 +227,7 @@ class DatesToAvoidIT extends BaseIntegrationTest {
     }
 
     private void completeCase(CreateCase.CreateCasePayloadBuilder createCasePayloadBuilder) {
-        saveDefaultDecision(createCasePayloadBuilder.getId(), createCasePayloadBuilder.getOffenceIds());
+        saveDefaultDecision(createCasePayloadBuilder.getId(), createCasePayloadBuilder.getOffenceIds(), true);
     }
 
     private void updatePleaToNotGuiltyAndConfirm(final UUID caseId, final UUID offenceId, final UUID defendantId) {

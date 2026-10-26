@@ -9,7 +9,7 @@
 
     <groupId>uk.gov.moj.cpp.sjp</groupId>
     <artifactId>sjp-parent</artifactId>
-    <version>25.104.0-M1-SNAPSHOT</version>
+    <version>25.104.0-M1-java-25-IT-fix-CADB-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <properties>

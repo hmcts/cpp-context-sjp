@@ -28,6 +28,11 @@
             <groupId>uk.gov.moj.cpp.unifiedsearch</groupId>
             <artifactId>unifiedsearch-client</artifactId>
         </dependency>
+        <dependency>
+            <groupId>co.elastic.clients</groupId>
+            <artifactId>elasticsearch-java</artifactId>
+            <version>9.2.2</version>
+        </dependency>
 
         <!-- Test Dependencies -->
         <dependency>

@@ -82,7 +82,7 @@ public class SjpService {
         final JsonObject payload = createObjectBuilder().add(SESSION_ID, sessionId.toString()).build();
         final JsonEnvelope request = envelopeFrom(metadataFrom(envelope.metadata()).withName("sjp.query.session"), payload);
         final JsonEnvelope response = requester.requestAsAdmin(request);
-        return response.payloadAsJsonObject();
+        return response.payload() != JsonValue.NULL ? response.payloadAsJsonObject() : null;
     }
 
     public JsonObject getLatestAocpSessionDetails(final JsonEnvelope envelope) {

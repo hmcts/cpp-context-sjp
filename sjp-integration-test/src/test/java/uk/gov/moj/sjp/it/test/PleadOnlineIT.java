@@ -1071,7 +1071,7 @@ public class PleadOnlineIT extends BaseIntegrationTest {
         pleaPayload.remove("financialMeans");
         assertThat(pleaPayload.has("financialMeans"), is(false));
         assertThat(pleaPayload.has("outgoings"), is(true));
-        final JsonPath response = pleadOnlineWithPublicEvent(pleaPayload);
+        final JsonPath response = pleadOnlineWithPublicEvent(pleaPayload, false);
         verifyResponseCase(response, TEMPLATE_PLEA_NOT_GUILTY_WITHOUT_FINANCIAL_MEANS_CASE_RESPONSE);
         verifyResponseOnlinePlea(TEMPLATE_PLEA_NOT_GUILTY_WITHOUT_FINANCIAL_MEANS_RESPONSE, notGuilty);
     }
@@ -1084,7 +1084,7 @@ public class PleadOnlineIT extends BaseIntegrationTest {
         pleaPayload.remove("financialMeans");
         assertThat(pleaPayload.has("financialMeans"), is(false));
         assertThat(pleaPayload.has("outgoings"), is(true));
-        final JsonPath response = pleadOnline(pleaPayload);
+        final JsonPath response = pleadOnline(pleaPayload, false);
         verifyResponseCase(response, TEMPLATE_PLEA_NOT_GUILTY_WITHOUT_FINANCIAL_MEANS_CASE_RESPONSE);
         verifyResponseOnlinePlea(TEMPLATE_PLEA_NOT_GUILTY_WITHOUT_FINANCIAL_MEANS_RESPONSE, notGuilty);
     }
@@ -1096,7 +1096,7 @@ public class PleadOnlineIT extends BaseIntegrationTest {
         pleaPayload.remove("outgoings");
         assertThat(pleaPayload.has("financialMeans"), is(true));
         assertThat(pleaPayload.has("outgoings"), is(false));
-        final JsonPath response = pleadOnlineWithPublicEvent(pleaPayload);
+        final JsonPath response = pleadOnlineWithPublicEvent(pleaPayload, false);
         verifyResponseCase(response, TEMPLATE_PLEA_NOT_GUILTY_WITHOUT_FINANCIAL_MEANS_CASE_RESPONSE);
         verifyResponseOnlinePlea(TEMPLATE_PLEA_NOT_GUILTY_WITHOUT_OUTGOINGS_RESPONSE, notGuilty);
     }
@@ -1108,7 +1108,7 @@ public class PleadOnlineIT extends BaseIntegrationTest {
         pleaPayload.remove("outgoings");
         assertThat(pleaPayload.has("financialMeans"), is(true));
         assertThat(pleaPayload.has("outgoings"), is(false));
-        final JsonPath response = pleadOnline(pleaPayload);
+        final JsonPath response = pleadOnline(pleaPayload, false);
         verifyResponseCase(response, TEMPLATE_PLEA_NOT_GUILTY_WITHOUT_FINANCIAL_MEANS_CASE_RESPONSE);
         verifyResponseOnlinePlea(TEMPLATE_PLEA_NOT_GUILTY_WITHOUT_OUTGOINGS_RESPONSE, notGuilty);
     }
@@ -1123,7 +1123,7 @@ public class PleadOnlineIT extends BaseIntegrationTest {
         pleaPayload.getJSONObject("personalDetails").put("nationalInsuranceNumber", "SR569876FD");
         assertThat(pleaPayload.has("financialMeans"), is(true));
         assertThat(pleaPayload.has("outgoings"), is(false));
-        final JsonPath response = pleadOnlineWithPublicEvent(pleaPayload);
+        final JsonPath response = pleadOnlineWithPublicEvent(pleaPayload, false);
 
         verifyResponseCase(response, TEMPLATE_PLEA_NOT_GUILTY_WITH_CHANGED_DETAILS_CASE_RESPONSE);
         verifyResponseOnlinePlea(TEMPLATE_PLEA_NOT_GUILTY_WITH_CHANGED_DETAILS_RESPONSE, notGuilty);
@@ -1139,7 +1139,7 @@ public class PleadOnlineIT extends BaseIntegrationTest {
         pleaPayload.getJSONObject("personalDetails").put("nationalInsuranceNumber", "SR569876FD");
         assertThat(pleaPayload.has("financialMeans"), is(true));
         assertThat(pleaPayload.has("outgoings"), is(false));
-        final JsonPath response = pleadOnline(pleaPayload);
+        final JsonPath response = pleadOnline(pleaPayload, false);
 
         verifyResponseCase(response, TEMPLATE_PLEA_NOT_GUILTY_WITH_CHANGED_DETAILS_CASE_RESPONSE);
         verifyResponseOnlinePlea(TEMPLATE_PLEA_NOT_GUILTY_WITH_CHANGED_DETAILS_RESPONSE, notGuilty);
@@ -1153,7 +1153,7 @@ public class PleadOnlineIT extends BaseIntegrationTest {
         pleaPayload.remove("outgoings");
         assertThat(pleaPayload.has("financialMeans"), is(false));
         assertThat(pleaPayload.has("outgoings"), is(false));
-        final JsonPath response = pleadOnlineWithPublicEvent(pleaPayload);
+        final JsonPath response = pleadOnlineWithPublicEvent(pleaPayload, false);
         verifyResponseCase(response, TEMPLATE_PLEA_NOT_GUILTY_WITHOUT_FINANCIAL_MEANS_CASE_RESPONSE);
         verifyResponseOnlinePlea(TEMPLATE_PLEA_NOT_GUILTY_WITHOUT_FINANCIAL_MEANS_AND_OUTGOINGS_RESPONSE, notGuilty);
     }
@@ -1166,7 +1166,7 @@ public class PleadOnlineIT extends BaseIntegrationTest {
         pleaPayload.remove("outgoings");
         assertThat(pleaPayload.has("financialMeans"), is(false));
         assertThat(pleaPayload.has("outgoings"), is(false));
-        final JsonPath response = pleadOnline(pleaPayload);
+        final JsonPath response = pleadOnline(pleaPayload, false);
         verifyResponseCase(response, TEMPLATE_PLEA_NOT_GUILTY_WITHOUT_FINANCIAL_MEANS_CASE_RESPONSE);
         verifyResponseOnlinePlea(TEMPLATE_PLEA_NOT_GUILTY_WITHOUT_FINANCIAL_MEANS_AND_OUTGOINGS_RESPONSE, notGuilty);
     }
@@ -1177,7 +1177,7 @@ public class PleadOnlineIT extends BaseIntegrationTest {
         final JSONObject pleaPayload = getOnlinePleaPayload(notGuilty);
         pleaPayload.put("financialMeans", createObjectBuilder().build());
         assertThat(pleaPayload.getJSONObject("financialMeans").keySet(), is(empty()));
-        final JsonPath response = pleadOnlineWithPublicEvent(pleaPayload);
+        final JsonPath response = pleadOnlineWithPublicEvent(pleaPayload, false);
         verifyResponseCase(response, TEMPLATE_PLEA_NOT_GUILTY_WITHOUT_FINANCIAL_MEANS_CASE_RESPONSE);
         verifyResponseOnlinePlea(TEMPLATE_PLEA_NOT_GUILTY_WITHOUT_FINANCIAL_MEANS_RESPONSE, notGuilty);
     }
@@ -1188,7 +1188,7 @@ public class PleadOnlineIT extends BaseIntegrationTest {
         final JSONObject pleaPayload = getOnlinePleaPayload(notGuilty);
         pleaPayload.put("financialMeans", createObjectBuilder().build());
         assertThat(pleaPayload.getJSONObject("financialMeans").keySet(), is(empty()));
-        final JsonPath response = pleadOnline(pleaPayload);
+        final JsonPath response = pleadOnline(pleaPayload, false);
         verifyResponseCase(response, TEMPLATE_PLEA_NOT_GUILTY_WITHOUT_FINANCIAL_MEANS_CASE_RESPONSE);
         verifyResponseOnlinePlea(TEMPLATE_PLEA_NOT_GUILTY_WITHOUT_FINANCIAL_MEANS_RESPONSE, notGuilty);
     }
@@ -1198,7 +1198,7 @@ public class PleadOnlineIT extends BaseIntegrationTest {
         final PleaType guilty = GUILTY;
         final JSONObject pleaPayload = getOnlinePleaPayload(guilty);
         assertThat(pleaPayload.has("financialMeans"), is(true));
-        final JsonPath response = pleadOnlineWithPublicEvent(pleaPayload);
+        final JsonPath response = pleadOnlineWithPublicEvent(pleaPayload, true);
         verifyResponseCase(response, TEMPLATE_PLEA_GUILTY_WITH_FINANCIAL_MEANS_CASE_RESPONSE);
         verifyResponseOnlinePlea(TEMPLATE_PLEA_GUILTY_WITH_FINANCIAL_MEANS_RESPONSE, guilty);
     }
@@ -1208,7 +1208,7 @@ public class PleadOnlineIT extends BaseIntegrationTest {
         final PleaType guilty = GUILTY;
         final JSONObject pleaPayload = getOnlinePleaPayload(guilty);
         assertThat(pleaPayload.has("financialMeans"), is(true));
-        final JsonPath response = pleadOnline(pleaPayload);
+        final JsonPath response = pleadOnline(pleaPayload, true);
         verifyResponseCase(response, TEMPLATE_PLEA_GUILTY_WITH_FINANCIAL_MEANS_CASE_RESPONSE);
         verifyResponseOnlinePlea(TEMPLATE_PLEA_GUILTY_WITH_FINANCIAL_MEANS_RESPONSE, guilty);
     }
@@ -1474,7 +1474,7 @@ public class PleadOnlineIT extends BaseIntegrationTest {
         return JsonPath.from(new StrSubstitutor(values).replace(getPayload(nameFile)));
     }
 
-    private JsonPath pleadOnlineWithPublicEvent(final JSONObject pleaPayload) {
+    private JsonPath pleadOnlineWithPublicEvent(final JSONObject pleaPayload, final boolean expectedReadyForDecision) {
         final PleaType pleaType = PleaType.valueOf(pleaPayload.getJSONArray("offences").getJSONObject(0).getString("plea"));
         try (final PleadOnlineHelper pleadOnlineHelper = new PleadOnlineHelper(createCasePayloadBuilder.getId())) {
             pleadOnlineHelper.pleadOnlinePublicEvent(stringToJsonObjectConverter.convert(pleaPayload.toString()));
@@ -1482,13 +1482,14 @@ public class PleadOnlineIT extends BaseIntegrationTest {
                     withJsonPath("defendant.offences[0].plea", is(pleaType.name())),
                     withJsonPath("defendant.offences[0].pleaMethod", is(PleaMethod.ONLINE.name())),
                     withJsonPath("defendant.offences[0].pleaDate", notNullValue()),
-                    withJsonPath("onlinePleaReceived", is(true))
+                    withJsonPath("onlinePleaReceived", is(true)),
+                    withJsonPath("readyForDecision", is(expectedReadyForDecision))
             };
             return pleadOnlineHelper.verifyPleaUpdated(createCasePayloadBuilder.getId(), pleaMatchers);
         }
     }
 
-    private JsonPath pleadOnline(final JSONObject pleaPayload) {
+    private JsonPath pleadOnline(final JSONObject pleaPayload, final boolean expectedReadyForDecision) {
         final PleaType pleaType = PleaType.valueOf(pleaPayload.getJSONArray("offences").getJSONObject(0).getString("plea"));
         try (final PleadOnlineHelper pleadOnlineHelper = new PleadOnlineHelper(createCasePayloadBuilder.getId())) {
             pleadOnlineHelper.pleadOnline(pleaPayload.toString());
@@ -1496,7 +1497,8 @@ public class PleadOnlineIT extends BaseIntegrationTest {
                     withJsonPath("defendant.offences[0].plea", is(pleaType.name())),
                     withJsonPath("defendant.offences[0].pleaMethod", is(PleaMethod.ONLINE.name())),
                     withJsonPath("defendant.offences[0].pleaDate", notNullValue()),
-                    withJsonPath("onlinePleaReceived", is(true))
+                    withJsonPath("onlinePleaReceived", is(true)),
+                    withJsonPath("readyForDecision", is(expectedReadyForDecision))
             };
             return pleadOnlineHelper.verifyPleaUpdated(createCasePayloadBuilder.getId(), pleaMatchers);
         }

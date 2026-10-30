@@ -17,6 +17,7 @@ import static java.util.stream.Collectors.joining;
 import static java.util.stream.Collectors.mapping;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toSet;
+import static java.util.stream.Collectors.toMap;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
 import static org.apache.commons.lang3.StringUtils.isEmpty;
 import static org.apache.commons.lang3.StringUtils.isNotEmpty;
@@ -496,9 +497,9 @@ public class CaseDecisionHandler {
         final Map<DecisionType, List<OffenceDecisionInformation>> collect =
                 decision.getOffenceDecisions()
                         .stream()
-                        .collect(groupingBy(OffenceDecision::getType,
-                                mapping(OffenceDecision::offenceDecisionInformationAsList, toList()))).entrySet().stream()
-                        .collect(Collectors.toMap(Map.Entry::getKey, decisionTypeListEntry -> decisionTypeListEntry.getValue().stream().flatMap(Collection::stream).collect(toList())));
+                        .collect(groupingBy(OffenceDecision::getType, mapping(OffenceDecision::offenceDecisionInformationAsList, toList())))
+                        .entrySet().stream()
+                        .collect(toMap(Map.Entry::getKey, decisionTypeListEntry -> decisionTypeListEntry.getValue().stream().flatMap(Collection::stream).collect(toList())));
 
         final BiFunction<Predicate<DecisionType>, Predicate<VerdictType>, Long> unmatchedDecisionTypeAndVerdicts = (decisionType, matchedVerdicts) -> collect.entrySet().stream()
                 .filter(a -> decisionType.test(a.getKey()))

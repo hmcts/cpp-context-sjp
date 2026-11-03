@@ -10,21 +10,35 @@ import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class HttpConnectionHelper {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(HttpConnectionHelper.class);
+
     private static final String CONTENT_TYPE = "content-type";
-    private static final String APPLICATION_JSON_CONTENT_TYPE = "application/json";
+    private static final String APPLICATION_JSON_CONTENT_TYPE = "application/vnd.courtlistpublishing-service.sjp.post+json";
 
     public Integer getResponseCode(final String url, final String payload) throws IOException {
+        return getResponseCode(url, payload, UUID.randomUUID().toString());
+    }
+
+    public Integer getResponseCode(final String url, final String payload, final String userId) throws IOException {
         final HttpPost post = new HttpPost(url);
         post.addHeader(CONTENT_TYPE, APPLICATION_JSON_CONTENT_TYPE);
-        post.addHeader(HeaderConstants.USER_ID, UUID.randomUUID().toString());
+        post.addHeader(HeaderConstants.USER_ID, userId);
         post.setEntity(new StringEntity(payload));
 
+        LOGGER.info("sending POST request to url {}", url);
         try (CloseableHttpClient httpClient = HttpClients.createDefault();
              CloseableHttpResponse response = httpClient.execute(post)) {
-            return response.getStatusLine().getStatusCode();
+            final int statusCode = response.getStatusLine().getStatusCode();
+            LOGGER.info("received response from url {}, statusCode {}", url, statusCode);
+            return statusCode;
+        } catch (final IOException e) {
+            LOGGER.error("failed to send POST request to url {}", url, e);
+            throw e;
         }
     }
 }

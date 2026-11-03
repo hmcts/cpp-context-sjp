@@ -146,7 +146,7 @@ public class CaseDetail implements Serializable {
     @Column(name = "managed_by_atcm")
     private Boolean managedByAtcm;
 
-    @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @OneToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "current_application_id")
     private CaseApplication currentApplication;
 

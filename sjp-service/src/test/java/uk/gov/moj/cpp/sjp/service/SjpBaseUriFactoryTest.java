@@ -82,15 +82,16 @@ class SjpBaseUriFactoryTest {
     }
 
     @Test
-    void shouldUseExistingUsersGroupsServiceInTheSameNamespace() {
+    void shouldPreserveFrameworkRoutingWithoutAnOverride() {
         try (WeldContainer container = container(true)) {
-            assertEquals("http://usersgroups-service-wildfly-app/usersgroups-service/query/api/rest/usersgroups",
+            assertEquals(LEGACY_QUERY,
                     container.select(BaseUriFactory.class).get().createBaseUri(endpoint(LEGACY_QUERY)));
         }
     }
 
     @Test
     void shouldRetainFrameworkMockRouting() {
+        System.setProperty("usersgroups.query.baseUri", "http://usersgroups-service-wildfly-app/usersgroups-service/");
         try (WeldContainer container = container(true)) {
             final EndpointDefinition definition = endpoint(LEGACY_QUERY);
             when(container.select(MockServerPortProvider.class).get().getMockServerPort(definition))
@@ -102,6 +103,7 @@ class SjpBaseUriFactoryTest {
 
     @Test
     void shouldDelegateOtherContextsToFrameworkPortSelection() {
+        System.setProperty("usersgroups.query.baseUri", "http://usersgroups-service-wildfly-app/usersgroups-service/");
         System.setProperty("DEFAULT_PORT", "8180");
         try (WeldContainer container = container(true)) {
             assertEquals("http://localhost:8180/hearing-query-api/query/api/rest/hearing",
@@ -112,12 +114,22 @@ class SjpBaseUriFactoryTest {
 
     @Test
     void shouldPreserveExplicitRemoteAndCombinedWarUrls() {
+        System.setProperty("usersgroups.query.baseUri", "http://usersgroups-service-wildfly-app/usersgroups-service/");
         try (WeldContainer container = container(true)) {
             final BaseUriFactory factory = container.select(BaseUriFactory.class).get();
             final String remote = "https://example.invalid/usersgroups-query-api/query/api/rest/usersgroups";
             final String combined = "http://localhost:9080/usersgroups-service/query/api/rest/usersgroups";
             assertEquals(remote, factory.createBaseUri(endpoint(remote)));
             assertEquals(combined, factory.createBaseUri(endpoint(combined)));
+        }
+    }
+
+    @Test
+    void shouldPreserveFrameworkRoutingForBlankOverride() {
+        System.setProperty("usersgroups.query.baseUri", " ");
+        try (WeldContainer container = container(true)) {
+            assertEquals(LEGACY_QUERY,
+                    container.select(BaseUriFactory.class).get().createBaseUri(endpoint(LEGACY_QUERY)));
         }
     }
 

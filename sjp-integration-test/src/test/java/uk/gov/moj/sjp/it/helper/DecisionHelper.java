@@ -112,12 +112,17 @@ public class DecisionHelper {
     }
 
     public static void saveDefaultDecision(final UUID caseId, final Collection<UUID> offenceIds) {
+        saveDefaultDecision(caseId, offenceIds, false);
+    }
+
+    public static void saveDefaultDecision(final UUID caseId, final Collection<UUID> offenceIds,
+                                           final boolean waitForAssignmentEvent) {
         ReferenceDataServiceStub.stubDefaultCourtByCourtHouseOUCodeQuery();
         final JsonObject readyCase = CaseHelper.pollUntilCaseReady(caseId);
         final SessionType sessionType = SessionType.valueOf(readyCase.getString("sessionType"));
         final ProsecutingAuthority prosecutingAuthority = ProsecutingAuthority.valueOf(readyCase.getString("prosecutingAuthority"));
 
-        final UUID sessionId = startSessionAndRequestAssignment(DEFAULT_USER, sessionType, prosecutingAuthority, caseId);
+        final UUID sessionId = startSessionAndRequestAssignment(DEFAULT_USER, sessionType, prosecutingAuthority, caseId, waitForAssignmentEvent);
 
         saveDefaultDecisionInSession(caseId, sessionId, DEFAULT_USER_ID, offenceIds);
     }
@@ -651,10 +656,16 @@ public class DecisionHelper {
     }
 
     private static UUID startSessionAndRequestAssignment(final User user, final SessionType sessionType, final ProsecutingAuthority prosecutingAuthority, final UUID caseId) {
+        return startSessionAndRequestAssignment(user, sessionType, prosecutingAuthority, caseId, false);
+    }
+
+    private static UUID startSessionAndRequestAssignment(final User user, final SessionType sessionType,
+                                                         final ProsecutingAuthority prosecutingAuthority, final UUID caseId,
+                                                         final boolean waitForAssignmentEvent) {
         final String courtHouseCode = prosecutingAuthority == ProsecutingAuthority.TFL ? DEFAULT_LONDON_COURT_HOUSE_OU_CODE : DEFAULT_NON_LONDON_COURT_HOUSE_OU_CODE;
         final UUID sessionId = randomUUID();
         startSessionAndConfirm(sessionId, user.getUserId(), courtHouseCode, sessionType);
-        requestCaseAssignmentAndConfirm(sessionId, user.getUserId(), caseId);
+        requestCaseAssignmentAndConfirm(sessionId, user.getUserId(), caseId, waitForAssignmentEvent);
         return sessionId;
     }
 

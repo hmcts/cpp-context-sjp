@@ -49,7 +49,17 @@ public class AssignmentHelper {
     }
 
     public static void requestCaseAssignmentAndConfirm(final UUID sessionId, final UUID userId, final UUID caseId) {
-        requestCaseAssignmentAsync(sessionId, userId);
+        requestCaseAssignmentAndConfirm(sessionId, userId, caseId, false);
+    }
+
+    public static void requestCaseAssignmentAndConfirm(final UUID sessionId, final UUID userId,
+                                                       final UUID caseId, final boolean waitForEvent) {
+        if (waitForEvent) {
+            requestCaseAssignmentAndWaitForEvent(sessionId, userId, CaseAssigned.EVENT_NAME)
+                    .orElseThrow(() -> new AssertionError("Expected next-case assignment event before assigning the target case"));
+        } else {
+            requestCaseAssignmentAsync(sessionId, userId);
+        }
         assignCaseToUser(caseId, userId, UUID.randomUUID(), ACCEPTED);
         pollUntilCaseAssignedToUser(caseId, userId);
     }

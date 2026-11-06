@@ -4,6 +4,8 @@ import static com.jayway.jsonpath.matchers.JsonPathMatchers.isJson;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
 import static java.util.UUID.randomUUID;
 import static jakarta.ws.rs.core.Response.Status.OK;
+import static java.util.concurrent.TimeUnit.SECONDS;
+import static org.awaitility.Awaitility.await;
 import static org.hamcrest.CoreMatchers.allOf;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.hasItem;
@@ -25,6 +27,7 @@ import uk.gov.justice.services.common.converter.LocalDates;
 import uk.gov.moj.cpp.sjp.domain.common.CaseStatus;
 
 import java.time.LocalDate;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
@@ -109,7 +112,8 @@ public class CaseSearchResultHelper {
         final UUID sessionId = randomUUID();
 
         startMagistrateSessionAndConfirm(sessionId, DEFAULT_USER_ID, DEFAULT_LONDON_COURT_HOUSE_OU_CODE, "Alan Smith");
-        requestCaseAssignment(sessionId, DEFAULT_USER_ID);
+        await().atMost(30, SECONDS).pollInterval(1, SECONDS)
+            .until(()-> requestCaseAssignment(sessionId, DEFAULT_USER_ID), Optional::isPresent);
     }
 
     public void verify(final String query, Matcher matcher) {

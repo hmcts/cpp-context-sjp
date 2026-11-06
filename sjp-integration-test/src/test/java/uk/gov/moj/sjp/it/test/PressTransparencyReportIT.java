@@ -22,6 +22,8 @@ import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubAllIndividualP
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubAllReferenceData;
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubAnyQueryOffences;
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubEnforcementAreaByPostcode;
+import static uk.gov.moj.sjp.it.stub.CourtListPublishingServiceStub.pollCourtListPublishRequests;
+import static uk.gov.moj.sjp.it.stub.CourtListPublishingServiceStub.stubPublishCourtListEndpoint;
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubProsecutorQuery;
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubRegionByPostcode;
 import static uk.gov.moj.sjp.it.stub.SysDocGeneratorStub.pollSysDocGenerationRequests;
@@ -68,7 +70,6 @@ public class PressTransparencyReportIT extends BaseIntegrationTest {
     private static final String SJP_EVENTS_PRESS_TRANSPARENCY_REPORT_GENERATION_STARTED = "sjp.events.press-transparency-pdf-report-generation-started";
     private static final String SJP_EVENTS_PRESS_TRANSPARENCY_REPORT_METADATA_ADDED = "sjp.events.press-transparency-pdf-report-metadata-added";
     private static final String SJP_EVENTS_PRESS_TRANSPARENCY_REPORT_GENERATION_FAILED = "sjp.events.press-transparency-pdf-report-generation-failed";
-    private static final String SJP_PUBLIC_EVENT_PRESS_TRANSPARENCY_REPORT_GENERATED = "public.sjp.press-transparency-report-generated";
     private final UUID caseId1 = randomUUID(), caseId2 = randomUUID();
     private final UUID offenceId1 = randomUUID(), offenceId2 = randomUUID();
     private PressTransparencyReportHelper pressTransparencyReportHelper = new PressTransparencyReportHelper();
@@ -78,6 +79,7 @@ public class PressTransparencyReportIT extends BaseIntegrationTest {
         resetAllRequests();
         cleanViewStore();
         stubGenerateDocumentEndPoint();
+        stubPublishCourtListEndpoint();
         stubAllIndividualProsecutorsQueries();
         stubAnyQueryOffences();
         stubAllReferenceData();
@@ -173,7 +175,16 @@ public class PressTransparencyReportIT extends BaseIntegrationTest {
     }
 
     @Test
-    public void shouldGeneratePressTransparencyJsonReports() {
+    public void shouldGeneratePressTransparencyJsonReportsFull() {
+        verifyGeneratePressTransparencyJsonReport("FULL", "SJP_PRESS_LIST");
+    }
+
+    @Test
+    public void shouldGeneratePressTransparencyJsonReportsDelta() {
+        verifyGeneratePressTransparencyJsonReport("DELTA", "SJP_DELTA_PRESS_LIST");
+    }
+
+    private void verifyGeneratePressTransparencyJsonReport(final String requestType, final String expectedListType) {
 
         final CreateCase.DefendantBuilder defendant1 = defaultDefendant()
                 .withRandomLastName();
@@ -191,34 +202,25 @@ public class PressTransparencyReportIT extends BaseIntegrationTest {
 
         final JsonObject payload = createObjectBuilder()
                 .add("format", "JSON")
-                .add("requestType", "DELTA")
+                .add("requestType", requestType)
                 .add("language", "ENGLISH")
                 .build();
 
         final EventListener eventListener = new EventListener()
                 .withMaxWaitTime(50000)
-                .subscribe(
-                        SJP_EVENTS_PRESS_TRANSPARENCY_REPORT_REQUESTED_JSON,
-                        SJP_PUBLIC_EVENT_PRESS_TRANSPARENCY_REPORT_GENERATED
-                )
+                .subscribe(SJP_EVENTS_PRESS_TRANSPARENCY_REPORT_REQUESTED_JSON)
                 .run(() -> pressTransparencyReportHelper.requestToGeneratePressTransparencyReport(payload));
 
         final Optional<JsonEnvelope> transparencyReportRequestedEvent = eventListener.popEvent(SJP_EVENTS_PRESS_TRANSPARENCY_REPORT_REQUESTED_JSON);
-        final Optional<JsonEnvelope> transparencyReportStartedEvent = eventListener.popEvent(SJP_PUBLIC_EVENT_PRESS_TRANSPARENCY_REPORT_GENERATED);
-
         assertThat(transparencyReportRequestedEvent.isPresent(), is(true));
-        assertThat(transparencyReportStartedEvent.isPresent(), is(true));
 
+        final List<JSONObject> courtListPublishRequests = pollCourtListPublishRequests(hasSize(1));
+        final JSONObject courtListPublishRequest = courtListPublishRequests.get(0);
 
-        final String pressTransparencyReportId = transparencyReportRequestedEvent
-                .map(requestedEvent -> requestedEvent.payloadAsJsonObject().getString("pressTransparencyReportId"))
-                .orElse("");
+        assertThat(courtListPublishRequest.getString("listType"), is(expectedListType));
 
-        final JsonEnvelope transparencyReportStartedEnvelope = transparencyReportStartedEvent.get();
-        final JsonObject transparencyReportStartedPayload = transparencyReportStartedEnvelope.payloadAsJsonObject();
-
-        JsonArray readyCases = transparencyReportStartedPayload.getJsonObject("listPayload").getJsonArray("readyCases");
-        assertThat(readyCases.size(), is(2));
+        final JSONObject listPayload = courtListPublishRequest.getJSONObject("listPayload");
+        assertThat(listPayload.getJSONArray("readyCases").length(), is(2));
     }
 
     @Test

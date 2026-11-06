@@ -60,6 +60,7 @@ import uk.gov.moj.cpp.sjp.event.OffenceWithdrawalRequested;
 import uk.gov.moj.cpp.sjp.event.decision.DecisionSaved;
 import uk.gov.moj.cpp.sjp.event.session.CaseUnassigned;
 import uk.gov.moj.sjp.it.command.CreateCase;
+import uk.gov.moj.sjp.it.helper.CaseHelper;
 import uk.gov.moj.sjp.it.helper.DecisionHelper;
 import uk.gov.moj.sjp.it.helper.EventListener;
 import uk.gov.moj.sjp.it.helper.OffencesWithdrawalRequestHelper;
@@ -191,6 +192,8 @@ public class MultipleOffencesWithdrawalRequestedIT extends BaseIntegrationTest {
         stubForIdMapperSuccess(Response.Status.OK);
 
         final UUID sessionId = randomUUID();
+
+        CaseHelper.pollUntilCaseReady(caseId);
 
         startSessionAndRequestAssignment(sessionId, userId, MAGISTRATE);
 

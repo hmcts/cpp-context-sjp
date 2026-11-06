@@ -1,5 +1,6 @@
 package uk.gov.moj.cpp.sjp.persistence.entity;
 
+import jakarta.persistence.*;
 import uk.gov.justice.services.common.jpa.converter.LocalDatePersistenceConverter;
 import uk.gov.moj.cpp.sjp.persistence.converter.JpaConverterJson;
 
@@ -8,16 +9,6 @@ import java.time.LocalDate;
 import java.util.UUID;
 
 import jakarta.json.JsonObject;
-import jakarta.persistence.Column;
-import jakarta.persistence.Convert;
-import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.OneToOne;
-import jakarta.persistence.Table;
 
 @Entity
 @Table(name = "case_application")
@@ -50,7 +41,7 @@ public class CaseApplication implements Serializable {
     @Enumerated(EnumType.STRING)
     private ApplicationType applicationType;
 
-    @ManyToOne(optional = false)
+    @ManyToOne(optional = false, fetch = FetchType.LAZY)
     @JoinColumn(name = "case_id", nullable = false)
     private CaseDetail caseDetail;
 

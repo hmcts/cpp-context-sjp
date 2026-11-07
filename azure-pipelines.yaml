@@ -34,6 +34,9 @@ variables:
   itTest_Folder: 'sjp-integration-test' # integration test folder name system-id-mapper-integration-test
   LANG : 'en_GB.UTF-8' # update lang u need
   LC_ALL : 'en_GB.UTF-8' # update LC u need
+  # Stop the checkout task running 'git sparse-checkout disable', which sets repositoryformatversion=1
+  # on the agent's git 2.34 and breaks jgitflow release-start ("Unknown repository format 1").
+  AGENT_USE_SPARSE_CHECKOUT_IN_CHECKOUT_TASK: 'false'
 
 stages:
   - ${{ if eq(variables['Build.Reason'], 'PullRequest') }}:

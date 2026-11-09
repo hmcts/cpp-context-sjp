@@ -342,6 +342,7 @@ public class CaseDocumentUploadedProcessorTest {
         final String description = "Case Document Upload rejected as case is referred to court for hearing";
         final JsonEnvelope privateEvent = createEnvelope("sjp.events.case-document-upload-rejected",
                 createObjectBuilder()
+                        .add("caseId", caseId.toString())
                         .add("documentId", documentReference.toString())
                         .add("description", description)
                         .build());
@@ -355,6 +356,7 @@ public class CaseDocumentUploadedProcessorTest {
 
         // Republished verbatim: the payload passes through untouched.
         assertThat(publicEvent.payloadAsJsonObject().toString(), isJson(allOf(
+                withJsonPath("$.caseId", equalTo(caseId.toString())),
                 withJsonPath("$.documentId", equalTo(documentReference.toString())),
                 withJsonPath("$.description", equalTo(description)))));
 

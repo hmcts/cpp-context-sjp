@@ -307,6 +307,7 @@ public class CaseDocumentHelper implements AutoCloseable {
         assertThat(caseDocumentUploadRejected, notNullValue());
 
         with(caseDocumentUploadRejected)
+                .assertThat("$.caseId", equalTo(caseId.toString()))
                 .assertThat("$.documentId", isAUuid())
                 .assertThat("$.description", notNullValue());
     }

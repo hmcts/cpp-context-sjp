@@ -105,6 +105,7 @@ public class UploadCaseDocumentTest extends CaseAggregateBaseTest {
         assertThat(events.get(0), instanceOf(CaseDocumentUploadRejected.class));
 
         final CaseDocumentUploadRejected caseDocumentUploadRejected = (CaseDocumentUploadRejected) events.get(0);
+        assertThat(caseDocumentUploadRejected.getCaseId(), equalTo(caseId));
         assertThat(caseDocumentUploadRejected.getDocumentId(), equalTo(documentReference));
 
         assertThat(caseDocumentUploadRejected.getDescription(), equalTo(expectedDescription));

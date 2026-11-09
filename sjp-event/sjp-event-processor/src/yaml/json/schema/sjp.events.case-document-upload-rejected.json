@@ -3,6 +3,9 @@
   "id": "http://justice.gov.uk/json/schemas/domains/sjp/event/case-document-upload-rejected.json",
   "type": "object",
   "properties": {
+    "caseId": {
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+    },
     "documentId": {
       "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
     },

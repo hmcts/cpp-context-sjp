@@ -1,5 +1,6 @@
 package uk.gov.moj.cpp.sjp.query.view.service;
 
+import static java.lang.Boolean.TRUE;
 import static java.time.LocalDate.now;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
@@ -272,6 +273,7 @@ public class ProsecutionCaseService {
                                 .map(e -> e > 0 ? e - 1 : 0).orElse(0))
                 .withOffenceTitle(getOffenceRefData(offenceRefData.orElse(null), "title", "welshTitle").orElse(null))
                 .withOffenceLegislation(getOffenceRefData(offenceRefData.orElse(null), "legislation", "welshLegislation").orElse(null))
+                .withProceedingsConcluded(TRUE.equals(offence.getCompleted()) ? TRUE : null)
                 .build();
     }
 

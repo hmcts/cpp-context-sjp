@@ -1,5 +1,6 @@
 package uk.gov.moj.sjp.it.test;
 
+import static com.jayway.jsonpath.matchers.JsonPathMatchers.hasNoJsonPath;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
 import static java.util.UUID.randomUUID;
 import static org.hamcrest.Matchers.allOf;
@@ -7,15 +8,19 @@ import static org.hamcrest.core.Is.is;
 import static uk.gov.justice.json.schemas.domains.sjp.Language.W;
 import static uk.gov.moj.sjp.it.command.CreateCase.CreateCasePayloadBuilder.withDefaults;
 import static uk.gov.moj.sjp.it.command.CreateCase.createCaseForPayloadBuilder;
+import static uk.gov.moj.sjp.it.helper.CaseHelper.pollUntilCaseReady;
+import static uk.gov.moj.sjp.it.helper.DecisionHelper.saveDefaultDecision;
 import static uk.gov.moj.sjp.it.model.ProsecutingAuthority.DVLA;
 import static uk.gov.moj.sjp.it.model.ProsecutingAuthority.TFL;
 import static uk.gov.moj.sjp.it.model.ProsecutingAuthority.TVL;
 import static uk.gov.moj.sjp.it.pollingquery.CasePoller.pollUntilProsecutionCaseByIdIsOk;
 import static uk.gov.moj.sjp.it.stub.ProsecutionCaseFileServiceStub.stubCaseDetails;
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubCountryNationalities;
+import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubEnforcementAreaByPostcode;
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubEthnicities;
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubProsecutorQuery;
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubQueryOffencesByCode;
+import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubRegionByPostcode;
 import static uk.gov.moj.sjp.it.util.CaseAssignmentRestrictionHelper.provisionCaseAssignmentRestrictions;
 import static uk.gov.moj.sjp.it.util.SjpDatabaseCleaner.cleanViewStore;
 import static uk.gov.moj.sjp.it.util.UrnProvider.generate;
@@ -68,7 +73,28 @@ public class FindProsecutionCaseIT extends BaseIntegrationTest {
                 withJsonPath("$.defendants[0].personDefendant.personDetails.lastName", is("LLOYD")),
                 withJsonPath("$.defendants[0].personDefendant.personDetails.nationalInsuranceNumber", is(NATIONAL_INSURANCE_NUMBER)),
                 withJsonPath("$.defendants[0].offences[0].id", is(offenceId1.toString())),
-                withJsonPath("$.defendants[0].offences[0].dvlaOffenceCode", is("DC10"))
+                withJsonPath("$.defendants[0].offences[0].dvlaOffenceCode", is("DC10")),
+                // no decision yet: the offence is live, so proceedingsConcluded is omitted (not false)
+                hasNoJsonPath("$.defendants[0].offences[0].proceedingsConcluded")
+        ));
+    }
+
+    @Test
+    public void shouldMarkOffenceAsProceedingsConcludedWhenFinalDecisionSaved() {
+        final CreateCase.CreateCasePayloadBuilder createCasePayloadBuilder = createCaseWithSingleOffence();
+        final String postcode = createCasePayloadBuilder.getDefendantBuilder().getAddressBuilder().getPostcode();
+        stubEnforcementAreaByPostcode(postcode, "1080", "Bedfordshire Magistrates' Court");
+        stubRegionByPostcode("1080", "DEFENDANT_REGION");
+
+        pollUntilCaseReady(caseId);
+        // saves a DISMISS decision, which is final, so the offence is marked completed in the viewstore
+        saveDefaultDecision(caseId, offenceId1);
+
+        pollUntilProsecutionCaseByIdIsOk(caseId, allOf(
+                withJsonPath("$.id", is(caseId.toString())),
+                withJsonPath("$.caseStatus", is("INACTIVE")),
+                withJsonPath("$.defendants[0].offences[0].id", is(offenceId1.toString())),
+                withJsonPath("$.defendants[0].offences[0].proceedingsConcluded", is(true))
         ));
     }
 
@@ -89,7 +115,7 @@ public class FindProsecutionCaseIT extends BaseIntegrationTest {
         ));
     }
 
-    private void createCaseWithSingleOffence() {
+    private CreateCase.CreateCasePayloadBuilder createCaseWithSingleOffence() {
         final CreateCase.CreateCasePayloadBuilder createCasePayloadBuilder = withDefaults()
                 .withId(caseId)
                 .withProsecutingAuthority(TFL)
@@ -105,6 +131,7 @@ public class FindProsecutionCaseIT extends BaseIntegrationTest {
 
 
         createCaseForPayloadBuilder(createCasePayloadBuilder);
+        return createCasePayloadBuilder;
     }
 
     private void createCaseWithSingleOffenceForCompany() {

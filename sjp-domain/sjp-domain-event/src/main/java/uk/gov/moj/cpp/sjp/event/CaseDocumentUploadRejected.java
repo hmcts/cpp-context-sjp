@@ -9,6 +9,14 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 @Event("sjp.events.case-document-upload-rejected")
 public class CaseDocumentUploadRejected {
     /**
+     * The case the upload was rejected for, so a context that sends one document to several cases
+     * learns which of them refused it.
+     *
+     * <p>Absent from events recorded before it was added; those replay with this field null.
+     */
+    private final UUID caseId;
+
+    /**
      * File service id of the rejected document. Null when it was addressed by
      * {@link #documentReferenceUri} instead - exactly one of the two is set.
      */
@@ -26,10 +34,15 @@ public class CaseDocumentUploadRejected {
     private final String description;
 
     @JsonCreator
-    public CaseDocumentUploadRejected(UUID documentId, String documentReferenceUri, String description) {
+    public CaseDocumentUploadRejected(UUID caseId, UUID documentId, String documentReferenceUri, String description) {
+        this.caseId = caseId;
         this.documentId = documentId;
         this.documentReferenceUri = documentReferenceUri;
         this.description = description;
+    }
+
+    public UUID getCaseId() {
+        return caseId;
     }
 
     public UUID getDocumentId() {

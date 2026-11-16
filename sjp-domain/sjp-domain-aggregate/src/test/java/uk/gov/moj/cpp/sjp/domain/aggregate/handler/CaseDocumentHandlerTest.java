@@ -36,7 +36,9 @@ public class CaseDocumentHandlerTest {
 
         Stream<Object> result = CaseDocumentHandler.INSTANCE.uploadCaseDocument(caseId, documentReference, null, documentType, state);
 
-        assertThat(result.collect(Collectors.toList()), contains(instanceOf(CaseDocumentUploadRejected.class)));
+        final List<Object> events = result.collect(Collectors.toList());
+        assertThat(events, contains(instanceOf(CaseDocumentUploadRejected.class)));
+        assertThat(((CaseDocumentUploadRejected) events.get(0)).getCaseId(), is(caseId));
     }
 
     @Test
@@ -55,6 +57,7 @@ public class CaseDocumentHandlerTest {
         assertThat(events, contains(instanceOf(CaseDocumentUploadRejected.class)));
 
         final CaseDocumentUploadRejected rejected = (CaseDocumentUploadRejected) events.get(0);
+        assertThat(rejected.getCaseId(), is(caseId));
         assertThat(rejected.getDocumentReferenceUri(), is(documentReferenceUri));
         assertThat(rejected.getDocumentId(), is(nullValue()));
         assertThat(rejected.getDescription(), containsString(documentReferenceUri));
@@ -97,7 +100,9 @@ public class CaseDocumentHandlerTest {
 
         Stream<Object> result = CaseDocumentHandler.INSTANCE.uploadCaseDocument(caseId, documentReference, null, documentType, state);
 
-        assertThat(result.collect(Collectors.toList()), contains(instanceOf(CaseDocumentUploadRejected.class)));
+        final List<Object> events = result.collect(Collectors.toList());
+        assertThat(events, contains(instanceOf(CaseDocumentUploadRejected.class)));
+        assertThat(((CaseDocumentUploadRejected) events.get(0)).getCaseId(), is(caseId));
     }
 
     @Test

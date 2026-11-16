@@ -127,7 +127,7 @@ public class UploadCaseDocumentHandlerTest {
         when(caseAggregate1.getState()).thenReturn(state);
         when(state.getMetadataUserId()).thenReturn(randomUUID());
 
-        final CaseDocumentUploadRejected caseDocumentUploadRejected = new CaseDocumentUploadRejected(DOCUMENT_REFERENCE, null, "");
+        final CaseDocumentUploadRejected caseDocumentUploadRejected = new CaseDocumentUploadRejected(CASE_ID, DOCUMENT_REFERENCE, null, "");
         when(caseAggregate1.uploadCaseDocument(CASE_ID, DOCUMENT_REFERENCE, null, DOCUMENT_TYPE)).thenReturn(Stream.of(caseDocumentUploadRejected));
 
         uploadCaseDocumentHandler.handle(command);
@@ -138,6 +138,7 @@ public class UploadCaseDocumentHandlerTest {
                                 withMetadataEnvelopedFrom(command)
                                         .withName("sjp.events.case-document-upload-rejected"),
                                 payloadIsJson(allOf(
+                                        withJsonPath("$.caseId", equalTo(CASE_ID.toString())),
                                         withJsonPath("$.documentId", equalTo(DOCUMENT_REFERENCE.toString())),
                                         withJsonPath("$.description", equalTo(""))
 

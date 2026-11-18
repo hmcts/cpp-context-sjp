@@ -4,6 +4,9 @@ import static java.lang.Boolean.TRUE;
 import static java.time.LocalDate.now;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
+import static java.util.Comparator.comparing;
+import static java.util.Comparator.naturalOrder;
+import static java.util.Comparator.nullsFirst;
 import static java.util.Objects.nonNull;
 import static java.util.Optional.empty;
 import static java.util.Optional.ofNullable;
@@ -39,8 +42,10 @@ import uk.gov.justice.core.courts.PersonDefendant;
 import uk.gov.justice.core.courts.ProsecutionCase;
 import uk.gov.justice.core.courts.ProsecutionCaseIdentifier;
 import uk.gov.moj.cpp.sjp.domain.Employer;
+import uk.gov.moj.cpp.sjp.domain.decision.DecisionType;
 import uk.gov.moj.cpp.sjp.domain.plea.PleaType;
 import uk.gov.moj.cpp.sjp.model.prosecution.helpers.DefendantTitleParser;
+import uk.gov.moj.cpp.sjp.persistence.entity.CaseDecision;
 import uk.gov.moj.cpp.sjp.persistence.entity.CaseDetail;
 import uk.gov.moj.cpp.sjp.persistence.entity.ContactDetails;
 import uk.gov.moj.cpp.sjp.persistence.entity.DefendantDetail;
@@ -52,6 +57,7 @@ import uk.gov.moj.cpp.sjp.persistence.repository.CaseRepository;
 import uk.gov.moj.cpp.sjp.persistence.repository.OnlinePleaDetailRepository;
 
 import java.time.ZonedDateTime;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -186,10 +192,11 @@ public class ProsecutionCaseService {
                                           final Map<String, JsonObject> offenceDefinitionsByOffenceCode) {
 
         final DefendantDetail defendantDetail = caseDetail.getDefendant();
+        final Map<UUID, DecisionType> latestDecisionTypeByOffence = getLatestDecisionTypeByOffence(caseDetail);
 
         final List<Offence> offenceViews = defendantDetail.getOffences()
                 .stream()
-                .map(offence -> createOffenceView(offence, prosecutionCaseFileDefendant, offenceDefinitionsByOffenceCode))
+                .map(offence -> createOffenceView(offence, prosecutionCaseFileDefendant, offenceDefinitionsByOffenceCode, latestDecisionTypeByOffence))
                 .collect(toList());
         final List<DefendantAlias> aliases = getDefendantAliases(prosecutionCaseFileDefendant);
 
@@ -246,8 +253,26 @@ public class ProsecutionCaseService {
                 .build();
     }
 
+    /**
+     * Offences can be decided more than once (e.g. adjourned then fined, or fined then set aside),
+     * so the latest decision for each offence, by saved time, determines whether it is concluded.
+     */
+    private Map<UUID, DecisionType> getLatestDecisionTypeByOffence(final CaseDetail caseDetail) {
+        final Map<UUID, DecisionType> latestDecisionTypeByOffence = new HashMap<>();
+        ofNullable(caseDetail.getCaseDecisions()).orElse(emptyList())
+                .stream()
+                .sorted(comparing(CaseDecision::getSavedAt, nullsFirst(naturalOrder())))
+                .flatMap(caseDecision -> ofNullable(caseDecision.getOffenceDecisions()).orElse(emptyList()).stream())
+                .filter(offenceDecision -> nonNull(offenceDecision.getOffenceId()) && nonNull(offenceDecision.getDecisionType()))
+                .forEach(offenceDecision -> latestDecisionTypeByOffence.put(offenceDecision.getOffenceId(), offenceDecision.getDecisionType()));
+        return latestDecisionTypeByOffence;
+    }
+
     private Offence createOffenceView(final OffenceDetail offence, final JsonObject prosecutionCaseFileDefendant,
-                                      final Map<String, JsonObject> offenceDefinitionsByOffenceCode) {
+                                      final Map<String, JsonObject> offenceDefinitionsByOffenceCode,
+                                      final Map<UUID, DecisionType> latestDecisionTypeByOffence) {
+
+        final DecisionType latestDecisionType = latestDecisionTypeByOffence.get(offence.getId());
 
         final Optional<JsonObject> prosecutionCaseFileOffenceDetails = getProsecutionCaseFileOffenceDetails(offence, prosecutionCaseFileDefendant);
 
@@ -273,7 +298,7 @@ public class ProsecutionCaseService {
                                 .map(e -> e > 0 ? e - 1 : 0).orElse(0))
                 .withOffenceTitle(getOffenceRefData(offenceRefData.orElse(null), "title", "welshTitle").orElse(null))
                 .withOffenceLegislation(getOffenceRefData(offenceRefData.orElse(null), "legislation", "welshLegislation").orElse(null))
-                .withProceedingsConcluded(TRUE.equals(offence.getCompleted()) ? TRUE : null)
+                .withProceedingsConcluded(latestDecisionType != null && latestDecisionType.isConcluded() ? TRUE : null)
                 .build();
     }
 

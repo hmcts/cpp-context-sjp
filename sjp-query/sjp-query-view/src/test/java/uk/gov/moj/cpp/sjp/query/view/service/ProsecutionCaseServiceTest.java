@@ -1,8 +1,8 @@
 package uk.gov.moj.cpp.sjp.query.view.service;
 
-import static java.lang.Boolean.FALSE;
 import static java.lang.Boolean.TRUE;
 import static java.time.LocalDate.now;
+import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
 import static java.util.Optional.of;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -12,6 +12,10 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
+import static uk.gov.moj.cpp.sjp.domain.decision.DecisionType.ADJOURN;
+import static uk.gov.moj.cpp.sjp.domain.decision.DecisionType.FINANCIAL_PENALTY;
+import static uk.gov.moj.cpp.sjp.domain.decision.DecisionType.REFER_FOR_COURT_HEARING;
+import static uk.gov.moj.cpp.sjp.domain.decision.DecisionType.SET_ASIDE;
 import static uk.gov.moj.cpp.sjp.query.view.service.ProsecutionCaseService.INACTIVE;
 import static uk.gov.moj.cpp.sjp.query.view.util.JsonHelper.readJsonFromFile;
 import static uk.gov.moj.cpp.sjp.query.view.util.builders.CaseDetailEntityBuilder.withDefaults;
@@ -20,10 +24,13 @@ import static java.util.Arrays.asList;
 import uk.gov.justice.core.courts.Offence;
 import uk.gov.justice.core.courts.ProsecutionCase;
 import uk.gov.moj.cpp.sjp.domain.Employer;
+import uk.gov.moj.cpp.sjp.domain.decision.DecisionType;
 import uk.gov.moj.cpp.sjp.persistence.entity.Address;
+import uk.gov.moj.cpp.sjp.persistence.entity.CaseDecision;
 import uk.gov.moj.cpp.sjp.persistence.entity.CaseDetail;
 import uk.gov.moj.cpp.sjp.persistence.entity.DefendantDetail;
 import uk.gov.moj.cpp.sjp.persistence.entity.LegalEntityDetails;
+import uk.gov.moj.cpp.sjp.persistence.entity.OffenceDecision;
 import uk.gov.moj.cpp.sjp.persistence.entity.OffenceDetail;
 import uk.gov.moj.cpp.sjp.persistence.entity.OnlinePleaDetail;
 import uk.gov.moj.cpp.sjp.persistence.entity.PersonalDetails;
@@ -31,7 +38,7 @@ import uk.gov.moj.cpp.sjp.persistence.repository.CaseRepository;
 import uk.gov.moj.cpp.sjp.persistence.repository.OnlinePleaDetailRepository;
 
 import java.time.LocalDate;
-import java.util.ArrayList;
+import java.time.ZonedDateTime;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -42,6 +49,8 @@ import javax.json.JsonObject;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.EnumSource;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -51,6 +60,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 public class ProsecutionCaseServiceTest {
 
     private static final String OFFENCE_CODE = "CA03010";
+    private static final ZonedDateTime NOW = ZonedDateTime.now();
 
     @InjectMocks
     private ProsecutionCaseService prosecutionCaseService;
@@ -192,75 +202,105 @@ public class ProsecutionCaseServiceTest {
         assertNull(prosecutionCase.getDefendants().get(0).getOffences().get(0).getDvlaOffenceCode());
     }
 
-    @Test
-    public void shouldMarkAllOffencesAsProceedingsConcludedWhenAllOffencesCompleted() {
-        final List<Offence> offences = findOffencesWithCompletedFlags(TRUE, TRUE);
+    @ParameterizedTest
+    @EnumSource(value = DecisionType.class, names = {"WITHDRAW", "DISMISS", "DISCHARGE", "FINANCIAL_PENALTY", "NO_SEPARATE_PENALTY", "OATS"})
+    public void shouldMarkOffenceAsProceedingsConcludedWhenLatestDecisionIsConcluded(final DecisionType decisionType) {
+        final OffenceDetail offence = createOffenceDetail(1);
+
+        final List<Offence> offences = findOffences(singletonList(offence),
+                singletonList(caseDecision(NOW, offenceDecision(offence, decisionType))));
 
         assertThat(offences.get(0).getProceedingsConcluded(), is(TRUE));
-        assertThat(offences.get(1).getProceedingsConcluded(), is(TRUE));
+    }
+
+    @ParameterizedTest
+    @EnumSource(value = DecisionType.class, names = {"ADJOURN", "SET_ASIDE", "REFER_FOR_COURT_HEARING", "REFERRED_TO_OPEN_COURT", "REFERRED_FOR_FUTURE_SJP_SESSION"})
+    public void shouldNotSetProceedingsConcludedWhenLatestDecisionIsNotConcluded(final DecisionType decisionType) {
+        final OffenceDetail offence = createOffenceDetail(1);
+        // referral decisions are final in SJP and set the completed flag, but the offence is still live elsewhere
+        offence.setCompleted(decisionType.isFinal());
+
+        final List<Offence> offences = findOffences(singletonList(offence),
+                singletonList(caseDecision(NOW, offenceDecision(offence, decisionType))));
+
+        assertNull(offences.get(0).getProceedingsConcluded());
     }
 
     @Test
-    public void shouldMarkOnlyCompletedOffencesAsProceedingsConcludedWhenCaseIsPartlyDecided() {
-        final List<Offence> offences = findOffencesWithCompletedFlags(TRUE, FALSE);
+    public void shouldMarkOnlyConcludedOffencesAsProceedingsConcludedWhenCaseIsPartlyDecided() {
+        final OffenceDetail concludedOffence = createOffenceDetail(1);
+        final OffenceDetail referredOffence = createOffenceDetail(2);
+
+        final List<Offence> offences = findOffences(asList(concludedOffence, referredOffence),
+                singletonList(caseDecision(NOW,
+                        offenceDecision(concludedOffence, FINANCIAL_PENALTY),
+                        offenceDecision(referredOffence, REFER_FOR_COURT_HEARING))));
 
         assertThat(offences.get(0).getProceedingsConcluded(), is(TRUE));
         assertNull(offences.get(1).getProceedingsConcluded());
     }
 
     @Test
-    public void shouldNotSetProceedingsConcludedWhenNoOffenceCompleted() {
-        final List<Offence> offences = findOffencesWithCompletedFlags(FALSE, FALSE);
+    public void shouldNotSetProceedingsConcludedWhenOffenceHasNoDecision() {
+        final List<Offence> offences = findOffences(asList(createOffenceDetail(1), createOffenceDetail(2)), emptyList());
 
         assertNull(offences.get(0).getProceedingsConcluded());
         assertNull(offences.get(1).getProceedingsConcluded());
     }
 
     @Test
-    public void shouldNotSetProceedingsConcludedWhenCompletedFlagIsNotSet() {
-        final List<Offence> offences = findOffencesWithCompletedFlags(null, null);
+    public void shouldMarkOffenceAsProceedingsConcludedWhenAdjournedOffenceIsLaterFined() {
+        final OffenceDetail offence = createOffenceDetail(1);
 
-        assertNull(offences.get(0).getProceedingsConcluded());
-        assertNull(offences.get(1).getProceedingsConcluded());
+        // supplied out of order to prove the latest decision is chosen by savedAt, not list position
+        final List<Offence> offences = findOffences(singletonList(offence), asList(
+                caseDecision(NOW, offenceDecision(offence, FINANCIAL_PENALTY)),
+                caseDecision(NOW.minusDays(28), offenceDecision(offence, ADJOURN))));
+
+        assertThat(offences.get(0).getProceedingsConcluded(), is(TRUE));
     }
 
     @Test
-    public void shouldNotSetProceedingsConcludedWhenCompletedOffenceDecisionIsSetAside() {
-        final OffenceDetail offence = createOffenceDetail(1, TRUE);
-        // CaseApplicationListener.handleApplicationDecisionSetAside clears the completed flag
-        offence.setCompleted(false);
+    public void shouldNotSetProceedingsConcludedWhenFinedOffenceIsLaterSetAside() {
+        final OffenceDetail offence = createOffenceDetail(1);
 
-        final List<Offence> offences = findOffences(singletonList(offence));
+        final List<Offence> offences = findOffences(singletonList(offence), asList(
+                caseDecision(NOW, offenceDecision(offence, SET_ASIDE)),
+                caseDecision(NOW.minusDays(28), offenceDecision(offence, FINANCIAL_PENALTY))));
 
         assertNull(offences.get(0).getProceedingsConcluded());
     }
 
-    private List<Offence> findOffencesWithCompletedFlags(final Boolean... completedFlags) {
-        final List<OffenceDetail> offenceDetails = new ArrayList<>();
-        for (int i = 0; i < completedFlags.length; i++) {
-            // offences are held in a TreeSet ordered by sequence number, so each needs a distinct one
-            offenceDetails.add(createOffenceDetail(i + 1, completedFlags[i]));
-        }
-        return findOffences(offenceDetails);
-    }
-
-    private OffenceDetail createOffenceDetail(final int sequenceNumber, final Boolean completed) {
-        final OffenceDetail offenceDetail = OffenceDetail.builder()
+    private OffenceDetail createOffenceDetail(final int sequenceNumber) {
+        // offences are held in a TreeSet ordered by sequence number, so each needs a distinct one
+        return OffenceDetail.builder()
                 .setId(UUID.randomUUID())
                 .setSequenceNumber(sequenceNumber)
                 .setCode(OFFENCE_CODE)
                 .build();
-        offenceDetail.setCompleted(completed);
-        return offenceDetail;
     }
 
-    private List<Offence> findOffences(final List<OffenceDetail> offenceDetails) {
+    private static CaseDecision caseDecision(final ZonedDateTime savedAt, final OffenceDecision... offenceDecisions) {
+        final CaseDecision caseDecision = new CaseDecision();
+        caseDecision.setId(UUID.randomUUID());
+        caseDecision.setSavedAt(savedAt);
+        caseDecision.setOffenceDecisions(asList(offenceDecisions));
+        return caseDecision;
+    }
+
+    private static OffenceDecision offenceDecision(final OffenceDetail offence, final DecisionType decisionType) {
+        return new OffenceDecision(offence.getId(), UUID.randomUUID(), decisionType, null, null, null) {
+        };
+    }
+
+    private List<Offence> findOffences(final List<OffenceDetail> offenceDetails, final List<CaseDecision> caseDecisions) {
         final DefendantDetail defendantDetail = createPersonDefendantDetail();
         defendantDetail.setOffences(offenceDetails);
 
         final CaseDetail caseDetail = withDefaults()
                 .withDefendantDetail(defendantDetail)
                 .build();
+        caseDetail.setCaseDecisions(caseDecisions);
 
         final JsonObject caseFileDetails = readJsonFromFile("data/prosecutioncasefile.query.case.json");
         final JsonObject nationality = readJsonFromFile("data/referencedata.query.nationality.json");

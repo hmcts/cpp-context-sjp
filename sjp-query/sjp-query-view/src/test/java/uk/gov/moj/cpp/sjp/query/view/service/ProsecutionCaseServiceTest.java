@@ -205,7 +205,7 @@ public class ProsecutionCaseServiceTest {
     @ParameterizedTest
     @EnumSource(value = DecisionType.class, names = {"WITHDRAW", "DISMISS", "DISCHARGE", "FINANCIAL_PENALTY", "NO_SEPARATE_PENALTY", "OATS"})
     public void shouldMarkOffenceAsProceedingsConcludedWhenLatestDecisionIsConcluded(final DecisionType decisionType) {
-        final OffenceDetail offence = createOffenceDetail(1);
+        final OffenceDetail offence = createCompletedOffenceDetail(1);
 
         final List<Offence> offences = findOffences(singletonList(offence),
                 singletonList(caseDecision(NOW, offenceDecision(offence, decisionType))));
@@ -228,8 +228,8 @@ public class ProsecutionCaseServiceTest {
 
     @Test
     public void shouldMarkOnlyConcludedOffencesAsProceedingsConcludedWhenCaseIsPartlyDecided() {
-        final OffenceDetail concludedOffence = createOffenceDetail(1);
-        final OffenceDetail referredOffence = createOffenceDetail(2);
+        final OffenceDetail concludedOffence = createCompletedOffenceDetail(1);
+        final OffenceDetail referredOffence = createCompletedOffenceDetail(2);
 
         final List<Offence> offences = findOffences(asList(concludedOffence, referredOffence),
                 singletonList(caseDecision(NOW,
@@ -250,7 +250,7 @@ public class ProsecutionCaseServiceTest {
 
     @Test
     public void shouldMarkOffenceAsProceedingsConcludedWhenAdjournedOffenceIsLaterFined() {
-        final OffenceDetail offence = createOffenceDetail(1);
+        final OffenceDetail offence = createCompletedOffenceDetail(1);
 
         // supplied out of order to prove the latest decision is chosen by savedAt, not list position
         final List<Offence> offences = findOffences(singletonList(offence), asList(
@@ -269,6 +269,25 @@ public class ProsecutionCaseServiceTest {
                 caseDecision(NOW.minusDays(28), offenceDecision(offence, FINANCIAL_PENALTY))));
 
         assertNull(offences.get(0).getProceedingsConcluded());
+    }
+
+    @Test
+    public void shouldNotSetProceedingsConcludedWhenApplicationDecisionIsSetAside() {
+        final OffenceDetail offence = createCompletedOffenceDetail(1);
+        // a granted stat dec / reopening: CaseApplicationListener.handleApplicationDecisionSetAside clears
+        // the completed flag but records no new offence decision, so the latest decision is still concluded
+        offence.setCompleted(false);
+
+        final List<Offence> offences = findOffences(singletonList(offence),
+                singletonList(caseDecision(NOW, offenceDecision(offence, FINANCIAL_PENALTY))));
+
+        assertNull(offences.get(0).getProceedingsConcluded());
+    }
+
+    private OffenceDetail createCompletedOffenceDetail(final int sequenceNumber) {
+        final OffenceDetail offenceDetail = createOffenceDetail(sequenceNumber);
+        offenceDetail.setCompleted(true);
+        return offenceDetail;
     }
 
     private OffenceDetail createOffenceDetail(final int sequenceNumber) {

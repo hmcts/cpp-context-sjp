@@ -2,34 +2,60 @@ package uk.gov.moj.sjp.it.test;
 
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.hasNoJsonPath;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
+import static java.util.UUID.fromString;
 import static java.util.UUID.randomUUID;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.core.Is.is;
 import static uk.gov.justice.json.schemas.domains.sjp.Language.W;
+import static uk.gov.moj.cpp.sjp.domain.SessionType.MAGISTRATE;
+import static uk.gov.moj.cpp.sjp.domain.decision.OffenceDecisionInformation.createOffenceDecisionInformation;
+import static uk.gov.moj.cpp.sjp.domain.disability.DisabilityNeeds.NO_DISABILITY_NEEDS;
+import static uk.gov.moj.cpp.sjp.domain.verdict.VerdictType.NO_VERDICT;
 import static uk.gov.moj.sjp.it.command.CreateCase.CreateCasePayloadBuilder.withDefaults;
 import static uk.gov.moj.sjp.it.command.CreateCase.createCaseForPayloadBuilder;
+import static uk.gov.moj.sjp.it.helper.AssignmentHelper.requestCaseAssignmentAndConfirm;
 import static uk.gov.moj.sjp.it.helper.CaseHelper.pollUntilCaseReady;
+import static uk.gov.moj.sjp.it.helper.DecisionHelper.saveDecision;
 import static uk.gov.moj.sjp.it.helper.DecisionHelper.saveDefaultDecision;
+import static uk.gov.moj.sjp.it.helper.SessionHelper.startSessionAndConfirm;
 import static uk.gov.moj.sjp.it.model.ProsecutingAuthority.DVLA;
 import static uk.gov.moj.sjp.it.model.ProsecutingAuthority.TFL;
 import static uk.gov.moj.sjp.it.model.ProsecutingAuthority.TVL;
+import static uk.gov.moj.sjp.it.pollingquery.CasePoller.pollForCase;
 import static uk.gov.moj.sjp.it.pollingquery.CasePoller.pollUntilProsecutionCaseByIdIsOk;
+import static uk.gov.moj.sjp.it.stub.IdMapperStub.stubForIdMapperSuccess;
+import static uk.gov.moj.sjp.it.stub.ProgressionServiceStub.stubReferCaseToCourtCommand;
 import static uk.gov.moj.sjp.it.stub.ProsecutionCaseFileServiceStub.stubCaseDetails;
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubCountryNationalities;
+import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubDefaultCourtByCourtHouseOUCodeQuery;
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubEnforcementAreaByPostcode;
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubEthnicities;
+import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubHearingTypesQuery;
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubProsecutorQuery;
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubQueryOffencesByCode;
+import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubReferralDocumentMetadataQuery;
+import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubReferralReason;
+import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubReferralReasonsQuery;
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubRegionByPostcode;
 import static uk.gov.moj.sjp.it.util.CaseAssignmentRestrictionHelper.provisionCaseAssignmentRestrictions;
+import static uk.gov.moj.sjp.it.util.Defaults.DEFAULT_LONDON_COURT_HOUSE_OU_CODE;
 import static uk.gov.moj.sjp.it.util.SjpDatabaseCleaner.cleanViewStore;
 import static uk.gov.moj.sjp.it.util.UrnProvider.generate;
 
+import uk.gov.justice.json.schemas.domains.sjp.User;
+import uk.gov.moj.cpp.sjp.domain.DefendantCourtInterpreter;
+import uk.gov.moj.cpp.sjp.domain.DefendantCourtOptions;
+import uk.gov.moj.cpp.sjp.domain.decision.ReferForCourtHearing;
 import uk.gov.moj.sjp.it.command.CreateCase;
+import uk.gov.moj.sjp.it.model.DecisionCommand;
 
+import java.util.List;
 import java.util.UUID;
 
+import javax.ws.rs.core.Response;
+
 import com.google.common.collect.Sets;
+import org.hamcrest.Matcher;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -45,6 +71,10 @@ public class FindProsecutionCaseIT extends BaseIntegrationTest {
     private static final String NATIONAL_INSURANCE_NUMBER = "BB333333B";
     private final UUID prosecutorId = randomUUID();
     private final String LEGAL_ENTITY_NAME = "Legal Entity Name";
+
+    private static final UUID REFERRAL_REASON_ID = randomUUID();
+    private static final UUID HEARING_TYPE_ID = fromString("06b0c2bf-3f98-46ed-ab7e-56efaf9ecced");
+    private static final String HEARING_CODE = "PLE";
 
     @BeforeEach
     public void setUp() throws Exception {
@@ -95,6 +125,37 @@ public class FindProsecutionCaseIT extends BaseIntegrationTest {
                 withJsonPath("$.caseStatus", is("INACTIVE")),
                 withJsonPath("$.defendants[0].offences[0].id", is(offenceId1.toString())),
                 withJsonPath("$.defendants[0].offences[0].proceedingsConcluded", is(true))
+        ));
+    }
+
+    @Test
+    public void shouldNotMarkOffenceAsProceedingsConcludedWhenReferredForCourtHearing() {
+        stubDefaultCourtByCourtHouseOUCodeQuery();
+        stubReferralReasonsQuery(REFERRAL_REASON_ID, HEARING_CODE, "referral reason");
+        stubReferralReason(REFERRAL_REASON_ID.toString(), "stub-data/referencedata.referral-reason.json");
+        stubHearingTypesQuery(HEARING_TYPE_ID.toString(), HEARING_CODE, "Plea & Trial Preparation");
+        stubReferralDocumentMetadataQuery(randomUUID().toString(), "SJPN");
+        stubReferCaseToCourtCommand();
+        stubForIdMapperSuccess(Response.Status.OK);
+
+        createCaseWithSingleOffence();
+        pollUntilCaseReady(caseId);
+
+        final UUID sessionId = randomUUID();
+        startSessionAndConfirm(sessionId, USER_ID, DEFAULT_LONDON_COURT_HOUSE_OU_CODE, MAGISTRATE);
+        requestCaseAssignmentAndConfirm(sessionId, USER_ID, caseId);
+
+        final ReferForCourtHearing referForCourtHearing = new ReferForCourtHearing(null,
+                List.of(createOffenceDecisionInformation(offenceId1, NO_VERDICT)), REFERRAL_REASON_ID, "listing notes", 10,
+                new DefendantCourtOptions(new DefendantCourtInterpreter("French", true), true, NO_DISABILITY_NEEDS), null);
+        saveDecision(new DecisionCommand(sessionId, caseId, null, new User("John", "Smith", USER_ID), List.of(referForCourtHearing), null));
+        pollForCase(caseId, new Matcher[]{withJsonPath("$.caseDecisions[0].offenceDecisions[0].decisionType", is("REFER_FOR_COURT_HEARING"))});
+
+        // the referral is final in SJP, but the offence is still live in the criminal court, so it is not concluded
+        pollUntilProsecutionCaseByIdIsOk(caseId, allOf(
+                withJsonPath("$.id", is(caseId.toString())),
+                withJsonPath("$.defendants[0].offences[0].id", is(offenceId1.toString())),
+                hasNoJsonPath("$.defendants[0].offences[0].proceedingsConcluded")
         ));
     }
 

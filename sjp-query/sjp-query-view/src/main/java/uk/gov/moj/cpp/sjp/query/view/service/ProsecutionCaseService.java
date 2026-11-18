@@ -298,8 +298,17 @@ public class ProsecutionCaseService {
                                 .map(e -> e > 0 ? e - 1 : 0).orElse(0))
                 .withOffenceTitle(getOffenceRefData(offenceRefData.orElse(null), "title", "welshTitle").orElse(null))
                 .withOffenceLegislation(getOffenceRefData(offenceRefData.orElse(null), "legislation", "welshLegislation").orElse(null))
-                .withProceedingsConcluded(latestDecisionType != null && latestDecisionType.isConcluded() ? TRUE : null)
+                .withProceedingsConcluded(isProceedingsConcluded(offence, latestDecisionType) ? TRUE : null)
                 .build();
+    }
+
+    /**
+     * Concluded only while SJP still holds the offence as completed and its latest decision disposed of it.
+     * The completed check covers a granted statutory declaration or reopening: the listener clears completed
+     * on application set-aside without recording a new offence decision.
+     */
+    private static boolean isProceedingsConcluded(final OffenceDetail offence, final DecisionType latestDecisionType) {
+        return TRUE.equals(offence.getCompleted()) && latestDecisionType != null && latestDecisionType.isConcluded();
     }
 
     private Optional<String> getOffenceRefData(final JsonObject offenceData, final String fieldName, final String welshFieldName) {

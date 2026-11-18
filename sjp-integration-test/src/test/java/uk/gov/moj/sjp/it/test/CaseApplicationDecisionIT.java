@@ -211,8 +211,7 @@ public class CaseApplicationDecisionIT extends BaseIntegrationTest {
                 withJsonPath("$.defendant.offences[0].hasFinalDecision", is(true)),
                 withJsonPath("$.defendant.offences[0].plea", is("NOT_GUILTY"))
         ));
-
-        // decided again (dismissed): concluded once more
+        
         pollUntilProsecutionCaseByIdIsOk(caseId, withJsonPath("$.defendants[0].offences[0].proceedingsConcluded", is(true)));
     }
 

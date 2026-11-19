@@ -22,6 +22,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 @ServiceComponent(Component.QUERY_VIEW)
+@Transactional
 public class SessionQueryView {
 
     @Inject
@@ -36,7 +37,6 @@ public class SessionQueryView {
     private static final Logger LOGGER = LoggerFactory.getLogger(SessionQueryView.class);
 
     @Handles("sjp.query.session")
-    @Transactional
     public JsonEnvelope findSession(final JsonEnvelope query) {
         final UUID sessionId = UUID.fromString(query.payloadAsJsonObject().getString("sessionId"));
         final Session session = sessionRepository.findBy(sessionId);

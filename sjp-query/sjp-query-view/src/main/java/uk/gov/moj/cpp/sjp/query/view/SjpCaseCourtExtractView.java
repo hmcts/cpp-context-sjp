@@ -14,6 +14,7 @@ import uk.gov.moj.cpp.sjp.query.view.service.CourtExtractDataService;
 import java.util.UUID;
 
 import javax.inject.Inject;
+import javax.transaction.Transactional;
 
 @ServiceComponent(Component.QUERY_VIEW)
 public class SjpCaseCourtExtractView {
@@ -22,6 +23,7 @@ public class SjpCaseCourtExtractView {
     private CourtExtractDataService courtExtractDataService;
 
     @Handles("sjp.query.case-court-extract")
+    @Transactional
     public Envelope<CaseCourtExtractView> getCaseCourtExtractData(final JsonEnvelope queryEnvelope) {
         final UUID caseId = fromString(queryEnvelope.payloadAsJsonObject().getString("caseId"));
 

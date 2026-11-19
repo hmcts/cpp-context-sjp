@@ -20,11 +20,16 @@ import java.util.UUID;
 import static java.util.UUID.randomUUID;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.justice.services.messaging.Envelope.envelopeFrom;
 import static uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderFactory.metadataWithRandomUUID;
 import static uk.gov.moj.cpp.sjp.persistence.entity.ApplicationStatus.APPEAL_PENDING;
+import static uk.gov.moj.cpp.sjp.persistence.entity.ApplicationStatus.APPLICATION_STATUS_NOT_KNOWN;
+import static uk.gov.moj.cpp.sjp.persistence.entity.ApplicationStatus.STATUTORY_DECLARATION_GRANTED;
+import static uk.gov.moj.cpp.sjp.persistence.entity.ApplicationStatus.STATUTORY_DECLARATION_PENDING;
 
 @ExtendWith(MockitoExtension.class)
 public class CCApplicationStatusListenerTest {
@@ -94,7 +99,55 @@ public class CCApplicationStatusListenerTest {
 
     }
 
+    @Test
+    public void shouldSetStatusNotKnownWhenNoStatusIsSet() {
+        when(caseService.findById(CASE_ID)).thenReturn(caseDetail);
 
+        listener.handleCCApplicationStatusUpdated(ccApplicationStatusUpdated(ApplicationStatus.APPLICATION_STATUS_NOT_KNOWN));
 
+        verify(caseService).saveCaseDetail(caseDetailArgumentCaptor.capture());
+        assertThat(caseDetailArgumentCaptor.getValue().getCcApplicationStatus(), equalTo(APPLICATION_STATUS_NOT_KNOWN));
+    }
 
+    @Test
+    public void shouldNotOverwritePendingStatusWithStatusNotKnown() {
+        caseDetail.setCcApplicationStatus(STATUTORY_DECLARATION_PENDING);
+        when(caseService.findById(CASE_ID)).thenReturn(caseDetail);
+
+        listener.handleCCApplicationStatusUpdated(ccApplicationStatusUpdated(ApplicationStatus.APPLICATION_STATUS_NOT_KNOWN));
+
+        verify(caseService, never()).saveCaseDetail(any());
+        assertThat(caseDetail.getCcApplicationStatus(), equalTo(STATUTORY_DECLARATION_PENDING));
+    }
+
+    @Test
+    public void shouldNotOverwriteFinalStatusWithStatusNotKnown() {
+        caseDetail.setCcApplicationStatus(STATUTORY_DECLARATION_GRANTED);
+        when(caseService.findById(CASE_ID)).thenReturn(caseDetail);
+
+        listener.handleCCApplicationStatusUpdated(ccApplicationStatusUpdated(ApplicationStatus.APPLICATION_STATUS_NOT_KNOWN));
+
+        verify(caseService, never()).saveCaseDetail(any());
+        assertThat(caseDetail.getCcApplicationStatus(), equalTo(STATUTORY_DECLARATION_GRANTED));
+    }
+
+    @Test
+    public void shouldOverwriteStatusNotKnownWithFinalStatus() {
+        caseDetail.setCcApplicationStatus(APPLICATION_STATUS_NOT_KNOWN);
+        when(caseService.findById(CASE_ID)).thenReturn(caseDetail);
+
+        listener.handleCCApplicationStatusUpdated(ccApplicationStatusUpdated(ApplicationStatus.STATUTORY_DECLARATION_GRANTED));
+
+        verify(caseService).saveCaseDetail(caseDetailArgumentCaptor.capture());
+        assertThat(caseDetailArgumentCaptor.getValue().getCcApplicationStatus(), equalTo(STATUTORY_DECLARATION_GRANTED));
+    }
+
+    private Envelope<CCApplicationStatusUpdated> ccApplicationStatusUpdated(final ApplicationStatus status) {
+        return envelopeFrom(metadataWithRandomUUID("sjp.events.cc-application-status-updated"),
+                CCApplicationStatusUpdated.ccApplicationStatusUpdated()
+                        .withCaseId(CASE_ID)
+                        .withApplicationId(APPLICATION_ID)
+                        .withStatus(status)
+                        .build());
+    }
 }

@@ -35,6 +35,10 @@ public enum ApplicationStatus {
 
     REOPENING_REFUSED,
 
+    STATUTORY_DECLARATION_DISMISSED,
+
+    REOPENING_DISMISSED,
+
     EJECTED,
 
     LISTED,

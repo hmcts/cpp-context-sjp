@@ -2,15 +2,14 @@ package uk.gov.moj.cpp.sjp.event.processor;
 
 import static java.lang.Boolean.TRUE;
 import static org.apache.commons.collections.CollectionUtils.isEmpty;
+import static uk.gov.justice.json.schemas.domains.sjp.ApplicationStatus.APPLICATION_STATUS_NOT_KNOWN;
 import static uk.gov.justice.services.core.annotation.Component.EVENT_PROCESSOR;
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
 import static uk.gov.justice.services.messaging.JsonEnvelope.metadataFrom;
 import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 
-import uk.gov.justice.core.courts.CourtApplication;
 import uk.gov.justice.core.courts.CourtApplicationCase;
 import uk.gov.justice.core.courts.Hearing;
-import uk.gov.justice.json.schemas.domains.sjp.ApplicationStatus;
 import uk.gov.justice.json.schemas.domains.sjp.results.PublicHearingResulted;
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
 import uk.gov.justice.services.core.annotation.Handles;
@@ -19,8 +18,6 @@ import uk.gov.justice.services.core.sender.Sender;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.sjp.event.processor.utils.ApplicationResultStatusResolver;
 
-import java.util.Objects;
-import java.util.Optional;
 
 import javax.inject.Inject;
 import javax.json.JsonObject;
@@ -58,13 +55,12 @@ public class HearingResultReceivedProcessor {
             return;
         }
         hearing.getCourtApplications().stream().forEach(courtApplication -> {
-            final String applicationType = courtApplication.getType().getType();
-            final String applicationCode = courtApplication.getType().getCode();
             final String applicationId = courtApplication.getId().toString();
-            if(courtApplication.getCourtApplicationCases() != null && courtApplication.getJudicialResults() != null) {
+            if (courtApplication.getCourtApplicationCases() != null && courtApplication.getJudicialResults() != null) {
+                final String applicationStatus = ApplicationResultStatusResolver.getFinalApplicationStatus(courtApplication)
+                        .orElse(APPLICATION_STATUS_NOT_KNOWN.toString());
                 courtApplication.getCourtApplicationCases().stream().filter(CourtApplicationCase::getIsSJP).forEach(courtApplicationCase -> {
                     final String sjpCaseId = courtApplicationCase.getProsecutionCaseId().toString();
-                    final String applicationStatus = getApplicationStatus(courtApplication, applicationType, applicationCode);
                     sendMessage(jsonEnvelope, applicationId, sjpCaseId, applicationStatus);
                 });
             }
@@ -83,18 +79,4 @@ public class HearingResultReceivedProcessor {
                 applicationStatusPayload);
         sender.send(envelopeToSend);
     }
-
-    private String getApplicationStatus(final CourtApplication courtApplication, final String applicationType, final String applicationCode) {
-
-        final Optional<String> applicationStatus =
-                courtApplication
-                        .getJudicialResults()
-                        .stream()
-                        .map(judicialResult -> ApplicationResultStatusResolver.getApplicationStatus(applicationType, judicialResult.getJudicialResultTypeId(), applicationCode))
-                        .filter(Objects::nonNull)
-                        .findFirst();
-
-        return applicationStatus.orElse(ApplicationStatus.APPLICATION_STATUS_NOT_KNOWN.toString());
-    }
-
 }

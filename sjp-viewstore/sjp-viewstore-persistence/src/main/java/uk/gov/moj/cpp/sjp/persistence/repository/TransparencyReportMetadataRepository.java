@@ -2,21 +2,46 @@ package uk.gov.moj.cpp.sjp.persistence.repository;
 
 import uk.gov.moj.cpp.sjp.persistence.entity.TransparencyReportMetadata;
 
+import javax.enterprise.context.ApplicationScoped;
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
-import org.apache.deltaspike.data.api.EntityRepository;
-import org.apache.deltaspike.data.api.Query;
-import org.apache.deltaspike.data.api.QueryParam;
-import org.apache.deltaspike.data.api.Repository;
+@ApplicationScoped
+public class TransparencyReportMetadataRepository {
 
-@Repository
-public interface TransparencyReportMetadataRepository extends EntityRepository<TransparencyReportMetadata, UUID> {
+    @PersistenceContext(unitName = "sjp-persistence-unit")
+    private EntityManager entityManager;
 
-    @Query(value = "SELECT trmd FROM TransparencyReportMetadata trmd " +
-            "WHERE trmd.fileServiceId is not null and trmd.generatedAt > :fromDate " +
-            "ORDER BY trmd.generatedAt DESC")
-    List<TransparencyReportMetadata> findLatestTransparencyReportMetadata(@QueryParam("fromDate") LocalDateTime fromDate);
+    public List<TransparencyReportMetadata> findLatestTransparencyReportMetadata(LocalDateTime fromDate) {
+        return entityManager.createQuery(
+                "SELECT trmd FROM TransparencyReportMetadata trmd " +
+                        "WHERE trmd.fileServiceId is not null and trmd.generatedAt > :fromDate " +
+                        "ORDER BY trmd.generatedAt DESC",
+                TransparencyReportMetadata.class)
+                .setParameter("fromDate", fromDate)
+                .getResultList();
+    }
 
+    public TransparencyReportMetadata findBy(final UUID id) {
+        return entityManager.find(TransparencyReportMetadata.class, id);
+    }
+
+    public TransparencyReportMetadata save(final TransparencyReportMetadata entity) {
+        return entityManager.merge(entity);
+    }
+
+    public void remove(final TransparencyReportMetadata entity) {
+        entityManager.remove(entityManager.contains(entity) ? entity : entityManager.merge(entity));
+    }
+
+    public Long count() {
+        return entityManager.createQuery("SELECT COUNT(e) FROM TransparencyReportMetadata e", Long.class).getResultStream().findFirst().orElse(null);
+    }
+
+    public List<TransparencyReportMetadata> findAll() {
+        return entityManager.createQuery("SELECT e FROM TransparencyReportMetadata e", TransparencyReportMetadata.class).getResultList();
+    }
 }

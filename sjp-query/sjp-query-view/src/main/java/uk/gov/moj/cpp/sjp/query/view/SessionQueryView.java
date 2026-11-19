@@ -1,6 +1,5 @@
 package uk.gov.moj.cpp.sjp.query.view;
 
-
 import uk.gov.justice.services.core.annotation.Component;
 import uk.gov.justice.services.core.annotation.Handles;
 import uk.gov.justice.services.core.annotation.ServiceComponent;
@@ -17,6 +16,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 import javax.inject.Inject;
+import javax.transaction.Transactional;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -36,6 +36,7 @@ public class SessionQueryView {
     private static final Logger LOGGER = LoggerFactory.getLogger(SessionQueryView.class);
 
     @Handles("sjp.query.session")
+    @Transactional
     public JsonEnvelope findSession(final JsonEnvelope query) {
         final UUID sessionId = UUID.fromString(query.payloadAsJsonObject().getString("sessionId"));
         final Session session = sessionRepository.findBy(sessionId);

@@ -26,13 +26,14 @@ import java.util.UUID;
 
 import javax.inject.Inject;
 import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
 
 public class DecisionSavedToCaseDecision implements Converter<DecisionSaved, CaseDecision> {
 
     private static final Set<DecisionType> MULTIPLE_OFFENCE_DECISION_TYPES = newHashSet(ADJOURN,
             REFER_FOR_COURT_HEARING, REFERRED_FOR_FUTURE_SJP_SESSION, REFERRED_TO_OPEN_COURT, SET_ASIDE);
 
-    @Inject
+    @PersistenceContext(unitName = "sjp-persistence-unit")
     private EntityManager em;
 
     @Inject

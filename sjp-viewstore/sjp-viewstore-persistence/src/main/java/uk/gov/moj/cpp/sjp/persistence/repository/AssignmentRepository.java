@@ -1,6 +1,5 @@
 package uk.gov.moj.cpp.sjp.persistence.repository;
 
-
 import com.google.common.collect.Lists;
 import uk.gov.moj.cpp.sjp.domain.AssignmentCandidate;
 import uk.gov.moj.cpp.sjp.domain.SessionType;
@@ -10,12 +9,12 @@ import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
-import javax.inject.Inject;
 import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
 
 public class AssignmentRepository {
 
-    @Inject
+    @PersistenceContext(unitName = "sjp-persistence-unit")
     private EntityManager em;
 
     private static final String ASSIGNMENTS_CANDIDATES_QUERY =

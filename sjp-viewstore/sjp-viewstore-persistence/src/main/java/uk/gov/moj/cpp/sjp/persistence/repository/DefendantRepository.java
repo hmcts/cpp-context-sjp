@@ -4,25 +4,20 @@ package uk.gov.moj.cpp.sjp.persistence.repository;
 import uk.gov.moj.cpp.sjp.persistence.entity.DefendantDetail;
 import uk.gov.moj.cpp.sjp.persistence.entity.view.UpdatedDefendantDetails;
 
+import javax.enterprise.context.ApplicationScoped;
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
+import javax.transaction.Transactional;
 import java.time.ZonedDateTime;
 import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 
-import javax.inject.Inject;
-import javax.persistence.EntityManager;
-
-import org.apache.deltaspike.data.api.EntityRepository;
-import org.apache.deltaspike.data.api.Query;
-import org.apache.deltaspike.data.api.QueryParam;
-import org.apache.deltaspike.data.api.Repository;
-import org.apache.deltaspike.data.api.SingleResultType;
-
 /**
  * Repository for {@link DefendantDetail}
  */
-@Repository
-public abstract class DefendantRepository implements EntityRepository<DefendantDetail, UUID> {
+@ApplicationScoped
+public class DefendantRepository {
 
     private static final String UPDATED_DEFENDANT_DETAILS = "SELECT new uk.gov.moj.cpp.sjp.persistence.entity.view.UpdatedDefendantDetails(" +
             "dd.personalDetails.firstName, " +
@@ -43,7 +38,8 @@ public abstract class DefendantRepository implements EntityRepository<DefendantD
             "AND (((dd.addressUpdatedAt BETWEEN :fromDate and :toDate) AND (dd.addressUpdatedAt IS NOT NULL AND dd.updatesAcknowledgedAt is NULL OR dd.addressUpdatedAt > dd.updatesAcknowledgedAt)) " +
             "OR ((dd.personalDetails.dateOfBirthUpdatedAt BETWEEN :fromDate and :toDate) AND (dd.personalDetails.dateOfBirthUpdatedAt IS NOT NULL AND dd.updatesAcknowledgedAt IS NULL OR dd.personalDetails.dateOfBirthUpdatedAt > dd.updatesAcknowledgedAt)) " +
             "OR ((dd.nameUpdatedAt BETWEEN :fromDate and :toDate) AND (dd.nameUpdatedAt IS NOT NULL AND dd.updatesAcknowledgedAt IS NULL OR dd.nameUpdatedAt > dd.updatesAcknowledgedAt)))";
-    @Inject
+
+    @PersistenceContext(unitName = "sjp-persistence-unit")
     private EntityManager entityManager;
 
     public List<UpdatedDefendantDetails> findUpdatedByCaseProsecutingAuthority(
@@ -66,16 +62,52 @@ public abstract class DefendantRepository implements EntityRepository<DefendantD
         return query.getResultList();
     }
 
-    @Query("SELECT d.caseDetail.id FROM DefendantDetail d WHERE d.id=:id")
-    public abstract UUID findCaseIdByDefendantId(@QueryParam("id") final UUID id);
+    public UUID findCaseIdByDefendantId(final UUID id) {
+        return entityManager.createQuery("SELECT d.caseDetail.id FROM DefendantDetail d WHERE d.id=:id", UUID.class)
+                .setParameter("id", id)
+                .getResultStream().findFirst().orElse(null);
+    }
 
-    @Query("SELECT d.caseDetail.id FROM DefendantDetail d WHERE d.correlationId=:correlationId")
-    public abstract UUID findCaseIdByCorrelationId(@QueryParam("correlationId") final UUID correlationId);
+    public UUID findCaseIdByCorrelationId(final UUID correlationId) {
+        return entityManager.createQuery("SELECT d.caseDetail.id FROM DefendantDetail d WHERE d.correlationId=:correlationId", UUID.class)
+                .setParameter("correlationId", correlationId)
+                .getResultStream().findFirst().orElse(null);
+    }
 
-    @Query(value = "SELECT d.caseDetail.id FROM DefendantDetail d WHERE d.id=:id",
-            singleResult = SingleResultType.OPTIONAL)
-    public abstract UUID findOptionalCaseIdByDefendantId(@QueryParam("id") final UUID id);
+    public UUID findOptionalCaseIdByDefendantId(final UUID id) {
+        return entityManager.createQuery("SELECT d.caseDetail.id FROM DefendantDetail d WHERE d.id=:id", UUID.class)
+                .setParameter("id", id)
+                .getResultStream()
+                .findFirst()
+                .orElse(null);
+    }
 
-    @Query(value = "SELECT dd FROM DefendantDetail dd, ReadyCase rc where dd.caseDetail.id = rc.caseId")
-    public abstract List<DefendantDetail> findByReadyCases();
+    public List<DefendantDetail> findByReadyCases() {
+        return entityManager.createQuery(
+                "SELECT dd FROM DefendantDetail dd, ReadyCase rc where dd.caseDetail.id = rc.caseId",
+                DefendantDetail.class)
+                .getResultList();
+    }
+
+    public DefendantDetail findBy(final UUID id) {
+        return entityManager.find(DefendantDetail.class, id);
+    }
+
+    @Transactional
+    public DefendantDetail save(final DefendantDetail entity) {
+        return entityManager.merge(entity);
+    }
+
+    @Transactional
+    public void remove(final DefendantDetail entity) {
+        entityManager.remove(entityManager.contains(entity) ? entity : entityManager.merge(entity));
+    }
+
+    public Long count() {
+        return entityManager.createQuery("SELECT COUNT(e) FROM DefendantDetail e", Long.class).getResultStream().findFirst().orElse(null);
+    }
+
+    public List<DefendantDetail> findAll() {
+        return entityManager.createQuery("SELECT e FROM DefendantDetail e", DefendantDetail.class).getResultList();
+    }
 }

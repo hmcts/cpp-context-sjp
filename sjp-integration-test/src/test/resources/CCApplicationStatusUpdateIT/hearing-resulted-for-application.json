@@ -1,0 +1,75 @@
+{
+  "isReshare": false,
+  "sharedTime": "${SHARED_TIME}",
+  "hearingDay": "${HEARING_DAY}",
+  "hearing": {
+    "id": "${HEARING_ID}",
+    "jurisdictionType": "MAGISTRATES",
+    "isSJPHearing": false,
+    "type": {
+      "id": "4a0e892d-c0c5-3c51-95b8-704d8c781776",
+      "description": "Application"
+    },
+    "courtCentre": {
+      "id": "99ad5b10-7ccb-4b5d-a93c-7684d0b8e441",
+      "name": "Croydon court"
+    },
+    "hearingDays": [
+      {
+        "sittingDay": "${SHARED_TIME}",
+        "listedDurationMinutes": 20
+      }
+    ],
+    "courtApplications": [
+      {
+        "id": "${APP_ID}",
+        "type": {
+          "id": "${TYPE_ID}",
+          "type": "${APPLICATION_TYPE}",
+          "code": "${APPLICATION_CODE}",
+          "categoryCode": "categoryCode123",
+          "linkType": "${LINK_TYPE}",
+          "jurisdiction": "MAGISTRATES",
+          "summonsTemplateType": "NOT_APPLICABLE",
+          "breachType": "NOT_APPLICABLE",
+          "appealFlag": true,
+          "applicantAppellantFlag": false,
+          "pleaApplicableFlag": false,
+          "commrOfOathFlag": false,
+          "courtOfAppealFlag": false,
+          "courtExtractAvlFlag": false,
+          "prosecutorThirdPartyFlag": false,
+          "spiOutApplicableFlag": false,
+          "offenceActiveOrder": "COURT_ORDER"
+        },
+        "courtApplicationCases": [
+          {
+            "prosecutionCaseId": "${CASE_ID}",
+            "prosecutionCaseIdentifier": {
+              "prosecutionAuthorityCode": "TFL",
+              "prosecutionAuthorityId": "cf73207f-3ced-488a-82a0-3fba79c3ce85",
+              "prosecutionAuthorityReference": "TFL12345-A"
+            },
+            "isSJP": true,
+            "caseStatus": "caseStatus"
+          }
+        ],
+        "judicialResults": [${JUDICIAL_RESULTS}],
+        "applicationReceivedDate": "${APPLICATION_RECEIVED_DATE}",
+        "applicant": {
+          "id": "00000000-0000-0000-0000-000000000000",
+          "synonym": "a",
+          "summonsRequired": false,
+          "notificationRequired": false
+        },
+        "subject": {
+          "id": "00000000-0000-0000-0000-000000000000",
+          "synonym": "a",
+          "summonsRequired": false,
+          "notificationRequired": false
+        },
+        "applicationStatus": "LISTED"
+      }
+    ]
+  }
+}

@@ -1,9 +1,15 @@
 package uk.gov.moj.cpp.sjp.event.processor;
 
+import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
 import static java.util.Collections.singletonList;
 import static java.util.UUID.randomUUID;
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.allOf;
 import org.junit.jupiter.api.Assertions;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.verify;
 import static uk.gov.justice.core.courts.CourtApplication.courtApplication;
 import static uk.gov.justice.core.courts.Hearing.hearing;
@@ -11,8 +17,17 @@ import static uk.gov.justice.json.schemas.domains.sjp.results.PublicHearingResul
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
 import static uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderFactory.metadataWithRandomUUID;
 import static uk.gov.justice.services.test.utils.core.reflection.ReflectionUtil.setField;
+import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopePayloadMatcher.payloadIsJson;
+import static uk.gov.moj.cpp.sjp.event.processor.utils.ApplicationResult.AACD;
+import static uk.gov.moj.cpp.sjp.event.processor.utils.ApplicationResult.AASA;
+import static uk.gov.moj.cpp.sjp.event.processor.utils.ApplicationResult.ASV;
+import static uk.gov.moj.cpp.sjp.event.processor.utils.ApplicationResult.DISM;
 import static uk.gov.moj.cpp.sjp.event.processor.utils.ApplicationResult.G;
+import static uk.gov.moj.cpp.sjp.event.processor.utils.ApplicationResult.RFSD;
+import static uk.gov.moj.cpp.sjp.event.processor.utils.SjpApplicationTypes.APPEAL_AGAINST_CONVICTION_AND_SENTENCE_BY_MAGISTRATE_TO_CROWN_COURT;
+import static uk.gov.moj.cpp.sjp.event.processor.utils.SjpApplicationTypes.APPEAL_AGAINST_CONVICTION_BY_MAGISTRATE_TO_CROWN_COURT;
 import static uk.gov.moj.cpp.sjp.event.processor.utils.SjpApplicationTypes.APPEARANCE_TO_MAKE_STATUTORY_DECLARATION_SJP;
+import static uk.gov.moj.cpp.sjp.event.processor.utils.SjpApplicationTypes.APPLICATION_TO_REOPEN_CASE;
 
 import uk.gov.justice.core.courts.CourtApplication;
 import uk.gov.justice.core.courts.CourtApplicationCase;
@@ -32,6 +47,7 @@ import uk.gov.justice.services.messaging.JsonEnvelope;
 
 import java.util.Arrays;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import javax.json.JsonValue;
 
@@ -72,6 +88,10 @@ public class HearingResultedProcessorTest {
             .build();
 
     final UUID caseId = randomUUID();
+
+    // result definitions that are not a final application outcome
+    private static final String ADJOURNMENT_RESULT_ID = randomUUID().toString();
+    private static final String COSTS_RESULT_ID = randomUUID().toString();
 
     @BeforeEach
     public void setUp() {
@@ -164,5 +184,91 @@ public class HearingResultedProcessorTest {
         JsonEnvelope hearingJsonEnvelopeWithNoJudicialResult = populateHearingWithNoJudicialResult(APPEARANCE_TO_MAKE_STATUTORY_DECLARATION_SJP.getApplicationType(), caseId, false, G.getResultId(), false);
         Assertions.assertDoesNotThrow(() -> hearingResultReceivedProcessor.hearingResultReceived(hearingJsonEnvelopeWithNoJudicialResult));
         verify(sender, never()).send(envelopeCaptor.capture());
+    }
+
+    @Test
+    public void shouldSendGrantedWhenAncillaryResultComesFirst() {
+
+        runTestWithResults(APPEARANCE_TO_MAKE_STATUTORY_DECLARATION_SJP.getApplicationCode(), ApplicationStatus.STATUTORY_DECLARATION_GRANTED,
+                COSTS_RESULT_ID, G.getResultId());
+    }
+
+    @Test
+    public void shouldSendRefusedWhenAncillaryResultComesFirst() {
+
+        runTestWithResults(APPLICATION_TO_REOPEN_CASE.getApplicationCode(), ApplicationStatus.REOPENING_REFUSED,
+                ADJOURNMENT_RESULT_ID, RFSD.getResultId());
+    }
+
+    @Test
+    public void shouldSendStatusNotKnownWhenHearingIsAdjournedOnly() {
+
+        runTestWithResults(APPEARANCE_TO_MAKE_STATUTORY_DECLARATION_SJP.getApplicationCode(), ApplicationStatus.APPLICATION_STATUS_NOT_KNOWN, ADJOURNMENT_RESULT_ID);
+    }
+
+    @Test
+    public void shouldSendStatusNotKnownWhenResultsAreAtOffenceLevelOnly() {
+
+        runTestWithResults(APPLICATION_TO_REOPEN_CASE.getApplicationCode(), ApplicationStatus.APPLICATION_STATUS_NOT_KNOWN);
+    }
+
+    @Test
+    public void shouldNotSendCommandWhenNoSjpCourtApplicationCase() {
+
+        hearingResultReceivedProcessor.hearingResultReceived(populateHearingWithResults(APPEARANCE_TO_MAKE_STATUTORY_DECLARATION_SJP.getApplicationCode(), false, G.getResultId()));
+        verify(sender, never()).send(any());
+    }
+
+    @Test
+    public void shouldSendDismissedForStatDecAndReopen() {
+
+        runTestWithResults(APPEARANCE_TO_MAKE_STATUTORY_DECLARATION_SJP.getApplicationCode(), ApplicationStatus.STATUTORY_DECLARATION_DISMISSED, DISM.getResultId());
+        runTestWithResults(APPLICATION_TO_REOPEN_CASE.getApplicationCode(), ApplicationStatus.REOPENING_DISMISSED, DISM.getResultId());
+    }
+
+    @Test
+    public void shouldSendSentenceVariedForConvictionAppeals() {
+
+        runTestWithResults(APPEAL_AGAINST_CONVICTION_AND_SENTENCE_BY_MAGISTRATE_TO_CROWN_COURT.getApplicationCode(), ApplicationStatus.APPLICATION_DISMISSED_SENTENCE_VARIED, ASV.getResultId());
+        runTestWithResults(APPEAL_AGAINST_CONVICTION_BY_MAGISTRATE_TO_CROWN_COURT.getApplicationCode(), ApplicationStatus.APPLICATION_DISMISSED_SENTENCE_VARIED, ASV.getResultId());
+    }
+
+    @Test
+    public void shouldUseFirstRecognisedResultWhenSeveralAreShared() {
+
+        runTestWithResults(APPEAL_AGAINST_CONVICTION_AND_SENTENCE_BY_MAGISTRATE_TO_CROWN_COURT.getApplicationCode(), ApplicationStatus.APPEAL_DISMISSED,
+                AACD.getResultId(), AASA.getResultId());
+        runTestWithResults(APPEAL_AGAINST_CONVICTION_AND_SENTENCE_BY_MAGISTRATE_TO_CROWN_COURT.getApplicationCode(), ApplicationStatus.APPEAL_ALLOWED,
+                AASA.getResultId(), AACD.getResultId());
+    }
+
+    private void runTestWithResults(final String applicationCode, final ApplicationStatus expectedStatus, final String... resultDefinitionIds) {
+        reset(sender);
+        hearingResultReceivedProcessor.hearingResultReceived(populateHearingWithResults(applicationCode, true, resultDefinitionIds));
+
+        verify(sender).send(envelopeCaptor.capture());
+        assertThat(envelopeCaptor.getValue().metadata().name(), equalTo("sjp.command.update-cc-case-application-status"));
+        assertThat(envelopeCaptor.getValue().payload(),
+                payloadIsJson(allOf(
+                        withJsonPath("$.caseId", equalTo(caseId.toString())),
+                        withJsonPath("$.applicationStatus", equalTo(expectedStatus.toString())))));
+    }
+
+    private JsonEnvelope populateHearingWithResults(final String applicationCode, final boolean isSJPCase, final String... resultDefinitionIds) {
+        final CourtApplication courtApplication = courtApplication()
+                .withId(randomUUID())
+                .withType(new CourtApplicationType.Builder().withCode(applicationCode).build())
+                .withJudicialResults(Arrays.stream(resultDefinitionIds)
+                        .map(id -> new JudicialResult.Builder().withJudicialResultTypeId(UUID.fromString(id)).build())
+                        .collect(Collectors.toList()))
+                .withCourtApplicationCases(singletonList(new CourtApplicationCase.Builder().withIsSJP(isSJPCase).withProsecutionCaseId(caseId).build()))
+                .build();
+
+        final PublicHearingResulted publicHearingResulted = publicHearingResulted()
+                .withHearing(getHearing(false, courtApplication, false))
+                .build();
+
+        return envelopeFrom(metadataWithRandomUUID(HearingResultedProcessor.PUBLIC_EVENTS_HEARING_RESULTED),
+                objectToJsonObjectConverter.convert(publicHearingResulted));
     }
 }

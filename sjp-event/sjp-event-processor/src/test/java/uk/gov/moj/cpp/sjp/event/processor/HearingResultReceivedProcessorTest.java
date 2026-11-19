@@ -30,6 +30,7 @@ import javax.json.JsonValue;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
 import static java.util.Collections.singletonList;
@@ -40,6 +41,7 @@ import static org.hamcrest.Matchers.allOf;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.verify;
 import static uk.gov.justice.core.courts.CourtApplication.courtApplication;
 import static uk.gov.justice.core.courts.Hearing.hearing;
@@ -95,6 +97,11 @@ public class HearingResultReceivedProcessorTest {
     private ObjectToJsonObjectConverter objectToJsonObjectConverter;
 
     final UUID caseId = randomUUID();
+
+    // result definitions that are not a final application outcome
+    private static final String ADJOURNMENT_RESULT_ID = randomUUID().toString();
+    private static final String NEXT_HEARING_RESULT_ID = randomUUID().toString();
+    private static final String COSTS_RESULT_ID = randomUUID().toString();
 
     @BeforeEach
     public void setUp() {
@@ -225,20 +232,83 @@ public class HearingResultReceivedProcessorTest {
 
 
     @Test
-    public void shouldHandleHearingResultReceivedWithJudicialResultsNotMatch() throws IOException {
+    public void shouldSendStatusNotKnownWhenJudicialResultsNotMatch() throws IOException {
 
-        JsonEnvelope hearingJsonEnvelope = populateHearing("SOME RANDOM STATUS", caseId, true, randomUUID().toString());
-        hearingResultReceivedProcessor.hearingResultReceived(hearingJsonEnvelope);
+        runTest("SOME RANDOM STATUS", randomUUID().toString(), APPLICATION_STATUS_NOT_KNOWN);
+    }
+
+    @Test
+    public void shouldSendStatusNotKnownWhenHearingIsAdjournedOnly() {
+
+        runTestWithResults(APPEARANCE_TO_MAKE_STATUTORY_DECLARATION_SJP.getApplicationCode(), APPLICATION_STATUS_NOT_KNOWN,
+                ADJOURNMENT_RESULT_ID, NEXT_HEARING_RESULT_ID);
+    }
+
+    @Test
+    public void shouldSendStatusNotKnownWhenResultsAreAtOffenceLevelOnly() {
+
+        runTestWithResults(APPLICATION_TO_REOPEN_CASE.getApplicationCode(), APPLICATION_STATUS_NOT_KNOWN);
+    }
+
+    @Test
+    public void shouldUseDecisionWhenAncillaryResultComesFirst() {
+
+        runTestWithResults(APPEARANCE_TO_MAKE_STATUTORY_DECLARATION_SJP.getApplicationCode(), ApplicationStatus.STATUTORY_DECLARATION_GRANTED,
+                COSTS_RESULT_ID, G.getResultId());
+        runTestWithResults(APPLICATION_TO_REOPEN_CASE.getApplicationCode(), ApplicationStatus.REOPENING_GRANTED,
+                NEXT_HEARING_RESULT_ID, ROPENED.getResultId());
+    }
+
+    @Test
+    public void shouldSendDismissedForStatDecAndReopen() {
+
+        runTestWithResults(APPEARANCE_TO_MAKE_STATUTORY_DECLARATION_SJP.getApplicationCode(), ApplicationStatus.STATUTORY_DECLARATION_DISMISSED, DISM.getResultId());
+        runTestWithResults(APPLICATION_TO_REOPEN_CASE.getApplicationCode(), ApplicationStatus.REOPENING_DISMISSED, COSTS_RESULT_ID, DISM.getResultId());
+    }
+
+    @Test
+    public void shouldSendSentenceVariedForConvictionAppeals() {
+
+        runTestWithResults(APPEAL_AGAINST_CONVICTION_AND_SENTENCE_BY_MAGISTRATE_TO_CROWN_COURT.getApplicationCode(), ApplicationStatus.APPLICATION_DISMISSED_SENTENCE_VARIED, ASV.getResultId());
+        runTestWithResults(APPEAL_AGAINST_CONVICTION_BY_MAGISTRATE_TO_CROWN_COURT.getApplicationCode(), ApplicationStatus.APPLICATION_DISMISSED_SENTENCE_VARIED, ASV.getResultId());
+    }
+
+    @Test
+    public void shouldUseFirstRecognisedResultWhenSeveralAreShared() {
+
+        runTestWithResults(APPEAL_AGAINST_CONVICTION_AND_SENTENCE_BY_MAGISTRATE_TO_CROWN_COURT.getApplicationCode(), ApplicationStatus.APPEAL_DISMISSED,
+                AACD.getResultId(), AASA.getResultId());
+        runTestWithResults(APPEAL_AGAINST_CONVICTION_AND_SENTENCE_BY_MAGISTRATE_TO_CROWN_COURT.getApplicationCode(), ApplicationStatus.APPEAL_ALLOWED,
+                AASA.getResultId(), AACD.getResultId());
+    }
+
+    private void runTestWithResults(final String applicationCode, final ApplicationStatus expectedStatus, final String... resultDefinitionIds) {
+        reset(sender);
+        hearingResultReceivedProcessor.hearingResultReceived(populateHearingWithResults(applicationCode, resultDefinitionIds));
 
         verify(sender).send(envelopeCaptor.capture());
-        final Envelope<JsonValue> sentEnvelope = envelopeCaptor.getValue();
-
-        assertThat(sentEnvelope.metadata().name(), equalTo("sjp.command.update-cc-case-application-status"));
-        assertThat(sentEnvelope.payload(),
+        assertThat(envelopeCaptor.getValue().payload(),
                 payloadIsJson(allOf(
                         withJsonPath("$.caseId", equalTo(caseId.toString())),
-                        withJsonPath("$.applicationStatus", equalTo(APPLICATION_STATUS_NOT_KNOWN.toString())))));
+                        withJsonPath("$.applicationStatus", equalTo(expectedStatus.toString())))));
+    }
 
+    private JsonEnvelope populateHearingWithResults(final String applicationCode, final String... resultDefinitionIds) {
+        final CourtApplication courtApplication = courtApplication()
+                .withId(randomUUID())
+                .withType(new CourtApplicationType.Builder().withCode(applicationCode).build())
+                .withJudicialResults(Arrays.stream(resultDefinitionIds)
+                        .map(id -> new JudicialResult.Builder().withJudicialResultTypeId(UUID.fromString(id)).build())
+                        .collect(Collectors.toList()))
+                .withCourtApplicationCases(singletonList(new CourtApplicationCase.Builder().withIsSJP(true).withProsecutionCaseId(caseId).build()))
+                .build();
+
+        final PublicHearingResulted publicHearingResulted = publicHearingResulted()
+                .withHearing(hearing().withCourtApplications(singletonList(courtApplication)).withIsSJPHearing(false).build())
+                .build();
+
+        return envelopeFrom(metadataWithRandomUUID(HearingResultReceivedProcessor.PUBLIC_HEARING_RESULTED),
+                objectToJsonObjectConverter.convert(publicHearingResulted));
     }
 
     @Test

@@ -1,0 +1,22 @@
+{
+  "judicialResultId": "${JUDICIAL_RESULT_ID}",
+  "judicialResultTypeId": "${JUDICIAL_RESULT_TYPE_ID}",
+  "orderedHearingId": "${HEARING_ID}",
+  "orderedDate": "${HEARING_DAY}",
+  "label": "${LABEL}",
+  "resultText": "${LABEL}",
+  "category": "${CATEGORY}",
+  "isAdjournmentResult": ${IS_ADJOURNMENT_RESULT},
+  "isFinancialResult": false,
+  "isConvictedResult": false,
+  "isAvailableForCourtExtract": true,
+  "terminatesOffenceProceedings": false,
+  "lifeDuration": false,
+  "publishedForNows": false,
+  "rollUpPrompts": false,
+  "publishedAsAPrompt": false,
+  "excludedFromResults": false,
+  "alwaysPublished": false,
+  "urgent": false,
+  "d20": false
+}

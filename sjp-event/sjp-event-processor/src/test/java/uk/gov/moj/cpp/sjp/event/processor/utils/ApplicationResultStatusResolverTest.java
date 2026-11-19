@@ -151,11 +151,11 @@ class ApplicationResultStatusResolverTest {
                 Arguments.of(APPEARANCE_TO_MAKE_STATUTORY_DECLARATION_SJP, new String[]{ancillary, G.getResultId()}, STATUTORY_DECLARATION_GRANTED),
                 Arguments.of(APPLICATION_TO_REOPEN_CASE, new String[]{ancillary, RFSD.getResultId()}, REOPENING_REFUSED),
                 Arguments.of(APPEARANCE_TO_MAKE_STATUTORY_DECLARATION_SJP, new String[]{ancillary, DISM.getResultId()}, STATUTORY_DECLARATION_DISMISSED),
-                // favourable outcome wins, whatever the order
-                Arguments.of(APPEAL_AGAINST_CONVICTION_AND_SENTENCE_BY_MAGISTRATE_TO_CROWN_COURT, new String[]{AACD.getResultId(), AASA.getResultId()}, APPEAL_ALLOWED),
-                Arguments.of(APPEAL_AGAINST_CONVICTION_AND_SENTENCE_BY_MAGISTRATE_TO_CROWN_COURT, new String[]{AASA.getResultId(), AACD.getResultId()}, APPEAL_ALLOWED),
-                Arguments.of(APPEARANCE_TO_MAKE_STATUTORY_DECLARATION_SJP, new String[]{WDRN.getResultId(), RFSD.getResultId()}, STATUTORY_DECLARATION_REFUSED),
-                Arguments.of(APPEAL_AGAINST_CONVICTION_BY_MAGISTRATE_TO_CROWN_COURT, new String[]{APA.getResultId(), ASV.getResultId()}, APPLICATION_DISMISSED_SENTENCE_VARIED));
+                // several recognised results: the first recognised one wins
+                Arguments.of(APPEAL_AGAINST_CONVICTION_AND_SENTENCE_BY_MAGISTRATE_TO_CROWN_COURT, new String[]{AACD.getResultId(), AASA.getResultId()}, APPEAL_DISMISSED),
+                Arguments.of(APPEAL_AGAINST_CONVICTION_AND_SENTENCE_BY_MAGISTRATE_TO_CROWN_COURT, new String[]{ancillary, AASA.getResultId(), AACD.getResultId()}, APPEAL_ALLOWED),
+                Arguments.of(APPEARANCE_TO_MAKE_STATUTORY_DECLARATION_SJP, new String[]{WDRN.getResultId(), RFSD.getResultId()}, STATUTORY_DECLARATION_WITHDRAWN),
+                Arguments.of(APPEAL_AGAINST_CONVICTION_BY_MAGISTRATE_TO_CROWN_COURT, new String[]{APA.getResultId(), ASV.getResultId()}, APPEAL_ABANDONED));
     }
 
     @ParameterizedTest()

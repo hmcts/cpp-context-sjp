@@ -43,14 +43,11 @@ import uk.gov.justice.core.courts.CourtApplicationType;
 import uk.gov.justice.core.courts.JudicialResult;
 import uk.gov.justice.json.schemas.domains.sjp.ApplicationStatus;
 
-import java.util.Comparator;
-import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.Set;
 import java.util.UUID;
 
 public class ApplicationResultStatusResolver {
@@ -160,22 +157,13 @@ public class ApplicationResultStatusResolver {
         resultToActionMap.put(APPEAL_AGAINST_SENTENCE_AND_CONVICTION.getApplicationType() + APA.getResultId(), APPEAL_ABANDONED);
     }
 
-    // When an application has several recognised results, the favourable outcome wins:
-    // granted/allowed, then refused/dismissed/sentence varied, then withdrawn/abandoned.
-    private static final Set<ApplicationStatus> GRANTED_OR_ALLOWED = EnumSet.of(
-            STATUTORY_DECLARATION_GRANTED, REOPENING_GRANTED, APPEAL_ALLOWED);
-    private static final Set<ApplicationStatus> REFUSED_OR_DISMISSED = EnumSet.of(
-            STATUTORY_DECLARATION_REFUSED, REOPENING_REFUSED, APPEAL_REFUSED,
-            STATUTORY_DECLARATION_DISMISSED, REOPENING_DISMISSED, APPEAL_DISMISSED,
-            APPLICATION_DISMISSED_SENTENCE_VARIED);
-
     private ApplicationResultStatusResolver() {
     }
 
     /**
-     * Resolves the final status of a court application from all of its application-level results.
-     * Unrecognised results are ignored; if none is recognised the result is empty, meaning the
-     * current status (pending or a previous final status) must be kept.
+     * Resolves the final status of a court application from its application-level results: the
+     * first recognised result wins and unrecognised results (e.g. adjournment, costs) are ignored.
+     * If none is recognised the result is empty, meaning the final status is not known.
      */
     public static Optional<String> getFinalApplicationStatus(final CourtApplication courtApplication) {
         final List<JudicialResult> judicialResults = courtApplication.getJudicialResults();
@@ -189,7 +177,7 @@ public class ApplicationResultStatusResolver {
                 .filter(Objects::nonNull)
                 .map(resultDefinitionId -> resolve(type.getType(), resultDefinitionId, type.getCode()))
                 .filter(Objects::nonNull)
-                .min(Comparator.comparingInt(ApplicationResultStatusResolver::rank))
+                .findFirst()
                 .map(ApplicationStatus::toString);
     }
 
@@ -201,16 +189,6 @@ public class ApplicationResultStatusResolver {
         final String resultId = resultDefinitionId.toString();
         return Optional.ofNullable(resultToActionMap.get(courtApplicationType + resultId))
                 .orElse(resultToActionByCodeMap.get(courtApplicationCode + resultId));
-    }
-
-    private static int rank(final ApplicationStatus applicationStatus) {
-        if (GRANTED_OR_ALLOWED.contains(applicationStatus)) {
-            return 0;
-        }
-        if (REFUSED_OR_DISMISSED.contains(applicationStatus)) {
-            return 1;
-        }
-        return 2;
     }
 
     private static final class ApplicationStatusByCodeMapBuilder {

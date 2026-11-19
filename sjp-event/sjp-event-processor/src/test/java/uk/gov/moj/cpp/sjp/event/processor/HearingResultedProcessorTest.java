@@ -234,9 +234,9 @@ public class HearingResultedProcessorTest {
     }
 
     @Test
-    public void shouldPreferAllowedOverDismissedInEitherOrder() {
+    public void shouldUseFirstRecognisedResultWhenSeveralAreShared() {
 
-        runTestWithResults(APPEAL_AGAINST_CONVICTION_AND_SENTENCE_BY_MAGISTRATE_TO_CROWN_COURT.getApplicationCode(), ApplicationStatus.APPEAL_ALLOWED,
+        runTestWithResults(APPEAL_AGAINST_CONVICTION_AND_SENTENCE_BY_MAGISTRATE_TO_CROWN_COURT.getApplicationCode(), ApplicationStatus.APPEAL_DISMISSED,
                 AACD.getResultId(), AASA.getResultId());
         runTestWithResults(APPEAL_AGAINST_CONVICTION_AND_SENTENCE_BY_MAGISTRATE_TO_CROWN_COURT.getApplicationCode(), ApplicationStatus.APPEAL_ALLOWED,
                 AASA.getResultId(), AACD.getResultId());

@@ -51,6 +51,8 @@ import uk.gov.moj.sjp.it.model.DecisionCommand;
 import uk.gov.moj.sjp.it.model.ProsecutingAuthority;
 import uk.gov.moj.sjp.it.util.builders.DismissBuilder;
 
+import io.restassured.path.json.JsonPath;
+
 import java.sql.SQLException;
 import java.time.Duration;
 import java.time.LocalDate;
@@ -186,8 +188,9 @@ public class CCApplicationStatusUpdateIT extends BaseIntegrationTest {
                 judicialResult(RESULT_COSTS, "Costs", "ANCILLARY", false),
                 judicialResult(RESULT_GRANTED_G, "Granted", "FINAL", false));
 
-        pollUntilCaseByIdIsOk(caseId, allOf(
+        final JsonPath caseDetails = pollUntilCaseByIdIsOk(caseId, allOf(
                 withJsonPath("$.ccApplicationStatus", is(ApplicationStatus.STATUTORY_DECLARATION_GRANTED.name()))));
+        assertThat(caseDetails.getString("ccApplicationStatus"), is(ApplicationStatus.STATUTORY_DECLARATION_GRANTED.name()));
     }
 
     @Test
@@ -211,8 +214,9 @@ public class CCApplicationStatusUpdateIT extends BaseIntegrationTest {
         // 2nd hearing: granted -> final status replaces PENDING
         shareApplicationResults(judicialResult(RESULT_GRANTED_G, "Granted", "FINAL", false));
 
-        pollUntilCaseByIdIsOk(caseId, allOf(
+        final JsonPath caseDetails = pollUntilCaseByIdIsOk(caseId, allOf(
                 withJsonPath("$.ccApplicationStatus", is(ApplicationStatus.STATUTORY_DECLARATION_GRANTED.name()))));
+        assertThat(caseDetails.getString("ccApplicationStatus"), is(ApplicationStatus.STATUTORY_DECLARATION_GRANTED.name()));
     }
 
     @Test
@@ -221,8 +225,9 @@ public class CCApplicationStatusUpdateIT extends BaseIntegrationTest {
 
         shareApplicationResults(judicialResult(RESULT_DISMISSED_DISM, "Dismissed", "FINAL", false));
 
-        pollUntilCaseByIdIsOk(caseId, allOf(
+        final JsonPath caseDetails = pollUntilCaseByIdIsOk(caseId, allOf(
                 withJsonPath("$.ccApplicationStatus", is(ApplicationStatus.STATUTORY_DECLARATION_DISMISSED.name()))));
+        assertThat(caseDetails.getString("ccApplicationStatus"), is(ApplicationStatus.STATUTORY_DECLARATION_DISMISSED.name()));
     }
 
     private void createStatDecApplicationAndWaitUntilPending() {

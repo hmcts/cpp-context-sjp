@@ -32,7 +32,6 @@ import uk.gov.moj.cpp.sjp.persistence.entity.DefendantDetail;
 import uk.gov.moj.cpp.sjp.persistence.entity.LegalEntityDetails;
 import uk.gov.moj.cpp.sjp.persistence.entity.OffenceDecision;
 import uk.gov.moj.cpp.sjp.persistence.entity.OffenceDetail;
-import uk.gov.moj.cpp.sjp.persistence.entity.OnlinePleaDetail;
 import uk.gov.moj.cpp.sjp.persistence.entity.PersonalDetails;
 import uk.gov.moj.cpp.sjp.persistence.repository.CaseRepository;
 import uk.gov.moj.cpp.sjp.persistence.repository.OnlinePleaDetailRepository;
@@ -57,7 +56,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 
 @ExtendWith(MockitoExtension.class)
-public class ProsecutionCaseServiceTest {
+class ProsecutionCaseServiceTest {
 
     private static final String OFFENCE_CODE = "CA03010";
     private static final ZonedDateTime NOW = ZonedDateTime.now();
@@ -85,7 +84,7 @@ public class ProsecutionCaseServiceTest {
 
 
     @Test
-    public void shouldFindProsecutionCaseWhenDefendantIsPerson() {
+    void shouldFindProsecutionCaseWhenDefendantIsPerson() {
 
         final CaseDetail caseDetail = withDefaults()
                 .withDefendantDetail(createPersonDefendantDetail())
@@ -110,7 +109,7 @@ public class ProsecutionCaseServiceTest {
     }
 
     @Test
-    public void shouldFindProsecutionCaseWhenDefendantIsCompany() {
+    void shouldFindProsecutionCaseWhenDefendantIsCompany() {
 
         final CaseDetail caseDetail = withDefaults()
                 .withDefendantDetail(createLegalEntityDefendantDetails())
@@ -133,7 +132,7 @@ public class ProsecutionCaseServiceTest {
     }
 
     @Test
-    public void shouldPopulateDvlaOffenceCode() {
+    void shouldPopulateDvlaOffenceCode() {
         final DefendantDetail defendantDetail = createPersonDefendantDetail();
         defendantDetail.setOffences(asList(OffenceDetail.builder()
                 .setId(UUID.randomUUID())
@@ -168,7 +167,7 @@ public class ProsecutionCaseServiceTest {
     }
 
     @Test
-    public void shouldNotPopulateDvlaOffenceCodeIfNotAvailable() {
+    void shouldNotPopulateDvlaOffenceCodeIfNotAvailable() {
         final DefendantDetail defendantDetail = createPersonDefendantDetail();
         defendantDetail.setOffences(asList(OffenceDetail.builder()
                 .setId(UUID.randomUUID())
@@ -204,7 +203,7 @@ public class ProsecutionCaseServiceTest {
 
     @ParameterizedTest
     @EnumSource(value = DecisionType.class, names = {"WITHDRAW", "DISMISS", "DISCHARGE", "FINANCIAL_PENALTY", "NO_SEPARATE_PENALTY", "OATS"})
-    public void shouldMarkOffenceAsProceedingsConcludedWhenLatestDecisionIsConcluded(final DecisionType decisionType) {
+    void shouldMarkOffenceAsProceedingsConcludedWhenLatestDecisionIsConcluded(final DecisionType decisionType) {
         final OffenceDetail offence = createCompletedOffenceDetail(1);
 
         final List<Offence> offences = findOffences(singletonList(offence),
@@ -215,7 +214,7 @@ public class ProsecutionCaseServiceTest {
 
     @ParameterizedTest
     @EnumSource(value = DecisionType.class, names = {"ADJOURN", "SET_ASIDE", "REFER_FOR_COURT_HEARING", "REFERRED_TO_OPEN_COURT", "REFERRED_FOR_FUTURE_SJP_SESSION"})
-    public void shouldNotSetProceedingsConcludedWhenLatestDecisionIsNotConcluded(final DecisionType decisionType) {
+    void shouldNotSetProceedingsConcludedWhenLatestDecisionIsNotConcluded(final DecisionType decisionType) {
         final OffenceDetail offence = createOffenceDetail(1);
         // referral decisions are final in SJP and set the completed flag, but the offence is still live elsewhere
         offence.setCompleted(decisionType.isFinal());
@@ -227,7 +226,7 @@ public class ProsecutionCaseServiceTest {
     }
 
     @Test
-    public void shouldMarkOnlyConcludedOffencesAsProceedingsConcludedWhenCaseIsPartlyDecided() {
+    void shouldMarkOnlyConcludedOffencesAsProceedingsConcludedWhenCaseIsPartlyDecided() {
         final OffenceDetail concludedOffence = createCompletedOffenceDetail(1);
         final OffenceDetail referredOffence = createCompletedOffenceDetail(2);
 
@@ -241,7 +240,7 @@ public class ProsecutionCaseServiceTest {
     }
 
     @Test
-    public void shouldNotSetProceedingsConcludedWhenOffenceHasNoDecision() {
+    void shouldNotSetProceedingsConcludedWhenOffenceHasNoDecision() {
         final List<Offence> offences = findOffences(asList(createOffenceDetail(1), createOffenceDetail(2)), emptyList());
 
         assertNull(offences.get(0).getProceedingsConcluded());
@@ -249,7 +248,7 @@ public class ProsecutionCaseServiceTest {
     }
 
     @Test
-    public void shouldMarkOffenceAsProceedingsConcludedWhenAdjournedOffenceIsLaterFined() {
+    void shouldMarkOffenceAsProceedingsConcludedWhenAdjournedOffenceIsLaterFined() {
         final OffenceDetail offence = createCompletedOffenceDetail(1);
 
         // supplied out of order to prove the latest decision is chosen by savedAt, not list position
@@ -261,7 +260,7 @@ public class ProsecutionCaseServiceTest {
     }
 
     @Test
-    public void shouldNotSetProceedingsConcludedWhenFinedOffenceIsLaterSetAside() {
+    void shouldNotSetProceedingsConcludedWhenFinedOffenceIsLaterSetAside() {
         final OffenceDetail offence = createOffenceDetail(1);
 
         final List<Offence> offences = findOffences(singletonList(offence), asList(
@@ -272,7 +271,7 @@ public class ProsecutionCaseServiceTest {
     }
 
     @Test
-    public void shouldNotSetProceedingsConcludedWhenApplicationDecisionIsSetAside() {
+    void shouldNotSetProceedingsConcludedWhenApplicationDecisionIsSetAside() {
         final OffenceDetail offence = createCompletedOffenceDetail(1);
         // a granted stat dec / reopening: CaseApplicationListener.handleApplicationDecisionSetAside clears
         // the completed flag but records no new offence decision, so the latest decision is still concluded

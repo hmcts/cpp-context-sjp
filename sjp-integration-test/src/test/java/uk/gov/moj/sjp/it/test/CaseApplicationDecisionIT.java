@@ -20,6 +20,7 @@ import static uk.gov.moj.cpp.sjp.domain.decision.imposition.PaymentType.PAY_TO_C
 import static uk.gov.moj.cpp.sjp.domain.plea.PleaType.GUILTY;
 import static uk.gov.moj.cpp.sjp.domain.plea.PleaType.NOT_GUILTY;
 import static uk.gov.moj.cpp.sjp.domain.verdict.VerdictType.FOUND_GUILTY;
+import static uk.gov.moj.sjp.it.Constants.DEFAULT_OFFENCE_CODE;
 import static uk.gov.moj.sjp.it.Constants.NOTICE_PERIOD_IN_DAYS;
 import static uk.gov.moj.sjp.it.command.CreateCase.createCaseForPayloadBuilder;
 import static uk.gov.moj.sjp.it.helper.AssignmentHelper.requestCaseAssignmentAndConfirm;
@@ -38,9 +39,14 @@ import static uk.gov.moj.sjp.it.model.ProsecutingAuthority.TVL;
 import static uk.gov.moj.sjp.it.pollingquery.CasePoller.pollForCase;
 import static uk.gov.moj.sjp.it.pollingquery.CasePoller.pollUntilCaseByIdIsOk;
 import static uk.gov.moj.sjp.it.pollingquery.CasePoller.pollUntilCaseStatusCompleted;
+import static uk.gov.moj.sjp.it.pollingquery.CasePoller.pollUntilProsecutionCaseByIdIsOk;
+import static uk.gov.moj.sjp.it.stub.ProsecutionCaseFileServiceStub.stubCaseDetails;
+import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubCountryNationalities;
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubDefaultCourtByCourtHouseOUCodeQuery;
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubEnforcementAreaByPostcode;
+import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubEthnicities;
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubProsecutorQuery;
+import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubQueryOffencesByCode;
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubRegionByPostcode;
 import static uk.gov.moj.sjp.it.stub.UsersGroupsStub.stubForUserDetails;
 import static uk.gov.moj.sjp.it.stub.UsersGroupsStub.stubGroupForUser;
@@ -144,6 +150,9 @@ public class CaseApplicationDecisionIT extends BaseIntegrationTest {
 
     @Test
     public void shouldRecordApplicationDecisionGranted() {
+        stubProsecutionCaseQueryDependencies();
+        // discharged in setUp: disposed of in SJP, so concluded
+        pollUntilProsecutionCaseByIdIsOk(caseId, withJsonPath("$.defendants[0].offences[0].proceedingsConcluded", is(true)));
 
         createCaseApplication(USER.getUserId(), caseId, appId,
                 STAT_DEC_TYPE_ID, STAT_DEC_TYPE_CODE, "A", DATE_RECEIVED, APP_STATUS,
@@ -181,6 +190,9 @@ public class CaseApplicationDecisionIT extends BaseIntegrationTest {
                 withoutJsonPath("$.defendant.offences[0].convictingCourt")
         ));
 
+        // stat dec granted: the offence is live again in SJP (no new offence decision is recorded), so not concluded
+        pollUntilProsecutionCaseByIdIsOk(caseId, withoutJsonPath("$.defendants[0].offences[0].proceedingsConcluded"));
+
         final SetPleasPayloadBuilder setPleas = setPleasPayloadBuilder()
                 .welshHearing(false)
                 .withInterpreter(null, false)
@@ -199,6 +211,8 @@ public class CaseApplicationDecisionIT extends BaseIntegrationTest {
                 withJsonPath("$.defendant.offences[0].hasFinalDecision", is(true)),
                 withJsonPath("$.defendant.offences[0].plea", is("NOT_GUILTY"))
         ));
+        
+        pollUntilProsecutionCaseByIdIsOk(caseId, withJsonPath("$.defendants[0].offences[0].proceedingsConcluded", is(true)));
     }
 
     @Test
@@ -243,4 +257,10 @@ public class CaseApplicationDecisionIT extends BaseIntegrationTest {
                 ));
     }
 
+    private void stubProsecutionCaseQueryDependencies() {
+        stubQueryOffencesByCode(DEFAULT_OFFENCE_CODE);
+        stubCaseDetails(caseId, "stub-data/prosecutioncasefile.query.case-details-welsh.json");
+        stubCountryNationalities("stub-data/referencedata.query.country-nationality.json");
+        stubEthnicities("stub-data/referencedata.query.ethnicities.json");
+    }
 }

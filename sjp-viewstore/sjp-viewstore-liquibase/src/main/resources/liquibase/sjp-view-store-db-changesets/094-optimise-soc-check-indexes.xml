@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+         http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.3.xsd">
+
+    <changeSet id="094.1" author="shrikanth.shetty"
+               logicalFilePath="liquibase/sjp-view-store-db-changelog.xml">
+        <sql>
+            ALTER TABLE offence_decision DROP CONSTRAINT offence_decision_pkey;
+            ALTER TABLE offence_decision ADD CONSTRAINT offence_decision_pkey PRIMARY KEY (case_decision_id, offence_id);
+        </sql>
+
+        <rollback>
+            ALTER TABLE offence_decision DROP CONSTRAINT offence_decision_pkey;
+            ALTER TABLE offence_decision ADD CONSTRAINT offence_decision_pkey PRIMARY KEY (offence_id, case_decision_id);
+        </rollback>
+    </changeSet>
+
+    <changeSet id="094.2" author="shrikanth.shetty"
+               logicalFilePath="liquibase/sjp-view-store-db-changelog.xml">
+        <sql>
+            DROP INDEX IF EXISTS case_decision_id_idx CASCADE;
+            CREATE INDEX IF NOT EXISTS offence_decision_decision_type_idx ON offence_decision (decision_type) WHERE decision_type = 'ADJOURN';
+        </sql>
+
+        <rollback>
+            DROP INDEX IF EXISTS offence_decision_decision_type_idx;
+            CREATE INDEX IF NOT EXISTS case_decision_id_idx ON offence_decision (case_decision_id);
+        </rollback>
+    </changeSet>
+
+    <changeSet id="094.3" author="shrikanth.shetty"
+               logicalFilePath="liquibase/sjp-view-store-db-changelog.xml">
+        <sql>
+            DROP INDEX IF EXISTS case_decision_session_id_saved_at_idx CASCADE;
+            CREATE INDEX IF NOT EXISTS case_decision_session_id_idx ON case_decision (session_id);
+            CREATE INDEX IF NOT EXISTS case_decision_saved_at_idx ON case_decision (saved_at);
+        </sql>
+
+        <rollback>
+            DROP INDEX IF EXISTS case_decision_saved_at_idx;
+            DROP INDEX IF EXISTS case_decision_session_id_idx;
+            CREATE INDEX IF NOT EXISTS case_decision_session_id_saved_at_idx ON case_decision (session_id, saved_at);
+        </rollback>
+    </changeSet>
+
+</databaseChangeLog>

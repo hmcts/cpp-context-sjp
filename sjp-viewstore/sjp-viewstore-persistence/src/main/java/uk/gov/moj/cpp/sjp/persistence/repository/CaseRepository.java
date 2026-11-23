@@ -35,22 +35,24 @@ public abstract class CaseRepository extends AbstractEntityRepository<CaseDetail
 
 
     private static final String SELECT_CASES_FOR_SOC_CHECK =
-            " with adjourn_temp as (select distinct cd.id from case_decision cd inner join offence_decision od on cd.id = od.case_decision_id where od.decision_type = 'ADJOURN')" +
-                    " select distinct cast(cd.id as varchar) as id , cd.urn as urn, cdn.saved_at as lastUpdatedDate, cd.prosecuting_authority as prosecutingAuthority, sess.magistrate as magistrate, " +
-                    " cast(case " +
-                    " when sess.legal_adviser_user_id is null then sess.user_id " +
-                    " when sess.legal_adviser_user_id is not null then sess.legal_adviser_user_id " +
-                    " end as varchar) as legalAdvisorUserId " +
-                    " from case_details cd inner join case_decision cdn on cd.id = cdn.case_id " +
-                    " inner join offence_decision od on cdn.id = od.case_decision_id " +
-                    " inner join session sess on sess.id = cdn.session_id " +
-                    " where cdn.saved_at >= :fromDate and cdn.saved_at  <= :toDate " +
-                    " and cdn.id not in (select atemp.id from adjourn_temp atemp)" +
-                    " and cd.id not in (select soc.case_id from soc_check soc)" +
-                    " and cd.completed = true" +
-                    " and sess.user_id != :loggedInUserId" +
-                    " and sess.local_justice_area_national_court_code = :ljaCode and sess.court_house_code = :courtHouseCode" +
-                    " order by";
+            " SELECT DISTINCT " +
+                    "    CAST(cd.id AS varchar) AS id, " +
+                    "    cd.urn AS urn, " +
+                    "    cdn.saved_at AS lastUpdatedDate, " +
+                    "    cd.prosecuting_authority AS prosecutingAuthority, " +
+                    "    sess.magistrate AS magistrate, " +
+                    "    CAST( COALESCE(sess.legal_adviser_user_id, sess.user_id) AS varchar ) AS legalAdvisorUserId " +
+                    "FROM case_details cd " +
+                    "INNER JOIN case_decision cdn ON cd.id = cdn.case_id AND cd.completed = true " +
+                    "INNER JOIN session sess ON sess.id = cdn.session_id " +
+                    "WHERE cdn.saved_at BETWEEN :fromDate AND :toDate " +
+                    "  AND EXISTS ( SELECT 1 FROM offence_decision od WHERE od.case_decision_id = cdn.id ) " +
+                    "  AND NOT EXISTS ( SELECT 1 FROM offence_decision od WHERE od.case_decision_id = cdn.id AND od.decision_type = 'ADJOURN' ) " +
+                    "  AND NOT EXISTS ( SELECT 1 FROM soc_check soc WHERE soc.case_id = cd.id ) " +
+                    "  AND sess.user_id != :loggedInUserId " +
+                    "  AND sess.local_justice_area_national_court_code = :ljaCode " +
+                    "  AND sess.court_house_code = :courtHouseCode " +
+                    "ORDER BY";
 
     @SuppressWarnings("unchecked")
     public List<Object[]> findCasesForSOCCheck(final String loggedInUserId,

@@ -16,8 +16,6 @@ import javax.persistence.EntityManager;
 import javax.persistence.NoResultException;
 import javax.persistence.PersistenceContext;
 import javax.persistence.TypedQuery;
-import javax.transaction.Transactional;
-
 /**
  * Repository for {@link CaseDetail}
  */
@@ -284,7 +282,7 @@ public class CaseRepository {
         return entityManager.find(CaseDetail.class, id);
     }
 
-    @Transactional
+
     public CaseDetail save(final CaseDetail caseDetail) {
         // Mirror the DeltaSpike EntityRepository.save contract: persist a genuinely-new entity
         // (leaving the passed instance managed so later mutations are tracked), else merge.
@@ -295,7 +293,6 @@ public class CaseRepository {
         return caseDetail;
     }
 
-    @Transactional
     public void remove(final CaseDetail caseDetail) {
         entityManager.remove(entityManager.contains(caseDetail) ? caseDetail : entityManager.merge(caseDetail));
     }

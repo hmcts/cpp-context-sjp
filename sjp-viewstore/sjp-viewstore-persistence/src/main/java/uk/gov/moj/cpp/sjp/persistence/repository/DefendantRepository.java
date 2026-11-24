@@ -93,12 +93,11 @@ public class DefendantRepository {
         return entityManager.find(DefendantDetail.class, id);
     }
 
-    @Transactional
+
     public DefendantDetail save(final DefendantDetail entity) {
         return entityManager.merge(entity);
     }
 
-    @Transactional
     public void remove(final DefendantDetail entity) {
         entityManager.remove(entityManager.contains(entity) ? entity : entityManager.merge(entity));
     }

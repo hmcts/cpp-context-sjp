@@ -11,7 +11,6 @@ import java.util.UUID;
 
 
 @ApplicationScoped
-@Transactional
 public class SessionRepository {
 
     @PersistenceContext(unitName = "sjp-persistence-unit")

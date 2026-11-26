@@ -3,16 +3,16 @@ package uk.gov.moj.cpp.sjp.persistence.repository;
 import uk.gov.moj.cpp.sjp.persistence.entity.CaseSearchResult;
 
 import javax.enterprise.context.ApplicationScoped;
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
 import java.util.List;
 import java.util.UUID;
 
 @ApplicationScoped
-public class CaseSearchResultRepository {
+public class CaseSearchResultRepository extends JPAEntityRepository<CaseSearchResult, UUID> {
 
-    @PersistenceContext(unitName = "sjp-persistence-unit")
-    private EntityManager entityManager;
+    @Override
+    protected Class<CaseSearchResult> getEntityClass() {
+        return CaseSearchResult.class;
+    }
 
     public List<CaseSearchResult> findByLastName(final String prosecutingAuthority, final String lastName,
                                                  final List<String> agentProsecutorAuthorityAccess) {
@@ -64,29 +64,9 @@ public class CaseSearchResultRepository {
                 .getResultList();
     }
 
-    public CaseSearchResult findBy(final UUID id) {
-        return entityManager.find(CaseSearchResult.class, id);
-    }
-
-    public CaseSearchResult save(final CaseSearchResult entity) {
-        return entityManager.merge(entity);
-    }
-
     public CaseSearchResult saveAndFlush(final CaseSearchResult entity) {
         final CaseSearchResult merged = entityManager.merge(entity);
         entityManager.flush();
         return merged;
-    }
-
-    public void remove(final CaseSearchResult entity) {
-        entityManager.remove(entityManager.contains(entity) ? entity : entityManager.merge(entity));
-    }
-
-    public Long count() {
-        return entityManager.createQuery("SELECT COUNT(e) FROM CaseSearchResult e", Long.class).getResultStream().findFirst().orElse(null);
-    }
-
-    public List<CaseSearchResult> findAll() {
-        return entityManager.createQuery("SELECT e FROM CaseSearchResult e", CaseSearchResult.class).getResultList();
     }
 }

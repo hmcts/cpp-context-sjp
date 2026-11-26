@@ -10,14 +10,8 @@ import uk.gov.moj.cpp.sjp.persistence.entity.CaseDetail;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.RegisterExtension;
 
-class CaseRepositoryProsecutingAuthorityTest {
-
-    private static final String PERSISTENCE_UNIT = "sjp-test-persistence-unit";
-
-    @RegisterExtension
-    static HibernateTestEntityManagerProvider hibernateTestEntityManagerProvider = new HibernateTestEntityManagerProvider(PERSISTENCE_UNIT);
+class CaseRepositoryProsecutingAuthorityTest extends BaseJpaRepositoryTest {
 
     private CaseRepository caseRepository;
 

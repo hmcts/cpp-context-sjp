@@ -1,12 +1,9 @@
 package uk.gov.moj.cpp.sjp.persistence.repository;
 
-
 import uk.gov.moj.cpp.sjp.persistence.entity.DefendantDetail;
 import uk.gov.moj.cpp.sjp.persistence.entity.OffenceDetail;
 
 import javax.enterprise.context.ApplicationScoped;
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
 import java.util.List;
 import java.util.UUID;
 
@@ -14,10 +11,12 @@ import java.util.UUID;
  * Repository for {@link OffenceDetail}
  */
 @ApplicationScoped
-public class OffenceRepository {
+public class OffenceRepository extends JPAEntityRepository<OffenceDetail, UUID>{
 
-    @PersistenceContext(unitName = "sjp-persistence-unit")
-    private EntityManager entityManager;
+    @Override
+    protected Class<OffenceDetail> getEntityClass() {
+        return OffenceDetail.class;
+    }
 
     public List<OffenceDetail> findByDefendantDetail(DefendantDetail defendantDetail) {
         return entityManager.createQuery(
@@ -33,25 +32,5 @@ public class OffenceRepository {
                 OffenceDetail.class)
                 .setParameter("offenceIds", offenceIds)
                 .getResultList();
-    }
-
-    public OffenceDetail findBy(final UUID id) {
-        return entityManager.find(OffenceDetail.class, id);
-    }
-
-    public OffenceDetail save(final OffenceDetail entity) {
-        return entityManager.merge(entity);
-    }
-
-    public void remove(final OffenceDetail entity) {
-        entityManager.remove(entityManager.contains(entity) ? entity : entityManager.merge(entity));
-    }
-
-    public Long count() {
-        return entityManager.createQuery("SELECT COUNT(e) FROM OffenceDetail e", Long.class).getResultStream().findFirst().orElse(null);
-    }
-
-    public List<OffenceDetail> findAll() {
-        return entityManager.createQuery("SELECT e FROM OffenceDetail e", OffenceDetail.class).getResultList();
     }
 }

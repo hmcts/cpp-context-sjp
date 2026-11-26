@@ -3,40 +3,20 @@ package uk.gov.moj.cpp.sjp.persistence.repository;
 import uk.gov.moj.cpp.sjp.persistence.entity.AccountNote;
 
 import javax.enterprise.context.ApplicationScoped;
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
 import java.util.List;
 import java.util.UUID;
 
 @ApplicationScoped
-public class CaseAccountNoteRepository {
+public class CaseAccountNoteRepository extends JPAEntityRepository<AccountNote, UUID> {
 
-    @PersistenceContext(unitName = "sjp-persistence-unit")
-    private EntityManager entityManager;
+    @Override
+    protected Class<AccountNote> getEntityClass() {
+        return AccountNote.class;
+    }
 
     public List<AccountNote> findByCaseUrn(final String caseUrn) {
         return entityManager.createQuery("SELECT e FROM AccountNote e WHERE e.caseUrn = :caseUrn", AccountNote.class)
                 .setParameter("caseUrn", caseUrn)
                 .getResultList();
-    }
-
-    public AccountNote findBy(final UUID id) {
-        return entityManager.find(AccountNote.class, id);
-    }
-
-    public AccountNote save(final AccountNote entity) {
-        return entityManager.merge(entity);
-    }
-
-    public void remove(final AccountNote entity) {
-        entityManager.remove(entityManager.contains(entity) ? entity : entityManager.merge(entity));
-    }
-
-    public Long count() {
-        return entityManager.createQuery("SELECT COUNT(e) FROM AccountNote e", Long.class).getResultStream().findFirst().orElse(null);
-    }
-
-    public List<AccountNote> findAll() {
-        return entityManager.createQuery("SELECT e FROM AccountNote e", AccountNote.class).getResultList();
     }
 }

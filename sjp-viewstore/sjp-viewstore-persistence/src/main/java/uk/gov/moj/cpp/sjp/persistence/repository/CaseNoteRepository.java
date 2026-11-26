@@ -4,16 +4,16 @@ import uk.gov.justice.json.schemas.domains.sjp.NoteType;
 import uk.gov.moj.cpp.sjp.persistence.entity.CaseNote;
 
 import javax.enterprise.context.ApplicationScoped;
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
 import java.util.List;
 import java.util.UUID;
 
 @ApplicationScoped
-public class CaseNoteRepository {
+public class CaseNoteRepository extends JPAEntityRepository<CaseNote, UUID> {
 
-    @PersistenceContext(unitName = "sjp-persistence-unit")
-    private EntityManager entityManager;
+    @Override
+    protected Class<CaseNote> getEntityClass() {
+        return CaseNote.class;
+    }
 
     public List<CaseNote> findByCaseIdOrderByAddedAtDesc(final UUID caseId) {
         return entityManager.createQuery("SELECT e FROM CaseNote e WHERE e.caseId = :caseId ORDER BY e.addedAt DESC", CaseNote.class)
@@ -26,31 +26,5 @@ public class CaseNoteRepository {
                 .setParameter("caseId", caseId)
                 .setParameter("noteType", noteType)
                 .getResultList();
-    }
-
-    public CaseNote findBy(final UUID id) {
-        return entityManager.find(CaseNote.class, id);
-    }
-
-    public CaseNote save(final CaseNote entity) {
-        // Mirror the DeltaSpike EntityRepository.save contract: persist a genuinely-new entity
-        // (leaving the passed instance managed) else merge.
-        if (entity.getNoteId() != null && entityManager.find(CaseNote.class, entity.getNoteId()) != null) {
-            return entityManager.merge(entity);
-        }
-        entityManager.persist(entity);
-        return entity;
-    }
-
-    public void remove(final CaseNote entity) {
-        entityManager.remove(entityManager.contains(entity) ? entity : entityManager.merge(entity));
-    }
-
-    public Long count() {
-        return entityManager.createQuery("SELECT COUNT(e) FROM CaseNote e", Long.class).getResultStream().findFirst().orElse(null);
-    }
-
-    public List<CaseNote> findAll() {
-        return entityManager.createQuery("SELECT e FROM CaseNote e", CaseNote.class).getResultList();
     }
 }

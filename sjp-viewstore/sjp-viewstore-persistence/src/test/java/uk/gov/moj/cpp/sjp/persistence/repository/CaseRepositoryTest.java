@@ -47,9 +47,8 @@ import javax.persistence.NonUniqueResultException;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.RegisterExtension;
 
-class CaseRepositoryTest {
+class CaseRepositoryTest extends BaseJpaRepositoryTest {
 
     private static final Map<UUID, CaseDetail> CASES = new HashMap<>();
 
@@ -79,11 +78,6 @@ class CaseRepositoryTest {
     private static final String OFFENCE_CODE = "PS0001";
     private static final List<ReadyCase> READY_CASES = new ArrayList<>();
     private static LocalDate postingDate = LocalDate.of(2015, 12, 31);
-
-    private static final String PERSISTENCE_UNIT = "sjp-test-persistence-unit";
-
-    @RegisterExtension
-    static HibernateTestEntityManagerProvider hibernateTestEntityManagerProvider = new HibernateTestEntityManagerProvider(PERSISTENCE_UNIT);
 
     private EntityManager entityManager;
 

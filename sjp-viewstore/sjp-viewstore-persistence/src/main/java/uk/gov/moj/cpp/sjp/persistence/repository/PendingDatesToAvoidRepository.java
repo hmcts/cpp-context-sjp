@@ -3,21 +3,20 @@ package uk.gov.moj.cpp.sjp.persistence.repository;
 import uk.gov.moj.cpp.sjp.persistence.entity.PendingDatesToAvoid;
 
 import javax.enterprise.context.ApplicationScoped;
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
-
 
 /**
  * Repository for {@link PendingDatesToAvoid}
  */
 @ApplicationScoped
-public class PendingDatesToAvoidRepository {
+public class PendingDatesToAvoidRepository extends JPAEntityRepository<PendingDatesToAvoid, UUID> {
 
-    @PersistenceContext(unitName = "sjp-persistence-unit")
-    private EntityManager entityManager;
+    @Override
+    protected Class<PendingDatesToAvoid> getEntityClass() {
+        return PendingDatesToAvoid.class;
+    }
 
     public List<PendingDatesToAvoid> findCasesPendingDatesToAvoid(String prosecutingAuthority,
                                                                   List<String> agentProsecutorAuthorityAccess) {
@@ -34,25 +33,5 @@ public class PendingDatesToAvoidRepository {
 
     public void removeByCaseId(final UUID caseId) {
         Optional.ofNullable(this.findBy(caseId)).ifPresent(this::remove);
-    }
-
-    public PendingDatesToAvoid findBy(final UUID id) {
-        return entityManager.find(PendingDatesToAvoid.class, id);
-    }
-
-    public PendingDatesToAvoid save(final PendingDatesToAvoid entity) {
-        return entityManager.merge(entity);
-    }
-
-    public void remove(final PendingDatesToAvoid entity) {
-        entityManager.remove(entityManager.contains(entity) ? entity : entityManager.merge(entity));
-    }
-
-    public Long count() {
-        return entityManager.createQuery("SELECT COUNT(e) FROM PendingDatesToAvoid e", Long.class).getResultStream().findFirst().orElse(null);
-    }
-
-    public List<PendingDatesToAvoid> findAll() {
-        return entityManager.createQuery("SELECT e FROM PendingDatesToAvoid e", PendingDatesToAvoid.class).getResultList();
     }
 }

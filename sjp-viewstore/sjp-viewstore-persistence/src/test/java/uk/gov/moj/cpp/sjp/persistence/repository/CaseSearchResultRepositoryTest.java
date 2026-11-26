@@ -23,9 +23,8 @@ import java.util.concurrent.atomic.AtomicLong;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.RegisterExtension;
 
-class CaseSearchResultRepositoryTest {
+class CaseSearchResultRepositoryTest extends BaseJpaRepositoryTest {
 
     private static final boolean IS_CURRENT = false;
     private static final boolean IS_OLD = true;
@@ -38,11 +37,6 @@ class CaseSearchResultRepositoryTest {
     private static final String PROSECUTING_AUTHORITY_2 = "PROC2";
     private static final String PROSECUTING_AUTHORITY_WILDCARD = "%";
     private static final String LEGAL_ENTITY_NAME = "legalEntityName";
-
-    private static final String PERSISTENCE_UNIT = "sjp-test-persistence-unit";
-
-    @RegisterExtension
-    static HibernateTestEntityManagerProvider hibernateTestEntityManagerProvider = new HibernateTestEntityManagerProvider(PERSISTENCE_UNIT);
 
     private CaseSearchResultRepository caseSearchResultRepository;
     private CaseSummaryRepository caseSummaryRepository;

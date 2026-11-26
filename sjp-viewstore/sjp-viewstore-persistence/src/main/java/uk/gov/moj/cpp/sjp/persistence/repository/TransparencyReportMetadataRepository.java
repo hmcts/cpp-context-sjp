@@ -3,17 +3,17 @@ package uk.gov.moj.cpp.sjp.persistence.repository;
 import uk.gov.moj.cpp.sjp.persistence.entity.TransparencyReportMetadata;
 
 import javax.enterprise.context.ApplicationScoped;
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
 @ApplicationScoped
-public class TransparencyReportMetadataRepository {
+public class TransparencyReportMetadataRepository extends JPAEntityRepository<TransparencyReportMetadata, UUID> {
 
-    @PersistenceContext(unitName = "sjp-persistence-unit")
-    private EntityManager entityManager;
+    @Override
+    protected Class<TransparencyReportMetadata> getEntityClass() {
+        return TransparencyReportMetadata.class;
+    }
 
     public List<TransparencyReportMetadata> findLatestTransparencyReportMetadata(LocalDateTime fromDate) {
         return entityManager.createQuery(
@@ -23,25 +23,5 @@ public class TransparencyReportMetadataRepository {
                 TransparencyReportMetadata.class)
                 .setParameter("fromDate", fromDate)
                 .getResultList();
-    }
-
-    public TransparencyReportMetadata findBy(final UUID id) {
-        return entityManager.find(TransparencyReportMetadata.class, id);
-    }
-
-    public TransparencyReportMetadata save(final TransparencyReportMetadata entity) {
-        return entityManager.merge(entity);
-    }
-
-    public void remove(final TransparencyReportMetadata entity) {
-        entityManager.remove(entityManager.contains(entity) ? entity : entityManager.merge(entity));
-    }
-
-    public Long count() {
-        return entityManager.createQuery("SELECT COUNT(e) FROM TransparencyReportMetadata e", Long.class).getResultStream().findFirst().orElse(null);
-    }
-
-    public List<TransparencyReportMetadata> findAll() {
-        return entityManager.createQuery("SELECT e FROM TransparencyReportMetadata e", TransparencyReportMetadata.class).getResultList();
     }
 }

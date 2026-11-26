@@ -1,19 +1,17 @@
 package uk.gov.moj.cpp.sjp.persistence.repository;
 
 import uk.gov.moj.cpp.sjp.persistence.entity.CaseDecision;
-
 import javax.enterprise.context.ApplicationScoped;
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
 import java.util.List;
 import java.util.UUID;
 
-
 @ApplicationScoped
-public class CaseDecisionRepository {
+public class CaseDecisionRepository extends JPAEntityRepository<CaseDecision, UUID> {
 
-    @PersistenceContext(unitName = "sjp-persistence-unit")
-    private EntityManager entityManager;
+    @Override
+    protected Class<CaseDecision> getEntityClass() {
+        return CaseDecision.class;
+    }
 
     public List<CaseDecision> findCaseDecisionsForConvictingCourtSessions(final UUID offenceId) {
         return entityManager.createQuery("SELECT casedecision FROM CaseDecision as casedecision INNER JOIN casedecision.offenceDecisions as offencedecision " +
@@ -28,31 +26,5 @@ public class CaseDecisionRepository {
                         "WHERE casedecision_b.caseId = casedecision_a.caseId )", CaseDecision.class)
                 .setParameter("caseId", caseId)
                 .getResultStream().findFirst().orElse(null);
-    }
-
-    public CaseDecision findBy(final UUID id) {
-        return entityManager.find(CaseDecision.class, id);
-    }
-
-    public CaseDecision save(final CaseDecision entity) {
-        // Mirror the DeltaSpike EntityRepository.save contract: persist a genuinely-new entity
-        // (leaving the passed instance managed, and its associations unresolved) else merge.
-        if (entity.getId() != null && entityManager.find(CaseDecision.class, entity.getId()) != null) {
-            return entityManager.merge(entity);
-        }
-        entityManager.persist(entity);
-        return entity;
-    }
-
-    public void remove(final CaseDecision entity) {
-        entityManager.remove(entityManager.contains(entity) ? entity : entityManager.merge(entity));
-    }
-
-    public Long count() {
-        return entityManager.createQuery("SELECT COUNT(e) FROM CaseDecision e", Long.class).getResultStream().findFirst().orElse(null);
-    }
-
-    public List<CaseDecision> findAll() {
-        return entityManager.createQuery("SELECT e FROM CaseDecision e", CaseDecision.class).getResultList();
     }
 }

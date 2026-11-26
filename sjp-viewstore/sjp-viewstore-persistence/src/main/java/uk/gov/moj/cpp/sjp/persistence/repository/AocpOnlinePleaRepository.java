@@ -23,8 +23,6 @@ import uk.gov.moj.cpp.sjp.persistence.entity.Address;
 import uk.gov.moj.cpp.sjp.persistence.entity.AocpOnlinePlea;
 
 import javax.enterprise.context.ApplicationScoped;
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaUpdate;
@@ -35,10 +33,7 @@ import java.util.UUID;
 import java.util.function.Function;
 
 
-public abstract class AocpOnlinePleaRepository {
-
-    @PersistenceContext(unitName = "sjp-persistence-unit")
-    private EntityManager entityManager;
+public abstract class AocpOnlinePleaRepository extends JPAEntityRepository<AocpOnlinePlea, UUID> {
 
     private static final String PERSONAL_DETAILS = "personalDetails";
     private static final String ADDRESS = "address";
@@ -81,26 +76,6 @@ public abstract class AocpOnlinePleaRepository {
                 .getResultStream()
                 .findFirst()
                 .orElse(null);
-    }
-
-    public AocpOnlinePlea findBy(final UUID id) {
-        return entityManager.find(AocpOnlinePlea.class, id);
-    }
-
-    public AocpOnlinePlea save(final AocpOnlinePlea aocpOnlinePlea) {
-        return entityManager.merge(aocpOnlinePlea);
-    }
-
-    public void remove(final AocpOnlinePlea aocpOnlinePlea) {
-        entityManager.remove(entityManager.contains(aocpOnlinePlea) ? aocpOnlinePlea : entityManager.merge(aocpOnlinePlea));
-    }
-
-    public Long count() {
-        return entityManager.createQuery("SELECT COUNT(op) FROM AocpOnlinePlea op", Long.class).getResultStream().findFirst().orElse(null);
-    }
-
-    public List<AocpOnlinePlea> findAll() {
-        return entityManager.createQuery("SELECT op FROM AocpOnlinePlea op", AocpOnlinePlea.class).getResultList();
     }
 
     abstract List<FIELDS> getFieldsToUpdate();
@@ -166,6 +141,11 @@ public abstract class AocpOnlinePleaRepository {
                     PERSON_DRIVER_NUMBER,
                     PERSON_DRIVER_LICENCE_DETAILS
             );
+        }
+
+        @Override
+        protected Class<AocpOnlinePlea> getEntityClass() {
+            return AocpOnlinePlea.class;
         }
     }
 

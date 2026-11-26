@@ -24,19 +24,13 @@ import java.util.UUID;
 import org.apache.commons.lang3.StringUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.RegisterExtension;
 
 /**
  * DB integration tests for {@link OffenceRepository} class
  */
-class OffenceRepositoryTest {
+class OffenceRepositoryTest extends BaseJpaRepositoryTest {
 
     private static final int NUM_PREVIOUS_CONVICTIONS = 1;
-
-    private static final String PERSISTENCE_UNIT = "sjp-test-persistence-unit";
-
-    @RegisterExtension
-    static HibernateTestEntityManagerProvider hibernateTestEntityManagerProvider = new HibernateTestEntityManagerProvider(PERSISTENCE_UNIT);
 
     private OffenceRepository offenceRepository;
 

@@ -25,18 +25,12 @@ import java.util.stream.Stream;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.RegisterExtension;
 
-class CaseRepositorySjpnTest {
+class CaseRepositorySjpnTest extends BaseJpaRepositoryTest {
 
     private static final String TFL_PROSECUTOR_FILTER_VALUE = "TFL";
     private static final String COURT_ADMIN_FILTER_VALUE = "%";
     private static final int NUMBER_OF_PROSECUTING_AUTHORITIES = 2;
-
-    private static final String PERSISTENCE_UNIT = "sjp-test-persistence-unit";
-
-    @RegisterExtension
-    static HibernateTestEntityManagerProvider hibernateTestEntityManagerProvider = new HibernateTestEntityManagerProvider(PERSISTENCE_UNIT);
 
     private CaseRepository caseRepository;
 

@@ -27,18 +27,12 @@ import java.util.UUID;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.RegisterExtension;
 
-class OnlinePleaRepositoryTest {
+class OnlinePleaRepositoryTest extends BaseJpaRepositoryTest {
 
     public static final String HOME = "123131231";
     public static final String MOBILE = "12313131";
     public static final String EMAIL = "test@test.com";
-
-    private static final String PERSISTENCE_UNIT = "sjp-test-persistence-unit";
-
-    @RegisterExtension
-    static HibernateTestEntityManagerProvider hibernateTestEntityManagerProvider = new HibernateTestEntityManagerProvider(PERSISTENCE_UNIT);
 
     private OnlinePleaRepository.FinancialMeansOnlinePleaRepository onlinePleaRepository;
 

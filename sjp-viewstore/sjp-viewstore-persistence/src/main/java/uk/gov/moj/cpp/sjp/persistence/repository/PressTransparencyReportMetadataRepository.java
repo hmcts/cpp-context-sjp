@@ -3,17 +3,17 @@ package uk.gov.moj.cpp.sjp.persistence.repository;
 import uk.gov.moj.cpp.sjp.persistence.entity.PressTransparencyReportMetadata;
 
 import javax.enterprise.context.ApplicationScoped;
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
 @ApplicationScoped
-public class PressTransparencyReportMetadataRepository {
+public class PressTransparencyReportMetadataRepository extends JPAEntityRepository<PressTransparencyReportMetadata, UUID> {
 
-    @PersistenceContext(unitName = "sjp-persistence-unit")
-    private EntityManager entityManager;
+    @Override
+    protected Class<PressTransparencyReportMetadata> getEntityClass() {
+        return PressTransparencyReportMetadata.class;
+    }
 
     public List<PressTransparencyReportMetadata> findLatestPressTransparencyReportMetadata(LocalDateTime fromDate) {
         return entityManager.createQuery(
@@ -23,25 +23,5 @@ public class PressTransparencyReportMetadataRepository {
                 PressTransparencyReportMetadata.class)
                 .setParameter("fromDate", fromDate)
                 .getResultList();
-    }
-
-    public PressTransparencyReportMetadata findBy(final UUID id) {
-        return entityManager.find(PressTransparencyReportMetadata.class, id);
-    }
-
-    public PressTransparencyReportMetadata save(final PressTransparencyReportMetadata entity) {
-        return entityManager.merge(entity);
-    }
-
-    public void remove(final PressTransparencyReportMetadata entity) {
-        entityManager.remove(entityManager.contains(entity) ? entity : entityManager.merge(entity));
-    }
-
-    public Long count() {
-        return entityManager.createQuery("SELECT COUNT(e) FROM PressTransparencyReportMetadata e", Long.class).getResultStream().findFirst().orElse(null);
-    }
-
-    public List<PressTransparencyReportMetadata> findAll() {
-        return entityManager.createQuery("SELECT e FROM PressTransparencyReportMetadata e", PressTransparencyReportMetadata.class).getResultList();
     }
 }

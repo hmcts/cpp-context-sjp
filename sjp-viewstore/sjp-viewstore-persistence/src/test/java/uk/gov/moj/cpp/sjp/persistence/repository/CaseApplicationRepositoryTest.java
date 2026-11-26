@@ -21,15 +21,9 @@ import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.RegisterExtension;
 
 @Disabled
-class CaseApplicationRepositoryTest {
-
-    private static final String PERSISTENCE_UNIT = "sjp-test-persistence-unit";
-
-    @RegisterExtension
-    static HibernateTestEntityManagerProvider hibernateTestEntityManagerProvider = new HibernateTestEntityManagerProvider(PERSISTENCE_UNIT);
+class CaseApplicationRepositoryTest extends BaseJpaRepositoryTest {
 
     private static final UUID APPLICATION_ID = randomUUID();
     private static final UUID CASE_ID = randomUUID();
@@ -80,7 +74,7 @@ class CaseApplicationRepositoryTest {
     private CaseApplication getCaseApplication() {
         final CaseApplication caseApplication = new CaseApplication();
         caseApplication.setApplicationId(APPLICATION_ID);
-        caseApplication.setCaseDetail(createCase(CASE_ID, URN, DEFENDANT_ID, POSTCODE, VALID_MATERIAL_ID_1, VALID_MATERIAL_ID_2));
+        caseApplication.setCaseDetail(caseDetail);
         caseApplication.setTypeId(APPLICATION_TYPE_ID);
         caseApplication.setDateReceived(DATE_RECEIVED);
         caseApplication.setTypeCode(APPLICATION_TYPE_ID.toString());

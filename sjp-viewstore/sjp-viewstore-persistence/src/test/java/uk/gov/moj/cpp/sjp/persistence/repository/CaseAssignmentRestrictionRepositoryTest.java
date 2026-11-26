@@ -13,16 +13,10 @@ import uk.gov.moj.cpp.sjp.persistence.entity.CaseAssignmentRestriction;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.RegisterExtension;
 
 @Disabled
 // This test is ignored since h2 does not support jsonb type
-class CaseAssignmentRestrictionRepositoryTest {
-
-    private static final String PERSISTENCE_UNIT = "sjp-test-persistence-unit";
-
-    @RegisterExtension
-    static HibernateTestEntityManagerProvider hibernateTestEntityManagerProvider = new HibernateTestEntityManagerProvider(PERSISTENCE_UNIT);
+class CaseAssignmentRestrictionRepositoryTest extends BaseJpaRepositoryTest {
 
     private static final String PROSECUTING_AUTHORITY_TVL = "TVL";
     private static final String PROSECUTING_AUTHORITY_TFL = "TFL";

@@ -4,16 +4,15 @@ import uk.gov.moj.cpp.sjp.persistence.entity.CaseApplication;
 import uk.gov.moj.cpp.sjp.persistence.entity.CaseDetail;
 
 import javax.enterprise.context.ApplicationScoped;
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
-import java.util.List;
 import java.util.UUID;
 
 @ApplicationScoped
-public class CaseApplicationRepository {
+public class CaseApplicationRepository extends JPAEntityRepository<CaseApplication, UUID> {
 
-    @PersistenceContext(unitName = "sjp-persistence-unit")
-    private EntityManager entityManager;
+    @Override
+    protected Class<CaseApplication> getEntityClass() {
+        return CaseApplication.class;
+    }
 
     public CaseDetail findByApplicationDecisionId(final UUID applicationDecisionId) {
         return entityManager.createQuery("SELECT ca.caseDetail FROM CaseApplication ca WHERE ca.applicationDecision.decisionId=:applicationDecisionId", CaseDetail.class)
@@ -25,25 +24,5 @@ public class CaseApplicationRepository {
         return entityManager.createQuery("SELECT ca.caseDetail FROM CaseApplication ca WHERE ca.id=:applicationId", CaseDetail.class)
                 .setParameter("applicationId", applicationId)
                 .getResultStream().findFirst().orElse(null);
-    }
-
-    public CaseApplication findBy(final UUID id) {
-        return entityManager.find(CaseApplication.class, id);
-    }
-
-    public CaseApplication save(final CaseApplication entity) {
-        return entityManager.merge(entity);
-    }
-
-    public void remove(final CaseApplication entity) {
-        entityManager.remove(entityManager.contains(entity) ? entity : entityManager.merge(entity));
-    }
-
-    public Long count() {
-        return entityManager.createQuery("SELECT COUNT(e) FROM CaseApplication e", Long.class).getResultStream().findFirst().orElse(null);
-    }
-
-    public List<CaseApplication> findAll() {
-        return entityManager.createQuery("SELECT e FROM CaseApplication e", CaseApplication.class).getResultList();
     }
 }

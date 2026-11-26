@@ -71,8 +71,6 @@ import uk.gov.moj.cpp.sjp.persistence.entity.LegalEntityFinancialMeans;
 import uk.gov.moj.cpp.sjp.persistence.entity.OnlinePlea;
 
 import javax.enterprise.context.ApplicationScoped;
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaUpdate;
@@ -82,10 +80,12 @@ import java.util.List;
 import java.util.UUID;
 import java.util.function.Function;
 
-public abstract class OnlinePleaRepository {
+public abstract class OnlinePleaRepository extends JPAEntityRepository<OnlinePlea, UUID>{
 
-    @PersistenceContext(unitName = "sjp-persistence-unit")
-    private EntityManager entityManager;
+    @Override
+    protected Class<OnlinePlea> getEntityClass() {
+        return OnlinePlea.class;
+    }
 
     private static final String INSERT_STATEMENT =
             "INSERT INTO online_plea(case_id, submitted_on, defendant_id) " +
@@ -127,26 +127,6 @@ public abstract class OnlinePleaRepository {
     }
 
     abstract List<FIELDS> getFieldsToUpdate();
-
-    public OnlinePlea findBy(final UUID id) {
-        return entityManager.find(OnlinePlea.class, id);
-    }
-
-    public OnlinePlea save(final OnlinePlea entity) {
-        return entityManager.merge(entity);
-    }
-
-    public void remove(final OnlinePlea entity) {
-        entityManager.remove(entityManager.contains(entity) ? entity : entityManager.merge(entity));
-    }
-
-    public Long count() {
-        return entityManager.createQuery("SELECT COUNT(e) FROM OnlinePlea e", Long.class).getResultStream().findFirst().orElse(null);
-    }
-
-    public List<OnlinePlea> findAll() {
-        return entityManager.createQuery("SELECT e FROM OnlinePlea e", OnlinePlea.class).getResultList();
-    }
 
     enum FIELDS {
         CASE_ID(OnlinePlea::getCaseId, "caseId"),

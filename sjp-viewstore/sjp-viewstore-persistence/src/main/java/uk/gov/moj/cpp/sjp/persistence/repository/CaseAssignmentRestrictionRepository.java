@@ -3,18 +3,18 @@ package uk.gov.moj.cpp.sjp.persistence.repository;
 import uk.gov.moj.cpp.sjp.persistence.entity.CaseAssignmentRestriction;
 
 import javax.enterprise.context.ApplicationScoped;
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
 import java.util.List;
 
 @ApplicationScoped
-public class CaseAssignmentRestrictionRepository {
+public class CaseAssignmentRestrictionRepository extends JPAEntityRepository<CaseAssignmentRestriction, String> {
 
-    @PersistenceContext(unitName = "sjp-persistence-unit")
-    private EntityManager entityManager;
+    @Override
+    protected Class<CaseAssignmentRestriction> getEntityClass() {
+        return CaseAssignmentRestriction.class;
+    }
 
     private static final String INSERT_STATEMENT =
             "INSERT INTO case_assignment_restriction(prosecuting_authority, include_only, exclude, date_time_created, valid_from, valid_to) " +
@@ -69,25 +69,5 @@ public class CaseAssignmentRestrictionRepository {
             insertStatement.setParameter("valid_to", LocalDate.of(9999, 1, 1));
         }
         insertStatement.executeUpdate();
-    }
-
-    public CaseAssignmentRestriction findBy(final String id) {
-        return entityManager.find(CaseAssignmentRestriction.class, id);
-    }
-
-    public CaseAssignmentRestriction save(final CaseAssignmentRestriction entity) {
-        return entityManager.merge(entity);
-    }
-
-    public void remove(final CaseAssignmentRestriction entity) {
-        entityManager.remove(entityManager.contains(entity) ? entity : entityManager.merge(entity));
-    }
-
-    public Long count() {
-        return entityManager.createQuery("SELECT COUNT(e) FROM CaseAssignmentRestriction e", Long.class).getResultStream().findFirst().orElse(null);
-    }
-
-    public List<CaseAssignmentRestriction> findAll() {
-        return entityManager.createQuery("SELECT e FROM CaseAssignmentRestriction e", CaseAssignmentRestriction.class).getResultList();
     }
 }

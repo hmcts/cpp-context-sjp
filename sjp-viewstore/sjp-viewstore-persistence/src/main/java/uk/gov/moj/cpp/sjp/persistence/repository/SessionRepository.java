@@ -3,18 +3,16 @@ package uk.gov.moj.cpp.sjp.persistence.repository;
 import uk.gov.moj.cpp.sjp.persistence.entity.Session;
 
 import javax.enterprise.context.ApplicationScoped;
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
-import javax.transaction.Transactional;
 import java.util.List;
 import java.util.UUID;
 
-
 @ApplicationScoped
-public class SessionRepository {
+public class SessionRepository extends JPAEntityRepository<Session, UUID>{
 
-    @PersistenceContext(unitName = "sjp-persistence-unit")
-    private EntityManager entityManager;
+    @Override
+    protected Class<Session> getEntityClass() {
+        return Session.class;
+    }
 
     public List<Session> findLatestAocpSession() {
         return entityManager.createQuery(
@@ -22,25 +20,5 @@ public class SessionRepository {
                         "(select max(session2.startedAt) from Session session2 where session2.type='AOCP' and session2.endedAt is null)",
                 Session.class)
                 .getResultList();
-    }
-
-    public Session findBy(final UUID id) {
-        return entityManager.find(Session.class, id);
-    }
-
-    public Session save(final Session entity) {
-        return entityManager.merge(entity);
-    }
-
-    public void remove(final Session entity) {
-        entityManager.remove(entityManager.contains(entity) ? entity : entityManager.merge(entity));
-    }
-
-    public Long count() {
-        return entityManager.createQuery("SELECT COUNT(e) FROM Session e", Long.class).getResultStream().findFirst().orElse(null);
-    }
-
-    public List<Session> findAll() {
-        return entityManager.createQuery("SELECT e FROM Session e", Session.class).getResultList();
     }
 }

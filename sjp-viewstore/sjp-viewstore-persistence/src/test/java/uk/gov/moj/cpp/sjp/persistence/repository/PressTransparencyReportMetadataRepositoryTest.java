@@ -12,14 +12,8 @@ import java.util.UUID;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.RegisterExtension;
 
-class PressTransparencyReportMetadataRepositoryTest {
-
-    private static final String PERSISTENCE_UNIT = "sjp-test-persistence-unit";
-
-    @RegisterExtension
-    static HibernateTestEntityManagerProvider hibernateTestEntityManagerProvider = new HibernateTestEntityManagerProvider(PERSISTENCE_UNIT);
+class PressTransparencyReportMetadataRepositoryTest extends BaseJpaRepositoryTest {
 
     private PressTransparencyReportMetadataRepository pressTransparencyReportMetadataRepository;
 

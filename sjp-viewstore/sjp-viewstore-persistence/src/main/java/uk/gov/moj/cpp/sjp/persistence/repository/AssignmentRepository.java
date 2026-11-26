@@ -9,13 +9,12 @@ import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
+public class AssignmentRepository extends JPAEntityRepository<AssignmentCandidate, UUID> {
 
-public class AssignmentRepository {
-
-    @PersistenceContext(unitName = "sjp-persistence-unit")
-    private EntityManager em;
+    @Override
+    protected Class<AssignmentCandidate> getEntityClass() {
+        return AssignmentCandidate.class;
+    }
 
     private static final String ASSIGNMENTS_CANDIDATES_QUERY =
                     "SELECT " +
@@ -56,7 +55,7 @@ public class AssignmentRepository {
             return Lists.newArrayList();
         }
 
-        return em.createNativeQuery(ASSIGNMENTS_CANDIDATES_QUERY, CaseDetail.RESULT_SET_MAPPING_ASSIGNMENT_CANDIDATES)
+        return entityManager.createNativeQuery(ASSIGNMENTS_CANDIDATES_QUERY, CaseDetail.RESULT_SET_MAPPING_ASSIGNMENT_CANDIDATES)
                 .setParameter("assigneeId", assigneeId)
                 .setParameter("prosecutingAuthorities", prosecutingAuthorities)
                 .setParameter("sessionType", sessionType.name())

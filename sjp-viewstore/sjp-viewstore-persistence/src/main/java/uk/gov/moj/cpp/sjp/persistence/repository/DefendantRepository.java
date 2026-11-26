@@ -1,13 +1,9 @@
 package uk.gov.moj.cpp.sjp.persistence.repository;
 
-
 import uk.gov.moj.cpp.sjp.persistence.entity.DefendantDetail;
 import uk.gov.moj.cpp.sjp.persistence.entity.view.UpdatedDefendantDetails;
 
 import javax.enterprise.context.ApplicationScoped;
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
-import javax.transaction.Transactional;
 import java.time.ZonedDateTime;
 import java.util.Collections;
 import java.util.List;
@@ -17,7 +13,12 @@ import java.util.UUID;
  * Repository for {@link DefendantDetail}
  */
 @ApplicationScoped
-public class DefendantRepository {
+public class DefendantRepository extends JPAEntityRepository<DefendantDetail, UUID>{
+
+    @Override
+    protected Class<DefendantDetail> getEntityClass() {
+        return DefendantDetail.class;
+    }
 
     private static final String UPDATED_DEFENDANT_DETAILS = "SELECT new uk.gov.moj.cpp.sjp.persistence.entity.view.UpdatedDefendantDetails(" +
             "dd.personalDetails.firstName, " +
@@ -38,9 +39,6 @@ public class DefendantRepository {
             "AND (((dd.addressUpdatedAt BETWEEN :fromDate and :toDate) AND (dd.addressUpdatedAt IS NOT NULL AND dd.updatesAcknowledgedAt is NULL OR dd.addressUpdatedAt > dd.updatesAcknowledgedAt)) " +
             "OR ((dd.personalDetails.dateOfBirthUpdatedAt BETWEEN :fromDate and :toDate) AND (dd.personalDetails.dateOfBirthUpdatedAt IS NOT NULL AND dd.updatesAcknowledgedAt IS NULL OR dd.personalDetails.dateOfBirthUpdatedAt > dd.updatesAcknowledgedAt)) " +
             "OR ((dd.nameUpdatedAt BETWEEN :fromDate and :toDate) AND (dd.nameUpdatedAt IS NOT NULL AND dd.updatesAcknowledgedAt IS NULL OR dd.nameUpdatedAt > dd.updatesAcknowledgedAt)))";
-
-    @PersistenceContext(unitName = "sjp-persistence-unit")
-    private EntityManager entityManager;
 
     public List<UpdatedDefendantDetails> findUpdatedByCaseProsecutingAuthority(
             String prosecutingAuthority,
@@ -87,26 +85,5 @@ public class DefendantRepository {
                 "SELECT dd FROM DefendantDetail dd, ReadyCase rc where dd.caseDetail.id = rc.caseId",
                 DefendantDetail.class)
                 .getResultList();
-    }
-
-    public DefendantDetail findBy(final UUID id) {
-        return entityManager.find(DefendantDetail.class, id);
-    }
-
-
-    public DefendantDetail save(final DefendantDetail entity) {
-        return entityManager.merge(entity);
-    }
-
-    public void remove(final DefendantDetail entity) {
-        entityManager.remove(entityManager.contains(entity) ? entity : entityManager.merge(entity));
-    }
-
-    public Long count() {
-        return entityManager.createQuery("SELECT COUNT(e) FROM DefendantDetail e", Long.class).getResultStream().findFirst().orElse(null);
-    }
-
-    public List<DefendantDetail> findAll() {
-        return entityManager.createQuery("SELECT e FROM DefendantDetail e", DefendantDetail.class).getResultList();
     }
 }

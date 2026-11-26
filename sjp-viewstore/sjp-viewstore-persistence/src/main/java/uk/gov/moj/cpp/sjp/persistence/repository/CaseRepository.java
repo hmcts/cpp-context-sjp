@@ -12,19 +12,19 @@ import java.util.List;
 import java.util.UUID;
 import org.apache.commons.lang3.StringUtils;
 import javax.enterprise.context.ApplicationScoped;
-import javax.persistence.EntityManager;
 import javax.persistence.NoResultException;
-import javax.persistence.PersistenceContext;
 import javax.persistence.TypedQuery;
 /**
  * Repository for {@link CaseDetail}
  */
 @SuppressWarnings({"ALL", "PMD.BeanMembersShouldSerialize"})
 @ApplicationScoped
-public class CaseRepository {
+public class CaseRepository extends JPAEntityRepository<CaseDetail, UUID> {
 
-    @PersistenceContext(unitName = "sjp-persistence-unit")
-    private EntityManager entityManager;
+    @Override
+    protected Class<CaseDetail> getEntityClass() {
+        return CaseDetail.class;
+    }
 
     private static final String SELECT_CASES_FOR_SOC_CHECK =
             " with adjourn_temp as (select distinct cd.id from case_decision cd inner join offence_decision od on cd.id = od.case_decision_id where od.decision_type = 'ADJOURN')" +
@@ -276,28 +276,5 @@ public class CaseRepository {
 
     public void updateDatesToAvoid(final UUID caseId, final String datesToAvoid) {
         findBy(caseId).setDatesToAvoid(datesToAvoid);
-    }
-
-    public CaseDetail findBy(final UUID id) {
-        return entityManager.find(CaseDetail.class, id);
-    }
-
-
-    public CaseDetail save(final CaseDetail caseDetail) {
-        // Mirror the DeltaSpike EntityRepository.save contract: persist a genuinely-new entity
-        // (leaving the passed instance managed so later mutations are tracked), else merge.
-        if (caseDetail.getId() != null && entityManager.find(CaseDetail.class, caseDetail.getId()) != null) {
-            return entityManager.merge(caseDetail);
-        }
-        entityManager.persist(caseDetail);
-        return caseDetail;
-    }
-
-    public void remove(final CaseDetail caseDetail) {
-        entityManager.remove(entityManager.contains(caseDetail) ? caseDetail : entityManager.merge(caseDetail));
-    }
-
-    public Long count() {
-        return entityManager.createQuery("SELECT COUNT(cd) FROM CaseDetail cd", Long.class).getSingleResult();
     }
 }

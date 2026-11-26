@@ -2,11 +2,14 @@ package uk.gov.moj.cpp.sjp.persistence.repository;
 
 import uk.gov.moj.cpp.sjp.persistence.entity.EnforcementNotification;
 
+import javax.enterprise.context.ApplicationScoped;
 import java.util.UUID;
 
-import org.apache.deltaspike.data.api.EntityRepository;
-import org.apache.deltaspike.data.api.Repository;
+@ApplicationScoped
+public class EnforcementPendingApplicationNotificationStatusRepository extends JPAEntityRepository<EnforcementNotification,UUID> {
 
-@Repository
-public interface EnforcementPendingApplicationNotificationStatusRepository extends EntityRepository<EnforcementNotification, UUID> {
+    @Override
+    protected Class<EnforcementNotification> getEntityClass() {
+        return EnforcementNotification.class;
+    }
 }

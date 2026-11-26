@@ -2,16 +2,31 @@ package uk.gov.moj.cpp.sjp.persistence.repository;
 
 import uk.gov.moj.cpp.sjp.persistence.entity.ReadyCase;
 
+import javax.enterprise.context.ApplicationScoped;
 import java.util.List;
 import java.util.UUID;
 
-import org.apache.deltaspike.data.api.EntityRepository;
-import org.apache.deltaspike.data.api.Repository;
+@ApplicationScoped
+public class ReadyCaseRepository extends JPAEntityRepository<ReadyCase, UUID> {
 
-@Repository
-public interface ReadyCaseRepository extends EntityRepository<ReadyCase, UUID> {
+    @Override
+    protected Class<ReadyCase> getEntityClass() {
+        return ReadyCase.class;
+    }
 
-    List<ReadyCase> findByAssigneeId(final UUID assigneeId);
+    public List<ReadyCase> findByAssigneeId(final UUID assigneeId) {
+        return entityManager.createQuery(
+                "SELECT e FROM ReadyCase e WHERE e.assigneeId = :assigneeId",
+                ReadyCase.class)
+                .setParameter("assigneeId", assigneeId)
+                .getResultList();
+    }
 
-    ReadyCase findByCaseId(final UUID caseId);
+    public ReadyCase findByCaseId(final UUID caseId) {
+        return entityManager.createQuery(
+                "SELECT e FROM ReadyCase e WHERE e.caseId = :caseId",
+                ReadyCase.class)
+                .setParameter("caseId", caseId)
+                .getResultStream().findFirst().orElse(null);
+    }
 }

@@ -2,15 +2,21 @@ package uk.gov.moj.cpp.sjp.persistence.repository;
 
 import uk.gov.moj.cpp.sjp.persistence.entity.AccountNote;
 
+import javax.enterprise.context.ApplicationScoped;
 import java.util.List;
 import java.util.UUID;
 
-import org.apache.deltaspike.data.api.EntityRepository;
-import org.apache.deltaspike.data.api.Repository;
+@ApplicationScoped
+public class CaseAccountNoteRepository extends JPAEntityRepository<AccountNote, UUID> {
 
-@Repository
-public interface CaseAccountNoteRepository extends EntityRepository<AccountNote, UUID> {
+    @Override
+    protected Class<AccountNote> getEntityClass() {
+        return AccountNote.class;
+    }
 
-    List<AccountNote> findByCaseUrn(final String caseUrn);
-
+    public List<AccountNote> findByCaseUrn(final String caseUrn) {
+        return entityManager.createQuery("SELECT e FROM AccountNote e WHERE e.caseUrn = :caseUrn", AccountNote.class)
+                .setParameter("caseUrn", caseUrn)
+                .getResultList();
+    }
 }

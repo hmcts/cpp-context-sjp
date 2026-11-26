@@ -1,23 +1,28 @@
 package uk.gov.moj.cpp.sjp.persistence.repository;
 
-import org.apache.deltaspike.data.api.EntityRepository;
-import org.apache.deltaspike.data.api.Query;
-import org.apache.deltaspike.data.api.QueryParam;
-import org.apache.deltaspike.data.api.Repository;
 import uk.gov.moj.cpp.sjp.persistence.entity.CaseApplication;
 import uk.gov.moj.cpp.sjp.persistence.entity.CaseDetail;
 
+import javax.enterprise.context.ApplicationScoped;
 import java.util.UUID;
 
-@Repository
-public interface CaseApplicationRepository extends EntityRepository<CaseApplication, UUID> {
+@ApplicationScoped
+public class CaseApplicationRepository extends JPAEntityRepository<CaseApplication, UUID> {
 
-    @Query("SELECT ca.caseDetail FROM CaseApplication ca WHERE ca.applicationDecision.decisionId=:applicationDecisionId")
-    CaseDetail findByApplicationDecisionId(@QueryParam("applicationDecisionId") UUID applicationDecisionId);
+    @Override
+    protected Class<CaseApplication> getEntityClass() {
+        return CaseApplication.class;
+    }
 
-    @Query("SELECT ca.caseDetail FROM CaseApplication ca WHERE ca.id=:applicationId")
-    CaseDetail findByApplicationId(@QueryParam("applicationId") UUID applicationId);
+    public CaseDetail findByApplicationDecisionId(final UUID applicationDecisionId) {
+        return entityManager.createQuery("SELECT ca.caseDetail FROM CaseApplication ca WHERE ca.applicationDecision.decisionId=:applicationDecisionId", CaseDetail.class)
+                .setParameter("applicationDecisionId", applicationDecisionId)
+                .getResultStream().findFirst().orElse(null);
+    }
 
+    public CaseDetail findByApplicationId(final UUID applicationId) {
+        return entityManager.createQuery("SELECT ca.caseDetail FROM CaseApplication ca WHERE ca.id=:applicationId", CaseDetail.class)
+                .setParameter("applicationId", applicationId)
+                .getResultStream().findFirst().orElse(null);
+    }
 }
-
-

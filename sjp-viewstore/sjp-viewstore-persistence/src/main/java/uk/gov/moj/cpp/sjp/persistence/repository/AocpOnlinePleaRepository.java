@@ -22,28 +22,18 @@ import static uk.gov.moj.cpp.sjp.persistence.repository.AocpOnlinePleaRepository
 import uk.gov.moj.cpp.sjp.persistence.entity.Address;
 import uk.gov.moj.cpp.sjp.persistence.entity.AocpOnlinePlea;
 
-import java.util.List;
-import java.util.UUID;
-import java.util.function.Function;
-
-import javax.inject.Inject;
-import javax.persistence.EntityManager;
+import javax.enterprise.context.ApplicationScoped;
 import javax.persistence.Query;
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaUpdate;
 import javax.persistence.criteria.Path;
 import javax.persistence.criteria.Root;
+import java.util.List;
+import java.util.UUID;
+import java.util.function.Function;
 
-import org.apache.deltaspike.data.api.EntityRepository;
-import org.apache.deltaspike.data.api.QueryParam;
-import org.apache.deltaspike.data.api.Repository;
-import org.apache.deltaspike.data.api.SingleResultType;
 
-@Repository
-public abstract class AocpOnlinePleaRepository implements EntityRepository<AocpOnlinePlea, UUID> {
-
-    @Inject
-    private EntityManager entityManager;
+public abstract class AocpOnlinePleaRepository extends JPAEntityRepository<AocpOnlinePlea, UUID> {
 
     private static final String PERSONAL_DETAILS = "personalDetails";
     private static final String ADDRESS = "address";
@@ -78,10 +68,15 @@ public abstract class AocpOnlinePleaRepository implements EntityRepository<AocpO
     /**
      * Hide employment, employer and outgoings.
      */
-    @org.apache.deltaspike.data.api.Query(
-            value = "SELECT new AocpOnlinePlea(op.caseId, op.defendantId, op.personalDetails, op.submittedOn, op.aocpAccepted) FROM AocpOnlinePlea op WHERE op.caseId = :caseId",
-            singleResult = SingleResultType.OPTIONAL)
-    public abstract AocpOnlinePlea findAocpPleaByCaseId(@QueryParam("caseId") final UUID caseId);
+    public AocpOnlinePlea findAocpPleaByCaseId(final UUID caseId) {
+        return entityManager.createQuery(
+                        "SELECT new AocpOnlinePlea(op.caseId, op.defendantId, op.personalDetails, op.submittedOn, op.aocpAccepted) FROM AocpOnlinePlea op WHERE op.caseId = :caseId",
+                        AocpOnlinePlea.class)
+                .setParameter("caseId", caseId)
+                .getResultStream()
+                .findFirst()
+                .orElse(null);
+    }
 
     abstract List<FIELDS> getFieldsToUpdate();
 
@@ -125,9 +120,10 @@ public abstract class AocpOnlinePleaRepository implements EntityRepository<AocpO
         }
     }
 
-    public abstract static class PersonDetailsOnlinePleaRepository extends AocpOnlinePleaRepository {
+    @ApplicationScoped
+    public static class PersonDetailsOnlinePleaRepository extends AocpOnlinePleaRepository {
         @Override
-        final List<FIELDS> getFieldsToUpdate() {
+        List<FIELDS> getFieldsToUpdate() {
             return asList(
                     PERSON_FIRST_NAME,
                     PERSON_LAST_NAME,
@@ -145,6 +141,11 @@ public abstract class AocpOnlinePleaRepository implements EntityRepository<AocpO
                     PERSON_DRIVER_NUMBER,
                     PERSON_DRIVER_LICENCE_DETAILS
             );
+        }
+
+        @Override
+        protected Class<AocpOnlinePlea> getEntityClass() {
+            return AocpOnlinePlea.class;
         }
     }
 

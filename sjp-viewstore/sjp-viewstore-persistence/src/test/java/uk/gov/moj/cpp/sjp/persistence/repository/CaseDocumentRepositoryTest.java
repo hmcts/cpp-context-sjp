@@ -1,9 +1,9 @@
 package uk.gov.moj.cpp.sjp.persistence.repository;
 
-import static junit.framework.TestCase.assertEquals;
+import static java.util.UUID.randomUUID;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import uk.gov.justice.services.common.converter.ZonedDateTimes;
-import uk.gov.justice.services.test.utils.persistence.BaseTransactionalJunit4Test;
 
 import uk.gov.moj.cpp.sjp.persistence.entity.CaseDetail;
 import uk.gov.moj.cpp.sjp.persistence.entity.CaseDocument;
@@ -13,23 +13,15 @@ import uk.gov.moj.cpp.sjp.persistence.entity.PersonalDetails;
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
 import java.util.List;
-import java.util.UUID;
-
-import javax.inject.Inject;
 
 import org.apache.commons.lang3.RandomStringUtils;
-import org.apache.deltaspike.testcontrol.api.junit.CdiTestRunner;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
-@RunWith(CdiTestRunner.class)
-public class CaseDocumentRepositoryTest extends BaseTransactionalJunit4Test {
+class CaseDocumentRepositoryTest extends BaseJpaRepositoryTest {
 
-    @Inject
     private CaseDocumentRepository caseDocumentRepository;
 
-    @Inject
     private CaseRepository caseRepository;
 
     private ZonedDateTime addedAt_2017_01_01 = ZonedDateTimes.fromString("2017-01-01T00:00:00.000Z");
@@ -38,8 +30,12 @@ public class CaseDocumentRepositoryTest extends BaseTransactionalJunit4Test {
 
     private static final Integer DOCUMENT_NUMBER = 1;
 
-    @Before
-    public void givenCaseDocuments() {
+    @BeforeEach
+    void givenCaseDocuments() {
+        caseDocumentRepository = new CaseDocumentRepository();
+        hibernateTestEntityManagerProvider.injectEntityManagerInto(caseDocumentRepository);
+        caseRepository = new CaseRepository();
+        hibernateTestEntityManagerProvider.injectEntityManagerInto(caseRepository);
         addCaseDocument(addedAt_2017_01_01);
         addCaseDocument(addedAt_2017_01_05);
         addCaseDocument(addedAt_2017_01_10);
@@ -65,12 +61,12 @@ public class CaseDocumentRepositoryTest extends BaseTransactionalJunit4Test {
 
     private void addCaseDocument(final ZonedDateTime addedAt) {
 
-        final DefendantDetail defendantDetail = new DefendantDetail(UUID.randomUUID(), new PersonalDetails(), null,1,null,null,null);
-        final CaseDetail caseDetail = new CaseDetail(UUID.randomUUID(), "TFL1234567", RandomStringUtils.randomAlphanumeric(12).toUpperCase(), "TFL", null, null, null,
+        final DefendantDetail defendantDetail = new DefendantDetail(randomUUID(), new PersonalDetails(), null,1,null,null,null);
+        final CaseDetail caseDetail = new CaseDetail(randomUUID(), "TFL1234567", RandomStringUtils.randomAlphanumeric(12).toUpperCase(), "TFL", null, null, null,
                 defendantDetail, null, LocalDate.now(), null);
         caseDetail.setDefendant(defendantDetail);
-        final CaseDocument caseDocument = new CaseDocument(UUID.randomUUID(),
-                UUID.randomUUID(), CaseDocument.RESULT_ORDER_DOCUMENT_TYPE,
+        final CaseDocument caseDocument = new CaseDocument(randomUUID(),
+                randomUUID(), CaseDocument.RESULT_ORDER_DOCUMENT_TYPE,
                 addedAt, caseDetail.getId(), DOCUMENT_NUMBER);
 
         caseRepository.save(caseDetail);

@@ -1,6 +1,5 @@
 package uk.gov.moj.cpp.sjp.query.view;
 
-
 import uk.gov.justice.services.core.annotation.Component;
 import uk.gov.justice.services.core.annotation.Handles;
 import uk.gov.justice.services.core.annotation.ServiceComponent;
@@ -17,11 +16,13 @@ import java.util.Optional;
 import java.util.UUID;
 
 import javax.inject.Inject;
+import javax.transaction.Transactional;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 @ServiceComponent(Component.QUERY_VIEW)
+@Transactional
 public class SessionQueryView {
 
     @Inject

@@ -2,16 +2,23 @@ package uk.gov.moj.cpp.sjp.persistence.repository;
 
 import uk.gov.moj.cpp.sjp.persistence.entity.EmailNotification;
 
+import javax.enterprise.context.ApplicationScoped;
 import java.util.UUID;
 
-import org.apache.deltaspike.data.api.EntityRepository;
-import org.apache.deltaspike.data.api.Query;
-import org.apache.deltaspike.data.api.QueryParam;
-import org.apache.deltaspike.data.api.Repository;
+@ApplicationScoped
+public class EmailNotificationRepository extends JPAEntityRepository<EmailNotification, UUID> {
 
-@Repository
-public interface EmailNotificationRepository extends EntityRepository<EmailNotification, UUID> {
+    @Override
+    protected Class<EmailNotification> getEntityClass() {
+        return EmailNotification.class;
+    }
 
-    @Query(value = "FROM EmailNotification e WHERE e.referenceId = :referenceId AND e.notificationType = :notificationType")
-    EmailNotification findByReferenceIdAndNotificationType(@QueryParam("referenceId") UUID referenceId, @QueryParam("notificationType") EmailNotification.NotificationNotifyDocumentType notificationType);
+    public EmailNotification findByReferenceIdAndNotificationType(final UUID referenceId, final EmailNotification.NotificationNotifyDocumentType notificationType) {
+        return entityManager.createQuery(
+                "SELECT e FROM EmailNotification e WHERE e.referenceId = :referenceId AND e.notificationType = :notificationType",
+                EmailNotification.class)
+                .setParameter("referenceId", referenceId)
+                .setParameter("notificationType", notificationType)
+                .getResultStream().findFirst().orElse(null);
+    }
 }

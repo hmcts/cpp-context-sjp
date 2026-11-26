@@ -2,12 +2,14 @@ package uk.gov.moj.cpp.sjp.persistence.repository;
 
 import uk.gov.moj.cpp.sjp.persistence.entity.SocCheck;
 
+import javax.enterprise.context.ApplicationScoped;
+import java.util.List;
 import java.util.UUID;
 
-import org.apache.deltaspike.data.api.EntityRepository;
-import org.apache.deltaspike.data.api.Repository;
-
-@Repository
-public interface SocCheckRepository extends EntityRepository<SocCheck, UUID> {
-
+@ApplicationScoped
+public class SocCheckRepository extends JPAEntityRepository<SocCheck, UUID> {
+    @Override
+    protected Class<SocCheck> getEntityClass() {
+        return SocCheck.class;
+    }
 }

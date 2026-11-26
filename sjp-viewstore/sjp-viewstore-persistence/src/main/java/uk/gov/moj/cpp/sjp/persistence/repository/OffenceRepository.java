@@ -1,26 +1,36 @@
 package uk.gov.moj.cpp.sjp.persistence.repository;
 
-
 import uk.gov.moj.cpp.sjp.persistence.entity.DefendantDetail;
 import uk.gov.moj.cpp.sjp.persistence.entity.OffenceDetail;
 
+import javax.enterprise.context.ApplicationScoped;
 import java.util.List;
 import java.util.UUID;
-
-import org.apache.deltaspike.data.api.EntityRepository;
-import org.apache.deltaspike.data.api.Query;
-import org.apache.deltaspike.data.api.QueryParam;
-import org.apache.deltaspike.data.api.Repository;
 
 /**
  * Repository for {@link OffenceDetail}
  */
-@Repository
-public interface OffenceRepository extends EntityRepository<OffenceDetail, UUID> {
+@ApplicationScoped
+public class OffenceRepository extends JPAEntityRepository<OffenceDetail, UUID>{
 
-    List<OffenceDetail> findByDefendantDetail(DefendantDetail defendantDetail);
+    @Override
+    protected Class<OffenceDetail> getEntityClass() {
+        return OffenceDetail.class;
+    }
 
-    @Query("FROM OffenceDetail od WHERE od.id IN :offenceIds")
-    List<OffenceDetail> findByIds(@QueryParam("offenceIds") List<UUID> offenceIds);
+    public List<OffenceDetail> findByDefendantDetail(DefendantDetail defendantDetail) {
+        return entityManager.createQuery(
+                "SELECT o FROM OffenceDetail o WHERE o.defendantDetail = :defendantDetail",
+                OffenceDetail.class)
+                .setParameter("defendantDetail", defendantDetail)
+                .getResultList();
+    }
 
+    public List<OffenceDetail> findByIds(List<UUID> offenceIds) {
+        return entityManager.createQuery(
+                "SELECT od FROM OffenceDetail od WHERE od.id IN (:offenceIds)",
+                OffenceDetail.class)
+                .setParameter("offenceIds", offenceIds)
+                .getResultList();
+    }
 }

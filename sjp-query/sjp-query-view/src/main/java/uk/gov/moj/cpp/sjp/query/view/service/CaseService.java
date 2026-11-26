@@ -66,6 +66,13 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
+import com.google.common.collect.Sets;
+import org.apache.commons.lang3.StringUtils;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import javax.json.JsonArray;
 import javax.json.JsonArrayBuilder;
@@ -73,14 +80,12 @@ import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
 import javax.persistence.NoResultException;
 import javax.persistence.NonUniqueResultException;
-
-import com.google.common.collect.Sets;
-import org.apache.commons.lang3.StringUtils;
-import org.apache.deltaspike.data.api.QueryResult;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import javax.persistence.TypedQuery;
+import javax.transaction.Transactional;
 
 @SuppressWarnings("WeakerAccess")
+@ApplicationScoped
+@Transactional
 public class CaseService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(CaseService.class);
@@ -194,7 +199,7 @@ public class CaseService {
         if (limit.isPresent() && limit.get() < 1) {
             casesDetails = Collections.emptyList();
         } else {
-            QueryResult<CaseDetail> caseDetailsResult;
+            TypedQuery<CaseDetail> caseDetailsResult;
 
             if (postedBefore.isPresent()) {
                 caseDetailsResult = caseRepository.findCasesMissingSjpn(prosecutingAuthorityFilterValue, postedBefore.get(),
@@ -205,7 +210,7 @@ public class CaseService {
             }
 
             if (limit.isPresent()) {
-                casesDetails = caseDetailsResult.maxResults(limit.get()).getResultList();
+                casesDetails = caseDetailsResult.setMaxResults(limit.get()).getResultList();
             } else {
                 casesDetails = caseDetailsResult.getResultList();
             }

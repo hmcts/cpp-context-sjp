@@ -1,11 +1,11 @@
 package uk.gov.moj.cpp.sjp.event.processor;
 
 import static java.util.UUID.randomUUID;
-import static javax.json.Json.createObjectBuilder;
-import static org.hamcrest.Matchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.is;
 import static org.mockito.Mockito.verify;
 import static uk.gov.justice.services.core.annotation.Component.EVENT_PROCESSOR;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 import static uk.gov.justice.services.test.utils.core.matchers.HandlerClassMatcher.isHandlerClass;
 import static uk.gov.justice.services.test.utils.core.matchers.HandlerMethodMatcher.method;
 import static uk.gov.moj.cpp.sjp.event.processor.ConvictionCourtResolvedProcessor.PUBLIC_CONVICTION_COURT_RESOLVED;

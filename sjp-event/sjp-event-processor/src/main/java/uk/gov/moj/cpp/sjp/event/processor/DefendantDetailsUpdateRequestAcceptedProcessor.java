@@ -1,8 +1,9 @@
 package uk.gov.moj.cpp.sjp.event.processor;
 
 import static uk.gov.justice.services.core.annotation.Component.EVENT_PROCESSOR;
-import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
 import static uk.gov.justice.services.messaging.Envelope.metadataFrom;
+import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 
 import uk.gov.justice.services.core.annotation.Handles;
 import uk.gov.justice.services.core.annotation.ServiceComponent;
@@ -10,7 +11,6 @@ import uk.gov.justice.services.core.sender.Sender;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 
 import javax.inject.Inject;
-import javax.json.Json;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
 
@@ -67,7 +67,7 @@ public class DefendantDetailsUpdateRequestAcceptedProcessor {
     }
 
     private JsonObject buildCommandPayload(final JsonObject eventPayload) {
-        final JsonObjectBuilder payloadBuilder = Json.createObjectBuilder()
+        final JsonObjectBuilder payloadBuilder = createObjectBuilder()
                 .add(CASE_ID, eventPayload.getString(CASE_ID))
                 .add(DEFENDANT_ID, eventPayload.getString(DEFENDANT_ID));
 
@@ -125,7 +125,7 @@ public class DefendantDetailsUpdateRequestAcceptedProcessor {
     }
 
     private void addIfPresent(final JsonObjectBuilder builder, final JsonObject source,
-                             final String sourceKey, final String targetKey) {
+                              final String sourceKey, final String targetKey) {
         if (source.containsKey(sourceKey) && !source.isNull(sourceKey)) {
             try {
                 final String value = source.getString(sourceKey, null);

@@ -1,6 +1,7 @@
 package uk.gov.moj.cpp.sjp.query.api.decorator;
 
 import static java.util.UUID.fromString;
+import static uk.gov.justice.services.messaging.JsonObjects.createArrayBuilder;
 import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 
 import uk.gov.justice.services.messaging.JsonEnvelope;
@@ -9,7 +10,6 @@ import uk.gov.moj.cpp.sjp.query.service.UsersGroupsService;
 import java.util.UUID;
 
 import javax.inject.Inject;
-import javax.json.Json;
 import javax.json.JsonArray;
 import javax.json.JsonArrayBuilder;
 import javax.json.JsonObject;
@@ -35,7 +35,7 @@ public class DecisionSessionDecorator {
 
     private JsonArray decorateDecisions(final JsonArray decisions, final JsonEnvelope envelope) {
 
-        final JsonArrayBuilder decisionsBuilder = Json.createArrayBuilder();
+        final JsonArrayBuilder decisionsBuilder = createArrayBuilder();
 
         decisions.getValuesAs(JsonObject.class).forEach(decision -> {
 
@@ -59,7 +59,7 @@ public class DecisionSessionDecorator {
                 legalAdviserUserId, envelope);
 
         return createObjectBuilder(session)
-                .add("legalAdviser", Json.createObjectBuilder()
+                .add("legalAdviser", createObjectBuilder()
                         .add("id", legalAdviserUserId.toString())
                         .add("firstName", legalAdviserDetails.getString("firstName"))
                         .add("lastName", legalAdviserDetails.getString("lastName"))

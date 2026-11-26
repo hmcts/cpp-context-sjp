@@ -2,15 +2,13 @@ package uk.gov.moj.cpp.sjp.event.listener;
 
 import static com.google.common.collect.Lists.newArrayList;
 import static java.util.UUID.randomUUID;
-import static javax.json.Json.createArrayBuilder;
-import static javax.json.Json.createObjectBuilder;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.mockito.ArgumentMatchers.isNotNull;
-import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
+import static uk.gov.justice.services.messaging.JsonObjects.createArrayBuilder;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 import static uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderFactory.metadataWithRandomUUID;
 import static uk.gov.moj.cpp.sjp.domain.DocumentFormat.PDF;
 import static uk.gov.moj.cpp.sjp.domain.DocumentLanguage.ENGLISH;

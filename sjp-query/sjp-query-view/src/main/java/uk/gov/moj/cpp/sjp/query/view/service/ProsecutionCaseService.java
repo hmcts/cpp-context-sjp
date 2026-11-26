@@ -9,7 +9,6 @@ import static java.util.Optional.ofNullable;
 import static java.util.UUID.fromString;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toSet;
-import static javax.json.Json.createObjectBuilder;
 import static org.apache.commons.lang3.StringUtils.isNotEmpty;
 import static uk.gov.justice.core.courts.ContactNumber.contactNumber;
 import static uk.gov.justice.core.courts.Defendant.defendant;
@@ -20,6 +19,7 @@ import static uk.gov.justice.core.courts.NotifiedPleaValue.NOTIFIED_NOT_GUILTY;
 import static uk.gov.justice.core.courts.NotifiedPleaValue.NO_NOTIFICATION;
 import static uk.gov.justice.core.courts.PersonDefendant.personDefendant;
 import static uk.gov.justice.core.courts.ProsecutionCase.prosecutionCase;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 
 import uk.gov.justice.core.courts.Address;
 import uk.gov.justice.core.courts.ContactNumber;

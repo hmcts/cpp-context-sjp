@@ -3,8 +3,8 @@ package uk.gov.moj.cpp.sjp.command.controller;
 import static java.lang.String.format;
 import static java.util.Optional.ofNullable;
 import static java.util.UUID.randomUUID;
-import static javax.json.Json.createObjectBuilder;
 import static uk.gov.justice.services.core.annotation.Component.COMMAND_CONTROLLER;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 
 import uk.gov.justice.services.common.util.Clock;
 import uk.gov.justice.services.core.annotation.Handles;

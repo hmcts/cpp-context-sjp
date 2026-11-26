@@ -1,24 +1,24 @@
 package uk.gov.moj.cpp.sjp.command.api;
 
-import static javax.json.Json.createObjectBuilder;
+import static java.util.UUID.randomUUID;
+import static org.apache.commons.lang3.RandomStringUtils.randomAlphanumeric;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
-import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.justice.services.core.annotation.Component.COMMAND_API;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 import static uk.gov.justice.services.test.utils.core.matchers.HandlerClassMatcher.isHandlerClass;
 import static uk.gov.justice.services.test.utils.core.matchers.HandlerMethodMatcher.method;
 import static uk.gov.justice.services.test.utils.core.messaging.JsonEnvelopeBuilder.envelope;
 import static uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderFactory.metadataWithRandomUUID;
 import static uk.gov.moj.cpp.sjp.command.utils.CommonObjectBuilderUtil.buildAddressWithPostcode;
 import static uk.gov.moj.cpp.sjp.command.utils.CommonObjectBuilderUtil.buildDefendantWithAddress;
+import static uk.gov.moj.cpp.sjp.command.utils.CommonObjectBuilderUtil.buildDefendantWithAddressAndOffences;
 import static uk.gov.moj.cpp.sjp.command.utils.CommonObjectBuilderUtil.buildDefendantWithAddressAndOffencesWithAOCPEligibilityAndStandardPenalty;
 import static uk.gov.moj.cpp.sjp.command.utils.CommonObjectBuilderUtil.buildDefendantWithContactDetails;
-import static uk.gov.moj.cpp.sjp.command.utils.CommonObjectBuilderUtil.buildDefendantWithAddressAndOffences;
-import static java.util.UUID.randomUUID;
-import static org.apache.commons.lang3.RandomStringUtils.randomAlphanumeric;
 
 import uk.gov.justice.services.core.enveloper.Enveloper;
 import uk.gov.justice.services.core.sender.Sender;

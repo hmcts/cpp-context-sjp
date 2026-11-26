@@ -1,11 +1,11 @@
 package uk.gov.moj.cpp.sjp.event.processor;
 
 import static java.util.UUID.randomUUID;
-import static javax.json.Json.createArrayBuilder;
-import static javax.json.Json.createObjectBuilder;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static uk.gov.justice.services.messaging.JsonObjects.createArrayBuilder;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 import static uk.gov.justice.services.test.utils.core.enveloper.EnvelopeFactory.createEnvelope;
 import static uk.gov.moj.cpp.sjp.domain.common.CaseManagementStatus.DONE;
 

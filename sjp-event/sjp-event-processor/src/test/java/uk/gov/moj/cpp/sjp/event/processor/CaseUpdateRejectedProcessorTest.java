@@ -2,9 +2,10 @@ package uk.gov.moj.cpp.sjp.event.processor;
 
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
 import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.core.AllOf.allOf;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.core.AllOf.allOf;
 import static org.mockito.Mockito.verify;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 import static uk.gov.justice.services.test.utils.core.enveloper.EnvelopeFactory.createEnvelope;
 import static uk.gov.justice.services.test.utils.core.enveloper.EnveloperFactory.createEnveloper;
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMatcher.jsonEnvelope;
@@ -17,8 +18,6 @@ import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.sjp.event.CaseUpdateRejected;
 
 import java.util.UUID;
-
-import javax.json.Json;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -47,7 +46,7 @@ public class CaseUpdateRejectedProcessorTest {
     public void caseUpdateRejectedPublicEvent() {
 
         final JsonEnvelope privateEvent = createEnvelope("sjp.events.case-update-rejected",
-                Json.createObjectBuilder()
+                createObjectBuilder()
                         .add("caseId", CASE_ID)
                         .add("reason", CaseUpdateRejected.RejectReason.CASE_COMPLETED.name())
                         .build());

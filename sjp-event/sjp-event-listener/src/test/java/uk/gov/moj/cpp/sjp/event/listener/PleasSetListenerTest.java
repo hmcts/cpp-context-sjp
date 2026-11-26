@@ -2,11 +2,12 @@ package uk.gov.moj.cpp.sjp.event.listener;
 
 import static java.util.Collections.singletonList;
 import static java.util.UUID.randomUUID;
-import static org.hamcrest.Matchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.is;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static uk.gov.justice.services.messaging.JsonObjects.createReader;
 import static uk.gov.justice.services.test.utils.core.enveloper.EnvelopeFactory.createEnvelope;
 import static uk.gov.moj.cpp.sjp.domain.disability.DisabilityNeeds.disabilityNeedsOf;
 
@@ -23,7 +24,6 @@ import uk.gov.moj.cpp.sjp.persistence.repository.CaseRepository;
 import java.io.StringReader;
 import java.util.UUID;
 
-import javax.json.Json;
 import javax.json.JsonObject;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -78,7 +78,7 @@ public class PleasSetListenerTest {
 
     private JsonEnvelope givenPleasSetEventWasRaised() throws JsonProcessingException {
         final PleasSet pleasSet = new PleasSet(randomUUID(),
-                new DefendantCourtOptions(null,false, disabilityNeedsOf(DISABILITY_NEEDS)),
+                new DefendantCourtOptions(null, false, disabilityNeedsOf(DISABILITY_NEEDS)),
                 singletonList(new Plea(randomUUID(), randomUUID(), PleaType.GUILTY)));
 
         return createEnvelope("sjp.events.pleas-set", convertToJsonObject(pleasSet));
@@ -87,9 +87,8 @@ public class PleasSetListenerTest {
 
     public JsonObject convertToJsonObject(PleasSet pleasSet) throws JsonProcessingException {
         String json = objectMapper.writeValueAsString(pleasSet);
-        return Json.createReader(new StringReader(json)).readObject();
+        return createReader(new StringReader(json)).readObject();
     }
-
 
 
 }

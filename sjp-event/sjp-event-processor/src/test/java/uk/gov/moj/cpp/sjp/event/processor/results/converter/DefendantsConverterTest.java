@@ -2,13 +2,13 @@ package uk.gov.moj.cpp.sjp.event.processor.results.converter;
 
 import static java.time.ZoneOffset.UTC;
 import static java.util.UUID.randomUUID;
-import static javax.json.Json.createObjectBuilder;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 import static uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderFactory.metadataWithRandomUUID;
 
 import uk.gov.justice.core.courts.Defendant;

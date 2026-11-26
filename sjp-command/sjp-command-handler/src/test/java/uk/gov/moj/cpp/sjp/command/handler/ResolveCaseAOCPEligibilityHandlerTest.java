@@ -1,15 +1,17 @@
 package uk.gov.moj.cpp.sjp.command.handler;
 
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
+import static java.math.BigDecimal.valueOf;
 import static java.util.Optional.empty;
 import static java.util.Optional.of;
-import static javax.json.Json.createObjectBuilder;
+import static java.util.UUID.randomUUID;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.allOf;
 import static org.mockito.Mockito.when;
 import static uk.gov.justice.services.core.annotation.Component.COMMAND_HANDLER;
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 import static uk.gov.justice.services.test.utils.core.enveloper.EnveloperFactory.createEnveloperWithEvents;
 import static uk.gov.justice.services.test.utils.core.matchers.EventStreamMatcher.eventStreamAppendedWith;
 import static uk.gov.justice.services.test.utils.core.matchers.HandlerMatcher.isHandler;
@@ -19,8 +21,6 @@ import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMetad
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopePayloadMatcher.payloadIsJson;
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeStreamMatcher.streamContaining;
 import static uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderFactory.metadataWithRandomUUID;
-import static java.util.UUID.randomUUID;
-import static java.math.BigDecimal.valueOf;
 
 import uk.gov.justice.services.core.aggregate.AggregateService;
 import uk.gov.justice.services.core.enveloper.Enveloper;
@@ -34,6 +34,7 @@ import uk.gov.moj.cpp.sjp.event.CaseEligibleForAOCP;
 import java.math.BigDecimal;
 import java.util.UUID;
 import java.util.stream.Stream;
+
 import javax.json.JsonValue;
 
 import org.junit.jupiter.api.Test;

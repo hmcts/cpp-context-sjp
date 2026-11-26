@@ -6,13 +6,12 @@ import static com.github.tomakehurst.wiremock.client.WireMock.get;
 import static com.github.tomakehurst.wiremock.client.WireMock.post;
 import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlPathMatching;
-import static javax.json.Json.createObjectBuilder;
 import static javax.ws.rs.core.Response.Status.OK;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 
 import java.time.ZonedDateTime;
 import java.util.UUID;
 
-import javax.json.Json;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.Response;
 
@@ -57,7 +56,7 @@ public class IdMapperStub {
     }
 
     public static void stubAddMapping() {
-        stubFor(post(urlPathMatching("/system-id-mapper-api/rest/systemid/mappings.*")).willReturn(WireMock.aResponse().withStatus(200).withHeader("CPPID", UUID.randomUUID().toString()).withBody(Json.createObjectBuilder().add("id", UUID.randomUUID().toString()).add("code", "OK").build().toString())));
+        stubFor(post(urlPathMatching("/system-id-mapper-api/rest/systemid/mappings.*")).willReturn(WireMock.aResponse().withStatus(200).withHeader("CPPID", UUID.randomUUID().toString()).withBody(createObjectBuilder().add("id", UUID.randomUUID().toString()).add("code", "OK").build().toString())));
     }
 
 }

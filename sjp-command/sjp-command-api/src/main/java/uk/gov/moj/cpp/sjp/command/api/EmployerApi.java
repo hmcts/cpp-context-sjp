@@ -1,6 +1,8 @@
 package uk.gov.moj.cpp.sjp.command.api;
 
 import static uk.gov.justice.services.core.annotation.Component.COMMAND_API;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilderWithFilter;
 import static uk.gov.moj.cpp.sjp.command.api.service.AddressService.normalizePostcodeInAddress;
 
 import uk.gov.justice.services.core.annotation.Handles;
@@ -8,10 +10,8 @@ import uk.gov.justice.services.core.annotation.ServiceComponent;
 import uk.gov.justice.services.core.enveloper.Enveloper;
 import uk.gov.justice.services.core.sender.Sender;
 import uk.gov.justice.services.messaging.JsonEnvelope;
-import uk.gov.justice.services.messaging.JsonObjects;
 
 import javax.inject.Inject;
-import javax.json.Json;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
 
@@ -35,14 +35,14 @@ public class EmployerApi {
     public void updateEmployer(final JsonEnvelope envelope) {
         final JsonObject payloadAsJsonObject = envelope.payloadAsJsonObject();
         //TODO ATCM-3151: when the UI is adapted remove this code below
-        final JsonObjectBuilder employerDetails = JsonObjects.createObjectBuilderWithFilter(payloadAsJsonObject,
+        final JsonObjectBuilder employerDetails = createObjectBuilderWithFilter(payloadAsJsonObject,
                 key -> !(CASE_ID.equals(key) || DEFENDANT_ID.equals(key) || ADDRESS.equals(key)));
 
         if (payloadAsJsonObject.containsKey(ADDRESS)) {
             employerDetails.add(ADDRESS, normalizePostcodeInAddress(payloadAsJsonObject.getJsonObject(ADDRESS)));
         }
 
-        final JsonObject payload = Json.createObjectBuilder()
+        final JsonObject payload = createObjectBuilder()
                 .add(CASE_ID, payloadAsJsonObject.getString(CASE_ID))
                 .add(DEFENDANT_ID, payloadAsJsonObject.getString(DEFENDANT_ID))
                 .add("employer", employerDetails)

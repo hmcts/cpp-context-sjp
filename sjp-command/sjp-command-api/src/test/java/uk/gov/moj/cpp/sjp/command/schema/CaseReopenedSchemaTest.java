@@ -1,34 +1,35 @@
 package uk.gov.moj.cpp.sjp.command.schema;
 
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.is;
-import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assume.assumeThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMatcher.jsonEnvelope;
 import static uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderFactory.metadataWithRandomUUID;
 
+import uk.gov.justice.services.messaging.JsonEnvelope;
+import uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMatcher;
+
 import java.util.stream.Stream;
+
+import javax.json.JsonValue;
+
 import org.hamcrest.CoreMatchers;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
-import uk.gov.justice.services.adapter.rest.exception.BadRequestException;
-import uk.gov.justice.services.messaging.JsonEnvelope;
-
-import javax.json.Json;
-import javax.json.JsonValue;
-
-import org.junit.jupiter.api.BeforeAll;
-import uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMatcher;
 
 public class CaseReopenedSchemaTest {
 
     /**
-     * Issue with remote refs, reported to Techpod: https://github.com/CJSCommonPlatform/microservice_framework/issues/648"
-     * ============ TODO: delete this block of code once the framework gets updated: ==============
+     * Issue with remote refs, reported to Techpod:
+     * https://github.com/CJSCommonPlatform/microservice_framework/issues/648" ============ TODO:
+     * delete this block of code once the framework gets updated: ==============
      */
     @BeforeAll
     public static void init() {
@@ -61,7 +62,7 @@ public class CaseReopenedSchemaTest {
     public void validEnvelope(String schema) {
         //given
         JsonEnvelope envelope = envelopeFrom(metadataWithRandomUUID(schema),
-                Json.createObjectBuilder()
+                createObjectBuilder()
                         .add("reason", "Reason")
                         .add("libraCaseNumber", "LIBRA12345")
                         .add("reopenedDate", "2017-01-01").build());
@@ -75,7 +76,7 @@ public class CaseReopenedSchemaTest {
     public void invalidEnvelope_reason_notFound(String schema) {
         //given
         JsonEnvelope envelope = envelopeFrom(metadataWithRandomUUID(schema),
-                Json.createObjectBuilder()
+                createObjectBuilder()
                         .add("libraCaseNumber", "LIBRA12345")
                         .add("reopenedDate", "2017-01-01").build());
 
@@ -90,7 +91,7 @@ public class CaseReopenedSchemaTest {
     public void invalidEnvelope_reason_empty(String schema) {
         //given
         JsonEnvelope envelope = envelopeFrom(metadataWithRandomUUID(schema),
-                Json.createObjectBuilder()
+                createObjectBuilder()
                         .add("reason", "")
                         .add("libraCaseNumber", "LIBRA12345")
                         .add("reopenedDate", "2017-01-01").build());
@@ -106,7 +107,7 @@ public class CaseReopenedSchemaTest {
     public void invalidEnvelope_reason_foundNull(String schema) {
         //given
         JsonEnvelope envelope = envelopeFrom(metadataWithRandomUUID(schema),
-                Json.createObjectBuilder()
+                createObjectBuilder()
                         .add("reason", JsonValue.NULL)
                         .add("libraCaseNumber", "LIBRA12345")
                         .add("reopenedDate", "2017-01-01").build());
@@ -122,7 +123,7 @@ public class CaseReopenedSchemaTest {
     public void invalidEnvelope_libraCaseNumber_notFound(String schema) {
         //given
         JsonEnvelope envelope = envelopeFrom(metadataWithRandomUUID(schema),
-                Json.createObjectBuilder()
+                createObjectBuilder()
                         .add("reason", "Reason")
                         .add("reopenedDate", "2017-01-01").build());
 
@@ -137,7 +138,7 @@ public class CaseReopenedSchemaTest {
     public void invalidEnvelope_libraCaseNumber_reason_empty(String schema) {
         //given
         JsonEnvelope envelope = envelopeFrom(metadataWithRandomUUID(schema),
-                Json.createObjectBuilder()
+                createObjectBuilder()
                         .add("reason", "Reason")
                         .add("libraCaseNumber", "")
                         .add("reopenedDate", "2017-01-01").build());
@@ -153,7 +154,7 @@ public class CaseReopenedSchemaTest {
     public void invalidEnvelope_libraCaseNumber_foundNull(String schema) {
         //given
         JsonEnvelope envelope = envelopeFrom(metadataWithRandomUUID(schema),
-                Json.createObjectBuilder()
+                createObjectBuilder()
                         .add("reason", "Reason")
                         .add("libraCaseNumber", JsonValue.NULL)
                         .add("reopenedDate", "2017-01-01")
@@ -170,7 +171,7 @@ public class CaseReopenedSchemaTest {
     public void invalidEnvelope_reopenedDate_notFound(String schema) {
         //given
         JsonEnvelope envelope = envelopeFrom(metadataWithRandomUUID(schema),
-                Json.createObjectBuilder()
+                createObjectBuilder()
                         .add("reason", "Reason")
                         .add("libraCaseNumber", "LIBRA12345")
                         .build());
@@ -187,7 +188,7 @@ public class CaseReopenedSchemaTest {
     public void invalidEnvelope_reopenedDate_invalidDate(String schema) {
         //given
         JsonEnvelope envelope = envelopeFrom(metadataWithRandomUUID(schema),
-                Json.createObjectBuilder()
+                createObjectBuilder()
                         .add("reason", "Reason")
                         .add("libraCaseNumber", "LIBRA12345")
                         .add("reopenedDate", "2017-13-01")

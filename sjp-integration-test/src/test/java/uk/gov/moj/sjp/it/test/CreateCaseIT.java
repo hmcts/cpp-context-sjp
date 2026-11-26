@@ -7,7 +7,6 @@ import static java.time.LocalDate.now;
 import static java.util.UUID.randomUUID;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static java.util.stream.Collectors.toList;
-import static javax.json.Json.createObjectBuilder;
 import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
 import static org.awaitility.Awaitility.await;
 import static org.hamcrest.CoreMatchers.equalTo;
@@ -17,6 +16,8 @@ import static org.hamcrest.Matchers.blankOrNullString;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.core.Is.is;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
+import static uk.gov.justice.services.messaging.JsonObjects.createReader;
 import static uk.gov.moj.sjp.it.command.CreateCase.CreateCasePayloadBuilder.defaultCaseBuilder;
 import static uk.gov.moj.sjp.it.command.CreateCase.OffenceBuilder.defaultOffenceBuilder;
 import static uk.gov.moj.sjp.it.command.CreateCase.createCaseForPayloadBuilder;
@@ -52,7 +53,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-import javax.json.Json;
 import javax.json.JsonArray;
 import javax.json.JsonObject;
 import javax.json.JsonValue;
@@ -81,7 +81,7 @@ public class CreateCaseIT extends BaseIntegrationTest {
     private static final String UPDATE_OFFENCE_MEDIA_TYPE = "application/vnd.sjp.update-offence-code+json";
 
     @BeforeEach
-    public void setUp(){
+    public void setUp() {
         stubOffenceFineLevelsQuery(fineLevel, maxValue);
         stubQueryOffencesByCode(offenceCode1);
         stubQueryOffencesByCode(offenceCode2);
@@ -152,19 +152,19 @@ public class CreateCaseIT extends BaseIntegrationTest {
         assertThat(jsonResponse.get("id"), equalTo(caseId.toString()));
         assertThat(jsonResponse.get("urn"), equalTo(createCase.getUrn()));
         assertThat(jsonResponse.get("prosecutingAuthorityName"), equalTo(TFL.getFullName()));
-        assertThat(jsonResponse.get("defendant.asn") , equalTo(defendant.getAsn()));
-        assertThat(jsonResponse.get("defendant.pncIdentifier") , equalTo(defendant.getPncIdentifier()));
-        assertThat(jsonResponse.get("defendant.legalEntityDetails.legalEntityName") , equalTo(defendant.getLegalEntityName()));
-        assertThat(jsonResponse.get("defendant.legalEntityDetails.address.address1") , equalTo(defendant.getAddressBuilder().getAddress1()));
-        assertThat(jsonResponse.get("defendant.legalEntityDetails.address.address2") , equalTo(defendant.getAddressBuilder().getAddress2()));
-        assertThat(jsonResponse.get("defendant.legalEntityDetails.address.address3") , equalTo(defendant.getAddressBuilder().getAddress3()));
-        assertThat(jsonResponse.get("defendant.legalEntityDetails.address.address4") , equalTo(defendant.getAddressBuilder().getAddress4()));
-        assertThat(jsonResponse.get("defendant.legalEntityDetails.address.address5") , equalTo(defendant.getAddressBuilder().getAddress5()));
-        assertThat(jsonResponse.get("defendant.legalEntityDetails.address.postcode") , equalTo(defendant.getAddressBuilder().getPostcode()));
+        assertThat(jsonResponse.get("defendant.asn"), equalTo(defendant.getAsn()));
+        assertThat(jsonResponse.get("defendant.pncIdentifier"), equalTo(defendant.getPncIdentifier()));
+        assertThat(jsonResponse.get("defendant.legalEntityDetails.legalEntityName"), equalTo(defendant.getLegalEntityName()));
+        assertThat(jsonResponse.get("defendant.legalEntityDetails.address.address1"), equalTo(defendant.getAddressBuilder().getAddress1()));
+        assertThat(jsonResponse.get("defendant.legalEntityDetails.address.address2"), equalTo(defendant.getAddressBuilder().getAddress2()));
+        assertThat(jsonResponse.get("defendant.legalEntityDetails.address.address3"), equalTo(defendant.getAddressBuilder().getAddress3()));
+        assertThat(jsonResponse.get("defendant.legalEntityDetails.address.address4"), equalTo(defendant.getAddressBuilder().getAddress4()));
+        assertThat(jsonResponse.get("defendant.legalEntityDetails.address.address5"), equalTo(defendant.getAddressBuilder().getAddress5()));
+        assertThat(jsonResponse.get("defendant.legalEntityDetails.address.postcode"), equalTo(defendant.getAddressBuilder().getPostcode()));
 
-        assertThat(jsonResponse.get("defendant.legalEntityDetails.contactDetails.mobile") , equalTo(defendant.getContactDetailsBuilder().getMobile()));
-        assertThat(jsonResponse.get("defendant.legalEntityDetails.contactDetails.email") , equalTo(defendant.getContactDetailsBuilder().getEmail()));
-        assertThat(jsonResponse.get("defendant.legalEntityDetails.contactDetails.home") , equalTo(defendant.getContactDetailsBuilder().getHome()));
+        assertThat(jsonResponse.get("defendant.legalEntityDetails.contactDetails.mobile"), equalTo(defendant.getContactDetailsBuilder().getMobile()));
+        assertThat(jsonResponse.get("defendant.legalEntityDetails.contactDetails.email"), equalTo(defendant.getContactDetailsBuilder().getEmail()));
+        assertThat(jsonResponse.get("defendant.legalEntityDetails.contactDetails.home"), equalTo(defendant.getContactDetailsBuilder().getHome()));
 
     }
 
@@ -390,7 +390,7 @@ public class CreateCaseIT extends BaseIntegrationTest {
     }
 
     @Test
-    public void shouldCaseBeCreatedWithoutDefendantTitle(){
+    public void shouldCaseBeCreatedWithoutDefendantTitle() {
         final UUID caseId = randomUUID();
         final ProsecutingAuthority prosecutingAuthority = TFL;
         stubProsecutorQuery(prosecutingAuthority.name(), prosecutingAuthority.getFullName(), randomUUID());
@@ -409,11 +409,11 @@ public class CreateCaseIT extends BaseIntegrationTest {
         assertThat(jsonResponse.get("id"), equalTo(caseId.toString()));
         assertThat(jsonResponse.get("urn"), equalTo(createCase.getUrn()));
         assertThat(jsonResponse.get("prosecutingAuthorityName"), equalTo(TFL.getFullName()));
-        assertThat(jsonResponse.get("defendant.personalDetails.title") , blankOrNullString());
+        assertThat(jsonResponse.get("defendant.personalDetails.title"), blankOrNullString());
     }
 
     @Test
-    public void shouldCaseBeCreatedWithoutPostcode(){
+    public void shouldCaseBeCreatedWithoutPostcode() {
         final UUID caseId = randomUUID();
         final ProsecutingAuthority prosecutingAuthority = TFL;
         stubProsecutorQuery(prosecutingAuthority.name(), prosecutingAuthority.getFullName(), randomUUID());
@@ -432,11 +432,11 @@ public class CreateCaseIT extends BaseIntegrationTest {
         assertThat(jsonResponse.get("id"), equalTo(caseId.toString()));
         assertThat(jsonResponse.get("urn"), equalTo(createCase.getUrn()));
         assertThat(jsonResponse.get("prosecutingAuthorityName"), equalTo(TFL.getFullName()));
-        assertThat(jsonResponse.get("defendant.personalDetails.address.postcode") , blankOrNullString());
+        assertThat(jsonResponse.get("defendant.personalDetails.address.postcode"), blankOrNullString());
     }
 
     @Test
-    public void shouldCaseBeCreatedWithAsnAndPncIdentifier(){
+    public void shouldCaseBeCreatedWithAsnAndPncIdentifier() {
         final UUID caseId = randomUUID();
         final ProsecutingAuthority prosecutingAuthority = TFL;
         stubProsecutorQuery(prosecutingAuthority.name(), prosecutingAuthority.getFullName(), randomUUID());
@@ -454,13 +454,13 @@ public class CreateCaseIT extends BaseIntegrationTest {
         assertThat(jsonResponse.get("id"), equalTo(caseId.toString()));
         assertThat(jsonResponse.get("urn"), equalTo(createCase.getUrn()));
         assertThat(jsonResponse.get("prosecutingAuthorityName"), equalTo(TFL.getFullName()));
-        assertThat(jsonResponse.get("defendant.asn") , equalTo(defendant.getAsn()));
+        assertThat(jsonResponse.get("defendant.asn"), equalTo(defendant.getAsn()));
         assertThat(jsonResponse.get("defendant.pcqId"), is(notNullValue()));
-        assertThat(jsonResponse.get("defendant.pncIdentifier") , equalTo(defendant.getPncIdentifier()));
+        assertThat(jsonResponse.get("defendant.pncIdentifier"), equalTo(defendant.getPncIdentifier()));
     }
 
     @Test
-    public void shouldCaseBeCreatedWithEndorsableOffences(){
+    public void shouldCaseBeCreatedWithEndorsableOffences() {
         final UUID caseId = randomUUID();
         final ProsecutingAuthority prosecutingAuthority = TVL;
         stubProsecutorQuery(prosecutingAuthority.name(), prosecutingAuthority.getFullName(), randomUUID());
@@ -578,8 +578,9 @@ public class CreateCaseIT extends BaseIntegrationTest {
                         ).collect(toList()))
                 .withDefendantId(randomUUID());
     }
+
     private JsonObject responseToJsonObject(String response) {
-        return Json.createReader(new StringReader(response)).readObject();
+        return createReader(new StringReader(response)).readObject();
     }
 
     private static void verifyOffenceCode(final UUID caseId, final String offenceCode2) {

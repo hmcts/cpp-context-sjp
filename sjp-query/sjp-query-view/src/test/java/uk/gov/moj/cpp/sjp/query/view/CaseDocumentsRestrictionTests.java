@@ -2,12 +2,12 @@ package uk.gov.moj.cpp.sjp.query.view;
 
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
 import static java.math.BigDecimal.ROUND_DOWN;
-import static javax.json.Json.createObjectBuilder;
-import static org.hamcrest.core.Is.is;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.core.Is.is;
 import static org.mockito.Mockito.when;
 import static uk.gov.justice.services.core.annotation.Component.QUERY_VIEW;
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 import static uk.gov.justice.services.test.utils.core.matchers.HandlerClassMatcher.isHandlerClass;
 import static uk.gov.justice.services.test.utils.core.matchers.HandlerMethodMatcher.method;
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMatcher.jsonEnvelope;
@@ -29,9 +29,10 @@ import uk.gov.moj.cpp.sjp.query.view.response.CaseView;
 import uk.gov.moj.cpp.sjp.query.view.service.CaseService;
 
 import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.util.Collections;
 import java.util.UUID;
+
+import javax.json.JsonObject;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -39,8 +40,6 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
-
-import javax.json.JsonObject;
 
 @ExtendWith(MockitoExtension.class)
 public class CaseDocumentsRestrictionTests {

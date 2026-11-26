@@ -1,11 +1,11 @@
 package uk.gov.moj.cpp.sjp.event.listener;
 
 import static java.time.ZoneOffset.UTC;
-import static javax.json.Json.createObjectBuilder;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 import static uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderFactory.metadataWithRandomUUID;
 
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;

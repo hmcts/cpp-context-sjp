@@ -1,9 +1,9 @@
 package uk.gov.moj.cpp.sjp.command.controller;
 
-import static javax.json.Json.createArrayBuilder;
-import static javax.json.Json.createObjectBuilder;
 import static uk.gov.justice.services.core.annotation.Component.COMMAND_CONTROLLER;
 import static uk.gov.justice.services.core.enveloper.Enveloper.envelop;
+import static uk.gov.justice.services.messaging.JsonObjects.createArrayBuilder;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 
 import uk.gov.justice.json.schemas.domains.sjp.command.AddCaseAssignmentRestriction;
 import uk.gov.justice.services.core.annotation.Handles;

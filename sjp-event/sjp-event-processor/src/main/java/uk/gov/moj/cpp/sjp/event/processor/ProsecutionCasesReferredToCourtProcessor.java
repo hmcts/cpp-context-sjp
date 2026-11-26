@@ -1,8 +1,8 @@
 package uk.gov.moj.cpp.sjp.event.processor;
 
 import static java.util.Objects.nonNull;
-import static javax.json.Json.createObjectBuilder;
 import static uk.gov.justice.services.core.annotation.Component.EVENT_PROCESSOR;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 
 import uk.gov.justice.services.core.annotation.Handles;
 import uk.gov.justice.services.core.annotation.ServiceComponent;

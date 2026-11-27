@@ -9,7 +9,7 @@
 
     <groupId>uk.gov.moj.cpp.sjp</groupId>
     <artifactId>sjp-parent</artifactId>
-    <version>17.104.200-CADB-3-CENTOS-SNAPSHOT</version>
+    <version>17.104.201-CADB-3-CENTOS-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <properties>

@@ -1,16 +1,15 @@
 package uk.gov.moj.cpp.sjp.command.api;
 
+import static java.util.Objects.nonNull;
 import static java.util.Optional.ofNullable;
 import static uk.gov.justice.services.core.annotation.Component.COMMAND_API;
-import static javax.json.Json.createArrayBuilder;
-import static java.util.Objects.nonNull;
-
 import static uk.gov.justice.services.messaging.JsonEnvelope.metadataFrom;
+import static uk.gov.justice.services.messaging.JsonObjects.createArrayBuilder;
 import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilderWithFilter;
+import static uk.gov.justice.services.messaging.JsonObjects.getBoolean;
 import static uk.gov.justice.services.messaging.JsonObjects.getLong;
 import static uk.gov.moj.cpp.sjp.command.api.service.AddressService.normalizePostcodeInAddress;
 import static uk.gov.moj.cpp.sjp.command.api.service.ContactDetailsService.convertBlankEmailsToNull;
-import static uk.gov.justice.services.messaging.JsonObjects.getBoolean;
 
 import uk.gov.justice.services.core.annotation.Handles;
 import uk.gov.justice.services.core.annotation.ServiceComponent;

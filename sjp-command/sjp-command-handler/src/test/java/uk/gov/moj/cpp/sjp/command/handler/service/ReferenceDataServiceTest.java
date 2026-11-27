@@ -8,6 +8,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 import static org.mockito.hamcrest.MockitoHamcrest.argThat;
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMatcher.jsonEnvelope;
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMetadataMatcher.withMetadataEnvelopedFrom;
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopePayloadMatcher.payloadIsJson;
@@ -23,7 +24,6 @@ import uk.gov.justice.services.test.utils.core.enveloper.EnveloperFactory;
 import java.util.Optional;
 import java.util.UUID;
 
-import javax.json.Json;
 import javax.json.JsonObject;
 import javax.json.JsonValue;
 
@@ -53,7 +53,7 @@ public class ReferenceDataServiceTest {
     @InjectMocks
     private ReferenceDataService referenceDataService;
 
-    private final JsonEnvelope envelope = envelopeFrom(metadataWithRandomUUIDAndName(), Json.createObjectBuilder().build());
+    private final JsonEnvelope envelope = envelopeFrom(metadataWithRandomUUIDAndName(), createObjectBuilder().build());
 
     @Test
     public void shouldReturnEnforcementAreaByPostcode() {
@@ -112,7 +112,7 @@ public class ReferenceDataServiceTest {
     @Test
     public void shouldReturnProsecutor() {
         final UUID id = randomUUID();
-        final JsonObject prosecutorJson = Json.createObjectBuilder()
+        final JsonObject prosecutorJson = createObjectBuilder()
                 .add("prosecutorCode", "100")
                 .add("prosecutorName", "test").build();
 
@@ -139,7 +139,7 @@ public class ReferenceDataServiceTest {
     }
 
     private static JsonObject newEnforcementArea() {
-        return Json.createObjectBuilder()
+        return createObjectBuilder()
                 .add("accountDivisionCode", "100")
                 .add("enforcingCourtCode", "1000")
                 .add("nationalPaymentPhone", "030 0790 9901")

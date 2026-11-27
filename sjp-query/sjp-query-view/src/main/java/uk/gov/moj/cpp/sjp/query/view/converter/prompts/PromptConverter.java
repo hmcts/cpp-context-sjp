@@ -1,7 +1,7 @@
 package uk.gov.moj.cpp.sjp.query.view.converter.prompts;
 
 import static java.util.Optional.ofNullable;
-import static javax.json.Json.createObjectBuilder;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 import static uk.gov.moj.cpp.sjp.query.view.util.CaseResultsConstants.PROMPT_DEFINITION_ID;
 
 import uk.gov.moj.cpp.sjp.query.view.converter.Prompt;

@@ -3,6 +3,7 @@ package uk.gov.moj.cpp.sjp.event.processor.activiti.delegates;
 import static uk.gov.justice.services.core.annotation.Component.EVENT_PROCESSOR;
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
 import static uk.gov.justice.services.messaging.JsonEnvelope.metadataFrom;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 
 import uk.gov.justice.services.core.annotation.FrameworkComponent;
 import uk.gov.justice.services.core.sender.Sender;
@@ -15,7 +16,6 @@ import java.util.UUID;
 
 import javax.inject.Inject;
 import javax.inject.Named;
-import javax.json.Json;
 import javax.json.JsonObject;
 
 import org.activiti.engine.delegate.DelegateExecution;
@@ -52,12 +52,12 @@ public class UploadFile implements JavaDelegate {
 
         final Metadata originalMetadata = metadataHelper.metadataFromString(metadataAsString);
 
-        final JsonObject fileUploadedEventPayload = Json.createObjectBuilder()
+        final JsonObject fileUploadedEventPayload = createObjectBuilder()
                 .add("documentId", documentReference)
                 .add("caseId", caseIdAsString)
                 .build();
 
-        final JsonObject uploadFileCommandPayload = Json.createObjectBuilder()
+        final JsonObject uploadFileCommandPayload = createObjectBuilder()
                 .add("materialId", UUID.randomUUID().toString())
                 .add("fileServiceId", documentReference)
                 .build();

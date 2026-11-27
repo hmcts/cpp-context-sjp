@@ -9,12 +9,13 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.core.AllOf.allOf;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.hamcrest.MockitoHamcrest.argThat;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.mockito.hamcrest.MockitoHamcrest.argThat;
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMatcher.jsonEnvelope;
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMetadataMatcher.metadata;
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopePayloadMatcher.payload;
@@ -34,7 +35,6 @@ import java.util.Collections;
 import java.util.Set;
 import java.util.UUID;
 
-import javax.json.Json;
 import javax.json.JsonObjectBuilder;
 
 import org.junit.jupiter.api.Test;
@@ -80,10 +80,10 @@ public class FindAssignmentCandidatesTest {
         final JsonEnvelope assignmentCandidates = assignmentQueryView.findAssignmentCandidates(assignmentQuery);
 
         assertThat(assignmentCandidates, jsonEnvelope(metadata().withName(QUERY_NAME), payload().isJson(allOf(
-                withJsonPath("$.assignmentCandidates[0].caseId", equalTo(assignmentCandidate1.getCaseId().toString())),
-                withJsonPath("$.assignmentCandidates[0].caseStreamVersion", equalTo(assignmentCandidate1.getCaseStreamVersion())),
-                withJsonPath("$.assignmentCandidates[1].caseId", equalTo(assignmentCandidate2.getCaseId().toString())),
-                withJsonPath("$.assignmentCandidates[1].caseStreamVersion", equalTo(assignmentCandidate2.getCaseStreamVersion()))
+                        withJsonPath("$.assignmentCandidates[0].caseId", equalTo(assignmentCandidate1.getCaseId().toString())),
+                        withJsonPath("$.assignmentCandidates[0].caseStreamVersion", equalTo(assignmentCandidate1.getCaseStreamVersion())),
+                        withJsonPath("$.assignmentCandidates[1].caseId", equalTo(assignmentCandidate2.getCaseId().toString())),
+                        withJsonPath("$.assignmentCandidates[1].caseStreamVersion", equalTo(assignmentCandidate2.getCaseStreamVersion()))
                 )))
         );
     }
@@ -105,10 +105,10 @@ public class FindAssignmentCandidatesTest {
         verify(assignmentService, never()).getProsecutingAuthorityByLja(any());
 
         assertThat(assignmentCandidates, jsonEnvelope(metadata().withName(QUERY_NAME), payload().isJson(allOf(
-                withJsonPath("$.assignmentCandidates[0].caseId", equalTo(assignmentCandidate1.getCaseId().toString())),
-                withJsonPath("$.assignmentCandidates[0].caseStreamVersion", equalTo(assignmentCandidate1.getCaseStreamVersion())),
-                withJsonPath("$.assignmentCandidates[1].caseId", equalTo(assignmentCandidate2.getCaseId().toString())),
-                withJsonPath("$.assignmentCandidates[1].caseStreamVersion", equalTo(assignmentCandidate2.getCaseStreamVersion()))
+                        withJsonPath("$.assignmentCandidates[0].caseId", equalTo(assignmentCandidate1.getCaseId().toString())),
+                        withJsonPath("$.assignmentCandidates[0].caseStreamVersion", equalTo(assignmentCandidate1.getCaseStreamVersion())),
+                        withJsonPath("$.assignmentCandidates[1].caseId", equalTo(assignmentCandidate2.getCaseId().toString())),
+                        withJsonPath("$.assignmentCandidates[1].caseStreamVersion", equalTo(assignmentCandidate2.getCaseStreamVersion()))
                 )))
         );
     }
@@ -129,10 +129,10 @@ public class FindAssignmentCandidatesTest {
         final JsonEnvelope assignmentCandidates = assignmentQueryView.findAssignmentCandidates(assignmentQuery);
 
         assertThat(assignmentCandidates, jsonEnvelope(metadata().withName(QUERY_NAME), payload().isJson(allOf(
-                withJsonPath("$.assignmentCandidates[0].caseId", equalTo(assignmentCandidate1.getCaseId().toString())),
-                withJsonPath("$.assignmentCandidates[0].caseStreamVersion", equalTo(assignmentCandidate1.getCaseStreamVersion())),
-                withJsonPath("$.assignmentCandidates[1].caseId", equalTo(assignmentCandidate2.getCaseId().toString())),
-                withJsonPath("$.assignmentCandidates[1].caseStreamVersion", equalTo(assignmentCandidate2.getCaseStreamVersion()))
+                        withJsonPath("$.assignmentCandidates[0].caseId", equalTo(assignmentCandidate1.getCaseId().toString())),
+                        withJsonPath("$.assignmentCandidates[0].caseStreamVersion", equalTo(assignmentCandidate1.getCaseStreamVersion())),
+                        withJsonPath("$.assignmentCandidates[1].caseId", equalTo(assignmentCandidate2.getCaseId().toString())),
+                        withJsonPath("$.assignmentCandidates[1].caseStreamVersion", equalTo(assignmentCandidate2.getCaseStreamVersion()))
                 )))
         );
     }
@@ -150,13 +150,13 @@ public class FindAssignmentCandidatesTest {
         final JsonEnvelope assignmentCandidates = assignmentQueryView.findAssignmentCandidates(assignmentQuery);
 
         assertThat(assignmentCandidates, jsonEnvelope(metadata().withName(QUERY_NAME), payload().isJson(
-                withJsonPath("$.assignmentCandidates.*", hasSize(0))
+                        withJsonPath("$.assignmentCandidates.*", hasSize(0))
                 ))
         );
     }
 
     private JsonEnvelope buildAssignmentQuery(final SessionType sessionType) {
-        final JsonObjectBuilder assignmentQueryPayloadBuilder = Json.createObjectBuilder()
+        final JsonObjectBuilder assignmentQueryPayloadBuilder = createObjectBuilder()
                 .add("assigneeId", assigneeId.toString())
                 .add("sessionType", sessionType.name())
                 .add("localJusticeAreaNationalCourtCode", localJusticeAreaNationalCourtCode)
@@ -166,7 +166,7 @@ public class FindAssignmentCandidatesTest {
     }
 
     private JsonEnvelope buildAssignmentQuery(final SessionType sessionType, final String prosecutingAuthorities) {
-        final JsonObjectBuilder assignmentQueryPayloadBuilder = Json.createObjectBuilder()
+        final JsonObjectBuilder assignmentQueryPayloadBuilder = createObjectBuilder()
                 .add("assigneeId", assigneeId.toString())
                 .add("sessionType", sessionType.name())
                 .add("localJusticeAreaNationalCourtCode", localJusticeAreaNationalCourtCode)

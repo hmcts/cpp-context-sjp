@@ -4,6 +4,7 @@ import static java.lang.String.format;
 import static java.lang.System.lineSeparator;
 import static java.util.UUID.fromString;
 import static java.util.stream.Collectors.joining;
+import static org.apache.commons.lang3.StringUtils.isNotBlank;
 import static uk.gov.justice.core.courts.JudicialResult.judicialResult;
 
 import uk.gov.justice.core.courts.JudicialResult;
@@ -65,6 +66,7 @@ public class JudicialResultHelper {
             "I", "INTERMEDIARY");
 
     public static final String Y = "Y";
+    public static final String DURATION = "duration";
 
 
     private JudicialResultHelper() {
@@ -93,11 +95,19 @@ public class JudicialResultHelper {
                 resultDefinition.getJsonArray("prompts")
                         .getValuesAs(JsonObject.class)
                         .stream()
-                        .filter(prompt -> prompt.getString("id").equals(jsPrompt.getId().toString())
-                                && duration.equals(prompt.getString("duration")))
+                        .filter(prompt -> prompt.getString("id").equals(jsPrompt.getId().toString()))
+                        .filter(prompt -> prompt.containsKey(DURATION))
+                        .filter(prompt -> isNotBlank(prompt.getString(DURATION)) && isNotBlank(duration))
+                        .filter(prompt -> isDurationStringMatchesPromptValue(duration, prompt))
                         .findFirst();
 
         return populatePrompt(jsPrompt, promptJson);
+    }
+
+    private static boolean isDurationStringMatchesPromptValue(final String duration, final JsonObject prompt) {
+        final String alphaOnlyPattern = "[^a-zA-Z]";
+        final String promptValue = prompt.getString(DURATION).replaceAll(alphaOnlyPattern, "");
+        return duration.equals(promptValue) || duration.toUpperCase().contains(promptValue.toUpperCase()) || promptValue.toUpperCase().contains(duration.toUpperCase());
     }
 
     @SuppressWarnings("squid:S00112")

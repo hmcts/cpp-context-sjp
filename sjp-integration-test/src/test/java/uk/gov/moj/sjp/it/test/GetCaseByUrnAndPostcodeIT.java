@@ -1,19 +1,19 @@
 package uk.gov.moj.sjp.it.test;
 
 import static java.util.UUID.randomUUID;
+import static uk.gov.justice.services.messaging.JsonObjects.createReader;
 import static uk.gov.moj.sjp.it.command.CreateCase.createCaseForPayloadBuilder;
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubEnforcementAreaByPostcode;
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubProsecutorQuery;
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubQueryOffencesByCode;
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubRegionByPostcode;
 
-import uk.gov.moj.sjp.it.model.ProsecutingAuthority;
 import uk.gov.moj.sjp.it.command.CreateCase;
 import uk.gov.moj.sjp.it.helper.CitizenHelper;
+import uk.gov.moj.sjp.it.model.ProsecutingAuthority;
 
 import java.util.UUID;
 
-import javax.json.Json;
 import javax.json.JsonObject;
 
 import org.junit.jupiter.api.BeforeAll;
@@ -46,7 +46,7 @@ public class GetCaseByUrnAndPostcodeIT extends BaseIntegrationTest {
 
     @Test
     public void shouldFindCaseByUrnAndPostcode() {
-        final JsonObject expected = Json.createReader(getClass().getResourceAsStream("/GetCaseByUrnAndPostcodeIT/expected.json")).readObject();
+        final JsonObject expected = createReader(getClass().getResourceAsStream("/GetCaseByUrnAndPostcodeIT/expected.json")).readObject();
         citizenHelper.verifyCaseByPersonUrnAndPostcode(expected, urn, POSTCODE);
     }
 

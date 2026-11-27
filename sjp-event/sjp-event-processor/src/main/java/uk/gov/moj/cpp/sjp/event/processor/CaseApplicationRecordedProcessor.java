@@ -3,6 +3,7 @@ package uk.gov.moj.cpp.sjp.event.processor;
 
 import static java.util.Objects.nonNull;
 import static uk.gov.justice.services.core.annotation.Component.EVENT_PROCESSOR;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 import static uk.gov.moj.cpp.sjp.event.processor.EventProcessorConstants.APPLICATION_ID;
 import static uk.gov.moj.cpp.sjp.event.processor.EventProcessorConstants.APPLICATION_REFERENCE;
 
@@ -16,7 +17,6 @@ import uk.gov.moj.cpp.sjp.event.CaseApplicationRecorded;
 import uk.gov.moj.cpp.sjp.event.processor.service.enforcementnotification.EnforcementNotificationService;
 
 import javax.inject.Inject;
-import javax.json.Json;
 import javax.json.JsonObject;
 
 import org.slf4j.Logger;
@@ -46,13 +46,13 @@ public class CaseApplicationRecordedProcessor {
     public void handleCaseApplicationRecorded(final JsonEnvelope jsonEnvelope) {
         final JsonObject payload = jsonEnvelope.payloadAsJsonObject();
         final CaseApplicationRecorded caseApplicationRecorded = jsonObjectToObjectConverter.convert(payload, CaseApplicationRecorded.class);
-        if(nonNull(caseApplicationRecorded.getCourtApplication()) && nonNull(caseApplicationRecorded.getCourtApplication().getApplicationReference())) {
+        if (nonNull(caseApplicationRecorded.getCourtApplication()) && nonNull(caseApplicationRecorded.getCourtApplication().getApplicationReference())) {
             final String applicationId = caseApplicationRecorded.getCourtApplication().getId().toString();
             if (LOGGER.isDebugEnabled()) {
                 LOGGER.debug("Stat dec application recorded for applicationId : {}", applicationId);
             }
 
-            final JsonObject jsonObject = Json.createObjectBuilder()
+            final JsonObject jsonObject = createObjectBuilder()
                     .add(APPLICATION_ID, applicationId)
                     .add(APPLICATION_REFERENCE, caseApplicationRecorded.getCourtApplication().getApplicationReference()).build();
             sender.send(enveloper.withMetadataFrom(jsonEnvelope, CASE_APPLICATION_RECORDED_PUBLIC_EVENT).apply(jsonObject));

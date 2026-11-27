@@ -9,8 +9,6 @@ import static java.util.Collections.emptyList;
 import static java.util.Optional.of;
 import static java.util.UUID.randomUUID;
 import static java.util.stream.Collectors.toList;
-import static javax.json.Json.createArrayBuilder;
-import static javax.json.Json.createObjectBuilder;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -27,6 +25,8 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
 import static uk.gov.justice.services.messaging.JsonEnvelope.metadataBuilder;
+import static uk.gov.justice.services.messaging.JsonObjects.createArrayBuilder;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMatcher.jsonEnvelope;
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMetadataMatcher.metadata;
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopePayloadMatcher.payload;
@@ -40,7 +40,6 @@ import static uk.gov.moj.cpp.sjp.persistence.builder.DefendantDetailBuilder.aDef
 import static uk.gov.moj.cpp.sjp.query.view.SjpQueryView.ERROR_INVALID_DATE_RANGE;
 import static uk.gov.moj.cpp.sjp.query.view.SjpQueryView.ERROR_INVALID_PAGE_NUMBER;
 
-import org.hamcrest.CoreMatchers;
 import uk.gov.justice.core.courts.ProsecutionCase;
 import uk.gov.justice.services.common.converter.LocalDates;
 import uk.gov.justice.services.common.exception.ForbiddenRequestException;
@@ -110,10 +109,10 @@ import java.util.UUID;
 import java.util.function.Function;
 import java.util.stream.Stream;
 
-import javax.json.Json;
 import javax.json.JsonObject;
 import javax.persistence.NoResultException;
 
+import org.hamcrest.CoreMatchers;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -122,7 +121,6 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
-import uk.gov.moj.cpp.sjp.query.view.service.defendantcase.DefendantPotentialCaseService;
 
 @SuppressWarnings({"squid:S1607", "squid:S5976"})
 @ExtendWith(MockitoExtension.class)
@@ -839,7 +837,7 @@ public class SjpQueryViewTest {
         offenceDetail.setCode(offenceCode);
         when(offenceRepository.findBy(offenceId)).thenReturn(offenceDetail);
 
-        final JsonObject offenceData = Json.createObjectBuilder()
+        final JsonObject offenceData = createObjectBuilder()
                 .add("title", "Offence title").build();
         when(referenceDataService.getOffenceData(offenceCode)).thenReturn(of(offenceData));
 

@@ -5,9 +5,9 @@ import static java.util.Collections.singletonList;
 import static java.util.Objects.nonNull;
 import static java.util.Optional.ofNullable;
 import static java.util.UUID.randomUUID;
-import static javax.json.Json.createObjectBuilder;
 import static org.apache.commons.lang3.StringUtils.isNotEmpty;
 import static uk.gov.justice.json.schemas.domains.sjp.queries.DecisionType.REFER_FOR_COURT_HEARING;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 import static uk.gov.moj.cpp.sjp.event.processor.service.referral.helpers.NotifiedPleaViewHelper.createNotifiedPleaView;
 
 import uk.gov.justice.core.courts.ContactNumber;

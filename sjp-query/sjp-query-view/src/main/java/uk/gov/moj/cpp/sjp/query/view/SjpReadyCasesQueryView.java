@@ -1,6 +1,6 @@
 package uk.gov.moj.cpp.sjp.query.view;
 
-import static javax.json.Json.createObjectBuilder;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 import static uk.gov.justice.services.messaging.JsonObjects.toJsonArray;
 
 import uk.gov.justice.services.core.annotation.Component;

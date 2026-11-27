@@ -8,10 +8,11 @@ import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.hasProperty;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static uk.gov.moj.cpp.sjp.domain.decision.OffenceDecisionInformation.createOffenceDecisionInformation;
-import static uk.gov.moj.cpp.sjp.domain.verdict.VerdictType.FOUND_GUILTY;
+import static uk.gov.moj.cpp.sjp.domain.verdict.VerdictType.FOUND_NOT_GUILTY;
 import static uk.gov.moj.cpp.sjp.event.processor.results.converter.judicialresult.JCaseResultsConstants.DATE_FORMAT;
 
 import uk.gov.moj.cpp.sjp.domain.decision.Dismiss;
+import uk.gov.moj.cpp.sjp.event.processor.results.converter.ConvictionInfo;
 import uk.gov.moj.cpp.sjp.event.processor.results.converter.judicialresult.DecisionAggregate;
 
 import org.hamcrest.Matchers;
@@ -37,7 +38,7 @@ public class DismissDecisionResultAggregatorTest extends BaseDecisionResultAggre
     @Test
     public void shouldPopulateResultWithRightPrompts() {
         final Dismiss offenceDecision
-                = new Dismiss(null, createOffenceDecisionInformation(offence1Id, FOUND_GUILTY));
+                = new Dismiss(null, createOffenceDecisionInformation(offence1Id, FOUND_NOT_GUILTY));
 
         aggregator.aggregate(offenceDecision, sjpSessionEnvelope, resultsAggregate, resultedOn);
 
@@ -48,5 +49,20 @@ public class DismissDecisionResultAggregatorTest extends BaseDecisionResultAggre
                         hasProperty("resultText", Matchers.is("Dismissed")),
                         hasProperty("judicialResultPrompts", is(nullValue()))))));
         assertThat(resultsAggregate.getFinalOffence(offenceDecision.getOffenceIds().get(0)),Matchers.is(true));
+    }
+
+    @Test
+    public void shouldPopulateConvictionInfoWithFoundNotGuiltyVerdict() {
+        final Dismiss offenceDecision
+                = new Dismiss(null, createOffenceDecisionInformation(offence1Id, FOUND_NOT_GUILTY));
+
+        aggregator.aggregate(offenceDecision, sjpSessionEnvelope, resultsAggregate, resultedOn);
+
+        final ConvictionInfo convictionInfo = resultsAggregate.getConvictionInfo(offence1Id);
+        assertThat(convictionInfo, is(Matchers.notNullValue()));
+        assertThat(convictionInfo.getOffenceId(), Matchers.is(offence1Id));
+        assertThat(convictionInfo.getVerdictType(), Matchers.is(FOUND_NOT_GUILTY));
+        assertThat(convictionInfo.getConvictionDate(), is(resultedOn.toLocalDate()));
+        assertThat(convictionInfo.getConvictingCourt(), is(nullValue()));
     }
 }

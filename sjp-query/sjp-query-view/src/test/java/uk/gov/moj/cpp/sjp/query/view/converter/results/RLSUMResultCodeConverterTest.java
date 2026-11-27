@@ -1,13 +1,11 @@
 package uk.gov.moj.cpp.sjp.query.view.converter.results;
 
-import static javax.json.Json.createArrayBuilder;
-import static javax.json.Json.createObjectBuilder;
 import static org.mockito.MockitoAnnotations.initMocks;
-
-import java.util.Arrays;
-import java.util.Collection;
+import static uk.gov.justice.services.messaging.JsonObjects.createArrayBuilder;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 
 import java.util.stream.Stream;
+
 import javax.json.JsonArray;
 import javax.json.JsonObject;
 

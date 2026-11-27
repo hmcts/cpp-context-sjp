@@ -70,7 +70,11 @@ import uk.gov.moj.cpp.sjp.domain.onlineplea.PleadOnline;
 import uk.gov.moj.cpp.sjp.domain.onlineplea.PleadOnlinePcqVisited;
 import uk.gov.moj.cpp.sjp.domain.plea.PleaMethod;
 import uk.gov.moj.cpp.sjp.domain.plea.SetPleas;
-import uk.gov.moj.cpp.sjp.event.*;
+import uk.gov.moj.cpp.sjp.event.ApplicationResultsRecorded;
+import uk.gov.moj.cpp.sjp.event.CCApplicationStatusCreated;
+import uk.gov.moj.cpp.sjp.event.CaseCompleted;
+import uk.gov.moj.cpp.sjp.event.CaseStatusChanged;
+import uk.gov.moj.cpp.sjp.event.CaseListedInCriminalCourtsUpdated;
 
 import javax.json.JsonObject;
 import java.math.BigDecimal;
@@ -81,7 +85,6 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Supplier;
-import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 

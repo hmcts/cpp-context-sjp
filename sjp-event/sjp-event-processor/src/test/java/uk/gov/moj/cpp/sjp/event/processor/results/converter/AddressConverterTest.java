@@ -3,6 +3,7 @@ package uk.gov.moj.cpp.sjp.event.processor.results.converter;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 import static uk.gov.moj.cpp.sjp.event.processor.results.converter.TestConstants.ADDRESS1_KEY;
 import static uk.gov.moj.cpp.sjp.event.processor.results.converter.TestConstants.ADDRESS2_KEY;
 import static uk.gov.moj.cpp.sjp.event.processor.results.converter.TestConstants.ADDRESS3_KEY;
@@ -28,7 +29,6 @@ import static uk.gov.moj.cpp.sjp.event.processor.results.converter.TestConstants
 
 import java.util.Optional;
 
-import javax.json.Json;
 import javax.json.JsonObject;
 
 import org.junit.jupiter.api.Test;
@@ -103,7 +103,7 @@ public class AddressConverterTest {
     }
 
     public static Optional<JsonObject> getJsonAddress() {
-        return Optional.of(Json.createObjectBuilder()
+        return Optional.of(createObjectBuilder()
                 .add(ADDRESS1_KEY, ADDRESS_LINE_1)
                 .add(ADDRESS2_KEY, ADDRESS_LINE_2)
                 .add(ADDRESS3_KEY, ADDRESS_LINE_3)
@@ -114,7 +114,7 @@ public class AddressConverterTest {
     }
 
     public static Optional<JsonObject> getJsonWelshAddress() {
-        return Optional.of(Json.createObjectBuilder()
+        return Optional.of(createObjectBuilder()
                 .add(WELSH_ADDRESS1_KEY, WELSH_ADDRESS_LINE_1)
                 .add(WELSH_ADDRESS2_KEY, WELSH_ADDRESS_LINE_2)
                 .add(WELSH_ADDRESS3_KEY, WELSH_ADDRESS_LINE_3)

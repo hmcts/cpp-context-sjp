@@ -11,6 +11,7 @@ import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.is;
 import static org.junit.jupiter.api.Assertions.fail;
 import static uk.gov.justice.services.integrationtest.utils.jms.JmsMessageProducerClientProvider.newPublicJmsMessageProducerClientProvider;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 import static uk.gov.justice.services.test.utils.core.matchers.ResponsePayloadMatcher.payload;
 import static uk.gov.justice.services.test.utils.core.matchers.ResponseStatusMatcher.status;
 import static uk.gov.moj.sjp.it.Constants.PUBLIC_EVENT_SET_PLEAS;
@@ -34,7 +35,6 @@ import java.util.concurrent.TimeUnit;
 
 import javax.jms.JMSException;
 import javax.jms.MessageConsumer;
-import javax.json.Json;
 import javax.json.JsonObject;
 import javax.ws.rs.core.Response;
 
@@ -145,7 +145,7 @@ public class PleadOnlineHelper implements AutoCloseable {
         final JmsMessageProducerClient publicJmsMessageProducerClient = newPublicJmsMessageProducerClientProvider()
                 .getMessageProducerClient();
 
-        final JsonObject publicEvent = Json.createObjectBuilder(payload)
+        final JsonObject publicEvent = createObjectBuilder(payload)
                 .add("caseId", caseId.toString())
                 .add("defendantId", defendantId.toString())
                 .build();

@@ -3,7 +3,7 @@
     <parent>
         <artifactId>sjp-parent</artifactId>
         <groupId>uk.gov.moj.cpp.sjp</groupId>
-        <version>17.103.177-CADB-3-SNAPSHOT</version>
+        <version>17.104.200-CADB-3-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -29,8 +29,9 @@
             <artifactId>unifiedsearch-client</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.elasticsearch.client</groupId>
-            <artifactId>elasticsearch-rest-high-level-client</artifactId>
+            <groupId>co.elastic.clients</groupId>
+            <artifactId>elasticsearch-java</artifactId>
+            <version>9.2.2</version>
         </dependency>
 
         <!-- Test Dependencies -->
